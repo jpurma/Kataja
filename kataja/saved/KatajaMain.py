@@ -46,7 +46,6 @@ import sys
 from kataja.Settings import Settings, FOREST, DOCUMENT
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.saved.Forest import Forest
-from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.UIManager import UIManager
@@ -66,8 +65,6 @@ from kataja.ui_support.ErrorDialog import ErrorDialog
 # objgraph = None
 
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
-
-DEBUG_TREESET = 'trees.txt'
 
 stylesheet = """
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
@@ -141,7 +138,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.forest_keepers = [classes.get('KatajaDocument')(empty=True)]
+        self.forest_keepers = [classes.get('KatajaDocument')()]
         self.forest_keeper = self.forest_keepers[0]
         self.settings_manager.set_document(self.forest_keeper)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
@@ -315,11 +312,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
-        if DEBUG_TREESET:
-            filename = running_environment.resources_path + DEBUG_TREESET
-        else:
-            filename = None
-        self.forest_keepers = [classes.KatajaDocument(treelist_filename=filename)]
+        self.forest_keepers = [classes.KatajaDocument()]
         self.forest_keeper = self.forest_keepers[0]
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)

@@ -21,7 +21,10 @@ class Feature:
             return self.value + self.name
 
     def __eq__(self, other):
-        return self.value == other.value and self.name == other.name
+        if other:
+            return self.value == other.value and self.name == other.name
+        else:
+            return False
 
     @staticmethod
     def from_string(s):

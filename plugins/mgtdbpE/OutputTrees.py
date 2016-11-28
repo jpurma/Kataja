@@ -37,7 +37,7 @@ def list_tree_to_nltk_tree(listtree):
 
 
 def print_results(dnodes, lexicon=None):
-        dt = Constituent.dnodes_to_dtree(dnodes, all_features=False)
+        dt = Constituent.dnodes_to_dtree(dnodes, all_features=True) #False)
         res = {}
         # d -- derivation tree
         res['d'] = list_tree_to_nltk_tree(dt.as_list_tree())
@@ -124,7 +124,7 @@ class StateTree:
         self.part0 = None
         self.part1 = None
         if dtree.features:
-            self.features = dtree.features
+            self.features = dtree.features.copy()
         elif dtree.label == '*':
             self.part0 = StateTree(dtree.parts[0])
             self.part1 = StateTree(dtree.parts[1])
@@ -137,6 +137,7 @@ class StateTree:
         headf0, *remainders0 = self.part0.features
         headf1, *remainders1 = self.part1.features
         if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
+            assert(self.features == remainders0)
             self.features = remainders0
             if remainders1:
                 self.movers = [remainders1]

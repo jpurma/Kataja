@@ -25,24 +25,30 @@ from collections import OrderedDict
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 
 
 class KatajaDocument(SavedObject):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
-    as scope of undo should be a single Forest. """
+    as scope of undo should be a single Forest.
+
+    :param name: Optional readable name for document
+    :param filename: File name for saving the document. Initially empty, will be set on save
+    """
 
     unique = True
 
-    def __init__(self, name=None, filename=None, treelist_filename=None, empty=False):
+    default_treeset_file = running_environment.resources_path + 'trees.txt'
+    default_treeset = ''
+
+    def __init__(self, name=None, filename=None):
         super().__init__()
-        self.name = name or filename or treelist_filename
+        self.name = name or filename or ''
         self.filename = filename
-        if treelist_filename and not empty:
-            treelist = self.load_treelist_from_text_file(treelist_filename)
-        else:
-            treelist = []
+        treelist = self.__class__.default_treeset
+        if not treelist:
+            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file)
         self.forests = [Forest()]
         self.current_index = 0
         self.forest = None

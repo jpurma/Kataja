@@ -35,14 +35,7 @@ class PoPDocument(KatajaDocument):
 
     # unique = True
     #
-
-    def __init__(self, name=None, filename=None, treelist_filename=None, empty=False):
-        # By default load the test set for POP-parser.
-
-        super().__init__(name=name,
-                         filename=filename,
-                         treelist_filename=running_environment.plugins_path + '/PoP/POP.txt',
-                         empty=empty)
+    default_treeset_file = running_environment.plugins_path + '/PoP2/POP.txt'
 
     def create_forests(self, treelist=None):
         """ This will read example sentences in form used by Ginsburg / Fong parser
