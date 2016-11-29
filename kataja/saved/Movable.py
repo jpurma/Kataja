@@ -364,7 +364,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim.setStartValue(0.0)
         self._fade_anim.setEndValue(1.0)
         self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
         self._fade_anim.finished.connect(self.fade_in_finished)
 
     def fade_in_finished(self):
@@ -386,7 +386,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim.setStartValue(1.0)
         self._fade_anim.setEndValue(0)
         self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
         self._fade_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_and_delete(self, s=300):
@@ -408,7 +408,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim.setStartValue(1.0)
         self._fade_anim.setEndValue(0)
         self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
         self._fade_anim.finished.connect(self.fade_out_finished_delete)
 
     def fade_out_finished(self):
