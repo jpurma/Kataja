@@ -51,6 +51,7 @@ UNARY_ADD_CHILD_LEFT = 'LeftAddUnaryChild'
 UNARY_ADD_CHILD_RIGHT = 'RightAddUnaryChild'
 LEAF_ADD_SIBLING_LEFT = 'LeftAddLeafSibling'
 LEAF_ADD_SIBLING_RIGHT = 'RightAddLeafSibling'
+MERGE_TO_TOP = 'MergeToTop'
 
 # Overlay buttons -- These refer to class names in OverlayButton.py
 REMOVE_MERGER = 'RemoveMergerButton'

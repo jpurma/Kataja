@@ -79,6 +79,9 @@ class KatajaFactory:
         if base_class:
             self.base_name_to_plugin_class[base_class.__name__] = plugin_class
             self.plugin_name_to_base_class[plugin_class.__name__] = base_class
+            for key, value in list(self.nodes.items()):
+                if value == base_class:
+                    self.nodes[key] = plugin_class
         else:
             self.base_name_to_plugin_class[plugin_class.__name__] = plugin_class
             self.plugin_name_to_base_class[plugin_class.__name__] = plugin_class

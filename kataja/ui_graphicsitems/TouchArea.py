@@ -1140,3 +1140,60 @@ class StartArrowTouchArea(AddBelowTouchArea):
         draw_arrow_shape_from_points(painter, -2, 0, 8, 7, c)
         if self._hovering:
             painter.drawRoundedRect(self.boundingRect(), 4, 4)
+
+
+
+
+class MergeToTop(BranchingTouchArea):
+    """ TouchArea that connects to nodes and has \-shape.  """
+    __qt_type_id__ = next_available_type_id()
+
+    def __init__(self, host, action):
+        super().__init__(host, action)
+        self._align_left = True
+
+    def update_end_points(self, end_point=None):
+        """
+
+        :param end_point: End point can be given or it can be calculated.
+        """
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        sx, sy = self.host.magnet(0)
+        self.start_point = sx, sy
+        if end_point:
+            self.end_point = end_point
+        else:
+            ex = sx - 20  # 75
+            ey = sy - 10
+            self.end_point = ex, ey
+        self.setPos(self.end_point[0], self.end_point[1])
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        adjust = []
+        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0), alignment=g.LEFT,
+                                                    curve_adjustment=adjust)[0]
+
+    def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
+        if ctrl.pressed is self:
+            pass
+        c = self.contextual_color()
+        painter.setPen(c)
+        if self._fill_path:
+            painter.fillPath(self._path, c)
+        else:
+            painter.drawPath(self._path)
+        if self._hovering:
+            painter.save()
+            painter.setBrush(ctrl.cm.ui())
+            painter.rotate(20)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            painter.restore()
+            draw_plus(painter, 4, 0)
+

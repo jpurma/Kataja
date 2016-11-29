@@ -328,6 +328,19 @@ class LeafAddSiblingRight(KatajaAction):
         node = self.get_host()
         ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
 
+
+class MergeToTop(KatajaAction):
+    k_action_uid = 'merge_to_top'
+    k_command = 'Merge this node to left of topmost node'
+
+
+    def method(self):
+        """ """
+        ctrl.release_editor_focus()
+        node = self.get_host()
+        ctrl.forest.merge_to_top(node.get_top_node(), node, merge_to_left=True)
+
+
 # Floating buttons ##################################
 
 
