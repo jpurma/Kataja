@@ -33,7 +33,7 @@ def get_by_part(fset, fpart):
 #  of just replacing them. valued_by would be this reference.
 
 class Feature(MyBaseClass):
-    replaces = "BaseFeature"
+    role = "Feature"
 
     def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
                  ifeature=False, valued_by=None, inactive=False):

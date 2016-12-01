@@ -27,7 +27,7 @@ import random
 import kataja.globals as g
 from kataja.SavedField import SavedSynField
 from kataja.globals import FEATURE_NODE
-from kataja.singletons import ctrl, qt_prefs, classes
+from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import as_html
 from kataja.uniqueness_generator import next_available_type_id
@@ -88,7 +88,7 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        obj = classes.Feature(name=label)
+        obj = ctrl.syntax.Feature(name=label)
         obj.after_init()
         return obj
 

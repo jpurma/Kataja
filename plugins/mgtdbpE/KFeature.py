@@ -4,7 +4,7 @@ from mgtdbpE.Feature import Feature
 
 
 class KFeature(Feature, BaseFeature):
-    replaces = "BaseFeature"
+    role = "Feature"
     syntactic_object = True
 
     editable = {}

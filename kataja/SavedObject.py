@@ -47,7 +47,7 @@ class SavedObject(object):
         self._history = {}
         self.uid = uid
         self.settings = {}
-        self.class_name = self.__class__.__name__
+        self.class_name = getattr(self.__class__, 'role', self.__class__.__name__)
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
         self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored

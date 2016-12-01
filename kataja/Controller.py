@@ -51,6 +51,9 @@ class Controller:
     ui_support elements without having to know what
     elements there are.
     e) capability to send Qt signals as main application.
+
+    Note that almost every class imports Controller, so we have to be careful not to try
+    importing those classes in here. Method annotation remains incomplete because of this.
     """
 
     def __init__(self):
@@ -114,11 +117,14 @@ class Controller:
         self.main = main
 
     @property
-    def FL(self):
+    def syntax(self):
         """
-        :return: BaseFL
+        :return: SyntaxConnection
         """
-        return self.main.FL
+        if self.main.forest:
+            return self.main.forest.syntax
+        else:
+            return self.main.syntax
 
     @property
     def ui(self):

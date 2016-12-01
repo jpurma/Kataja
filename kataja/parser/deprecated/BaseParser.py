@@ -24,7 +24,7 @@
 # ############################################################################
 
 
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl
 from kataja.saved.movables.Presentation import TextArea, Image
 
 latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
@@ -132,7 +132,7 @@ class BaseParser:
             if key in features:
                 features[key].set(value)
             else:
-                feature = classes.Feature(name=key, value=value)
+                feature = ctrl.syntax.Feature(name=key, value=value)
                 features[key] = feature
         if gloss:
             features['gloss'] = gloss
@@ -178,18 +178,18 @@ class BaseParser:
     def _create_constituent(self, features):
         """ Uses parsed dict of features """
         label = features['label']
-        if isinstance(label, classes.Feature):
+        if isinstance(label, ctrl.syntax.Feature):
             label = features['label'].value
         else:
             raise Exception("Label is not a proper Feature")
-        lexicon_entry = ctrl.FL.lexicon.get(label, None)
+        lexicon_entry = ctrl.syntax.lexicon.get(label, None)
         local_entry = self.local_lexicon.get(label, None)
         if local_entry:
             constituent = local_entry
         elif lexicon_entry:
             constituent = lexicon_entry.copy()
         else:
-            constituent = classes.Constituent(label)
+            constituent = ctrl.syntax.Constituent(label)
         constituent.set_features(features)
         self.add_local_lexicon(constituent)
         return constituent

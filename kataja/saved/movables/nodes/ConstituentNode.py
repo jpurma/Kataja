@@ -189,7 +189,7 @@ class ConstituentNode(Node):
         """
         if not label:
             label = forest.get_first_free_constituent_name()
-        c = classes.Constituent(label)
+        c = ctrl.syntax.Constituent(label)
         c.after_init()
         return c
 
@@ -806,7 +806,7 @@ class ConstituentNode(Node):
             parent = s.syntactic_object
             child = self.syntactic_object
             if child not in parent.parts:
-                ctrl.FL.k_connect(parent, child)
+                ctrl.syntax.connect(parent, child)
 
     def disconnect_in_syntax(self, edge):
         """ Implement this if disconnecting this node (using this edge) needs
@@ -824,7 +824,7 @@ class ConstituentNode(Node):
             parent = s.syntactic_object
             child = self.syntactic_object
             if child in parent.parts:
-                ctrl.FL.k_disconnect(parent, child)
+                ctrl.syntax.disconnect(parent, child)
 
     # ### Selection ########################################################
 

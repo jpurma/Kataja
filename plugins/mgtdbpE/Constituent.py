@@ -16,7 +16,7 @@ class Constituent(BaseConstituent):
     (though Constituents are actually used only for displaying results, not in parsing itself)
     and -- more importantly -- one Constituent can have two counts for the same feature,
     e.g. =D =D. and we have to be able to present such constituents. """
-    replaces = "ConfigurableConstituent"
+    role = "Constituent"
 
     def __init__(self, label='', features=None, parts=None, index_str=None):
         if in_kataja:

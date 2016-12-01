@@ -39,6 +39,7 @@ from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.SyntaxConnection import SyntaxConnection
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
@@ -95,6 +96,7 @@ class Forest(SavedObject):
         self.merge_counter = 0
         self.select_counter = 0
         self.comments = []
+        self.syntax = SyntaxConnection(classes)
         self.gloss_text = ''
         self.ongoing_animations = set()
         self.guessed_projections = False
@@ -372,7 +374,7 @@ class Forest(SavedObject):
             if synobj in synobjs_done:
                 return node
             synobjs_done.add(synobj)
-            if isinstance(synobj, classes.Constituent):
+            if isinstance(synobj, ctrl.syntax.Constituent):
                 # part_count = len(synobj.get_parts())
                 for part in synobj.get_parts():
                     child = recursive_create_edges(part)
@@ -382,7 +384,7 @@ class Forest(SavedObject):
                     nfeature = recursive_create_edges(feature)
                     if nfeature:
                         connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
-            elif isinstance(synobj, classes.Feature):
+            elif isinstance(synobj, ctrl.syntax.Feature):
                 if hasattr(synobj, 'get_parts'):
                     for part in synobj.get_parts():
                         child = recursive_create_edges(part)
@@ -420,9 +422,9 @@ class Forest(SavedObject):
                 if x == 0 and y == 0:
                     x = sc_center
                     y = sc_middle
-                if isinstance(syn_bare, classes.Constituent):
+                if isinstance(syn_bare, ctrl.syntax.Constituent):
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
-                elif isinstance(syn_bare, classes.Feature):
+                elif isinstance(syn_bare, ctrl.syntax.Feature):
                     node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
                 else:
                     continue
@@ -823,7 +825,7 @@ class Forest(SavedObject):
                     self.visualization.draw_tree(tree)
                     #tree.normalize_positions()
                     tree.move_to(x, 0)
-                    print('tree (%s) :%s' % (x, tree.boundingRect()))
+                    #print('tree (%s) :%s' % (x, tree.boundingRect()))
                     x += tree.boundingRect().width()
 
         #if not sc.manual_zoom:
@@ -1269,7 +1271,7 @@ class Forest(SavedObject):
             index = self.chain_manager.next_free_index()
             node.index = index
         assert index
-        constituent = classes.Constituent(label='t')
+        constituent = ctrl.syntax.Constituent(label='t')
         trace = self.create_node(synobj=constituent, relative=node)
         trace.is_trace = True
         trace.index = index
@@ -2245,7 +2247,7 @@ class Forest(SavedObject):
         """
         if not pos:
             pos = (0, 0)
-        merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
+        merger_const = ctrl.syntax.merge(left.syntactic_object, right.syntactic_object)
         merger_const.after_init()
         print('creating merger node...')
         merger_node = self.create_node(synobj=merger_const, relative=right)

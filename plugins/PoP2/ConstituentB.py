@@ -29,7 +29,7 @@ def find_shared_features(my_feats, other_feats):
 
 class Constituent(MyBaseClass):  # collections.UserList):
 
-    replaces = "ConfigurableConstituent"
+    role = "Constituent"
 
     def __init__(self, label='', part1=None, part2=None, features=None):
         if in_kataja:

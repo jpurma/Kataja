@@ -39,6 +39,7 @@ class BaseConstituent(IConstituent):
 
     # info for kataja engine
     syntactic_object = True
+    role = "Constituent"
 
     editable = {}
     addable = {'features': {'condition': 'can_add_feature', 'add': 'add_feature', 'order': 20}

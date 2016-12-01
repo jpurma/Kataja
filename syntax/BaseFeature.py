@@ -39,6 +39,7 @@ class BaseFeature(SavedObject):
     """
 
     syntactic_object = True
+    role = "Feature"
 
     editable = {}
     addable = {}

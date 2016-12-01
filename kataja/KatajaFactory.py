@@ -2,6 +2,9 @@ import kataja.globals as g
 
 # We could use globals but it is safer this way: you can only create objects listed here.
 
+def get_role(classobj):
+    return getattr(classobj, 'role', classobj.__name__)
+
 
 class KatajaFactory:
     def __init__(self):
@@ -28,7 +31,6 @@ class KatajaFactory:
         from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
         from kataja.saved.movables.nodes.FeatureNode import FeatureNode
         from kataja.saved.movables.nodes.GlossNode import GlossNode
-        from kataja.saved.movables.Node import Node
         from kataja.saved.movables.nodes.PropertyNode import PropertyNode
         from kataja.saved.Group import Group
         from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
@@ -36,15 +38,15 @@ class KatajaFactory:
         from kataja.saved.Forest import Forest
         from kataja.saved.KatajaDocument import KatajaDocument
         from kataja.saved.movables.Tree import Tree
+        from kataja.SyntaxConnection import SyntaxConnection
         from syntax.BaseFeature import BaseFeature
-        from syntax.ConfigurableConstituent import ConfigurableConstituent
-        from syntax.BaseConstituent import BaseConstituent
+        from syntax.ConfigurableConstituent import BaseConstituent
         from syntax.BaseFL import FL
 
         self.default_models = {ConstituentNode, AttributeNode, FeatureNode,
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
-                               DerivationStepManager, ConfigurableConstituent, BaseFeature, Tree,
-                               Group, FL, KatajaDocument, BaseConstituent}
+                               DerivationStepManager, BaseConstituent, BaseFeature, Tree,
+                               Group, FL, KatajaDocument, SyntaxConnection}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
@@ -56,42 +58,35 @@ class KatajaFactory:
 
         self.classes = {}
         for class_object in self.default_models:
-            self.classes[class_object.__name__] = class_object
+            role = get_role(class_object)
+            self.classes[role] = class_object
+        print(self.classes)
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
         self.base_name_to_plugin_class = {}
         self.plugin_name_to_base_class = {}
         self.update_node_info()
 
-    @property
-    def Constituent(self):
-        return self.get('ConfigurableConstituent')
-
-    @property
-    def Feature(self):
-        return self.get('BaseFeature')
-
-    @property
-    def FL(self):
-        return self.get('FL')
-
     def add_mapping(self, base_class, plugin_class):
+        plugin_role = get_role(plugin_class)
         if base_class:
-            self.base_name_to_plugin_class[base_class.__name__] = plugin_class
-            self.plugin_name_to_base_class[plugin_class.__name__] = base_class
+            base_role = get_role(base_class)
+            self.base_name_to_plugin_class[base_role] = plugin_class
+            self.plugin_name_to_base_class[plugin_role] = base_class
             for key, value in list(self.nodes.items()):
                 if value == base_class:
                     self.nodes[key] = plugin_class
         else:
-            self.base_name_to_plugin_class[plugin_class.__name__] = plugin_class
-            self.plugin_name_to_base_class[plugin_class.__name__] = plugin_class
-        self.classes[plugin_class.__name__] = plugin_class
+            self.base_name_to_plugin_class[plugin_role] = plugin_class
+            self.plugin_name_to_base_class[plugin_role] = plugin_class
+        self.classes[plugin_role] = plugin_class
 
     def restore_default_classes(self):
         """ Restore all classes to their default implementation """
         self.classes = {}
         for class_object in self.default_models:
-            self.classes[class_object.__name__] = class_object
+            role = get_role(class_object)
+            self.classes[role] = class_object
         self.base_name_to_plugin_class = {}
         self.plugin_name_to_base_class = {}
         self.nodes = self.default_node_classes.copy()
@@ -128,10 +123,11 @@ class KatajaFactory:
     def find_base_model(self, class_item):
         if class_item in self.default_models:
             return class_item
-        elif hasattr(class_item, 'replaces'):
-            class_name = class_item.replaces
+        elif hasattr(class_item, 'role'):
+            class_name = class_item.role
             for klass in self.default_models:
-                if klass.__name__ == class_name:
+                role = get_role(klass)
+                if role == class_name:
                     return klass
             raise NameError
         else:
@@ -143,7 +139,8 @@ class KatajaFactory:
     def remove_class(self, class_name):
         """ Remove mappings that replace original class with plugin's class """
         for replaced, class_item_candidate in list(self.base_name_to_plugin_class.items()):
-            if class_item_candidate.__name__ == class_name:
+            role = get_role(class_item_candidate)
+            if role == class_name:
                 del self.base_name_to_plugin_class[replaced]
                 break
         if class_name in self.plugin_name_to_base_class:

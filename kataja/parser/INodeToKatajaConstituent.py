@@ -3,7 +3,7 @@ __author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.INodes import IParserNode, ITextNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl
 from kataja.parser.SuperParser import SuperParser
 
 
@@ -100,7 +100,7 @@ class INodeToKatajaConstituent:
         :param node:
         :return:
         """
-        constituent = classes.Constituent(str(hash(tnode)))
+        constituent = ctrl.syntax.Constituent(str(hash(tnode)))
         cn = self.forest.create_node(synobj=constituent)
         cn.label = tnode
         cn.update_label()
@@ -120,7 +120,7 @@ class INodeToKatajaConstituent:
                 child = self.parsernodes_to_constituentnodes(nnode)
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
-        constituent = classes.Constituent()
+        constituent = ctrl.syntax.Constituent()
         cn = f.create_node(synobj=constituent)
         if not f.temp_tree:
             f.temp_tree = f.create_tree_for(cn)

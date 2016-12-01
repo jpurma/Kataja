@@ -43,6 +43,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
+from kataja.SyntaxConnection import SyntaxConnection
 from kataja.Settings import Settings, FOREST, DOCUMENT
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.saved.Forest import Forest
@@ -119,9 +120,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.settings_manager = Settings()
         ctrl.late_init(self)
         classes.late_init()
-        self.FL = classes.FL()
         prefs.import_node_classes(classes)
-
+        self.syntax = SyntaxConnection(classes)
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.settings_manager.set_prefs(prefs)
@@ -314,8 +314,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     else:
                         log.info("adding %s " % classobj.__name__)
                     classes.add_mapping(base_class, classobj)
-
-
+                self.syntax = SyntaxConnection(classes)
 
     def reset_preferences(self):
         """

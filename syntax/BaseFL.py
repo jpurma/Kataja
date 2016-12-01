@@ -89,7 +89,7 @@ class FL(SavedObject):
         for key, value in self.available_rules.items():
             self.rules[key] = value.get('default')
 
-    def get_roots(self):
+    def get_trees(self):
         """ List the constituent structures of the workspace, represented by their topmost element
         """
         return self.trees
@@ -205,14 +205,6 @@ class FL(SavedObject):
         """
         raise NotImplementedError
 
-    def consume(self, suitor, bride):
-        """ If successful feature check is supposed to do something for constituents or their features
-        :param suitor:
-        :param bride:
-        :return: None
-        """
-        raise NotImplementedError
-
     def c_commands(self, A, B):
         """ Evaluate if A C-commands B
         :param A:
@@ -234,31 +226,31 @@ class FL(SavedObject):
     # these methods don't belong to assumed capabilities of FL, they are to allow Kataja editing
     # capabilities to directly create and modify FL structures.
 
-    def k_create_constituent(self, **kw):
+    def create_constituent(self, **kw):
         """ Create constituent with provided values and return it
         :param kw:
         :return: IConstituent
         """
 
-        const = classes.Constituent(**kw)
+        const = ctrl.syntax.Constituent(**kw)
         self.constituents[const.key] = const
         return const
 
-    def k_get_constituent(self, key):
+    def get_constituent(self, key):
         """ Fetch the constituent matching the key from workspace
         :param key:
         :return:
         """
         return self.constituents.get(key, None)
 
-    def k_get_feature(self, key):
+    def get_feature(self, key):
         """ Fetch the feature matching the key from workspace
         :param key:
         :return:
         """
         return self.features.get(key, None)
 
-    def k_construct(self, parent, children, purge_existing=True):
+    def construct(self, parent, children, purge_existing=True):
         """ Sets up connections between constituents without caring if there are syntactic
         operations to allow that
         :param parent:
@@ -268,7 +260,7 @@ class FL(SavedObject):
         """
         raise NotImplementedError
 
-    def k_connect(self, parent, child, align=None):
+    def connect(self, parent, child, align=None):
         """ Tries to set a parent-child connection. It may be necessary to
         force parts to be in specific order, alignment can be used to give
         hints about the order
@@ -287,7 +279,7 @@ class FL(SavedObject):
                 parent.add_part(child)
 
 
-    def k_disconnect(self, parent, child):
+    def disconnect(self, parent, child):
         """ Tries to remove parent-child connection. Primitive: may leave binary trees to have empty
         branch.
         :param parent:
@@ -298,7 +290,7 @@ class FL(SavedObject):
         if child in parent.parts:
             parent.remove_part(child)
 
-    def k_replace(self, old_c, new_c, under_parent=None):
+    def replace(self, old_c, new_c, under_parent=None):
         """ Replace constituent with another, either in all occurences or only under specific parent
         :param old_c:
         :param new_c:
@@ -311,21 +303,21 @@ class FL(SavedObject):
         else:
             parents = [x for x in self.constituents.values() if old_c in x.parts]
             for parent in parents:
-                self.k_replace(old_c, new_c, under_parent=parent)
+                self.replace(old_c, new_c, under_parent=parent)
 
-    def k_linearization_types(self):
+    def linearization_types(self):
         """ Return available options for linearization
         :return:
         """
         raise NotImplementedError
 
-    def k_merge_types(self):
+    def merge_types(self):
         """ Provide available merge types
         :return:
         """
         raise NotImplementedError
 
-    def k_create_feature(self, **kw):
+    def create_feature(self, **kw):
         """ Create feature with provided values and return it
         :param kw:
         :return: IConstituent
@@ -335,34 +327,11 @@ class FL(SavedObject):
     # these are properties so they will get docstrings. Instead of reimplementing methods they should
     # use the base implementation and other implementations should modify the referred dicts instead.
 
-    @property
-    def k_available_rules(self):
-        """ Return dict of info about features offered by this FL implementation.
-        These may be used to create UI choices for these rules or limit available actions.
-
-        Dict values should be dicts with at least
-         {"options":[list of option_keys (str)], "default":option_key}
-        :return: dict of rules
-        """
-        raise NotImplementedError
-        # implement by uncommenting following and modify the class variable rules in your implementation
-        # return self.__class__.available_rules
-
-    def k_rules(self):
+    def rules(self):
         """ Return dict of currently active rules
         :return: dict of rule:value -pairs.
         """
         raise NotImplementedError
-
-    @property
-    def k_ui_strings(self):
-        """ Provide a dict that provides user-readable names for option_keys and help text for them if
-        required.
-        :return: dict where keys are option_keys and values are (readable_name, help_text) -tuples
-        """
-        raise NotImplementedError
-        # implement by uncommenting following and modify the class variable rules in your implementation
-        # return self.__class__.ui_strings
 
     # ############## #
     #                #
