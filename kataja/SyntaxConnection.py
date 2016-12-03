@@ -48,18 +48,57 @@ class SyntaxConnection:
         else:
             raise NotImplementedError
 
-    def merge(self, A, B, merge_type=None):
-        """ Do Merge of given type, return result
+    def merge(self, A, B):
+        """ Do Merge of two constituent. This is the default merge implementation which
+        is used if the more specific ones are not available or needed.
         :param A:
         :param B:
-        :param merge_type:
         :return:
         """
         if hasattr(self.FL, 'merge'):
-            return self.FL.merge(A, B, merge_type=merge_type)
+            return self.FL.merge(A, B)
         else:
             raise NotImplementedError
 
+    def set_merge(self, A, B):
+        """ Do set merge of two constituent.
+        :param A:
+        :param B:
+        :return:
+        """
+        if hasattr(self.FL, 'set_merge'):
+            return self.FL.set_merge(A, B)
+        elif hasattr(self.FL, 'merge'):
+            return self.FL.merge(A, B)
+        else:
+            raise NotImplementedError
+
+    def pair_merge(self, A, B):
+        """ Do pair merge of two constituent.
+        :param A:
+        :param B:
+        :return:
+        """
+        if hasattr(self.FL, 'pair_merge'):
+            return self.FL.pair_merge(A, B)
+        elif hasattr(self.FL, 'merge'):
+            return self.FL.merge(A, B)
+        else:
+            raise NotImplementedError
+
+    def merge_to_top(self, A, B, dir):
+        """
+        :param A:
+        :param B:
+        :param dir:
+        :return:
+        """
+        if hasattr(self.FL, 'merge_to_top'):
+            return self.FL.merge_to_top(A, B, dir)
+        elif hasattr(self.FL, 'merge'):
+            return self.FL.merge(A, B)
+        else:
+            raise NotImplementedError
 
     def linearize(self, a, linearization_type=None):
         """ Do linearisation for a structure, there may be various algorithms

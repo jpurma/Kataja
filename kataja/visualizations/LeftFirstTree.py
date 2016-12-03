@@ -99,7 +99,8 @@ class LeftFirstTree(BaseVisualization):
         for child in children:
             blocked = True
             grandchildren = child.get_children(similar=True, visible=True)
-            while blocked:
+            count = 0
+            while blocked and count < 10:
                 # is the right node position available?
                 blocked = grid.get(nx, ny)
                 if not blocked:
@@ -130,6 +131,7 @@ class LeftFirstTree(BaseVisualization):
                 if blocked:
                     nx += x_step
                     ny += y_step
+                count += 1
             grid.fill_path(path, path_marker)
             self._put_to_grid(grid, child, nx, ny, parent=node)
             if len(children) > 2:

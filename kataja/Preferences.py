@@ -282,6 +282,18 @@ class Preferences(object):
 
         self.custom_colors = {}
 
+        self.gloss_strategy = 'message'
+        # 'message', 'no', 'linearize', 'manual'
+        self._gloss_strategy_ui = {'tab': 'Drawing', 'choices':
+                                [('message', 'Message provided by parser'),
+                                 ('linearize', 'Linearisation of current trees'),
+                                 ('manual', 'Your title/gloss'),
+                                 ('no', 'No title'),],
+                                'help': 'Forests can draw additional text for e.g. gloss, '
+                                        'linearisation or parser output',
+                                'order': 40}
+
+
     def import_node_classes(self, classes):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():

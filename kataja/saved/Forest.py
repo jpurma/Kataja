@@ -319,9 +319,11 @@ class Forest(SavedObject):
         edge_keys_to_validate = set(self.edges.keys())
 
         # Don't delete gloss node if we have message to show
-        if msg and self.gloss:
-            if self.gloss.uid in node_keys_to_validate:
-                node_keys_to_validate.remove(self.gloss.uid)
+        gloss_strat = ctrl.settings.get('gloss_strategy')
+        if gloss_strat != 'no':
+            if msg and self.gloss:
+                if self.gloss.uid in node_keys_to_validate:
+                    node_keys_to_validate.remove(self.gloss.uid)
 
         def recursive_add_for_creation(me, parent_node, parent_synobj):
             """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
@@ -406,6 +408,8 @@ class Forest(SavedObject):
         sc_middle = scene_rect.center().y()
 
         for tree_root in synobjs:
+            if not tree_root:
+                continue
             synobjs_done = set()
             nodes_to_create = []
             tree_counter = []
@@ -516,23 +520,33 @@ class Forest(SavedObject):
             for old_group, remove_list in zip(old_groups, to_remove):
                 old_group.remove_nodes(remove_list)
 
-        gt = ''
-        if self.derivation_steps.is_first() or self.derivation_steps.is_last():
-            if gloss and msg:
-                gt = '\n'.join([gloss, '', msg.splitlines()[-1]])
-            elif gloss:
-                gt = gloss
-            elif msg:
-                gt = msg.splitlines()[-1]
-        elif msg:
-            gt = msg.splitlines()[-1]
-        self.gloss_text = gt
+        strat = ctrl.settings.get('gloss_strategy')
+        if strat and strat == 'message':
+            self.gloss_text = msg
         self.update_forest_gloss()
         self.guessed_projections = False
         ctrl.graph_scene.fit_to_window(force=True)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
+        strat = ctrl.settings.get('gloss_strategy')
+        if strat:
+            if strat == 'linearisation':
+                gts = []
+                for tree in self.trees:
+                    gt = ctrl.syntax.linearize(tree.top)
+                    if gt:
+                        gts.append(gt)
+                self.gloss_text = ' '.join(gts)
+            elif strat == 'message':
+                pass
+            elif strat == 'manual':
+                pass
+            elif strat == 'no':
+                self.gloss_text = ''
+        else:
+            self.gloss_text = ''
+
         if self.gloss_text and not ctrl.settings.get('syntactic_mode'):
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
@@ -1378,6 +1392,8 @@ class Forest(SavedObject):
                 tree.update_items()
         if node.parentItem():
             node.setParentItem(None)
+        if hasattr(node, 'on_delete'):
+            node.on_delete()
         # -- scene --
         self.remove_from_scene(node)
         # -- undo stack --
@@ -1656,7 +1672,6 @@ class Forest(SavedObject):
         #       * *  *
         #       *    *  *
         # make an index-keyless version of this.
-
         trace_dict = {}
         sorted_parents = []
         required_keys = set()
@@ -2150,10 +2165,14 @@ class Forest(SavedObject):
         if merge_to_left:
             left = new
             right = top
+            dir = '<'
         else:
             left = top
             right = new
-        merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new)
+            dir = '>'
+        merger_const = self.syntax.merge_to_top(left.syntactic_object, right.syntactic_object, dir)
+        merger_node = self.create_merger_node(merger_const=merger_const, left=left, right=right,
+                                              pos=pos, new=new)
 
         # Fix trees to include the new merger node
         for tree in set(top.trees):
@@ -2236,9 +2255,11 @@ class Forest(SavedObject):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None, new=None, head=None):
+    def create_merger_node(self, merger_const=None, left=None, right=None, pos=None, new=None,
+                           head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
+        :param merger_const: constituent to be used for merger (optional)
         :param left:
         :param right:
         :param pos:
@@ -2247,8 +2268,9 @@ class Forest(SavedObject):
         """
         if not pos:
             pos = (0, 0)
-        merger_const = ctrl.syntax.merge(left.syntactic_object, right.syntactic_object)
-        merger_const.after_init()
+        if not merger_const:
+            merger_const = ctrl.syntax.merge(left.syntactic_object, right.syntactic_object)
+            merger_const.after_init()
         print('creating merger node...')
         merger_node = self.create_node(synobj=merger_const, relative=right)
         print('created merger node: ', str(merger_node), repr(merger_node))

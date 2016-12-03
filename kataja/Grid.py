@@ -305,7 +305,8 @@ class Grid:
         :return: bool - True if there are already objects in path
         """
         for x, y in path:
-            if self.get(x, y):
+            item = self.get(x, y)
+            if item and item != 3:
                 return True
         return False
 
