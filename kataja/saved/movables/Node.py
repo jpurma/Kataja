@@ -35,7 +35,7 @@ from kataja.saved.Movable import Movable
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, create_shadow_effect, add_xy
+from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me
 from kataja.parser.INodes import as_html
 
 
@@ -928,7 +928,8 @@ class Node(Movable):
         """
         if not self.label_object:
             self.update_label()
-        self._label_visible = self.label_object.has_content() or self.label_object.is_quick_editing()
+        self._label_visible = self.label_object.has_content() or \
+                              self.label_object.is_quick_editing()
         self.label_object.setVisible(self._label_visible)
 
     @property

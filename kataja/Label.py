@@ -32,6 +32,7 @@ from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
 import difflib
+import time
 
 differ = difflib.Differ()
 
@@ -191,6 +192,7 @@ class Label(QtWidgets.QGraphicsItem):
 
     def update_label(self, force_update=False):
         """ Asks for node/host to give text and update if changed """
+        t = time.time()
         self.has_been_initialized = True
         is_card = self.is_card()
         if self.text_align == LEFT_ALIGN:

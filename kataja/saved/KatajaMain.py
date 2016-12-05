@@ -166,7 +166,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         #for gesture in gestures:
         #    self.grabGesture(gesture)
-        self.action_finished()
+        self.action_finished(undoable=False)
+        self.forest.undo_manager.flush_pile()
 
     def update_style_sheet(self):
         c = ctrl.cm.drawing()
@@ -375,7 +376,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.forest.derivation_steps:
             ds = self.forest.derivation_steps
             if not ds.activated:
+                print('jumping to derivation step: ', ds.derivation_step_index)
                 ds.jump_to_derivation_step(ds.derivation_step_index)
+        else:
+            print('no derivation steps')
         self.forest.prepare_for_drawing()
         ctrl.resume_undo()
 

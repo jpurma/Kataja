@@ -28,6 +28,7 @@ from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.parser.INodes import as_html
+from kataja.utils import time_me
 
 __author__ = 'purma'
 
@@ -268,6 +269,24 @@ class ConstituentNode(Node):
             if index_text:
                 parsed += '<sub>' + index_text + '</sub>'
         preview.setText(parsed)
+
+    def update_label_visibility(self):
+        """ Check if the label of the node has any content -- should it be
+        displayed. Node itself can be visible even when its label is not.
+        :return:
+        """
+        if not self.label_object:
+            self.update_label()
+        if not ctrl.settings.get('inner_labels'):
+            if self.is_leaf(only_similar=True, only_visible=True):
+                self._label_visible = self.label_object.has_content() or \
+                                      self.label_object.is_quick_editing()
+            else:
+                self._label_visible = self.label_object.is_quick_editing()
+        else:
+            self._label_visible = self.label_object.has_content() or \
+                                  self.label_object.is_quick_editing()
+        self.label_object.setVisible(self._label_visible)
 
 
     # Other properties

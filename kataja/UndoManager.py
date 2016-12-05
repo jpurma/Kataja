@@ -50,6 +50,12 @@ class UndoManager:
     def can_redo(self):
         return self._current < len(self._stack) - 1
 
+    def flush_pile(self):
+        """ Clear undo_pile for non-undoable big changes (e.g. loading new document) """
+        for obj in ctrl.undo_pile:
+            obj.flush_history()
+        ctrl.undo_pile = set()
+
     @time_me
     def take_snapshot(self, msg=''):
         """ Store changes from ctrl.undo_pile and put them here into undo_stack.
@@ -58,6 +64,7 @@ class UndoManager:
         """
         # save objects in undo pile
         snapshot = {}
+        # print('items in undo pile:', len(ctrl.undo_pile))
         for obj in ctrl.undo_pile:
             transitions, transition_type = obj.transitions()
             snapshot[obj.uid] = (obj, transitions, transition_type)
@@ -72,9 +79,9 @@ class UndoManager:
             self._stack.pop(0)
             self._current -= 1
 
-        log.info('took snapshot, undo stack size: %s items %s chars' % (
-            len(self._stack), len(str(self._stack))))
-        print('stack len:', len(str(self._stack)))
+        #log.info('took snapshot of size: %s, undo stack size: %s items %s chars' % (
+        #    len(str(snapshot)), len(self._stack), len(str(self._stack))))
+        #print('stack len:', len(str(self._stack)))
 
     def undo(self):
         """ Move backward in the undo stack

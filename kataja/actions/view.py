@@ -337,6 +337,20 @@ class ChangeVisualisation(KatajaAction):
             ctrl.forest.set_visualization(visualization_key)
             log.info(visualization_key)
 
+class ToggleInnerLabels(KatajaAction):
+    k_action_uid = 'toggle_inner_labels'
+    k_command = 'Use labels in inner nodes'
+    k_undoable = True
+    k_shortcut = 'l'
+    k_tooltip = 'Show or hide label text in inner nodes'
+
+    def method(self):
+        """ """
+        ctrl.settings.set('inner_labels', not ctrl.settings.get('inner_labels'), level=FOREST)
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.settings.get('inner_labels')
 
 class ToggleHighlighterProjection(KatajaAction):
     k_action_uid = 'toggle_highlighter_projection'

@@ -24,7 +24,7 @@
 import math
 
 from kataja.Settings import FOREST
-from kataja.utils import caller
+from kataja.utils import caller, time_me
 import kataja.globals as g
 import sys
 
@@ -123,7 +123,7 @@ class BaseVisualization:
         node.adjustment = (0, 0)
         node.use_adjustment = False
         node.locked = False
-        node.update_label()
+        #node.update_label()
         node.update_visibility()
         node.magnet_mapper = None
 

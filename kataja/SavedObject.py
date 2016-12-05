@@ -139,7 +139,7 @@ class SavedObject(object):
         2=DELETED)
         """
         transitions = {}
-        # print('item %s history: %s' % (self.uid, self._history))
+        #print('item %s history: %s' % (self.uid, self._history))
         for key, old_value in self._history.items():
             new_value = self._saved[key]
             if old_value != new_value:

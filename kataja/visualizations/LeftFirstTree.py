@@ -29,7 +29,7 @@ import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs
-from kataja.utils import caller
+from kataja.utils import caller, time_me
 
 
 class LeftFirstTree(BaseVisualization):
@@ -96,6 +96,8 @@ class LeftFirstTree(BaseVisualization):
         y_step = 2
         nx = x + x_shift
         ny = y + y_step
+        onx = nx
+        ony = ny
         for child in children:
             blocked = True
             grandchildren = child.get_children(similar=True, visible=True)
@@ -132,6 +134,13 @@ class LeftFirstTree(BaseVisualization):
                     nx += x_step
                     ny += y_step
                 count += 1
+            if count == 10:
+                print('******** too deep tree drawing *********')
+                path = grid.pixelated_path(x, y, onx, ony)
+                if nx > x:
+                    path_marker = 2
+                else:
+                    path_marker = 1
             grid.fill_path(path, path_marker)
             self._put_to_grid(grid, child, nx, ny, parent=node)
             if len(children) > 2:

@@ -189,6 +189,7 @@ class Preferences(object):
                                                 "are not used for syntactic computation, "
                                                 "show them instead of syntactic labels. "}
 
+        self.inner_labels = False
         self.projection_strong_lines = True
         self.projection_colorized = True
         self.projection_highlighter = False
