@@ -192,7 +192,7 @@ class Label(QtWidgets.QGraphicsItem):
 
     def update_label(self, force_update=False):
         """ Asks for node/host to give text and update if changed """
-        t = time.time()
+        force_update = True
         self.has_been_initialized = True
         is_card = self.is_card()
         if self.text_align == LEFT_ALIGN:

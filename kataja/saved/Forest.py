@@ -314,7 +314,7 @@ class Forest(SavedObject):
         :param transferred: list of items spelt out/transferred. These will form a group
         :return:
         """
-
+        t = time.time()
         node_keys_to_validate = set(self.nodes.keys())
         edge_keys_to_validate = set(self.edges.keys())
 
@@ -325,22 +325,29 @@ class Forest(SavedObject):
                 if self.gloss.uid in node_keys_to_validate:
                     node_keys_to_validate.remove(self.gloss.uid)
 
-        def recursive_add_for_creation(me, parent_node, parent_synobj):
+        def recursive_add_for_creation(me, parent_node, parent_synobj, done_nodes=None):
             """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
             To help this create a list of missing nodes with known positions.
             """
+            if done_nodes is None:
+                done_nodes = set()
+                done_nodes.add(me)
+            else:
+                done_nodes.add(me)
             if isinstance(me, list):
                 for list_item in me:
-                    recursive_add_for_creation(list_item, parent_node, parent_synobj)
+                    recursive_add_for_creation(list_item, parent_node, parent_synobj,
+                                               done_nodes)
             else:
                 node = self.get_node(me)
                 if node:
+                    node.syntactic_object = me
                     if hasattr(me, 'label'):
                         node.label = me.label
                     node.update_label()
                     if node.uid in node_keys_to_validate:
                         node_keys_to_validate.remove(node.uid)
-                    if node.node_type == g.FEATURE_NODE:
+                    if node.node_type == g.FEATURE_NODE and False:
                         node.locked_to_node = parent_node  # not me.unvalued
                     for tree in node.trees:
                         if not tree.numeration:
@@ -353,14 +360,17 @@ class Forest(SavedObject):
                     nodes_to_create.append((me, (0, 0)))
                 if hasattr(me, 'get_parts'):
                     for part in me.get_parts():
-                        recursive_add_for_creation(part, node, me)
+                        if part not in done_nodes:
+                            recursive_add_for_creation(part, node, me, done_nodes)
                 if hasattr(me, 'features'):
                     if isinstance(me.features, dict):
                         for feat in me.features.values():
-                            recursive_add_for_creation(feat, node, me)
+                            if feat not in done_nodes:
+                                recursive_add_for_creation(feat, node, me, done_nodes)
                     elif isinstance(me.features, (list, set, tuple)):
                         for feat in me.features:
-                            recursive_add_for_creation(feat, node, me)
+                            if feat not in done_nodes:
+                                recursive_add_for_creation(feat, node, me, done_nodes)
 
         # I guess that ordering of connections will be broken because of making
         # and deleting connections in unruly fashion

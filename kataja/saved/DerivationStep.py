@@ -115,6 +115,7 @@ class DerivationStepManager(SavedObject):
         assert(c < max_depth) # please raise the max depth if this is reached
         self.derivation_steps.append((d_step.uid, savedata, msg))
 
+    @time_me
     def restore_derivation_step(self, uid, frozen_data):
         """
         :param uid:
@@ -127,7 +128,6 @@ class DerivationStepManager(SavedObject):
         self.current = d_step
         self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg,
                                       d_step.gloss, d_step.transferred)
-
     def next_derivation_step(self):
         """
         :return:
@@ -135,6 +135,7 @@ class DerivationStepManager(SavedObject):
         if self.derivation_step_index + 1 >= len(self.derivation_steps):
             return
         self.derivation_step_index += 1
+
         uid, ds, msg = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(uid, ds)
         log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))

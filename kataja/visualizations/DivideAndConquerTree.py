@@ -23,13 +23,14 @@
 # ############################################################################
 
 import math
+import time
 
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.saved.Movable import Movable
 from kataja.singletons import prefs
 from kataja.visualizations.BalancedTree import BalancedTree
-
+from kataja.utils import time_me
 
 class DivideAndConquerTree(BalancedTree):
     """
@@ -80,7 +81,6 @@ class DivideAndConquerTree(BalancedTree):
         new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
-    # @time_me
     def draw_tree(self, tree):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
         
@@ -121,12 +121,13 @@ class DivideAndConquerTree(BalancedTree):
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
-        def _build_grid(node, parent=None):
-            if self.forest.should_we_draw(node, parent):
+        def _build_grid(node, parent=None, done:set=None):
+            if self.forest.should_we_draw(node, parent) and node not in done:
+                done.add(node)
                 grids = []
                 children = node.get_children(similar=True, visible=True)
                 for child in children:
-                    grid = _build_grid(child, parent=node)
+                    grid = _build_grid(child, parent=node, done=done)
                     if grid:
                         grids.append(grid)
                 # Recursion base case
@@ -186,7 +187,7 @@ class DivideAndConquerTree(BalancedTree):
             #    grid.fill_path(path)
             return grid
 
-        merged_grid = _build_grid(node=tree.top)
+        merged_grid = _build_grid(node=tree.top, done=set())
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height

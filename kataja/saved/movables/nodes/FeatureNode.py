@@ -176,16 +176,19 @@ class FeatureNode(Node):
 
 
     def update_relations(self):
-        for parent in self.get_parents(similar=False, visible=False):
-            if parent.node_type == g.CONSTITUENT_NODE:
-                if parent.is_visible():
-                    self.locked_to_node = parent
-                    break
-                else:
-                    self.locked_to_node = None
-            elif parent.node_type == g.FEATURE_NODE:
-                if self.locked_to_node == parent:
-                    self.locked_to_node = None
+        if ctrl.settings.get('features_locked_below_constituent'):
+            for parent in self.get_parents(similar=False, visible=False):
+                if parent.node_type == g.CONSTITUENT_NODE:
+                    if parent.is_visible():
+                        self.locked_to_node = parent
+                        break
+                    else:
+                        self.locked_to_node = None
+                elif parent.node_type == g.FEATURE_NODE:
+                    if self.locked_to_node == parent:
+                        self.locked_to_node = None
+        else:
+            self.locked_to_node = False
         super().update_relations()
 
     def paint(self, painter, option, widget=None):

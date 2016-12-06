@@ -28,11 +28,3 @@ class KFeature(Feature, BaseFeature):
     def __hash__(self):
         return hash(str(self))
 
-    # ############## #
-    #                #
-    #  Save support  #
-    #                #
-    # ############## #
-
-    ftype = SavedField("ftype")
-    value = SavedField("value")

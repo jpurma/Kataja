@@ -12,7 +12,7 @@ __author__ = 'purma'
 mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 10],
              UI_FONT: ['Helvetica Neue', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
              ITALIC_FONT: ['Asana Math', 'Italic', 12],
-             SMALL_CAPS: ['Helvetica Neue', 'Normal', 10],
+             SMALL_CAPS: ['Menlo', 'Normal', 10],
              SMALL_FEATURE: ['Helvetica Neue', 'Normal', 7],
              CUSTOM_FONT1: ['Asana Math', 'Normal', 12],
              CUSTOM_FONT2: ['Asana Math', 'Normal', 12],

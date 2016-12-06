@@ -27,15 +27,15 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
-from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
-from kataja.utils import to_tuple, add_xy, sub_xy, time_me
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
+from kataja.Settings import FOREST
+from kataja.Shapes import SHAPE_PRESETS, outline_stroker
+from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.Settings import OBJECT, FOREST
+from kataja.utils import to_tuple, add_xy, sub_xy
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -51,15 +51,18 @@ BOTTOM_LEFT_CORNER = 5
 BOTTOM_SIDE = 6
 BOTTOM_RIGHT_CORNER = 7
 
-angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
-                    13: 10, 14: 11, 15: 6, 16: 6}
+angle_magnet_map = {
+    0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11,
+    15: 6, 16: 6
+    }
 
-atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10,
-                   4: 9, 5: 8, 6: 7, 7: 5, 8: 5}
+atan_magnet_map = {
+    -8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10, 4: 9, 5: 8,
+    6: 7, 7: 5, 8: 5
+    }
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
-
 
 
 class Edge(QtWidgets.QGraphicsObject, SavedObject):
@@ -253,8 +256,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     lv = False
                 elif self.end and not self.end.is_visible():
                     lv = False
-                elif self.start and ctrl.forest.visualization and \
-                        not ctrl.forest.visualization.show_edges_for(self.start):
+                elif self.start and ctrl.forest.visualization and not \
+                        ctrl.forest.visualization.show_edges_for(
+                    self.start):
                     lv = False
                 elif not (self.start or self.end):
                     ctrl.forest.delete_edge(self)
@@ -508,7 +512,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         e.g. it is freely floating arrow or divider
         :param event: Drag event?
         """
-        #self.draggable = not (self.start or self.end)
+        # self.draggable = not (self.start or self.end)
 
         scene_pos = to_tuple(event.scenePos())
         dist = sub_xy(self.end_point, self.start_point)
@@ -542,26 +546,20 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         return new_x, new_y
 
     # ### Derivative features ############################################
-    #@time_me
+    # @time_me
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
         sx, sy = self.start_point
         ex, ey = self.end_point
         if sx == ex:
-            ex += 0.001 # fix disappearing vertical paths
+            ex += 0.001  # fix disappearing vertical paths
 
         en, ec = self.edge_index()
 
-        c = dict(start_point=self.start_point,
-                 end_point=(ex, ey),
-                 curve_adjustment=self.curve_adjustment,
-                 thick=self._projection_thick,
-                 edge_n=en,
-                 edge_count=ec,
-                 start=self.start,
-                 end=self.end,
-                 inner_only=self._use_simple_path)
+        c = dict(start_point=self.start_point, end_point=(ex, ey),
+                 curve_adjustment=self.curve_adjustment, thick=self._projection_thick, edge_n=en,
+                 edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path)
 
         self._path, self._true_path, self.control_points, self.adjusted_control_points = \
             SHAPE_PRESETS[self.shape_name].path(**c)
@@ -595,12 +593,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
-        if self.start and \
-           self.end and \
-           ctrl.settings.get('hide_edges_if_nodes_overlap', level=FOREST) and \
-           self.start.is_visible() and \
-           self.end.is_visible() and \
-           not (self.start.triangle or self.end.triangle):
+        if self.edge_type == g.FEATURE_EDGE:
+            self._nodes_overlap = False
+        elif self.start and self.end and \
+                ctrl.settings.get('hide_edges_if_nodes_overlap', level=FOREST) and \
+                self.start.is_visible() and self.end.is_visible() and \
+                not (self.start.triangle or self.end.triangle):
             self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
         elif self._nodes_overlap:
             self._nodes_overlap = False
@@ -698,30 +696,23 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     if dx > 0:
                         if dy > 0:
                             if s_right * ratio < s_bottom:
-                                self._computed_start_point = sx + s_right, \
-                                                             sy + (s_right * ratio)
+                                self._computed_start_point = sx + s_right, sy + (s_right * ratio)
                             else:
-                                self._computed_start_point = sx + (s_bottom / ratio), \
-                                                             sy + s_bottom
+                                self._computed_start_point = sx + (s_bottom / ratio), sy + s_bottom
                         else:
                             if s_right * ratio > s_top:
-                                self._computed_start_point = sx + s_right, \
-                                                             sy + (s_right * ratio)
+                                self._computed_start_point = sx + s_right, sy + (s_right * ratio)
                             else:
-                                self._computed_start_point = sx + (s_top / ratio), \
-                                                             sy + s_top
+                                self._computed_start_point = sx + (s_top / ratio), sy + s_top
                     else:
                         if dy > 0:
                             if s_left * ratio < s_bottom:
-                                self._computed_start_point = sx + s_left, \
-                                                             sy + (s_left * ratio)
+                                self._computed_start_point = sx + s_left, sy + (s_left * ratio)
                             else:
-                                self._computed_start_point = sx + (s_bottom / ratio), \
-                                                             sy + s_bottom
+                                self._computed_start_point = sx + (s_bottom / ratio), sy + s_bottom
                         else:
                             if s_left * ratio > s_top:
-                                self._computed_start_point = sx + s_left, \
-                                                             sy + (s_left * ratio)
+                                self._computed_start_point = sx + s_left, sy + (s_left * ratio)
                             else:
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
 
@@ -729,7 +720,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             connection_style = self.cached('end_connects_to')
             if connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
-            elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == CONNECT_TO_MAGNETS:
+            elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
+                    CONNECT_TO_MAGNETS:
                 self._computed_end_point = self.end.top_center_magnet()
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of end node to
@@ -898,12 +890,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 self._local_drag_handle_position = None
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
-            else: # This is regular click on 'pressed' object
+            else:  # This is regular click on 'pressed' object
                 self.select(event)
                 self.update()
             return None  # this mouseRelease is now consumed
         super().mouseReleaseEvent(event)
-
 
     @property
     def hovering(self):
@@ -969,7 +960,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ctrl.select(self)
 
     # ## Qt paint method override
-    #@time_me
+    # @time_me
     def paint(self, painter, option, widget=None):
         """
 
@@ -1018,8 +1009,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p.setWidthF(0.5)
                 painter.setPen(p)
                 if len(self.control_points) > 1:
-                    painter.drawLine(self.end_point[0], self.end_point[1], self.control_points[
-                        1][0], self.control_points[1][1])
+                    painter.drawLine(self.end_point[0], self.end_point[1],
+                                     self.control_points[1][0], self.control_points[1][1])
                     if ca > 1 and self.curve_adjustment[1][0]:
                         p.setStyle(QtCore.Qt.DashLine)
                         painter.drawLine(self.control_points[1][0], self.control_points[1][1],
@@ -1027,8 +1018,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                          self.adjusted_control_points[1][1])
                         p.setStyle(QtCore.Qt.SolidLine)
                 painter.drawLine(self.start_point[0], self.start_point[1],
-                                 self.control_points[0][0],
-                                 self.control_points[0][1])
+                                 self.control_points[0][0], self.control_points[0][1])
                 if ca > 0 and self.curve_adjustment[0][0]:
                     p.setStyle(QtCore.Qt.DashLine)
                     painter.drawLine(self.control_points[0][0], self.control_points[0][1],

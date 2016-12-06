@@ -24,6 +24,7 @@
 
 import kataja.globals as g
 from kataja.saved.movables.Node import Node
+from kataja.utils import time_me
 
 
 class Grid:

@@ -201,7 +201,6 @@ class SavedObject(object):
     def can_have_setting(self, key):
         return key in self.allowed_settings
 
-
     def after_init(self):
         """ Override this to do preparations necessary for object creation
         :return:
@@ -426,7 +425,6 @@ class SavedObject(object):
             return restored[obj_key]
         # If the object already exists (e.g. we are doing undo), the loaded
         # values overwrite existing values.
-
         obj = full_map.get(obj_key, None)
 
         # new data that the object should have
@@ -453,8 +451,7 @@ class SavedObject(object):
             new_value = new_data.get(key, None)
             if new_value is not None:
                 new_value = inflate(new_value)
-            if new_value != old_value:
-                setattr(obj, key, new_value)
+            setattr(obj, key, new_value)
 
         # objects need to be finalized after setting values, do this only once per load.
         if root:
