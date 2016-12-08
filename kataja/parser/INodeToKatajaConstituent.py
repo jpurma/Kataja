@@ -1,3 +1,4 @@
+from utils import time_me
 
 __author__ = 'purma'
 import kataja.globals as g
@@ -5,6 +6,7 @@ from kataja.parser.INodes import IParserNode, ITextNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl
 from kataja.parser.SuperParser import SuperParser
+from kataja.utils import time_me
 
 
 class INodeToKatajaConstituent:

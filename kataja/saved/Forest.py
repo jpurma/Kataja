@@ -25,34 +25,31 @@
 
 import collections
 import itertools
-import statistics
 import string
-import random
 import time
 
 from PyQt5 import QtWidgets
 
 import kataja.globals as g
-from kataja.Settings import FOREST
+from SyntaxConnection import SyntaxConnection
 from kataja.ChainManager import ChainManager
-from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.SyntaxConnection import SyntaxConnection
+from kataja.SavedObject import SavedObject
+from kataja.Settings import FOREST
+from kataja.UndoManager import UndoManager
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
-from kataja.saved.Group import Group
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
+from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Presentation import TextArea, Image
 from kataja.saved.movables.Tree import Tree
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
-from kataja.utils import time_me
+from kataja.singletons import ctrl, qt_prefs, classes, log
 
 
 class Forest(SavedObject):
@@ -65,7 +62,7 @@ class Forest(SavedObject):
       removing trees. """
 
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None,
-                 synobjs=None):
+                 synobjs=None, syntax=None):
         """ Create an empty forest """
         super().__init__()
         self.nodes_from_synobs = {}
@@ -75,6 +72,7 @@ class Forest(SavedObject):
         self.in_display = False
         self.visualization = None
         self.gloss = None
+        self.syntax = syntax or classes.get('SyntaxConnection')(classes)
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -96,7 +94,6 @@ class Forest(SavedObject):
         self.merge_counter = 0
         self.select_counter = 0
         self.comments = []
-        self.syntax = SyntaxConnection(classes)
         self.gloss_text = ''
         self.ongoing_animations = set()
         self.guessed_projections = False
@@ -184,6 +181,30 @@ class Forest(SavedObject):
         for item in self.get_all_objects():
             self.remove_from_scene(item, fade_out=False)
         self.in_display = False
+
+    def clear(self):
+        if self.in_display:
+            for item in self.get_all_objects():
+                self.remove_from_scene(item, fade_out=False)
+        self.nodes_from_synobs = {}
+        self.gloss = None
+        self.undo_manager = UndoManager(self)
+        self.chain_manager = ChainManager(self)
+        self.derivation_steps = DerivationStepManager(forest=self)
+        self.trees = []
+        self.temp_tree = None
+        self.nodes = {}
+        self.edges = {}
+        self.edge_types = set()
+        self.node_types = set()
+        self.groups = {}
+        self.others = {}
+        self.projections = {}
+        self.width_map = {}
+        self.traces_to_draw = {}
+        self.comments = []
+        self.gloss_text = ''
+        self._marked_for_deletion = set()
 
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains

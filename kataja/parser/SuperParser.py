@@ -1,10 +1,11 @@
 
 import ast
+import time
 
 from kataja.parser.HTMLToINode import HTMLToINode
 from kataja.parser.LatexToINode import LatexToINode
 from kataja.parser.INodes import IParserNode, ITextNode
-
+from kataja.utils import time_me
 
 class SuperParser:
 

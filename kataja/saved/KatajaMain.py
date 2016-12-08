@@ -30,34 +30,31 @@
 # Classnames are in camelcase.
 
 import gc
-# import gzip
 import importlib
 import json
 import os.path
-import time
+import sys
 import traceback
-import logging
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-import sys
 
-from kataja.SyntaxConnection import SyntaxConnection
-from kataja.Settings import Settings, FOREST, DOCUMENT
-from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
-from kataja.saved.Forest import Forest
+import kataja.globals as g
+from SyntaxConnection import SyntaxConnection
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
-from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
-import kataja.globals as g
+from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
+from kataja.Settings import Settings, DOCUMENT
+from kataja.UIManager import UIManager
+from kataja.saved.Forest import Forest
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
+from kataja.ui_support.ErrorDialog import ErrorDialog
+from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
-from kataja.ui_support.PreferencesDialog import PreferencesDialog
-from kataja.ui_support.ErrorDialog import ErrorDialog
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -118,6 +115,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
         self.settings_manager = Settings()
+        self.forest_keepers = []
+        self.forest_keeper = None
         ctrl.late_init(self)
         classes.late_init()
         prefs.import_node_classes(classes)
@@ -126,7 +125,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.settings_manager.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
-        self.install_plugins()
         self.color_manager.update_color_modes()  # include color modes from preferences
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.get_font(g.UI_FONT))
@@ -138,8 +136,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.forest_keepers = [classes.get('KatajaDocument')()]
-        self.forest_keeper = self.forest_keepers[0]
+        self.init_forest_keepers()
         self.settings_manager.set_document(self.forest_keeper)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
@@ -156,9 +153,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         kataja_app.processEvents()
         self.activateWindow()
         self.status_bar = self.statusBar()
-        log.info('Welcome to Kataja! (h) for help')
+        self.install_plugins()
         self.load_initial_treeset()
-        ctrl.call_watchers(self.forest_keeper, 'forest_changed')
+        log.info('Welcome to Kataja! (h) for help')
+        #ctrl.call_watchers(self.forest_keeper, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -207,14 +205,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     data['module_path'] = root
                     self.available_plugins[mod_name] = data
 
-    def enable_plugin(self, plugin_key, keep_data=True, reload=False):
+    def enable_plugin(self, plugin_key, reload=False):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 
         """
-        if keep_data:
-            all_data = self.create_save_data()
-        setup = self.load_plugin(plugin_key)
-        if not setup:
+        self.active_plugin_setup = self.load_plugin(plugin_key)
+        if not self.active_plugin_setup:
             return
         self.clear_all()
         ctrl.disable_undo()
@@ -223,8 +219,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             for key in sys.modules:
                 if key.startswith(plugin_key):
                     available.append(key)
-            if getattr(setup, 'reload_order', None):
-                to_reload = [x for x in setup.reload_order if x in available]
+            if getattr(self.active_plugin_setup, 'reload_order', None):
+                to_reload = [x for x in self.active_plugin_setup.reload_order if x in available]
             else:
                 to_reload = sorted(available)
             for mod_name in to_reload:
@@ -232,8 +228,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 print('reloaded ', mod_name)
                 log.info('reloaded module %s' % mod_name)
 
-        if hasattr(setup, 'plugin_parts'):
-            for classobj in setup.plugin_parts:
+        if hasattr(self.active_plugin_setup, 'plugin_parts'):
+            for classobj in self.active_plugin_setup.plugin_parts:
                 base_class = classes.find_base_model(classobj)
                 if base_class:
                     classes.add_mapping(base_class, classobj)
@@ -242,44 +238,30 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     m = "adding %s " % classobj.__name__
                 log.info(m)
                 print(m)
-        if hasattr(setup, 'start_plugin'):
-            setup.start_plugin(self, ctrl, prefs)
-        if not self.forest:
-            if keep_data:
-                try:
-                    self.load_objects(all_data, self)
-                    log.info('reloaded objects')
-                except:
-                    log.critical('Failed to reload object, loading defaults instead.')
-                    self.load_initial_treeset()
-            else:
-                self.load_initial_treeset()
+        if hasattr(self.active_plugin_setup, 'start_plugin'):
+            self.active_plugin_setup.start_plugin(self, ctrl, prefs)
+        self.init_forest_keepers()
         ctrl.resume_undo()
-        self.change_forest()
+        prefs.active_plugin_name = plugin_key
 
-    def disable_plugin(self, plugin_key, keep_data=True):
-        """ Remove one plugin from use: save data, replace plugin classes with original classes,
-        load data. """
-        if keep_data:
-            all_data = self.create_save_data()
-            #plugin_data = self.available_plugins[plugin_key]
-        setup = self.load_plugin(plugin_key)
-        if not setup:
+    def disable_current_plugin(self):
+        """ Disable the current plugin and load the default trees instead.
+        :param clear: if True, have empty treeset, if False, try to load default kataja treeset."""
+        if not self.active_plugin_setup:
             return
         ctrl.disable_undo()
-        if hasattr(setup, 'tear_down_plugin'):
-            setup.tear_down_plugin(self, ctrl, prefs)
+        if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
+            self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
-        if hasattr(setup, 'plugin_parts'):
-            for classobj in setup.plugin_parts:
+        if hasattr(self.active_plugin_setup, 'plugin_parts'):
+            for classobj in self.active_plugin_setup.plugin_parts:
                 class_name = classobj.__name__
                 if class_name:
                     log.info('removing %s' % class_name)
                     classes.remove_class(class_name)
-        if keep_data:
-            self.load_objects(all_data, self)
-            ctrl.resume_undo()
-            self.change_forest()
+        self.init_forest_keepers()
+        ctrl.resume_undo()
+        prefs.active_plugin_name = ''
 
     def load_plugin(self, plugin_module):
         setup = None
@@ -304,18 +286,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
-        for plugin_module in prefs.active_plugins.keys():
-            log.info('Installing plugin %s...' % plugin_module)
-            setup = self.load_plugin(plugin_module)
-            if setup and hasattr(setup, 'plugin_parts'):
-                for classobj in setup.plugin_parts:
-                    base_class = classes.find_base_model(classobj)
-                    if base_class:
-                        log.info("replacing %s with %s " % (base_class.__name__, classobj.__name__))
-                    else:
-                        log.info("adding %s " % classobj.__name__)
-                    classes.add_mapping(base_class, classobj)
-                self.syntax = SyntaxConnection(classes)
+        if prefs.active_plugin_name:
+            log.info('Installing plugin %s...' % prefs.active_plugin_name)
+            self.enable_plugin(prefs.active_plugin_name, reload=False)
 
     def reset_preferences(self):
         """
@@ -330,12 +303,24 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.preferences_dialog.open()
         self.ui_manager.preferences_dialog.trigger_all_updates()
 
+
+    def init_forest_keepers(self):
+        """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
+        plugins have changed the classes that implement these.
+        :return:
+        """
+        print('--- dumping previous ForestKeepers and starting new...')
+        print('type: ', type(classes.get('KatajaDocument')()))
+        self.forest_keepers = [classes.get('KatajaDocument')()]
+        self.forest_keeper = self.forest_keepers[0]
+
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
-        self.forest_keepers = [classes.KatajaDocument()]
-        self.forest_keeper = self.forest_keepers[0]
+
+        print('--- load initial treeset ---')
+        self.forest_keeper.create_forests(clear=False)
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
 
@@ -371,6 +356,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ctrl.disable_undo()
         if self.forest:
             self.forest.retire_from_drawing()
+        if not self.forest_keeper.forest:
+            self.forest_keeper.create_forests(clear=True)
         self.forest = self.forest_keeper.forest
         self.settings_manager.set_forest(self.forest)
         if self.forest.derivation_steps:

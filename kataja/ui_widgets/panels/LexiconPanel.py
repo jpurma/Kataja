@@ -1,10 +1,14 @@
+import io
 from PyQt5 import QtWidgets, QtCore
-
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_support.SelectionBox import SelectionBox
+
+import pprint
+
+from kataja.ui_support.panel_utils import text_button
 
 __author__ = 'purma'
 
@@ -23,42 +27,32 @@ class LexiconPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
-        self.lextree = QtWidgets.QTreeWidget()
-        self.lextree.setColumnCount(1)
+        self.lextext = QtWidgets.QPlainTextEdit()
         #tree.preferred_size = QtCore.QSize(220, 240)
         #tree.sizeHint = self.sizeHint
         self.watchlist = ['forest_changed']
         #self.preferred_size = tree.preferred_size
-        layout.addWidget(self.lextree)
-        self.info = QtWidgets.QLabel('info text here')
-        layout.addWidget(self.info)
+        layout.addWidget(self.lextext)
+        #self.info = QtWidgets.QLabel('info text here')
+        self.derive_button = text_button(ctrl.ui, layout, text='Derive again',
+                                         action='derive_from_lexicon')
+        layout.addWidget(self.derive_button)
+        #layout.addWidget(self.info)
         inner.setLayout(layout)
-        self.lextree.itemEntered.connect(self.item_entered)
-        self.lextree.itemClicked.connect(self.item_clicked)
-
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.prepare_lexicon()
         self.finish_init()
 
     def prepare_lexicon(self):
-        self.lextree.clear()
-        fk = ctrl.main.forest_keeper
-        if not fk:
+        self.lextext.clear()
+        if not ctrl.forest:
             return
-        print('preparing lexicon panel')
-        structures = QtWidgets.QTreeWidgetItem(self.lextree, ['Structures'])
-        constituents = QtWidgets.QTreeWidgetItem(self.lextree, ['Constituents'])
-        features = QtWidgets.QTreeWidgetItem(self.lextree, ['Features'])
-        for parent, sourcedict in [(structures, fk.structures),
-                                   (constituents, fk.constituents),
-                                   (features, fk.features)]:
-            for key, value in sourcedict.items():
-                item = QtWidgets.QTreeWidgetItem(parent, [key + value])
-                if ctrl.main.use_tooltips:
-                    item.setToolTip(value)
-                item.setData(55, {'key': key, 'description': value})
-                self.lextree.addItem(item)
+        if not ctrl.syntax:
+            return
+        text = ctrl.syntax.get_editable_lexicon()
+        if text:
+            self.lextext.setPlainText(text)
 
     def item_entered(self, item):
         self.info.setText(item.data(55).get('description', 'No description'))
@@ -84,8 +78,6 @@ class LexiconPanel(Panel):
         :param value: value given to the field
         :return:
         """
-        print('bop', signal)
         if signal == 'forest_changed':
-            print('bip')
             self.prepare_lexicon()
 

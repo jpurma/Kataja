@@ -26,23 +26,26 @@ from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from mgtdbpE.Parser import Parser, load_grammar
-import ast
-
+from kataja.singletons import classes
 
 class Document(KatajaDocument):
-    """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here, as scope of undo should be a single Forest. """
+    """ Container and loader for Forest objects. Remember to not enable undo for any of the actions
+     in here, as scope of undo should be a single Forest. """
 
     # unique = True
     #
     default_treeset_file = running_environment.plugins_path + '/mgtdbpE/sentences.txt'
 
-    def create_forests(self, treelist=None):
-        """ This will read sentences to parse. One sentence per line, no periods etc. 
+    def create_forests(self, filename=None, clear=False):
+        """ This will read sentences to parse. One sentence per line, no periods etc.
 
-        :param treelist: lines of file like above.
+        :param filename: not used
+        :param clear: start with empty
         """
-        if not treelist:
+        if clear:
             treelist = []
+        else:
+            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or []
 
         # Clear this screen before we start creating a mess
         ctrl.disable_undo() # disable tracking of changes (e.g. undo)
@@ -50,17 +53,21 @@ class Document(KatajaDocument):
             self.forest.retire_from_drawing()
         self.forests = []
 
-        grammar = load_grammar(running_environment.plugins_path + '/mgtdbpE/mg0.txt')
+        grammar = load_grammar(filename=running_environment.plugins_path + '/mgtdbpE/mg0.txt')
 
         for line in treelist:
             sentence = line.strip()
             if (not sentence) or sentence.startswith('#'):
                 continue
-            forest = Forest(gloss_text=sentence)
+            syn = classes.get('SyntaxConnection')(classes)
+            syn.sentence = sentence
+            syn.lexicon = grammar
+            forest = Forest(gloss_text=sentence, syntax=syn)
             self.forests.append(forest)
             parser = Parser(grammar, -0.0001, forest=forest)
             my_success, my_dnodes = parser.parse(sentence=sentence, start='C')
-            print(my_success)
+            ds = forest.derivation_steps
+            ds.derivation_step_index = len(ds.derivation_steps) - 1
         self.current_index = 0
         self.forest = self.forests[0]
         # allow change tracking (undo) again

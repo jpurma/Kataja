@@ -301,7 +301,7 @@ class Parser:
                 self.move1(node, prediction)
                 self.move2(node, prediction)
             else:
-                raise RuntimeError('exps')
+                raise RuntimeError('no possible expansions from current state -- parse failed')
 
     def scan_and_insert_terminals(self, prediction, derivation):
         for words in prediction.head.terminals:
@@ -533,10 +533,17 @@ class Parser:
             pprint.pprint(dtree)
 
 
-def load_grammar(filename):
+def load_grammar(g='', filename=''):
     lex_items = []
-    f = open(filename)
-    for line in f.readlines():
+    if filename:
+        f = open(filename)
+        lines = f.readlines()
+        f.close()
+    elif g:
+        lines = g.splitlines()
+    else:
+        lines = []
+    for line in lines:
         line = line.strip()
         if line.startswith('#'):
             continue

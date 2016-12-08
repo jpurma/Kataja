@@ -27,6 +27,7 @@ from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
+from kataja.utils import time_me
 
 
 class KatajaDocument(SavedObject):
@@ -40,18 +41,11 @@ class KatajaDocument(SavedObject):
     unique = True
 
     default_treeset_file = running_environment.resources_path + 'trees.txt'
-    default_treeset = ''
 
     def __init__(self, name=None, filename=None, clear=False):
         super().__init__()
         self.name = name or filename or ''
         self.filename = filename
-        if clear:
-            treelist = []
-        else:
-            treelist = self.__class__.default_treeset
-            if not treelist:
-                treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file)
         self.forests = [Forest()]
         self.current_index = 0
         self.forest = None
@@ -59,8 +53,6 @@ class KatajaDocument(SavedObject):
         self.structures = OrderedDict()
         self.constituents = OrderedDict()
         self.features = OrderedDict()
-        if treelist:
-            self.create_forests(treelist)
 
     def new_forest(self):
         """ Add a new forest after the current one.
@@ -131,9 +123,13 @@ class KatajaDocument(SavedObject):
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
 
-    def create_forests(self, treelist=None):
+    @time_me
+    def create_forests(self, filename=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
         This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.
+
+        It is common to override this method in plugins to provide custom commands for e.g.
+        running parsers.
 
         Example of tree this can read:
 
@@ -148,11 +144,16 @@ class KatajaDocument(SavedObject):
         ang tubig = ANG water
         'Maria's grandmother's servant drank the water'
 
-        :param treelist: list of strings, where a line can be a bracket trees or definition line for element
-        in a trees
+        :param filename: (optional) file to load from
+        :param clear: (optional) if True, start with an empty treeset and don't attempt to load
+        examples
         """
-        if not treelist:
+        print('************* create forests ****************')
+
+        if clear:
             treelist = []
+        else:
+            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or []
 
         # Clear this screen before we start creating a mess
         ctrl.disable_undo() # disable tracking of changes (e.g. undo)

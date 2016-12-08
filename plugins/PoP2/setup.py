@@ -22,10 +22,6 @@ plugin_parts = [Constituent, Feature, Generate, PoPDocument]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-no_legacy_trees = True
-# no_legacy_trees disables restoring the previous data. It is useful when start_plugin involves
-# loading our own example trees and data.
-
 plugin_preferences = {'play_nice': True}
 # These are additional preferences added by plugin. They extend the bottom layer of preferences
 # hierarchy and can have an UI elements in 'Preferences' panel. You can have custom panels or
@@ -45,7 +41,6 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled, after new classes are initialised. This can be
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
-    main.load_initial_treeset()  # runs KatajaDocument.__init__ etc
     ctrl.free_drawing_mode = False
     ctrl.ui.update_edit_mode()
 

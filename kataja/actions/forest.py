@@ -118,3 +118,18 @@ class PreviousStep(KatajaAction):
         ctrl.forest.derivation_steps.previous_derivation_step()
 
 
+class DeriveFromLexicon(KatajaAction):
+    k_action_uid = 'derive_from_lexicon'
+    k_command = 'Derive again from lexicon'
+    k_undoable = False
+    k_tooltip = 'Derive current sentence again with this lexicon'
+
+    def enabler(self):
+        return ctrl.syntax.supports_editable_lexicon
+
+    def method(self):
+        panel = ctrl.ui.get_panel('LexiconPanel')
+        if panel:
+            text = panel.lextext.toPlainText()
+            ctrl.syntax.derive_from_editable_lexicon(text)
+            ctrl.graph_view.setFocus()

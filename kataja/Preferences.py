@@ -189,7 +189,7 @@ class Preferences(object):
                                                 "are not used for syntactic computation, "
                                                 "show them instead of syntactic labels. "}
 
-        self.inner_labels = False
+        self.inner_labels = True
         self.features_locked_below_constituent = True
         self.projection_strong_lines = True
         self.projection_colorized = True
@@ -249,8 +249,8 @@ class Preferences(object):
         self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
 
         self.plugins_path = ''
-        self.active_plugins = {}
-        self._active_plugins_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
+        self.active_plugin_name = ''
+        self._active_plugin_name_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
 
         self.FPS = 60
         self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
@@ -434,6 +434,8 @@ class QtPreferences:
         self.leaf_pixmap = None
         self.pan_icon = None
         self.select_all_icon = None
+        self.center_focus_icon = None
+        self.cursor_icon = None
         self.full_icon = None
         self.settings_icon = None
         self.settings_pixmap = None
@@ -530,6 +532,8 @@ class QtPreferences:
         self.h_refresh_small_icon = icon('h_refresh24.png')
         self.pan_icon = icon('pan48.png')
         self.select_all_icon = icon('select_all48.png')
+        self.cursor_icon = icon('cursor48.png')
+        self.center_focus_icon = icon('center_focus48.png')
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.card_icon = icon('card48.png')
@@ -623,7 +627,7 @@ class QtPreferences:
         # print('get_font metrics: ', get_font)
         # print(self.font_space_width, self.font_bracket_width,
         # self.font_bracket_height)
-        self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
+        #self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 
     def toggle_large_ui_font(self, enabled, fonts_dict):
         ui_font = self.fonts[UI_FONT]

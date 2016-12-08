@@ -344,10 +344,12 @@ class ReloadPlugin(KatajaAction):
         :return: None
         """
 
-        keys = list(prefs.active_plugins.keys())
-        for key in keys:
-            ctrl.main.disable_plugin(key, keep_data=False)
-            ctrl.main.enable_plugin(key, keep_data=False, reload=True)
+        key = prefs.active_plugin_name
+        if key:
+            ctrl.main.disable_current_plugin()
+            ctrl.main.enable_plugin(key, reload=True)
+            ctrl.main.load_initial_treeset()
+
 
 class OpenPreferences(KatajaAction):
     k_action_uid = 'preferences'

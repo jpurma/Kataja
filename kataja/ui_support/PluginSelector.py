@@ -56,7 +56,7 @@ class PluginSelector(QtWidgets.QWidget):
 
         for key in sorted(ctrl.main.available_plugins.keys()):
             item = ctrl.main.available_plugins[key]
-            activated = key in prefs.active_plugins
+            activated = key == prefs.active_plugin_name
             plugin_frame = QtWidgets.QFrame(inner_widget)
             if activated:
                 plugin_frame.setPalette(enabled_palette)

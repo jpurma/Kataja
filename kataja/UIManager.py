@@ -701,6 +701,19 @@ class UIManager:
         for panel in self._panels.values():
             panel.update()
 
+    def show_panel(self, panel_id):
+        panel = self.get_panel(panel_id)
+        if not panel:
+            for panel_data in PANELS:
+                if panel_id == panel_data['class'].__name__:
+                    self.create_panel(panel_data)
+                    panel = self.get_panel(panel_id)
+                    break
+        panel.show()
+        action = self.get_action('toggle_panel_%s' % panel_id)
+        action.setChecked(True)
+
+
     def create_panels(self):
         """ Put actions to panels. Panel contents are defined at the top of
         this file.

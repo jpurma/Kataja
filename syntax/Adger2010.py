@@ -1,9 +1,5 @@
 # coding=utf-8
 
-from BaseFL import FL
-
-class AdgerFL(FL):
-    pass
 
 class AdgerConstituent(BaseConstituent):
 

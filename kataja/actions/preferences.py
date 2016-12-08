@@ -59,12 +59,14 @@ class TogglePlugin(KatajaAction):
             key = sender.plugin_key
         print('toggle plugin, key: %s, value %s' % (key, value))
         if value:
-            prefs.active_plugins[key] = ctrl.main.available_plugins[key].copy()
+            if prefs.active_plugin_name:
+                ctrl.main.disable_current_plugin()
             ctrl.main.enable_plugin(key)
+            ctrl.main.load_initial_treeset()
             m = "Enabled plugin '%s'" % key
-        elif key in prefs.active_plugins:
-            del prefs.active_plugins[key]
-            ctrl.main.disable_plugin(key)
+        elif key == prefs.active_plugin_name:
+            ctrl.main.disable_current_plugin()
+            ctrl.main.load_initial_treeset()
             m = "Disabled plugin '%s'" % key
         else:
             m = ""

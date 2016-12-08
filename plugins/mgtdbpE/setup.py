@@ -3,6 +3,7 @@ from mgtdbpE.Parser import Parser
 from mgtdbpE.Constituent import Constituent
 from mgtdbpE.KFeature import KFeature
 from mgtdbpE.ForestKeeper import Document
+from mgtdbpE.KSyntaxConnection import KSyntaxConnection
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -13,7 +14,7 @@ from mgtdbpE.ForestKeeper import Document
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Parser, Document, KFeature]
+plugin_parts = [Constituent, Parser, Document, KFeature, KSyntaxConnection]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -22,9 +23,11 @@ plugin_parts = [Constituent, Parser, Document, KFeature]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-no_legacy_trees = True
-# no_legacy_trees disables restoring the previous data. It is useful when start_plugin involves
-# loading our own example trees and data.
+# reload_order = ['myplugin.SyntaxConnection', 'myplugin.KDocument', 'myplugin.setup']
+reload_order = ['mgtdbpE.KFeature', 'mgtdbpE.Constituent',
+                'mgtdbpE.Parser', 'mgtdbpE.KSyntaxConnection',
+                'mgtdbpE.ForestKeeper', 'mgtdbpE.setup']  # put here 'myplugin.goodg'
+
 
 plugin_preferences = {'play_nice': True}
 # These are additional preferences added by plugin. They extend the bottom layer of preferences
@@ -45,9 +48,9 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled, after new classes are initialised. This can be
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
-    main.load_initial_treeset()  # runs KatajaDocument.__init__ etc
     ctrl.free_drawing_mode = False
     ctrl.ui.update_edit_mode()
+    ctrl.ui.show_panel('LexiconPanel')
 
 
 def tear_down_plugin(main, ctrl, prefs):
