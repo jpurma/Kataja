@@ -64,10 +64,6 @@ class Document(KatajaDocument):
             syn.lexicon = grammar
             forest = Forest(gloss_text=sentence, syntax=syn)
             self.forests.append(forest)
-            parser = Parser(grammar, -0.0001, forest=forest)
-            my_success, my_dnodes = parser.parse(sentence=sentence, start='C')
-            ds = forest.derivation_steps
-            ds.derivation_step_index = len(ds.derivation_steps) - 1
         self.current_index = 0
         self.forest = self.forests[0]
         # allow change tracking (undo) again

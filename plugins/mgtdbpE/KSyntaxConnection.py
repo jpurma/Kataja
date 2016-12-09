@@ -43,3 +43,15 @@ class KSyntaxConnection(SyntaxConnection):
         ds.jump_to_derivation_step(ds.derivation_step_index)
         f.prepare_for_drawing()
         ctrl.resume_undo()
+
+    def create_derivation(self, forest):
+        """ This is always called to initially turn syntax available here and some input into a
+        structure. Resulting structures are used to populate a forest.
+        :return:
+        """
+        self.parser = Parser(self.lexicon, -0.0001, forest=forest)
+        # parser doesn't return anything, it pushes derivation steps to forest
+        self.parser.parse(sentence=self.sentence, start='C')
+        ds = forest.derivation_steps
+        ds.derivation_step_index = len(ds.derivation_steps) - 1
+        ds.jump_to_derivation_step(ds.derivation_step_index)

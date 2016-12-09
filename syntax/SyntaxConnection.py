@@ -1,5 +1,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.KatajaFactory import KatajaFactory
+from kataja.Settings import FOREST
+from kataja.singletons import ctrl
 
 
 class SyntaxConnection(SavedObject):
@@ -36,6 +38,7 @@ class SyntaxConnection(SavedObject):
         self.features = {}
         self.lexicon = {}
         self.rules = {}
+        self.sentence = ''
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
 
@@ -43,8 +46,6 @@ class SyntaxConnection(SavedObject):
         """ List the constituent structures of the workspace, represented by their topmost element
         """
         return self.trees
-
-
 
     def get_editable_lexicon(self):
         """ If it is possible to provide editable lexicon, where to get it
@@ -58,6 +59,17 @@ class SyntaxConnection(SavedObject):
         """
         raise NotImplementedError
 
+    def create_derivation(self, forest):
+        """ This is always called to initially turn syntax available here and some input into a
+        structure. Resulting structures are used to populate a forest.
+        :return:
+        """
+        text = self.sentence.strip()
+        forest.parser.string_into_forest(text)
+        if ctrl.settings.get('uses_multidomination'):
+            ctrl.settings.set('uses_multidomination', False, level=FOREST)
+            forest.traces_to_multidomination()
+            # traces to multidomination will toggle uses_multidomination to True
 
     def get_constituent_from_lexicon(self, identifier):
         """ Fetch constituent from lexicon

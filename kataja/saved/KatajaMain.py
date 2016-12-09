@@ -360,13 +360,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.forest_keeper.create_forests(clear=True)
         self.forest = self.forest_keeper.forest
         self.settings_manager.set_forest(self.forest)
-        if self.forest.derivation_steps:
-            ds = self.forest.derivation_steps
-            if not ds.activated:
-                print('jumping to derivation step: ', ds.derivation_step_index)
-                ds.jump_to_derivation_step(ds.derivation_step_index)
-        else:
-            print('no derivation steps')
+        if self.forest.is_parsed:
+            if self.forest.derivation_steps:
+                ds = self.forest.derivation_steps
+                if not ds.activated:
+                    print('jumping to derivation step: ', ds.derivation_step_index)
+                    ds.jump_to_derivation_step(ds.derivation_step_index)
+            else:
+                print('no derivation steps')
         self.forest.prepare_for_drawing()
         ctrl.resume_undo()
 

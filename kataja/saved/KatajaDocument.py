@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl, running_environment
+from kataja.singletons import ctrl, running_environment, classes
 from kataja.saved.Forest import Forest
 from kataja.utils import time_me
 
@@ -193,10 +193,13 @@ class KatajaDocument(SavedObject):
                     gloss_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
-                self.forests.append(Forest(buildstring=buildstring,
-                                           definitions=definitions,
-                                           gloss_text=gloss_text,
-                                           comments=comments))
+                syn = classes.get('SyntaxConnection')(classes)
+                syn.sentence = buildstring
+                syn.lexicon = definitions
+                forest = Forest(gloss_text=gloss_text,
+                                comments=comments,
+                                syntax=syn)
+                self.forests.append(forest)
                 started_forest = False
             # trees definition starts a new forest
             elif line and not started_forest:
@@ -209,15 +212,19 @@ class KatajaDocument(SavedObject):
             elif line:
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added
-            self.forests.append(Forest(buildstring=buildstring,
-                                       definitions=definitions,
-                                       gloss_text=gloss_text,
-                                       comments=comments))
+            syn = classes.get('SyntaxConnection')(classes)
+            syn.sentence = buildstring
+            syn.lexicon = definitions
+            forest = Forest(gloss_text=gloss_text,
+                            comments=comments,
+                            syntax=syn)
+            self.forests.append(forest)
         if not self.forests:
-            self.forests.append(Forest(buildstring="",
-                                       definitions=[],
-                                       gloss_text='',
-                                       comments=[]))
+            syn = classes.get('SyntaxConnection')(classes)
+            forest = Forest(gloss_text='',
+                            comments=[],
+                            syntax=syn)
+            self.forests.append(forest)
         self.current_index = 0
         self.forest = self.forests[0]
         # allow change tracking (undo) again

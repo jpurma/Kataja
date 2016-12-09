@@ -375,14 +375,15 @@ class Label(QtWidgets.QGraphicsItem):
             setattr(self._host, self.edited_field, parsed_parts)
 
     def editable_doc_changed(self):
-        if not self._recursion_block: # self._quick_editing and
-            w = self.width
-            self._recursion_block = True
-            self.resize_label()
-            self._host.update_bounding_rect()
-            if self.width != w and self.scene() == ctrl.graph_scene:
-                ctrl.forest.draw()
-            self._recursion_block = False
+        if self._recursion_block or not (ctrl.forest.in_display and ctrl.forest.is_parsed):
+            return
+        w = self.width
+        self._recursion_block = True
+        self.resize_label()
+        self._host.update_bounding_rect()
+        if self.width != w and self.scene() == ctrl.graph_scene:
+            ctrl.forest.draw()
+        self._recursion_block = False
 
     def get_max_size_from_host(self):
         if self._host.resizable and self._host.user_size is not None:

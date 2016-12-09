@@ -31,7 +31,6 @@ import time
 from PyQt5 import QtWidgets
 
 import kataja.globals as g
-from SyntaxConnection import SyntaxConnection
 from kataja.ChainManager import ChainManager
 from kataja.Projection import Projection
 from kataja.SavedField import SavedField
@@ -61,9 +60,16 @@ class Forest(SavedObject):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None,
-                 synobjs=None, syntax=None):
-        """ Create an empty forest """
+    def __init__(self, gloss_text='', comments=None, syntax=None):
+        """ Create an empty forest. Gloss_text and comments are metadata
+        about trees that doesn't belong to syntax implementation, so its kept here. Syntax
+        implementations may still use it.
+
+        By default, a new Forest doesn't create its nodes -- it doesn't do the derivation yet.
+        This is to save speed and memory with large structures. If the is_parsed -flag is False
+        when created, but once Forest is displayed, the derivation has to run and after that
+        is_parsed is True.
+        """
         super().__init__()
         self.nodes_from_synobs = {}
         self.main = ctrl.main
@@ -72,6 +78,7 @@ class Forest(SavedObject):
         self.in_display = False
         self.visualization = None
         self.gloss = None
+        self.is_parsed = False
         self.syntax = syntax or classes.get('SyntaxConnection')(classes)
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
@@ -99,16 +106,8 @@ class Forest(SavedObject):
         self.guessed_projections = False
         self.halt_drawing = False
         self._marked_for_deletion = set()
-        if synobjs:
-            self.mirror_the_syntax(synobjs)
-        if buildstring:
-            self.create_trees_from_string(buildstring)
-        if definitions:
-            self.read_definitions(definitions)
-        if gloss_text:
-            self.gloss_text = gloss_text
-        if comments:
-            self.comments = comments
+        self.gloss_text = gloss_text
+        self.comments = comments
 
         # Update request flags
         self._do_edge_visibility_check = False
@@ -163,6 +162,10 @@ class Forest(SavedObject):
         """
         self.in_display = True
         ctrl.disable_undo()
+        if not self.is_parsed:
+            self.syntax.create_derivation(self)
+            self.after_model_update('nodes', 0)
+            self.is_parsed = True
         self.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
@@ -854,6 +857,7 @@ class Forest(SavedObject):
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
+        assert(self.is_parsed)
         sc = ctrl.graph_scene
         sc.stop_animations()
         self.update_trees()
@@ -1279,31 +1283,6 @@ class Forest(SavedObject):
         :param simple_parse: If several words are given, merge them together
         """
         return self.parser.string_into_forest(text)
-
-    def create_trees_from_string(self, text):
-        """ Use this to initially draw the trees from a bracket notation or
-        whatever parser can handle. This doesn't clean up the forest before
-        creating new nodes, so make sure that this is drawn on empty forest
-        or be prepared for consequences.
-        :param text: string that the parser can handle
-        """
-        text = text.strip()
-        self.parser.string_into_forest(text)
-        if ctrl.settings.get('uses_multidomination'):
-            ctrl.settings.set('uses_multidomination', False, level=FOREST)
-            self.traces_to_multidomination()
-            # traces to multidomination will toggle uses_multidomination to True
-
-    # noinspection PyMethodMayBeStatic
-    def read_definitions(self, definitions):
-        """
-        :param definitions: Try to set features and glosses according to
-        definition strings for nodes in trees.
-        :return:
-        """
-        # todo: can we write feature/gloss definitions into node text elements?
-        # print('we have following keys:', self.nodes_by_uid.keys())
-        pass
 
     def create_trace_for(self, node):
         """
@@ -2473,4 +2452,6 @@ class Forest(SavedObject):
     select_counter = SavedField("select_counter")
     comments = SavedField("comments")
     gloss_text = SavedField("gloss_text")
+    syntax = SavedField("syntax")
+    is_parsed = SavedField("is_parsed")
     gloss = SavedField("gloss")
