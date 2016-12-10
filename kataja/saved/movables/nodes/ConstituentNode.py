@@ -142,7 +142,7 @@ class ConstituentNode(Node):
         g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
         g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'],
                         'action': 'remove_node'},
-        g.QUICK_EDIT_LABEL: {}, # 'condition': 'is_quick_editing'
+        #g.QUICK_EDIT_LABEL: {}, # 'condition': 'is_quick_editing'
     }
 
     def __init__(self, syntactic_object=None, forest=None):
@@ -162,6 +162,7 @@ class ConstituentNode(Node):
         self.select_order = 0
         self.original_parent = None
         self._projection_color = None
+        self.in_projections = []
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -448,10 +449,14 @@ class ConstituentNode(Node):
         lower_html = []
         syntactic_mode = ctrl.settings.get('syntactic_mode')
         display_labels = ctrl.settings.get('show_display_labels')
+        inner_labels = ctrl.settings.get('inner_labels')
 
-        if self.triangle and not self.is_leaf(only_similar=True, only_visible=False):
+        leaf = self.is_leaf(only_similar=True, only_visible=False)
+        if self.triangle and not leaf:
             lower_html.append(self.get_triangle_text())
-        if display_labels and self.display_label:
+        if inner_labels == 2:  # use secondary labels
+            html.append(as_html(self.syntactic_object.get_secondary_label()))
+        elif display_labels and self.display_label:
             html.append(as_html(self.display_label))
         else:
             if self.label_html:
@@ -561,6 +566,7 @@ class ConstituentNode(Node):
         """
         r = []
         children = self.get_children(similar=True, visible=False)
+        my_heads = self.get_head_nodes()
         l = len(children)
         if l == 1:
             # down arrow
@@ -575,20 +581,15 @@ class ConstituentNode(Node):
             # don't use arrows if more than 3
             prefix = [''] * l
         for n, child in enumerate(children):
-            head_node_of_child = child.head_node or child
-            enabled = True #bool(child.head_node or child.is_leaf(only_visible=False))
-            d = {'text': '%s%s' % (prefix[n], head_node_of_child.short_str()),
-                 'value': head_node_of_child,
-                 'is_checked': head_node_of_child == self.head_node,
+            head_nodes_of_child = child.get_head_nodes() or [child]
+            enabled = True
+            d = {'text': '%s%s' % (prefix[n], ', '.join([x.short_str() for x in
+                                                         head_nodes_of_child])),
+                 'value': n,
+                 'is_checked': head_nodes_of_child == my_heads,
                  'enabled': enabled,
-                 'tooltip': 'inherit label from ' + str(head_node_of_child)}
+                 'tooltip': 'inherit label from ' + str(head_nodes_of_child)}
             r.append(d)
-        d = {'text': 'Undefined',
-             'value': None,
-             'is_checked': not self.head_node,
-             'enabled': True,
-             'tooltip': "doesn't inherit head"}
-        r.append(d)
         return r
 
     def guess_projection(self):
@@ -618,32 +619,50 @@ class ConstituentNode(Node):
         head_node = find_original(self, strip_xbars(str(al)))
         self.set_projection(head_node)
 
-    def set_projection(self, new_head):
+    def set_projection(self, head):
         """ Set this node to be projection from new_head.
         :param new_head:
         :return:
         """
-        if new_head == self or new_head == self.syntactic_object:
-            raise hell
-        if isinstance(new_head, Node):
-            self.head = new_head.syntactic_object
+        print('set_projection called with ', head)
+
+        if head:
+            if isinstance(head, list):
+                if isinstance(head[0], Node):
+                    self.syntactic_object.set_head([x.syntactic_object for x in head])
+                else:
+                    self.syntactic_object.set_head(head)
+            elif isinstance(head, Node):
+                self.syntactic_object.set_head([head.syntactic_object])
+            else:
+                self.syntactic_object.set_head([head])
         else:
-            self.head = new_head
+            self.syntactic_object.set_head([])
 
     def set_projection_display(self, color_id):
         self._projection_color = color_id
 
-    @property
-    def head_node(self):
+    def get_syn_heads(self):
+        """ Heads are syntactic objects, not nodes. This helper reminds of that and fails nicely.
+        :return:
+        """
+        if not self.syntactic_object:
+            return []
+        return getattr(self.syntactic_object, 'heads', [])
+
+    def get_head_nodes(self):
         """ Heads are syntactic objects, not nodes. This is helper to get the node instead.
         :return:
         """
-        if self.head is self.syntactic_object:
-            return self
-        elif self.head:
-            return self.forest.get_node(self.head)
-        else:
-            return None
+        heads = []
+        for synobj in self.syntactic_object.heads:
+            if synobj:
+                h = self.forest.get_node(synobj)
+                if h:
+                    heads.append(h)
+            else:
+                print(self.syntactic_object, ' has bad heads: ', self.syntactic_object.heads)
+        return heads
 
     @property
     def contextual_color(self):

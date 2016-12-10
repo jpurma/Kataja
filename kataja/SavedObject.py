@@ -403,8 +403,14 @@ class SavedObject(object):
                         f = QtGui.QFont()
                         f.fromString(data[1])
                         return f
+                    elif data_type.startswith('Q'):
+                        raise SaveError('unknown QObject: %s' % str(data))
                     else:
-                        raise SaveError('unknown QObject: %s' % data)
+                        result = []
+                        for item in data:
+                            result.append(inflate(item))
+                        result = tuple(result)
+                        return result
                 else:
                     result = []
                     for item in data:

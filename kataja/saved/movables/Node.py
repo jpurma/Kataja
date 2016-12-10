@@ -1290,7 +1290,8 @@ class Node(Movable):
             if ctrl.main.use_tooltips:
                 self.setToolTip("Edit with keyboard, click the cog to inspect the node")
             if ctrl.single_selection() and not ctrl.multiselection_delay:
-                self.label_object.set_quick_editing(True)
+                if ctrl.settings.get('single_click_editing'):
+                    self.label_object.set_quick_editing(True)
         self.update()
 
     # ### MOUSE - kataja
@@ -1332,7 +1333,8 @@ class Node(Movable):
             if len(ctrl.selected) > 1:
                 ctrl.select(self)
             else:
-                pass
+                if not ctrl.settings.get('single_click_editing'):
+                    self.label_object.set_quick_editing(True)
         else:
             ctrl.select(self)
 

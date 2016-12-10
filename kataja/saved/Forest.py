@@ -49,6 +49,7 @@ from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.singletons import ctrl, qt_prefs, classes, log
+from kataja.utils import time_me
 
 
 class Forest(SavedObject):
@@ -111,7 +112,7 @@ class Forest(SavedObject):
 
         # Update request flags
         self._do_edge_visibility_check = False
-        self.change_view_mode(ctrl.settings.get('syntactic_mode'))
+        #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated (e.g. by
@@ -174,6 +175,7 @@ class Forest(SavedObject):
         self.draw()  # do draw once to avoid having the first draw in undo stack.
         ctrl.graph_scene.fit_to_window()
         ctrl.resume_undo()
+        ctrl.graph_view.setFocus()
 
     def retire_from_drawing(self):
         """ Announce that this forest should not try to work with scene
@@ -426,6 +428,11 @@ class Forest(SavedObject):
                         child = recursive_create_edges(part)
                         if child and child.node_type == g.FEATURE_NODE:
                             connect_if_necessary(node, child, g.CHECKING_EDGE)
+                if hasattr(synobj, 'checks'):
+                    if synobj.checks:
+                        checking_node = self.get_node(synobj.checks)
+                        if checking_node:
+                            connect_if_necessary(checking_node, node, g.CHECKING_EDGE)
             return node
 
         def rec_add_item(item, result_set):
@@ -920,18 +927,18 @@ class Forest(SavedObject):
         """
         chains = []
 
-        def is_head_projecting_upwards(chain, node, head_node) -> None:
+        def is_head_projecting_upwards(chain, node) -> None:
             chain.append(node)
             ends_here = True
             for parent in node.get_parents(similar=True, visible=False):
-                if parent is head_node or parent.head_node is head_node:
+                if node in parent.get_head_nodes():
                     ends_here = False
                     # create a copy of chain so that when the chain ends it will be added
                     # as separate chain to another projection branch
-                    is_head_projecting_upwards(list(chain), parent, head_node)
+                    is_head_projecting_upwards(list(chain), parent)
             if ends_here and len(chain) > 1:
                 chains.append(chain)
-        is_head_projecting_upwards([], head_node, head_node)
+        is_head_projecting_upwards([], head_node)
         return chains
 
     def remove_projection(self, head_node):
@@ -948,7 +955,7 @@ class Forest(SavedObject):
         :return:
         """
         # only do this the first time we load a new structure
-        if not self.guessed_projections:
+        if ctrl.settings.get('guess_projections') and not self.guessed_projections:
             for tree in self.trees:
                 for node in tree.sorted_constituents:
                     node.guess_projection()
@@ -959,19 +966,23 @@ class Forest(SavedObject):
         old_heads = set([x.head for x in self.projections.values()])
 
         new_heads = set()
-        for node in list(self.nodes.values()):
-            if node.node_type == g.CONSTITUENT_NODE and node.head_node is None:
-                chains = Forest.compute_projection_chains_for(node)
-                if chains:
-                    new_heads.add(node)
-                    projection = self.projections.get(node.uid, None)
-                    if projection:
-                        projection.update_chains(chains)
-                    else:
-                        projection = Projection(node, chains, next(self.projection_rotator))
-                        self.projections[node.uid] = projection
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE:
+                if not node.get_head_nodes():
+                    chains = Forest.compute_projection_chains_for(node)
+                    if chains:
+                        new_heads.add(node)
+                        projection = self.projections.get(node.uid, None)
+                        if projection:
+                            projection.update_chains(chains)
+                        else:
+                            projection = Projection(node, chains, next(self.projection_rotator))
+                            self.projections[node.uid] = projection
+                node.in_projections = []
         for head in old_heads - new_heads:
             self.remove_projection(head)
+        for edge in self.edges.values():
+            edge.in_projections = []
         self.update_projection_display()
 
     def update_projection_display(self):
@@ -1961,10 +1972,11 @@ class Forest(SavedObject):
         if edge:
             parent = edge.start
             child = edge.end
-        if hasattr(parent, 'head') and hasattr(child, 'head'):
-            if parent.head is child.head or parent.head_node is child:
-                if hasattr(parent, 'set_projection'):
-                    parent.set_projection(None)
+        if parent.node_type == g.CONSTITUENT_NODE and child.node_type == g.CONSTITUENT_NODE:
+            syn_heads = parent.get_syn_heads()
+            if child.syntactic_object in syn_heads:
+                syn_heads.remove(child.syntactic_object)
+                parent.syntactic_object.set_heads(syn_heads)
         # then remove the edge
         if not edge:
             edge = parent.get_edge_to(child, edge_type)
@@ -2126,7 +2138,7 @@ class Forest(SavedObject):
         else:
             left = old_node
             right = new_node
-        parent_info = [(e.start, e.direction(), e.start.head_node) for e in
+        parent_info = [(e.start, e.direction(), e.start.get_head_nodes()) for e in
                        old_node.get_edges_up(similar=True, visible=False)]
 
         for op, align, head in parent_info:
@@ -2147,9 +2159,10 @@ class Forest(SavedObject):
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.copy_position(old_node)
         merger_node.set_projection(old_node)
-        for op, align, head_node in parent_info:
-            if head_node == old_node:
-                op.set_projection(head_node)
+        for op, align, head_nodes in parent_info:
+            if old_node in head_nodes:
+                op.set_projection(head_nodes)  # fixme: not sure if we treat multiple heads right
+                # here
 
     def merge_to_top(self, top, new, merge_to_left=True, pos=None):
         """
@@ -2227,10 +2240,9 @@ class Forest(SavedObject):
 
         edge = parent.get_edge_to(child)
         # store the projection and alignment info before disconnecting the edges
-        head = None
-        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head is child.head or \
-                parent.head_node is child:
-            head = parent.head
+        heads = []
+        if parent.node_type == g.CONSTITUENT_NODE:
+            heads = parent.get_head_nodes()
 
         direction = edge.direction()
         self.disconnect_edge(edge)
@@ -2258,8 +2270,12 @@ class Forest(SavedObject):
                 group.add_node(merger_node)
 
         # projections
-        if head:
-            merger_node.set_projection(head)
+        if heads:
+            if child in heads:
+                merger_node.set_projection(heads)
+                heads.remove(child)
+                heads.append(merger_node)
+                parent.set_projection(heads)
 
         # chains
         if self.traces_are_visible():
@@ -2288,8 +2304,7 @@ class Forest(SavedObject):
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
-        if head:
-            merger_node.set_projection(head)
+        merger_node.set_projection(head)
         return merger_node
 
     def copy_node(self, node):
@@ -2407,6 +2422,7 @@ class Forest(SavedObject):
                 return 'accent%s' % i
 
     # View mode
+    @time_me
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=FOREST)
         ctrl.settings.set('show_display_labels', not syntactic_mode, level=FOREST)

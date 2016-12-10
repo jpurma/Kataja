@@ -50,23 +50,19 @@ class Projection:
         return res
 
     def set_visuals(self, strong_lines, colorized, highlighter):
-        change_nodes = self._changes or \
-                       self.strong_lines != strong_lines or \
-                       self.colorized != colorized
         self.colorized = colorized
         self.strong_lines = strong_lines
-        if change_nodes:
-            if colorized:
-                color_id = self.color_id
-            else:
-                color_id = None
-            for edge in self.get_edges():
-                edge.set_projection_display(strong_lines, color_id)
-            for chain in self.chains:
-                if len(chain) > 1:
-                    for node in chain:
-                        node.set_projection_display(color_id)
-        self._changes = False
+        if colorized:
+            color_id = self.color_id
+        else:
+            color_id = None
+        for edge in self.get_edges():
+            edge.in_projections.append(self)
+        for chain in self.chains:
+            if len(chain) > 1:
+                for node in chain:
+                    node.in_projections.append(self)
+                    node.set_projection_display(color_id)
         self.highlighter = highlighter
         if highlighter:
             if not self.visual:

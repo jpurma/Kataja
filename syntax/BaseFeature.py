@@ -50,6 +50,7 @@ class BaseFeature(SavedObject):
         self.name = name
         self.value = value
         self.family = family
+        self.checks = None
 
     def has_value(self, prop):
         return self.value == prop
@@ -95,3 +96,4 @@ class BaseFeature(SavedObject):
     value = SavedField("value")
     assigned = SavedField("assigned")
     family = SavedField("family")
+    checks = SavedField("checks")

@@ -14,6 +14,8 @@ class SyntaxConnection(SavedObject):
     """
     role = "SyntaxConnection"
     supports_editable_lexicon = False
+    supports_secondary_labels = False
+
     options = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),
                "linearization_types": dict(options=["merge_asymmetry", "kayne"]),
                "binary_branching_for_constituents": dict(options=[True, False], default=True),

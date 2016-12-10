@@ -54,7 +54,10 @@ class BaseConstituent(IConstituent):
          """
         super().__init__(**kw)
         self.label = label
-        self.head = head
+        if head:
+            self.heads = [head]
+        else:
+            self.heads = []
         self.features = features or {}
         self.parts = parts or []
 
@@ -148,7 +151,13 @@ class BaseConstituent(IConstituent):
         :param head:
         :return:
         """
-        self.head = head
+        print('set_head called with ', head)
+        if isinstance(head, list):
+            self.heads = head
+        elif head:
+            self.heads = [head]
+        else:
+            self.heads = []
 
     def get_feature(self, key):
         """ Gets the local feature (within this constituent, not of its children) with key 'key'
@@ -157,6 +166,14 @@ class BaseConstituent(IConstituent):
         """
         f = self.features.get(key, None)
         return f
+
+    def get_secondary_label(self):
+        """ Visualisation can switch between showing labels and some other information in label
+        space. If you want to support this, have "support_secondary_labels = True"
+        in SyntaxConnection and provide something from this getter.
+        :return:
+        """
+        raise NotImplementedError
 
     def has_feature(self, key):
         """ Check the existence of feature within this constituent
@@ -235,7 +252,7 @@ class BaseConstituent(IConstituent):
         nc = self.__class__(label=self.label,
                             parts=new_parts,
                             features=new_features,
-                            head=self.head)
+                            heads=self.heads)
         return nc
 
     # ############## #
@@ -248,4 +265,4 @@ class BaseConstituent(IConstituent):
     sourcestring = SavedField("sourcestring")
     label = SavedField("label")
     parts = SavedField("parts")
-    head = SavedField("head")
+    heads = SavedField("heads")

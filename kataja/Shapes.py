@@ -202,14 +202,14 @@ class ShapedCubicPath(Shape):
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
              edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
-             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=False, inner_only=False,
+             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False,
              **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
-        if thick:
-            leaf_x *= 2
-            leaf_y *= 2
+        if thick > 0:
+            leaf_x *= thick
+            leaf_y *= thick
 
         if relative:
             dx = abs(rel_dx * (ex - sx))
@@ -311,12 +311,12 @@ class ShapedQuadraticPath(Shape):
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0, edge_count=1,
              relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3,
-             thick=False, inner_only=False, **kwargs):
+             thick=1, inner_only=False, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
-        if thick:
-            leaf_x *= 2
-            leaf_y *= 2
+        if thick > 0:
+            leaf_x *= thick
+            leaf_y *= thick
 
         if relative:
             dx = abs(rel_dx * (ex - sx))
@@ -407,13 +407,13 @@ class ShapedLinearPath(Shape):
     thickness = 0.5
 
     @staticmethod
-    def path(start_point=None, end_point=None, leaf_x=2, leaf_y=2, thick=False, inner_only=False,
+    def path(start_point=None, end_point=None, leaf_x=2, leaf_y=2, thick=1, inner_only=False,
              **kwargs):
         sx, sy = start_point
         dx, dy = end_point
-        if thick:
-            leaf_x *= 2
-            leaf_y *= 2
+        if thick > 0:
+            leaf_x *= thick
+            leaf_y *= thick
 
         c = [(dx - leaf_x, dy - leaf_y), (dx + leaf_x, dy - leaf_y)]
         if inner_only:
@@ -476,7 +476,7 @@ class BlobPath(Shape):
     thickness = 0.5
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=False,
+    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=1,
              start=None, end=None, inner_only=False, **kwargs):
         if start:
             scx, scy = start.current_scene_position
@@ -486,8 +486,8 @@ class BlobPath(Shape):
             ecx, ecy = end.current_scene_position
         else:
             ecx, ecy = end_point
-        if thick:
-            thickness *= 2
+        if thick > 0:
+            thickness *= thick
         t2 = thickness * 2
 
         sx, sy = start_point
@@ -586,7 +586,7 @@ class DirectionalBlobPath(Shape):
     thickness = 0.5
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=False,
+    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=1,
              start=None, end=None, inner_only=False, **kwargs):
         if start:
             scx, scy = start.current_scene_position
@@ -602,7 +602,7 @@ class DirectionalBlobPath(Shape):
             return None, inner_path, [], []
 
         t2 = thickness * 2
-        if thick:
+        if thick > 1:
             start_ball = start and start.has_visible_label()
             if start_ball:
                 sx1, sy1, sw, sh = start.boundingRect().getRect()

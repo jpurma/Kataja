@@ -189,8 +189,8 @@ class Preferences(object):
                                                 "are not used for syntactic computation, "
                                                 "show them instead of syntactic labels. "}
 
-        self.inner_labels = True
-        self.features_locked_below_constituent = True
+        self.inner_labels = 1
+        self.features_locked_below_constituent = False
         self.projection_strong_lines = True
         self.projection_colorized = True
         self.projection_highlighter = False
@@ -200,6 +200,10 @@ class Preferences(object):
         self.last_key_colors = {}
 
         self.use_xbar_aliases = False
+
+        self.single_click_editing = False
+        self._single_click_editing_ui = {'tab': 'General', 'label': 'Single click editing',
+                                  'help': 'Selecting a node triggers editing its label'}
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',
@@ -222,6 +226,9 @@ class Preferences(object):
 
         self.include_gloss_to_print = True
         self._include_gloss_to_print_ui = {'tab': 'Printing'}
+
+        self.guess_projections = False
+        # plugins can toggle projection guessing on and off
 
         self.use_projection = True
         self._use_projection_ui = {'tab': 'Syntax'}

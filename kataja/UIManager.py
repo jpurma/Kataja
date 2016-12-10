@@ -1157,7 +1157,6 @@ class UIManager:
             return button
         constructor = getattr(kataja.ui_widgets.OverlayButton, class_key)
         button = constructor(node, self.main.graph_view)
-
         self.add_ui(button)
         button.update_position()
         if action:

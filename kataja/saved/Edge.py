@@ -94,7 +94,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.label_data = {}
         self._nodes_overlap = False
 
-        self._projection_thick = False
+        self.in_projections = []
         self._projection_color = None
 
         self._computed_start_point = None
@@ -372,9 +372,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
 
-        if thick == self._projection_thick and color == self._projection_color:
-            return
-        self._projection_thick = thick
         self._projection_color = color
 
     def make_relative_vector(self):
@@ -556,9 +553,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ex += 0.001  # fix disappearing vertical paths
 
         en, ec = self.edge_index()
+        thick = 1
+        if self.in_projections and self.in_projections[0].strong_lines:
+            thick = len(self.in_projections)
 
         c = dict(start_point=self.start_point, end_point=(ex, ey),
-                 curve_adjustment=self.curve_adjustment, thick=self._projection_thick, edge_n=en,
+                 curve_adjustment=self.curve_adjustment, thick=thick, edge_n=en,
                  edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path)
 
         self._path, self._true_path, self.control_points, self.adjusted_control_points = \
@@ -593,7 +593,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
-        if self.edge_type == g.FEATURE_EDGE:
+        if self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
             self._nodes_overlap = False
         elif self.start and self.end and \
                 ctrl.settings.get('hide_edges_if_nodes_overlap', level=FOREST) and \
@@ -981,8 +981,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
-                if self._projection_thick:
-                    thickness *= 2
+                if self.in_projections and self.in_projections[0].strong_lines:
+                    thickness *= len(self.in_projections)
                 p.setWidthF(thickness)
                 painter.setPen(p)
                 if self._path.length() == 0 or self._path.isEmpty():

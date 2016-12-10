@@ -200,13 +200,13 @@ class HeadDownTree(BaseVisualization):
                         grid.insert_columns(-x)
                         nleft -= x
                         x = 0
-            elif hasattr(node, 'head_node'):
-                my_head = node.head_node
+            elif hasattr(node, 'get_head_nodes'):
+                my_head = node.get_head_nodes()
                 projecting_child = None
                 for child in children:
-                    if not hasattr(child, 'head_node'):
+                    if not hasattr(child, 'get_head_nodes'):
                         continue
-                    if child is my_head or child.head_node is my_head:
+                    if child in my_head or my_head in child.get_head_nodes():
                         projecting_child = child
                 if not projecting_child:
                     projecting_child = children[0]

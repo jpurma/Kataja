@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
 
-from kataja.Settings import FOREST
+from kataja.Settings import FOREST, DOCUMENT
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
@@ -337,16 +337,25 @@ class ChangeVisualisation(KatajaAction):
             ctrl.forest.set_visualization(visualization_key)
             log.info(visualization_key)
 
+
 class ToggleInnerLabels(KatajaAction):
     k_action_uid = 'toggle_inner_labels'
     k_command = 'Use labels in inner nodes'
     k_undoable = True
     k_shortcut = 'l'
-    k_tooltip = 'Show or hide label text in inner nodes'
+    k_tooltip = 'Switch what to show as label text in inner nodes'
 
     def method(self):
         """ """
-        ctrl.settings.set('inner_labels', not ctrl.settings.get('inner_labels'), level=FOREST)
+        now = ctrl.settings.get('inner_labels')
+        now += 1
+        if ctrl.forest.syntax.supports_secondary_labels:
+            if now == 3:
+                now = 0
+        else:
+            if now == 2:
+                now = 0
+        ctrl.settings.set('inner_labels', now, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):

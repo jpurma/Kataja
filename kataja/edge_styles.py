@@ -20,7 +20,7 @@ master_styles = {
             'end_connects_to': BORDER
         }, CHECKING_EDGE: {
             'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': .40, 'visible': True,
-            'arrowhead_at_start': True, 'arrowhead_at_end': False, 'font': MAIN_FONT,
+            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER
         }, ATTRIBUTE_EDGE: {
