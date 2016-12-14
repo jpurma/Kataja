@@ -62,7 +62,6 @@ class Projection:
             if len(chain) > 1:
                 for node in chain:
                     node.in_projections.append(self)
-                    node.set_projection_display(color_id)
         self.highlighter = highlighter
         if highlighter:
             if not self.visual:

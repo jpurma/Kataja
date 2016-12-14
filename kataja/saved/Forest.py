@@ -25,6 +25,7 @@
 
 import collections
 import itertools
+import random
 import string
 import time
 
@@ -401,6 +402,7 @@ class Forest(SavedObject):
         # I guess that ordering of connections will be broken because of making
         # and deleting connections in unruly fashion
         def connect_if_necessary(parent, child, edge_type):
+            assert(parent != child)
             edge = parent.get_edge_to(child, edge_type)
             if not edge:
                 self.connect_node(parent, child, edge_type=edge_type, mirror_in_syntax=False)
@@ -465,8 +467,10 @@ class Forest(SavedObject):
             for syn_bare, pos in nodes_to_create:
                 x, y = pos
                 if x == 0 and y == 0:
-                    x = sc_center
-                    y = sc_middle
+                    x = sc_center + random.randint(-100, 100)
+                    y = sc_middle + random.randint(-100, 100)
+                    if isinstance(syn_bare, ctrl.syntax.Feature):
+                        y += 100
                 if isinstance(syn_bare, ctrl.syntax.Constituent):
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, ctrl.syntax.Feature):
@@ -500,9 +504,15 @@ class Forest(SavedObject):
             if edge:
                 # noinspection PyTypeChecker
                 self.delete_edge(edge)
+
+        f_mode = ctrl.settings.get('feature_positioning')
+        shape = ctrl.settings.get('label_shape')
+        parents = []
         for node in self.nodes.values():
+            node.update_relations(parents, shape=shape, position=f_mode)
             node.update_label()
-            node.update_relations()
+        for parent in parents:
+            parent.gather_children()
 
         # Update or create groups of transferred items
         old_groups = [gr for gr in self.groups.values() if gr.get_label_text().startswith(
@@ -1672,6 +1682,12 @@ class Forest(SavedObject):
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.label_shape = shape
                 node.label_object.update_label()
+
+        parents = []
+        for node in self.nodes.values():
+            node.update_relations(parents)
+        for parent in parents:
+            parent.gather_children()
         self.prepare_width_map()
 
     def compute_traces_to_draw(self, rotator) -> int:

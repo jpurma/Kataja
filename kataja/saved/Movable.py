@@ -246,9 +246,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             elif self.locked:
                 return False, False
             elif self.locked_to_node:
-                pos = self.locked_to_node.get_locked_node_positions(self)
-                if pos:
-                    self.current_position = pos[0], pos[1]
                 return False, False
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
@@ -313,6 +310,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """ Kill moving animation for this object.
         :return: None
         """
+        self._high_priority_move = False
         if self.after_move_function:
             self.after_move_function()
             self.after_move_function = None

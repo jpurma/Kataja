@@ -84,9 +84,6 @@ class LeftFirstTree(BaseVisualization):
             return
         grid.set(x, y, node)
         fy = y
-        for fnode in node.get_locked_in_nodes():
-            fy += 1
-            grid.set(x, fy, 3)
 
         children = node.get_children(similar=True, visible=True)
         if not children:

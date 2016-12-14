@@ -485,6 +485,8 @@ class Node(Movable):
         :return:
         """
         old_parent = self.parentItem()
+        if isinstance(old_parent, Node):
+            return
         new_parent = self.pick_tallest_tree()
         if new_parent:
             if old_parent is not new_parent:
@@ -759,28 +761,78 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
-    def get_locked_node_relative_positions(self, for_me=None):
-        center_x = self.boundingRect().center().x()
-        bottom_y = self.boundingRect().bottom()
-        if for_me:
-            for fnode in self.get_children(visible=True, similar=False):
-                if fnode.locked_to_node is self:
-                    if fnode is for_me:
-                        return center_x, bottom_y
-                    else:
-                        bottom_y += fnode.height
-        else:
-            l = []
-            for fnode in self.get_children(visible=True, similar=False):
-                if fnode.locked_to_node is self:
-                    l.append((fnode, center_x, bottom_y))
-                    bottom_y += fnode.height
-            return l
+    def gather_children(self):
+        fpos = ctrl.settings.get('feature_positioning')
+        shape = ctrl.settings.get('label_shape')
+        if shape == g.CARD:
+            fpos = 3  # only two column arrangement looks good on cards
 
-    def get_locked_node_positions(self, for_me=None):
-        x, y = self.current_position
-        rx, ry = self.get_locked_node_relative_positions(for_me)
-        return x+rx, y+ry
+        if fpos == 1:  # vertical
+            center_x = self.boundingRect().center().x()
+            bottom_y = self.boundingRect().bottom()
+            y = bottom_y
+            for fnode in self.get_children(visible=True, similar=False):
+                if fnode.locked_to_node is self:
+                    fnode.setPos(center_x, y)
+                    y += fnode.height
+        elif fpos == 2:  # horizontal
+            center_x = self.boundingRect().center().x()
+            bottom_y = self.boundingRect().bottom()
+            nods = []
+            total_width = 0
+            max_height = 0
+            for fnode in self.get_children(visible=True, similar=False):
+                if fnode.locked_to_node is self:
+                    w = fnode.width
+                    nods.append((fnode, total_width))
+                    total_width += w - 4
+                    if fnode.height > max_height:
+                        max_height = fnode.height
+            if nods:
+                left_margin = (total_width / -2) + center_x
+                left_margin += nods[0][0].width / 2
+                y = bottom_y + (max_height / 2)
+                for fnode, x in nods:
+                    fnode.setPos(left_margin + x, y)
+        elif fpos == 3:  # card layout, two columns
+            in_card = ctrl.settings.get('label_shape') == g.CARD
+            cw, ch = self.label_object.card_size
+            center_x = self.boundingRect().center().x()
+            top_y = 22
+            left_margin = center_x - (cw / 2)
+            right_margin = center_x + (cw / 2)
+            left_nods = []
+            right_nods = []
+            for fnode in self.get_children(visible=True, similar=False):
+                if fnode.locked_to_node is self:
+                    if fnode.syntactic_object.value in ['-', '=', '✓-', '✓=']:
+                        right_nods.append(fnode)
+                    else:
+                        left_nods.append(fnode)
+            y = top_y
+            if in_card:
+                hspace = ch - top_y
+                if left_nods:
+                    node_hspace = hspace / len(left_nods)
+                    half_h = node_hspace / 2
+                    for fnode in left_nods:
+                        fnode.setPos(left_margin + fnode.width / 2, y + half_h)
+                        y += node_hspace
+                if right_nods:
+                    y = top_y
+                    node_hspace = hspace / len(right_nods)
+                    half_h = node_hspace / 2
+                    for fnode in right_nods:
+                        fnode.setPos(right_margin - fnode.width / 2, y + half_h)
+                        y += node_hspace
+            else:
+                for fnode in left_nods:
+                    fnode.setPos(left_margin + fnode.width / 2, y)
+                    y += fnode.height - 4
+                y = top_y
+                for fnode in right_nods:
+                    fnode.setPos(right_margin - fnode.width / 2, y)
+                    y += fnode.height - 4
 
     def get_locked_in_nodes(self):
         return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
@@ -795,7 +847,7 @@ class Node(Movable):
         return other not in self.get_parents(similar=False, visible=False)
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
-    def update_relations(self):
+    def update_relations(self, parents, shape=None, position=None):
         if self.locked_to_node:
             edge = self.get_edge_to(self.locked_to_node)
             if edge:
@@ -1104,6 +1156,7 @@ class Node(Movable):
                          (x + w2 + w4, y_max), (x_max, y_max)]
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
+
         return self.inner_rect
 
     def overlap_rect(self):
@@ -1426,8 +1479,7 @@ class Node(Movable):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        for node in self.get_locked_in_nodes():
-            node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+        pass
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features,

@@ -154,7 +154,7 @@ class HeadDownTree(BaseVisualization):
                 grids = []
                 children = node.get_children(visible=True, similar=True)
                 for child in children:
-                    if child.locked_to_node is node:
+                    if child.locked_to_node:
                         continue
                     grid = _build_grid(child, parent=node)
                     if grid:

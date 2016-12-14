@@ -161,7 +161,6 @@ class ConstituentNode(Node):
         self.merge_order = 0
         self.select_order = 0
         self.original_parent = None
-        self._projection_color = None
         self.in_projections = []
 
         # ### Cycle index stores the order when node was originally merged to structure.
@@ -354,6 +353,7 @@ class ConstituentNode(Node):
 
     def should_show_gloss_in_label(self) -> bool:
         return ctrl.settings.get('show_glosses') == 1
+
 
     def update_status_tip(self) -> None:
         """ Hovering status tip """
@@ -639,9 +639,6 @@ class ConstituentNode(Node):
         else:
             self.syntactic_object.set_head([])
 
-    def set_projection_display(self, color_id):
-        self._projection_color = color_id
-
     def get_syn_heads(self):
         """ Heads are syntactic objects, not nodes. This helper reminds of that and fails nicely.
         :return:
@@ -672,8 +669,8 @@ class ConstituentNode(Node):
 
         if ctrl.is_selected(self):
             base = ctrl.cm.selection()
-        elif self._projection_color:
-            base = ctrl.cm.get(self._projection_color)
+        elif self.in_projections:
+            base = ctrl.cm.get(self.in_projections[0].color_id)
         else:
             base = self.color
         if self.drag_data:
@@ -890,17 +887,6 @@ class ConstituentNode(Node):
 
     # ## Most of this is implemented in Node
 
-    def start_dragging_tracking(self, host=False, scene_pos=None):
-        """ Drag the node stack with me
-        :param host:
-        :param scene_pos:
-        :return:
-        """
-        super().start_dragging_tracking(host=host, scene_pos=scene_pos)
-        for node in self.children():
-            if node.locked_to_node == self:
-                node.start_dragging_tracking(host=False, scene_pos=scene_pos)
-
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
@@ -912,11 +898,6 @@ class ConstituentNode(Node):
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
                     node.start_dragging_tracking(host=False, scene_pos=scene_pos)
-                    for n in node.get_locked_in_nodes():
-                        n.start_dragging_tracking(host=False, scene_pos=scene_pos)
-
-        for node in self.get_locked_in_nodes():
-            node.start_dragging_tracking(host=False, scene_pos=scene_pos)
 
     #################################
 

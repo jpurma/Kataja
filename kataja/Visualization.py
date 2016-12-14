@@ -161,7 +161,6 @@ class BaseVisualization:
         node_x, node_y = node.current_position
         old_x, old_y = node.current_position
         alpha = 0.2
-
         # attract
         down = node.edges_down
         for edge in down:
@@ -171,7 +170,7 @@ class BaseVisualization:
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            radius = (other.width + node.width) / 2
+            radius = (other.width + node.width + other.height + node.height) / 4
             if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
@@ -187,7 +186,7 @@ class BaseVisualization:
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            radius = (other.width + node.width) / 2
+            radius = (other.width + node.width + other.height + node.height) / 4
             if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
@@ -217,18 +216,30 @@ class BaseVisualization:
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = (other.width + node.width) / 2
+            safe_zone = (other.width + node.width + other.height + node.height) / 4
             if dist == safe_zone:
                 continue
             if dist < safe_zone:
                 required_dist = abs(dist - safe_zone)
                 pushing_force = required_dist / (dist * dist * alpha)
-                #pushing_force = min(random.random() * 60, pushing_force)
 
                 node_x += pushing_force * dist_x
                 node_y += pushing_force * dist_y
                 if dist_x == 0:
                     node_x -= 1
+
+            # safe_zone = (other.width + node.width) / 2
+            # if dist == safe_zone:
+            #     continue
+            # if dist < safe_zone:
+            #     required_dist = abs(dist - safe_zone)
+            #     pushing_force = required_dist / (dist * dist * alpha)
+            #     #pushing_force = min(random.random() * 60, pushing_force)
+            #
+            #     node_x += pushing_force * dist_x
+            #     node_y += pushing_force * dist_y
+            #     if dist_x == 0:
+            #         node_x -= 1
 
         if node.physics_x:
             xvel = node_x - old_x

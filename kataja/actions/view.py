@@ -69,7 +69,7 @@ class ActivateNoFrameNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.NORMAL, level=FOREST)
+        ctrl.settings.set('label_shape', g.NORMAL, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):
@@ -89,7 +89,7 @@ class ActivateScopeboxNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.SCOPEBOX, level=FOREST)
+        ctrl.settings.set('label_shape', g.SCOPEBOX, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):
@@ -109,7 +109,7 @@ class ActivateBracketedNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.BRACKETED, level=FOREST)
+        ctrl.settings.set('label_shape', g.BRACKETED, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):
@@ -129,7 +129,7 @@ class ActivateBoxShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.BOX, level=FOREST)
+        ctrl.settings.set('label_shape', g.BOX, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):
@@ -149,7 +149,7 @@ class ActivateCardNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.CARD, level=FOREST)
+        ctrl.settings.set('label_shape', g.CARD, level=DOCUMENT)
         ctrl.forest.update_label_shape()
 
     def getter(self):
@@ -160,9 +160,9 @@ class ActivateCardNodeShape(KatajaAction):
                g.CARD not in ctrl.forest.visualization.banned_node_shapes
 
 
-class SwitchBracketMode(KatajaAction):
-    k_action_uid = 'bracket_mode'
-    k_command = 'Show &brackets'
+class ToggleLabelShape(KatajaAction):
+    k_action_uid = 'toggle_label_shape'
+    k_command = 'Rotate between node shapes'
     k_shortcut = 'b'
     k_checkable = True
 
@@ -188,7 +188,7 @@ class SwitchBracketMode(KatajaAction):
             m = '(b) Node shape: Boxes'
         elif bs == g.CARD:
             m = '(b) Node shape: Cards'
-        ctrl.settings.set('label_shape', bs, level=FOREST)
+        ctrl.settings.set('label_shape', bs, level=DOCUMENT)
         ctrl.forest.update_label_shape()
         return m
 
@@ -427,4 +427,34 @@ class ToggleShowDisplayLabel(KatajaAction):
 
     def getter(self):
         return ctrl.settings.get('show_display_labels')
+
+
+class ToggleFeatureDisplayMode(KatajaAction):
+    k_action_uid = 'toggle_feature_display_mode'
+    k_command = 'Change how to display features'
+    k_tooltip = 'Switch between ways to arrange features'
+    k_shortcut = 'f'
+
+    def method(self):
+        f_mode = ctrl.settings.get('feature_positioning')
+        f_mode += 1
+        if f_mode == 4:
+            f_mode = 0
+        ctrl.settings.set('feature_positioning', f_mode, level=DOCUMENT)
+        parents = []
+        shape = ctrl.settings.get('label_shape')
+        for node in ctrl.forest.nodes.values():
+            node.update_relations(parents, shape=shape, position=f_mode)
+            node.update_label()
+        for parent in parents:
+            parent.gather_children()
+
+    def getter(self):
+        if ctrl.settings.get('label_shape') == g.CARD:
+            return 3
+        else:
+            return ctrl.settings.get('feature_positioning')
+
+    def enabler(self):
+        return ctrl.settings.get('label_shape') != g.CARD
 

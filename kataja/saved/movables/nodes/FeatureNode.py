@@ -173,23 +173,46 @@ class FeatureNode(Node):
         self.value = value
         self.family = family
 
+    def release_from_locked_position(self):
+        self.locked_to_node = None
+        if self.parentItem() and isinstance(self.parentItem(), Node):
+            spos = self.scenePos()
+            self.setParentItem(self.parentItem().parentItem())
+            my_pos = self.mapFromScene(spos)
+            ppos = self.mapToParent(my_pos)
+            self.current_position = ppos.x(), ppos.y()
+            self.setPos(ppos)
 
 
-    def update_relations(self):
-        if ctrl.settings.get('features_locked_below_constituent'):
+    def update_relations(self, parents, shape=None, position=None):
+        """ Cluster features according to feature_positioning -setting or release them to be
+        positioned according to visualisation.
+        :param parents: list where we collect parent objects that need to position their children
+        :return:
+        """
+
+        if parents is None:
+            parents = []
+        if shape is None:
+            shape = ctrl.settings.get('label_shape')
+        if position is None:
+            position = ctrl.settings.get('feature_positioning')
+        if position or shape == g.CARD:
             for parent in self.get_parents(similar=False, visible=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
                     if parent.is_visible():
                         self.locked_to_node = parent
+                        self.setParentItem(parent)
+                        parents.append(parent)
                         break
                     else:
-                        self.locked_to_node = None
+                        self.release_from_locked_position()
                 elif parent.node_type == g.FEATURE_NODE:
                     if self.locked_to_node == parent:
-                        self.locked_to_node = None
+                        self.release_from_locked_position()
         else:
-            self.locked_to_node = False
-        super().update_relations()
+            self.release_from_locked_position()
+        super().update_relations(parents, shape, position)
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with

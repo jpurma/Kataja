@@ -81,9 +81,9 @@ class PinPanel(KatajaAction):
 
 class ToggleFullScreen(KatajaAction):
     k_action_uid = 'fullscreen_mode'
-    k_command = '&Fullscreen'
+    k_command = 'Fullscreen'
     k_undoable = False
-    k_shortcut = 'f'
+    k_shortcut = 'Ctrl+f'
     k_checkable = True
 
     def method(self):
@@ -92,10 +92,10 @@ class ToggleFullScreen(KatajaAction):
         """
         if ctrl.main.isFullScreen():
             ctrl.main.showNormal()
-            log.info('(f) windowed')
+            log.info('(Cmd+f) windowed')
             ctrl.ui.restore_panel_positions()
         else:
             ctrl.ui.store_panel_positions()
             ctrl.main.showFullScreen()
-            log.info('(f) fullscreen')
+            log.info('(Cmd+f) fullscreen')
         ctrl.graph_scene.fit_to_window(force=True)

@@ -95,7 +95,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._nodes_overlap = False
 
         self.in_projections = []
-        self._projection_color = None
 
         self._computed_start_point = None
         self._computed_end_point = None
@@ -363,17 +362,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def is_visible(self) -> bool:
         return self._visible_by_logic
 
-    def set_projection_display(self, thick, color):
-        """ Set both options related to displaying projections with edges.
-        :param thick: bool, should the projections be drawn with thicker lines
-        :param color: edge will be painted with given marker color (assumes
-        that the color is transparent and will be painted on top of existing
-        path)
-        :return:
-        """
-
-        self._projection_color = color
-
     def make_relative_vector(self):
         """ Relative vector helps to keep the shape of a line when another,
         attached end moves.
@@ -487,8 +475,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif self.is_broken():
             return ctrl.cm.broken(self.color)
-        elif self._projection_color:
-            return ctrl.cm.get(self._projection_color)
+        elif self.in_projections:
+            return ctrl.cm.get(self.in_projections[0].color_id)
         else:
             return self.color
 
@@ -554,7 +542,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         en, ec = self.edge_index()
         thick = 1
-        if self.in_projections and self.in_projections[0].strong_lines:
+        if self.in_projections and (self.in_projections[0].strong_lines and not
+                                    self.in_projections[0].colorized):
             thick = len(self.in_projections)
 
         c = dict(start_point=self.start_point, end_point=(ex, ey),
@@ -981,16 +970,40 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
-                if self.in_projections and self.in_projections[0].strong_lines:
-                    thickness *= len(self.in_projections)
-                p.setWidthF(thickness)
-                painter.setPen(p)
-                if self._path.length() == 0 or self._path.isEmpty():
-                    print(self, self._path.length(), self._path.isEmpty())
-                painter.drawPath(self._path)
+                if self.in_projections and self.in_projections[0].colorized:
+                    p.setWidthF(thickness)
+                    left = self.start_point[0] > self.end_point[0]
+                    for i, proj in enumerate(self.in_projections):
+                        cp = QtGui.QPen(p)
+                        cp.setColor(ctrl.cm.get(proj.color_id))
+                        painter.setPen(cp)
+                        if left:
+                            cpath = self._path.translated(i, i)
+                        else:
+                            cpath = self._path.translated(-i, i)
+                        painter.drawPath(cpath)
+
+                elif self.in_projections and self.in_projections[0].strong_lines:
+                    p.setWidthF(thickness * len(self.in_projections))
+                    painter.setPen(p)
+                    painter.drawPath(self._path)
+                else:
+                    p.setWidthF(thickness)
+                    painter.setPen(p)
+                    painter.drawPath(self._path)
 
             if self.is_filled():
-                painter.fillPath(self._path, c)
+                if self.in_projections and self.in_projections[0].colorized:
+                    left = self.start_point[0] > self.end_point[0]
+                    for i, proj in enumerate(self.in_projections):
+                        cp = ctrl.cm.get(proj.color_id)
+                        if left:
+                            cpath = self._path.translated(i, i)
+                        else:
+                            cpath = self._path.translated(-i, i)
+                        painter.fillPath(cpath, cp)
+                else:
+                    painter.fillPath(self._path, c)
             if self.cached('arrowhead_at_start') and self._arrowhead_start_path:
                 painter.fillPath(self._arrowhead_start_path, c)
             if self.cached('arrowhead_at_end') and self._arrowhead_end_path:

@@ -190,7 +190,7 @@ class Preferences(object):
                                                 "show them instead of syntactic labels. "}
 
         self.inner_labels = 1
-        self.features_locked_below_constituent = False
+        self.feature_positioning = 2
         self.projection_strong_lines = True
         self.projection_colorized = True
         self.projection_highlighter = False
