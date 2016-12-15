@@ -175,16 +175,15 @@ class LeftFirstTree(BaseVisualization):
             x = offset_x
             for x_i, node in enumerate(row):
                 if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
-                    if not node.inner_rect:
-                        node.update_bounding_rect()
-                    height_spillover = node.inner_rect.bottom() - edge_height
+                    cbr = node.future_children_bounding_rect()
+                    height_spillover = cbr.bottom() - edge_height
                     if height_spillover > extra_height:
                         if edge_height:
                             extra_height = math.ceil(
                                 height_spillover / float(edge_height)) * edge_height
                         else:
                             extra_height = math.ceil(height_spillover)
-                    width_spillover = ((node.width + prev_width) / 2) - (edge_width * 2)
+                    width_spillover = ((cbr.width() + prev_width) / 2) - (edge_width * 2)
                     if width_spillover > extra_widths[x_i]:
                         if edge_width:
                             extra_widths[x_i] = math.ceil(
@@ -193,7 +192,7 @@ class LeftFirstTree(BaseVisualization):
                             extra_widths[x_i] = math.ceil(width_spillover)
                     # fix cases where bottom half of tall node is overlapped by edges from smaller
                     # node beside it.
-                    if prev_height > node.height:
+                    if prev_height > cbr.height():
                         if x_i >= 1 and y_i < merged_grid.height - 2:
                             edge = merged_grid.get(x_i - 1, y_i + 1, raw=True)
                             left_neighbor = merged_grid.get(x_i - 2, y_i, raw=True)
@@ -202,17 +201,17 @@ class LeftFirstTree(BaseVisualization):
                             #  ..A.B..
                             #  .../.\. <--- the left edge here can be obstructed by A
                             if left_neighbor and edge and isinstance(edge, int):
-                                edge_box_left_x = x - node.width / 3 - edge_width
+                                edge_box_left_x = x - cbr.width() / 3 - edge_width
                                 prev_box_right_x = prev_x + (prev_width / 2)
                                 width_overlap = prev_box_right_x - edge_box_left_x
-                                height_overlap = prev_height - node.height
+                                height_overlap = prev_height - cbr.height()
                                 if extra_widths[x_i] < width_overlap:
                                     extra_widths[x_i] = width_overlap
                                 if extra_height < height_overlap:
                                     extra_height = height_overlap
                     x += extra_widths[x_i]
-                    prev_width = node.width
-                    prev_height = node.height
+                    prev_width = cbr.width()
+                    prev_height = cbr.height()
                     prev_x = x
                 else:
                     x += extra_widths[x_i]

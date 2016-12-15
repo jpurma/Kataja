@@ -138,7 +138,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.update_position()
 
     def use_physics(self):
-        return self.physics_x or self.physics_y
+        return (self.physics_x or self.physics_y) and not self.locked_to_node
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -245,8 +245,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             # Locked nodes are immune to physics
             elif self.locked:
                 return False, False
-            elif self.locked_to_node:
-                return False, False
+            #elif self.locked_to_node:
+            #    return False, False
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
         if self._move_counter:
@@ -265,6 +265,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             if not self._move_counter:
                 self.stop_moving()
             self.current_position = add_xy(self.current_position, movement)
+            if self.locked_to_node:
+                self.locked_to_node.do_size_update = True
             return True, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():

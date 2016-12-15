@@ -38,6 +38,7 @@ from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me
 from kataja.parser.INodes import as_html
 
+call_counter = [0]
 
 class DragData:
     """ Helper object to contain drag-related data for duration of dragging """
@@ -126,7 +127,7 @@ class Node(Movable):
         # Visibility flags
         self._node_type_visible = True
         self._node_in_triangle = False
-
+        self.do_size_update = True
 
         self.in_scene = False
 
@@ -169,7 +170,7 @@ class Node(Movable):
         """
         self.in_scene = True
         self.update_label()
-        self.update_bounding_rect()
+        self.do_size_update = True
         self.update_visibility()
         self.announce_creation()
         self.forest.store(self)
@@ -392,7 +393,7 @@ class Node(Movable):
         Remove temporary/state information from node, eg. remove touch areas.
         """
         Movable.reset(self)
-        self.update_bounding_rect()
+        self.do_size_update = True
         ctrl.ui.remove_touch_areas_for(self)
 
     def move(self, md):
@@ -486,7 +487,7 @@ class Node(Movable):
         """
         old_parent = self.parentItem()
         if isinstance(old_parent, Node):
-            return
+            return  # This is locked to some other node and should keep it as parent
         new_parent = self.pick_tallest_tree()
         if new_parent:
             if old_parent is not new_parent:
@@ -773,7 +774,7 @@ class Node(Movable):
             y = bottom_y
             for fnode in self.get_children(visible=True, similar=False):
                 if fnode.locked_to_node is self:
-                    fnode.setPos(center_x, y)
+                    fnode.move_to(center_x, y)
                     y += fnode.height
         elif fpos == 2:  # horizontal
             center_x = self.boundingRect().center().x()
@@ -793,7 +794,7 @@ class Node(Movable):
                 left_margin += nods[0][0].width / 2
                 y = bottom_y + (max_height / 2)
                 for fnode, x in nods:
-                    fnode.setPos(left_margin + x, y)
+                    fnode.move_to(left_margin + x, y)
         elif fpos == 3:  # card layout, two columns
             in_card = ctrl.settings.get('label_shape') == g.CARD
             cw, ch = self.label_object.card_size
@@ -816,22 +817,22 @@ class Node(Movable):
                     node_hspace = hspace / len(left_nods)
                     half_h = node_hspace / 2
                     for fnode in left_nods:
-                        fnode.setPos(left_margin + fnode.width / 2, y + half_h)
+                        fnode.move_to(left_margin + fnode.width / 2, y + half_h)
                         y += node_hspace
                 if right_nods:
                     y = top_y
                     node_hspace = hspace / len(right_nods)
                     half_h = node_hspace / 2
                     for fnode in right_nods:
-                        fnode.setPos(right_margin - fnode.width / 2, y + half_h)
+                        fnode.move_to(right_margin - fnode.width / 2, y + half_h)
                         y += node_hspace
             else:
                 for fnode in left_nods:
-                    fnode.setPos(left_margin + fnode.width / 2, y)
+                    fnode.move_to(left_margin + fnode.width / 2, y)
                     y += fnode.height - 4
                 y = top_y
                 for fnode in right_nods:
-                    fnode.setPos(right_margin - fnode.width / 2, y)
+                    fnode.move_to(right_margin - fnode.width / 2, y)
                     y += fnode.height - 4
 
     def get_locked_in_nodes(self):
@@ -970,7 +971,7 @@ class Node(Movable):
         self.label_object.update_font()
         self.label_object.update_label()
         self.update_label_visibility()
-        self.update_bounding_rect()
+        self.do_size_update = True
         self.update_status_tip()
 
     def update_label_visibility(self):
@@ -1109,7 +1110,9 @@ class Node(Movable):
         """ Do housekeeping for bounding rect and related measurements
         :return:
         """
+        prev_ir = self.inner_rect
         my_class = self.__class__
+        self.do_size_update = False
         if self.user_size is None:
             user_width, user_height = 0, 0
         else:
@@ -1156,7 +1159,6 @@ class Node(Movable):
                          (x + w2 + w4, y_max), (x_max, y_max)]
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
-
         return self.inner_rect
 
     def overlap_rect(self):
@@ -1170,16 +1172,32 @@ class Node(Movable):
         if self.label_object:
             self.label_object.resize_label()
 
+    def future_children_bounding_rect(self):
+        """ Like childrenBoundingRect that uses target_positions to estimate where nodes will go,
+        you'll need this to estimate the actual size of node + childItems to reserve room for
+        node in visualisation.
+        :return:
+        """
+        my_br = self.boundingRect()
+        for child in self.childItems():
+            if isinstance(child, Node):
+                c_br = child.future_children_bounding_rect()
+                x, y = child.target_position
+                c_br.setX(x)
+                c_br.setY(y)
+                my_br = my_br.united(c_br)
+        return my_br
+
     def boundingRect(self):
         """ BoundingRects are used often and cost of this method affects
         performance.
         inner_rect is used as a cached bounding rect and returned fast if
         there is no explicit
         update asked. """
-        if self.inner_rect:
-            return self.inner_rect
-        else:
+        if self.do_size_update or not self.inner_rect:
             return self.update_bounding_rect()
+        else:
+            return self.inner_rect
 
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
@@ -1202,7 +1220,7 @@ class Node(Movable):
         """ Hide, and remember why this is hidden """
         self.folded_away = True
         self.update_visibility()
-        self.update_bounding_rect()
+        self.do_size_update = True
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents(similar=False, visible=False):
             self.folding_towards.update_visibility()

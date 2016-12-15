@@ -214,7 +214,7 @@ class Tree(Movable):
             for node in self.sorted_nodes:
                 if node.is_visible():
                     nbr = node.childrenBoundingRect()
-                    if node.locked_to_node:  # bit expensive but may be worth it
+                    if node.locked_to_node:  # this node was already included in parents nbr.
                         continue
                     elif node.physics_x or node.physics_y:
                         x, y = node.x(), node.y()

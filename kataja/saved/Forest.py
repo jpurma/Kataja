@@ -2385,7 +2385,7 @@ class Forest(SavedObject):
             folded.copy_position(node)
             folded.fade_in()
             folded.update_visibility()
-            folded.update_bounding_rect()
+            folded.do_size_update = True
             folded.after_move_function = None
         # this needs second round of update visibility, as child nodes may
         # yet not be visible, so edges to them

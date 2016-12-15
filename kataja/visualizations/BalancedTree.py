@@ -82,7 +82,7 @@ class BalancedTree(BaseVisualization):
 
         def recursive_position(node, x, y):
             if node.is_leaf(only_similar=True, only_visible=True):
-                rect = QtCore.QRectF(node.boundingRect())
+                rect = QtCore.QRectF(node.future_children_bounding_rect())
                 rect.adjust(-x_margin, -y_margin, x_margin, y_margin)
                 x -= rect.width() / 2
                 rect.moveCenter(QtCore.QPoint(x, y))

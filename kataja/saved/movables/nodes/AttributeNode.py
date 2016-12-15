@@ -115,7 +115,7 @@ class AttributeNode(Node):
             self.set_original_position((x, y))
             self.update_help_text()
             self.update_label()
-            self.update_bounding_rect()
+            self.do_size_update = True
             self.update_visibility()
 
     def update_help_text(self):
