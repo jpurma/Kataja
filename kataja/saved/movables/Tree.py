@@ -5,7 +5,6 @@ from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
-from utils import time_me
 
 __author__ = 'purma'
 
@@ -212,11 +211,9 @@ class Tree(Movable):
             min_x, min_y = 10000, 10000
             max_x, max_y = -10000, -10000
             for node in self.sorted_nodes:
-                if node.is_visible():
-                    nbr = node.childrenBoundingRect()
-                    if node.locked_to_node:  # this node was already included in parents nbr.
-                        continue
-                    elif node.physics_x or node.physics_y:
+                if node.is_visible() and not node.locked_to_node:
+                    nbr = node.future_children_bounding_rect()
+                    if node.physics_x or node.physics_y:
                         x, y = node.x(), node.y()
                     else:
                         x, y = node.target_position

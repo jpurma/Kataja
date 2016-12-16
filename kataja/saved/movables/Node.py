@@ -127,7 +127,6 @@ class Node(Movable):
         # Visibility flags
         self._node_type_visible = True
         self._node_in_triangle = False
-        self.do_size_update = True
 
         self.in_scene = False
 
@@ -170,7 +169,7 @@ class Node(Movable):
         """
         self.in_scene = True
         self.update_label()
-        self.do_size_update = True
+        self.update_bounding_rect()
         self.update_visibility()
         self.announce_creation()
         self.forest.store(self)
@@ -393,7 +392,7 @@ class Node(Movable):
         Remove temporary/state information from node, eg. remove touch areas.
         """
         Movable.reset(self)
-        self.do_size_update = True
+        self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
 
     def move(self, md):
@@ -971,7 +970,7 @@ class Node(Movable):
         self.label_object.update_font()
         self.label_object.update_label()
         self.update_label_visibility()
-        self.do_size_update = True
+        self.update_bounding_rect()
         self.update_status_tip()
 
     def update_label_visibility(self):
@@ -1112,7 +1111,6 @@ class Node(Movable):
         """
         prev_ir = self.inner_rect
         my_class = self.__class__
-        self.do_size_update = False
         if self.user_size is None:
             user_width, user_height = 0, 0
         else:
@@ -1172,20 +1170,23 @@ class Node(Movable):
         if self.label_object:
             self.label_object.resize_label()
 
-    def future_children_bounding_rect(self):
+    def future_children_bounding_rect(self, limit_height=False):
         """ Like childrenBoundingRect that uses target_positions to estimate where nodes will go,
         you'll need this to estimate the actual size of node + childItems to reserve room for
         node in visualisation.
         :return:
         """
         my_br = self.boundingRect()
+        my_br = self.update_bounding_rect()
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = child.future_children_bounding_rect()
+                c_br = child.boundingRect()
+                c_br = child.update_bounding_rect()
                 x, y = child.target_position
-                c_br.setX(x)
-                c_br.setY(y)
+                c_br.moveCenter(QtCore.QPoint(x, y))
                 my_br = my_br.united(c_br)
+        if limit_height:
+            my_br.setHeight(self.boundingRect().height())
         return my_br
 
     def boundingRect(self):
@@ -1194,7 +1195,7 @@ class Node(Movable):
         inner_rect is used as a cached bounding rect and returned fast if
         there is no explicit
         update asked. """
-        if self.do_size_update or not self.inner_rect:
+        if not self.inner_rect:
             return self.update_bounding_rect()
         else:
             return self.inner_rect
@@ -1220,7 +1221,7 @@ class Node(Movable):
         """ Hide, and remember why this is hidden """
         self.folded_away = True
         self.update_visibility()
-        self.do_size_update = True
+        self.update_bounding_rect()
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents(similar=False, visible=False):
             self.folding_towards.update_visibility()

@@ -888,11 +888,14 @@ class Forest(SavedObject):
             x = 0
             for tree in self.trees:
                 if tree.top:
+                    self.visualization.prepare_to_normalise(tree)
                     self.visualization.draw_tree(tree)
+                    self.visualization.normalise_movers(tree)
                     #tree.normalize_positions()
-                    tree.move_to(x, 0)
+                    #tree.move_to(x, 0)
+                    #tree.move_to(0, 0)
                     #print('tree (%s) :%s' % (x, tree.boundingRect()))
-                    x += tree.boundingRect().width()
+                    #x += tree.boundingRect().width()
 
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
@@ -2385,7 +2388,7 @@ class Forest(SavedObject):
             folded.copy_position(node)
             folded.fade_in()
             folded.update_visibility()
-            folded.do_size_update = True
+            folded.update_bounding_rect()
             folded.after_move_function = None
         # this needs second round of update visibility, as child nodes may
         # yet not be visible, so edges to them

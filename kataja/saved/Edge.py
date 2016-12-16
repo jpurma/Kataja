@@ -41,6 +41,7 @@ CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
 CONNECT_TO_MAGNETS = 2
 CONNECT_TO_BORDER = 3
+SPECIAL = 4
 
 TOP_LEFT_CORNER = 0
 TOP_SIDE = 1
@@ -153,6 +154,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         self.connect_end_points(self.start, self.end)
+        self.setZValue(self.cached('z_value'))
         self.update_end_points()
         self.update_visibility()
         self.announce_creation()
@@ -654,7 +656,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return
         if self.start:
             connection_style = self.cached('start_connects_to')
-            if connection_style == CONNECT_TO_CENTER:
+            if connection_style == SPECIAL:
+                self._computed_start_point = self.start.special_connection_point(self, start=True)
+            elif connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = self.start.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
                 self._computed_start_point = self.start.bottom_center_magnet()
@@ -707,7 +711,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         if self.end:
             connection_style = self.cached('end_connects_to')
-            if connection_style == CONNECT_TO_CENTER:
+            if connection_style == SPECIAL:
+                self._computed_end_point = self.end.special_connection_point(self, start=False)
+            elif connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
                     CONNECT_TO_MAGNETS:

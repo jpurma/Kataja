@@ -106,18 +106,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
         x_min = 6000
         x_max = -6000
         empty = True
-        gl = ctrl.forest.gloss
-        if gl and gl.isVisible():
-            minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
-            empty = False
+        # gl = ctrl.forest.gloss
+        # if gl and gl.isVisible():
+        #     minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
+        #     if minx < x_min:
+        #         x_min = minx
+        #     if maxx > x_max:
+        #         x_max = maxx
+        #     if miny < y_min:
+        #         y_min = miny
+        #     if maxy > y_max:
+        #         y_max = maxy
+        #     empty = False
 
         # , ctrl.forest.groups.values())
         for tree in ctrl.forest.trees:

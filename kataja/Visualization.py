@@ -49,6 +49,7 @@ class BaseVisualization:
         self._hits = {}
         self._max_hits = {}
         self.use_gravity = True
+        self._stored_top_node_positions = []
         self.traces_to_draw = {}
 
     def prepare(self, forest, reset=True):
@@ -127,10 +128,47 @@ class BaseVisualization:
         node.update_visibility()
         node.magnet_mapper = None
 
+    def prepare_to_normalise(self, tree):
+        """ Store the current tree top node position so that the new arrangement can keep that
+        point fixed during change.
+        :return:
+        """
+        def find_old_node(node):
+            if node.unmoved or node.locked_to_node:
+                children = node.get_children(visible=True, similar=True, reverse=True)
+                for child in children:
+                    f = find_old_node(child)
+                    if f:
+                        return f
+            elif tree.top.physics_x or tree.top.physics_y:
+                return node.current_position
+            else:
+                return node.target_position
+        found = find_old_node(tree.top)
+        if not found:
+            found = (0, 0)
+        self._stored_top_node_positions.append(found)
+
     def draw_tree(self, tree):
         """ Subclasses implement this """
         pass
 
+    def normalise_movers(self, tree):
+        i = self.forest.trees.index(tree)
+        old = self._stored_top_node_positions[i]
+        new = tree.top.target_position
+        dx = old[0] - new[0]
+        dy = old[1] - new[1]
+        for node in tree.sorted_nodes:
+            if node.locked_to_node:
+                continue
+            elif node.physics_x and node.physics_y:
+                continue
+            pass
+            node.target_position = node.target_position[0] + dx, node.target_position[1] + dy
+            if node.target_position != node.current_position:
+                node.start_moving()  # restart moving since we shifted the end point
+        tree.tree_changed = True
 
     # def reset(self):
     # """ Not sure if this should be used at all, it is confusing in its purpose """

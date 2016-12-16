@@ -41,7 +41,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 
 import kataja.globals as g
-from SyntaxConnection import SyntaxConnection
+from syntax.SyntaxConnection import SyntaxConnection
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager

@@ -98,6 +98,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._move_counter = 0
         self._use_easing = True
         self._step = None
+        self.unmoved = True  # flag to distinguish newly created nodes
         self.after_move_function = None
         self.use_adjustment = False
         self._high_priority_move = False
@@ -238,6 +239,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         # _high_priority_move can be used together with _move_counter
 
+        self.unmoved = False
         if not self._high_priority_move:
             # Dragging overrides (almost) everything, don't try to move this anywhere
             if self._dragged:
@@ -266,7 +268,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
                 self.stop_moving()
             self.current_position = add_xy(self.current_position, movement)
             if self.locked_to_node:
-                self.locked_to_node.do_size_update = True
+                self.locked_to_node.update_bounding_rect()
             return True, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():

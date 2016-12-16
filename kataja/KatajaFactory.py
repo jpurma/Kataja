@@ -38,7 +38,7 @@ class KatajaFactory:
         from kataja.saved.Forest import Forest
         from kataja.saved.KatajaDocument import KatajaDocument
         from kataja.saved.movables.Tree import Tree
-        from SyntaxConnection import SyntaxConnection
+        from syntax.SyntaxConnection import SyntaxConnection
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import BaseConstituent
 

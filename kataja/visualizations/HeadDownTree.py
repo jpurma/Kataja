@@ -127,7 +127,7 @@ class HeadDownTree(BaseVisualization):
         edge_width = prefs.edge_width / 2
 
         def _get_grid_size(mnode):
-            mnode_br = mnode.future_children_bounding_rect()
+            mnode_br = mnode.future_children_bounding_rect(limit_height=True)
             node_width = mnode_br.width()
             node_height = mnode_br.height()
             node_top_row = mnode.get_top_y()

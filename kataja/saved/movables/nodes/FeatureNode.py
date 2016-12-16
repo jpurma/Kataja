@@ -183,7 +183,6 @@ class FeatureNode(Node):
             self.current_position = ppos.x(), ppos.y()
             self.setPos(ppos)
 
-
     def update_relations(self, parents, shape=None, position=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
@@ -294,6 +293,9 @@ class FeatureNode(Node):
 
     def set_assigned(self, value):
         self.assigned = value
+
+    def special_connection_point(self, edge, start=False):
+        return self.current_scene_position
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object

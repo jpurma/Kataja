@@ -21,10 +21,11 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
+from kataja.singletons import ctrl
 
 
 class BalancedTree(BaseVisualization):
@@ -82,31 +83,29 @@ class BalancedTree(BaseVisualization):
 
         def recursive_position(node, x, y):
             if node.is_leaf(only_similar=True, only_visible=True):
-                rect = QtCore.QRectF(node.future_children_bounding_rect())
-                rect.adjust(-x_margin, -y_margin, x_margin, y_margin)
-                x -= rect.width() / 2
-                rect.moveCenter(QtCore.QPoint(x, y))
-                node.move_to(rect.center().x(), rect.center().y(), align=g.CENTER_ALIGN,
+                leaf_rect = QtCore.QRectF(node.future_children_bounding_rect(limit_height=True))
+                x -= leaf_rect.width() / 2
+                cp = QtCore.QPoint(x, y)
+                leaf_rect.moveCenter(cp)
+                node.move_to(leaf_rect.center().x(), leaf_rect.center().y(), align=g.CENTER_ALIGN,
                              valign=g.BOTTOM_ROW)
+                return leaf_rect
             else:
-                rect = None
-                uw = 0
+                combined_rect = None
                 for child in node.get_children(visible=True, similar=True, reverse=True):
                     if self.forest.should_we_draw(child, node):
-                        crect = recursive_position(child, x, y)
-                        x -= crect.width()
-                        if not rect:
-                            rect = crect
+                        childrens_rect = recursive_position(child, x, y)
+                        x -= childrens_rect.width()
+                        if not combined_rect:
+                            combined_rect = childrens_rect
                         else:
-                            rect = rect.united(crect)
-                        uw += crect.width()
-                y -= rect.height()
+                            combined_rect = combined_rect.united(childrens_rect)
+                y -= combined_rect.height()
                 my_rect = QtCore.QRectF(node.boundingRect())
-                my_rect.adjust(-x_margin, -y_margin, x_margin, y_margin)
-                my_rect.moveCenter(QtCore.QPoint(rect.center().x(), y - (my_rect.height() / 2)))
+                cp = QtCore.QPoint(combined_rect.center().x(), y - (my_rect.height() / 2))
+                my_rect.moveCenter(cp)
                 node.move_to(my_rect.center().x(), my_rect.center().y(), align=g.CENTER_ALIGN,
                              valign=g.BOTTOM_ROW)
-                rect = rect.united(my_rect)
-            return rect
-
+                combined_rect = combined_rect.united(my_rect)
+                return combined_rect
         recursive_position(tree.top, 0, 0)
