@@ -1061,6 +1061,7 @@ class Node(Movable):
             painter.setPen(pen)
             painter.drawLine(0, 0, 0, 2)
             painter.drawRect(self.label_rect)
+            painter.drawRect(self.inner_rect)
         if self.drag_data:
             rect = True
             brush = self.drag_data.background
@@ -1109,7 +1110,6 @@ class Node(Movable):
         """ Do housekeeping for bounding rect and related measurements
         :return:
         """
-        prev_ir = self.inner_rect
         my_class = self.__class__
         if self.user_size is None:
             user_width, user_height = 0, 0
@@ -1171,17 +1171,18 @@ class Node(Movable):
             self.label_object.resize_label()
 
     def future_children_bounding_rect(self, limit_height=False):
-        """ Like childrenBoundingRect that uses target_positions to estimate where nodes will go,
-        you'll need this to estimate the actual size of node + childItems to reserve room for
-        node in visualisation.
+        """ This combines boundingRect with children's boundingRects based on children's
+        target_positions instead of current ones.
+        You'll want to use this to estimate the actual size of node + childItems when reserving
+        room for node in visualisation.
+        :param limit_height: return boundingRect that only expands its width to include children,
+        height is the called node's boundingRect.
         :return:
         """
         my_br = self.boundingRect()
-        my_br = self.update_bounding_rect()
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = child.boundingRect()
-                c_br = child.update_bounding_rect()
+                c_br = QtCore.QRectF(child.boundingRect())
                 x, y = child.target_position
                 c_br.moveCenter(QtCore.QPoint(x, y))
                 my_br = my_br.united(c_br)

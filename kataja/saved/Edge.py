@@ -117,6 +117,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._start_node_moving = False
         self._end_node_moving = False
         self._make_fat_path = False
+        self._curve_dir_start = BOTTOM_SIDE
+        self._curve_dir_end = TOP_SIDE
         self.setZValue(10)
         self.status_tip = ""
         self.arrowhead_size_at_start = 6
@@ -547,10 +549,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.in_projections and (self.in_projections[0].strong_lines and not
                                     self.in_projections[0].colorized):
             thick = len(self.in_projections)
+        curve_dir_1 = None
+        curve_dir_2 = None
 
         c = dict(start_point=self.start_point, end_point=(ex, ey),
                  curve_adjustment=self.curve_adjustment, thick=thick, edge_n=en,
-                 edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path)
+                 edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path,
+                 curve_dir_start=self._curve_dir_start, curve_dir_end=self._curve_dir_end)
 
         self._path, self._true_path, self.control_points, self.adjusted_control_points = \
             SHAPE_PRESETS[self.shape_name].path(**c)
@@ -657,14 +662,27 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.start:
             connection_style = self.cached('start_connects_to')
             if connection_style == SPECIAL:
-                self._computed_start_point = self.start.special_connection_point(self, start=True)
+                self._computed_start_point, self._curve_dir_start = \
+                    self.start.special_connection_point(self, sx, sy, ex, ey, start=True)
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = self.start.current_scene_position
+                if abs(sx - ex) < abs(sy - ey):
+                    if sy < ey:
+                        self._curve_dir_start = BOTTOM_SIDE
+                    else:
+                        self._curve_dir_start = TOP_SIDE
+                else:
+                    if sx < ex:
+                        self._curve_dir_start = RIGHT_SIDE
+                    else:
+                        self._curve_dir_start = LEFT_SIDE
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
                 self._computed_start_point = self.start.bottom_center_magnet()
+                self._curve_dir_start = BOTTOM_SIDE
             elif connection_style == CONNECT_TO_MAGNETS:
                 e_n, e_count = self.edge_index()
                 self._computed_start_point = self.start.bottom_magnet(e_n, e_count)
+                self._curve_dir_start = BOTTOM_SIDE
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of start node to
                 # center of end node / end_point. It is simple, but the point can be in any of four
@@ -677,47 +695,71 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 if dx == 0:
                     if dy > 0:
                         self._computed_start_point = sx, sy + s_bottom
+                        self._curve_dir_start = BOTTOM_SIDE
                     else:
                         self._computed_start_point = sx, sy + s_top
+                        self._curve_dir_start = TOP_SIDE
                 elif dy == 0:
                     if dx > 0:
                         self._computed_start_point = sx + s_right, sy
+                        self._curve_dir_start = RIGHT_SIDE
                     else:
                         self._computed_start_point = sx + s_left, sy
+                        self._curve_dir_start = LEFT_SIDE
                 else:
                     ratio = dy / dx
                     if dx > 0:
                         if dy > 0:
                             if s_right * ratio < s_bottom:
                                 self._computed_start_point = sx + s_right, sy + (s_right * ratio)
+                                self._curve_dir_start = RIGHT_SIDE
                             else:
                                 self._computed_start_point = sx + (s_bottom / ratio), sy + s_bottom
+                                self._curve_dir_start = BOTTOM_SIDE
                         else:
                             if s_right * ratio > s_top:
                                 self._computed_start_point = sx + s_right, sy + (s_right * ratio)
+                                self._curve_dir_start = RIGHT_SIDE
                             else:
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
+                                self._curve_dir_start = TOP_SIDE
                     else:
                         if dy > 0:
                             if s_left * ratio < s_bottom:
                                 self._computed_start_point = sx + s_left, sy + (s_left * ratio)
+                                self._curve_dir_start = LEFT_SIDE
                             else:
                                 self._computed_start_point = sx + (s_bottom / ratio), sy + s_bottom
+                                self._curve_dir_start = BOTTOM_SIDE
                         else:
                             if s_left * ratio > s_top:
                                 self._computed_start_point = sx + s_left, sy + (s_left * ratio)
+                                self._curve_dir_start = LEFT_SIDE
                             else:
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
+                                self._curve_dir_start = TOP_SIDE
 
         if self.end:
             connection_style = self.cached('end_connects_to')
             if connection_style == SPECIAL:
-                self._computed_end_point = self.end.special_connection_point(self, start=False)
+                self._computed_end_point, self._curve_dir_end = self.end.special_connection_point(
+                    self, sx, sy, ex, ey, start=False)
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
+                if abs(sx - ex) < abs(sy - ey):
+                    if sy > ey:
+                        self._curve_dir_end = BOTTOM_SIDE
+                    else:
+                        self._curve_dir_end = TOP_SIDE
+                else:
+                    if sx > ex:
+                        self._curve_dir_end = RIGHT_SIDE
+                    else:
+                        self._curve_dir_end = LEFT_SIDE
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
                     CONNECT_TO_MAGNETS:
                 self._computed_end_point = self.end.top_center_magnet()
+                self._curve_dir_end = TOP_SIDE
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of end node to
                 # center of start node / start_point. It is simple, but the point can be in any of
@@ -730,39 +772,50 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 if dx == 0:
                     if dy > 0:
                         self._computed_end_point = ex, ey + e_top
+                        self._curve_dir_end = TOP_SIDE
                     else:
                         self._computed_end_point = ex, ey + e_bottom
+                        self._curve_dir_end = BOTTOM_SIDE
                 elif dy == 0:
                     if dx > 0:
                         self._computed_end_point = ex + e_left, ey
+                        self._curve_dir_end = LEFT_SIDE
                     else:
                         self._computed_end_point = ex + e_right, ey
+                        self._curve_dir_end = RIGHT_SIDE
                 else:
                     ratio = dy / dx
                     if dx > 0:
                         if dy > 0:
                             if e_left * ratio > e_top:
                                 self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                self._curve_dir_end = LEFT_SIDE
                             else:
                                 self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
+                                self._curve_dir_end = TOP_SIDE
                         else:
                             if e_left * ratio < e_bottom:
                                 self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                self._curve_dir_end = LEFT_SIDE
                             else:
                                 self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                                self._curve_dir_end = BOTTOM_SIDE
                     else:
                         if dy > 0:
                             if e_right * ratio > e_top:
                                 self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                                self._curve_dir_end = RIGHT_SIDE
                             else:
                                 self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
+                                self._curve_dir_end = TOP_SIDE
                         else:
                             if e_right * ratio < e_bottom:
                                 self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                                self._curve_dir_end = RIGHT_SIDE
                             else:
                                 self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                                self._curve_dir_end = BOTTOM_SIDE
+
 
     def connect_end_points(self, start, end):
         """

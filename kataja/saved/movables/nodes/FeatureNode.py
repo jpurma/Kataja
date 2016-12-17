@@ -31,6 +31,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import as_html
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.saved.Edge import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -182,6 +183,7 @@ class FeatureNode(Node):
             ppos = self.mapToParent(my_pos)
             self.current_position = ppos.x(), ppos.y()
             self.setPos(ppos)
+            self.update_bounding_rect()
 
     def update_relations(self, parents, shape=None, position=None):
         """ Cluster features according to feature_positioning -setting or release them to be
@@ -199,13 +201,18 @@ class FeatureNode(Node):
         if position or shape == g.CARD:
             for parent in self.get_parents(similar=False, visible=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
-                    if parent.is_visible():
-                        self.locked_to_node = parent
-                        self.setParentItem(parent)
-                        parents.append(parent)
-                        break
-                    else:
-                        self.release_from_locked_position()
+                        if parent.is_visible():
+                            self.locked_to_node = parent
+                            if self.parentItem() is not parent:
+                                self.setParentItem(parent)
+                                px, py = parent.current_position
+                                sx, sy = self.current_position
+                                self.current_position = sx - px, sy - py
+                            self.update_bounding_rect()
+                            parents.append(parent)
+                            break
+                        else:
+                            self.release_from_locked_position()
                 elif parent.node_type == g.FEATURE_NODE:
                     if self.locked_to_node == parent:
                         self.release_from_locked_position()
@@ -251,7 +258,7 @@ class FeatureNode(Node):
             return ctrl.cm.selection()
             # return ctrl.cm.selected(ctrl.cm.selection())
         else:
-            return qt_prefs.no_brush()
+            return qt_prefs.no_brush
 
     def connect_in_syntax(self, edge):
         """ Implement this if connecting this node (using this edge) needs to be
@@ -294,8 +301,41 @@ class FeatureNode(Node):
     def set_assigned(self, value):
         self.assigned = value
 
-    def special_connection_point(self, edge, start=False):
-        return self.current_scene_position
+    def special_connection_point(self, edge, sx, sy, ex, ey, start=False):
+        f_align = ctrl.settings.get('feature_positioning')
+        br = self.boundingRect()
+        left, top, right, bottom = (x * .8 for x in br.getCoords())
+        if f_align == 0: # direct
+            return self.current_scene_position, BOTTOM_SIDE
+        elif f_align == 1: # vertical
+            if start:
+                if sx < ex:
+                    return (sx + right, sy), RIGHT_SIDE
+                else:
+                    return (sx + left, sy), LEFT_SIDE
+            else:
+                if sx < ex:
+                    return (ex + left, ey), LEFT_SIDE
+                else:
+                    return (ex + right, ey), RIGHT_SIDE
+        elif f_align == 2:  # horizontal
+            if start:
+                if sy < ey:
+                    return (sx, sy + bottom), BOTTOM_SIDE
+                else:
+                    return (sx, sy + top), TOP_SIDE
+            else:
+                if sy <= ey:
+                    return (ex, ey + top), TOP_SIDE
+                else:
+                    return (ex, ey + bottom), BOTTOM_SIDE
+        elif f_align == 3:  # card
+            if start:
+                return (sx + right, sy), RIGHT_SIDE
+            else:
+                return (ex + left, ey), LEFT_SIDE
+
+        return self.current_scene_position, 0
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object

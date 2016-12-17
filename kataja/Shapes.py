@@ -15,6 +15,16 @@ pipi = pi * 2.0
 outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
+TOP_LEFT_CORNER = 0
+TOP_SIDE = 1
+TOP_RIGHT_CORNER = 2
+LEFT_SIDE = 3
+RIGHT_SIDE = 4
+BOTTOM_LEFT_CORNER = 5
+BOTTOM_SIDE = 6
+BOTTOM_RIGHT_CORNER = 7
+
+
 
 class Shape:
     """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
@@ -202,8 +212,8 @@ class ShapedCubicPath(Shape):
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
              edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
-             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False,
-             **kwargs):
+             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False, curve_dir_start=0,
+             curve_dir_end=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
@@ -217,8 +227,34 @@ class ShapedCubicPath(Shape):
         else:
             dy = fixed_dy
             dx = fixed_dx
-        dx *= direction_multiplier(edge_n, edge_count)
-        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
+        dm = direction_multiplier(edge_n, edge_count)
+        dx *= dm
+        if curve_dir_start == BOTTOM_SIDE:
+            if sx > ex and dm > 0:
+                cp1 = (sx + dx * 2, sy + dy)
+            else:
+                cp1 = (sx, sy + dy)
+        elif curve_dir_start == TOP_SIDE:
+            cp1 = (sx, sy + dy)
+        elif curve_dir_start == LEFT_SIDE:
+            cp1 = (sx + dx, sy)
+        elif curve_dir_start == RIGHT_SIDE:
+            cp1 = (sx + dx, sy)
+        else:
+            cp1 = (sx + dx, sy)
+        if curve_dir_end == BOTTOM_SIDE:
+            cp2 = (ex, ey - dy)
+        elif curve_dir_end == TOP_SIDE:
+            cp2 = (ex, ey - dy)
+        elif curve_dir_end == LEFT_SIDE:
+            cp2 = (ex - dx, ey)
+        elif curve_dir_end == RIGHT_SIDE:
+            cp2 = (ex - dx, ey)
+        else:
+            cp2 = (ex - dx, ey)
+
+        control_points = [cp1, cp2]
+
         c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
         (c1x, c1y), (c2x, c2y) = c
         if inner_only:
@@ -254,6 +290,7 @@ class CubicPath(Shape):
     fill = False
     outline = True
     thickness = 1.0
+    relative = True
     rel_dx = 0.2
     rel_dy = 0.4
     fixed_dx = 20
@@ -261,7 +298,8 @@ class CubicPath(Shape):
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0, edge_count=1,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15, **kwargs):
+             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15, curve_dir_start=0,
+             curve_dir_end=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
@@ -272,8 +310,34 @@ class CubicPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dx *= direction_multiplier(edge_n=edge_n, edge_count=edge_count)
-        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
+        dm = direction_multiplier(edge_n, edge_count)
+        dx *= dm
+        if curve_dir_start == BOTTOM_SIDE:
+            if sx > ex and dm > 0:
+                cp1 = (sx + dx * 2, sy + dy)
+            else:
+                cp1 = (sx, sy + dy)
+        elif curve_dir_start == TOP_SIDE:
+            cp1 = (sx, sy + dy)
+        elif curve_dir_start == LEFT_SIDE:
+            cp1 = (sx + dx, sy)
+        elif curve_dir_start == RIGHT_SIDE:
+            cp1 = (sx + dx, sy)
+        else:
+            cp1 = (sx + dx, sy)
+        if curve_dir_end == BOTTOM_SIDE:
+            cp2 = (ex, ey - dy)
+        elif curve_dir_end == TOP_SIDE:
+            cp2 = (ex, ey - dy)
+        elif curve_dir_end == LEFT_SIDE:
+            cp2 = (ex - dx, ey)
+        elif curve_dir_end == RIGHT_SIDE:
+            cp2 = (ex - dx, ey)
+        else:
+            cp2 = (ex - dx, ey)
+
+        control_points = [cp1, cp2]
+
         path = QtGui.QPainterPath(Pf(sx, sy))
         c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
         (c1x, c1y), (c2x, c2y) = c
@@ -302,16 +366,17 @@ class ShapedQuadraticPath(Shape):
     outline = False
     thickness = 0.5
     rel_dx = 0.2
-    rel_dy = 0
+    rel_dy = 0.4
+    relative = True
     fixed_dx = 20
-    fixed_dy = 0
+    fixed_dy = 20
     leaf_x = 3
     leaf_y = 3
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0, edge_count=1,
-             relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3,
-             thick=1, inner_only=False, **kwargs):
+             relative=False, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20, leaf_x=1, leaf_y=2,
+             thick=1, inner_only=False, curve_dir_start=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         if thick > 0:
@@ -324,8 +389,22 @@ class ShapedQuadraticPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dx *= direction_multiplier(edge_n, edge_count)
-        control_points = [(sx + dx, sy + dy)]
+        dm = direction_multiplier(edge_n, edge_count)
+        dx *= dm
+        if curve_dir_start == BOTTOM_SIDE:
+            if sx > ex and dm > 0:
+                cp1 = (sx + dx, sy + dy)
+            else:
+                cp1 = (sx, sy + dy)
+        elif curve_dir_start == TOP_SIDE:
+            cp1 = (sx, sy + dy)
+        elif curve_dir_start == LEFT_SIDE:
+            cp1 = (sx + dx, sy)
+        elif curve_dir_start == RIGHT_SIDE:
+            cp1 = (sx + dx, sy)
+        else:
+            cp1 = (sx + dx, sy)
+        control_points = [cp1]
         c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
         c1x, c1y = c[0]
         if inner_only:
@@ -367,7 +446,8 @@ class QuadraticPath(Shape):
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
-             edge_count=1, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, **kwargs):
+             edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20,
+             curve_dir_start=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         if relative:
@@ -376,8 +456,22 @@ class QuadraticPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dx *= direction_multiplier(edge_n, edge_count)
-        control_points = [(sx + dx, sy + dy)]
+        dm = direction_multiplier(edge_n, edge_count)
+        dx *= dm
+        if curve_dir_start == BOTTOM_SIDE:
+            if sx > ex and dm > 0:
+                cp1 = (sx + dx, sy + dy)
+            else:
+                cp1 = (sx, sy + dy)
+        elif curve_dir_start == TOP_SIDE:
+            cp1 = (sx, sy + dy)
+        elif curve_dir_start == LEFT_SIDE:
+            cp1 = (sx + dx, sy)
+        elif curve_dir_start == RIGHT_SIDE:
+            cp1 = (sx + dx, sy)
+        else:
+            cp1 = (sx + dx, sy)
+        control_points = [cp1]
         path = QtGui.QPainterPath(Pf(sx, sy))
         c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
         c1x, c1y = c[0]
