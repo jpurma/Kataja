@@ -252,11 +252,12 @@ class FeatureNode(Node):
         """ Background color that is sensitive to node's state """
         if ctrl.pressed == self:
             return ctrl.cm.active(ctrl.cm.selection())
+        elif self.drag_data:
+            return ctrl.cm.hovering(ctrl.cm.selection())
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
             return ctrl.cm.selection()
-            # return ctrl.cm.selected(ctrl.cm.selection())
         else:
             return qt_prefs.no_brush
 

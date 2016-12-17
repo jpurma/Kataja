@@ -447,7 +447,12 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :param scene_pos: current drag focus
         :return:
         """
-        new_pos = scene_pos[0], scene_pos[1]
+        if self.parentItem():
+            p = self.parentItem().mapFromScene(scene_pos[0], scene_pos[1])
+            new_pos = p.x(), p.y()
+        else:
+            new_pos = scene_pos[0], scene_pos[1]
+
         if self.use_physics():
             self.locked = True
             self.current_position = new_pos

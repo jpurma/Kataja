@@ -335,7 +335,6 @@ class CubicPath(Shape):
             cp2 = (ex - dx, ey)
         else:
             cp2 = (ex - dx, ey)
-
         control_points = [cp1, cp2]
 
         path = QtGui.QPainterPath(Pf(sx, sy))

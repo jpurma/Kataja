@@ -52,9 +52,12 @@ class DragData:
         scx, scy = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
-        bg = ctrl.cm.paper2().lighter(102)
-        bg.setAlphaF(.65)
-        self.background = bg
+        if hasattr(node, 'contextual_background'):
+            self.background = node.contextual_background()
+        else:
+            bg = ctrl.cm.paper2().lighter(102)
+            bg.setAlphaF(.65)
+            self.background = bg
         self.old_zvalue = node.zValue()
         parent = node.parentItem()
         if parent:
@@ -1062,9 +1065,6 @@ class Node(Movable):
             painter.drawLine(0, 0, 0, 2)
             painter.drawRect(self.label_rect)
             painter.drawRect(self.inner_rect)
-        if self.drag_data:
-            rect = True
-            brush = self.drag_data.background
         if ls == g.SCOPEBOX or ls == g.BOX:
             pen.setWidth(0.5)
             brush = ctrl.cm.paper2()
@@ -1080,7 +1080,10 @@ class Node(Movable):
                 for yd in range((len(leaves) - 1) * 2, 0, -2):
                     painter.drawRoundedRect(self.inner_rect.translated(yd, yd), xr, yr)
 
-        if self._hovering:
+        if self.drag_data:
+            rect = True
+            brush = self.drag_data.background
+        elif self._hovering:
             if rect:
                 brush = ctrl.cm.paper()
             rect = True
@@ -1481,6 +1484,7 @@ class Node(Movable):
         """
         ctrl.dragged_set.add(self)
         ctrl.add_my_group_to_dragged_groups(self)
+        self.drag_data = True
         self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
 
         tree = self.tree_where_top()
@@ -1531,12 +1535,7 @@ class Node(Movable):
                 edge.update()
         else:
             dx, dy = d.distance_from_pointer
-            p = self.parentItem()
-            if p:
-                px, py = p.current_position
-                super().dragged_to((nx + dx - px, ny + dy - py))
-            else:
-                super().dragged_to((nx + dx, ny + dy))
+            super().dragged_to((nx + dx, ny + dy))
             for edge in itertools.chain(self.edges_up, self.edges_down):
                 edge.make_path()
                 edge.update()
@@ -1781,6 +1780,7 @@ class Node(Movable):
         if ctrl.settings.get('syntactic_mode'):
             self._node_type_visible = self.is_syntactic
         else:
+            self._node_type_visible = True
             self._node_type_visible = True
         self._node_in_triangle = self.folded_away or self.folding_towards
 
