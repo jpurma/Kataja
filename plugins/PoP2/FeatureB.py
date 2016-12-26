@@ -38,7 +38,7 @@ class Feature(MyBaseClass):
     def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
                  ifeature=False, valued_by=None, inactive=False):
         if in_kataja:
-            super().__init__(name=name, value=value, assigned=not unvalued)
+            super().__init__(name=name, value=value)
         if namestring:
             if namestring.startswith('u'):
                 namestring = namestring[1:]
@@ -144,14 +144,6 @@ class Feature(MyBaseClass):
 
     def unvalued_and_alone(self):
         return self.unvalued and not self.valued_by
-
-    def name_with_u_prefix(self):
-        if self.unvalued:
-            return 'u' + self.name
-        elif self.ifeature:
-            return 'i' + self.name
-        else:
-            return self.name
 
     def value_with(self, other):
         assert other is not self

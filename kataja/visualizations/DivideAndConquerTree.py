@@ -112,7 +112,7 @@ class DivideAndConquerTree(BalancedTree):
             node_offset_y = br.y()
             node_top_row = mnode.get_top_y()
             relative_start_height = (node_offset_y + node_top_row) / node_height
-            height_in_rows = math.ceil(node_height / float(edge_height or 1)) - 1#+ 1
+            height_in_rows = max((1, math.ceil(node_height / float(edge_height or 1)) - 1))
             start_height = max(int(relative_start_height * height_in_rows), 0)
             width_in_columns = math.ceil(node_width / float(edge_width or 1)) + 1
             left_adjust = int(width_in_columns / -2)

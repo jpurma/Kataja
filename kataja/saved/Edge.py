@@ -189,9 +189,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         ctrl.forest.remove_from_scene(self)
         return self
 
-    def copy(self, others=None):
-        super().copy(others)
-
     @property
     def color_id(self) -> str:
         return self.cached('color_id')

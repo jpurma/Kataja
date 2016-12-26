@@ -130,6 +130,8 @@ class DeriveFromLexicon(KatajaAction):
     def method(self):
         panel = ctrl.ui.get_panel('LexiconPanel')
         if panel:
-            text = panel.lextext.toPlainText()
-            ctrl.syntax.derive_from_editable_lexicon(text)
+            lexicon = panel.lextext.toPlainText()
+            sentence = panel.sentence_text.text()
+            semantics = panel.semantics_text.text()
+            ctrl.syntax.derive_from_editable_lexicon(sentence, lexicon, semantics)
             ctrl.graph_view.setFocus()

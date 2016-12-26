@@ -15,6 +15,7 @@ class SyntaxConnection(SavedObject):
     role = "SyntaxConnection"
     supports_editable_lexicon = False
     supports_secondary_labels = False
+    display_modes = []
 
     options = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),
                "linearization_types": dict(options=["merge_asymmetry", "kayne"]),
@@ -56,7 +57,65 @@ class SyntaxConnection(SavedObject):
         print('old get_editable_lexicon')
         return repr(self.lexicon)
 
-    def derive_from_editable_lexicon(self, lexdata):
+    def get_editable_sentence(self):
+        """ If the current systems supports parsing, return the current parsed string. User can
+        edit it and retry parsing.
+        :return:
+        """
+        return ''
+
+    def get_editable_semantics(self):
+        """ If the current systems supports parsing, return the current parsed string. User can
+        edit it and retry parsing.
+        :return:
+        """
+        return ''
+
+    def get_c_commanded_leaves(self, node):
+        """ By default we cheat on c-command and do it on node level, where we have a reliable
+        access to parent of node.
+        :param node:
+        :return:
+        """
+        def _pick_leaves(n):
+            if n not in passed:
+                passed.add(n)
+                children = n.get_children(visible=False, similar=True)
+                if children:
+                    for c in children:
+                        _pick_leaves(c)
+                else:
+                    leaves.append(n)
+        leaves = []
+        passed = set()
+        #passed.add(node)
+        for parent in node.get_parents():
+            _pick_leaves(parent)
+        return [l.syntactic_object for l in leaves]
+
+    def get_dominated_nodes(self, node):
+        """ General solution works on level of nodes, not constituents, so this shouldn't be used
+        to determine how nodes relate to each others.
+        :param node:
+        :return:
+        """
+        def _pick_leaves(n):
+            if n not in passed:
+                passed.add(n)
+                leaves.append(n)
+                children = n.get_children(visible=False, similar=True)
+                if children:
+                    for c in children:
+                        _pick_leaves(c)
+        leaves = []
+        passed = set()
+        passed.add(node)
+        for child in node.get_children(visible=False, similar=True):
+            _pick_leaves(child)
+        return [l.syntactic_object for l in leaves]
+
+
+    def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
         raise NotImplementedError

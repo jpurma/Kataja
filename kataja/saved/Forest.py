@@ -329,7 +329,7 @@ class Forest(SavedObject):
         return tree
 
     def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None, gloss=None,
-                          transferred=None):
+                          transferred=None, mover=None):
         """ This is a big important function to ensure that Nodes on display are only those that
         are present in syntactic objects. Clean up the residue, create those nodes that are
         missing and create the edges.
@@ -339,9 +339,12 @@ class Forest(SavedObject):
         :param msg: message associated with this derivation step, this will be used as gloss
         :param gloss: gloss text for the whole forest
         :param transferred: list of items spelt out/transferred. These will form a group
+        :param mover: single items to point out as special. This will form a group
         :return:
         """
         t = time.time()
+        if self.syntax.display_modes:
+            synobjs = self.syntax.transform_trees_for_display(synobjs)
         node_keys_to_validate = set(self.nodes.keys())
         edge_keys_to_validate = set(self.edges.keys())
 
@@ -559,7 +562,6 @@ class Forest(SavedObject):
                             #new_g.outline = True
                             new_g.update_colors('accent5')
                             new_g.update_selection(selection)
-                            new_g.update_selection(selection)
         if old_groups:
             # Remove items from groups where they don't belong
             items_to_remove = all_old_items - all_new_items
@@ -571,6 +573,31 @@ class Forest(SavedObject):
             for old_group, remove_list in zip(old_groups, to_remove):
                 old_group.remove_nodes(remove_list)
 
+        # ---------
+        # Update or create mover group
+        old_group = None
+        for group in self.groups.values():
+            if group.purpose == 'mover':
+                old_group = group
+                break
+        if mover:
+            mover = self.get_node(mover)
+            if old_group:
+                old_group.clear(remove=False)
+                group = old_group
+            else:
+                group = self.create_group()
+                group.purpose = 'mover'
+                #group.set_label_text('Next mover')
+                group.include_children = False
+                group.fill = True
+                group.outline = False
+                group.update_colors('accent8')
+            group.update_selection([mover])
+        else:
+            if old_group:
+                old_group.clear(remove=True)
+        # ---------
         strat = ctrl.settings.get('gloss_strategy')
         if strat and strat == 'message':
             self.gloss_text = msg
@@ -885,18 +912,11 @@ class Forest(SavedObject):
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
-            x = 0
             for tree in self.trees:
                 if tree.top:
                     self.visualization.prepare_to_normalise(tree)
                     self.visualization.draw_tree(tree)
                     self.visualization.normalise_movers(tree)
-                    #tree.normalize_positions()
-                    #tree.move_to(x, 0)
-                    #tree.move_to(0, 0)
-                    #print('tree (%s) :%s' % (x, tree.boundingRect()))
-                    #x += tree.boundingRect().width()
-
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
         sc.start_animations()
@@ -2445,7 +2465,7 @@ class Forest(SavedObject):
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=FOREST)
         ctrl.settings.set('show_display_labels', not syntactic_mode, level=FOREST)
-        for node in self.nodes.values():
+        for node in list(self.nodes.values()):
             node.update_label()
             node.update_label_visibility()
             node.update_visibility()

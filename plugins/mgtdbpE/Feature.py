@@ -1,30 +1,24 @@
 
 class Feature:
-    """ This implementation of mgtdb Features has one important difference from features as
-    presented by Stabler,
-    """
+    """ Minimal syntactic feature implementation """
 
-    def __init__(self, value='', name=''):
-        self.value = value
+    def __init__(self, name, value):
         self.name = name
+        self.value = value
 
     def __repr__(self):
-        if self.value == 'cat':
-            return self.name
-        elif self.value == 'sel':
-            return '=' + self.name
-        elif self.value == 'neg':
-            return '-' + self.name
-        elif self.value == 'pos':
-            return '+' + self.name
-        else:
-            return self.value + self.name
+        s = [str(self.name)]
+        if self.value:
+            s.append(str(self.value))
+        return ":".join(s)
 
     def __eq__(self, other):
         if other:
             return self.value == other.value and self.name == other.name
-        else:
-            return False
+        return False
+
+    def copy(self):
+        return self.__class__(self.name, self.value)
 
     @staticmethod
     def from_string(s):
@@ -36,4 +30,5 @@ class Feature:
         else:
             value = ''
             name = s
-        return Feature(value, name)
+        name, foo, bar = name.partition(':')  # 'case:acc' -> name = 'case', family = 'acc'
+        return Feature(name, value)

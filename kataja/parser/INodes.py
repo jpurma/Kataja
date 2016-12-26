@@ -1,5 +1,6 @@
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.parser.mappings import command_to_latex, command_to_html
+import html
 
 __author__ = 'purma'
 """ INodes can be used to represent strings that have formatting commands and
@@ -186,9 +187,10 @@ class ITextNode:
         s = []
         for part in self.parts:
             if isinstance(part, ITextNode):
-                s.append(part.as_html())
+                p = part.as_html()
             else:
-                s.append(str(part))
+                p = str(part)
+            s.append(p)
         ss = ''.join(s)
         return ss.replace('\n', '<br/>')
 

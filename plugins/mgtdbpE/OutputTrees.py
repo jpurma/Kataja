@@ -37,31 +37,41 @@ def list_tree_to_nltk_tree(listtree):
 
 
 def print_results(dnodes, lexicon=None):
+        print('attempting to create derivation tree...')
         dt = Constituent.dnodes_to_dtree(dnodes, all_features=True) #False)
         res = {}
         # d -- derivation tree
         res['d'] = list_tree_to_nltk_tree(dt.as_list_tree())
+        print('success at creating derivation tree.')
         # pd -- pretty-printed derivation tree
         output = io.StringIO()
         pptree(output, dt.as_list_tree())
         res['pd'] = output.getvalue()
+        print(res['pd'])
         output.close()
         # s -- state tree
+        print('attempting to create state tree...')
         res['s'] = list_tree_to_nltk_tree(StateTree(dt).as_list_tree())
+        print('success at creating state tree.')
         # ps -- pretty-printed state tree
         output = io.StringIO()
         pptree(output, StateTree(dt).as_list_tree())
         res['ps'] = output.getvalue()
+        print(res['ps'])
         output.close()
         # b -- bare tree
+        print('attempting to create bare tree...')
         res['b'] = list_tree_to_nltk_tree(BareTree(dt).as_list_tree())
+        print('success at creating bare tree.')
         # pb -- pretty-printed bare tree
         output = io.StringIO()
         pptree(output, BareTree(dt).as_list_tree())
         res['pb'] = output.getvalue()
         output.close()
         # x -- xbar tree
+        print('attempting to create xbar tree...')
         res['x'] = list_tree_to_nltk_tree(XBarTree(dt).as_list_tree())
+        print('success at creating xbar tree.')
         # px -- pretty-printed xbar tree
         output = io.StringIO()
         pptree(output, XBarTree(dt).as_list_tree())
@@ -125,11 +135,11 @@ class StateTree:
         self.part1 = None
         if dtree.features:
             self.features = dtree.features.copy()
-        elif dtree.label == '*':
+        if dtree.label == '•' or dtree.label == '●' or dtree.label == '*':
             self.part0 = StateTree(dtree.parts[0])
             self.part1 = StateTree(dtree.parts[1])
             self.merge_check()
-        elif dtree.label == 'o':
+        elif dtree.label == '◦' or dtree.label == '○' or dtree.label == 'o':
             self.part0 = StateTree(dtree.parts[0])
             self.move_check()
 
@@ -137,7 +147,6 @@ class StateTree:
         headf0, *remainders0 = self.part0.features
         headf1, *remainders1 = self.part1.features
         if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
-            assert(self.features == remainders0)
             self.features = remainders0
             if remainders1:
                 self.movers = [remainders1]
@@ -152,6 +161,7 @@ class StateTree:
         found = False
         mover = []
         self.movers = []
+        assert self.part0.movers
         for mover_f_list in self.part0.movers:
             if mover_f_list[0].name == mover_match.name:
                 if found:
@@ -177,6 +187,19 @@ class StateTree:
         else:  # leaf
             return [sfs]
 
+    def to_constituent(self):
+        parts = []
+        fss = []
+        if self.features:
+            fss.append(self.features)
+        fss += self.movers
+        label = ','.join([' '.join([str(f) for f in fs]) for fs in fss])
+        if self.part0:
+            parts.append(self.part0.to_constituent())
+        if self.part1:
+            parts.append(self.part1.to_constituent())
+        return Constituent(label=label, parts=parts)
+
 
 class BareTree:
     """
@@ -194,12 +217,12 @@ class BareTree:
             self.label = dtree.label
             if dtree.features:
                 self.features = dtree.features
-            elif dtree.label == '*':
+            if dtree.label == '•' or dtree.label == '●' or dtree.label == '*':
                 self.part0 = BareTree(dtree.parts[0])
                 self.part1 = BareTree(dtree.parts[1])
                 self.moving = [] + self.part0.moving + self.part1.moving
                 self.merge_check()
-            elif dtree.label == 'o':
+            elif dtree.label == '◦' or dtree.label == '○' or dtree.label == 'o':
                 self.part1 = BareTree(dtree.parts[0])
                 self.move_check()
 
@@ -237,7 +260,7 @@ class BareTree:
                 found = True
             else:
                 self.movers.append(mover_f_list)
-        assert found
+        #assert found
         self.moving = []
         for (fs, moving_tree) in self.part1.moving:
             if fs[0].name == mover_match.name:
@@ -248,7 +271,7 @@ class BareTree:
             self.movers.append(mover)
             self.moving.append((mover, self.part0))
         self.label = '>'
-        assert self.part0
+        #assert self.part0
 
     def as_list_tree(self):
         if not (self.part0 or self.part1):
@@ -261,6 +284,17 @@ class BareTree:
             return [self.label, self.part0.as_list_tree(), self.part1.as_list_tree()]
         else:
             raise RuntimeError('BareTree.as_list_tree')
+
+    def to_constituent(self):
+        parts = []
+        if self.part0:
+            parts.append(self.part0.to_constituent())
+        if self.part1:
+            parts.append(self.part1.to_constituent())
+        if parts:
+            return Constituent(label=self.label, parts=parts)
+        else:
+            return Constituent(label=self.label, features=self.features)
 
 
 class XBarTree:
@@ -290,12 +324,12 @@ class XBarTree:
                         break
                 assert self.category
 
-            elif dtree.label == '*':
+            if dtree.label == '•' or dtree.label == '●' or dtree.label == '*':
                 self.part0 = XBarTree(dtree.parts[0], self.cntr, top=False)
                 self.part1 = XBarTree(dtree.parts[1], self.part0.cntr, top=False)
                 self.moving = [] + self.part0.moving + self.part1.moving
                 self.merge_check()
-            elif dtree.label == 'o':
+            elif dtree.label == '◦' or dtree.label == '○' or dtree.label == 'o':
                 self.part1 = XBarTree(dtree.parts[0], self.cntr, top=False)
                 self.cntr = self.part1.cntr
                 self.move_check()
@@ -364,6 +398,7 @@ class XBarTree:
         if not (self.part0 or self.part1):
             if self.lexical:
                 if self.label and isinstance(self.label, str):
+                    # this is creating ["D'" [ "which" ] ] -trees as lists which we don't want
                     return [self.category, [self.label]]
                 else:
                     return [self.category, [self.label]]
@@ -374,3 +409,136 @@ class XBarTree:
         else:
             raise RuntimeError('XBarTree.as_list_tree')
 
+    def to_constituent(self):
+        parts = []
+        if self.part0:
+            parts.append(self.part0.to_constituent())
+        if self.part1:
+            parts.append(self.part1.to_constituent())
+        if parts:
+            return Constituent(label=self.label, parts=parts)
+        else:
+            if self.lexical:
+                head = Constituent(label=self.label, features=self.features)
+                return Constituent(label=self.category, parts=[head])
+            else:
+                return Constituent(label=self.label, features=self.features)
+
+
+class TracelessXBarTree:
+    """
+    convert derivation tree to X-bar tree -
+      similar to the bare tree conversion
+    """
+
+    def __init__(self, dtree, top=True):
+        self.features = []
+        self.movers = []
+        self.label = ''
+        self.part0 = None
+        self.part1 = None
+        self.moving = []
+        self.category = ''
+        if dtree:
+            self.label = dtree.label
+            if dtree.features:
+                self.features = dtree.features
+                for f in dtree.features:
+                    if f.value == '':
+                        self.category = f.name
+                        break
+                assert self.category
+
+            if dtree.label == '•' or dtree.label == '●' or dtree.label == '*':
+                self.part0 = TracelessXBarTree(dtree.parts[0], top=False)
+                self.part1 = TracelessXBarTree(dtree.parts[1], top=False)
+                self.moving = [] + self.part0.moving + self.part1.moving
+                self.merge_check()
+            elif dtree.label == '◦' or dtree.label == '○' or dtree.label == 'o':
+                self.part1 = TracelessXBarTree(dtree.parts[0], top=False)
+                self.move_check()
+        if top:
+            self.label = self.category + 'P'
+
+    def merge_check(self):
+        headf0, *remainders0 = self.part0.features
+        headf1, *remainders1 = self.part1.features
+        if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
+            self.features = remainders0  # copy remaining head1 features
+            self.movers = self.part0.movers + self.part1.movers  # add movers1 and 2
+            if remainders1:
+                self.movers.append(remainders1)
+                self.moving.append((remainders1, self.part1))
+            else:
+                self.part1.category += 'P'
+        else:
+            raise RuntimeError('merge_check error')
+        self.category = self.part0.category
+        self.label = self.category + "'"
+
+    def move_check(self):
+        mover_match, *remaining = self.part1.features
+        self.features = remaining
+        found = False
+        mover = []
+        self.movers = []
+        for mover_f_list in self.part1.movers:
+            if mover_f_list[0].name == mover_match.name:
+                if found:
+                    raise RuntimeError('SMC violation in move_check')
+                mover = mover_f_list[1:]
+                found = True
+            else:
+                self.movers.append(mover_f_list)
+        assert found
+        self.moving = []
+        for (fs, moving_tree) in self.part1.moving:
+            if fs[0].name == mover_match.name:
+                self.part0 = moving_tree
+            else:
+                self.moving.append((fs, moving_tree))
+        if mover:
+            self.movers.append(mover)
+            self.moving.append((mover, self.part0))
+        self.category = self.part1.category
+        self.label = self.category + "'"
+        assert self.part0
+
+    def as_list_tree(self):
+        if not (self.part0 or self.part1):
+            if self.label and isinstance(self.label, str):
+                # this is creating ["D'" [ "which" ] ] -trees as lists which we don't want
+                return [self.category, [self.label]]
+            else:
+                return [self.category, [self.label]]
+        elif self.part0 and self.part1:  # merge
+            return [self.label, self.part0.as_list_tree(), self.part1.as_list_tree()]
+        else:
+            raise RuntimeError('XBarTree.as_list_tree')
+
+    def to_constituent(self, done=None):
+        if done is None:
+            done = {}
+        parts = []
+        if self.part0:
+            if self.part0 in done:
+                p0 = done[self.part0]
+            else:
+                p0 = self.part0.to_constituent(done)
+            parts.append(p0)
+        if self.part1:
+            if self.part1 in done:
+                p1 = done[self.part1]
+            else:
+                p1 = self.part1.to_constituent(done)
+            parts.append(p1)
+        if parts:
+            p = Constituent(label=self.label, parts=parts)
+        else:
+            head = Constituent(label=self.label, features=self.features)
+            p = Constituent(label=self.category, parts=[head])
+        done[self] = p
+        return p
+
+    def __hash__(self):
+        return id(self)

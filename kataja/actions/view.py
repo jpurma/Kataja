@@ -60,6 +60,30 @@ class SwitchViewMode(KatajaAction):
         return ctrl.settings.get('syntactic_mode')
 
 
+class SwitchSyntaxViewMode(KatajaAction):
+    k_action_uid = 'switch_syntax_view_mode'
+    k_command = 'Switch view modes offered by syntax'
+    k_tooltip = 'Syntax engines may offer different views to their structures'
+    k_shortcut = 'v'
+    k_undoable = False
+
+    def method(self):
+        """ Switch between showing only syntactic objects and showing richer representation
+        :param syntactic_mode: None to toggle between modes, True to hide other except syntactic
+        objects and values, False to show all items
+        syntactic only
+        :return:
+        """
+        ctrl.forest.syntax.next_display_mode()
+        ctrl.forest.derivation_steps.restore_derivation_step()
+
+    def getter(self):
+        if ctrl.forest.syntax.display_modes:
+            return ctrl.forest.syntax.syntax_display_mode
+
+    def enabler(self):
+        return bool(ctrl.forest.syntax.display_modes)
+
 class ActivateNoFrameNodeShape(KatajaAction):
     k_action_uid = 'set_no_frame_node_shape'
     k_command = 'Borderless nodes'

@@ -55,11 +55,6 @@ class FeatureNode(Node):
                               prefill='value',
                               tooltip='Value given to this feature',
                               syntactic=True),
-                'assigned': dict(name='Assigned', input_type='checkbox',
-                                 select_action='set_assigned_feature',
-                                 tooltip="If feature is unassigned ('uFeature') "
-                                         "it is looking for a value",
-                                 syntactic=True),
                 'family': dict(name='Family', prefill='family',
                                tooltip='Several distinct features can be '
                                        'grouped under one family (e.g. '
@@ -108,8 +103,6 @@ class FeatureNode(Node):
             y += random.uniform(-4, 4)
         self.set_original_position((x, y))
 
-    def name_with_u_prefix(self):
-        return self.syntactic_object.name_with_u_prefix()
 
     def compose_html_for_viewing(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
@@ -126,13 +119,7 @@ class FeatureNode(Node):
         if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
 
-        parts = [self.name_with_u_prefix()]
-        if self.syntactic_object.assigned:
-            if self.value:
-                parts.append(as_html(self.value))
-            if self.family:
-                parts.append(as_html(self.family))
-        return ':'.join(parts), ''
+        return str(self.syntactic_object), ''
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -299,9 +286,6 @@ class FeatureNode(Node):
             if constituent.has_feature(feature):
                 constituent.remove_feature(feature)
 
-    def set_assigned(self, value):
-        self.assigned = value
-
     def special_connection_point(self, edge, sx, sy, ex, ey, start=False):
         f_align = ctrl.settings.get('feature_positioning')
         br = self.boundingRect()
@@ -348,6 +332,5 @@ class FeatureNode(Node):
     # ############## #
 
     name = SavedSynField("name")
-    assigned = SavedSynField("assigned")
     value = SavedSynField("value")
     family = SavedSynField("family")

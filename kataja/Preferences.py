@@ -194,6 +194,7 @@ class Preferences(object):
         self.projection_strong_lines = True
         self.projection_colorized = True
         self.projection_highlighter = False
+        self.show_c_command = True
 
         self.user_palettes = {}
         self.traces_are_grouped_together = False

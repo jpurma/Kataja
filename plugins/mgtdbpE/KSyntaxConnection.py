@@ -2,10 +2,13 @@ from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl
 from syntax.SyntaxConnection import SyntaxConnection
 from mgtdbpE.Parser import load_grammar, Parser
+from mgtdbpE.OutputTrees import StateTree, XBarTree, BareTree, TracelessXBarTree
 
 class KSyntaxConnection(SyntaxConnection):
     role = "SyntaxConnection"
     supports_editable_lexicon = True
+    supports_secondary_labels = True
+    display_modes = ['Derivation tree', 'State tree', 'Bare tree', 'XBar tree']
 
     def __init__(self, classes):
         SavedObject.__init__(self)
@@ -18,6 +21,7 @@ class KSyntaxConnection(SyntaxConnection):
         self.rules = {}
         self.sentence = ''
         self.parser = None
+        self.syntax_display_mode = 3
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
 
@@ -49,9 +53,46 @@ class KSyntaxConnection(SyntaxConnection):
         structure. Resulting structures are used to populate a forest.
         :return:
         """
+        print('create_derivation: ', self.lexicon)
         self.parser = Parser(self.lexicon, -0.0001, forest=forest)
         # parser doesn't return anything, it pushes derivation steps to forest
         self.parser.parse(sentence=self.sentence, start='C')
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
+
+    def set_display_mode(self, i):
+        self.syntax_display_mode = i
+
+    def next_display_mode(self):
+        self.syntax_display_mode += 1
+        if self.syntax_display_mode == len(self.display_modes):
+            self.syntax_display_mode = 0
+
+    def transform_trees_for_display(self, synobjs):
+        if self.syntax_display_mode == 0:
+            # Just derivation trees
+            return synobjs
+        elif self.syntax_display_mode == 1:
+            # StateTree(dt)
+            res = []
+            for synobj in synobjs:
+                const = StateTree(synobj).to_constituent()
+                res.append(const)
+            return res
+        elif self.syntax_display_mode == 2:
+            # BareTree(dt)
+            res = []
+            for synobj in synobjs:
+                const = BareTree(synobj).to_constituent()
+                res.append(const)
+            return res
+        elif self.syntax_display_mode == 3:
+            # XBarTree(dt)
+            res = []
+            for synobj in synobjs:
+                const = TracelessXBarTree(synobj).to_constituent()
+                res.append(const)
+            return res
+
+        return synobjs

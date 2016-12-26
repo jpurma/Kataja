@@ -58,7 +58,7 @@ class BaseConstituent(IConstituent):
             self.heads = [head]
         else:
             self.heads = []
-        self.features = features or {}
+        self.features = features or []
         self.parts = parts or []
 
     def __str__(self):
@@ -160,12 +160,14 @@ class BaseConstituent(IConstituent):
             self.heads = []
 
     def get_feature(self, key):
-        """ Gets the local feature (within this constituent, not of its children) with key 'key'
+        """ Gets the first local feature (within this constituent, not of its children) with key
+        'key'
         :param key: string for identifying feature type
         :return: feature object
         """
-        f = self.features.get(key, None)
-        return f
+        for f in self.features:
+            if f.name == key:
+                return f
 
     def get_secondary_label(self):
         """ Visualisation can switch between showing labels and some other information in label
@@ -181,8 +183,9 @@ class BaseConstituent(IConstituent):
         :return: bool
         """
         if isinstance(key, BaseFeature):
-            return key in list(self.features.values())
-        return key in list(self.features.keys())
+            return key in self.features
+        else:
+            return bool(self.get_feature(key))
 
     def add_feature(self, feature):
         """ Add an existing Feature object to this constituent.
@@ -191,38 +194,43 @@ class BaseConstituent(IConstituent):
         """
         if isinstance(feature, BaseFeature):
             self.poke('features')
-            self.features[feature.name] = feature
+            self.features.append(feature)
         else:
             raise TypeError
 
+
     def set_feature(self, key, value, family=''):
-        """ Set constituent to have a certain feature. If the value given is Feature instance, then it is used,
+        """ Set constituent to have a certain feature. If the value given is Feature
+        instance, then it is used,
         otherwise a new Feature is created or existing one modified.
         :param key: str, the key for finding the feature
         :param value:
-        :param family: string, optional. If new feature belongs to a certain feature family, e.g. phi features.
+        :param family: string, optional. If new feature belongs to a certain feature family,
+        e.g. phi features.
         """
         if isinstance(value, BaseFeature):
-            self.poke('features')
-            self.features[key] = value
-        else:
-            f = self.features.get(key, None)
-            if f:
-                f.set(value)
-            else:
-                f = BaseFeature(name=key, value=value)
+            if value not in self.features:
                 self.poke('features')
-            self.features[key] = f
+                self.features.append(value)
+        else:
+            self.poke('features')
+            new_f = BaseFeature(value=value, name=key)
+            self.features.append(new_f)
 
     def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
-        :param fname: str, the name for finding the feature or for convenience, a feature instance to be removed
+        :param fname: str, the name for finding the feature or for convenience, a feature
+        instance to be removed
         """
         if isinstance(name, BaseFeature):
-            name = name.name
-        if hasattr(self.features, name):
-            self.poke('features')
-            del self.features[name]
+            if name in self.features:
+                self.poke('features')
+                self.features.remove(name)
+        else:
+            for f in list(self.features):
+                if f.name == name:
+                    self.poke('features')
+                    self.features.remove(f)
 
     def is_leaf(self):
         """ Check if the constituent is leaf constituent (no children) or inside a trees (has children).
@@ -254,6 +262,7 @@ class BaseConstituent(IConstituent):
                             features=new_features,
                             heads=self.heads)
         return nc
+
 
     # ############## #
     #                #

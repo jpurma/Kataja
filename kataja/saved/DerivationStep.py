@@ -42,7 +42,7 @@ class DerivationStep(SavedObject):
      """
 
     def __init__(self, synobjs=None, numeration=None, other=None, msg=None, gloss=None,
-                 transferred=None):
+                 transferred=None, mover=None):
         super().__init__()
         self.synobjs = synobjs or []
         self.numeration = numeration
@@ -50,6 +50,7 @@ class DerivationStep(SavedObject):
         self.msg = msg
         self.gloss = gloss
         self.transferred = transferred
+        self.mover = mover
 
     def __str__(self):
         return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(self.other) \
@@ -68,6 +69,7 @@ class DerivationStep(SavedObject):
     msg = SavedField("msg")
     gloss = SavedField("gloss")
     transferred = SavedField("transferred")
+    mover = SavedField("mover")
 
 
 class DerivationStepManager(SavedObject):
@@ -83,7 +85,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_step_index = 0
 
     def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg='',
-                                        gloss='', transferred=None):
+                                        gloss='', transferred=None, mover=None):
         """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
         created in the fly. No problems from visualisations misbehaving, chains etc.
         :param synobjs: list of syntactic objects present in this snapshot
@@ -95,7 +97,7 @@ class DerivationStepManager(SavedObject):
         :param transferred: items that have been transferred/spelt out
         :return:
         """
-        d_step = DerivationStep(synobjs, numeration, other, msg, gloss, transferred)
+        d_step = DerivationStep(synobjs, numeration, other, msg, gloss, transferred, mover)
         # Use Kataja's save system to freeze objects into form where they can be stored and restored
         # without further changes affecting them.
         savedata = {}
@@ -116,18 +118,19 @@ class DerivationStepManager(SavedObject):
         self.derivation_steps.append((d_step.uid, savedata, msg))
 
     @time_me
-    def restore_derivation_step(self, uid, frozen_data):
-        """
-        :param uid:
-        :param frozen_data:
-        """
-        d_step = DerivationStep()
-        d_step.uid = uid
-        d_step.load_objects(frozen_data, ctrl.main)
-        self.activated = True
-        self.current = d_step
-        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg,
-                                      d_step.gloss, d_step.transferred)
+    def restore_derivation_step(self):
+        if self.derivation_steps:
+            uid, frozen_data, msg = self.derivation_steps[self.derivation_step_index]
+            d_step = DerivationStep()
+            d_step.uid = uid
+            d_step.load_objects(frozen_data, ctrl.main)
+            self.activated = True
+            self.current = d_step
+            self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other,
+                                          d_step.msg, d_step.gloss, d_step.transferred,
+                                          d_step.mover)
+            log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
+
     def next_derivation_step(self):
         """
         :return:
@@ -135,10 +138,7 @@ class DerivationStepManager(SavedObject):
         if self.derivation_step_index + 1 >= len(self.derivation_steps):
             return
         self.derivation_step_index += 1
-
-        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
-        self.restore_derivation_step(uid, ds)
-        log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        self.restore_derivation_step()
 
     def previous_derivation_step(self):
         """
@@ -147,19 +147,14 @@ class DerivationStepManager(SavedObject):
         if self.derivation_step_index == 0:
             return
         self.derivation_step_index -= 1
-        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
-        self.restore_derivation_step(uid, ds)
-        log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        self.restore_derivation_step()
 
     def jump_to_derivation_step(self, i):
         """
         :return:
         """
         self.derivation_step_index = i
-        if self.derivation_steps:
-            uid, ds, msg = self.derivation_steps[self.derivation_step_index]
-            self.restore_derivation_step(uid, ds)
-            log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        self.restore_derivation_step()
 
     def is_first(self):
         return self.derivation_step_index == 0

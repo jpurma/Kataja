@@ -32,6 +32,7 @@ from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
 import difflib
+from html import escape
 import time
 
 differ = difflib.Differ()
@@ -203,6 +204,11 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
 
         html, lower_html = self._host.compose_html_for_viewing()
+        if html in ['<', '>', '&']:
+            html = escape(html)
+        if lower_html in ['<', '>', '&']:
+            lower_html = escape(lower_html)
+
         if self.label_shape == SCOPEBOX:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '<sub>' + html + '</sub>'

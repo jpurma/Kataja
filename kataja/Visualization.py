@@ -154,6 +154,8 @@ class BaseVisualization:
         pass
 
     def normalise_movers(self, tree):
+        if tree not in self.forest.trees:
+            return
         i = self.forest.trees.index(tree)
         old = self._stored_top_node_positions[i]
         new = tree.top.target_position

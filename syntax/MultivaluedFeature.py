@@ -31,16 +31,14 @@ class MultivaluedFeature(BaseFeature):
     iterables to list if given as values, and monads to list objects
     """
 
-    def __init__(self, name='Feature', value=None, assigned=True, family=''):
+    def __init__(self, name='Feature', value=None, family=''):
         super().__init__()
-        self.assigned = assigned
         self.name = name
         if isinstance(value, (list, tuple, set)):
             self.value = list(value)
         else:
             self.value = [value]
         self.value = value
-        self.assigned = assigned
         self.family = family
 
     def has_value(self, prop):
@@ -57,20 +55,18 @@ class MultivaluedFeature(BaseFeature):
             self.value.remove(val)
 
     def __repr__(self):
-        return "MultivaluedFeature(name=%r, value=%r, assigned=%r, family=%r)" % (self.name,
-                                                                                   self.value,
-                                                                                   self.assigned,
-                                                                                   self.family)
+        return "MultivaluedFeature(name=%r, value=%r, family=%r)" % (self.name,
+                                                                     self.value,
+                                                                     self.family)
 
     def __str__(self):
         s = []
-        if self.family:
-            s.append(self.family)
-        if self.assigned:
-            s.append(self.name)
+        if self.value in ('+', '-', '=', 'u'):
+            s.append(self.value + str(self.name))
         else:
-            s.append('u' + self.name)
-        if self.value:
+            s.append(str(self.name))
             s.append(str(self.value))
+        if self.family:
+            s.append(str(self.family))
         return ":".join(s)
 

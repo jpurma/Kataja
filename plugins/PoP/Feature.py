@@ -38,7 +38,7 @@ class Feature(MyBaseClass):
     def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
                  ifeature=False):
         if in_kataja:
-            super().__init__(name=name, value=value, assigned=not unvalued)
+            super().__init__(name=name, value=value)
         if namestring:
             if namestring.startswith('u'):
                 namestring = namestring[1:]
@@ -124,13 +124,6 @@ class Feature(MyBaseClass):
         else:
             return item in str(self)
 
-    def name_with_u_prefix(self):
-        if self.unvalued:
-            return 'u' + self.name
-        elif self.ifeature:
-            return 'i' + self.name
-        else:
-            return self.name
 
     def copy(self):
         return Feature(counter=self.counter, name=self.name, value=self.value,

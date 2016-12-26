@@ -318,7 +318,7 @@ class CubicPath(Shape):
             else:
                 cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
-            cp1 = (sx, sy + dy)
+            cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
             cp1 = (sx + dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
@@ -326,7 +326,7 @@ class CubicPath(Shape):
         else:
             cp1 = (sx + dx, sy)
         if curve_dir_end == BOTTOM_SIDE:
-            cp2 = (ex, ey - dy)
+            cp2 = (ex, ey + dy)
         elif curve_dir_end == TOP_SIDE:
             cp2 = (ex, ey - dy)
         elif curve_dir_end == LEFT_SIDE:
@@ -393,10 +393,12 @@ class ShapedQuadraticPath(Shape):
         if curve_dir_start == BOTTOM_SIDE:
             if sx > ex and dm > 0:
                 cp1 = (sx + dx, sy + dy)
+            elif dm < 0 and sx < ex: # big honking curve
+                cp1 = ((sx + ex) / 2, sy)
             else:
                 cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
-            cp1 = (sx, sy + dy)
+            cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
             cp1 = (sx + dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
@@ -463,7 +465,7 @@ class QuadraticPath(Shape):
             else:
                 cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
-            cp1 = (sx, sy + dy)
+            cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
             cp1 = (sx + dx, sy)
         elif curve_dir_start == RIGHT_SIDE:

@@ -1,2 +1,3 @@
 which queen says the king knows which wine the queen prefers
 which wine the queen prefers
+the king knows which wine the queen prefers

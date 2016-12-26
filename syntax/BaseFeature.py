@@ -44,47 +44,68 @@ class BaseFeature(SavedObject):
     editable = {}
     addable = {}
 
-    def __init__(self, name='Feature', value=None, assigned=True, family=''):
+    def __init__(self, name='Feature', value=None, family=''):
         super().__init__()
-        self.assigned = assigned
         self.name = name
         self.value = value
         self.family = family
-        self.checks = None
+        self.checks = None  # this has no syntactic effect but storing which feature this
+        # feature has checked helps presentation
 
     def has_value(self, prop):
         return self.value == prop
 
     @property
     def unassigned(self):
-        return not self.assigned
+        return self.unvalued()
 
-    def name_with_u_prefix(self):
-        if not self.assigned:
-            return 'u' + self.name
-        else:
-            return self.name
+    @property
+    def assigned(self):
+        return not self.unvalued()
+
+    def unvalued(self):
+        return self.value == 'u' or self.value == '='
 
     def satisfies(self, feature):
-        return feature.unassigned and feature.name == self.name and self.assigned
+        return feature.unvalued() and feature.name == self.name and not self.unvalued()
 
-    def __repr__(self):
-        return "BaseFeature(name=%r, value=%r, assigned=%r, family=%r)" % (self.name,
-                                                                            self.value,
-                                                                            self.assigned,
-                                                                            self.family)
+    def __eq__(self, other):
+        if other:
+            return self.value == other.value and self.name == other.name and self.family == \
+                                                                             other.family
+        return False
+
+    def copy(self):
+        return self.__class__(name=self.name, value=self.value, family=self.family)
+
+    def checked(self):
+        return self.value.startswith('✓')
 
     def __str__(self):
         s = []
+        signs = ('+', '-', '=', 'u', '✓')
+        if len(self.value) == 1 and self.value in signs or len(self.value) == 2 and self.value[1]\
+                in signs:
+            s.append(self.value + str(self.name))
+        elif self.value or self.family:
+            s.append(str(self.name))
+            s.append(str(self.value))
+            if self.family:
+                s.append(str(self.family))
+        else:
+            s.append(str(self.name))
+        return ":".join(s)
+
+    def __repr__(self):
+        s = [str(self.name)]
+        if self.value or self.family:
+            s.append(str(self.value))
         if self.family:
             s.append(str(self.family))
-        if self.assigned:
-            s.append(str(self.name))
-        else:
-            s.append('u' + str(self.name))
-        if self.value:
-            s.append(str(self.value))
         return ":".join(s)
+
+    def __hash__(self):
+        return id(self)
 
     # ############## #
     #                #
@@ -94,6 +115,18 @@ class BaseFeature(SavedObject):
 
     name = SavedField("name")
     value = SavedField("value")
-    assigned = SavedField("assigned")
     family = SavedField("family")
     checks = SavedField("checks")
+
+    @staticmethod
+    def from_string(s):
+        if not s:
+            return
+        if s[0] in '-=+':
+            value = s[0]
+            name = s[1:]
+        else:
+            value = ''
+            name = s
+        name, foo, family = name.partition(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
+        return BaseFeature(name, value, family)

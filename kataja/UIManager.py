@@ -425,6 +425,12 @@ class UIManager:
             if item.host and not (item.is_fading_out or item.selection_independent):
                 self.remove_ui(item)
 
+        # Have a better way to do this -- halos as UI-items?
+        if ctrl.forest and ctrl.forest.nodes:
+            for node in ctrl.forest.nodes.values():
+                if node.node_type == g.CONSTITUENT_NODE and node.halo:
+                    node.toggle_halo(False)
+
         # create ui_support pieces for selected elements. don't create touchareas and buttons
         # if multiple selection, it gets confusing fast
         if len(ctrl.selected) == 1:
@@ -436,6 +442,15 @@ class UIManager:
             elif isinstance(item, Node):
                 self.update_touch_areas_for_selected_node(item)
                 self.update_buttons_for_selected_node(item)
+                if ctrl.settings.get('show_c_command'):
+                    if item.node_type == g.CONSTITUENT_NODE:
+                        c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(
+                            item)
+                        for synobj in c_commanded_synobjs:
+                            node = ctrl.forest.get_node(synobj)
+                            if node and node.is_visible():
+                                node.toggle_halo(True)
+
         if ctrl.selected:
             # note UI panels that they should use scope 'selection' for their activities
             self.set_scope(g.SELECTION)

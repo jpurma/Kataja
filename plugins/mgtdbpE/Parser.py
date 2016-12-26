@@ -22,7 +22,7 @@ Comments welcome: jukka.purma--at--gmail.com
 """
 import time
 import pprint
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 try:
     from kataja.saved.Forest import Forest
@@ -34,7 +34,7 @@ except ImportError:
 if in_kataja:
     from mgtdbpE.Constituent import Constituent as DTree
     from mgtdbpE.OutputTrees import print_results
-    from mgtdbpE.KFeature import KFeature as Feature
+    from syntax.BaseFeature import BaseFeature as Feature
 else:
     #from OutputTrees import DTree, print_results
     from OutputTrees import print_results
@@ -42,20 +42,12 @@ else:
     from Feature import Feature
 
 
-class LexItem:
-    """ These are more typical LIs. It takes in list of words instead of one string for
-    compability with mgtdbp output. These are not used in parsing at all, they are only to print
-    out the grammar. """
-
-    def __init__(self, words, features):
-        self.words = words
-        self.features = features
+class LexItem(namedtuple('LexItem', ('words', 'features'))):
 
     def __str__(self):
-        return ', '.join(self.words) + ' :: ' + ' '.join([str(f) for f in self.features])
-
-    def __repr__(self):
-        return 'LI(%r, %r)' % (self.words, self.features)
+        words = ', '.join(self.words)
+        feats = ' '.join([str(f) for f in self.features])
+        return f'{words} :: {feats}'
 
 
 class LexTreeNode:
@@ -194,7 +186,7 @@ class DerivationNode:
 
 
 class Parser:
-    def __init__(self, lex_items, min_p, forest=None):
+    def __init__(self, lex_items, min_p, forest=None, syntax_connection=None):
         print('****** Starting Parser *******')
         self.d = lex_items
         self.min_p = min_p
@@ -203,6 +195,7 @@ class Parser:
         self.new_parses = []
         self.results = {}
         self.forest = forest  # optional kataja forest where to push trees
+        self.syntax = syntax_connection
         self.dtrees = {}  # store resulting structures across parsing rounds so that nodes 'grow'
         #                   instead of starting from a blank slate at each iteration.
 
@@ -232,7 +225,7 @@ class Parser:
     def parse(self, start, sentence):
         # Prepare prediction queue. We have a prediction that the derivation will finish
         # in a certain kind of category, e.g. 'C'
-        final_features = [Feature('', start)]
+        final_features = [Feature(start, '')]
         topmost_head = self.lex[start]
         prediction = Prediction(topmost_head, tree=DerivationNode('', features=final_features))
 
@@ -342,14 +335,14 @@ class Parser:
         pr0.head_path += '0'  # left
         pr0.movers = {}  # this is external merge, doesn't bring any movers
         pr0.mover_paths = {}
-        pr0.tree.features.append(Feature('=', category)) # =D, =N,...
+        pr0.tree.features.append(Feature(category, '=')) # =D, =N,...
         pr0.tree.path += '0'  # left
         pr0.tree.moving_features = {}
 
         pr1 = prediction.copy()  # movers to complement only
         pr1.head = self.lex[category]  # head can be any LI in this category
         pr1.head_path += '1'  # right
-        pr1.tree.features = [Feature('', category)] # D, N,...
+        pr1.tree.features = [Feature(category, '')] # D, N,...
         pr1.tree.path += '1'  # right
         print('merge1, pr0:', pr0.compact())
         print('merge1, pr1:', pr1.compact())
@@ -369,7 +362,7 @@ class Parser:
         pr0 = prediction.copy()  # pr0 receives movers from prediction.
         pr0.head = node
         pr0.head_path += '1'  # right?
-        pr0.tree.features.append(Feature('=', category))  # =D, =N,...
+        pr0.tree.features.append(Feature(category, '='))  # =D, =N,...
         pr0.tree.path += '0'  # left?
 
         pr1 = prediction.copy()
@@ -377,7 +370,7 @@ class Parser:
         pr1.movers = {}  # pr1 is non-mover and a specifier
         pr1.head_path += '0'  # left, as in specifier? Why head_path and tree path are different?
         pr1.mover_paths = {}
-        pr1.tree.features = [Feature('', category)]  # D, N,...
+        pr1.tree.features = [Feature(category, '')]  # D, N,...
         pr1.tree.path += '1'
         pr1.tree.moving_features = {}
         print('merge2, pr0:', pr0.compact())
@@ -402,7 +395,7 @@ class Parser:
                 pr0.head = node  # head path is not changing. wonder why?
                 pr0.movers = {}
                 pr0.mover_paths = {}
-                pr0.tree.features.append(Feature('=', cat)) # =D, =N
+                pr0.tree.features.append(Feature(cat, '=')) # =D, =N
                 pr0.tree.path += '0'
                 pr0.tree.moving_features = {}
 
@@ -414,7 +407,7 @@ class Parser:
                 del pr1.mover_paths[mover_cat]
                 pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()  # movers to
                 # complement
-                pr1.tree.features.append(Feature('', cat))
+                pr1.tree.features.append(Feature(cat, ''))
                 pr1.tree.path += '1'
                 del pr1.tree.moving_features[mover_cat]
                 print('merge3, pr0:', pr0.compact())
@@ -439,7 +432,7 @@ class Parser:
                 pr0.head = node
                 del pr0.movers[mover_cat]  # we used the "next" licensee, so now empty
                 del pr0.mover_paths[mover_cat]
-                pr0.tree.features.append(Feature('=', cat))
+                pr0.tree.features.append(Feature(cat, '='))
                 pr0.tree.path += '0'
                 del pr0.tree.moving_features[mover_cat]
 
@@ -449,7 +442,7 @@ class Parser:
                 pr1.head_path = pr1.mover_paths[mover_cat]
                 pr1.mover_paths = {}
                 pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()
-                pr1.tree.features.append(Feature('', cat))
+                pr1.tree.features.append(Feature(cat, ''))
                 pr1.tree.path += '1'
                 pr1.tree.moving_features = {}
                 print('merge4, pr0:', pr0.compact())
@@ -470,9 +463,9 @@ class Parser:
             pr0.head_path += '1'
             pr0.mover_paths[cat] = prediction.head_path
             pr0.mover_paths[cat] += '0'
-            pr0.tree.features.append(Feature('+', cat))  # trunk has '+'
+            pr0.tree.features.append(Feature(cat, '+'))  # trunk has '+'
             pr0.tree.path += '0'
-            pr0.tree.moving_features[cat] = [Feature('-', cat)]  # mover has '-'
+            pr0.tree.moving_features[cat] = [Feature(cat, '-')]  # mover has '-'
             print('move1, pr0:', pr0.compact())
             self.new_parses.append((pr0, None))
 
@@ -499,9 +492,9 @@ class Parser:
                     del pr0.mover_paths[mover_cat]
                     pr0.tree.moving_features[root_f] = pr0.tree.moving_features[mover_cat].copy()
                     pr0.tree.moving_features[root_f].append(
-                        Feature('-', cat))  # extend prev features of mover with (neg cat)
+                        Feature(cat, '-'))  # extend prev features of mover with (neg cat)
                     del pr0.tree.moving_features[mover_cat]
-                    pr0.tree.features.append(Feature('+', cat))
+                    pr0.tree.features.append(Feature(cat, '+'))
                     pr0.tree.path += '0'
                     print('move2, pr0:', pr0.compact())
                     self.new_parses.append((pr0, None))
@@ -558,7 +551,7 @@ def load_grammar(g='', filename=''):
 ############################################################################################
 
 if __name__ == '__main__':
-    g = load_grammar('mg0.txt')
+    g = load_grammar(filename='mg0.txt')
 
     sentences = ["the king prefers the beer",
                  "which king says which queen knows which king says which wine the queen prefers",

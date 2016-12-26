@@ -55,13 +55,12 @@ class SavedObject(object):
     def __str__(self):
         return self.class_name + str(self.uid)
 
-    def copy(self, others=None):
+    def copy(self):
         """ Make a new object of same type and copy its attributes.
         object class can define dont_copy, list of attribute names that shouldn't be copied (
         either because they refer to peers or objects above, or because they are handled
         manually.). Attributes starting with '_' are always ignored, and the copied object is
         assigned a new key.
-        :param others:
         :return:
         """
         if self.__class__.unique:
@@ -73,7 +72,7 @@ class SavedObject(object):
         for key, value in vars(self).items():
             if (not key.startswith('_')) and key not in dont_copy:
                 if hasattr(value, 'copy'):
-                    new_value = value.copy(others=others)
+                    new_value = value.copy()
                 else:
                     new_value = copy.copy(value)
                 setattr(new_obj, key, new_value)

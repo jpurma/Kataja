@@ -49,6 +49,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.color_key = ''
         self.color = None
         self.color_tr_tr = None
+        self.purpose = None
         self.path = None
         self.label_item = None
         self.label_data = {}
@@ -171,6 +172,17 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                 self.forest.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
+
+    def clear(self, remove=True):
+        self.selection = set()
+        self.selection_with_children = set()
+        self.update_shape()
+        if remove:
+            if self.persistent:
+                self.forest.remove_group(self)
+            else:
+                ctrl.ui.remove_ui_for(self)
+
 
     def add_node(self, node):
         """ Manual addition of single node
@@ -510,6 +522,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     selection = SavedField("selection")
     color_key = SavedField("color_key")
     label_data = SavedField("label_data")
+    purpose = SavedField("purpose")
     include_children = SavedField("include_children")
     allow_overlap = SavedField("allow_overlap")
     fill = SavedField("fill")

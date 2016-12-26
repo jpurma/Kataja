@@ -162,6 +162,7 @@ class ConstituentNode(Node):
         self.select_order = 0
         self.original_parent = None
         self.in_projections = []
+        self.halo = False
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -909,6 +910,22 @@ class ConstituentNode(Node):
         :param other:
         """
         pass
+
+    # ###### Halo for showing some association with selected node (e.g. c-command) ######
+
+    def toggle_halo(self, value):
+        self.halo = value
+        self.update()
+
+    def paint(self, painter, option, widget=None):
+        """ Painting is sensitive to mouse/selection issues, but usually with
+        :param painter:
+        :param option:
+        :param widget:
+        nodes it is the label of the node that needs complex painting """
+        super().paint(painter, option, widget=widget)
+        if self.halo:
+            painter.drawEllipse(self.inner_rect)
 
     # ############## #
     #                #

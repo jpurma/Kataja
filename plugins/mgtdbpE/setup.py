@@ -1,7 +1,6 @@
 # coding=utf-8
 from mgtdbpE.Parser import Parser
 from mgtdbpE.Constituent import Constituent
-from mgtdbpE.KFeature import KFeature
 from mgtdbpE.ForestKeeper import Document
 from mgtdbpE.KSyntaxConnection import KSyntaxConnection
 
@@ -14,7 +13,7 @@ from mgtdbpE.KSyntaxConnection import KSyntaxConnection
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Parser, Document, KFeature, KSyntaxConnection]
+plugin_parts = [Constituent, Parser, Document, KSyntaxConnection]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -24,7 +23,7 @@ plugin_parts = [Constituent, Parser, Document, KFeature, KSyntaxConnection]
 # previously initialized special structures can be destroyed.
 
 # reload_order = ['myplugin.SyntaxConnection', 'myplugin.KDocument', 'myplugin.setup']
-reload_order = ['mgtdbpE.KFeature', 'mgtdbpE.Constituent',
+reload_order = ['mgtdbpE.Constituent',
                 'mgtdbpE.Parser', 'mgtdbpE.KSyntaxConnection',
                 'mgtdbpE.ForestKeeper', 'mgtdbpE.setup']  # put here 'myplugin.goodg'
 

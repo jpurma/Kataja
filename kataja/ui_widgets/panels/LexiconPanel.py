@@ -30,6 +30,10 @@ class LexiconPanel(Panel):
         self.lextext = QtWidgets.QPlainTextEdit()
         self.watchlist = ['forest_changed']
         layout.addWidget(self.lextext)
+        self.sentence_text = QtWidgets.QLineEdit()
+        layout.addWidget(self.sentence_text)
+        self.semantics_text = QtWidgets.QLineEdit()
+        layout.addWidget(self.semantics_text)
         self.info = QtWidgets.QLabel('info text here')
         self.derive_button = text_button(ctrl.ui, layout, text='Derive again',
                                          action='derive_from_lexicon')
@@ -53,6 +57,10 @@ class LexiconPanel(Panel):
             self.lextext.setPlainText(text)
         else:
             self.lextext.clear()
+        sentence = ctrl.syntax.get_editable_sentence()
+        semantics = ctrl.syntax.get_editable_semantics()
+        self.sentence_text.setText(sentence)
+        self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 
     def watch_alerted(self, obj, signal, field_name, value):

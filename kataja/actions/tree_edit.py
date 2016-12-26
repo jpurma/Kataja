@@ -352,21 +352,3 @@ class ToggleNodeEditEmbed(KatajaAction):
         node = self.get_host()
         ctrl.ui.start_editing_node(node)
 
-
-class SetAssignedFeature(KatajaAction):
-    k_action_uid = 'set_assigned_feature'
-    k_command = 'Set feature as assigned'
-
-    def method(self):
-        """ """
-        sender = self.sender()
-        if sender:
-            featurenode = self.get_host()
-            value = sender.isChecked()
-            featurenode.set_assigned(value)
-            featurenode.update_label()
-            if value:
-                return "Feature '%s' set to assigned" % featurenode.name
-            else:
-                return "Feature '%s' set to unassigned" % featurenode.name
-
