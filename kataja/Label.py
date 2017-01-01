@@ -202,7 +202,6 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable_doc.set_align(QtCore.Qt.AlignRight)
         else:
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
-
         html, lower_html = self._host.compose_html_for_viewing()
         if html in ['<', '>', '&']:
             html = escape(html)
@@ -220,25 +219,27 @@ class Label(QtWidgets.QGraphicsItem):
             if lower_html:
                 html += lower_html.replace('<br/>', '')
         if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
-            self.prepareGeometryChange()
-            if is_card:
-                self.editable_doc.setTextWidth(self.card_size[0])
-            else:
-                self.editable_doc.setTextWidth(-1)
-            self.html = html
-            self.editable_part.setHtml(html)
+            #self.prepareGeometryChange()
+            if self.html != html:
+                if is_card:
+                    self.editable_doc.setTextWidth(self.card_size[0])
+                else:
+                    self.editable_doc.setTextWidth(-1)
+                self.html = html
+                self.editable_part.setHtml(html)
             ctrl.qdocument_parser.process(self.editable_doc)
             if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
-                self.lower_html = lower_html
                 if not self.lower_part:
                     self.init_lower_part()
-                if is_card:
-                    self.lower_doc.setTextWidth(self.card_size[0])
-                else:
-                    self.lower_doc.setTextWidth(-1)
-                self.lower_part.setHtml(self.lower_html)
+                if lower_html != self.lower_html:
+                    self.lower_html = lower_html
+                    if is_card:
+                        self.lower_doc.setTextWidth(self.card_size[0])
+                    else:
+                        self.lower_doc.setTextWidth(-1)
+                    self.lower_part.setHtml(self.lower_html)
                 ctrl.qdocument_parser.process(self.lower_doc)
-                self.prepareGeometryChange()
+                #self.prepareGeometryChange()
             else:
                 self.lower_html = ''
                 if self.lower_part:

@@ -328,6 +328,7 @@ class Forest(SavedObject):
         tree.show()
         return tree
 
+    @time_me
     def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None, gloss=None,
                           transferred=None, mover=None):
         """ This is a big important function to ensure that Nodes on display are only those that
@@ -342,7 +343,6 @@ class Forest(SavedObject):
         :param mover: single items to point out as special. This will form a group
         :return:
         """
-        t = time.time()
         if self.syntax.display_modes:
             synobjs = self.syntax.transform_trees_for_display(synobjs)
         node_keys_to_validate = set(self.nodes.keys())
@@ -374,9 +374,10 @@ class Forest(SavedObject):
                     node.syntactic_object = me
                     if hasattr(me, 'label'):
                         node.label = me.label
-                    node.update_label()
-                    if node.uid in node_keys_to_validate:
-                        node_keys_to_validate.remove(node.uid)
+                    #node.update_label()
+                    found_nodes.add(node.uid)
+                    #if node.uid in node_keys_to_validate:
+                    #    node_keys_to_validate.remove(node.uid)
                     if node.node_type == g.FEATURE_NODE and False:
                         node.locked_to_node = parent_node  # not me.unvalued
                     for tree in node.trees:
@@ -405,19 +406,21 @@ class Forest(SavedObject):
         # I guess that ordering of connections will be broken because of making
         # and deleting connections in unruly fashion
         def connect_if_necessary(parent, child, edge_type):
-            assert(parent != child)
             edge = parent.get_edge_to(child, edge_type)
             if not edge:
                 self.connect_node(parent, child, edge_type=edge_type, mirror_in_syntax=False)
-            elif edge.uid in edge_keys_to_validate:
-                edge_keys_to_validate.remove(edge.uid)
+            else:
+                found_edges.add(edge.uid)
+            #elif edge.uid in edge_keys_to_validate:
+            #    edge_keys_to_validate.remove(edge.uid)
+
 
         def recursive_create_edges(synobj):
             node = self.get_node(synobj)
             if synobj in synobjs_done:
                 return node
             synobjs_done.add(synobj)
-            if isinstance(synobj, ctrl.syntax.Constituent):
+            if node.node_type == g.CONSTITUENT_NODE:
                 # part_count = len(synobj.get_parts())
                 for part in synobj.get_parts():
                     child = recursive_create_edges(part)
@@ -427,7 +430,8 @@ class Forest(SavedObject):
                     nfeature = recursive_create_edges(feature)
                     if nfeature:
                         connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
-            elif isinstance(synobj, ctrl.syntax.Feature):
+                self.verify_edge_order_for_constituent_nodes(node)
+            elif node.node_type == g.FEATURE_NODE:
                 if hasattr(synobj, 'get_parts'):
                     for part in synobj.get_parts():
                         child = recursive_create_edges(part)
@@ -452,6 +456,7 @@ class Forest(SavedObject):
         scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
         sc_center = scene_rect.center().x()
         sc_middle = scene_rect.center().y()
+        t = time.time()
 
         for tree_root in synobjs:
             if not tree_root:
@@ -459,8 +464,11 @@ class Forest(SavedObject):
             synobjs_done = set()
             nodes_to_create = []
             tree_counter = []
+            found_nodes = set()
             most_popular_tree = None
+
             recursive_add_for_creation(tree_root, None, None)
+            node_keys_to_validate -= found_nodes
 
             # noinspection PyArgumentList
             most_popular_trees = collections.Counter(tree_counter).most_common(1)
@@ -483,7 +491,9 @@ class Forest(SavedObject):
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
 
+            found_edges = set()
             recursive_create_edges(tree_root)
+            edge_keys_to_validate -= found_edges
 
             if most_popular_tree:
                 most_popular_tree.top = self.get_node(tree_root)
@@ -525,6 +535,7 @@ class Forest(SavedObject):
         if old_groups:
             for group in old_groups:
                 all_old_items.update(set(group.selection))
+
         if transferred:
             new_groups = []
             if transferred:
@@ -562,6 +573,7 @@ class Forest(SavedObject):
                             #new_g.outline = True
                             new_g.update_colors('accent5')
                             new_g.update_selection(selection)
+
         if old_groups:
             # Remove items from groups where they don't belong
             items_to_remove = all_old_items - all_new_items
@@ -604,6 +616,49 @@ class Forest(SavedObject):
         self.update_forest_gloss()
         self.guessed_projections = False
         ctrl.graph_scene.fit_to_window(force=True)
+
+    def verify_edge_order_for_constituent_nodes(self, node):
+        """ Verify that relations to children are in same order as in syntactic object. This
+        depends on how syntax supports ordering.
+        :return:
+        """
+        if isinstance(node.syntactic_object.parts, list):
+            #  we assume that if parts use lists, then they are implicitly ordered.
+            correct_order = node.syntactic_object.parts
+            current_order = [edge.end.syntactic_object for edge in node.edges_down if edge.end
+                             and edge.edge_type == g.CONSTITUENT_EDGE]
+            if correct_order != current_order:
+                new_order = []
+                passed = []
+                for edge in node.edges_down:
+                    if edge.edge_type == g.CONSTITUENT_EDGE and edge.end and \
+                            edge.end.syntactic_object in node.syntactic_object.parts:
+                        new_order.append((node.syntactic_object.parts.index(
+                            edge.end.syntactic_object), edge))
+                    else:
+                        passed.append(edge)
+                new_order = [edge for i, edge in sorted(new_order)]
+                node.edges_down = new_order + passed
+        if node.syntactic_object.features and isinstance(node.syntactic_object.features, list):
+            #  we assume that if features are in lists, then they are implicitly ordered.
+            correct_order = node.syntactic_object.features
+            current_order = [edge.end.syntactic_object for edge in node.edges_down if edge.end
+                             and edge.edge_type == g.FEATURE_EDGE]
+            if correct_order != current_order:
+                new_order = []
+                passed = []
+                for edge in node.edges_down:
+                    if edge.edge_type == g.FEATURE_EDGE and edge.end and \
+                            edge.end.syntactic_object in node.syntactic_object.features:
+                        new_order.append((node.syntactic_object.features.index(
+                            edge.end.syntactic_object), edge))
+                    else:
+                        passed.append(edge)
+                new_order = [edge for i, edge in sorted(new_order)]
+                node.edges_down = passed + new_order
+
+
+
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -1903,9 +1958,8 @@ class Forest(SavedObject):
     # These manipulations should be low level operations only called from
     # by forest's higher level methods.
     #
-
     def connect_node(self, parent=None, child=None, direction='', edge_type=None,
-                     fade_in=False, mirror_in_syntax = True):
+                     fade_in=False, mirror_in_syntax=True):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -1959,8 +2013,8 @@ class Forest(SavedObject):
             parent.edges_down.append(new_edge)
         if mirror_in_syntax:
             child.connect_in_syntax(new_edge)
-        parent.update_label()
-        child.update_label()
+        #parent.update_label()
+        #child.update_label()
         #print('--- finished connect')
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)

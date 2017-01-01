@@ -2,7 +2,8 @@ from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl
 from syntax.SyntaxConnection import SyntaxConnection
 from mgtdbpE.Parser import load_grammar, Parser
-from mgtdbpE.OutputTrees import StateTree, XBarTree, BareTree, TracelessXBarTree
+from mgtdbpE.OutputTrees import StateTree, BareTree, TracelessXBarTree
+
 
 class KSyntaxConnection(SyntaxConnection):
     role = "SyntaxConnection"
@@ -21,7 +22,7 @@ class KSyntaxConnection(SyntaxConnection):
         self.rules = {}
         self.sentence = ''
         self.parser = None
-        self.syntax_display_mode = 3
+        self.syntax_display_mode = 2
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
 
@@ -31,7 +32,7 @@ class KSyntaxConnection(SyntaxConnection):
         """
         return '\n'.join([str(const) for const in self.lexicon])
 
-    def derive_from_editable_lexicon(self, lexdata):
+    def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
         grammar = load_grammar(g=lexdata)
@@ -39,6 +40,7 @@ class KSyntaxConnection(SyntaxConnection):
         ctrl.disable_undo()
         f = ctrl.forest
         f.clear()
+        self.sentence = sentence
         self.parser = Parser(grammar, -0.0001, forest=f)
         # parser doesn't return anything, it pushes derivation steps to forest
         self.parser.parse(sentence=self.sentence, start='C')
@@ -47,6 +49,13 @@ class KSyntaxConnection(SyntaxConnection):
         ds.jump_to_derivation_step(ds.derivation_step_index)
         f.prepare_for_drawing()
         ctrl.resume_undo()
+
+    def get_editable_sentence(self):
+        """ If the current systems supports parsing, return the current parsed string. User can
+        edit it and retry parsing.
+        :return:
+        """
+        return self.sentence
 
     def create_derivation(self, forest):
         """ This is always called to initially turn syntax available here and some input into a
@@ -94,5 +103,5 @@ class KSyntaxConnection(SyntaxConnection):
                 const = TracelessXBarTree(synobj).to_constituent()
                 res.append(const)
             return res
-
-        return synobjs
+        else:
+            return synobjs

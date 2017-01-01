@@ -44,7 +44,7 @@ class KatajaDocument(SavedObject):
 
     def __init__(self, name=None, filename=None, clear=False):
         super().__init__()
-        self.name = name or filename or ''
+        self.name = name or filename or 'New project'
         self.filename = filename
         self.forests = [Forest()]
         self.current_index = 0

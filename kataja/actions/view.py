@@ -84,6 +84,7 @@ class SwitchSyntaxViewMode(KatajaAction):
     def enabler(self):
         return bool(ctrl.forest.syntax.display_modes)
 
+
 class ActivateNoFrameNodeShape(KatajaAction):
     k_action_uid = 'set_no_frame_node_shape'
     k_command = 'Borderless nodes'

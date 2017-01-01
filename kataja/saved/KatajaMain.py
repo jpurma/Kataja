@@ -65,6 +65,7 @@ from kataja.visualizations.available import VISUALIZATIONS
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 stylesheet = """
+QWidget {font-family: "Helvetica Neue"; font-size: 10px;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
@@ -122,12 +123,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         prefs.import_node_classes(classes)
         self.syntax = SyntaxConnection(classes)
         prefs.load_preferences(disable=reset_prefs or no_prefs)
-        qt_prefs.late_init(running_environment, prefs, self.fontdb)
+        qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.color_manager.update_color_modes()  # include color modes from preferences
         self.setWindowIcon(qt_prefs.kataja_icon)
-        self.app.setFont(qt_prefs.get_font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
@@ -238,6 +238,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     m = "adding %s " % classobj.__name__
                 log.info(m)
                 print(m)
+        if hasattr(self.active_plugin_setup, 'help_file'):
+            dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
+            print(dir_path)
+            self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.init_forest_keepers()
@@ -289,6 +293,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if prefs.active_plugin_name:
             log.info('Installing plugin %s...' % prefs.active_plugin_name)
             self.enable_plugin(prefs.active_plugin_name, reload=False)
+        self.ui_manager.update_plugin_menu()
 
     def reset_preferences(self):
         """
@@ -322,7 +327,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         print('--- load initial treeset ---')
         self.forest_keeper.create_forests(clear=False)
         self.change_forest()
-        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+        self.ui_manager.update_projects_menu()
 
     def create_new_project(self):
         names = [fk.name for fk in self.forest_keepers]
@@ -336,14 +341,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest_keepers.append(classes.KatajaDocument(name=name))
         self.forest_keeper = self.forest_keepers[-1]
         self.change_forest()
-        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+        self.ui_manager.update_projects_menu()
         return self.forest_keeper
 
     def switch_project(self, i):
         self.forest.retire_from_drawing()
         self.forest_keeper = self.forest_keepers[i]
         self.change_forest()
-        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+        self.ui_manager.update_projects_menu()
         return self.forest_keeper
 
     # ### Visualization

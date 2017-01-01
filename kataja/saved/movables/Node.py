@@ -767,6 +767,9 @@ class Node(Movable):
     def gather_children(self):
         fpos = ctrl.settings.get('feature_positioning')
         shape = ctrl.settings.get('label_shape')
+        children = self.get_children(visible=True, similar=False)
+        if not children:
+            return
         if shape == g.CARD:
             fpos = 3  # only two column arrangement looks good on cards
 
@@ -774,7 +777,7 @@ class Node(Movable):
             center_x = self.boundingRect().center().x()
             bottom_y = self.boundingRect().bottom()
             y = bottom_y
-            for fnode in self.get_children(visible=True, similar=False):
+            for fnode in children:
                 if fnode.locked_to_node is self:
                     fnode.move_to(center_x, y)
                     y += fnode.height
@@ -784,7 +787,7 @@ class Node(Movable):
             nods = []
             total_width = 0
             max_height = 0
-            for fnode in self.get_children(visible=True, similar=False):
+            for fnode in children:
                 if fnode.locked_to_node is self:
                     w = fnode.width
                     nods.append((fnode, total_width))
@@ -806,7 +809,7 @@ class Node(Movable):
             right_margin = center_x + (cw / 2)
             left_nods = []
             right_nods = []
-            for fnode in self.get_children(visible=True, similar=False):
+            for fnode in children:
                 if fnode.locked_to_node is self:
                     if fnode.syntactic_object.value in ['-', '=', '✓-', '✓=']:
                         right_nods.append(fnode)

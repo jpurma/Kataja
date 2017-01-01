@@ -107,8 +107,6 @@ def launch_kataja():
 def prepare_app():
     app = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
-    font = QtGui.QFont('Helvetica', 10)
-    app.setFont(font)
     app.setApplicationName('Kataja')
     app.setOrganizationName('Purma')
     app.setOrganizationDomain('purma.fi')

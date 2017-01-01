@@ -1,14 +1,30 @@
-from PyQt5 import QtWidgets
-from kataja.singletons import ctrl
+from PyQt5 import QtWidgets, QtGui
+
+from kataja.globals import MAIN_FONT
+from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 
 from kataja.ui_support.panel_utils import text_button
 
 __author__ = 'purma'
 
+stylesheet = """
+HelpPanel {font-family: "Helvetica Neue"; font-size: 12px;}
+"""
 
-class LexiconPanel(Panel):
+
+class HelpPanel(Panel):
     """ Browse and build the lexicon """
+    default_text = """
+    <h3>Welcome to Kataja!</h3>
+    Try these:<br/>
+    <b>1-9, 0</b> - different visualisations, press again for alternatives<br/>
+    <b>b</b> - switch between ways to show nodes<br/>
+    <b>l</b> - switch between label visibility<br/>
+    <b>f</b> - switch between feature visibility<br/>
+    <b>v</b> - switch between views provided by syntax/plugin<br/>
+    <b>t</b> - switch between multidomination / traces<br/>
+    """
 
     def __init__(self, name, default_position='bottom', parent=None, folded=False):
         """
@@ -20,42 +36,32 @@ class LexiconPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
+        inner.setContentsMargins(0, 0, 0, 0)
+        self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QVBoxLayout()
-        self.lextext = QtWidgets.QPlainTextEdit()
-        self.watchlist = ['forest_changed']
-        layout.addWidget(self.lextext)
-        self.sentence_text = QtWidgets.QLineEdit()
-        layout.addWidget(self.sentence_text)
-        self.semantics_text = QtWidgets.QLineEdit()
-        layout.addWidget(self.semantics_text)
-        self.info = QtWidgets.QLabel('info text here')
-        self.derive_button = text_button(ctrl.ui, layout, text='Derive again',
-                                         action='derive_from_lexicon')
-        layout.addWidget(self.derive_button)
-        layout.addWidget(self.info)
+        self.label = QtWidgets.QTextBrowser()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.label.setContentsMargins(0, 0, 0, 0)
+        self.label.setMinimumWidth(200)
+        self.label.setFrameStyle(QtWidgets.QFrame.NoFrame)
+        self.label.setStyleSheet(stylesheet)
+        p = self.label.palette()
+        p.setColor(QtGui.QPalette.Base, ctrl.cm.transparent)
+        self.label.setPalette(p)
+        layout.addWidget(self.label)
         inner.setLayout(layout)
         self.setWidget(inner)
-        self.widget().setAutoFillBackground(True)
-        self.prepare_lexicon()
+        self.set_text(HelpPanel.default_text)
         self.finish_init()
         ctrl.graph_view.activateWindow()
         ctrl.graph_view.setFocus()
 
-    def prepare_lexicon(self):
-        if not ctrl.forest:
-            return
-        if not ctrl.syntax:
-            return
-        text = ctrl.syntax.get_editable_lexicon()
-        if text:
-            self.lextext.setPlainText(text)
-        else:
-            self.lextext.clear()
-        sentence = ctrl.syntax.get_editable_sentence()
-        semantics = ctrl.syntax.get_editable_semantics()
-        self.sentence_text.setText(sentence)
-        self.semantics_text.setText(semantics)
-        ctrl.graph_view.activateWindow()
+    def set_text(self, text):
+        self.label.setHtml(text)
+
+    def text(self):
+        return self.label.toHtml()
+
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

@@ -477,7 +477,7 @@ class QtPreferences:
         self.shape_icon_scope = None
         self.shape_icon_brackets = None
 
-    def late_init(self, running_environment, preferences, fontdb):
+    def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
         qt requirements that are difficult to get around.
         :param running_environment:
@@ -509,7 +509,7 @@ class QtPreferences:
 
         # print("get_font families:", QtGui.QFontDatabase().families())
         self.fontdb = fontdb
-        self.prepare_fonts(preferences.fonts, running_environment)
+        self.prepare_fonts(preferences.fonts, running_environment, log)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
         self.no_pen = QtGui.QPen()
@@ -605,22 +605,21 @@ class QtPreferences:
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
-    def prepare_fonts(self, fonts_dict, running_environment):
+    def prepare_fonts(self, fonts_dict, running_environment, log):
         """
         :param fonts_dict:
         :param running_environment:
         """
-        # print('preparing fonts...')
         self.fonts = {}
+        asana_math = self.fontdb.addApplicationFont(running_environment.resources_path +
+                                                    "Asana-Math.otf")
+        if asana_math == -1:
+            log.warning("Failed to load 'Asana-Math.otf' from %s, if it is not provided by "
+                        "system, things can get ugly.")
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
             size = int(size)
             font = self.fontdb.font(name, style, size)
-            # print(name, get_font.exactMatch())
-            if name == 'Asana Math' and not font.exactMatch():
-                self.fontdb.addApplicationFont(
-                    running_environment.resources_path + "Asana-Math.otf")
-                font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)
             self.fonts[key] = font

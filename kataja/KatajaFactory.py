@@ -8,8 +8,21 @@ def get_role(classobj):
 
 class KatajaFactory:
     def __init__(self):
-        """ Load factory with default classes for objects. Plugins can overload these with their
-        own classes. """
+        """ Factory creates object instances of desired class. Factory is used instead of direct
+        instance creation to allow flexibility in defining what exactly is the class
+        implementation we are going to use.
+
+        Example:
+        A plugin can replace Constituent with its own implementation, and by using
+        katajafactory.get('Constituent')() as constructor you would get this
+        replaced implementation -- if you are working with plugin activated, you'd want all
+        Constituents to be these. If your code would 'import syntax.Constituent' and create
+        'Constituent()', it would cause problems when a plugin that replaces Constituent is active.
+
+        Of course, when you are working within plugin, you can directly import and construct
+        objects, assuming we are not going to have multiple plugins active. (That feature would
+        lead to lots of problems.)
+        """
 
         self.default_models = {}
         self.default_edge_class = None
@@ -59,7 +72,6 @@ class KatajaFactory:
         for class_object in self.default_models:
             role = get_role(class_object)
             self.classes[role] = class_object
-        print(self.classes)
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
         self.base_name_to_plugin_class = {}

@@ -3,6 +3,8 @@ from mgtdbpE.Parser import Parser
 from mgtdbpE.Constituent import Constituent
 from mgtdbpE.ForestKeeper import Document
 from mgtdbpE.KSyntaxConnection import KSyntaxConnection
+import os
+from PyQt5 import QtCore
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -37,6 +39,8 @@ plugin_preferences = {'play_nice': True}
 # existing settings, so see kataja.Preferences to find out what is already there and use unique
 # names.
 
+help_file = 'help.html'
+
 def before_init(main, ctrl, prefs):
     """ This is called when plugin is enabled but before the new classes replace the existing.
     This is rarely needed, usually start_plugin is better place to do initialisations. """
@@ -55,6 +59,7 @@ def start_plugin(main, ctrl, prefs):
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
+
     pass
 
 

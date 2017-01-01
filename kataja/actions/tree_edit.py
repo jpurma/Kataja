@@ -70,8 +70,9 @@ class CloseEmbed(KatajaAction):
         :return: None
         """
         embed = self.get_ui_container()
-        ctrl.ui.remove_ui(embed, fade=True)
-        ctrl.ui.close_active_embed()
+        if embed:
+            ctrl.ui.remove_ui(embed, fade=True)
+            ctrl.ui.close_active_embed()
 
 
 class CreateNewNodeFromText(KatajaAction):

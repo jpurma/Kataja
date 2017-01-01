@@ -147,6 +147,7 @@ class KatajaAction(QtWidgets.QAction):
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
+        self.host_menu = None
         self.undoable = self.k_undoable
         self.tip = tooltip or self.k_tooltip or self.command
         self.disable_undo_and_message = False

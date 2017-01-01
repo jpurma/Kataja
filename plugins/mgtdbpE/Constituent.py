@@ -186,6 +186,7 @@ class Constituent(BaseConstituent):
             leaf = terminals.pop(0)
             c.label = ' '.join(leaf.label)
             c.features = list(reversed(leaf.features))
+            c.secondary_label = ' '.join([str(f) for f in c.features])
             if dnode.features and dnode.features != leaf.features:
                 print('dnode has features: ', dnode.features)
                 print('leaf has features: ', leaf.features)
@@ -206,10 +207,11 @@ class Constituent(BaseConstituent):
                 c.features = list(reversed(dnode.features))
             else:
                 c.features = []
+            c.secondary_label = ' '.join([str(f) for f in c.features])
             if len(parts) > 1:
-                c.label = '●'
+                c.label = '•'
             elif len(parts) == 1:
-                c.label = '○'
+                c.label = '◦'
             else:
                 c.label = ''
             c.parts = parts
@@ -261,3 +263,5 @@ class Constituent(BaseConstituent):
 
     def __hash__(self):
         return hash(self.index_str)
+
+    secondary_label = SavedField("secondary_label")

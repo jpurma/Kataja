@@ -332,23 +332,6 @@ class PrintToFile(KatajaAction):
 #         args = shlex.split(command)
 #         subprocess.Popen(args)  # , cwd =prefs.blender_env_path)
 
-class ReloadPlugin(KatajaAction):
-    k_action_uid = 'reload_plugin'
-    k_command = '&Reload plugins'
-    k_shortcut = 'Ctrl+r'
-    k_undoable = False
-
-    def method(self):
-        """ (not working recently) Try to export as a blender file and run
-        blender render.
-        :return: None
-        """
-
-        key = prefs.active_plugin_name
-        if key:
-            ctrl.main.disable_current_plugin()
-            ctrl.main.enable_plugin(key, reload=True)
-            ctrl.main.load_initial_treeset()
 
 
 class OpenPreferences(KatajaAction):

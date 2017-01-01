@@ -99,3 +99,4 @@ class ToggleFullScreen(KatajaAction):
             ctrl.main.showFullScreen()
             log.info('(Cmd+f) fullscreen')
         ctrl.graph_scene.fit_to_window(force=True)
+

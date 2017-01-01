@@ -43,9 +43,10 @@ class Document(KatajaDocument):
         :param clear: start with empty
         """
         if clear:
-            treelist = []
+            treelist = ['hello']
         else:
-            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or []
+            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or \
+                       ['hello']
 
         # Clear this screen before we start creating a mess
         ctrl.disable_undo() # disable tracking of changes (e.g. undo)

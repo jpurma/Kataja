@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import os
 from collections import OrderedDict
 import logging
 
@@ -50,6 +51,7 @@ from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
+from kataja.ui_widgets.panels.HelpPanel import HelpPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
@@ -75,15 +77,16 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
           {'class': StylePanel, 'name': 'Styles', 'position': 'right'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
-          {'class': ColorWheelPanel, 'name': 'Color theme wheel', 'position': 'right',
-           'folded': True, 'closed': True},
+          #{'class': ColorWheelPanel, 'name': 'Color theme wheel', 'position': 'right',
+          # 'folded': True, 'closed': True},
           {'class': LineOptionsPanel, 'name': 'More edge options', 'position': 'float',
            'closed': True},
           {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
-          {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': True}]
+          {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': True},
+          {'class': HelpPanel, 'name': 'Help', 'position': 'float'}]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
@@ -91,19 +94,26 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                               '---', 'preferences', '---', 'quit'])),
                               ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
                                                        'paste'])),
-                              ('build_menu', ('&Build', ['next_forest', 'previous_forest',
+                              ('trees_menu', ('&Trees', ['next_forest', 'previous_forest',
                                                          'next_derivation_step',
                                                          'prev_derivation_step'])),
-                              ('rules_menu', ('&Rules', ['toggle_label_shape', 'trace_mode',
-                                                         'toggle_feature_display_mode',
-                                                         'merge_order_attribute',
-                                                         'select_order_attribute'])),
-                              ('view_menu', ('&View', ['$visualizations', '---',
-                                                       'switch_view_mode', 'change_colors',
-                                                       'zoom_to_fit', '---',
+                              ('drawing_menu', ('&Drawing', ['$visualizations',
+                                                             '---',
+                                                             'toggle_label_shape',
+                                                             'trace_mode',
+                                                             'toggle_feature_display_mode',
+                                                             'switch_syntax_view_mode',
+                                                             'switch_view_mode',
+                                                             'change_colors',
+                                                             'merge_order_attribute',
+                                                             'select_order_attribute'])),
+                              ('view_menu', ('&View', ['zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
-                              ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
-                                                             'toggle_all_panels', '---'])),
+                              ('windows_menu', ('&Windows', ['$panels', '---',
+                                                             'toggle_all_panels', '---',
+                                                             '$projects'])),
+                              ('plugin_menu', ('&Plugin', ['manage_plugins', 'reload_plugin',
+                                                           '---', '$plugins'])),
                               ('help_menu', ('&Help', ['help']))])
 
 
@@ -145,6 +155,11 @@ class UIManager:
         self.qe_label = None
         self.activity_marker = None
         self.ui_activity_marker = None
+        # These actions are dynamically created and may be needed to be updated
+        self.panel_actions = []
+        self.project_actions = []
+        self.plugin_actions = []
+        self.visualisation_actions = []
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -217,6 +232,28 @@ class UIManager:
         self.active_shape_name = ctrl.settings.cached_edge_type('shape_name', self.active_edge_type)
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
+
+    def set_help_text(self, text, append=False, prepend=False):
+        panel = self.get_panel('HelpPanel')
+        if panel:
+            if append:
+                s = panel.default_text
+                panel.set_text('<br/>'.join((s, text)))
+            elif prepend:
+                s = panel.default_text
+                panel.set_text('<br/>'.join((text, s)))
+            else:
+                panel.set_text(text)
+
+    def set_help_source(self, searchpath, filename):
+        panel = self.get_panel('HelpPanel')
+        if panel:
+            if filename:
+                panel.label.setSearchPaths([searchpath])
+                panel.label.setSource(QtCore.QUrl(filename))
+            else:
+                panel.set_text(panel.default_text)
+                panel.label.setSearchPaths([])
 
     def start_color_dialog(self, receiver, parent, role, initial_color='content1'):
         """ There can be several color dialogs active at same time. Even when
@@ -593,15 +630,27 @@ class UIManager:
         # them later.
         # eg. additional_actions['visualizations'] = ['vis_1','vis_2',
         # 'vis_3'...]
-        vis_actions = []
-        for name, vis in VISUALIZATIONS.items():
-            key = action_key(name)
-            action = kataja.actions.ChangeVisualisation(action_uid=key, command=name, args=[name],
-                                                        shortcut=vis.shortcut)
-            self.actions[key] = action
-            vis_actions.append(key)
 
-        panel_actions = []
+        # $visualisations
+        self.prepare_visualisation_actions()
+        # $panels
+        self.prepare_panel_actions()
+        # $projects
+        self.prepare_project_actions()
+        # $plugins
+        self.prepare_plugin_actions()
+
+        log.info('Prepared %s actions.' % len(self.actions))
+        return {'visualizations': self.visualisation_actions, 'panels': self.panel_actions,
+                'projects': self.project_actions, 'plugins': self.plugin_actions}
+
+    def prepare_panel_actions(self):
+        for action in self.panel_actions:
+            if action.key in self.actions:
+                del self.actions[action.key]
+            if action.host_menu:
+                action.host_menu.removeAction(action)
+        self.panel_actions = []
         for panel_data in PANELS:
             # noinspection PyTypeChecker
             panel_key = panel_data['class'].__name__
@@ -611,10 +660,70 @@ class UIManager:
                                                 command=panel_data['name'],
                                                 args=[panel_key])
             self.actions[key] = action
-            panel_actions.append(key)
+            self.panel_actions.append(action)
 
-        log.info('Prepared %s actions.' % len(self.actions))
-        return {'visualizations': vis_actions, 'panels': panel_actions}
+    def prepare_visualisation_actions(self):
+        for action in self.visualisation_actions:
+            if action.key in self.actions:
+                del self.actions[action.key]
+            if action.host_menu:
+                action.host_menu.removeAction(action)
+        self.visualisation_actions = []
+        for name, vis in VISUALIZATIONS.items():
+            key = action_key(name)
+            action = kataja.actions.ChangeVisualisation(action_uid=key, command=name, args=[name],
+                                                        shortcut=vis.shortcut)
+            self.actions[key] = action
+            self.visualisation_actions.append(action)
+
+    def prepare_project_actions(self):
+        print(self.project_actions)
+        for action in self.project_actions:
+            if action.key in self.actions:
+                del self.actions[action.key]
+            if action.host_menu:
+                action.host_menu.removeAction(action)
+        self.project_actions = []
+        for i, project in enumerate(ctrl.main.forest_keepers):
+            key = 'project_%s' % project.name
+            action = kataja.actions.SwitchProject(action_uid=key,
+                                                  command=project.name,
+                                                  args=[i])
+            self.actions[key] = action
+            action.setChecked(project is ctrl.main.forest_keeper)
+            self.project_actions.append(action)
+
+    def prepare_plugin_actions(self):
+        for action in self.plugin_actions:
+            if action.key in self.actions:
+                del self.actions[action.key]
+            if action.host_menu:
+                action.host_menu.removeAction(action)
+        self.plugin_actions = []
+        if prefs.active_plugin_name:
+
+            key = 'plugin_%s' % prefs.active_plugin_name
+            action = kataja.actions.SwitchPlugin(action_uid=key,
+                                                 command=prefs.active_plugin_name,
+                                                 args=[prefs.active_plugin_name])
+            self.actions[key] = action
+            action.setChecked(True)
+            self.project_actions.append(action)
+
+    def update_projects_menu(self):
+        win_menu = self._top_menus['windows_menu']
+        self.prepare_project_actions()
+        for action in self.project_actions:
+            win_menu.addAction(action)
+            action.host_menu = win_menu
+
+    def update_plugin_menu(self):
+        plugin_menu = self._top_menus['plugin_menu']
+        self.prepare_plugin_actions()
+        for action in self.plugin_actions:
+            plugin_menu.addAction(action)
+            action.host_menu = plugin_menu
+
 
     def get_action(self, key) -> KatajaAction:
         """ Returns action method for key, None if no such action
@@ -648,8 +757,13 @@ class UIManager:
                     add_menu(new_menu, item[0], item[1])
                 elif item == '---':
                     new_menu.addSeparator()
+                elif isinstance(item, KatajaAction):
+                    new_menu.addAction(item)
+                    item.host_menu = new_menu
                 else:
-                    new_menu.addAction(self.actions[item])
+                    action = self.actions[item]
+                    new_menu.addAction(action)
+                    action.host_menu = new_menu
 
             parent.addMenu(new_menu)
             return new_menu
@@ -672,35 +786,17 @@ class UIManager:
 
         # replace '$names' with dynamic actions
         expanded_menu_structure = OrderedDict()
+        print('additional actions: ', additional_actions)
+        print('menu_structure: ', menu_structure)
         for key, data in menu_structure.items():
             expanded_menu_structure[key] = expand_list(*data)
 
         # build menus
         self._top_menus = {}
 
-
         for key, data in expanded_menu_structure.items():
             menu = add_menu(self.main.menuBar(), *data)
             self._top_menus[key] = menu
-
-    def update_projects_menu(self, projects, current_project):
-
-        win_menu = self._top_menus['windows_menu']
-        last_separator = 0
-        for i, item in enumerate(win_menu.actions()):
-            if item.isSeparator():
-                last_separator = i
-        for action in win_menu.actions()[last_separator+1:]:
-            del self.actions[action.key]
-            win_menu.removeAction(action)
-        for i, project in enumerate(projects):
-            key = 'project_%s' % project.name
-            action = kataja.actions.SwitchProject(action_uid=key,
-                                                  command=project.name,
-                                                  args=[i])
-            self.actions[key] = action
-            action.setChecked(project is current_project)
-            win_menu.addAction(action)
 
     # ###################################################################
     #                           PANELS

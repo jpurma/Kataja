@@ -2,6 +2,7 @@
 
 from kataja.singletons import ctrl, prefs
 from kataja.KatajaAction import KatajaAction
+from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
 # ==== Class variables for KatajaActions:
@@ -40,6 +41,60 @@ class SetPluginsPath(KatajaAction):
         prefs.plugins_path = path
         return "Plugin path set to %s" % path
 
+class ManagePlugins(KatajaAction):
+    k_action_uid = 'manage_plugins'
+    k_command = 'Manage plugins...'
+    k_undoable = False
+    k_tooltip = 'View available plugins and enable or disable them'
+
+    def method(self):
+        """ Opens the large preferences dialog and switch to plugins tab, as it has the UI
+        for managing plugins.
+        :return: None
+        """
+        if not ctrl.ui.preferences_dialog:
+            ctrl.ui.preferences_dialog = PreferencesDialog(ctrl.main)
+        ctrl.ui.preferences_dialog.open()
+        i = prefs._tab_order.index('Plugins')
+        ctrl.ui.preferences_dialog.listwidget.setCurrentRow(i)
+        ctrl.ui.preferences_dialog.stackwidget.setCurrentIndex(i)
+
+class SwitchPlugin(KatajaAction):
+    k_action_uid = 'switch_plugin'
+    k_dynamic = True
+    k_checkable = True
+    k_undoable = False
+    k_exclusive = True
+
+    def method(self, index):
+        """ Switch to another project. The action description is generated dynamically,
+        not in code below.
+        :param index:
+        """
+        pass
+        #project = ctrl.main.switch_project(index)
+        #log.info("Switched to project '%s'" % project.name)
+
+
+class ReloadPlugin(KatajaAction):
+    k_action_uid = 'reload_plugin'
+    k_command = '&Reload plugins'
+    k_shortcut = 'Ctrl+r'
+    k_undoable = False
+
+    def method(self):
+        """ Reload currently active plugin
+        :return: None
+        """
+
+        key = prefs.active_plugin_name
+        if key:
+            ctrl.main.disable_current_plugin()
+            ctrl.main.enable_plugin(key, reload=True)
+            ctrl.main.load_initial_treeset()
+
+    def enabler(self):
+        return prefs.active_plugin_name
 
 class TogglePlugin(KatajaAction):
     k_action_uid = 'toggle_plugin'
