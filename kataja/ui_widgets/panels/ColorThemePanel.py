@@ -38,20 +38,23 @@ class ColorPanel(Panel):
         ocm = ctrl.cm.ordered_color_modes
         self.selector_items = [(c['name'], key) for key, c in ocm.items()]
         hlayout = QtWidgets.QHBoxLayout()
+        f = qt_prefs.get_font(g.MAIN_FONT)
 
         self.selector = SelectionBox(self)
         self.selector.add_items(self.selector_items)
         self.ui_manager.connect_element_to_action(self.selector, 'set_color_mode')
         hlayout.addWidget(self.selector)
         self.randomize = QtWidgets.QPushButton('⚁⚅')
-        self.randomize.setFont(qt_prefs.fonts[g.MAIN_FONT])
+        self.randomize.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
+                                                                              f.pointSize()))
         self.randomize.setFixedSize(40, 20)
         self.randomize.setEnabled(False)
         ctrl.ui.connect_element_to_action(self.randomize,
                                           'randomize_palette')
         hlayout.addWidget(self.randomize, 1, QtCore.Qt.AlignRight)
         self.store_favorite = QtWidgets.QPushButton('★')
-        self.store_favorite.setFont(qt_prefs.fonts[g.MAIN_FONT])
+        self.store_favorite.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
+                                                                                   f.pointSize()))
         self.store_favorite.setFixedSize(26, 20)
         self.store_favorite.setEnabled(False)
         ctrl.ui.connect_element_to_action(self.store_favorite,

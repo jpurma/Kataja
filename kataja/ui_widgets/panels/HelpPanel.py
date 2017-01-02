@@ -8,10 +8,6 @@ from kataja.ui_support.panel_utils import text_button
 
 __author__ = 'purma'
 
-stylesheet = """
-HelpPanel {font-family: "Helvetica Neue"; font-size: 12px;}
-"""
-
 
 class HelpPanel(Panel):
     """ Browse and build the lexicon """
@@ -42,9 +38,9 @@ class HelpPanel(Panel):
         self.label = QtWidgets.QTextBrowser()
         layout.setContentsMargins(0, 0, 0, 0)
         self.label.setContentsMargins(0, 0, 0, 0)
+        self.label.setStyleSheet('font-size: 12px')
         self.label.setMinimumWidth(200)
         self.label.setFrameStyle(QtWidgets.QFrame.NoFrame)
-        self.label.setStyleSheet(stylesheet)
         p = self.label.palette()
         p.setColor(QtGui.QPalette.Base, ctrl.cm.transparent)
         self.label.setPalette(p)

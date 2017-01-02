@@ -648,7 +648,7 @@ class QtPreferences:
             ui_font.setPointSize(fonts_dict[UI_FONT][2])
             console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
 
-    def get_font(self, name):
+    def get_font(self, name) -> QtGui.QFont:
         """
         :param name:
         :return: QFont

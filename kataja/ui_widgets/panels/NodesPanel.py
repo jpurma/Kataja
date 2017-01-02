@@ -21,7 +21,8 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
         self.key = key
         self.setPalette(ctrl.cm.palette_from_key(color_key))
-        self.setFont(qt_prefs.get_font(font_key))
+        f = qt_prefs.get_font(font_key)
+        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
         self.add_button = icon_button(ctrl.ui, self, hlayout,
                                       icon=qt_prefs.add_icon,
                                       text='Add ' + name,
@@ -46,7 +47,8 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
         self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button.update_colors()
-        self.setFont(qt_prefs.get_font(font_key))
+        f = qt_prefs.get_font(font_key)
+        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
 
     def update_frame(self):
         node_class = classes.nodes.get(self.key, None)

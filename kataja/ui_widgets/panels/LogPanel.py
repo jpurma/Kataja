@@ -8,9 +8,6 @@ from kataja.singletons import ctrl, log
 
 __author__ = 'purma'
 
-stylesheet = """
-LogPanel {font-family: Menlo; font-size: 10px;}
-"""
 
 class LogPanel(Panel):
     """ Dump window """
@@ -27,7 +24,7 @@ class LogPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)
-        inner.setStyleSheet(stylesheet)
+        inner.setStyleSheet('font-family: "Menlo"; font-size: 10px;')
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         inner.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -54,5 +51,6 @@ class LogPanel(Panel):
             self.resize(QtCore.QSize(480, 480))
 
     def update(self, *args):
-        #self.widget().setFont(qt_prefs.get_font(g.CONSOLE_FONT))
+        f = qt_prefs.get_font(g.CONSOLE_FONT)
+        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
         super().update(*args)

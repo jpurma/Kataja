@@ -29,7 +29,8 @@ class ModeLabel(UIWidget, PanelButton):
         f.setPointSize(f.pointSize() * 1.2)
         fm = QtGui.QFontMetrics(f)
         mw = max([fm.width(text) for text in text_options])
-        self.setFont(f)
+        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (
+            f.family(), int(f.pointSize())))
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self.setFlat(True)
         self.setMinimumWidth(mw + 12)

@@ -125,9 +125,9 @@ class SymbolPanel(Panel):
         self.symlist.setMouseTracking(True)
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
         self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
-        f = QtGui.QFont(qt_prefs.fonts[g.MAIN_FONT])
-        f.setPointSize(f.pointSize() * 1.5)
-        self.symlist.setFont(f)
+        f = qt_prefs.get_font(g.MAIN_FONT)
+        self.symlist.setStyleSheet('font-family: "%s"; font-size: %spx;' % (
+            f.family(), int(f.pointSize() * 1.5)))
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
         layout.addWidget(self.symlist)
@@ -140,7 +140,6 @@ class SymbolPanel(Panel):
         inner.setLayout(layout)
         self.tables = {}
         keys = list(latex_to_unicode.keys())
-        log.info('this many symbols: %s ' % len(keys))
         for name in table_names:
             self.tables[name] = []
         keys.sort()
@@ -152,8 +151,6 @@ class SymbolPanel(Panel):
         self.tables['more arrows'] = more_arrows
         self.tables['common'] = common
         # self.tables['arrows'] = arrows
-
-
         self.prepare_symbols('common')
         self.setWidget(inner)
         self.finish_init()

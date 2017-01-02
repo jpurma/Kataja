@@ -17,7 +17,6 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     label = QtWidgets.QLabel(text, parent=parent)
     if palette:
         label.setPalette(palette)
-    label.setFont(qt_prefs.get_font(g.UI_FONT))
     label.setBuddy(buddy)
     label.setStatusTip(tooltip)
     if ctrl.main.use_tooltips:
