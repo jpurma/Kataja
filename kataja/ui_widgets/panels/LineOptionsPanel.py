@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtCore
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, classes
 from kataja.utils import time_me
 from kataja.saved.Edge import Edge
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button, \
-    knob, KnobDial, checkbox, radiobutton
+    knob, KnobDial, checkbox, radiobutton, selector, shape_selector, color_selector
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 
@@ -36,10 +36,33 @@ class LineOptionsPanel(Panel):
         spac = 8
         ui = self.ui_manager
         hlayout = box_row(layout)
-        self.reset_adjustment = mini_button(ui, self, hlayout, text='Reset arc adjustments',
-                                            action='reset_control_points', width=-1)
-        self.reset_all = mini_button(ui, self, hlayout, text='Reset edge settings',
-                                     action='reset_edge_settings', width=-1)
+
+        self.scope_selector = selector(ui, self, hlayout,
+                                       data=[],
+                                       action='style_scope',
+                                       label='Style for')
+        self.scope_selector.setMinimumWidth(96)
+        layout.addSpacing(spac)
+
+        hlayout = box_row(layout)
+        self.shape_selector = shape_selector(ui, self, hlayout,
+                                             action='change_edge_shape',
+                                             label='Shape')
+
+        self.edge_color_selector = color_selector(ui, self, hlayout,
+                                                  action='change_edge_color',
+                                                  label='Color', role='edge')
+
+        # Line thickness
+        hlayout = box_row(layout)
+        self.fill_button = checkbox(ui, self, hlayout, label='Fill',
+                                    action='edge_shape_fill')
+
+        self.line_button = checkbox(ui, self, hlayout, label='Outline',
+                                    action='edge_shape_line')
+        self.thickness_spinbox = decimal_spinbox(ui, self, hlayout,
+                                                 label='Thickness', range_min=0.0, range_max=10.0,
+                                                 step=0.1, action='edge_thickness', suffix=' px')
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
@@ -77,17 +100,6 @@ class LineOptionsPanel(Panel):
         self.arc_reference_buttons.addButton(self.fixed_arc_button)
         self.arc_reference_buttons.addButton(self.relative_arc_button)
 
-        # Line thickness
-        layout.addSpacing(spac)
-        hlayout = box_row(layout)
-        self.fill_button = checkbox(ui, self, hlayout, label='Fill',
-                                    action='edge_shape_fill')
-
-        self.line_button = checkbox(ui, self, hlayout, label='Outline',
-                                    action='edge_shape_line')
-        self.thickness_spinbox = decimal_spinbox(ui, self, hlayout,
-                                                 label='Thickness', range_min=0.0, range_max=10.0,
-                                                 step=0.1, action='edge_thickness', suffix=' px')
 
         # Leaf size
         hlayout = box_row(layout)
@@ -101,6 +113,13 @@ class LineOptionsPanel(Panel):
                                               range_max=20.0,
                                               step=0.5,
                                               action='leaf_shape_y', suffix=' px')
+        layout.addSpacing(spac)
+        hlayout = box_row(layout)
+        self.reset_all = mini_button(ui, self, hlayout, text='Reset edge settings',
+                                     action='reset_edge_settings', width=-1)
+        self.reset_adjustment = mini_button(ui, self, hlayout,
+                                            text='Reset curves',
+                                            action='reset_control_points', width=-1)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
@@ -116,21 +135,31 @@ class LineOptionsPanel(Panel):
         """
         if not ctrl.forest:
             return
-        if ctrl.ui.scope_is_selection:
-            ec = ctrl.settings.get_edge_setting('edge_count', edge_type=ctrl.ui.active_edge_type)
-            if ec:
-                if ec == 1:
-                    self.set_title('Settings for selected edge')
-                else:
-                    self.set_title('Settings for selected edges')
-            else:
-                self.set_title('Edge settings - No edge selected')
-        else:
-            edge_type = ctrl.ui.active_edge_type
-            edge_name_plural = edge_names.get(edge_type, '? edges')[1].lower()
-            self.set_title('Settings for all ' + edge_name_plural)
+        self.update_scope_selector_options()
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
+
+    def update_scope_selector_options(self):
+        """ Redraw scope selector, show only scopes that are used in this
+        forest """
+        items = [('Edges in current selection', g.SELECTION)]
+        edge_types = []
+        for node_type in classes.node_types_order:
+            default_edge = classes.nodes[node_type].default_edge
+            if default_edge not in edge_types:
+                edge_types.append(default_edge)
+                if default_edge in edge_names:
+                    edge_name_plural = edge_names[default_edge][1]
+                else:
+                    edge_name_plural = default_edge
+                items.append((edge_name_plural, node_type))
+        self.scope_selector.add_items(items)
+
+    def update_selection(self):
+        self.update_scope_selector_options()
+        self.scope_selector.select_by_data(ctrl.ui.active_scope)
+
+
 
     def initial_position(self, next_to=''):
         """

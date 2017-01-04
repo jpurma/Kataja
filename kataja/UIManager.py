@@ -40,7 +40,6 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_support.MyColorDialog import MyColorDialog
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_support.TopBarButtons import TopBarButtons
@@ -256,32 +255,6 @@ class UIManager:
                 panel.set_text(panel.default_text)
                 panel.label.setSearchPaths([])
 
-    def start_color_dialog(self, receiver, parent, role, initial_color='content1'):
-        """ There can be several color dialogs active at same time. Even when
-        closed they are kept in the color_dialogs -dict.
-
-        Color dialogs store their role (e.g. the field they are connected to)
-         in 'role' variable. When they report color change, the role redirects
-         the change to correct field.
-
-        :param receiver:
-        :param parent:
-        :param role:
-        :param initial_color:
-        :return:
-        """
-        if role in self.color_dialogs:
-            cd = self.color_dialogs[role]
-            cd.setCurrentColor(ctrl.cm.get(initial_color))
-        else:
-            cd = MyColorDialog(parent, role, initial_color)
-            self.color_dialogs[role] = cd
-        cd.show()
-        receiver.update()
-
-    def update_color_dialog(self, role, color_id):
-        if role in self.color_dialogs:
-            self.color_dialogs[role].setCurrentColor(ctrl.cm.get(color_id))
 
     def start_font_dialog(self, parent, role, initial_font=None):
         if not initial_font:

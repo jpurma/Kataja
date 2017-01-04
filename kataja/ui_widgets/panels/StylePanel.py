@@ -32,11 +32,8 @@ class StylePanel(Panel):
         self._edges_in_selection = []
         self.cached_node_types = set()
         self.current_color = ctrl.cm.drawing()
-        self.cached_node_color = 'content1'
-        self.cached_edge_color = 'content1'
         self.cached_font_id = 'main_font'
-        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed',
-                          'forest_changed', 'scope_changed', 'palette_changed']
+        self.watchlist = ['selection_changed', 'forest_changed', 'scope_changed']
         # Other items may be temporarily added, they are defined as
         # class.variables
         ui = self.ui_manager
@@ -80,7 +77,7 @@ class StylePanel(Panel):
                                            label='Text style')
 
         self.node_color_selector = color_selector(ui, self.style_widgets, hlayout,
-                                                  action='change_node_color')
+                                                  action='change_node_color', role='node')
 
         self.open_font_dialog = icon_button(ui, self.style_widgets, hlayout,
                                             icon=qt_prefs.font_icon,
@@ -94,7 +91,7 @@ class StylePanel(Panel):
                                              label='Edge style')
 
         self.edge_color_selector = color_selector(ui, self.style_widgets, hlayout,
-                                                  action='change_edge_color')
+                                                  action='change_edge_color', role='edge')
 
         self.edge_options = icon_button(ui, self.style_widgets, hlayout,
                                         icon=qt_prefs.settings_icon,
@@ -153,36 +150,6 @@ class StylePanel(Panel):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
             self.font_selector.select_by_data(font_id)
 
-    def receive_color_from_color_dialog(self, role, color):
-        """ Replace color in palette with new color
-        :param role: 'node' or 'edge'
-        :param color:
-        :return:
-        """
-        if role == 'node':
-            color_key = self.cached_node_color
-            ctrl.cm.d[color_key] = color
-            ctrl.main.trigger_but_suppress_undo('change_node_color')
-        else:
-            color_key = self.cached_edge_color
-            ctrl.cm.d[color_key] = color
-            ctrl.main.trigger_but_suppress_undo('change_edge_color')
-
-    def update_node_color_selector(self, color_key):
-        s = self.node_color_selector
-        self.cached_node_color = color_key
-        # launch a color dialog if color_id is unknown or if clicking
-        # already selected color
-        s.select_by_data(color_key)
-        s.update()
-
-    def update_edge_color_selector(self, color_key):
-        s = self.edge_color_selector
-        self.cached_edge_color = color_key
-        s.select_by_data(color_key)
-        s.update()
-        self.shape_selector.update()
-
     def update_panel(self):
         """ Panel update should be necessary when changing ctrl.selection or
         after the trees has otherwise changed.
@@ -209,37 +176,28 @@ class StylePanel(Panel):
          edges, they cannot be shown in the color selector. They can still be
          overridden with new selection.
         """
-        if ctrl.ui.scope_is_selection:
+        print('update fields called')
+        if ctrl.ui.scope_is_selection and False:
             no_node = True
             no_edge = True
             for item in ctrl.selected:
                 if no_node and isinstance(item, Node):
                     no_node = False
-                    self.cached_node_color = item.get_color_id()
-                    set_value(self.node_color_selector, self.cached_node_color)
                     self.cached_font_id = item.get_font_id()
                     set_value(self.font_selector, self.cached_font_id)
                 elif no_edge and isinstance(item, Edge):
                     no_edge = False
-                    self.cached_edge_color = item.color_id
-                    set_value(self.edge_color_selector, item.color_id)
                     set_value(self.shape_selector, item.shape_name)
                 elif not (no_edge or no_node):
                     break
-        elif ctrl.forest:
+        elif ctrl.forest and False:
             node_type = ctrl.ui.active_node_type
             edge_type = ctrl.ui.active_edge_type
-            node_color = ctrl.settings.get_node_setting('color_id', node_type=node_type)
             node_font = ctrl.settings.get_node_setting('font_id', node_type=node_type)
-            edge_color = ctrl.settings.get_edge_setting('color_id', edge_type=edge_type)
             edge_shape = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
             # Color selector - show
-            set_value(self.node_color_selector, node_color)
             set_value(self.font_selector, node_font)
-            set_value(self.edge_color_selector, edge_color)
             set_value(self.shape_selector, edge_shape)
-            self.cached_node_color = node_color
-            self.cached_edge_color = edge_color
             self.cached_font_id = node_font
 
     def watch_alerted(self, obj, signal, field_name, value):
@@ -264,5 +222,3 @@ class StylePanel(Panel):
             self.update_fields()
         elif signal == 'scope_changed':
             self.update_fields()
-        elif signal == 'palette_changed':
-            self.shape_selector.update_colors()

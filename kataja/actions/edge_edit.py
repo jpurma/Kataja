@@ -5,6 +5,7 @@ from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
 from kataja.saved.Edge import Edge
 from kataja.Settings import FOREST
+from kataja.ui_support.ColorSelector import ColorDialogForSelector
 
 from kataja.singletons import ctrl, log
 
@@ -33,6 +34,7 @@ from kataja.singletons import ctrl, log
 # enabler : if enabler is defined, the action is active (also reflected into its UI elements) only
 #           when enabler returns True
 #
+
 
 class EditEdgeLabelEnterText(KatajaAction):
     k_action_uid = 'edit_edge_label_enter_text'
@@ -210,22 +212,34 @@ class ChangeEdgeColor(KatajaAction):
         """ Change edge shape for selection or in currently active edge type.
         :return: None
         """
-        panel = ctrl.ui.get_panel('StylePanel')
-        color_key = panel.edge_color_selector.currentData()
-        panel.edge_color_selector.model().selected_color = color_key
+        selector = self.sender()
+        if isinstance(selector, ColorDialogForSelector):
+            selector = selector.parentWidget()
+        color_key = selector.currentData()
         color = ctrl.cm.get(color_key)
         # launch a color dialog if color_id is unknown or clicking
         # already selected color
-        prev_color = panel.cached_edge_color
+        update = False
+        start = False
         if not color:
             color = ctrl.cm.get('content1')
             ctrl.cm.d[color_key] = color
-            ctrl.ui.start_color_dialog(panel.edge_color_selector, panel, 'edge', color_key)
-        elif prev_color == color_key:
-            ctrl.ui.start_color_dialog(panel.edge_color_selector, panel, 'edge', color_key)
-        else:
-            ctrl.ui.update_color_dialog('edge', color_key)
-        panel.update_edge_color_selector(color_key)
+            start = True
+        elif selector.selected_color == color_key:
+            start = True
+        elif selector.color_dialog:
+            update = True
+        if start:
+            if selector.color_dialog:
+                selector.update_color_dialog(color_key)
+                selector.color_dialog.show()
+            else:
+                selector.start_color_dialog(color_key)
+        elif update:
+            selector.update_color_dialog(color_key)
+
+        selector.selected_color = color_key
+
         # Update color for selected edges
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
@@ -238,6 +252,7 @@ class ChangeEdgeColor(KatajaAction):
                                            edge_type=ctrl.ui.active_edge_type, level=FOREST)
             for edge in ctrl.forest.edges.values():
                 edge.update()
+        ctrl.call_watchers(self, 'active_edge_color_changed')  # shape_selector needs this
         if color_key:
             log.info('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
 

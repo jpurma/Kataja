@@ -3,6 +3,7 @@ from kataja.Settings import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log
 from kataja.saved.movables.Node import Node
+from kataja.ui_support.ColorSelector import ColorDialogForSelector
 
 
 # ==== Class variables for KatajaActions:
@@ -248,22 +249,34 @@ class ChangeNodeColor(KatajaAction):
         """ Change color for selection or in currently active edge type.
         :return: None
         """
-        panel = ctrl.ui.get_panel('StylePanel')
-        color_key = panel.node_color_selector.currentData()
-        panel.node_color_selector.model().selected_color = color_key
+        selector = self.sender()
+        if isinstance(selector, ColorDialogForSelector):
+            selector = selector.parentWidget()
+        color_key = selector.currentData()
         color = ctrl.cm.get(color_key)
         # launch a color dialog if color_id is unknown or clicking
         # already selected color
-        prev_color = panel.cached_node_color
+        update = False
+        start = False
         if not color:
             color = ctrl.cm.get('content1')
             ctrl.cm.d[color_key] = color
-            ctrl.ui.start_color_dialog(panel.node_color_selector, panel, 'node', color_key)
-        elif prev_color == color_key:
-            ctrl.ui.start_color_dialog(panel.node_color_selector, panel, 'node', color_key)
-        else:
-            ctrl.ui.update_color_dialog('node', color_key)
-        panel.update_node_color_selector(color_key)
+            start = True
+        elif selector.selected_color == color_key:
+            start = True
+        elif selector.color_dialog:
+            update = True
+        if start:
+            if selector.color_dialog:
+                selector.update_color_dialog(color_key)
+                selector.color_dialog.show()
+            else:
+                selector.start_color_dialog(color_key)
+        elif update:
+            selector.update_color_dialog(color_key)
+
+        selector.selected_color = color_key
+
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:

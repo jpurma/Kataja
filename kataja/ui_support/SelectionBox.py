@@ -28,13 +28,13 @@ class SelectionBox(QtWidgets.QComboBox):
     def add_items(self, values):
         self.uses_data = True
         self.clear()
-        for text in values:
-            if isinstance(text, tuple):
-                text, data = text
+        for value in values:
+            if isinstance(value, tuple):
+                text, data = value
                 self.addItem(text, data)
             else:
                 self.uses_data = False
-                self.addItem(text)
+                self.addItem(value)
 
     def select_by_text(self, text):
         self.setCurrentText(text)

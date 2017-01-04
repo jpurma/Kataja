@@ -345,16 +345,18 @@ def font_selector(ui_manager, parent, layout, action='', label=''):
     return selector
 
 
-def color_selector(ui_manager, parent, layout, action='', label=''):
+def color_selector(ui_manager, parent, layout, action='', label='', role='node'):
     """
 
     :param ui_manager:
     :param parent:
     :param layout:
     :param action:
+    :param label:
+    :param role: 'node', 'edge' or 'group'
     :return:
     """
-    selector = ColorSelector(parent)
+    selector = ColorSelector(parent, role)
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
