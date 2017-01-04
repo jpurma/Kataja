@@ -298,7 +298,7 @@ class ChangeColors(KatajaAction):
             color_panel.show()
         else:
             ctrl.settings.set('hsv', None, level=FOREST)
-            ctrl.forest.update_colors()
+            ctrl.main.update_colors()
             ctrl.main.activateWindow()
             # self.ui_support.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s,
             #  l))

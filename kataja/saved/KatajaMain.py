@@ -65,7 +65,7 @@ from kataja.visualizations.available import VISUALIZATIONS
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 stylesheet = """
-QWidget {font-family: "Helvetica Neue"; font-size: 10px;}
+QWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
@@ -74,13 +74,19 @@ sub sup {font-size: 8pt; vertical-align: sup}
 sup sup {font-size: 8pt; vertical-align: sup}
 EmbeddedMultibutton:disabled {text-decoration: line-through; color: gray;}
 EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
-ModeLabel {border: 1px transparent none}
+ModeLabel {border: 1px transparent none; color: %(ui)s; font-family: "%(ui_font)s";
+           font-size: %(ui_font_larger)spx}
 ModeLabel:hover {border: 1px solid %(ui)s; border-radius: 3}
 ModeLabel:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s; border-radius: 3}
 ModeLabel:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; border-radius: 3;
-color: %(paper)s}
+                          color: %(paper)s}
 ModeLabel:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
-color: %(ui_lighter)s}
+                         color: %(ui_lighter)s}
+PanelButton {border: 1px transparent none}
+PanelButton:hover {border: 1px solid %(ui)s; border-radius: 3}
+PanelButton:pressed {border: 2px solid %(ui_lighter)s; background-color: %(paper)s;
+                     border-radius: 3}
+PanelButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 """
 
 
@@ -121,7 +127,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ctrl.late_init(self)
         classes.late_init()
         prefs.import_node_classes(classes)
-        self.syntax = SyntaxConnection(classes)
+        self.syntax = SyntaxConnection()
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
@@ -131,6 +137,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
+        ctrl.add_watcher('ui_font_changed', self)
         self.ui_manager = UIManager(self)
         self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
@@ -142,7 +149,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest = Forest()
         self.settings_manager.set_forest(self.forest)
         self.update_style_sheet()
-        self.forest.update_colors()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
@@ -170,9 +176,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def update_style_sheet(self):
         c = ctrl.cm.drawing()
         ui = ctrl.cm.ui()
+        f = qt_prefs.get_font(g.UI_FONT)
         self.setStyleSheet(stylesheet % {'draw': c.name(), 'lighter': c.lighter().name(),
                                          'paper': ctrl.cm.paper().name(),
-                                         'ui': ui.name(), 'ui_lighter': ui.lighter().name()})
+                                         'ui': ui.name(), 'ui_lighter': ui.lighter().name(),
+                                         'ui_font': f.family(), 'ui_font_size': f.pointSize(),
+                                         'ui_font_larger': int(f.pointSize() * 1.2)})
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
@@ -472,7 +481,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         if mode != ctrl.settings.get('color_mode') or force:
             ctrl.settings.set('color_mode', mode, level=DOCUMENT)
-            self.forest.update_colors()
+            self.update_colors()
 
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
@@ -630,6 +639,36 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         len(str(savedata)), len(savedata)))
         # print(savedata)
         return savedata
+
+    def update_colors(self, randomise=False):
+        cm = self.color_manager
+        old_gradient_base = cm.paper()
+        cm.update_colors(randomise=randomise)
+        self.app.setPalette(cm.get_qt_palette())
+        self.update_style_sheet()
+        ctrl.call_watchers(self, 'palette_changed')
+        if cm.gradient:
+            if old_gradient_base != cm.paper():
+                self.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
+            else:
+                self.graph_scene.setBackgroundBrush(cm.gradient)
+        else:
+            self.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'ui_font_changed':
+            self.update_style_sheet()
 
     # ############## #
     #                #

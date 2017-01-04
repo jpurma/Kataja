@@ -60,7 +60,7 @@ class Document(KatajaDocument):
             sentence = line.strip()
             if (not sentence) or sentence.startswith('#'):
                 continue
-            syn = classes.get('SyntaxConnection')(classes)
+            syn = classes.get('SyntaxConnection')()
             syn.sentence = sentence
             syn.lexicon = grammar
             forest = Forest(gloss_text=sentence, syntax=syn)

@@ -442,10 +442,10 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.main.redraw()
 
     def resize_ui_font(self):
+
         qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)
-        ctrl.main.app.setFont(qt_prefs.get_font(g.UI_FONT))
+        ctrl.call_watchers(self, 'ui_font_changed')
         ctrl.ui.redraw_panels()
-        self.update()
 
     def update_pens(self):
         """

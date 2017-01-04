@@ -30,9 +30,6 @@ class ActivityMarker(QtWidgets.QGraphicsRectItem, UIGraphicsItem):
         """ stay always in initial position """
         pass
 
-    def update_colors(self):
-        """ Uses available accent colors """
-        self.setBrush(ctrl.cm.get('accent%s' % str(self.role + 1)))
 
 
 

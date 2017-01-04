@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.globals import MAIN_FONT
+from kataja.globals import UI_FONT
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 
@@ -38,7 +38,11 @@ class HelpPanel(Panel):
         self.label = QtWidgets.QTextBrowser()
         layout.setContentsMargins(0, 0, 0, 0)
         self.label.setContentsMargins(0, 0, 0, 0)
-        self.label.setStyleSheet('font-size: 12px')
+        f = qt_prefs.get_font(UI_FONT)
+        point_size = f.pointSize()
+        if point_size < 14:
+            point_size = 12
+        self.label.setStyleSheet('font-size: %spx;' % point_size)
         self.label.setMinimumWidth(200)
         self.label.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.label.palette()
@@ -47,6 +51,7 @@ class HelpPanel(Panel):
         layout.addWidget(self.label)
         inner.setLayout(layout)
         self.setWidget(inner)
+        self.watchlist = ['ui_font_changed']
         self.set_text(HelpPanel.default_text)
         self.finish_init()
         ctrl.graph_view.activateWindow()
@@ -57,7 +62,6 @@ class HelpPanel(Panel):
 
     def text(self):
         return self.label.toHtml()
-
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -71,6 +75,10 @@ class HelpPanel(Panel):
         :param value: value given to the field
         :return:
         """
-        if signal == 'forest_changed':
-            self.prepare_lexicon()
+        if signal == 'ui_font_changed':
+            f = qt_prefs.get_font(UI_FONT)
+            point_size = f.pointSize()
+            if point_size < 14:
+                point_size = 12
+            self.label.setStyleSheet('font-size: %spx;' % point_size)
 

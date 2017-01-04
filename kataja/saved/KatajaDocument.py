@@ -171,6 +171,8 @@ class KatajaDocument(SavedObject):
         comments = []
         started_forest = False
 
+        syntax_class = classes.get('SyntaxConnection')
+
         for line in treelist:
             line = line.strip()
             #line.split('=', 1)
@@ -193,7 +195,7 @@ class KatajaDocument(SavedObject):
                     gloss_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
-                syn = classes.get('SyntaxConnection')(classes)
+                syn = syntax_class()
                 syn.sentence = buildstring
                 syn.lexicon = definitions
                 forest = Forest(gloss_text=gloss_text,
@@ -212,7 +214,7 @@ class KatajaDocument(SavedObject):
             elif line:
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added
-            syn = classes.get('SyntaxConnection')(classes)
+            syn = syntax_class()
             syn.sentence = buildstring
             syn.lexicon = definitions
             forest = Forest(gloss_text=gloss_text,
@@ -220,7 +222,7 @@ class KatajaDocument(SavedObject):
                             syntax=syn)
             self.forests.append(forest)
         if not self.forests:
-            syn = classes.get('SyntaxConnection')(classes)
+            syn = syntax_class()
             forest = Forest(gloss_text='',
                             comments=[],
                             syntax=syn)

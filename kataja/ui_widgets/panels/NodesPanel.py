@@ -43,12 +43,8 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
     def update_colors(self):
         color_key = ctrl.settings.get_node_setting('color_id', node_type=self.key)
-        font_key = ctrl.settings.get_node_setting('font_id', node_type=self.key)
-
         self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button.update_colors()
-        f = qt_prefs.get_font(font_key)
-        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
 
     def update_frame(self):
         node_class = classes.nodes.get(self.key, None)
@@ -99,7 +95,8 @@ class NodesPanel(Panel):
         inner.setMinimumWidth(160)
         inner.setMaximumWidth(220)
         inner.setMaximumHeight(140)
-        self.watchlist = ['forest_changed', 'view_mode_changed', 'edit_mode_changed']
+        self.watchlist = ['forest_changed', 'view_mode_changed', 'edit_mode_changed',
+                          'palette_changed']
 
         #inner.setMinimumHeight(120)
         #inner.setMaximumHeight(150)
@@ -154,3 +151,5 @@ class NodesPanel(Panel):
             self.update_panel()
         elif signal == 'forest_changed':
             self.update_panel()
+        elif signal == 'palette_changed':
+            self.update_colors()

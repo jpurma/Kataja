@@ -387,10 +387,10 @@ class Controller:
     def call_watchers(self, obj, signal, field_name=None, value=None):
         """ Alert (UI) objects that are watching for changes for given field
         in given object
-        :param obj:
-        :param signal:
-        :param field_name
-        :param value:
+        :param obj: object that is sending the signal
+        :param signal: str to identify what kind of signal is sent
+        :param field_name: affected field name (optional)
+        :param value: new value for field (optional)
         :return:
         """
         if not self.watchers_disabled:

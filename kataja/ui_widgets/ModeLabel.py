@@ -5,16 +5,6 @@ from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
 from kataja.ui_widgets.OverlayButton import PanelButton
 
-style_sheet = """
-ModeLabel {border: 1px transparent none}
-:hover {border: 1px solid %(draw)s; border-radius: 3}
-:pressed {border: 1px solid %(lighter)s; background-color: %(paper)s; border-radius: 3}
-:checked:!hover {border: 1px solid %(paper)s; background-color: %(draw)s; border-radius: 3;
-color: %(paper)s}
-:checked:hover {border-color: %(lighter)s; background-color: %(draw)s; border-radius: 3;
-color: %(lighter)s}
-"""
-
 
 class ModeLabel(UIWidget, PanelButton):
 
@@ -25,16 +15,14 @@ class ModeLabel(UIWidget, PanelButton):
         PanelButton.__init__(self, None, text_options[0], size=24, parent=parent)
         self.setCheckable(True)
         self.text_options = text_options
-        f = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
-        f.setPointSize(f.pointSize() * 1.2)
-        fm = QtGui.QFontMetrics(f)
+        font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
+        font.setPointSize(font.pointSize() * 1.2)
+        fm = QtGui.QFontMetrics(font)
         mw = max([fm.width(text) for text in text_options])
-        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (
-            f.family(), int(f.pointSize())))
-        self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self.setFlat(True)
         self.setMinimumWidth(mw + 12)
         self.setMinimumHeight(24)
+        ctrl.add_watcher('ui_font_changed', self)
 
     def checkStateSet(self):
         val = self.isChecked()
@@ -46,7 +34,24 @@ class ModeLabel(UIWidget, PanelButton):
         self.update_position()
 
     def update_colors(self):
-        pass
+        self.compose_icon()
 
-    def update_style_sheet(self):
-        pass
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'ui_font_changed':
+            font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
+            font.setPointSize(font.pointSize() * 1.2)
+            fm = QtGui.QFontMetrics(font)
+            mw = max([fm.width(text) for text in self.text_options])
+            self.setMinimumWidth(mw + 12)
+            self.update()

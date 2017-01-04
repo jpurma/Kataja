@@ -205,15 +205,12 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             key = self.host.get_color_id()
         if key:
             self._palette = ctrl.cm.get_accent_palette(key)
-        else:
-            self._palette = ctrl.cm.get_qt_palette_for_ui()
-        self.setPalette(self._palette)
+            self.setPalette(self._palette)
 
     def wake_up(self):
         self.fade_in()
         self.raise_()
         self.focus_to_main()
-
 
     def focus_to_main(self):
         pass
@@ -228,3 +225,8 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
 
     def resizeEvent(self, event):
         QtWidgets.QWidget.resizeEvent(self, event)
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.PaletteChange:
+            self.update_colors()
+        return QtWidgets.QWidget.event(self, e)

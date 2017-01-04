@@ -36,7 +36,7 @@ class StylePanel(Panel):
         self.cached_edge_color = 'content1'
         self.cached_font_id = 'main_font'
         self.watchlist = ['edge_shape', 'edge_color', 'selection_changed',
-                          'forest_changed', 'scope_changed']
+                          'forest_changed', 'scope_changed', 'palette_changed']
         # Other items may be temporarily added, they are defined as
         # class.variables
         ui = self.ui_manager
@@ -190,9 +190,6 @@ class StylePanel(Panel):
         """
         self.update_fields()
 
-    def update_colors(self):
-        self.shape_selector.update_colors()
-
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
@@ -247,8 +244,7 @@ class StylePanel(Panel):
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
-        listen. These signals
-         are declared in 'self.watchlist'.
+        listen. These signals are declared in 'self.watchlist'.
 
          This method will try to sort out the received signals and act
          accordingly.
@@ -268,3 +264,5 @@ class StylePanel(Panel):
             self.update_fields()
         elif signal == 'scope_changed':
             self.update_fields()
+        elif signal == 'palette_changed':
+            self.shape_selector.update_colors()

@@ -24,13 +24,16 @@ class LogPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)
-        inner.setStyleSheet('font-family: "Menlo"; font-size: 10px;')
+        f = qt_prefs.get_font(g.CONSOLE_FONT)
+        inner.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         inner.setFocusPolicy(QtCore.Qt.NoFocus)
         self.resize_grip = QtWidgets.QSizeGrip(self)
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
+        self.watchlist = ['ui_font_changed']
+
         layout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         inner.setLayout(layout)
 
@@ -50,7 +53,19 @@ class LogPanel(Panel):
         if floating:
             self.resize(QtCore.QSize(480, 480))
 
-    def update(self, *args):
-        f = qt_prefs.get_font(g.CONSOLE_FONT)
-        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
-        super().update(*args)
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'ui_font_changed':
+            f = qt_prefs.get_font(g.CONSOLE_FONT)
+            self.widget().setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
+                                                                                 f.pointSize()))

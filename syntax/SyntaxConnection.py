@@ -1,7 +1,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.KatajaFactory import KatajaFactory
 from kataja.Settings import FOREST
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 
 
 class SyntaxConnection(SavedObject):
@@ -32,8 +32,8 @@ class SyntaxConnection(SavedObject):
                       ("Features are forced to binary trees", "")
                   }
 
-    def __init__(self, classes: KatajaFactory):
-        super().__init__(self)
+    def __init__(self):
+        super().__init__()
         self.Constituent = classes.get('Constituent')
         self.Feature = classes.get('Feature')
         self.trees = []

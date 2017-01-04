@@ -45,13 +45,13 @@ class SetColorMode(KatajaAction):
         return ctrl.settings.get('color_mode')
 
 
-class RandomizePalette(KatajaAction):
+class RandomisePalette(KatajaAction):
     k_action_uid = 'randomize_palette'
     k_command = 'Randomize palette'
     k_tooltip = 'Roll new random colors'
 
     def method(self):
-        ctrl.forest.update_colors(refresh=True)
+        ctrl.main.update_colors(randomise=True)
 
     def enabler(self):
         d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)

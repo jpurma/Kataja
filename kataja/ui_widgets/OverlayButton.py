@@ -29,13 +29,6 @@ from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_graphicsitems.TouchArea import TouchArea
 
-borderstyle = """
-PanelButton {border: 1px transparent none}
-:hover {border: 1px solid %s; border-radius: 3}
-:pressed {border: 2px solid %s; background-color: %s; border-radius: 3}
-:checked {border: 1px solid %s; background-color: %s; border-radius: 3}
-"""
-
 
 class PanelButton(QtWidgets.QPushButton):
     """ Buttons that change their color according to widget where they are.
@@ -149,11 +142,9 @@ class PanelButton(QtWidgets.QPushButton):
     def update_style_sheet(self):
         paper = ctrl.cm.paper()
         c = ctrl.cm.get(self.color_key)
-        ss = """
-PanelButton {border: 1px transparent none}
-:hover {border: 1px solid %s; border-radius: 3}
-:pressed {border: 2px solid %s; background-color: %s; border-radius: 3}
-:checked {border: 2px solid %s; border-radius: 3}
+        ss = """ :hover {border-color: %s;}
+:pressed {border-color: %s; background-color: %s;}
+:checked {border-color: %s;}
 """ % (c.name(), c.lighter().name(), paper.name(), c.name()) # paper2.name()
         self.setStyleSheet(ss) # background-color: %s;
 
@@ -185,9 +176,6 @@ class OverlayButton(UIWidget, PanelButton):
         UIWidget.__init__(self, ui_key=ui_key, host=host)
         PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
                              color_key=color_key, draw_method=draw_method, tooltip=tooltip)
-
-    def update_colors(self):
-        PanelButton.update_colors(self)
 
     def mousePressEvent(self, event):
         self.setIcon(self.hover_icon)

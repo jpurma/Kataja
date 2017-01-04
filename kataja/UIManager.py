@@ -178,6 +178,7 @@ class UIManager:
         ctrl.add_watcher('forest_changed', self)
         ctrl.add_watcher('viewport_changed', self)
 
+
     def disable_item(self, ui_key):
         """ Disable ui_item, assuming it can be disabled (buttons etc).
         :param ui_key:
@@ -414,17 +415,13 @@ class UIManager:
             if self.top_bar_buttons:
                 self.top_bar_buttons.update_position()
 
+
     def resize_ui(self, size):
         """
 
         :param size:
         """
         self.update_positions()
-
-    def update_colors(self):
-        """ Update colors in all ui_support elements that understand that demand."""
-        for item in self._items.values():
-            item.update_colors()
 
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
@@ -677,7 +674,6 @@ class UIManager:
             self.visualisation_actions.append(action)
 
     def prepare_project_actions(self):
-        print(self.project_actions)
         for action in self.project_actions:
             if action.key in self.actions:
                 del self.actions[action.key]
@@ -786,8 +782,6 @@ class UIManager:
 
         # replace '$names' with dynamic actions
         expanded_menu_structure = OrderedDict()
-        print('additional actions: ', additional_actions)
-        print('menu_structure: ', menu_structure)
         for key, data in menu_structure.items():
             expanded_menu_structure[key] = expand_list(*data)
 

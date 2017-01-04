@@ -1,5 +1,5 @@
 from kataja.SavedObject import SavedObject
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 from syntax.SyntaxConnection import SyntaxConnection
 from mgtdbpE.Parser import load_grammar, Parser
 from mgtdbpE.OutputTrees import StateTree, BareTree, TracelessXBarTree
@@ -11,7 +11,7 @@ class KSyntaxConnection(SyntaxConnection):
     supports_secondary_labels = True
     display_modes = ['Derivation tree', 'State tree', 'Bare tree', 'XBar tree']
 
-    def __init__(self, classes):
+    def __init__(self):
         SavedObject.__init__(self)
         self.Constituent = classes.get('Constituent')
         self.Feature = classes.get('Feature')

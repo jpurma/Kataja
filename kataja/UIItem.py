@@ -45,9 +45,6 @@ class UIItem:
     def update_position(self):
         pass
 
-    def update_colors(self):
-        pass
-
     def after_close(self):
         pass
 

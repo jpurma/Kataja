@@ -352,7 +352,7 @@ class PaletteManager:
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.ordered_color_modes = OrderedDict()
-        self.activate_color_mode('solarized_lt', cold_start=True)
+        self.activate_color_mode('solarized_lt', randomise=False, cold_start=True)
         self.color_keys = ['content1', 'content2', 'content3', 'background1',
                            'background2', 'accent1', 'accent2', 'accent3',
                            'accent4', 'accent5', 'accent6', 'accent7',
@@ -388,12 +388,13 @@ class PaletteManager:
         key = self.create_theme_from_color(self.current_hex, self.hsv)
         return key
 
-    def activate_color_mode(self, mode, refresh=False, cold_start=False):
+    def activate_color_mode(self, mode, randomise=False, cold_start=False):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active
         :param mode:
-        :param refresh:
-        :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
-            is not yet available
+        :param randomise: bool -- if mode generates random colors, True for new colors, False to
+        try to remember previous colors (e.g. when restoring a document)
+        :param cold_start: bool -- use this if some color palette is required,
+        but ctrl-singleton is not yet available
         """
         compute = False
         lu_min = 25
@@ -432,7 +433,7 @@ class PaletteManager:
         if compute:
             if not cold_start:
                 remembered = ctrl.settings.get('last_key_colors')
-                if mode in remembered and not refresh:
+                if mode in remembered and not randomise:
                     self.hsv = list(remembered[mode])
                     self.compute_palette(self.hsv)
                     return
@@ -473,13 +474,13 @@ class PaletteManager:
         """
         return self.d.get(key, None)
 
-    def update_colors(self, refresh=False):
+    def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
         :param prefs:
         :param settings:
-        :param refresh:
+        :param randomise: if color mode allows, generate new base color
         """
-        self.activate_color_mode(self.current_color_mode, refresh=refresh)
+        self.activate_color_mode(self.current_color_mode, randomise=randomise)
         self.get_qt_palette(cached=False)
         self.get_qt_palette_for_ui(cached=False)
         self.create_accent_palettes()

@@ -81,7 +81,7 @@ class Forest(SavedObject):
         self.visualization = None
         self.gloss = None
         self.is_parsed = False
-        self.syntax = syntax or classes.get('SyntaxConnection')(classes)
+        self.syntax = syntax or classes.get('SyntaxConnection')()
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -168,7 +168,8 @@ class Forest(SavedObject):
             self.syntax.create_derivation(self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-        self.update_colors()
+        ctrl.add_watcher('palette_changed', self)
+        ctrl.main.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
         self.scene.keep_updating_visible_area = True
@@ -186,6 +187,7 @@ class Forest(SavedObject):
         """
         for item in self.get_all_objects():
             self.remove_from_scene(item, fade_out=False)
+        ctrl.remove_from_watch(self)
         self.in_display = False
 
     def clear(self):
@@ -985,24 +987,6 @@ class Forest(SavedObject):
         else:
             for edge in self.edges.values():
                 edge.update_shape()
-
-    def update_colors(self, refresh=False):
-        """ Update colors to those specified for this Forest."""
-        cm = ctrl.cm
-        old_gradient_base = cm.paper()
-        self.main.color_manager.update_colors(refresh=refresh)
-        self.main.app.setPalette(cm.get_qt_palette())
-        self.main.update_style_sheet()
-        if cm.gradient:
-            if old_gradient_base != cm.paper():
-                self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
-            else:
-                self.main.graph_scene.setBackgroundBrush(cm.gradient)
-        else:
-            self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
-        for other in self.others.values():
-            other.update_colors()
-        self.main.ui_manager.update_colors()
 
     # ##### Projections ##########################################
 
@@ -2531,7 +2515,27 @@ class Forest(SavedObject):
                 ctrl.settings.set('temp_color_mode', 'gray', level=FOREST)
         else:
             ctrl.settings.set('temp_color_mode', '', level=FOREST)
-        self.update_colors()
+        ctrl.main.update_colors()
+
+    ### Watcher #########################
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to
+        listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act
+         accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'palette_changed':
+            for other in self.others.values():
+                other.update_colors()
 
     # ######## Utility functions ###############################
 

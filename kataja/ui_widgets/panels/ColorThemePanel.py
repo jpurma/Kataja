@@ -68,8 +68,8 @@ class ColorPanel(Panel):
         self.finish_init()
 
     def update_colors(self):
-        """
-
+        """ In addition to normal update_colors -calls due to change in active palette, color theme
+        panel gets calls when some available color modes/palettes change.
         """
         ocm = ctrl.cm.ordered_color_modes
         current_color_modes = [(c['name'], key) for key, c in ocm.items()]

@@ -160,12 +160,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     def set_title(self, title):
         self.titleBarWidget().title.setText(title)
 
-    def update_colors(self):
-        """ Implement if trickier color update than palette change is needed
-        :return:
-        """
-        pass
-
     def set_folded(self, folded):
         self.folded = folded
         self.titleBarWidget().update_fold(folded)
@@ -285,7 +279,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :param value: value given to the field
         :return:
         """
-        print('watch alerted: ', obj, signal, field_name, value)
+        pass
+        #print('watch alerted: ', obj, signal, field_name, value)
 
     def showEvent(self, QShowEvent):
         """
