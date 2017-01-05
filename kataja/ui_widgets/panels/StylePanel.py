@@ -5,8 +5,8 @@ from kataja.singletons import ctrl, qt_prefs, prefs, classes
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.panel_utils import set_value, box_row, font_selector, \
-    color_selector, icon_button, shape_selector, text_button, selector, mini_button
+from kataja.ui_support.panel_utils import  box_row, font_selector, color_selector, icon_button, \
+    shape_selector, selector, mini_button
 
 __author__ = 'purma'
 
@@ -32,8 +32,8 @@ class StylePanel(Panel):
         self._edges_in_selection = []
         self.cached_node_types = set()
         self.current_color = ctrl.cm.drawing()
-        self.cached_font_id = 'main_font'
-        self.watchlist = ['selection_changed', 'forest_changed', 'scope_changed']
+
+        self.watchlist = ['selection_changed', 'forest_changed']
         # Other items may be temporarily added, they are defined as
         # class.variables
         ui = self.ui_manager
@@ -132,31 +132,6 @@ class StylePanel(Panel):
         self.update_scope_selector_options()
         self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
-    def receive_font_from_selector(self, font_key, font):
-        ctrl.ui.set_font(font_key, font)
-        self.cached_font_id = font_key
-        self.update_font_selector(font_key)
-        ctrl.main.trigger_action('select_font_from_dialog')
-
-    def update_font_selector(self, font_id):
-        self.cached_font_id = font_id
-        font = qt_prefs.fonts[font_id]
-        item = self.font_selector.find_list_item(font_id)
-        self.font_selector.setFont(font)
-        if item:
-            item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
-            item.setFont(font)
-        else:
-            self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
-            self.font_selector.select_by_data(font_id)
-
-    def update_panel(self):
-        """ Panel update should be necessary when changing ctrl.selection or
-        after the trees has otherwise changed.
-        :return:
-        """
-        self.update_fields()
-
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
@@ -165,40 +140,6 @@ class StylePanel(Panel):
         items = [('Current selection', g.SELECTION)]
         items += [(ni[key]['name_pl'], key) for key in classes.node_types_order]
         self.scope_selector.add_items(items)
-
-    def update_fields(self):
-        """ Update different elements in the panel to show the correct values
-        based on selection or current scope. Change of scope may remove or
-        add new choices to selectors or do other hard manipulation to elements.
-
-        First find what are the properties of the selected edges.
-        If they are conflicting, e.g. there are two different colors in selected
-         edges, they cannot be shown in the color selector. They can still be
-         overridden with new selection.
-        """
-        print('update fields called')
-        if ctrl.ui.scope_is_selection and False:
-            no_node = True
-            no_edge = True
-            for item in ctrl.selected:
-                if no_node and isinstance(item, Node):
-                    no_node = False
-                    self.cached_font_id = item.get_font_id()
-                    set_value(self.font_selector, self.cached_font_id)
-                elif no_edge and isinstance(item, Edge):
-                    no_edge = False
-                    set_value(self.shape_selector, item.shape_name)
-                elif not (no_edge or no_node):
-                    break
-        elif ctrl.forest and False:
-            node_type = ctrl.ui.active_node_type
-            edge_type = ctrl.ui.active_edge_type
-            node_font = ctrl.settings.get_node_setting('font_id', node_type=node_type)
-            edge_shape = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
-            # Color selector - show
-            set_value(self.font_selector, node_font)
-            set_value(self.shape_selector, edge_shape)
-            self.cached_font_id = node_font
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
@@ -213,12 +154,7 @@ class StylePanel(Panel):
         :param value: value given to the field
         :return:
         """
-        # print('StylePanel alerted: ', obj, signal, field_name, value)
         if signal == 'selection_changed':
             self.update_selection()
-            self.update_fields()
         elif signal == 'forest_changed':
             self.update_selection()
-            self.update_fields()
-        elif signal == 'scope_changed':
-            self.update_fields()

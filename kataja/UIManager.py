@@ -40,7 +40,6 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_support.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
@@ -149,8 +148,6 @@ class UIManager:
         self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
         self.preferences_dialog = None
-        self.color_dialogs = {}
-        self.font_dialogs = {}
         self.qe_label = None
         self.activity_marker = None
         self.ui_activity_marker = None
@@ -254,31 +251,6 @@ class UIManager:
             else:
                 panel.set_text(panel.default_text)
                 panel.label.setSearchPaths([])
-
-
-    def start_font_dialog(self, parent, role, initial_font=None):
-        if not initial_font:
-            initial_font = role
-        if role in self.font_dialogs:
-            fd = self.font_dialogs[role]
-            fd.setCurrentFont(qt_prefs.get_font(initial_font))
-        else:
-            fd = MyFontDialog(parent, initial_font)
-            self.font_dialogs[role] = fd
-        fd.show()
-
-    def get_role_of_font_dialog(self, dialog):
-        for key, value in self.font_dialogs.items():
-            if value is dialog:
-                return key
-
-    def update_font_dialog(self, role, font_id):
-        if role in self.font_dialogs:
-            self.font_dialogs[role].setCurrentFont(qt_prefs.get_font(font_id))
-
-    @staticmethod
-    def set_font(font_id, font):
-        qt_prefs.fonts[font_id] = font
 
     def add_ui(self, item, show=True):
         """

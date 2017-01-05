@@ -229,16 +229,15 @@ class ChangeEdgeColor(KatajaAction):
             start = True
         elif selector.color_dialog:
             update = True
+        selector.selected_color = color_key
         if start:
             if selector.color_dialog:
-                selector.update_color_dialog(color_key)
+                selector.update_color_dialog()
                 selector.color_dialog.show()
             else:
-                selector.start_color_dialog(color_key)
+                selector.start_color_dialog()
         elif update:
-            selector.update_color_dialog(color_key)
-
-        selector.selected_color = color_key
+            selector.update_color_dialog()
 
         # Update color for selected edges
         if ctrl.ui.scope_is_selection:

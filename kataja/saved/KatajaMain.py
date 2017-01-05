@@ -65,7 +65,8 @@ from kataja.visualizations.available import VISUALIZATIONS
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 stylesheet = """
-QWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
+.QWidget, .SelectionBox, QLabel, QAbstractButton, QDialog, QFrame, QMainWindow, QDialog,
+QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}

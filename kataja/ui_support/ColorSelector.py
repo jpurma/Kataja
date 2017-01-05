@@ -134,16 +134,16 @@ class ColorSelector(TableModelSelectionBox):
         super().select_by_data(data)
         self.selected_color = data
 
-    def start_color_dialog(self, initial_color='content1'):
+    def start_color_dialog(self):
         """
         :param parent:
         :param initial_color:
         :return:
         """
-        self.color_dialog = ColorDialogForSelector(self, initial_color)
+        self.color_dialog = ColorDialogForSelector(self, self.selected_color)
 
-    def update_color_dialog(self, color_id):
-        self.color_dialog.setCurrentColor(ctrl.cm.get(color_id))
+    def update_color_dialog(self):
+        self.color_dialog.setCurrentColor(self.selected_color)
 
     def receive_color_from_color_dialog(self, color):
         """ Replace color in palette with new color

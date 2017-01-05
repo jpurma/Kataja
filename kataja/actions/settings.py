@@ -1,7 +1,7 @@
 # coding=utf-8
 from kataja.Settings import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
-from kataja.singletons import ctrl, prefs, log
+from kataja.singletons import ctrl, prefs, log, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.ui_support.ColorSelector import ColorDialogForSelector
 
@@ -30,6 +30,7 @@ from kataja.ui_support.ColorSelector import ColorDialogForSelector
 # enabler : if enabler is defined, the action is active (also reflected into its UI elements) only
 #           when enabler returns True
 #
+from ui_support import FontSelector
 
 
 class SetColorMode(KatajaAction):
@@ -173,10 +174,8 @@ class StartFontDialog(KatajaAction):
         other available
         nodes
         """
-
         panel = self.get_ui_container()
-        font_key = panel.cached_font_id
-        ctrl.ui.start_font_dialog(panel, font_key, font_key)
+        panel.font_selector.start_font_dialog()
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope()
@@ -192,21 +191,23 @@ class SelectFont(KatajaAction):
         """ Change font key for current node or node type.
         :return: None
         """
-        panel = ctrl.ui.get_panel('StylePanel')
-        if panel:
-            font_id = panel.font_selector.currentData() or panel.cached_font_id
-            panel.update_font_selector(font_id)
-            if ctrl.ui.scope_is_selection:
-                for node in ctrl.selected:
-                    if isinstance(node, Node):
-                        node.font_id = font_id
-                        node.update_label()
-            else:
-                ctrl.settings.set_node_setting('font_id', font_id,
-                                               node_type=ctrl.ui.active_node_type,
-                                               level=FOREST)
-                for node in ctrl.forest.nodes.values():
+        selector = self.sender()
+        font_id = selector.currentData() or selector.selected_font
+        selector.selected_font = font_id
+        if ctrl.ui.scope_is_selection:
+            for node in ctrl.selected:
+                if isinstance(node, Node):
+                    node.font_id = font_id
                     node.update_label()
+        else:
+            ctrl.settings.set_node_setting('font_id', font_id,
+                                           node_type=ctrl.ui.active_node_type,
+                                           level=FOREST)
+            for node in ctrl.forest.nodes.values():
+                node.update_label()
+        font = qt_prefs.get_font(font_id)
+        if selector.font_dialog:
+            selector.font_dialog.setCurrentFont(font)
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope()
@@ -217,26 +218,12 @@ class SelectFont(KatajaAction):
 
 class SelectFontFromDialog(KatajaAction):
     k_action_uid = 'select_font_from_dialog'
-    k_command = 'Change label font'
-    k_tooltip = 'Change font for current selection or for a node type'
     k_undoable = False
 
     def method(self):
-        panel = ctrl.ui.get_panel('StylePanel')
-        if panel:
-            font_id = panel.cached_font_id
-            panel.update_font_selector(font_id)
-            if ctrl.ui.scope_is_selection:
-                for node in ctrl.selected:
-                    if isinstance(node, Node):
-                        node.font_id = font_id
-                        node.update_label()
-            else:
-                ctrl.settings.set_node_setting('font_id', font_id,
-                                               node_type=ctrl.ui.active_node_type,
-                                               level=FOREST)
-                for node in ctrl.forest.nodes.values():
-                    node.update_label()
+        # all the work is done before action is called, action is here because we want
+        # action completion effects to happen
+        pass
 
 
 class ChangeNodeColor(KatajaAction):
@@ -266,16 +253,15 @@ class ChangeNodeColor(KatajaAction):
             start = True
         elif selector.color_dialog:
             update = True
+        selector.selected_color = color_key
         if start:
             if selector.color_dialog:
-                selector.update_color_dialog(color_key)
+                selector.update_color_dialog()
                 selector.color_dialog.show()
             else:
-                selector.start_color_dialog(color_key)
+                selector.start_color_dialog()
         elif update:
-            selector.update_color_dialog(color_key)
-
-        selector.selected_color = color_key
+            selector.update_color_dialog()
 
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
