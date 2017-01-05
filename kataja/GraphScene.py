@@ -398,7 +398,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges
-
             for item in self.selectedItems():
                 if hasattr(item, 'select'):
                     item.select(event, multi=True)

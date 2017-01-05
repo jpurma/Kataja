@@ -23,7 +23,6 @@
 # ############################################################################
 import math
 
-from kataja.Settings import FOREST
 from kataja.utils import caller, time_me
 import kataja.globals as g
 import sys
@@ -78,7 +77,7 @@ class BaseVisualization:
             ls = 0
             while ls in self.banned_node_shapes:
                 ls += 1
-            ctrl.settings.set('label_shape', ls, level=FOREST)
+            ctrl.settings.set('label_shape', ls, level=g.FOREST)
             self.forest.update_label_shape()
 
     def reset_nodes(self):

@@ -206,6 +206,7 @@ class Controller:
     def multiselection_end(self):
         self.multiselection_delay = False
         self.call_watchers(self, 'selection_changed', value=self.selected)
+        self.ui.add_message(f'selected {len(self.selected)} objects')
 
     def multiple_selection(self):
         """
@@ -275,7 +276,6 @@ class Controller:
         """
         if obj not in self.selected:
             self.selected.append(obj)
-            self.ui.add_message('added to selection %s' % str(obj))
             obj.update_selection_status(True)
             if not self.multiselection_delay:
                 self.call_watchers(self, 'selection_changed', value=self.selected)

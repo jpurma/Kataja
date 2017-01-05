@@ -31,7 +31,7 @@ from PyQt5.QtGui import QColor as c
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
-from kataja.Settings import FOREST
+from kataja.globals import FOREST
 from kataja.singletons import ctrl, prefs, running_environment
 
 

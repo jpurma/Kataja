@@ -1,5 +1,5 @@
 # coding=utf-8
-from kataja.Settings import FOREST, DOCUMENT
+from kataja.globals import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log, qt_prefs
 from kataja.saved.movables.Node import Node
@@ -165,24 +165,6 @@ class ResetStyleInScope(KatajaAction):
         return True
 
 
-class StartFontDialog(KatajaAction):
-    k_action_uid = 'start_font_dialog'
-    k_command = 'Use a custom font'
-    k_tooltip = 'Select your own font for node labels'
-    k_undoable = False
-
-    def method(self):
-        """ Change drawing panel to work on selected nodes, constituent nodes or
-        other available
-        nodes
-        """
-        panel = self.get_ui_container()
-        panel.font_selector.start_font_dialog()
-
-    def enabler(self):
-        return ctrl.ui.has_nodes_in_scope()
-
-
 class SelectFont(KatajaAction):
     k_action_uid = 'select_font'
     k_command = 'Change label font'
@@ -276,6 +258,7 @@ class ChangeNodeColor(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:
                 if isinstance(node, Node):
+                    ctrl.settings.set_node_setting('color_id', color_key, node=node)
                     node.color_id = color_key
                     node.update_label()
         # ... or update color for all nodes of this type

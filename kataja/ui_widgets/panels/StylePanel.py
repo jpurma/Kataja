@@ -77,13 +77,6 @@ class StylePanel(Panel):
                                            action='select_font',
                                            label='font')
 
-
-        #self.open_font_dialog = icon_button(ui, self.style_widgets, hlayout,
-        #                                    icon=qt_prefs.font_icon,
-        #                                    text='Add custom font',
-        #                                    action='start_font_dialog',
-        #                                    size=20)
-
         hlayout = box_row(sw_layout)
         self.shape_selector = shape_selector(ui, self.style_widgets, hlayout,
                                              action='change_edge_shape',

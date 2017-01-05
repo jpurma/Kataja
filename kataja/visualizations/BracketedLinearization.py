@@ -24,7 +24,6 @@
 
 
 import kataja.globals as g
-from kataja.Settings import FOREST
 from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs, log, ctrl
 
@@ -82,7 +81,7 @@ class BracketedLinearization(BaseVisualization):
             ls = g.NORMAL
         else:
             ls += 1
-        ctrl.settings.set('label_shape', ls, level=FOREST)
+        ctrl.settings.set('label_shape', ls, level=g.FOREST)
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 

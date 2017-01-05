@@ -3,15 +3,9 @@ import copy
 
 from kataja.Shapes import SHAPE_PRESETS, SHAPE_DICT
 from kataja.utils import time_me
-
-HIGHEST = 0
-OBJECT = 1
-SELECTION = 2
-FOREST = 3
-DOCUMENT = 4
-PREFS = 5
-
-CONFLICT = 666666
+from kataja.saved.movables.Node import Node
+from kataja.saved.Edge import Edge
+from kataja.globals import HIGHEST, FOREST, DOCUMENT, PREFS, OBJECT, SELECTION
 
 
 class Settings:
@@ -38,7 +32,6 @@ class Settings:
     def __init__(self):
         self.document = None
         self.forest = None
-        self.s_unified = {}
         self.s_forest = {}
         self.s_document = {}
         self.prefs = None
@@ -56,32 +49,22 @@ class Settings:
         self.forest = None
         self.s_document = document.settings
         self.s_forest = {}
-        self.s_unified = {}
         self._shape_cache = {}
 
     def set_forest(self, forest):
         self.forest = forest
         self.s_forest = forest.settings
-        self.s_unified = {}
         self.update_shape_cache()
 
     #@time_me
-    def get(self, key, level=HIGHEST, obj=None, ignore_selection=False):
-        #print('get setting, key:%s, level:%s, obj:%s, ignore_selection:%s' % (
-        #    key, level, obj, ignore_selection
-        #))
+    def get(self, key, level=HIGHEST, obj=None):
+        #print('get setting, key:%s, level:%s, obj:%s' % (key, level, obj))
         if obj:
+            print('settings.get with object:', obj)
+            raise hell
             if level == HIGHEST:
                 if key in obj.settings:
                     return obj.settings[key]
-            elif level == OBJECT:
-                return obj.settings.get(key, None)
-        elif not ignore_selection:
-            if level == HIGHEST:
-                if key in self.s_unified:
-                    return self.s_unified[key]
-            elif level == SELECTION:
-                return self.s_unified.get(key, None)
         if level == HIGHEST:
             if key in self.s_forest:
                 return self.s_forest[key]
@@ -146,35 +129,6 @@ class Settings:
         elif level == DOCUMENT:
             if key in self.s_document:
                 del self.s_document[key]
-
-    def update_selections(self):
-        """ Make a new s_unified -dict that combines the settings of all selected objects. If there
-        are conflicting settings in selection, these will have value CONFLICT. If no selection, this
-        dict is empty.
-        Settings of selection should only be used for updating UI dials.
-        :return:
-        """
-        new_d = {}
-        for item in ctrl.selected:
-            for key, value in item.settings.items():
-                if isinstance(value, dict):
-                    n_d = {}
-                    for k, v in value.items():
-                        if key in new_d \
-                                and isinstance(new_d[key], dict)\
-                                and new_d[key].get(k, None) != v:
-                            n_d[k] = CONFLICT
-                        else:
-                            n_d[k] = v
-                    new_d[key] = n_d
-                else:
-                    if key in new_d and new_d[key] != value:
-                        new_d[key] = CONFLICT
-                    else:
-                        new_d[key] = value
-        if new_d:
-            print(new_d)
-        self.s_unified = new_d
 
     # Those settings that are represented by dict need special methods to get/set/delete, as having
     # some dict set is not enough, one has to check if the dict has necessary key and traverse
@@ -247,33 +201,55 @@ class Settings:
         return self._shape_cache[edge_type][key]
 
     def cached_active_edge(self, key):
-        if key in self.s_unified:
-            return self.s_unified[key]
         if not self._shape_cache:
             self.update_shape_cache()
         return self._shape_cache[self.ui.active_edge_type][key]
 
     def active_nodes(self, key):
-        return self._get_dict_setting(key, subtype=self.ui.active_node_type, level=HIGHEST,
-                                      dictname='nodes')
+        """ Return node setting either from selected items or from ui.active_node_type.
+        :param key:
+        :return:
+        """
+        if self.ui.scope_is_selection:
+            typical_node = None
+            for node in ctrl.selected:
+                if isinstance(node, Node):
+                    if key in node.settings:
+                        return node.settings[key]
+                    if not typical_node:
+                        typical_node = node
+            if typical_node:
+                return self.get_node_setting(key, node_type=typical_node.node_type)
+        return self.get_node_setting(key, node_type=self.ui.active_node_type)
+
+    def active_edges(self, key):
+        """ Return edge setting either from selected items or from ui.active_edge_type
+        :param key:
+        :return:
+        """
+        if self.ui.scope_is_selection:
+            typical_edge = None
+
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    if key in edge.settings:
+                        return edge.settings[key]
+                    if not typical_edge:
+                        typical_edge = edge
+            if typical_edge:
+                return self.cached_edge(key, typical_edge)
+        return self.cached_active_edge(key)
+
 
     # ## ### Deep diggers
 
     def _get_dict_setting(self, key, subtype=None, obj=None, level=HIGHEST, dictname=None):
-        if not (subtype or obj):
-            raise ValueError
         if obj:
             if level == HIGHEST:
                 if key in obj.settings:
                     return obj.settings[key]
             elif level == OBJECT:
                 return obj.settings.get(key, None)
-        else:
-            if level == HIGHEST:
-                if key in self.s_unified:
-                    return self.s_unified[key]
-            elif level == SELECTION:
-                return self.s_unified.get(key, None)
         if level == HIGHEST:
             if dictname in self.s_forest and subtype in self.s_forest[dictname] \
                     and key in self.s_forest[dictname][subtype]:

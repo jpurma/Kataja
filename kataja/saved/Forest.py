@@ -36,7 +36,6 @@ from kataja.ChainManager import ChainManager
 from kataja.Projection import Projection
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.Settings import FOREST
 from kataja.UndoManager import UndoManager
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
@@ -709,7 +708,7 @@ class Forest(SavedObject):
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
             ctrl.settings.set('hide_edges_if_nodes_overlap',
-                              self.visualization.hide_edges_if_nodes_overlap, level=FOREST)
+                              self.visualization.hide_edges_if_nodes_overlap, level=g.FOREST)
             self.scene.keep_updating_visible_area = True
         self.main.graph_scene.manual_zoom = False
 
@@ -2501,8 +2500,8 @@ class Forest(SavedObject):
     # View mode
     @time_me
     def change_view_mode(self, syntactic_mode):
-        ctrl.settings.set('syntactic_mode', syntactic_mode, level=FOREST)
-        ctrl.settings.set('show_display_labels', not syntactic_mode, level=FOREST)
+        ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.FOREST)
+        ctrl.settings.set('show_display_labels', not syntactic_mode, level=g.FOREST)
         for node in list(self.nodes.values()):
             node.update_label()
             node.update_label_visibility()
@@ -2510,11 +2509,11 @@ class Forest(SavedObject):
         ctrl.call_watchers(self, 'view_mode_changed', value=syntactic_mode)
         if syntactic_mode:
             if ctrl.main.color_manager.paper().value() < 100:
-                ctrl.settings.set('temp_color_mode', 'dk_gray', level=FOREST)
+                ctrl.settings.set('temp_color_mode', 'dk_gray', level=g.FOREST)
             else:
-                ctrl.settings.set('temp_color_mode', 'gray', level=FOREST)
+                ctrl.settings.set('temp_color_mode', 'gray', level=g.FOREST)
         else:
-            ctrl.settings.set('temp_color_mode', '', level=FOREST)
+            ctrl.settings.set('temp_color_mode', '', level=g.FOREST)
         ctrl.main.update_colors()
 
     ### Watcher #########################

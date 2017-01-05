@@ -47,7 +47,7 @@ from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.Settings import Settings, DOCUMENT
+from kataja.Settings import Settings
 from kataja.UIManager import UIManager
 from kataja.saved.Forest import Forest
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
@@ -471,7 +471,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :param hsv:
         """
-        self.settings_manager.set('hsv', hsv, level=DOCUMENT)
+        self.settings_manager.set('hsv', hsv, level=g.DOCUMENT)
         self.forest.update_colors()
 
     def change_color_mode(self, mode, force=False):
@@ -481,7 +481,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param mode:
         """
         if mode != ctrl.settings.get('color_mode') or force:
-            ctrl.settings.set('color_mode', mode, level=DOCUMENT)
+            ctrl.settings.set('color_mode', mode, level=g.DOCUMENT)
             self.update_colors()
 
     def timerEvent(self, event):

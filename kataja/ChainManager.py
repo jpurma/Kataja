@@ -2,7 +2,7 @@
 import string
 from collections import namedtuple
 
-from kataja.Settings import FOREST
+from kataja.globals import FOREST
 from kataja.utils import time_me, caller, add_xy
 from kataja.singletons import ctrl
 

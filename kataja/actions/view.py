@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
 
-from kataja.Settings import FOREST, DOCUMENT
+from kataja.globals import FOREST, DOCUMENT
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction

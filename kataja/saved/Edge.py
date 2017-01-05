@@ -31,7 +31,6 @@ import kataja.globals as g
 from kataja.EdgeLabel import EdgeLabel
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.Settings import FOREST
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
@@ -589,7 +588,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
             self._nodes_overlap = False
         elif self.start and self.end and \
-                ctrl.settings.get('hide_edges_if_nodes_overlap', level=FOREST) and \
+                ctrl.settings.get('hide_edges_if_nodes_overlap') and \
                 self.start.is_visible() and self.end.is_visible() and \
                 not (self.start.triangle or self.end.triangle):
             self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())

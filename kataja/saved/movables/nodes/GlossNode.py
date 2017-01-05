@@ -25,7 +25,6 @@ GlossNode is a Node to display translation or explanation of a constituent
 #
 #############################################################################
 import kataja.globals as g
-from kataja.Settings import FOREST
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
@@ -95,7 +94,7 @@ class GlossNode(Node):
     def on_delete(self):
         if self is ctrl.forest.gloss:
             ctrl.forest.gloss = None
-            ctrl.settings.set('gloss_strategy', 'no', level=FOREST)
+            ctrl.settings.set('gloss_strategy', 'no', level=g.FOREST)
             # this is called just in case that somebody tries to clear ctrl.forest.gloss and we are
             # not there anymore.
             ctrl.forest.remove_from_scene(self, fade_out=False)

@@ -135,7 +135,8 @@ class ColorSelector(TableModelSelectionBox):
         self.color_dialog = ColorDialogForSelector(self, self.selected_color)
 
     def update_color_dialog(self):
-        self.color_dialog.setCurrentColor(self.selected_color)
+        color = ctrl.cm.get(self.selected_color) or ctrl.cm.get('content1')
+        self.color_dialog.setCurrentColor(color)
 
     def receive_color_from_color_dialog(self, color):
         """ Replace color in palette with new color

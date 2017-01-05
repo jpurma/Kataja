@@ -1,6 +1,6 @@
 from kataja.SavedObject import SavedObject
 from kataja.KatajaFactory import KatajaFactory
-from kataja.Settings import FOREST
+from kataja.globals import FOREST
 from kataja.singletons import ctrl, classes
 
 

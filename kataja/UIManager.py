@@ -480,7 +480,6 @@ class UIManager:
                 ctrl.call_watchers(self, 'scope_changed')
             if self.selection_group:
                 self.remove_selection_group()
-        ctrl.settings.update_selections()
 
     def has_nodes_in_scope(self):
         if self.scope_is_selection:
