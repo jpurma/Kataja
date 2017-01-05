@@ -618,7 +618,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def reset_style(self):
         self.shape_name = None
         ctrl.settings.reset_edge_settings(edge=self)
-        ctrl.settings.reset_shape_settings(edge=self)
         self.curve_adjustment = [(0, 0)] * len(self.control_points)
         self.update_shape()
 

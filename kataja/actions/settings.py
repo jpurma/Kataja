@@ -153,9 +153,11 @@ class ResetStyleInScope(KatajaAction):
                 if hasattr(item, 'reset_style'):
                     item.reset_style()
         else:
-            ctrl.settings.reset_node_style(ctrl.ui.active_node_type, level=FOREST)
-            ctrl.settings.reset_edge_style(ctrl.ui.active_edge_type, level=FOREST)
+            ctrl.settings.reset_node_settings(ctrl.ui.active_node_type, level=FOREST)
+            ctrl.settings.reset_edge_settings(ctrl.ui.active_edge_type, level=FOREST)
         ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
 
     def enabler(self):
         if ctrl.forest is None:
@@ -193,11 +195,18 @@ class SelectFont(KatajaAction):
         """
         selector = self.sender()
         font_id = selector.currentData() or selector.selected_font
-        selector.selected_font = font_id
+        if font_id.startswith('font_picker::'):
+            font_id = font_id.split('::')[1]
+            if not selector.font_dialog:
+                selector.selected_font = font_id
+                selector.start_font_dialog()
+        else:
+            selector.selected_font = font_id
+
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:
                 if isinstance(node, Node):
-                    node.font_id = font_id
+                    ctrl.settings.set_node_setting('font_id', font_id, node=node)
                     node.update_label()
         else:
             ctrl.settings.set_node_setting('font_id', font_id,

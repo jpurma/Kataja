@@ -99,19 +99,11 @@ class ColorSelector(TableModelSelectionBox):
             item.setSizeHint(QSize(22, 20))
             self.color_items.append(item)
         view = QtWidgets.QTableView()
-
-        # add_icon = QtGui.QIcon()
-        # add_icon.fromTheme("list-add")
-        # add_item = QtGui.QStandardItem('+')
-        # add_item.setTextAlignment(QtCore.Qt.AlignCenter)
-        # add_item.setSizeHint(QSize(22, 20))
         self.table = [self.color_items[0:5] + self.color_items[21:24],
                       self.color_items[5:13],
                       self.color_items[13:21],
                       self.color_items[24:31]]  # + [add_item]
         model.clear()
-        # model.setRowCount(8)
-        # model.setColumnCount(4)
         self.selected_color = 'content1'
         self.default_color = 'content1'
         self.color_dialog = None

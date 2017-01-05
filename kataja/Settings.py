@@ -199,6 +199,10 @@ class Settings:
     def del_edge_setting(self, key, edge_type=None, edge=None, level=OBJECT):
         self._del_dict_setting(key, subtype=edge_type, obj=edge, level=level, dictname='edges')
 
+    def reset_edge_settings(self, edge_type=None, edge=None, level=OBJECT):
+        self._reset_subtype_dict(subtype=edge_type, obj=edge, level=level, dictname='edges')
+        self.update_shape_cache()
+
     # Node settings are stored directly in Node.settings, but in settings['nodes'][node_type]
     # in layers below.
 
@@ -215,6 +219,9 @@ class Settings:
 
     def del_node_setting(self, key, node_type=None, node=None, level=OBJECT):
         self._del_dict_setting(key, subtype=node_type, obj=node, level=level, dictname='nodes')
+
+    def reset_node_settings(self, node_type=None, node=None, level=OBJECT):
+        self._reset_subtype_dict(subtype=node_type, obj=node, level=level, dictname='nodes')
 
     #@time_me
     def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST, shape_name=None):
@@ -349,6 +356,29 @@ class Settings:
                         del d[subtype][key]
                         if not d[subtype]:
                             del d[subtype]
+                if not d:
+                    del self.s_document[dictname]
+
+    def _reset_subtype_dict(self, subtype=None, obj=None, level=None, dictname=None):
+        if not (obj or subtype):
+            raise ValueError
+        if obj and obj.settings: # Note that this removes *all* object-level settings.
+            obj.poke('settings')
+            obj.settings = {}
+        elif level == FOREST:
+            if dictname in self.s_forest:
+                self.forest.poke('settings')
+                d = self.s_forest[dictname]
+                if subtype in d:
+                    del d[subtype]
+                if not d:
+                    del self.s_forest[dictname]
+        elif level == DOCUMENT:
+            if dictname in self.s_document:
+                self.document.poke('settings')
+                d = self.s_document[dictname]
+                if subtype in d:
+                    del d[subtype]
                 if not d:
                     del self.s_document[dictname]
 

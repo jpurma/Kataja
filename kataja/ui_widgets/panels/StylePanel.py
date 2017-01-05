@@ -31,29 +31,28 @@ class StylePanel(Panel):
         self._nodes_in_selection = []
         self._edges_in_selection = []
         self.cached_node_types = set()
-        self.current_color = ctrl.cm.drawing()
 
         self.watchlist = ['selection_changed', 'forest_changed']
         # Other items may be temporarily added, they are defined as
         # class.variables
         ui = self.ui_manager
-        hlayout = box_row(layout)
-
-        styles_data = []
-        current_style_i = 0
-        for i, value in enumerate(prefs.available_styles):
-            if value == ctrl.settings.get('style'):
-                current_style_i = i
-            styles_data.append((value, value))
-        self.overall_style_box = selector(ui, self, hlayout,
-                                          data=styles_data,
-                                          action='change_master_style')
-        self.overall_style_box.setCurrentIndex(current_style_i)
-        #self.custom_overall_style = text_button(ui, hlayout,
-        #                                        text='customize',
-        #                                        action='customize_master_style',
-        #                                        checkable=True)
-        self.overall_style_box.hide()
+        # hlayout = box_row(layout)
+        #
+        # styles_data = []
+        # current_style_i = 0
+        # for i, value in enumerate(prefs.available_styles):
+        #     if value == ctrl.settings.get('style'):
+        #         current_style_i = i
+        #     styles_data.append((value, value))
+        # self.overall_style_box = selector(ui, self, hlayout,
+        #                                   data=styles_data,
+        #                                   action='change_master_style')
+        # self.overall_style_box.setCurrentIndex(current_style_i)
+        # #self.custom_overall_style = text_button(ui, hlayout,
+        # #                                        text='customize',
+        # #                                        action='customize_master_style',
+        # #                                        checkable=True)
+        # self.overall_style_box.hide()
         self.style_widgets = QtWidgets.QWidget(inner)
         sw_layout = QtWidgets.QVBoxLayout()
         sw_layout.setContentsMargins(0, 0, 0, 0)
@@ -69,21 +68,21 @@ class StylePanel(Panel):
         self.style_reset = mini_button(ui, self.style_widgets, hlayout,
                                        text='reset',
                                        action='reset_style_in_scope')
-
         hlayout = box_row(sw_layout)
 
+        self.node_color_selector = color_selector(ui, self.style_widgets, hlayout,
+                                                  action='change_node_color', role='node',
+                                                  label='Node color')
         self.font_selector = font_selector(ui, self.style_widgets, hlayout,
                                            action='select_font',
-                                           label='Text style')
+                                           label='font')
 
-        self.node_color_selector = color_selector(ui, self.style_widgets, hlayout,
-                                                  action='change_node_color', role='node')
 
-        self.open_font_dialog = icon_button(ui, self.style_widgets, hlayout,
-                                            icon=qt_prefs.font_icon,
-                                            text='Add custom font',
-                                            action='start_font_dialog',
-                                            size=20)
+        #self.open_font_dialog = icon_button(ui, self.style_widgets, hlayout,
+        #                                    icon=qt_prefs.font_icon,
+        #                                    text='Add custom font',
+        #                                    action='start_font_dialog',
+        #                                    size=20)
 
         hlayout = box_row(sw_layout)
         self.shape_selector = shape_selector(ui, self.style_widgets, hlayout,
@@ -98,6 +97,7 @@ class StylePanel(Panel):
                                         text='More line options',
                                         action='toggle_panel_LineOptionsPanel',
                                         checkable=True)
+
         self.style_widgets.setLayout(sw_layout)
         layout.addWidget(self.style_widgets)
         inner.setLayout(layout)
