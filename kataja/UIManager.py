@@ -599,7 +599,8 @@ class UIManager:
             # noinspection PyTypeChecker
             action = kataja.actions.TogglePanel(action_uid=key,
                                                 command=panel_data['name'],
-                                                args=[panel_key])
+                                                args=[panel_key],
+                                                tooltip=f"Open/Close {panel_data['name']}")
             self.actions[key] = action
             self.panel_actions.append(action)
 

@@ -2509,11 +2509,11 @@ class Forest(SavedObject):
         ctrl.call_watchers(self, 'view_mode_changed', value=syntactic_mode)
         if syntactic_mode:
             if ctrl.main.color_manager.paper().value() < 100:
-                ctrl.settings.set('temp_color_mode', 'dk_gray', level=g.FOREST)
+                ctrl.settings.set('temp_color_theme', 'dk_gray', level=g.FOREST)
             else:
-                ctrl.settings.set('temp_color_mode', 'gray', level=g.FOREST)
+                ctrl.settings.set('temp_color_theme', 'gray', level=g.FOREST)
         else:
-            ctrl.settings.set('temp_color_mode', '', level=g.FOREST)
+            ctrl.settings.set('temp_color_theme', '', level=g.FOREST)
         ctrl.main.update_colors()
 
     ### Watcher #########################

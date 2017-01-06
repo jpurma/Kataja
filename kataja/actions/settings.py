@@ -34,17 +34,17 @@ from ui_support import FontSelector
 
 
 class SetColorMode(KatajaAction):
-    k_action_uid = 'set_color_mode'
+    k_action_uid = 'set_color_theme'
     k_command = 'Change palette'
     k_tooltip = 'Change palette used for UI and drawings'
 
     def method(self):
         sender = self.sender()
         mode = sender.currentData()
-        ctrl.main.change_color_mode(mode)
+        ctrl.main.change_color_theme(mode)
 
     def getter(self):
-        return ctrl.settings.get('color_mode')
+        return ctrl.settings.get('color_theme')
 
 
 class RandomisePalette(KatajaAction):
@@ -56,27 +56,31 @@ class RandomisePalette(KatajaAction):
         ctrl.main.update_colors(randomise=True)
 
     def enabler(self):
-        d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)
-        return d and not d.get('fixed', True)
+        return ctrl.cm.can_randomise()
+
+class RemovePalette(KatajaAction):
+    k_action_uid = 'remove_palette'
+    k_command = 'Remove a custom palette'
+    k_tooltip = 'Remove a custom palette'
+
+    def method(self):
+        ctrl.cm.remove_current_palette()
+
+    def enabler(self):
+        return ctrl.cm.is_custom()
 
 
 class RememberPalette(KatajaAction):
     k_action_uid = 'remember_palette'
     k_command = 'Store palette as favorite'
-    k_tooltip = 'Store palette as favorite'
+    k_tooltip = 'Create a custom palette from these colors'
 
     def method(self):
-        key = ctrl.cm.create_theme_from_current_color()
-        d = ctrl.cm.get_color_mode_data(key)
-        if d:
-            return "Added color theme '%s' (%s) as favorite." % (d['name'], key)
+        key, name = ctrl.cm.create_theme_from_current_color()
+        return "Added color theme '%s' (%s) as custom color theme." % (name, key)
 
     def enabler(self):
-        d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)
-        if d and not d.get('fixed', True):
-            color_key = str(ctrl.cm.hsv)
-            return color_key not in ctrl.cm.ordered_color_modes
-        return False
+        return ctrl.cm.can_randomise()
 
 
 class CustomizeMasterStyle(KatajaAction):

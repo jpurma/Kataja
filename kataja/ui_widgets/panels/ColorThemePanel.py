@@ -35,14 +35,14 @@ class ColorPanel(Panel):
         widget.setMaximumWidth(220)
         widget.setMaximumHeight(60)
 
-        ocm = ctrl.cm.ordered_color_modes
+        ocm = ctrl.cm.ordered_color_themes
         self.selector_items = [(c['name'], key) for key, c in ocm.items()]
         hlayout = QtWidgets.QHBoxLayout()
         f = qt_prefs.get_font(g.MAIN_FONT)
 
         self.selector = SelectionBox(self)
         self.selector.add_items(self.selector_items)
-        self.ui_manager.connect_element_to_action(self.selector, 'set_color_mode')
+        self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
         hlayout.addWidget(self.selector)
         self.randomize = QtWidgets.QPushButton('⚁⚅')
         self.randomize.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
@@ -67,14 +67,26 @@ class ColorPanel(Panel):
         self.setWidget(widget)
         self.finish_init()
 
-    def update_colors(self):
-        """ In addition to normal update_colors -calls due to change in active palette, color theme
-        panel gets calls when some available color modes/palettes change.
-        """
-        ocm = ctrl.cm.ordered_color_modes
-        current_color_modes = [(c['name'], key) for key, c in ocm.items()]
-        if self.selector_items != current_color_modes:
+    def update_available_themes(self):
+        themes = ctrl.cm.list_available_themes()
+        if self.selector_items != themes:
             self.selector.clear()
-            self.selector.add_items(current_color_modes)
-            self.selector.select_by_text(ctrl.cm.current_color_mode)
+            self.selector.add_items(themes)
+            self.selector.select_by_text(ctrl.cm.theme_key)
+
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'color_themes_changed':
+            self.update_available_themes()
 

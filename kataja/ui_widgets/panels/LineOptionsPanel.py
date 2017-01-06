@@ -1,7 +1,6 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
+
 from kataja.singletons import ctrl, prefs, classes
-from kataja.utils import time_me
-from kataja.saved.Edge import Edge
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button, \
     knob, KnobDial, checkbox, radiobutton, selector, shape_selector, color_selector
@@ -9,6 +8,13 @@ import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 
 __author__ = 'purma'
+
+
+def hdivider():
+    hline = QtWidgets.QFrame()
+    hline.setForegroundRole(QtGui.QPalette.AlternateBase)
+    hline.setFrameShape(QtWidgets.QFrame.HLine)
+    return hline
 
 
 class LineOptionsPanel(Panel):
@@ -42,6 +48,8 @@ class LineOptionsPanel(Panel):
                                        action='style_scope',
                                        label='Style for')
         self.scope_selector.setMinimumWidth(96)
+
+        layout.addWidget(hdivider())
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
@@ -63,6 +71,7 @@ class LineOptionsPanel(Panel):
         self.thickness_spinbox = decimal_spinbox(ui, self, hlayout,
                                                  label='Thickness', range_min=0.0, range_max=10.0,
                                                  step=0.1, action='edge_thickness', suffix=' px')
+        layout.addWidget(hdivider())
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
@@ -70,8 +79,10 @@ class LineOptionsPanel(Panel):
                                                action='edge_arrowhead_start')
         self.arrowhead_end_button = checkbox(ui, self, hlayout, label='at end',
                                              action='edge_arrowhead_end')
-        # Curvature
+        layout.addWidget(hdivider())
         layout.addSpacing(spac)
+        # Curvature
+
         hlayout = box_row(layout)
         curve_modes = QtWidgets.QButtonGroup()
         self.relative_arc_button = radiobutton(ui, self, hlayout, label='Relative curve',
@@ -113,7 +124,9 @@ class LineOptionsPanel(Panel):
                                               range_max=20.0,
                                               step=0.5,
                                               action='leaf_shape_y', suffix=' px')
+        layout.addWidget(hdivider())
         layout.addSpacing(spac)
+
         hlayout = box_row(layout)
         self.reset_all = mini_button(ui, self, hlayout, text='Reset edge settings',
                                      action='reset_edge_settings', width=-1)

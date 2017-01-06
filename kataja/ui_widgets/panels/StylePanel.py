@@ -87,7 +87,7 @@ class StylePanel(Panel):
 
         self.edge_options = icon_button(ui, self.style_widgets, hlayout,
                                         icon=qt_prefs.settings_icon,
-                                        text='More line options',
+                                        text='More edge options',
                                         action='toggle_panel_LineOptionsPanel',
                                         checkable=True)
 

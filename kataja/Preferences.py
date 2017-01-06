@@ -88,9 +88,9 @@ class Preferences(object):
         self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles',
                            'Performance', 'Plugins', 'Advanced']
 
-        self.temp_color_mode = ''
-        self.color_mode = 'solarized_lt'
-        self._color_mode_ui = {'tab': 'General', 'special': 'color_modes',
+        self.temp_color_theme = ''
+        self.color_theme = 'solarized_lt'
+        self._color_theme_ui = {'tab': 'General', 'special': 'color_themes',
                                'label': 'Default colors',
                                'help': 'Color theme used for both trees and editor',
                                'on_change': 'update_colors', 'order': 10}

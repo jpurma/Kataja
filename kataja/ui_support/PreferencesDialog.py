@@ -25,7 +25,7 @@
 from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
-from kataja.PaletteManager import color_modes
+from kataja.PaletteManager import color_themes
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_support.PluginSelector import PluginSelector
@@ -420,8 +420,8 @@ class PreferencesDialog(QtWidgets.QDialog):
         new_page.setLayout(layout)
         return new_page, layout
 
-    def build_color_modes(self, key, d):
-        choices = [(key, data['name']) for key, data in color_modes.items()]
+    def build_color_themes(self, key, d):
+        choices = [(key, data['name']) for key, data in color_themes.items()]
         return Selector(key, self, choices), False
 
     def build_visualizations(self, key, d):
@@ -435,7 +435,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
 
     def update_colors(self):
-        ctrl.main.change_color_mode(prefs.color_mode, force=True)
+        ctrl.main.change_color_theme(prefs.color_theme, force=True)
 
     def update_visualization(self):
         ctrl.forest.set_visualization(prefs.visualization)

@@ -65,8 +65,8 @@ from kataja.visualizations.available import VISUALIZATIONS
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 stylesheet = """
-.QWidget, .SelectionBox, QLabel, QAbstractButton, QDialog, QFrame, QMainWindow, QDialog,
-QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
+.QWidget, .SelectionBox, .QComboBox, QLabel, QAbstractButton, QAbstractSpinBox, QDialog, QFrame,
+QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
@@ -133,7 +133,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
-        self.color_manager.update_color_modes()  # include color modes from preferences
+        self.color_manager.update_color_themes()  # include color modes from preferences
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
@@ -311,7 +311,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return:
         """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes)
-        self.color_manager.update_color_modes()
+        self.color_manager.update_color_themes()
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
@@ -474,14 +474,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.settings_manager.set('hsv', hsv, level=g.DOCUMENT)
         self.forest.update_colors()
 
-    def change_color_mode(self, mode, force=False):
+    def change_color_theme(self, mode, force=False):
         """
         triggered by color mode selector in colors panel
 
         :param mode:
         """
-        if mode != ctrl.settings.get('color_mode') or force:
-            ctrl.settings.set('color_mode', mode, level=g.DOCUMENT)
+        if mode != ctrl.settings.get('color_theme') or force:
+            ctrl.settings.set('color_theme', mode, level=g.DOCUMENT)
             self.update_colors()
 
     def timerEvent(self, event):

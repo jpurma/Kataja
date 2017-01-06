@@ -22,18 +22,19 @@
 #
 # ############################################################################
 
-import random
-import json
-import operator
 import math
+import operator
+import random
 from collections import OrderedDict
-from PyQt5.QtGui import QColor as c
-from PyQt5.QtGui import QColor
-from PyQt5.QtCore import Qt
-import PyQt5.QtGui as QtGui
-from kataja.globals import FOREST
-from kataja.singletons import ctrl, prefs, running_environment
 
+import PyQt5.QtGui as QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor as c
+
+from kataja.globals import FOREST
+from kataja.color_names import color_names
+from kataja.singletons import ctrl, prefs, log
 
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
 # We are going to have one theme built around these.
@@ -57,23 +58,606 @@ from kataja.singletons import ctrl, prefs, running_environment
 # cyan      #2aa198  6/6 cyan      37 #00afaf 60 -35 -05  42 161 152 175  74  63
 # green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 
-sol = [c(0, 43, 54), c(7, 54, 66), c(88, 110, 117), c(101, 123, 131),
-       c(131, 148, 150), c(147, 161, 161), c(238, 232, 213), c(253, 246, 227)]
-accents = [c(181, 137, 0), c(203, 75, 22), c(220, 50, 47), c(211, 54, 130),
-           c(108, 113, 196), c(38, 139, 210), c(42, 161, 152), c(133, 153, 0)]
+sol = [c(0, 43, 54), c(7, 54, 66), c(88, 110, 117), c(101, 123, 131), c(131, 148, 150),
+       c(147, 161, 161), c(238, 232, 213), c(253, 246, 227)]
+accents = [c(181, 137, 0), c(203, 75, 22), c(220, 50, 47), c(211, 54, 130), c(108, 113, 196),
+           c(38, 139, 210), c(42, 161, 152), c(133, 153, 0)]
 
 
-color_modes = OrderedDict(
-    [('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
-     ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('gray', {'name': 'Sketch', 'fixed': True, 'hsv': [0, 0, 0.3]}),
-     ('dk_gray', {'name': 'Sketch dark', 'fixed': True, 'hsv': [0, 0, 0.7]}),
-     ])
+color_themes = OrderedDict([('solarized_dk', {
+    'name': 'Solarized dark',
+    'hsv': [sol[3].hueF(), sol[3].saturationF(), sol[3].valueF()],
+    'build': 'solarized_dk'
+}), ('solarized_lt', {
+    'name': 'Solarized light',
+    'hsv': [sol[4].hueF(), sol[4].saturationF(), sol[4].valueF()],
+    'build': 'solarized_lt',
+}), ('random', {
+    'name': 'Random for each treeset',
+    'build': 'random',
+}), ('print', {
+    'name': 'Print-friendly',
+    'build': 'fixed',
+    'contrast': 72,
+    'hsv': [0.2, 0.2, 0.2],
+}), ('bw', {
+    'name': 'Black and white',
+    'build': 'fixed',
+    'contrast': 100,
+    'bw': True
+}), ('random-light', {
+    'name': 'Random on a light background',
+    'build': 'random',
+    'lu_max': 50
+}), ('random-dark', {
+    'name': 'Against a dark background',
+    'build': 'random',
+    'lu_min': 55
+}), ('gray', {
+    'name': 'Sketch',
+    'build': 'fixed',
+    'contrast': 50,
+    'hsv': [0, 0, 0.3],
+    'faded': True,
+}), ('dk_gray', {
+    'name': 'Sketch dark',
+    'build': 'fixed',
+    'contrast': 50,
+    'hsv': [0, 0, 0.7],
+    'faded': True,
+}), ])
+
+
+def adjust_lightness(color, amount):
+    r, g, b, a = color.getRgbF()
+    hu, s, l = rgb_to_husl(r, g, b)
+    l += amount
+    c = QColor()
+    r, g, b = husl_to_rgb(hu, s, l)
+    c.setRgbF(min(r, 1), min(g, 1), min(b, 1))
+    return c
+
+
+def shady(color, alpha):
+    c = QColor(color)
+    c.setAlphaF(alpha)
+    return c
+
+
+class PaletteManager:
+    """ Provides detailed access to current active palette and means to create and choose
+        palettes.
+
+        ForestSettings or single elements map their color definitions to keys in palette.
+
+        When a palette is saved, its QColors should be turned to HSV+A tuples.
+     """
+
+    def __init__(self):
+        # Current theme
+        self.theme_key = ''
+        self.hsv = [0.00, 0.29, 0.35]  # dark rose
+        self.d = OrderedDict()
+        self.d['white'] = c(255, 255, 255)
+        self.d['black'] = c(0, 0, 0)
+        self.custom_colors = ['custom%s' % i for i in range(0, 10)]
+        self._ui_palette = None
+        self._palette = None
+        self._accent_palettes = {}
+        self.current_hex = ''
+        self.transparent = Qt.transparent
+        self.gradient = QtGui.QRadialGradient(0, 0, 300)
+        self.gradient.setSpread(QtGui.QGradient.PadSpread)
+        self.custom = False
+        self.color_keys = ['content1', 'content2', 'content3', 'background1', 'background2',
+                           'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6',
+                           'accent7', 'accent8', 'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr',
+                           'accent5tr', 'accent6tr', 'accent7tr', 'accent8tr']
+
+        # Theme management
+        self.default_themes = color_themes
+        self.custom_themes = OrderedDict()
+
+        # Create some defaults
+        self.activate_color_theme('solarized_lt', try_to_remember=False)
+
+    def list_available_themes(self):
+        l = [(key, data['name']) for key, data in self.default_themes.items()]
+        ll = [(key, data['name']) for key, data in self.custom_themes.items()]
+        return l + ll
+
+    def update_color_themes(self):
+        self.ordered_color_themes = color_themes
+        self.ordered_color_themes.update(OrderedDict(sorted(prefs.user_palettes.items())))
+        ctrl.call_watchers(self, 'color_themes_changed')
+
+    def create_theme_from_color(self, hex_key, hsv):
+        prefs.user_palettes[hex_key] = {
+            'name': self.get_color_name(hsv),
+            'fixed': True,
+            'hsv': hsv,
+            'custom': True
+        }
+        self.custom = True
+        self.update_color_themes()
+        return hex_key
+
+    def create_custom_theme_from_modification(self):
+        pass
+
+    def remove_current_palette(self):
+        pass
+
+    def create_theme_from_current_color(self):
+        key = self.create_theme_from_color(self.current_hex, self.hsv)
+        return key
+
+    def activate_color_theme(self, theme_key, try_to_remember=True):
+        """ Prepare root color (self.hsv), depending on what kind of color settings are active
+        :param theme_key:
+        :param try_to_remember: bool -- try to restore the previous base color, effective only
+        for randomising palettes.
+        """
+
+        self.theme_key = theme_key
+        if theme_key in self.default_themes:
+            data = self.default_themes[theme_key]
+        elif theme_key in self.custom_themes:
+            data = self.custom_themes[theme_key]
+        else:
+            self.theme_key = 'solarized_lt'
+            data = self.default_themes[self.theme_key]
+            log.error(f'Unable to find color theme "{theme_key}"')
+
+        self.hsv = data.get('hsv', [0.00, 0.29, 0.35])  # dark rose)
+        contrast = data.get('contrast', 55)
+        faded = data.get('faded', False)
+        bw = data.get('bw', False)
+
+        build = data.get('build', '')
+        if build == 'solarized_lt':
+            self.build_solarized(light=True)
+            return
+        elif build == 'solarized_dk':
+            self.build_solarized(light=False)
+            return
+        elif build == 'random':
+            found = False
+            if try_to_remember:
+                remembered = ctrl.settings.get('last_key_colors') # found from forest's settings
+                if theme_key in remembered:
+                    self.hsv = list(remembered[theme_key])
+                    found = True
+            if not found:
+                lu_min = data.get('lu_min', 25)
+                lu = 101
+                lu_max = data.get('lu_max', 95)
+                while not (lu_min < lu < lu_max):
+                    r = random.random()
+                    g = random.random()
+                    b = random.random()
+                    hu, su, lu = rgb_to_husl(r, g, b)
+                key_color = c.fromRgbF(r, g, b)
+                self.hsv = list(key_color.getHsvF())[:3]
+                if ctrl.forest:
+                    remembered = ctrl.settings.get('last_key_colors')
+                    if remembered:
+                        remembered[theme_key] = self.hsv
+                    else:
+                        remembered = {theme_key: self.hsv}
+                    ctrl.settings.set('last_key_colors', remembered, level=FOREST)
+        self.compute_palette(self.hsv, contrast=contrast, faded=faded, bw=bw)
+
+    def can_randomise(self):
+        data = self.default_themes.get(self.theme_key, None)
+        return data and data.get('build', '') == 'random'
+
+    def is_custom(self):
+        return self.theme_key in self.custom_themes
+
+    def get(self, key) -> QColor:
+        """ Shortcut to palette dictionary (self.d) """
+        return self.d.get(key, None)
+
+    def update_colors(self, randomise=False):
+        """ Create/get root color and build palette around it
+        :param prefs:
+        :param settings:
+        :param randomise: if color mode allows, generate new base color
+        """
+        theme_key = ctrl.settings.get('temp_color_theme') or ctrl.settings.get('color_theme')
+        self.activate_color_theme(theme_key, try_to_remember=not randomise)
+        self.get_qt_palette(cached=False)
+        self.get_qt_palette_for_ui(cached=False)
+        self.create_accent_palettes()
+
+    def build_solarized(self, light=True):
+        """
+
+        :param light:
+        """
+        if light:
+            # Solarized light
+            # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
+            self.d['background1'] = sol[7]
+            # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
+            self.d['background2'] = sol[6]
+            # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
+            self.d['content1'] = sol[3]
+            # base1     #93a1a1 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
+            self.d['content2'] = sol[5]
+            # base01    #586e75 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
+            self.d['content3'] = sol[2]
+        else:
+            # Solarized dark
+            self.d['background1'] = sol[0]
+            self.d['background2'] = sol[1]
+            self.d['content1'] = sol[4]
+            self.d['content2'] = sol[2]
+            self.d['content3'] = sol[5]
+        for i, accent in enumerate(accents):
+            self.d['accent%s' % (i + 1)] = accent
+            self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
+            self.d['accent%str9' % (i + 1)] = shady(accent, 0.9)
+        self.d['background1tr'] = shady(self.d['background1'], 0.7)
+        tr = c(self.d['background2'])
+        tr.setAlphaF(0.7)
+        self.d['background2tr'] = shady(self.d['background2'], 0.7)
+        self.gradient.setColorAt(1, self.d['background1'])
+        self.gradient.setColorAt(0, self.d['background1'].lighter())
+
+    def compute_palette(self, hsv, contrast=55, bw=False, faded=False):
+        """ Create/get root color and build palette around it.
+        :param hsv:
+        Leaves custom colors as they are. """
+
+        self.hsv = hsv
+        # # This is the base color ##
+        key = c()
+        key.setHsvF(*hsv)
+        self.current_hex = key.name()
+        r, g, b, a = key.getRgbF()
+        h, s, l = rgb_to_husl(r, g, b)
+        if l > 50:
+            back_l = max(0, l - contrast)
+            accent_l = min(l, 62)
+        else:
+            back_l = min(99, l + contrast)
+            accent_l = max(45, l)
+        background1 = c()
+        bg_rgb = husl_to_rgb(h, s, back_l)
+        background1.setRgbF(*bg_rgb)
+        self.d['content1'] = key
+        self.d['content2'] = adjust_lightness(key, 4)
+        self.d['content3'] = adjust_lightness(key, -4)
+        for i, accent in enumerate(accents):
+            # accent colors have the same luminence as key color
+            adjusted_accent = c(accent)
+            ar, ag, ab, aa = accent.getRgbF()
+            ach, acs, acl = rgb_to_husl(ar, ag, ab)
+            # if bw:
+            #    acs = 0
+            if faded:
+                acs /= 2
+            ar, ag, ab = husl_to_rgb(ach, acs, accent_l)
+            adjusted_accent.setRgbF(ar, ag, max(0, ab))
+            self.d['accent%s' % (i + 1)] = adjusted_accent
+            self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)
+            self.d['accent%str9' % (i + 1)] = shady(adjusted_accent, 0.9)
+        self.d['background1'] = background1
+        if l < 0.7:
+            background2 = adjust_lightness(background1, -4)
+        else:
+            background2 = adjust_lightness(background1, 4)
+        self.d['background2'] = background2
+        self.d['background1tr'] = shady(background1, 0.7)
+        self.d['background2tr'] = shady(background2, 0.7)
+        # ## Gradient ###
+        self.gradient.setColorAt(1, self.d['background1'])
+        self.gradient.setColorAt(0, self.d['background1'].lighter())
+
+    def drawing(self) -> QColor:
+        """ Main drawing color for constituent branches
+        :return: QColor
+        """
+        return self.d['content1']
+
+    def text(self) -> QColor:
+        """ Main text color for constituent nodes
+        :return: QColor
+        """
+        return self.d['content1']
+
+    def paper(self) -> QColor:
+        """ Background color
+        :return: QColor
+        """
+        return self.d['background1']
+
+    def paper2(self) -> QColor:
+        """ Background color
+        :return: QColor
+        """
+        return self.d['background2']
+
+    def ui(self) -> QColor:
+        """ Primary UI text color
+        :return: QColor
+        """
+        return self.d['accent8']
+
+    def ui_tr(self) -> QColor:
+        """ Transparent UI color
+        :return: QColor
+        """
+        return self.d['accent8tr']
+
+    def ui_paper(self) -> QColor:
+        """ UI background color -- use for UI elements that float over main drawing.
+        :return: QColor
+        """
+        return self.d['accent8tr9']
+
+    def secondary(self) -> QColor:
+        """
+
+        :return:
+        """
+        return self.d['accent2']
+
+    def selection(self) -> QColor:
+        """
+
+        :return:
+        """
+        return self.d['accent3']
+
+    def hover(self) -> QColor:
+        """
+
+        :return:
+        """
+        return self.d['accent3tr']
+
+    def add_custom_color(self, color, n=-1):
+        """
+
+        :param color:
+        :param n:
+        """
+        if n == -1:
+            # find the first free (empty) custom color
+            j = -1
+            found = True
+            keys = list(self.d.keys())
+            while found:
+                j += 1
+                found = ('custom_%s' % j) in keys
+            n = j
+        self.d['custom_%s' % n] = color
+
+    def get_custom_color(self, n):
+        """
+
+        :param n:
+        :return:
+        """
+        return self.get('custom_%s' % n)
+
+    def active(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        if self.light_on_dark():
+            return color.lighter(160)
+        else:
+            return color.darker(160)
+
+    def lighter(self, color):
+        return color.lighter(110)
+
+    def inactive(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        nc = c(color)
+        nc.setAlphaF(0.5)
+        return nc
+
+    def hovering(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        return color.lighter(120)
+
+    def selected(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        if self.light_on_dark():
+            return color.lighter()
+        else:
+            return color.darker()
+
+    def broken(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        if self.light_on_dark():
+            if isinstance(color, QtGui.QBrush):
+                return QtGui.QBrush(color.color().darker())
+            else:
+                return color.darker()
+
+        else:
+            if isinstance(color, QtGui.QBrush):
+                return QtGui.QBrush(color.color().lighter())
+            else:
+                return color.lighter()
+
+    def get_color_name(self, color):
+        """ Try to find the closest matching color from a dictionary of color names
+        :param color: can be HSV(!) tuple, palette key (str) or QColor
+        :return:
+        """
+        if isinstance(color, (tuple, list)):
+            cc = c()
+            cc.setHsvF(color[0], color[1], color[2])
+        elif isinstance(color, str):
+            cc = self.get(color)
+        elif isinstance(color, QColor):
+            cc = color
+        else:
+            print('Unknown color: ', color)
+        r, g, b, a = cc.getRgb()
+        d_min = 100000
+        best = 0
+        for i, (name, hex, rgb) in enumerate(color_names):
+            ir, ig, ib = rgb
+            d = (r - ir) * (r - ir) + (g - ig) * (g - ig) + (b - ib) * (b - ib)
+            if d < d_min:
+                d_min = d
+                best = i
+        return color_names[best][0]
+
+    def palette_from_key(self, key, ui=False):
+        """
+
+        :param key:
+        :param ui:
+        :return:
+        """
+        if ui:
+            palette = QtGui.QPalette(self.get_qt_palette_for_ui())
+        else:
+            palette = QtGui.QPalette(self.get_qt_palette())
+
+        palette.setColor(QtGui.QPalette.WindowText, self.d[key])
+        palette.setColor(QtGui.QPalette.Text, self.d[key])
+        return palette
+
+    def light_on_dark(self):
+        """
+
+
+        :return:
+        """
+        return self.d['background1'].value() < 100
+
+    def use_glow(self):
+        """ In dark backgrounds the glow effect is nice, in light we prefer not.
+        :return: boolean
+        """
+        return prefs.glow_effect and self.light_on_dark()
+
+    def create_accent_palette(self, key):
+        base = self.d[key]
+        bbase = QtGui.QBrush(base)
+        pr, pg, pb, pa = self.paper().getRgb()
+        br, bg, bb, ba = base.getRgb()
+        base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
+        base_melded.setAlphaF(0.9)
+        bb_melded = QtGui.QBrush(base_melded)
+        bb_lt = QtGui.QBrush(base_melded.lighter())
+        bb_dk = QtGui.QBrush(base_melded.darker())
+        paper2 = QtGui.QBrush(self.d['background2'])
+        p = {
+            'windowText': self.text(),
+            'button': self.paper(),
+            'light': bb_lt,
+            'dark': bb_dk,
+            'mid': bbase,
+            'text': bbase,
+            'bright_text': bb_lt,
+            'base': paper2,
+            'window': bb_melded
+        }
+        pal = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'],
+                             p['text'], p['bright_text'], p['base'], p['window'])
+        pal = self.add_disabled_palette(pal, p)
+        self._accent_palettes[key] = pal
+
+    def create_accent_palettes(self):
+        self._accent_palettes = {}
+        for i in range(1, 9):
+            self.create_accent_palette('accent%s' % i)
+
+    def get_accent_palette(self, key):
+        if key not in self._accent_palettes:
+            self.create_accent_palette(key)
+        return self._accent_palettes[key]
+
+    def get_qt_palette(self, cached=True):
+        """
+
+        :param cached:
+        :return:
+        """
+        if cached and self._palette:
+            return self._palette
+        p = {
+            'windowText': QtGui.QBrush(self.d['content1']),
+            'button': QtGui.QBrush(self.d['background1']),
+            'light': QtGui.QBrush(self.d['content3']),
+            'dark': QtGui.QBrush(self.d['content2']),
+            'mid': QtGui.QBrush(self.hovering(self.d['content1'])),
+            'text': QtGui.QBrush(self.d['content1']),
+            'bright_text': QtGui.QBrush(self.d['accent8']),
+            'base': QtGui.QBrush(self.d['background2']),
+            'window': QtGui.QBrush(self.d['background1'])
+        }
+
+        self._palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'],
+                                       p['mid'], p['text'], p['bright_text'], p['base'],
+                                       p['window'])
+
+        self._palette = self.add_disabled_palette(self._palette, p)
+        return self._palette
+
+    def get_qt_palette_for_ui(self, cached=True):
+        """
+
+        :param cached:
+        :return:
+        """
+        if cached and self._ui_palette:
+            return self._ui_palette
+
+        p = {
+            'windowText': QtGui.QBrush(self.d['accent8']),
+            'button': QtGui.QBrush(self.d['background1']),
+            'light': QtGui.QBrush(self.d['accent8'].lighter()),
+            'dark': QtGui.QBrush(self.d['accent8'].darker()),
+            'mid': QtGui.QBrush(self.hovering(self.d['accent8'])),
+            'text': QtGui.QBrush(self.d['accent8']),
+            'bright_text': QtGui.QBrush(self.d['accent2']),
+            'base': QtGui.QBrush(self.d['background2']),
+            'window': QtGui.QBrush(self.d['background1'])
+        }
+        self._ui_palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'],
+                                          p['mid'], p['text'], p['bright_text'], p['base'],
+                                          p['window'])
+        self._ui_palette.setColor(QtGui.QPalette.AlternateBase, self.d['background2tr'])
+        self._ui_palette = self.add_disabled_palette(self._ui_palette, p)
+        return self._ui_palette
+
+    def add_disabled_palette(self, palette, p):
+
+        palette.setColorGroup(QtGui.QPalette.Disabled, self.broken(p['windowText']),
+                              self.broken(p['button']), self.broken(p['light']),
+                              self.broken(p['dark']), self.broken(p['mid']), self.broken(p['text']),
+                              self.broken(p['bright_text']), p['base'], p['window'])
+        return palette
 
 
 # HUSL colors and the code for creating them is from here:
@@ -99,16 +683,12 @@ color_modes = OrderedDict(
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-m = [
-    [3.240969941904521, -1.537383177570093, -0.498610760293],
-    [-0.96924363628087, 1.87596750150772, 0.041555057407175],
-    [0.055630079696993, -0.20397695888897, 1.056971514242878],
-]
-m_inv = [
-    [0.41239079926595, 0.35758433938387, 0.18048078840183],
-    [0.21263900587151, 0.71516867876775, 0.072192315360733],
-    [0.019330818715591, 0.11919477979462, 0.95053215224966],
-]
+m = [[3.240969941904521, -1.537383177570093, -0.498610760293],
+     [-0.96924363628087, 1.87596750150772, 0.041555057407175],
+     [0.055630079696993, -0.20397695888897, 1.056971514242878], ]
+m_inv = [[0.41239079926595, 0.35758433938387, 0.18048078840183],
+         [0.21263900587151, 0.71516867876775, 0.072192315360733],
+         [0.019330818715591, 0.11919477979462, 0.95053215224966], ]
 refX = 0.95045592705167
 refY = 1.0
 refZ = 1.089057750759878
@@ -299,578 +879,3 @@ def lch_to_husl(triple):
     S = C / mx * 100.0
 
     return [H, S, L]
-
-# --- HUSL code ends ---
-
-
-def adjust_lightness(color, amount):
-    r, g, b, a = color.getRgbF()
-    hu, s, l = rgb_to_husl(r, g, b)
-    l += amount
-    c = QColor()
-    r, g, b = husl_to_rgb(hu, s, l)
-    c.setRgbF(min(r, 1), min(g, 1), min(b, 1))
-    return c
-
-
-def shady(color, alpha):
-    c = QColor(color)
-    c.setAlphaF(alpha)
-    return c
-
-
-class PaletteManager:
-    """ Selects, creates and gives access to various palettes. The current palette is available in dict d with keys for default names and
-        possibility to expand with custom colors. Includes methods for creating new palettes.
-
-    ForestSettings or single elements map their color definitions to keys in palette.
-
-    When a palette is saved, its QColors should be turned to HSV+A tuples. 
-     """
-
-    def __init__(self, hsv_key=None):
-        try:
-            f = open(running_environment.resources_path + 'colors.json', 'r', encoding='UTF-8')
-            self.color_map = json.load(f)  # json.load(f, 'utf-8')
-
-            f.close()
-        except FileNotFoundError:
-            self.color_map = {}
-
-        if not hsv_key:
-            hsv_key = (0.00, 0.29, 0.35)  # dark rose
-        self.hsv = hsv_key
-        self.d = OrderedDict()
-        self.d['white'] = c(255, 255, 255)
-        self.d['black'] = c(0, 0, 0)
-        self.custom_colors = ['custom%s' % i for i in range(0, 10)]
-        self._ui_palette = None
-        self._palette = None
-        self._accent_palettes = {}
-        self.current_hex = ''
-        self.transparent = Qt.transparent
-        self.gradient = QtGui.QRadialGradient(0, 0, 300)
-        self.gradient.setSpread(QtGui.QGradient.PadSpread)
-        self.ordered_color_modes = OrderedDict()
-        self.activate_color_mode('solarized_lt', randomise=False, cold_start=True)
-        self.color_keys = ['content1', 'content2', 'content3', 'background1',
-                           'background2', 'accent1', 'accent2', 'accent3',
-                           'accent4', 'accent5', 'accent6', 'accent7',
-                           'accent8', 'accent1tr', 'accent2tr', 'accent3tr',
-                           'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
-                           'accent8tr']
-
-    @property
-    def current_color_mode(self):
-        """
-        :return:
-        """
-
-        if ctrl.settings.get('temp_color_mode'):
-            return ctrl.settings.get('temp_color_mode')
-        return ctrl.settings.get('color_mode')
-
-    def update_color_modes(self):
-        self.ordered_color_modes = color_modes
-        self.ordered_color_modes.update(OrderedDict(sorted(prefs.user_palettes.items())))
-        if hasattr(ctrl.main, 'ui_manager'):
-            panel = ctrl.ui.get_panel('ColorThemePanel')
-            if panel:
-                panel.update_colors()
-
-    def create_theme_from_color(self, hex_key, hsv):
-        prefs.user_palettes[hex_key] = {'name': self.get_color_name(hsv), 'fixed': True,
-                                        'hsv': hsv}
-        self.update_color_modes()
-        return hex_key
-
-    def create_theme_from_current_color(self):
-        key = self.create_theme_from_color(self.current_hex, self.hsv)
-        return key
-
-    def activate_color_mode(self, mode, randomise=False, cold_start=False):
-        """ Prepare root color (self.hsv), depending on what kind of color settings are active
-        :param mode:
-        :param randomise: bool -- if mode generates random colors, True for new colors, False to
-        try to remember previous colors (e.g. when restoring a document)
-        :param cold_start: bool -- use this if some color palette is required,
-        but ctrl-singleton is not yet available
-        """
-        compute = False
-        lu_min = 25
-        lu_max = 95
-
-        if mode == 'solarized_lt':
-            base = sol[3]
-            self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
-            self.current_hex = base.name()
-            self.build_solarized(light=True)
-        elif mode == 'solarized_dk':
-            base = sol[4]
-            self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
-            self.current_hex = base.name()
-            self.build_solarized(light=False)
-        elif mode == 'random':
-            compute = True
-        elif mode == 'random-light':
-            lu_max = 50
-            compute = True
-        elif mode == 'random-dark':
-            lu_min = 55
-            compute = True
-        elif mode == 'bw':
-            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
-            self.compute_palette(self.hsv, contrast=100, bw=True)
-        elif mode == 'print':
-            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
-            self.compute_palette(self.hsv, contrast=72)
-        elif mode == 'gray' or mode == 'dk_gray':
-            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
-            self.compute_palette(self.hsv, contrast=50, faded=True)
-        else:
-            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
-            self.compute_palette(self.hsv)
-        if compute:
-            if not cold_start:
-                remembered = ctrl.settings.get('last_key_colors')
-                if mode in remembered and not randomise:
-                    self.hsv = list(remembered[mode])
-                    self.compute_palette(self.hsv)
-                    return
-            lu = 101
-            while lu < lu_min or lu > lu_max:
-                r = random.random()
-                g = random.random()
-                b = random.random()
-                hu, su, lu = rgb_to_husl(r, g, b)
-            key_color = c.fromRgbF(r, g, b)
-            self.hsv = list(key_color.getHsvF())[:3]
-            self.compute_palette(self.hsv)
-
-            if not cold_start:
-                remembered = ctrl.settings.get('last_key_colors')
-                if remembered:
-                    remembered[mode] = self.hsv
-                else:
-                    ctrl.settings.set('last_key_colors', {mode: self.hsv}, level=FOREST)
-
-    def get_color_mode_data(self, mode):
-        """
-
-        :param mode:
-        :return:
-        """
-        if mode in self.ordered_color_modes:
-            return self.ordered_color_modes[mode]
-        else:
-            print('asking for unknown color mode: ', mode)
-            return self.ordered_color_modes['random']
-
-    def get(self, key):
-        """
-
-        :param key:
-        :return:
-        """
-        return self.d.get(key, None)
-
-    def update_colors(self, randomise=False):
-        """ Create/get root color and build palette around it
-        :param prefs:
-        :param settings:
-        :param randomise: if color mode allows, generate new base color
-        """
-        self.activate_color_mode(self.current_color_mode, randomise=randomise)
-        self.get_qt_palette(cached=False)
-        self.get_qt_palette_for_ui(cached=False)
-        self.create_accent_palettes()
-
-    def build_solarized(self, light=True):
-        """
-
-        :param light:
-        """
-        if light:
-            # Solarized light
-            # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
-            self.d['background1'] = sol[7]
-            # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
-            self.d['background2'] = sol[6]
-            # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
-            self.d['content1'] = sol[3]
-            # base1     #93a1a1 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
-            self.d['content2'] = sol[5]
-            # base01    #586e75 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
-            self.d['content3'] = sol[2]
-        else:
-            # Solarized dark
-            self.d['background1'] = sol[0]
-            self.d['background2'] = sol[1]
-            self.d['content1'] = sol[4]
-            self.d['content2'] = sol[2]
-            self.d['content3'] = sol[5]
-        for i, accent in enumerate(accents):
-            self.d['accent%s' % (i + 1)] = accent
-            self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
-            self.d['accent%str9' % (i + 1)] = shady(accent, 0.9)
-        self.d['background1tr'] = shady(self.d['background1'], 0.7)
-        tr = c(self.d['background2'])
-        tr.setAlphaF(0.7)
-        self.d['background2tr'] = shady(self.d['background2'], 0.7)
-        self.gradient.setColorAt(1, self.d['background1'])
-        self.gradient.setColorAt(0, self.d['background1'].lighter())
-
-    def compute_palette(self, hsv, contrast=55, bw=False, faded=False):
-        """ Create/get root color and build palette around it.
-        :param hsv:
-        Leaves custom colors as they are. """
-
-        self.hsv = hsv
-        # # This is the base color ##
-        key = c()
-        key.setHsvF(*hsv)
-        self.current_hex = key.name()
-        r, g, b, a = key.getRgbF()
-        h, s, l = rgb_to_husl(r, g, b)
-        if l > 50:
-            back_l = max(0, l - contrast)
-            accent_l = min(l, 62)
-        else:
-            back_l = min(99, l + contrast)
-            accent_l = max(45, l)
-        background1 = c()
-        bg_rgb = husl_to_rgb(h, s, back_l)
-        background1.setRgbF(*bg_rgb)
-        self.d['content1'] = key
-        self.d['content2'] = adjust_lightness(key, 4)
-        self.d['content3'] = adjust_lightness(key, -4)
-        for i, accent in enumerate(accents):
-            # accent colors have the same luminence as key color
-            adjusted_accent = c(accent)
-            ar, ag, ab, aa = accent.getRgbF()
-            ach, acs, acl = rgb_to_husl(ar, ag, ab)
-            #if bw:
-            #    acs = 0
-            if faded:
-                acs /= 2
-            ar, ag, ab = husl_to_rgb(ach, acs, accent_l)
-            adjusted_accent.setRgbF(ar, ag, max(0, ab))
-            self.d['accent%s' % (i + 1)] = adjusted_accent
-            self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)
-            self.d['accent%str9' % (i + 1)] = shady(adjusted_accent, 0.9)
-        self.d['background1'] = background1
-        if l < 0.7:
-            background2 = adjust_lightness(background1, -4)
-        else:
-            background2 = adjust_lightness(background1, 4)
-        self.d['background2'] = background2
-        self.d['background1tr'] = shady(background1, 0.7)
-        self.d['background2tr'] = shady(background2, 0.7)
-        # ## Gradient ###
-        self.gradient.setColorAt(1, self.d['background1'])
-        self.gradient.setColorAt(0, self.d['background1'].lighter())
-
-
-    def drawing(self) -> QColor:
-        """ Main drawing color for constituent branches
-        :return: QColor
-        """
-        return self.d['content1']
-
-    def text(self) -> QColor:
-        """ Main text color for constituent nodes
-        :return: QColor
-        """
-        return self.d['content1']
-
-    def paper(self) -> QColor:
-        """ Background color
-        :return: QColor
-        """
-        return self.d['background1']
-
-    def paper2(self) -> QColor:
-        """ Background color
-        :return: QColor
-        """
-        return self.d['background2']
-
-    def ui(self) -> QColor:
-        """ Primary UI text color
-        :return: QColor
-        """
-        return self.d['accent8']
-
-    def ui_tr(self) -> QColor:
-        """ Transparent UI color
-        :return: QColor
-        """
-        return self.d['accent8tr']
-
-    def ui_paper(self) -> QColor:
-        """ UI background color -- use for UI elements that float over main drawing.
-        :return: QColor
-        """
-        return self.d['accent8tr9']
-
-    def secondary(self) -> QColor:
-        """
-
-        :return:
-        """
-        return self.d['accent2']
-
-    def selection(self):
-        """
-
-        :return:
-        """
-        return self.d['accent3']
-
-    def hover(self):
-        """
-
-        :return:
-        """
-        return self.d['accent3tr']
-
-    def add_custom_color(self, color, n=-1):
-        """
-
-        :param color:
-        :param n:
-        """
-        if n == -1:
-            # find the first free (empty) custom color
-            j = -1
-            found = True
-            keys = list(self.d.keys())
-            while found:
-                j += 1
-                found = ('custom_%s' % j) in keys
-            n = j
-        self.d['custom_%s' % n] = color
-
-    def get_custom_color(self, n):
-        """
-
-        :param n:
-        :return:
-        """
-        return self.get('custom_%s' % n)
-
-    def active(self, color):
-        """
-
-        :param color:
-        :return:
-        """
-        if self.light_on_dark():
-            return color.lighter(160)
-        else:
-            return color.darker(160)
-
-    def lighter(self, color):
-        return color.lighter(110)
-
-    def inactive(self, color):
-        """
-
-        :param color:
-        :return:
-        """
-        nc = c(color)
-        nc.setAlphaF(0.5)
-        return nc
-
-    def hovering(self, color):
-        """
-
-        :param color:
-        :return:
-        """
-        return color.lighter(120)
-
-    def selected(self, color):
-        """
-
-        :param color:
-        :return:
-        """
-        if self.light_on_dark():
-            return color.lighter()
-        else:
-            return color.darker()
-
-    def broken(self, color):
-        """
-
-        :param color:
-        :return:
-        """
-        if self.light_on_dark():
-            if isinstance(color, QtGui.QBrush):
-                return QtGui.QBrush(color.color().darker())
-            else:
-                return color.darker()
-
-        else:
-            if isinstance(color, QtGui.QBrush):
-                return QtGui.QBrush(color.color().lighter())
-            else:
-                return color.lighter()
-
-    def get_color_name(self, color):
-        """
-
-
-        :param color:
-        :return:
-        """
-        if not self.color_map:
-            return ''
-        if isinstance(color, (tuple, list)):
-            cc = c()
-            cc.setHsvF(color[0], color[1], color[2])
-        elif isinstance(color, str):
-            cc = self.get(color)
-        elif isinstance(color, QColor):
-            cc = color
-        else:
-            print('Unknown color: ', color)
-        r, g, b, a = cc.getRgb()
-        d_min = 100000
-        best = 'white'
-        for key, color in self.color_map.items():
-            o_rgb = color['rgb']
-            d = (r - o_rgb[0]) * (r - o_rgb[0]) + (g - o_rgb[1]) * (
-                g - o_rgb[1]) + (b - o_rgb[2]) * (b - o_rgb[2])
-            if d < d_min:
-                d_min = d
-                best = key
-        return self.color_map[best]['name']
-
-    def palette_from_key(self, key, ui=False):
-        """
-
-        :param key:
-        :param ui:
-        :return:
-        """
-        if ui:
-            palette = QtGui.QPalette(self.get_qt_palette_for_ui())
-        else:
-            palette = QtGui.QPalette(self.get_qt_palette())
-
-        palette.setColor(QtGui.QPalette.WindowText, self.d[key])
-        palette.setColor(QtGui.QPalette.Text, self.d[key])
-        return palette
-
-    def light_on_dark(self):
-        """
-
-
-        :return:
-        """
-        return self.d['background1'].value() < 100
-
-    def use_glow(self):
-        """ In dark backgrounds the glow effect is nice, in light we prefer not.
-        :return: boolean
-        """
-        return prefs.glow_effect and self.light_on_dark()
-
-    def create_accent_palette(self, key):
-        base = self.d[key]
-        bbase = QtGui.QBrush(base)
-        pr, pg, pb, pa = self.paper().getRgb()
-        br, bg, bb, ba = base.getRgb()
-        base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
-        base_melded.setAlphaF(0.9)
-        bb_melded = QtGui.QBrush(base_melded)
-        bb_lt = QtGui.QBrush(base_melded.lighter())
-        bb_dk = QtGui.QBrush(base_melded.darker())
-        paper2 = QtGui.QBrush(self.d['background2'])
-        p = {'windowText': self.text(), 'button': self.paper(),
-             'light': bb_lt,
-             'dark': bb_dk, 'mid': bbase, 'text': bbase,
-             'bright_text': bb_lt, 'base': paper2, 'window': bb_melded}
-        pal = QtGui.QPalette(
-            p['windowText'], p['button'], p['light'], p['dark'], p['mid'],
-            p['text'], p['bright_text'], p['base'], p['window'])
-        pal = self.add_disabled_palette(pal, p)
-        self._accent_palettes[key] = pal
-
-    def create_accent_palettes(self):
-        self._accent_palettes = {}
-        for i in range(1, 9):
-            self.create_accent_palette('accent%s' % i)
-
-    def get_accent_palette(self, key):
-        if key not in self._accent_palettes:
-            self.create_accent_palette(key)
-        return self._accent_palettes[key]
-
-    def get_qt_palette(self, cached=True):
-        """
-
-        :param cached:
-        :return:
-        """
-        if cached and self._palette:
-            return self._palette
-        p = {'windowText': QtGui.QBrush(self.d['content1']),
-             'button': QtGui.QBrush(self.d['background1']),
-             'light': QtGui.QBrush(self.d['content3']),
-             'dark': QtGui.QBrush(self.d['content2']),
-             'mid': QtGui.QBrush(self.hovering(self.d['content1'])),
-             'text': QtGui.QBrush(self.d['content1']),
-             'bright_text': QtGui.QBrush(self.d['accent8']),
-             'base': QtGui.QBrush(self.d['background2']),
-             'window': QtGui.QBrush(self.d['background1'])}
-
-        self._palette = QtGui.QPalette(p['windowText'], p['button'], p['light'],
-                                       p['dark'], p['mid'], p['text'],
-                                       p['bright_text'], p['base'], p['window'])
-
-        self._palette = self.add_disabled_palette(self._palette, p)
-        return self._palette
-
-    def get_qt_palette_for_ui(self, cached=True):
-        """
-
-        :param cached:
-        :return:
-        """
-        if cached and self._ui_palette:
-            return self._ui_palette
-
-        p = {'windowText': QtGui.QBrush(self.d['accent8']),
-             'button': QtGui.QBrush(self.d['background1']),
-             'light': QtGui.QBrush(self.d['accent8'].lighter()),
-             'dark': QtGui.QBrush(self.d['accent8'].darker()),
-             'mid': QtGui.QBrush(self.hovering(self.d['accent8'])),
-             'text': QtGui.QBrush(self.d['accent8']),
-             'bright_text': QtGui.QBrush(self.d['accent2']),
-             'base': QtGui.QBrush(self.d['background2']),
-             'window': QtGui.QBrush(self.d['background1'])
-             }
-        self._ui_palette = QtGui.QPalette(p['windowText'], p['button'],
-                                          p['light'], p['dark'], p['mid'],
-                                          p['text'], p['bright_text'],
-                                          p['base'], p['window'])
-        self._ui_palette.setColor(QtGui.QPalette.AlternateBase,
-                                  self.d['background2tr'])
-        self._ui_palette = self.add_disabled_palette(self._ui_palette, p)
-        return self._ui_palette
-
-    def add_disabled_palette(self, palette, p):
-
-        palette.setColorGroup(QtGui.QPalette.Disabled, self.broken(p['windowText']),
-                              self.broken(p['button']), self.broken(p['light']),
-                              self.broken(p['dark']), self.broken(p['mid']),
-                              self.broken(p['text']), self.broken(p['bright_text']),
-                              p['base'], p['window'])
-        return palette
-
-

@@ -520,13 +520,16 @@ class BranchingTouchArea(TouchArea):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
+        assert(self.host.start and self.host.end)
+        adjustment = self.host.end.adjustment
         # host is an edge
         ctrl.forest.insert_node_between(dropped_node, self.host.start,
                                         self.host.end,
                                         self._align_left,
                                         self.start_point)
+
         for node in ctrl.dragged_set:
-            node.adjustment = self.host.end.adjustment
+            node.adjustment = adjustment
         return 'moved node %s to sibling of %s' % (dropped_node, self.host)
 
 

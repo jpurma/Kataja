@@ -31,8 +31,8 @@ class ColorMappingPanel(Panel):
         self.preferred_size = (200, 220)
         selector = SelectionBox(self)
 
-        selector.add_items([c['name'] for c in ctrl.cm.ordered_color_modes.values()])
-        selector.activated.connect(self.change_color_mode)
+        selector.add_items([c['name'] for c in ctrl.cm.ordered_color_themes.values()])
+        selector.activated.connect(self.change_color_theme)
         self.mode_select = selector
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector)

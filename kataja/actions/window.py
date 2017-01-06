@@ -42,7 +42,6 @@ class TogglePanel(KatajaAction):
     k_viewgroup = 'Panels'
     k_undoable = False
     k_exclusive = False
-    k_tooltip = 'Close this panel'
 
     def method(self, panel_id):
         """ Show or hide panel depending if it is visible or not
