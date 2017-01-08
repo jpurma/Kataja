@@ -5,7 +5,6 @@ from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
 from kataja.saved.Edge import Edge
 from kataja.globals import FOREST
-from kataja.ui_support.ColorSelector import ColorDialogForSelector
 
 from kataja.singletons import ctrl, log
 
@@ -213,31 +212,7 @@ class ChangeEdgeColor(KatajaAction):
         :return: None
         """
         selector = self.sender()
-        if isinstance(selector, ColorDialogForSelector):
-            selector = selector.parentWidget()
-        color_key = selector.currentData()
-        color = ctrl.cm.get(color_key)
-        # launch a color dialog if color_id is unknown or clicking
-        # already selected color
-        update = False
-        start = False
-        if not color:
-            color = ctrl.cm.get('content1')
-            ctrl.cm.d[color_key] = color
-            start = True
-        elif selector.selected_color == color_key:
-            start = True
-        elif selector.color_dialog:
-            update = True
-        selector.selected_color = color_key
-        if start:
-            if selector.color_dialog:
-                selector.update_color_dialog()
-                selector.color_dialog.show()
-            else:
-                selector.start_color_dialog()
-        elif update:
-            selector.update_color_dialog()
+        color_key = selector.receive_color_selection()
 
         # Update color for selected edges
         if ctrl.ui.scope_is_selection:

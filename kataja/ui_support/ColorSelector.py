@@ -2,6 +2,7 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QSize
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.singletons import ctrl
+from kataja.PaletteManager import color_keys
 
 
 class ColorSwatchIconEngine(QtGui.QIconEngine):
@@ -58,27 +59,6 @@ class LineColorIcon(QtGui.QIcon):
         QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_id, selector))
 
 
-class ColorDialogForSelector(QtWidgets.QColorDialog):
-    """
-
-    :param parent:
-    :param role:
-    :param initial_color:
-    """
-
-    def __init__(self, parent, initial_color):
-        super().__init__(parent)
-        self.setOption(QtWidgets.QColorDialog.NoButtons)
-        # self.setOption(QtWidgets.QColorDialog.DontUseNativeDialog)
-        self.setOption(QtWidgets.QColorDialog.ShowAlphaChannel)
-        for i, key in enumerate(ctrl.cm.color_keys):
-            self.setStandardColor(i, ctrl.cm.get(key))
-        color = ctrl.cm.get(initial_color) or ctrl.cm.get('content1')
-        self.setCurrentColor(color)
-        self.currentColorChanged.connect(parent.receive_color_from_color_dialog)
-        self.show()
-
-
 class ColorSelector(TableModelSelectionBox):
     """
     :param parent:
@@ -93,7 +73,8 @@ class ColorSelector(TableModelSelectionBox):
         self.role = role
         self.color_items = []
         model = self.model()
-        for c in ctrl.cm.color_keys + ctrl.cm.custom_colors:
+        print(len(color_keys))
+        for c in color_keys:
             item = QtGui.QStandardItem(LineColorIcon(c, self), '')
             item.setData(c)
             item.setSizeHint(QSize(22, 20))
@@ -106,7 +87,6 @@ class ColorSelector(TableModelSelectionBox):
         model.clear()
         self.selected_color = 'content1'
         self.default_color = 'content1'
-        self.color_dialog = None
         for c, column in enumerate(self.table):
             for r, item in enumerate(column):
                 model.setItem(r, c, item)
@@ -126,32 +106,39 @@ class ColorSelector(TableModelSelectionBox):
         super().select_by_data(data)
         self.selected_color = data
 
+    def receive_color_selection(self) -> str:
+        """ Logic for launching color dialog if necessary and returning the selected color key so
+        that actions that use ColorSelector don't have to repeat this.
+        :return: color_key
+        """
+        color_key = self.currentData()
+        color = ctrl.cm.get(color_key)
+        # launch a color dialog if color_id is unknown or clicking
+        # already selected color
+        start = False
+        if not color:
+            color = ctrl.cm.get('content1')
+            ctrl.cm.set_color(color_key, color)
+            start = True
+        elif self.selected_color == color_key:
+            start = True
+        self.selected_color = color_key
+        if start:
+            self.start_color_dialog()
+        self.update_color_dialog()
+        return color_key
+
     def start_color_dialog(self):
-        """
-        :param parent:
-        :param initial_color:
-        :return:
-        """
-        self.color_dialog = ColorDialogForSelector(self, self.selected_color)
+        wheel = ctrl.ui.get_panel('ColorWheelPanel')
+        if (not wheel) or not wheel.isVisible():
+            ctrl.main.trigger_but_suppress_undo('toggle_panel_ColorWheelPanel')
 
     def update_color_dialog(self):
-        color = ctrl.cm.get(self.selected_color) or ctrl.cm.get('content1')
-        self.color_dialog.setCurrentColor(color)
-
-    def receive_color_from_color_dialog(self, color):
-        """ Replace color in palette with new color
-        :param color:
-        :return:
-        """
-        color_key = self.selected_color
-        ctrl.cm.d[color_key] = color
-        if self.role == 'node':
-            ctrl.main.trigger_but_suppress_undo('change_node_color')
-        elif self.role == 'edge':
-            ctrl.main.trigger_but_suppress_undo('change_edge_color')
-        elif self.role == 'group':
-            ctrl.main.trigger_but_suppress_undo('change_group_color')
-        ctrl.call_watchers(self, 'palette_changed')
+        wheel = ctrl.ui.get_panel('ColorWheelPanel')
+        if wheel and wheel.isVisible():
+            wheel.set_color_role(self.selected_color)
+            wheel.show()
+            wheel.raise_()
 
     def showEvent(self, event):
         ctrl.add_watcher('palette_changed', self)

@@ -34,13 +34,12 @@ class ColorPanel(Panel):
         widget.setMinimumWidth(160)
         widget.setMaximumWidth(220)
         widget.setMaximumHeight(60)
-
-        ocm = ctrl.cm.ordered_color_themes
-        self.selector_items = [(c['name'], key) for key, c in ocm.items()]
+        self.watchlist = ['color_themes_changed']
         hlayout = QtWidgets.QHBoxLayout()
         f = qt_prefs.get_font(g.MAIN_FONT)
 
         self.selector = SelectionBox(self)
+        self.selector_items = ctrl.cm.list_available_themes()
         self.selector.add_items(self.selector_items)
         self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
         hlayout.addWidget(self.selector)
@@ -70,10 +69,10 @@ class ColorPanel(Panel):
     def update_available_themes(self):
         themes = ctrl.cm.list_available_themes()
         if self.selector_items != themes:
+            self.selector_items = themes
             self.selector.clear()
-            self.selector.add_items(themes)
+            self.selector.add_items(self.selector_items)
             self.selector.select_by_text(ctrl.cm.theme_key)
-
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

@@ -24,32 +24,39 @@ class ColorWheelPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
+        self.selected_role = 'content1'
+        self.selected_hsv = ctrl.cm.get(self.selected_role).getHsvF()[:3]
+        self.watchlist = ['palette_changed', 'color_theme_changed']
+        self.try_to_match = True
+        self.draw_all_colors = True
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
-        widget.setMinimumHeight(150)
-        widget.setMaximumHeight(220)
-        widget.preferred_size = QtCore.QSize(220, 150)
+        #widget.setMinimumHeight(150)
+        #widget.setMaximumHeight(220)
+        widget.preferred_size = QtCore.QSize(220, 300)
+        the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
-        label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.editable_colors = ['content1', 'background1'] + the_rest
+        self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + \
+                          the_rest
+
+        self.role_label = QtWidgets.QLabel("Editing color")
+        self.role_selector = QtWidgets.QComboBox(parent=self)
+        self.role_selector.addItems(self.editable_colors)
         hlayout = QtWidgets.QHBoxLayout()
-        color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(ctrl.cm.hsv), self)
-        color_name.setFixedWidth(120)
-        color_name.setSizePolicy(label_policy)
-        self.color_name = color_name
-        hlayout.addWidget(color_name)
-        add_color_button = QtWidgets.QPushButton('+', self)
-        add_color_button.setFixedWidth(20)
-        add_color_button.setSizePolicy(label_policy)
-        add_color_button.clicked.connect(self.remember_color)
-        hlayout.addWidget(add_color_button)
+        hlayout.addWidget(self.role_label)
+        hlayout.addWidget(self.role_selector)
         layout.addLayout(hlayout)
+        self.color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(self.selected_hsv), self)
+        layout.addWidget(self.color_name)
 
-        color_wheel = ColorWheelInner(widget)
-        color_wheel.setFixedSize(160, 148)
-        layout.addWidget(color_wheel)
+        self.color_wheel = ColorWheelInner(widget)
+        self.color_wheel.suggested_size = 200
+        layout.addWidget(self.color_wheel)
+
+        layout.addSpacing(8)
         h_spinner = QtWidgets.QSpinBox(self)
         h_spinner.setRange(0, 255)
         h_spinner.valueChanged.connect(self.h_changed)
@@ -58,13 +65,11 @@ class ColorWheelPanel(Panel):
         self.h_spinner = h_spinner
         h_label = QtWidgets.QLabel('&H:', self)
         h_label.setBuddy(h_spinner)
-        h_label.setSizePolicy(label_policy)
         s_spinner = QtWidgets.QSpinBox(self)
         s_spinner.setRange(0, 255)
         s_spinner.valueChanged.connect(self.s_changed)
         s_label = QtWidgets.QLabel('&S:', self)
         s_label.setBuddy(s_spinner)
-        s_label.setSizePolicy(label_policy)
         s_spinner.setAccelerated(True)
         self.s_spinner = s_spinner
         v_spinner = QtWidgets.QSpinBox(self)
@@ -72,7 +77,6 @@ class ColorWheelPanel(Panel):
         v_spinner.valueChanged.connect(self.v_changed)
         v_label = QtWidgets.QLabel('&V:', self)
         v_label.setBuddy(v_spinner)
-        v_label.setSizePolicy(label_policy)
         v_spinner.setAccelerated(True)
         self.v_spinner = v_spinner
         hlayout = QtWidgets.QHBoxLayout()
@@ -82,12 +86,22 @@ class ColorWheelPanel(Panel):
         hlayout.addWidget(s_spinner)
         hlayout.addWidget(v_label)
         hlayout.addWidget(v_spinner)
-        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         layout.addLayout(hlayout)
         widget.setLayout(layout)
         self.setWidget(widget)
         self.finish_init()
 
+    def set_color_role(self, role):
+        self.selected_role = role
+        self.update_colors()
+        self.role_selector.setCurrentText(self.selected_role)
+
+    def update_hsv(self):
+        color = ctrl.cm.get(self.selected_role)
+        if color:
+            self.selected_hsv = color.getHsvF()[:3]
+        else:
+            self.selected_hsv = 0, 0, 0
 
     def h_changed(self, value):
         """
@@ -97,10 +111,9 @@ class ColorWheelPanel(Panel):
         """
         if self._updating:
             return
-        cm = ctrl.cm
-        hsv = (value / 255.0, cm.hsv[1], cm.hsv[2])
-        ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
-        self.update()
+        h, s, v = self.selected_hsv
+        h = value / 255.0
+        self.send_color(h, s, v)
 
     def s_changed(self, value):
         """
@@ -110,10 +123,9 @@ class ColorWheelPanel(Panel):
         """
         if self._updating:
             return
-        cm = ctrl.cm
-        hsv = (cm.hsv[0], value / 254.9, cm.hsv[2])
-        ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
-        self.update()
+        h, s, v = self.selected_hsv
+        s = value / 254.9
+        self.send_color(h, s, v)
 
     def v_changed(self, value):
         """
@@ -123,34 +135,62 @@ class ColorWheelPanel(Panel):
         """
         if self._updating:
             return
-        cm = ctrl.cm
-        hsv = (cm.hsv[0], cm.hsv[1], value / 255.0)
-        ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
-        self.update()
-
-    def remember_color(self):
-        """
-
-
-        """
-        cm = ctrl.cm
-        panel = ctrl.ui.get_panel('ColorThemePanel')
-        color_key = panel.create_theme_from_color(cm.hsv)
-        ctrl.main.change_color_theme(color_key)
+        h, s, v = self.selected_hsv
+        v = value / 255.0
+        self.send_color(h, s, v)
 
     def update_colors(self):
         """
 
-
         """
-        cm = ctrl.cm
-        h, s, v = cm.hsv
+        self.update_hsv()
+        h, s, v = self.selected_hsv
         self._updating = True
         self.h_spinner.setValue(h * 255)
         self.s_spinner.setValue(s * 255)
         self.v_spinner.setValue(v * 255)
-        self.color_name.setText(cm.get_color_name(cm.hsv))
+        self.color_name.setText(ctrl.cm.get_color_name(self.selected_hsv))
+        #self.update()
+        self.color_wheel.update()
         self._updating = False
+
+    def send_color(self, h, s, v):
+        """ Replace color in palette with new color
+        :param color:
+        :return:
+        """
+        color = QtGui.QColor.fromHsvF(h, s, v)
+        color_key = self.selected_role
+        #if (not color_key.startswith('custom')) and ctrl.cm.theme_key in ctrl.cm.default_themes:
+        #    ctrl.cm.create_custom_theme_from_modification(color_key, color)
+
+        ctrl.cm.set_color(color_key, color)
+        self.update_colors()
+        #if self.role == 'node':
+        #    ctrl.main.trigger_but_suppress_undo('change_node_color')
+        #elif self.role == 'edge':
+        #    ctrl.main.trigger_but_suppress_undo('change_edge_color')
+        #elif self.role == 'group':
+        #    ctrl.main.trigger_but_suppress_undo('change_group_color')
+        ctrl.call_watchers(self, 'palette_changed')
+
+    #def resizeEvent(self, rs):
+    #    self.color_wheel.update_measurements(self.width() - 20)
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'palette_changed' or signal == 'color_theme_changed':
+            self.update_colors()
 
 
 class ColorWheelInner(QtWidgets.QWidget):
@@ -165,20 +205,52 @@ class ColorWheelInner(QtWidgets.QWidget):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
+        self.suggested_size = 160
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0
         self._color_spot_area = 0, 0, 0
         self._flag_area = 0, 0, 0, 0
         self.setAutoFillBackground(True)
-        self.setMaximumSize(160, 148)
-        self.setGeometry(0, 0, 160, 148)
         self.show()
-        self._radius = 70
-        self._origin_x = self._radius + 4
-        self._origin_y = self._radius + 4
-        self._lum_box_x = 8 + (self._radius * 2)
-        self._lum_box_y = 4 + (self._radius / 2)
+        self.outer = self.parentWidget().parentWidget()
+        self._radius = 0
+        self._lum_box_height = 0
+        self._origin_x = 0
+        self._origin_y = 0
+        self._lum_box_x = 0
+        self._lum_box_y = 0
+        self._color_spot_max = 0
+        self._gradient = None
+        self.setMinimumSize(self.suggested_size, self.suggested_size)
+        self.setMaximumSize(600, 600)
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                           QtWidgets.QSizePolicy.MinimumExpanding)
+        self.update_measurements(self.suggested_size)
 
+    def resizeEvent(self, rs):
+        self.update_measurements(rs.size().width())
+
+    def update_measurements(self, x):
+        self.suggested_size = x
+        self._radius = x * 0.43
+        self._top_corner = x * 0.02
+        self._lum_box_width = x * 0.04
+        self._lum_box_height = x * 0.75
+        self._origin_x = x * 0.45
+        self._origin_y = x * 0.45
+        self._lum_box_x = x * 0.93
+        self._lum_box_y = x * 0.1
+        self._color_spot_max = x * 0.15
+        self._color_spot_min = x * 0.02
+        self._crosshair = x * 0.05
+        self._flag_width = x * 0.08
+        self._flag_height = x * 0.04
+        #self.setMinimumSize(self.suggested_size, self.suggested_size)
+        self._gradient = QtGui.QLinearGradient(0, self._lum_box_y, 0, self._lum_box_y +
+                                               self._lum_box_height)
+
+    def sizeHint(self):
+        return QtCore.QSize(self.suggested_size, self.suggested_size)
 
     def paintEvent(self, event):
         """
@@ -188,17 +260,12 @@ class ColorWheelInner(QtWidgets.QWidget):
         """
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
-        # painter.setBrush(colors.dark_gray)
         painter.setPen(ctrl.cm.ui())
-        # painter.drawRect(0, 0, 160, 160)
-        # painter.setBrush(colors.paper)
-        # painter.setPen(colors.paper)
         r = self._radius
-        painter.drawEllipse(4, 4, r + r, r + r)
-        painter.drawRect(self._lum_box_x, self._lum_box_y, 8, r)
+        painter.drawEllipse(self._top_corner, self._top_corner, r + r, r + r)
         cm = ctrl.cm
 
-        def draw_as_circle(color):
+        def draw_as_circle(color, selected=False):
             """
 
             :param color:
@@ -211,9 +278,18 @@ class ColorWheelInner(QtWidgets.QWidget):
             x = math.cos(angle) * depth
             x += self._origin_x
             y += self._origin_y
-            size = (1 - v) * 20.0 + 5
+            size = (1 - v) * self._color_spot_max + self._color_spot_min
             size2 = size / 2
-
+            if selected:
+                painter.setPen(QtGui.QColor(255, 255, 255))
+                painter.drawEllipse(x - size2 - 1, y - size2 - 1, size + 2, size + 2)
+                self._color_spot_area = x, y, v
+                painter.setPen(cm.ui())
+                painter.drawLine(x, y - size2 - self._crosshair, x, y + size2 + self._crosshair)
+                painter.drawLine(x - size2 - self._crosshair, y, x + size2 + self._crosshair, y)
+                self._flag_area = (self._lum_box_x - ((self._flag_width - self._lum_box_width) / 2),
+                                   self._lum_box_y + self._lum_box_height * (1 - v),
+                                   self._flag_width, self._flag_height)
             if color == cm.paper():
                 painter.setPen(cm.drawing())
                 painter.setBrush(color)
@@ -221,19 +297,31 @@ class ColorWheelInner(QtWidgets.QWidget):
                 painter.setBrush(color)
                 painter.setPen(color)
             painter.drawEllipse(x - size2, y - size2, size, size)
-            return x, y, v
 
-        draw_these = [cm.paper(), cm.ui(), cm.secondary(), cm.drawing()]
-        x, y, v = 0, 0, 0
-        for color in draw_these:
-            x, y, v = draw_as_circle(color)
-        self._color_spot_area = x, y, v
-        size = (1 - v) * 20.0 + 5
-        size2 = size / 2
-        painter.setPen(cm.ui())
-        painter.drawLine(x, y - size2, x, y + size2)
-        painter.drawLine(x - size2, y, x + size2, y)
-        self._flag_area = self._lum_box_x, self._lum_box_y + r * (1 - v), 8, 8
+        if self.outer.draw_all_colors:
+            draw_these = self.outer.all_colors
+        else:
+            draw_these = [self.outer.selected_role]
+        for color_key in draw_these:
+            if color_key != self.outer.selected_role:
+                color = ctrl.cm.get(color_key)
+                if color:
+                    draw_as_circle(color, selected=False)
+
+        color = ctrl.cm.get(self.outer.selected_role)
+        if color:
+            draw_as_circle(color, selected=True)
+
+        painter.setPen(ctrl.cm.ui())
+        light = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 1.0)
+        self._gradient.setColorAt(0, light)
+        dark = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 0)
+        self._gradient.setColorAt(1, dark)
+        painter.setBrush(self._gradient)
+
+        painter.drawRect(self._lum_box_x, self._lum_box_y, self._lum_box_width,
+                         self._lum_box_height + self._flag_height)
+
         painter.setBrush(cm.drawing())
         painter.drawRect(self._flag_area[0], self._flag_area[1], self._flag_area[2], self._flag_area[3])
         # QtWidgets.QWidget.paintEvent(self, event)
@@ -251,8 +339,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         elif v > 1:
             v = 1
         if ov != v:
-            ctrl.main.adjust_colors((h, s, v))  # @UndefinedVariable
-            self.update()
+            self.outer.send_color(h, s, v)
 
 
     def mousePressEvent(self, event):
@@ -266,7 +353,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         c_x, c_y, c_r = self._color_spot_area
         if f_x <= x <= f_x + f_w and f_y <= y <= f_y + f_h:
             self._pressed = FLAG
-        elif abs(x - c_x) + abs(y - c_y) < (1 - c_r) * 20 + 5:
+        elif abs(x - c_x) + abs(y - c_y) < (1 - c_r) * self._color_spot_max + self._color_spot_min:
             self._pressed = CIRCLE
 
     def mouseMoveEvent(self, event):
@@ -276,16 +363,8 @@ class ColorWheelInner(QtWidgets.QWidget):
         :return:
         """
 
-        def get_value_from_flag_position(value, y):
-            """
-
-            :param value:
-            :param y:
-            :return:
-            """
-            if self._radius == 0:
-                return 0
-            dv = (self._radius - (y - self._lum_box_y)) / self._radius
+        def get_value_from_flag_position(y):
+            dv = (self._lum_box_y + self._lum_box_height - y) / self._lum_box_height
             if dv < 0:
                 dv = 0
             if dv > 1:
@@ -293,12 +372,6 @@ class ColorWheelInner(QtWidgets.QWidget):
             return dv
 
         def get_color_from_position(x, y):
-            """
-
-            :param x:
-            :param y:
-            :return:
-            """
             dx = self._origin_x - x
             dy = self._origin_y - y
             hyp = math.sqrt(dx * dx + dy * dy)
@@ -311,19 +384,15 @@ class ColorWheelInner(QtWidgets.QWidget):
             h = (math.atan2(dy, dx) + math.pi) / (math.pi * 2)
             return h, s
 
-        cm = ctrl.cm
+        h, s, v = self.outer.selected_hsv
         if self._pressed == FLAG:
             x, y = to_tuple(event.localPos())
-            new_value = get_value_from_flag_position(cm.hsv[2], y)
-            hsv = (cm.hsv[0], cm.hsv[1], new_value)
-            ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
-            self.update()
+            v = get_value_from_flag_position(y)
+            self.outer.send_color(h, s, v)
         elif self._pressed == CIRCLE:
             x, y = to_tuple(event.localPos())
             h, s = get_color_from_position(x, y)
-            hsv = (h, s, cm.hsv[2])
-            ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
-            self.update()
+            self.outer.send_color(h, s, v)
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):

@@ -3,7 +3,6 @@ from kataja.globals import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log, qt_prefs
 from kataja.saved.movables.Node import Node
-from kataja.ui_support.ColorSelector import ColorDialogForSelector
 
 
 # ==== Class variables for KatajaActions:
@@ -64,7 +63,10 @@ class RemovePalette(KatajaAction):
     k_tooltip = 'Remove a custom palette'
 
     def method(self):
-        ctrl.cm.remove_current_palette()
+        active = ctrl.cm.theme_key
+        ctrl.main.change_color_theme(ctrl.cm.default)
+        ctrl.cm.remove_custom_theme(active)
+        return f"Removed custom palette '{active}'."
 
     def enabler(self):
         return ctrl.cm.is_custom()
@@ -77,48 +79,49 @@ class RememberPalette(KatajaAction):
 
     def method(self):
         key, name = ctrl.cm.create_theme_from_current_color()
+        ctrl.main.change_color_theme(key)
         return "Added color theme '%s' (%s) as custom color theme." % (name, key)
 
     def enabler(self):
         return ctrl.cm.can_randomise()
 
 
-class CustomizeMasterStyle(KatajaAction):
-    k_action_uid = 'customize_master_style'
-    k_command = 'Customize style'
-    k_tooltip = 'Modify the styles of lines and nodes'
-    k_undoable = False
-
-    def method(self):
-        """ """
-        panel = ctrl.ui.get_panel('StylePanel')
-        panel.toggle_customization(not self.getter())
-
-    def getter(self):
-        panel = ctrl.ui.get_panel('StylePanel')
-        return panel.style_widgets.isVisible()
-
-
-class ChangeMasterStyle(KatajaAction):
-    k_action_uid = 'change_master_style'
-    k_command = 'Change drawing style'
-    k_tooltip = 'Changes the style of lines and nodes'
-    k_undoable = False
-
-    def method(self):
-        """ """
-        sender = self.sender()
-        value = sender.currentData(256)
-        ctrl.settings.set('style', value, level=DOCUMENT)
-        ctrl.forest.redraw_edges()
-        return "Changed master style to '%s'" % value
-
-    def enabler(self):
-        return ctrl.forest is not None and ctrl.settings.get('style')
-
-    def getter(self):
-        return ctrl.settings.get('style')
-
+# class CustomizeMasterStyle(KatajaAction):
+#     k_action_uid = 'customize_master_style'
+#     k_command = 'Customize style'
+#     k_tooltip = 'Modify the styles of lines and nodes'
+#     k_undoable = False
+#
+#     def method(self):
+#         """ """
+#         panel = ctrl.ui.get_panel('StylePanel')
+#         panel.toggle_customization(not self.getter())
+#
+#     def getter(self):
+#         panel = ctrl.ui.get_panel('StylePanel')
+#         return panel.style_widgets.isVisible()
+#
+#
+# class ChangeMasterStyle(KatajaAction):
+#     k_action_uid = 'change_master_style'
+#     k_command = 'Change drawing style'
+#     k_tooltip = 'Changes the style of lines and nodes'
+#     k_undoable = False
+#
+#     def method(self):
+#         """ """
+#         sender = self.sender()
+#         value = sender.currentData(256)
+#         ctrl.settings.set('style', value, level=DOCUMENT)
+#         ctrl.forest.redraw_edges()
+#         return "Changed master style to '%s'" % value
+#
+#     def enabler(self):
+#         return ctrl.forest is not None and ctrl.settings.get('style')
+#
+#     def getter(self):
+#         return ctrl.settings.get('style')
+#
 
 class ChangeStyleScope(KatajaAction):
     k_action_uid = 'style_scope'
@@ -232,32 +235,7 @@ class ChangeNodeColor(KatajaAction):
         :return: None
         """
         selector = self.sender()
-        if isinstance(selector, ColorDialogForSelector):
-            selector = selector.parentWidget()
-        color_key = selector.currentData()
-        color = ctrl.cm.get(color_key)
-        # launch a color dialog if color_id is unknown or clicking
-        # already selected color
-        update = False
-        start = False
-        if not color:
-            color = ctrl.cm.get('content1')
-            ctrl.cm.d[color_key] = color
-            start = True
-        elif selector.selected_color == color_key:
-            start = True
-        elif selector.color_dialog:
-            update = True
-        selector.selected_color = color_key
-        if start:
-            if selector.color_dialog:
-                selector.update_color_dialog()
-                selector.color_dialog.show()
-            else:
-                selector.start_color_dialog()
-        elif update:
-            selector.update_color_dialog()
-
+        color_key = selector.receive_color_selection()
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:

@@ -133,7 +133,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
-        self.color_manager.update_color_themes()  # include color modes from preferences
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
@@ -311,7 +310,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return:
         """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes)
-        self.color_manager.update_color_themes()
+        ctrl.call_watchers(self, 'color_themes_changed')
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
@@ -464,15 +463,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         action going on """
         for action in self.ui_manager.actions.values():
             action.setDisabled(True)
-
-    def adjust_colors(self, hsv):
-        """
-        adjust colors -action (shift-alt-c)
-
-        :param hsv:
-        """
-        self.settings_manager.set('hsv', hsv, level=g.DOCUMENT)
-        self.forest.update_colors()
 
     def change_color_theme(self, mode, force=False):
         """

@@ -36,6 +36,10 @@ from kataja.globals import FOREST
 from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
 
+color_keys = [f'content{i}' for i in range(1, 4)] + [f'background{i}' for i in range(1, 3)] + \
+             [f'accent{i}' for i in range(1, 9)] + [f'accent{i}tr' for i in range(1, 9)] + \
+             [f'custom{i}' for i in range(1, 10)]
+
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
 # We are going to have one theme built around these.
 
@@ -136,11 +140,9 @@ class PaletteManager:
     def __init__(self):
         # Current theme
         self.theme_key = ''
+        self.default = 'solarized_lt'
         self.hsv = [0.00, 0.29, 0.35]  # dark rose
         self.d = OrderedDict()
-        self.d['white'] = c(255, 255, 255)
-        self.d['black'] = c(0, 0, 0)
-        self.custom_colors = ['custom%s' % i for i in range(0, 10)]
         self._ui_palette = None
         self._palette = None
         self._accent_palettes = {}
@@ -149,21 +151,16 @@ class PaletteManager:
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.custom = False
-        self.color_keys = ['content1', 'content2', 'content3', 'background1', 'background2',
-                           'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6',
-                           'accent7', 'accent8', 'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr',
-                           'accent5tr', 'accent6tr', 'accent7tr', 'accent8tr']
-
         # Theme management
         self.default_themes = color_themes
         self.custom_themes = OrderedDict()
 
         # Create some defaults
-        self.activate_color_theme('solarized_lt', try_to_remember=False)
+        self.activate_color_theme(self.default, try_to_remember=False)
 
     def list_available_themes(self):
-        l = [(key, data['name']) for key, data in self.default_themes.items()]
-        ll = [(key, data['name']) for key, data in self.custom_themes.items()]
+        l = [(data['name'], key) for key, data in self.default_themes.items()]
+        ll = [(data['name'], key) for key, data in self.custom_themes.items()]
         return l + ll
 
     def update_color_themes(self):
@@ -171,26 +168,58 @@ class PaletteManager:
         self.ordered_color_themes.update(OrderedDict(sorted(prefs.user_palettes.items())))
         ctrl.call_watchers(self, 'color_themes_changed')
 
-    def create_theme_from_color(self, hex_key, hsv):
-        prefs.user_palettes[hex_key] = {
-            'name': self.get_color_name(hsv),
-            'fixed': True,
-            'hsv': hsv,
-            'custom': True
-        }
-        self.custom = True
-        self.update_color_themes()
-        return hex_key
-
-    def create_custom_theme_from_modification(self):
-        pass
-
-    def remove_current_palette(self):
-        pass
-
     def create_theme_from_current_color(self):
-        key = self.create_theme_from_color(self.current_hex, self.hsv)
-        return key
+        storage = {}
+        for key, col in self.d.items():
+            storage[key] = col.getRgbF()
+
+        theme = {
+            'name': self.get_color_name(self.hsv),
+            'build': 'fixed',
+            'hsv': self.hsv,
+            'custom': True,
+            'colors': storage
+        }
+        prefs.user_palettes[self.current_hex] = theme
+        self.custom_themes[self.current_hex] = theme
+        ctrl.call_watchers(self, 'color_themes_changed')
+        return self.current_hex, theme['name']
+
+    def create_custom_theme_from_modification(self, color_key, color):
+        theme_key = f'{self.theme_key} modified'
+        print('creating new theme: ', theme_key)
+        c = 0
+        while theme_key in self.custom_themes:
+            c += 1
+            theme_key = f'{self.theme_key} modified {c}'
+        if color_key == 'content1':
+            hsv = list(color.getHsvF())[:3]
+        else:
+            hsv = self.hsv
+        storage = {}
+        for key, col in self.d.items():
+            storage[key] = col.getRgbF()
+
+        storage[color_key] = color.getRgbF()
+
+        theme = {
+            'name': theme_key,
+            'build': 'fixed',
+            'hsv': hsv,
+            'custom': True,
+            'colors': storage
+        }
+
+        prefs.user_palettes[theme_key] = theme
+        self.custom_themes[theme_key] = theme
+        ctrl.call_watchers(self, 'color_themes_changed')
+        return theme_key, theme_key
+
+    def remove_custom_palette(self, theme_key):
+        if theme_key in prefs.user_palettes:
+            del prefs.user_palettes[theme_key]
+        if theme_key in self.custom_themes:
+            self.custom_themes.remove(theme_key)
 
     def activate_color_theme(self, theme_key, try_to_remember=True):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active
@@ -205,7 +234,7 @@ class PaletteManager:
         elif theme_key in self.custom_themes:
             data = self.custom_themes[theme_key]
         else:
-            self.theme_key = 'solarized_lt'
+            self.theme_key = self.default
             data = self.default_themes[self.theme_key]
             log.error(f'Unable to find color theme "{theme_key}"')
 
@@ -213,6 +242,7 @@ class PaletteManager:
         contrast = data.get('contrast', 55)
         faded = data.get('faded', False)
         bw = data.get('bw', False)
+        colors = data.get('colors', None)
 
         build = data.get('build', '')
         if build == 'solarized_lt':
@@ -246,7 +276,19 @@ class PaletteManager:
                     else:
                         remembered = {theme_key: self.hsv}
                     ctrl.settings.set('last_key_colors', remembered, level=FOREST)
-        self.compute_palette(self.hsv, contrast=contrast, faded=faded, bw=bw)
+        if colors:
+            for key, (r, g, b, a) in colors.items():
+                color = c.fromRgbF(r, g, b)
+                color.setAlphaF(a)
+                self.d[key] = color
+            color = self.d['content1']
+            self.current_hex = color.name()
+            self.hsv = list(color.getHsvF())[:3]
+            self.gradient.setColorAt(1, self.d['background1'])
+            self.gradient.setColorAt(0, self.d['background1'].lighter())
+
+        else:
+            self.compute_palette(self.hsv, contrast=contrast, faded=faded, bw=bw)
 
     def can_randomise(self):
         data = self.default_themes.get(self.theme_key, None)
@@ -258,6 +300,13 @@ class PaletteManager:
     def get(self, key) -> QColor:
         """ Shortcut to palette dictionary (self.d) """
         return self.d.get(key, None)
+
+    def set_color(self, key, color):
+        self.d[key] = color
+        if self.theme_key in self.custom_themes:
+            theme_data = self.custom_themes[self.theme_key]
+            theme_data['colors'][key] = color.getRgbF()
+            # same theme_data object also lives in prefs.
 
     def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
@@ -298,11 +347,7 @@ class PaletteManager:
         for i, accent in enumerate(accents):
             self.d['accent%s' % (i + 1)] = accent
             self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
-            self.d['accent%str9' % (i + 1)] = shady(accent, 0.9)
-        self.d['background1tr'] = shady(self.d['background1'], 0.7)
-        tr = c(self.d['background2'])
-        tr.setAlphaF(0.7)
-        self.d['background2tr'] = shady(self.d['background2'], 0.7)
+        self.current_hex = self.d['content1'].name()
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
 
@@ -343,18 +388,16 @@ class PaletteManager:
             adjusted_accent.setRgbF(ar, ag, max(0, ab))
             self.d['accent%s' % (i + 1)] = adjusted_accent
             self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)
-            self.d['accent%str9' % (i + 1)] = shady(adjusted_accent, 0.9)
         self.d['background1'] = background1
         if l < 0.7:
             background2 = adjust_lightness(background1, -4)
         else:
             background2 = adjust_lightness(background1, 4)
         self.d['background2'] = background2
-        self.d['background1tr'] = shady(background1, 0.7)
-        self.d['background2tr'] = shady(background2, 0.7)
-        # ## Gradient ###
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
+
+    # Getters for common color roles ###########################################
 
     def drawing(self) -> QColor:
         """ Main drawing color for constituent branches
@@ -392,12 +435,6 @@ class PaletteManager:
         """
         return self.d['accent8tr']
 
-    def ui_paper(self) -> QColor:
-        """ UI background color -- use for UI elements that float over main drawing.
-        :return: QColor
-        """
-        return self.d['accent8tr9']
-
     def secondary(self) -> QColor:
         """
 
@@ -419,32 +456,7 @@ class PaletteManager:
         """
         return self.d['accent3tr']
 
-    def add_custom_color(self, color, n=-1):
-        """
-
-        :param color:
-        :param n:
-        """
-        if n == -1:
-            # find the first free (empty) custom color
-            j = -1
-            found = True
-            keys = list(self.d.keys())
-            while found:
-                j += 1
-                found = ('custom_%s' % j) in keys
-            n = j
-        self.d['custom_%s' % n] = color
-
-    def get_custom_color(self, n):
-        """
-
-        :param n:
-        :return:
-        """
-        return self.get('custom_%s' % n)
-
-    def active(self, color):
+    def active(self, color) -> QColor:
         """
 
         :param color:
@@ -455,10 +467,10 @@ class PaletteManager:
         else:
             return color.darker(160)
 
-    def lighter(self, color):
+    def lighter(self, color) -> QColor:
         return color.lighter(110)
 
-    def inactive(self, color):
+    def inactive(self, color) -> QColor:
         """
 
         :param color:
@@ -468,7 +480,7 @@ class PaletteManager:
         nc.setAlphaF(0.5)
         return nc
 
-    def hovering(self, color):
+    def hovering(self, color) -> QColor:
         """
 
         :param color:
@@ -476,7 +488,7 @@ class PaletteManager:
         """
         return color.lighter(120)
 
-    def selected(self, color):
+    def selected(self, color) -> QColor:
         """
 
         :param color:
@@ -487,7 +499,7 @@ class PaletteManager:
         else:
             return color.darker()
 
-    def broken(self, color):
+    def broken(self, color) -> QtGui.QBrush:
         """
 
         :param color:
@@ -505,7 +517,19 @@ class PaletteManager:
             else:
                 return color.lighter()
 
-    def get_color_name(self, color):
+    def light_on_dark(self) -> bool:
+        """
+        :return:
+        """
+        return self.d['background1'].value() < 100
+
+    def use_glow(self) -> bool:
+        """ In dark backgrounds the glow effect is nice, in light we prefer not.
+        :return: boolean
+        """
+        return prefs.glow_effect and self.light_on_dark()
+
+    def get_color_name(self, color) -> str:
         """ Try to find the closest matching color from a dictionary of color names
         :param color: can be HSV(!) tuple, palette key (str) or QColor
         :return:
@@ -530,7 +554,9 @@ class PaletteManager:
                 best = i
         return color_names[best][0]
 
-    def palette_from_key(self, key, ui=False):
+    # ### QPalettes ################################################
+
+    def palette_from_key(self, key, ui=False) -> QtGui.QPalette:
         """
 
         :param key:
@@ -545,20 +571,6 @@ class PaletteManager:
         palette.setColor(QtGui.QPalette.WindowText, self.d[key])
         palette.setColor(QtGui.QPalette.Text, self.d[key])
         return palette
-
-    def light_on_dark(self):
-        """
-
-
-        :return:
-        """
-        return self.d['background1'].value() < 100
-
-    def use_glow(self):
-        """ In dark backgrounds the glow effect is nice, in light we prefer not.
-        :return: boolean
-        """
-        return prefs.glow_effect and self.light_on_dark()
 
     def create_accent_palette(self, key):
         base = self.d[key]
@@ -647,7 +659,7 @@ class PaletteManager:
         self._ui_palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'],
                                           p['mid'], p['text'], p['bright_text'], p['base'],
                                           p['window'])
-        self._ui_palette.setColor(QtGui.QPalette.AlternateBase, self.d['background2tr'])
+        self._ui_palette.setColor(QtGui.QPalette.AlternateBase, shady(self.d['background2'], 0.7))
         self._ui_palette = self.add_disabled_palette(self._ui_palette, p)
         return self._ui_palette
 
