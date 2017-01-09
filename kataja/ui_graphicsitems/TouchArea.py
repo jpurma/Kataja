@@ -1193,10 +1193,18 @@ class MergeToTop(BranchingTouchArea):
         else:
             painter.drawPath(self._path)
         if self._hovering:
-            painter.save()
-            painter.setBrush(ctrl.cm.ui())
-            painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
-            painter.restore()
-            draw_plus(painter, 4, 0)
+            if len(self.host.trees) == 1:
+                top = list(self.host.trees)[0].top
+                scene_point = QtCore.QPointF(*top.current_scene_position)
+                end_point = self.mapFromScene(scene_point)
+                path = QtGui.QPainterPath(QtCore.QPointF(0, 0))
+                path.quadTo(QtCore.QPointF(end_point.x() - 200, end_point.y()), end_point)
+                painter.drawPath(path)
+            else:
+                painter.save()
+                painter.setBrush(ctrl.cm.ui())
+                painter.rotate(20)
+                draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+                painter.restore()
+                draw_plus(painter, 4, 0)
 
