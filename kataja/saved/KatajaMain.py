@@ -631,7 +631,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         # print(savedata)
         return savedata
 
-    def update_colors(self, randomise=False):
+    def update_colors(self, randomise=False, animate=True):
         cm = self.color_manager
         old_gradient_base = cm.paper()
         cm.update_colors(randomise=randomise)
@@ -639,12 +639,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.update_style_sheet()
         ctrl.call_watchers(self, 'palette_changed')
         if cm.gradient:
-            if old_gradient_base != cm.paper():
+            if old_gradient_base != cm.paper() and animate:
                 self.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
             else:
                 self.graph_scene.setBackgroundBrush(cm.gradient)
         else:
             self.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
+        self.update()
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

@@ -284,25 +284,6 @@ class ToggleSelectOrder(KatajaAction):
             ctrl.forest.add_order_features('S')
 
 
-class ChangeColors(KatajaAction):
-    k_action_uid = 'change_colors'
-    k_command = 'Change &Colors'
-    k_shortcut = 'Shift+c'
-
-    def method(self):
-        """ DEPRECATED change colors -action (shift-c)
-        :return: None
-        """
-        color_panel = ctrl.ui.get_panel('ColorThemePanel')
-        if not color_panel.isVisible():
-            color_panel.show()
-        else:
-            ctrl.settings.set('hsv', None, level=FOREST)
-            ctrl.main.update_colors()
-            ctrl.main.activateWindow()
-            # self.ui_support.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s,
-            #  l))
-
 
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'

@@ -136,7 +136,7 @@ class ColorSelector(TableModelSelectionBox):
     def update_color_dialog(self):
         wheel = ctrl.ui.get_panel('ColorWheelPanel')
         if wheel and wheel.isVisible():
-            wheel.set_color_role(self.selected_color)
+            wheel.set_color_role(self.selected_color, update_selector=True)
             wheel.show()
             wheel.raise_()
 

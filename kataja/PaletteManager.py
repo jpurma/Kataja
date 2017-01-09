@@ -35,6 +35,7 @@ from PyQt5.QtGui import QColor as c
 from kataja.globals import FOREST
 from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
+from kataja.globals import DOCUMENT
 
 color_keys = [f'content{i}' for i in range(1, 4)] + [f'background{i}' for i in range(1, 3)] + \
              [f'accent{i}' for i in range(1, 9)] + [f'accent{i}tr' for i in range(1, 9)] + \
@@ -163,11 +164,6 @@ class PaletteManager:
         ll = [(data['name'], key) for key, data in self.custom_themes.items()]
         return l + ll
 
-    def update_color_themes(self):
-        self.ordered_color_themes = color_themes
-        self.ordered_color_themes.update(OrderedDict(sorted(prefs.user_palettes.items())))
-        ctrl.call_watchers(self, 'color_themes_changed')
-
     def create_theme_from_current_color(self):
         storage = {}
         for key, col in self.d.items():
@@ -186,12 +182,11 @@ class PaletteManager:
         return self.current_hex, theme['name']
 
     def create_custom_theme_from_modification(self, color_key, color):
-        theme_key = f'{self.theme_key} modified'
-        print('creating new theme: ', theme_key)
-        c = 0
+        c = 1
+        theme_key = f'custom theme {c}'
         while theme_key in self.custom_themes:
             c += 1
-            theme_key = f'{self.theme_key} modified {c}'
+            theme_key = f'custom theme {c}'
         if color_key == 'content1':
             hsv = list(color.getHsvF())[:3]
         else:
@@ -212,7 +207,6 @@ class PaletteManager:
 
         prefs.user_palettes[theme_key] = theme
         self.custom_themes[theme_key] = theme
-        ctrl.call_watchers(self, 'color_themes_changed')
         return theme_key, theme_key
 
     def remove_custom_palette(self, theme_key):
@@ -237,6 +231,7 @@ class PaletteManager:
             self.theme_key = self.default
             data = self.default_themes[self.theme_key]
             log.error(f'Unable to find color theme "{theme_key}"')
+            print(self.custom_themes)
 
         self.hsv = data.get('hsv', [0.00, 0.29, 0.35])  # dark rose)
         contrast = data.get('contrast', 55)
@@ -301,12 +296,37 @@ class PaletteManager:
         """ Shortcut to palette dictionary (self.d) """
         return self.d.get(key, None)
 
-    def set_color(self, key, color):
-        self.d[key] = color
-        if self.theme_key in self.custom_themes:
-            theme_data = self.custom_themes[self.theme_key]
-            theme_data['colors'][key] = color.getRgbF()
-            # same theme_data object also lives in prefs.
+    def set_color(self, key, color, compute_companions=False):
+        """ In its simplest, put a color to palette dict. If palette is not custom palette and
+        color is not going to custom colors slot, then make a new palette and switch to use
+        it."""
+
+        if self.theme_key in self.default_themes and not key.startswith('custom'):
+            new_key, name = self.create_custom_theme_from_modification(key, color)
+            ctrl.settings.set('color_theme', new_key, level=DOCUMENT)
+            ctrl.main.update_colors(randomise=False, animate=False)
+            ctrl.call_watchers(self, 'color_themes_changed')
+        else:
+            self.d[key] = color
+            if compute_companions:
+                if key == 'content1':
+                    self.compute_palette(color.getHsvF()[:3])
+                    self.d['content2'] = adjust_lightness(color, 8)
+                    self.d['content3'] = adjust_lightness(color, -8)
+                elif key == 'background1':
+                    r, g, b, a = self.drawing().getRgbF()
+                    h, s, l = rgb_to_husl(r, g, b)
+                    if l < 0.7:
+                        self.d['background2'] = adjust_lightness(color, -8)
+                    else:
+                        self.d['background2'] = adjust_lightness(color, 8)
+            if self.theme_key in self.custom_themes:
+                theme_data = self.custom_themes[self.theme_key]
+                c = theme_data['colors']
+                for key, color in self.d.items():
+                    c[key] = color.getRgbF()
+                ctrl.main.update_colors(randomise=False, animate=False)
+                # same theme_data object also lives in prefs, updating it once does them both
 
     def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
@@ -327,23 +347,23 @@ class PaletteManager:
         """
         if light:
             # Solarized light
-            # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
-            self.d['background1'] = sol[7]
-            # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
-            self.d['background2'] = sol[6]
-            # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
-            self.d['content1'] = sol[3]
+            self.d['content1'] = sol[3]  # body text / primary content
             # base1     #93a1a1 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
-            self.d['content2'] = sol[5]
+            self.d['content2'] = sol[5]  # comments / secondary content
             # base01    #586e75 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
-            self.d['content3'] = sol[2]
+            self.d['content3'] = sol[2]  # optional emphasized content
+            # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
+            self.d['background1'] = sol[7]  # background
+            # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
+            self.d['background2'] = sol[6]  # background highlights
+            # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
         else:
             # Solarized dark
-            self.d['background1'] = sol[0]
-            self.d['background2'] = sol[1]
             self.d['content1'] = sol[4]
             self.d['content2'] = sol[2]
             self.d['content3'] = sol[5]
+            self.d['background1'] = sol[0]
+            self.d['background2'] = sol[1]
         for i, accent in enumerate(accents):
             self.d['accent%s' % (i + 1)] = accent
             self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
@@ -373,8 +393,8 @@ class PaletteManager:
         bg_rgb = husl_to_rgb(h, s, back_l)
         background1.setRgbF(*bg_rgb)
         self.d['content1'] = key
-        self.d['content2'] = adjust_lightness(key, 4)
-        self.d['content3'] = adjust_lightness(key, -4)
+        self.d['content2'] = adjust_lightness(key, 8)
+        self.d['content3'] = adjust_lightness(key, -8)
         for i, accent in enumerate(accents):
             # accent colors have the same luminence as key color
             adjusted_accent = c(accent)
@@ -390,9 +410,9 @@ class PaletteManager:
             self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)
         self.d['background1'] = background1
         if l < 0.7:
-            background2 = adjust_lightness(background1, -4)
+            background2 = adjust_lightness(background1, -8)
         else:
-            background2 = adjust_lightness(background1, 4)
+            background2 = adjust_lightness(background1, 8)
         self.d['background2'] = background2
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
@@ -713,7 +733,21 @@ epsilon = 0.0088564516
 # Public API
 
 def husl_to_rgb(h, s, l):
-    return lch_to_rgb(*husl_to_lch([h, s, l]))
+    br, bg, bb = lch_to_rgb(*husl_to_lch([h, s, l]))
+    if br < 0:
+        br = 0
+    elif br > 1:
+        br = 1
+    if bg < 0:
+        bg = 0
+    elif bg > 1:
+        bg = 1
+    if bb < 0:
+        bb = 0
+    elif bb > 1:
+        bb = 1
+    return br, bg, bb
+
 
 
 def rgb_to_husl(r, g, b):

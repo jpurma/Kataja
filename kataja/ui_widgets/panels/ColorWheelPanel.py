@@ -32,9 +32,6 @@ class ColorWheelPanel(Panel):
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
-        # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
-        #widget.setMinimumHeight(150)
-        #widget.setMaximumHeight(220)
         widget.preferred_size = QtCore.QSize(220, 300)
         the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
@@ -42,9 +39,10 @@ class ColorWheelPanel(Panel):
         self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + \
                           the_rest
 
-        self.role_label = QtWidgets.QLabel("Editing color")
+        self.role_label = QtWidgets.QLabel("Color for role: ")
         self.role_selector = QtWidgets.QComboBox(parent=self)
         self.role_selector.addItems(self.editable_colors)
+        self.role_selector.currentTextChanged.connect(self.set_color_role)
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.role_label)
         hlayout.addWidget(self.role_selector)
@@ -91,10 +89,11 @@ class ColorWheelPanel(Panel):
         self.setWidget(widget)
         self.finish_init()
 
-    def set_color_role(self, role):
+    def set_color_role(self, role, update_selector=False):
         self.selected_role = role
         self.update_colors()
-        self.role_selector.setCurrentText(self.selected_role)
+        if update_selector:
+            self.role_selector.setCurrentText(self.selected_role)
 
     def update_hsv(self):
         color = ctrl.cm.get(self.selected_role)
@@ -149,8 +148,8 @@ class ColorWheelPanel(Panel):
         self.h_spinner.setValue(h * 255)
         self.s_spinner.setValue(s * 255)
         self.v_spinner.setValue(v * 255)
-        self.color_name.setText(ctrl.cm.get_color_name(self.selected_hsv))
-        #self.update()
+        self.color_name.setText(f'{ctrl.cm.get_color_name(self.selected_hsv)}, '
+                                f'{ctrl.cm.get(self.selected_role).name()}')
         self.color_wheel.update()
         self._updating = False
 
@@ -160,22 +159,8 @@ class ColorWheelPanel(Panel):
         :return:
         """
         color = QtGui.QColor.fromHsvF(h, s, v)
-        color_key = self.selected_role
-        #if (not color_key.startswith('custom')) and ctrl.cm.theme_key in ctrl.cm.default_themes:
-        #    ctrl.cm.create_custom_theme_from_modification(color_key, color)
+        ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match)
 
-        ctrl.cm.set_color(color_key, color)
-        self.update_colors()
-        #if self.role == 'node':
-        #    ctrl.main.trigger_but_suppress_undo('change_node_color')
-        #elif self.role == 'edge':
-        #    ctrl.main.trigger_but_suppress_undo('change_edge_color')
-        #elif self.role == 'group':
-        #    ctrl.main.trigger_but_suppress_undo('change_group_color')
-        ctrl.call_watchers(self, 'palette_changed')
-
-    #def resizeEvent(self, rs):
-    #    self.color_wheel.update_measurements(self.width() - 20)
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -208,19 +193,25 @@ class ColorWheelInner(QtWidgets.QWidget):
         self.suggested_size = 160
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0
-        self._color_spot_area = 0, 0, 0
         self._flag_area = 0, 0, 0, 0
         self.setAutoFillBackground(True)
         self.show()
         self.outer = self.parentWidget().parentWidget()
         self._radius = 0
+        self._top_corner = 0
+        self._lum_box_width = 0
         self._lum_box_height = 0
         self._origin_x = 0
         self._origin_y = 0
         self._lum_box_x = 0
         self._lum_box_y = 0
         self._color_spot_max = 0
+        self._color_spot_min = 0
+        self._crosshair = 0
+        self._flag_width = 0
+        self._flag_height = 0
         self._gradient = None
+        self.clickable_areas = []
         self.setMinimumSize(self.suggested_size, self.suggested_size)
         self.setMaximumSize(600, 600)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
@@ -245,7 +236,6 @@ class ColorWheelInner(QtWidgets.QWidget):
         self._crosshair = x * 0.05
         self._flag_width = x * 0.08
         self._flag_height = x * 0.04
-        #self.setMinimumSize(self.suggested_size, self.suggested_size)
         self._gradient = QtGui.QLinearGradient(0, self._lum_box_y, 0, self._lum_box_y +
                                                self._lum_box_height)
 
@@ -265,12 +255,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         painter.drawEllipse(self._top_corner, self._top_corner, r + r, r + r)
         cm = ctrl.cm
 
-        def draw_as_circle(color, selected=False):
-            """
-
-            :param color:
-            :return:
-            """
+        def draw_as_circle(color, key, selected=False):
             h, s, v, a = color.getHsvF()
             angle = math.radians(h * 360)
             depth = s * r
@@ -283,34 +268,33 @@ class ColorWheelInner(QtWidgets.QWidget):
             if selected:
                 painter.setPen(QtGui.QColor(255, 255, 255))
                 painter.drawEllipse(x - size2 - 1, y - size2 - 1, size + 2, size + 2)
-                self._color_spot_area = x, y, v
                 painter.setPen(cm.ui())
                 painter.drawLine(x, y - size2 - self._crosshair, x, y + size2 + self._crosshair)
                 painter.drawLine(x - size2 - self._crosshair, y, x + size2 + self._crosshair, y)
                 self._flag_area = (self._lum_box_x - ((self._flag_width - self._lum_box_width) / 2),
                                    self._lum_box_y + self._lum_box_height * (1 - v),
                                    self._flag_width, self._flag_height)
-            if color == cm.paper():
+            if color_key.startswith('background'):
                 painter.setPen(cm.drawing())
                 painter.setBrush(color)
             else:
                 painter.setBrush(color)
                 painter.setPen(color)
             painter.drawEllipse(x - size2, y - size2, size, size)
+            self.clickable_areas.append(QtCore.QRectF(x - size2 - 1, y - size2 - 1, size + 2,
+                                                      size + 2))
 
-        if self.outer.draw_all_colors:
-            draw_these = self.outer.all_colors
-        else:
-            draw_these = [self.outer.selected_role]
-        for color_key in draw_these:
-            if color_key != self.outer.selected_role:
-                color = ctrl.cm.get(color_key)
-                if color:
-                    draw_as_circle(color, selected=False)
+        self.clickable_areas = []
 
+        for color_key in self.outer.all_colors:
+            color = ctrl.cm.get(color_key)
+            if color:
+                draw_as_circle(color, color_key, selected=False)
+            else:
+                self.clickable_areas.append(QtCore.QRectF())
         color = ctrl.cm.get(self.outer.selected_role)
         if color:
-            draw_as_circle(color, selected=True)
+            draw_as_circle(color, self.outer.selected_role, selected=True)
 
         painter.setPen(ctrl.cm.ui())
         light = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 1.0)
@@ -331,7 +315,7 @@ class ColorWheelInner(QtWidgets.QWidget):
 
         :param event:
         """
-        h, s, v = ctrl.settings.get('hsv')  # @UndefinedVariable
+        h, s, v = self.outer.selected_hsv
         ov = v
         v += event.angleDelta().y() / 100.0
         if v < 0:
@@ -341,20 +325,35 @@ class ColorWheelInner(QtWidgets.QWidget):
         if ov != v:
             self.outer.send_color(h, s, v)
 
-
     def mousePressEvent(self, event):
         """
 
         :param event:
         """
-        x, y = to_tuple(event.localPos())
+        lp = event.localPos()
+        x, y = to_tuple(lp)
         f_x, f_y, f_w, f_h = self._flag_area
-        # print 'x:%s y:%s f_x1:%s f_y1:%s, f_x2:%s, f_y2:%s' % (x,y, f_x, f_y, f_x+f_w, f_y+f_h)
-        c_x, c_y, c_r = self._color_spot_area
         if f_x <= x <= f_x + f_w and f_y <= y <= f_y + f_h:
             self._pressed = FLAG
-        elif abs(x - c_x) + abs(y - c_y) < (1 - c_r) * self._color_spot_max + self._color_spot_min:
-            self._pressed = CIRCLE
+            return
+
+        found = -1
+        for i, rect in enumerate(self.clickable_areas):
+            if rect.contains(x, y):
+                found = i
+                break
+        if found >= 0:
+            self._pressed = self.outer.all_colors[i]
+            if self.outer.selected_role != self._pressed:
+                if self._pressed in self.outer.editable_colors:
+                    self.outer.set_color_role(self._pressed, update_selector=True)
+                else:
+                    if self._pressed.startswith('content'):
+                        self.outer.set_color_role('content1', update_selector=True)
+                    elif self._pressed.startswith('background'):
+                        self.outer.set_color_role('background1', update_selector=True)
+                    self._pressed = None  # prevent dragging weirdness
+
 
     def mouseMoveEvent(self, event):
         """
@@ -389,7 +388,7 @@ class ColorWheelInner(QtWidgets.QWidget):
             x, y = to_tuple(event.localPos())
             v = get_value_from_flag_position(y)
             self.outer.send_color(h, s, v)
-        elif self._pressed == CIRCLE:
+        elif self._pressed:
             x, y = to_tuple(event.localPos())
             h, s = get_color_from_position(x, y)
             self.outer.send_color(h, s, v)
