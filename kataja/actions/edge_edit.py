@@ -213,6 +213,8 @@ class ChangeEdgeColor(KatajaAction):
         """
         selector = self.sender()
         color_key = selector.receive_color_selection()
+        if not color_key:
+            return
 
         # Update color for selected edges
         if ctrl.ui.scope_is_selection:

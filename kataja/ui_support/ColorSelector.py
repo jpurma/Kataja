@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import QSize
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.singletons import ctrl
@@ -17,6 +17,13 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         QtGui.QIconEngine.__init__(self)
         self.color_key = color_key
         self.selector = selector
+        self.grad = QtGui.QConicalGradient(8, 8, 0)
+        self.grad.setColorAt(0, QtGui.QColor.fromHsv(359, 255, 255))
+        self.grad.setColorAt(0.25, QtGui.QColor.fromHsv(270, 255, 255))
+        self.grad.setColorAt(0.5, QtGui.QColor.fromHsv(180, 255, 255))
+        self.grad.setColorAt(0.75, QtGui.QColor.fromHsv(90, 255, 255))
+        self.grad.setColorAt(1.0, QtGui.QColor.fromHsv(0, 255, 255))
+
 
     # @caller
     def paint(self, painter, rect, mode, state):
@@ -31,21 +38,27 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         bg = ctrl.cm.get('background1')
         painter.fillRect(rect, bg)
         c = ctrl.cm.get(self.color_key)
-        if not c:
-            c = bg
-        painter.setBrush(c)
-        if self.selector.selected_color == self.color_key:
-            pen = QtGui.QPen(c.lighter())
-        else:
-            pen = QtGui.QPen(c.darker())
-        if self.selector.default_color == self.color_key:
-            pen.setWidth(3)
-        else:
-            pen.setWidth(1)
+        if c:
+            painter.setBrush(c)
+            if self.selector.selected_color == self.color_key:
+                pen = QtGui.QPen(c.lighter())
+            else:
+                pen = QtGui.QPen(c.darker())
+            if self.selector.default_color == self.color_key:
+                pen.setWidth(3)
+            else:
+                pen.setWidth(1)
 
-        painter.setPen(pen)
-        painter.drawRoundedRect(rect, 2, 2)
-        # painter.fillRect(rect, ctrl.cm.get(self.color_key))
+            painter.setPen(pen)
+            painter.drawRoundedRect(rect, 2, 2)
+        else:
+            self.grad.setCenter(rect.center())
+            painter.setBrush(self.grad)
+            painter.drawRoundedRect(rect, 2, 2)
+            painter.setBrush(ctrl.cm.paper())
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(rect.left() + 2, rect.top() + 2, rect.width() - 4, rect.height()
+                                - 4)
 
 
 class LineColorIcon(QtGui.QIcon):
@@ -78,6 +91,7 @@ class ColorSelector(TableModelSelectionBox):
             item = QtGui.QStandardItem(LineColorIcon(c, self), '')
             item.setData(c)
             item.setSizeHint(QSize(22, 20))
+            item.setToolTip(c)
             self.color_items.append(item)
         view = QtWidgets.QTableView()
         self.table = [self.color_items[0:5] + self.color_items[21:24],
@@ -112,26 +126,19 @@ class ColorSelector(TableModelSelectionBox):
         :return: color_key
         """
         color_key = self.currentData()
+        if not color_key:
+            return
         color = ctrl.cm.get(color_key)
         # launch a color dialog if color_id is unknown or clicking
         # already selected color
-        start = False
-        if not color:
-            color = ctrl.cm.get('content1')
-            ctrl.cm.set_color(color_key, color)
-            start = True
-        elif self.selected_color == color_key:
-            start = True
+        prev_color = self.selected_color
         self.selected_color = color_key
-        if start:
-            self.start_color_dialog()
+        if (not color) or prev_color == color_key:
+            wheel = ctrl.ui.get_panel('ColorWheelPanel')
+            if (not wheel) or not wheel.isVisible():
+                ctrl.main.trigger_but_suppress_undo('toggle_panel_ColorWheelPanel')
         self.update_color_dialog()
         return color_key
-
-    def start_color_dialog(self):
-        wheel = ctrl.ui.get_panel('ColorWheelPanel')
-        if (not wheel) or not wheel.isVisible():
-            ctrl.main.trigger_but_suppress_undo('toggle_panel_ColorWheelPanel')
 
     def update_color_dialog(self):
         wheel = ctrl.ui.get_panel('ColorWheelPanel')

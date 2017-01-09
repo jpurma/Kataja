@@ -4,11 +4,25 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 import kataja.globals as g
 from kataja.ui_support.SelectionBox import SelectionBox
+import random
 
 __author__ = 'purma'
 
+dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
 
 
+class RandomiseButton(QtWidgets.QPushButton):
+
+    def __init__(self):
+        QtWidgets.QPushButton.__init__(self)
+        self.reroll()
+        f = qt_prefs.get_font(g.MAIN_FONT)
+        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
+        self.setFixedSize(40, 20)
+        self.setEnabled(False)
+
+    def reroll(self):
+        self.setText(random.choice(dice) + random.choice(dice))
 
 class ColorPanel(Panel):
     """
@@ -43,14 +57,10 @@ class ColorPanel(Panel):
         self.selector.add_items(self.selector_items)
         self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
         hlayout.addWidget(self.selector)
-        self.randomize = QtWidgets.QPushButton('⚁⚅')
-        self.randomize.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
-                                                                              f.pointSize()))
-        self.randomize.setFixedSize(40, 20)
-        self.randomize.setEnabled(False)
-        ctrl.ui.connect_element_to_action(self.randomize,
-                                          'randomize_palette')
-        hlayout.addWidget(self.randomize, 1, QtCore.Qt.AlignRight)
+        self.randomise = RandomiseButton()
+        ctrl.ui.connect_element_to_action(self.randomise,
+                                          'randomise_palette')
+        hlayout.addWidget(self.randomise, 1, QtCore.Qt.AlignRight)
         self.store_favorite = QtWidgets.QPushButton('★')
         self.store_favorite.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
                                                                                    f.pointSize()))

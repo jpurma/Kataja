@@ -47,12 +47,15 @@ class SetColorMode(KatajaAction):
 
 
 class RandomisePalette(KatajaAction):
-    k_action_uid = 'randomize_palette'
-    k_command = 'Randomize palette'
+    k_action_uid = 'randomise_palette'
+    k_command = 'Randomise palette'
     k_tooltip = 'Roll new random colors'
 
     def method(self):
         ctrl.main.update_colors(randomise=True)
+        sender = self.sender()
+        if sender and hasattr(sender, 'reroll'):
+            sender.reroll()
 
     def enabler(self):
         return ctrl.cm.can_randomise()
@@ -236,6 +239,9 @@ class ChangeNodeColor(KatajaAction):
         """
         selector = self.sender()
         color_key = selector.receive_color_selection()
+        if not color_key:
+            return
+
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:

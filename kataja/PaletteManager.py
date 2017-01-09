@@ -143,6 +143,7 @@ class PaletteManager:
         self.theme_key = ''
         self.default = 'solarized_lt'
         self.hsv = [0.00, 0.29, 0.35]  # dark rose
+        self.theme_contrast = 65
         self.d = OrderedDict()
         self._ui_palette = None
         self._palette = None
@@ -174,6 +175,7 @@ class PaletteManager:
             'build': 'fixed',
             'hsv': self.hsv,
             'custom': True,
+            'contrast': self.theme_contrast,
             'colors': storage
         }
         prefs.user_palettes[self.current_hex] = theme
@@ -181,7 +183,7 @@ class PaletteManager:
         ctrl.call_watchers(self, 'color_themes_changed')
         return self.current_hex, theme['name']
 
-    def create_custom_theme_from_modification(self, color_key, color):
+    def create_custom_theme_from_modification(self, color_key, color, contrast):
         c = 1
         theme_key = f'custom theme {c}'
         while theme_key in self.custom_themes:
@@ -201,6 +203,7 @@ class PaletteManager:
             'name': theme_key,
             'build': 'fixed',
             'hsv': hsv,
+            'contrast': contrast,
             'custom': True,
             'colors': storage
         }
@@ -283,7 +286,7 @@ class PaletteManager:
             self.gradient.setColorAt(0, self.d['background1'].lighter())
 
         else:
-            self.compute_palette(self.hsv, contrast=contrast, faded=faded, bw=bw)
+            self.compute_palette(self.hsv, contrast=contrast, faded=faded)
 
     def can_randomise(self):
         data = self.default_themes.get(self.theme_key, None)
@@ -296,13 +299,13 @@ class PaletteManager:
         """ Shortcut to palette dictionary (self.d) """
         return self.d.get(key, None)
 
-    def set_color(self, key, color, compute_companions=False):
+    def set_color(self, key, color, compute_companions=False, contrast=65):
         """ In its simplest, put a color to palette dict. If palette is not custom palette and
         color is not going to custom colors slot, then make a new palette and switch to use
         it."""
 
         if self.theme_key in self.default_themes and not key.startswith('custom'):
-            new_key, name = self.create_custom_theme_from_modification(key, color)
+            new_key, name = self.create_custom_theme_from_modification(key, color, contrast)
             ctrl.settings.set('color_theme', new_key, level=DOCUMENT)
             ctrl.main.update_colors(randomise=False, animate=False)
             ctrl.call_watchers(self, 'color_themes_changed')
@@ -310,7 +313,7 @@ class PaletteManager:
             self.d[key] = color
             if compute_companions:
                 if key == 'content1':
-                    self.compute_palette(color.getHsvF()[:3])
+                    self.compute_palette(color.getHsvF()[:3], contrast=contrast)
                     self.d['content2'] = adjust_lightness(color, 8)
                     self.d['content3'] = adjust_lightness(color, -8)
                 elif key == 'background1':
@@ -325,8 +328,8 @@ class PaletteManager:
                 c = theme_data['colors']
                 for key, color in self.d.items():
                     c[key] = color.getRgbF()
-                ctrl.main.update_colors(randomise=False, animate=False)
-                # same theme_data object also lives in prefs, updating it once does them both
+            ctrl.main.update_colors(randomise=False, animate=False)
+            # same theme_data object also lives in prefs, updating it once does them both
 
     def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
@@ -371,12 +374,13 @@ class PaletteManager:
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
 
-    def compute_palette(self, hsv, contrast=55, bw=False, faded=False):
+    def compute_palette(self, hsv, contrast=55, faded=False):
         """ Create/get root color and build palette around it.
         :param hsv:
         Leaves custom colors as they are. """
 
         self.hsv = hsv
+        self.theme_contrast = contrast
         # # This is the base color ##
         key = c()
         key.setHsvF(*hsv)

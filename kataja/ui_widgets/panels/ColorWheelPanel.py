@@ -11,6 +11,19 @@ from kataja.ui_widgets.Panel import FLAG, CIRCLE, Panel
 __author__ = 'purma'
 
 
+def spinner(parent, layout, connect, label='', vmin=0, vmax=360, wrapping=False):
+    spin = QtWidgets.QSpinBox(parent)
+    spin.setRange(vmin, vmax)
+    spin.valueChanged.connect(connect)
+    spin.setAccelerated(True)
+    spin.setWrapping(wrapping)
+    if label:
+        label = QtWidgets.QLabel(label, parent)
+        label.setBuddy(spin)
+        layout.addWidget(label)
+    layout.addWidget(spin)
+    return spin
+
 class ColorWheelPanel(Panel):
     """
 
@@ -26,8 +39,10 @@ class ColorWheelPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         self.selected_role = 'content1'
         self.selected_hsv = ctrl.cm.get(self.selected_role).getHsvF()[:3]
+        self.match_contrast = 65
         self.watchlist = ['palette_changed', 'color_theme_changed']
         self.try_to_match = True
+        self._updating = True
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
@@ -38,7 +53,7 @@ class ColorWheelPanel(Panel):
         self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + \
                           the_rest
 
-        self.role_label = QtWidgets.QLabel("Color for role: ")
+        self.role_label = QtWidgets.QLabel("Picking color for role: ")
         self.role_selector = QtWidgets.QComboBox(parent=self)
         self.role_selector.addItems(self.editable_colors)
         self.role_selector.currentTextChanged.connect(self.set_color_role)
@@ -54,38 +69,44 @@ class ColorWheelPanel(Panel):
         layout.addWidget(self.color_wheel)
 
         layout.addSpacing(8)
-        h_spinner = QtWidgets.QSpinBox(self)
-        h_spinner.setRange(0, 255)
-        h_spinner.valueChanged.connect(self.h_changed)
-        h_spinner.setAccelerated(True)
-        h_spinner.setWrapping(True)
-        self.h_spinner = h_spinner
-        h_label = QtWidgets.QLabel('&H:', self)
-        h_label.setBuddy(h_spinner)
-        s_spinner = QtWidgets.QSpinBox(self)
-        s_spinner.setRange(0, 255)
-        s_spinner.valueChanged.connect(self.s_changed)
-        s_label = QtWidgets.QLabel('&S:', self)
-        s_label.setBuddy(s_spinner)
-        s_spinner.setAccelerated(True)
-        self.s_spinner = s_spinner
-        v_spinner = QtWidgets.QSpinBox(self)
-        v_spinner.setRange(0, 255)
-        v_spinner.valueChanged.connect(self.v_changed)
-        v_label = QtWidgets.QLabel('&V:', self)
-        v_label.setBuddy(v_spinner)
-        v_spinner.setAccelerated(True)
-        self.v_spinner = v_spinner
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.addWidget(h_label)
-        hlayout.addWidget(h_spinner)
-        hlayout.addWidget(s_label)
-        hlayout.addWidget(s_spinner)
-        hlayout.addWidget(v_label)
-        hlayout.addWidget(v_spinner)
+        self.h_spinner = spinner(self, hlayout, self.h_changed, label='H:', vmax=360, wrapping=True)
+        self.s_spinner = spinner(self, hlayout, self.s_changed, label='S:', vmax=255)
+        self.v_spinner = spinner(self, hlayout, self.v_changed, label='V:', vmax=255)
+        layout.addLayout(hlayout)
+        hlayout = QtWidgets.QHBoxLayout()
+        self.r_spinner = spinner(self, hlayout, self.r_changed, label='R:', vmax=255)
+        self.g_spinner = spinner(self, hlayout, self.g_changed, label='G:', vmax=255)
+        self.b_spinner = spinner(self, hlayout, self.b_changed, label='B:', vmax=255)
+        layout.addLayout(hlayout)
+
+        hlayout = QtWidgets.QHBoxLayout()
+        match_help = "When adjusting 'content1' or 'background1', try to find contrasting colors " \
+                     "for other roles."
+        self.match_l = QtWidgets.QLabel("Auto-match palette:")
+        self.match_l.setToolTip(match_help)
+        self.match_l.setParent(self)
+        self.match_cb = QtWidgets.QCheckBox()
+        self.match_cb.setToolTip(match_help)
+        self.match_cb.setParent(self)
+        self.match_cb.setChecked(self.try_to_match)
+        self.match_cb.stateChanged.connect(self.set_palette_matching)
+        self.match_l.setBuddy(self.match_cb)
+        hlayout.addWidget(self.match_l)
+        hlayout.addWidget(self.match_cb)
+        chelp = "Contrast for auto-matched palettes"
+        self.contrast_label = QtWidgets.QLabel("Contrast:")
+        self.contrast_label.setToolTip(chelp)
+        self.contrast_label.setParent(self)
+        hlayout.addWidget(self.contrast_label)
+        self.contrast_spin = spinner(self, hlayout, self.contrast_changed, vmin=30, vmax=99)
+        self.contrast_spin.setToolTip(chelp)
+        self.contrast_spin.setValue(self.match_contrast)
+
         layout.addLayout(hlayout)
         widget.setLayout(layout)
         self.setWidget(widget)
+        self._updating = False
         self.finish_init()
 
     def set_color_role(self, role, update_selector=False):
@@ -93,6 +114,27 @@ class ColorWheelPanel(Panel):
         self.update_colors()
         if update_selector:
             self.role_selector.setCurrentText(self.selected_role)
+        self.update_matching()
+
+    def update_matching(self):
+        if self.selected_role == 'content1' or self.selected_role == 'background1':
+            self.match_cb.setEnabled(True)
+            self.match_l.setEnabled(True)
+            if self.try_to_match:
+                self.contrast_spin.setEnabled(True)
+                self.contrast_label.setEnabled(True)
+            else:
+                self.contrast_spin.setEnabled(False)
+                self.contrast_label.setEnabled(False)
+        else:
+            self.match_cb.setEnabled(False)
+            self.match_l.setEnabled(False)
+            self.contrast_spin.setEnabled(False)
+            self.contrast_label.setEnabled(False)
+
+    def set_palette_matching(self, value):
+        self.try_to_match = value
+        self.update_matching()
 
     def update_hsv(self):
         color = ctrl.cm.get(self.selected_role)
@@ -101,24 +143,21 @@ class ColorWheelPanel(Panel):
         else:
             self.selected_hsv = 0, 0, 0
 
-    def h_changed(self, value):
-        """
+    def contrast_changed(self, value):
+        if self._updating:
+            return
+        self.match_contrast = value
+        self.send_color(*self.selected_hsv)
 
-        :param value:
-        :return:
-        """
+
+    def h_changed(self, value):
         if self._updating:
             return
         h, s, v = self.selected_hsv
-        h = value / 255.0
+        h = value / 360.0
         self.send_color(h, s, v)
 
     def s_changed(self, value):
-        """
-
-        :param value:
-        :return:
-        """
         if self._updating:
             return
         h, s, v = self.selected_hsv
@@ -126,16 +165,29 @@ class ColorWheelPanel(Panel):
         self.send_color(h, s, v)
 
     def v_changed(self, value):
-        """
-
-        :param value:
-        :return:
-        """
         if self._updating:
             return
         h, s, v = self.selected_hsv
         v = value / 255.0
         self.send_color(h, s, v)
+
+    def r_changed(self, value):
+        if self._updating:
+            return
+        color = QtGui.QColor.fromHsvF(*self.selected_hsv)
+        self.send_color_rgb(value, color.green(), color.blue())
+
+    def g_changed(self, value):
+        if self._updating:
+            return
+        color = QtGui.QColor.fromHsvF(*self.selected_hsv)
+        self.send_color_rgb(color.red(), value, color.blue())
+
+    def b_changed(self, value):
+        if self._updating:
+            return
+        color = QtGui.QColor.fromHsvF(*self.selected_hsv)
+        self.send_color_rgb(color.red(), color.green(), value)
 
     def update_colors(self):
         """
@@ -144,22 +196,31 @@ class ColorWheelPanel(Panel):
         self.update_hsv()
         h, s, v = self.selected_hsv
         self._updating = True
-        self.h_spinner.setValue(h * 255)
+        self.h_spinner.setValue(h * 360)
         self.s_spinner.setValue(s * 255)
         self.v_spinner.setValue(v * 255)
+        color = QtGui.QColor.fromHsvF(h, s, v)
+        self.r_spinner.setValue(color.red())
+        self.g_spinner.setValue(color.green())
+        self.b_spinner.setValue(color.blue())
         self.color_name.setText(f'{ctrl.cm.get_color_name(self.selected_hsv)}, '
                                 f'{ctrl.cm.get(self.selected_role).name()}')
+        self.contrast_spin.setValue(ctrl.cm.theme_contrast)
         self.color_wheel.update()
         self._updating = False
 
     def send_color(self, h, s, v):
-        """ Replace color in palette with new color
-        :param color:
-        :return:
+        """ Replace color in palette with new color from hsvF (0.0-1.0)
         """
         color = QtGui.QColor.fromHsvF(h, s, v)
-        ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match)
+        ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
+                          contrast=self.match_contrast)
 
+    def send_color_rgb(self, r, g, b):
+        """ Replace color in palette with new color from rgb (0-255) """
+        color = QtGui.QColor.fromRgb(r, g, b)
+        ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
+                          contrast=self.match_contrast)
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -317,7 +378,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         painter.drawRect(self._lum_box_x, self._lum_box_y, self._lum_box_width,
                          self._lum_box_height + self._flag_height)
 
-        painter.setBrush(cm.drawing())
+        painter.setBrush(color or ctrl.cm.get('accent1'))
         painter.drawRect(self._flag_area[0], self._flag_area[1], self._flag_area[2], self._flag_area[3])
         # QtWidgets.QWidget.paintEvent(self, event)
 
