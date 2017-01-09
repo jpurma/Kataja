@@ -28,7 +28,6 @@ class ColorWheelPanel(Panel):
         self.selected_hsv = ctrl.cm.get(self.selected_role).getHsvF()[:3]
         self.watchlist = ['palette_changed', 'color_theme_changed']
         self.try_to_match = True
-        self.draw_all_colors = True
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
@@ -230,7 +229,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         self._origin_x = x * 0.45
         self._origin_y = x * 0.45
         self._lum_box_x = x * 0.93
-        self._lum_box_y = x * 0.1
+        self._lum_box_y = x * 0.07
         self._color_spot_max = x * 0.15
         self._color_spot_min = x * 0.02
         self._crosshair = x * 0.05
@@ -249,9 +248,20 @@ class ColorWheelInner(QtWidgets.QWidget):
         :return:
         """
         painter = QtGui.QPainter(self)
-        painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
-        painter.setPen(ctrl.cm.ui())
+        painter.setRenderHints(QtGui.QPainter.Antialiasing) # | QtGui.QPainter.TextAntialiasing)
+        painter.setPen(QtCore.Qt.NoPen)
         r = self._radius
+        v = self.outer.selected_hsv[2] * 255
+        con_grad = QtGui.QConicalGradient(self._top_corner + r, self._top_corner + r, 0)
+        con_grad.setColorAt(0, QtGui.QColor.fromHsv(359, 255, v))
+        con_grad.setColorAt(0.25, QtGui.QColor.fromHsv(270, 255, v))
+        con_grad.setColorAt(0.5, QtGui.QColor.fromHsv(180, 255, v))
+        con_grad.setColorAt(0.75, QtGui.QColor.fromHsv(90, 255, v))
+        con_grad.setColorAt(1.0, QtGui.QColor.fromHsv(0, 255, v))
+        painter.setBrush(con_grad)
+        painter.drawEllipse(self._top_corner - 4, self._top_corner - 4, r + r + 8, r + r + 8)
+        painter.setBrush(ctrl.cm.paper())
+
         painter.drawEllipse(self._top_corner, self._top_corner, r + r, r + r)
         cm = ctrl.cm
 
@@ -295,6 +305,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         color = ctrl.cm.get(self.outer.selected_role)
         if color:
             draw_as_circle(color, self.outer.selected_role, selected=True)
+            self.clickable_areas.pop()  # dont want this to be twice there
 
         painter.setPen(ctrl.cm.ui())
         light = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 1.0)
@@ -341,9 +352,10 @@ class ColorWheelInner(QtWidgets.QWidget):
         for i, rect in enumerate(self.clickable_areas):
             if rect.contains(x, y):
                 found = i
-                break
+                if self.outer.all_colors[i] == self.outer.selected_role:
+                    break
         if found >= 0:
-            self._pressed = self.outer.all_colors[i]
+            self._pressed = self.outer.all_colors[found]
             if self.outer.selected_role != self._pressed:
                 if self._pressed in self.outer.editable_colors:
                     self.outer.set_color_role(self._pressed, update_selector=True)
