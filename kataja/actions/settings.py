@@ -60,16 +60,16 @@ class RandomisePalette(KatajaAction):
     def enabler(self):
         return ctrl.cm.can_randomise()
 
-class RemovePalette(KatajaAction):
-    k_action_uid = 'remove_palette'
-    k_command = 'Remove a custom palette'
-    k_tooltip = 'Remove a custom palette'
+class RemoveTheme(KatajaAction):
+    k_action_uid = 'remove_theme'
+    k_command = 'Remove a custom color theme'
+    k_tooltip = 'Remove a custom color theme'
 
     def method(self):
         active = ctrl.cm.theme_key
         ctrl.main.change_color_theme(ctrl.cm.default)
         ctrl.cm.remove_custom_theme(active)
-        return f"Removed custom palette '{active}'."
+        return f"Removed custom theme '{active}'."
 
     def enabler(self):
         return ctrl.cm.is_custom()

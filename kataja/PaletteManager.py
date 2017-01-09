@@ -236,11 +236,12 @@ class PaletteManager:
         self.custom_themes[theme_key] = theme
         return theme_key, theme_key
 
-    def remove_custom_palette(self, theme_key):
+    def remove_custom_theme(self, theme_key):
         if theme_key in prefs.custom_themes:
             del prefs.custom_themes[theme_key]
         if theme_key in self.custom_themes:
             self.custom_themes.remove(theme_key)
+        ctrl.call_watchers(self, 'color_themes_changed')
 
     def activate_color_theme(self, theme_key, try_to_remember=True):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active

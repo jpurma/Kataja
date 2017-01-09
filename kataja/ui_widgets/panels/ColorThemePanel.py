@@ -11,6 +11,36 @@ __author__ = 'purma'
 dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
 
 
+def color_theme_fragment(panel, layout):
+    hlayout = QtWidgets.QHBoxLayout()
+    f = qt_prefs.get_font(g.MAIN_FONT)
+    panel.selector = SelectionBox(panel)
+    panel.selector.setMaximumWidth(120)
+    panel.selector_items = ctrl.cm.list_available_themes()
+    panel.selector.add_items(panel.selector_items)
+    panel.ui_manager.connect_element_to_action(panel.selector, 'set_color_theme')
+    hlayout.addWidget(panel.selector)
+
+    panel.randomise = RandomiseButton()
+    ctrl.ui.connect_element_to_action(panel.randomise, 'randomise_palette')
+    hlayout.addWidget(panel.randomise, 1, QtCore.Qt.AlignRight)
+
+    panel.remove_theme = QtWidgets.QPushButton('Remove')
+    #panel.remove_theme.setFixedSize(40, 20)
+    ctrl.ui.connect_element_to_action(panel.remove_theme, 'remove_theme')
+    panel.remove_theme.hide()
+    hlayout.addWidget(panel.remove_theme, 1, QtCore.Qt.AlignRight)
+
+    panel.store_favorite = QtWidgets.QPushButton('★')
+    panel.store_favorite.setStyleSheet(
+        'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
+    panel.store_favorite.setFixedSize(26, 20)
+    panel.store_favorite.setEnabled(False)
+    ctrl.ui.connect_element_to_action(panel.store_favorite, 'remember_palette')
+    hlayout.addWidget(panel.store_favorite, 1, QtCore.Qt.AlignRight)
+    layout.addLayout(hlayout)
+
+
 class RandomiseButton(QtWidgets.QPushButton):
 
     def __init__(self):
@@ -48,29 +78,8 @@ class ColorPanel(Panel):
         widget.setMinimumWidth(160)
         widget.setMaximumWidth(220)
         widget.setMaximumHeight(60)
-        self.watchlist = ['color_themes_changed']
-        hlayout = QtWidgets.QHBoxLayout()
-        f = qt_prefs.get_font(g.MAIN_FONT)
-
-        self.selector = SelectionBox(self)
-        self.selector_items = ctrl.cm.list_available_themes()
-        self.selector.add_items(self.selector_items)
-        self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
-        hlayout.addWidget(self.selector)
-        self.randomise = RandomiseButton()
-        ctrl.ui.connect_element_to_action(self.randomise,
-                                          'randomise_palette')
-        hlayout.addWidget(self.randomise, 1, QtCore.Qt.AlignRight)
-        self.store_favorite = QtWidgets.QPushButton('★')
-        self.store_favorite.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
-                                                                                   f.pointSize()))
-        self.store_favorite.setFixedSize(26, 20)
-        self.store_favorite.setEnabled(False)
-        ctrl.ui.connect_element_to_action(self.store_favorite,
-                                          'remember_palette')
-        hlayout.addWidget(self.store_favorite, 1, QtCore.Qt.AlignRight)
-
-        layout.addLayout(hlayout)
+        self.watchlist = ['color_themes_changed', 'palette_changed']
+        color_theme_fragment(self, layout)
         widget.setLayout(layout)
 
         self.setWidget(widget)
@@ -78,11 +87,20 @@ class ColorPanel(Panel):
 
     def update_available_themes(self):
         themes = ctrl.cm.list_available_themes()
+        key = ctrl.cm.theme_key
         if self.selector_items != themes:
             self.selector_items = themes
             self.selector.clear()
             self.selector.add_items(self.selector_items)
-            self.selector.select_by_data(ctrl.cm.theme_key)
+            self.selector.select_by_data(key)
+        if key in ctrl.cm.custom_themes:
+            self.randomise.hide()
+            self.store_favorite.hide()
+            self.remove_theme.show()
+        else:
+            self.remove_theme.hide()
+            self.randomise.show()
+            self.store_favorite.show()
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
@@ -106,6 +124,7 @@ class ColorPanel(Panel):
         :return:
         """
         if signal == 'color_themes_changed':
-            print('colorthemepanel updates available themes')
+            self.update_available_themes()
+        elif signal == 'palette_changed':
             self.update_available_themes()
 

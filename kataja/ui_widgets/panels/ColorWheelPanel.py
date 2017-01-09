@@ -2,12 +2,10 @@ import math
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl
 from kataja.utils import to_tuple
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.SelectionBox import SelectionBox
-from kataja.ui_widgets.panels.ColorThemePanel import RandomiseButton
+from kataja.ui_widgets.panels.ColorThemePanel import color_theme_fragment
 import random
 
 __author__ = 'purma'
@@ -51,30 +49,7 @@ class ColorWheelPanel(Panel):
         widget = QtWidgets.QWidget(self)
         widget.preferred_size = QtCore.QSize(220, 300)
         # From ColorThemePanel
-        hlayout = QtWidgets.QHBoxLayout()
-        f = qt_prefs.get_font(g.MAIN_FONT)
-
-        self.selector = SelectionBox(self)
-        self.selector.setMaximumWidth(120)
-        self.selector_items = ctrl.cm.list_available_themes()
-        self.selector.add_items(self.selector_items)
-        self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
-        hlayout.addWidget(self.selector)
-        self.randomise = RandomiseButton()
-        ctrl.ui.connect_element_to_action(self.randomise,
-                                          'randomise_palette')
-        hlayout.addWidget(self.randomise, 1, QtCore.Qt.AlignRight)
-        self.store_favorite = QtWidgets.QPushButton('★')
-        self.store_favorite.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
-                                                                                   f.pointSize()))
-        self.store_favorite.setFixedSize(26, 20)
-        self.store_favorite.setEnabled(False)
-        ctrl.ui.connect_element_to_action(self.store_favorite,
-                                          'remember_palette')
-        hlayout.addWidget(self.store_favorite, 1, QtCore.Qt.AlignRight)
-
-        layout.addLayout(hlayout)
-        # paste ends
+        color_theme_fragment(self, layout)
 
         the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
@@ -256,13 +231,23 @@ class ColorWheelPanel(Panel):
 
     def update_available_themes(self):
         themes = ctrl.cm.list_available_themes()
+        key = ctrl.cm.theme_key
         if self.selector_items != themes:
             self.selector.blockSignals(True)
             self.selector_items = themes
             self.selector.clear()
             self.selector.add_items(self.selector_items)
-            self.selector.select_by_data(ctrl.cm.theme_key)
+            self.selector.select_by_data(key)
             self.selector.blockSignals(False)
+        if key in ctrl.cm.custom_themes:
+            self.randomise.hide()
+            self.store_favorite.hide()
+            self.remove_theme.show()
+        else:
+            self.remove_theme.hide()
+            self.randomise.show()
+            self.store_favorite.show()
+
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
@@ -288,6 +273,7 @@ class ColorWheelPanel(Panel):
         :return:
         """
         if signal == 'palette_changed':
+            self.update_available_themes()
             self.update_colors()
         elif signal == 'color_themes_changed':
             self.update_available_themes()
