@@ -77,14 +77,21 @@ class ColorPanel(Panel):
         self.finish_init()
 
     def update_available_themes(self):
-        print('update_available_themes')
         themes = ctrl.cm.list_available_themes()
         if self.selector_items != themes:
-            print('rebuilding theme list, trying to find', ctrl.cm.theme_key)
             self.selector_items = themes
             self.selector.clear()
             self.selector.add_items(self.selector_items)
             self.selector.select_by_data(ctrl.cm.theme_key)
+
+    def showEvent(self, event):
+        """ Panel may have missed signals to update its contents when it was hidden: update all
+        that signals would update.
+        :param event:
+        :return:
+        """
+        self.update_available_themes()
+        super().showEvent(event)
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -99,5 +106,6 @@ class ColorPanel(Panel):
         :return:
         """
         if signal == 'color_themes_changed':
+            print('colorthemepanel updates available themes')
             self.update_available_themes()
 

@@ -132,12 +132,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
+        self.color_manager.update_custom_colors()
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
-        ctrl.add_watcher('ui_font_changed', self)
+        ctrl.add_watcher(self, 'ui_font_changed')
         self.ui_manager = UIManager(self)
         self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
@@ -148,6 +149,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
         self.settings_manager.set_forest(self.forest)
+        self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
@@ -323,17 +325,15 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         plugins have changed the classes that implement these.
         :return:
         """
-        print('--- dumping previous ForestKeepers and starting new...')
-        print('type: ', type(classes.get('KatajaDocument')()))
         self.forest_keepers = [classes.get('KatajaDocument')()]
         self.forest_keeper = self.forest_keepers[0]
+        ctrl.call_watchers(self.forest_keeper, 'document_changed')
 
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
 
-        print('--- load initial treeset ---')
         self.forest_keeper.create_forests(clear=False)
         self.change_forest()
         self.ui_manager.update_projects_menu()
@@ -349,6 +349,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest.retire_from_drawing()
         self.forest_keepers.append(classes.KatajaDocument(name=name))
         self.forest_keeper = self.forest_keepers[-1]
+        ctrl.call_watchers(self.forest_keeper, 'document_changed')
         self.change_forest()
         self.ui_manager.update_projects_menu()
         return self.forest_keeper
@@ -356,6 +357,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def switch_project(self, i):
         self.forest.retire_from_drawing()
         self.forest_keeper = self.forest_keepers[i]
+        ctrl.call_watchers(self.forest_keeper, 'document_changed')
         self.change_forest()
         self.ui_manager.update_projects_menu()
         return self.forest_keeper
@@ -471,7 +473,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param mode:
         """
         if mode != ctrl.settings.get('color_theme') or force:
-            ctrl.settings.set('color_theme', mode, level=g.DOCUMENT)
+            if ctrl.settings.document:
+                ctrl.settings.set('color_theme', mode, level=g.DOCUMENT)
+            ctrl.settings.set('color_theme', mode, level=g.PREFS)
             self.update_colors()
 
     def timerEvent(self, event):

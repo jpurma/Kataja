@@ -3,13 +3,16 @@ import math
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import to_tuple
-from kataja.ui_widgets.Panel import FLAG, CIRCLE, Panel
-
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_support.SelectionBox import SelectionBox
+from kataja.ui_widgets.panels.ColorThemePanel import RandomiseButton
+import random
 
 __author__ = 'purma'
 
+FLAG = 999
 
 def spinner(parent, layout, connect, label='', vmin=0, vmax=360, wrapping=False):
     spin = QtWidgets.QSpinBox(parent)
@@ -40,13 +43,39 @@ class ColorWheelPanel(Panel):
         self.selected_role = 'content1'
         self.selected_hsv = ctrl.cm.get(self.selected_role).getHsvF()[:3]
         self.match_contrast = 65
-        self.watchlist = ['palette_changed', 'color_theme_changed']
+        self.watchlist = ['palette_changed', 'color_themes_changed']
         self.try_to_match = True
         self._updating = True
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         widget.preferred_size = QtCore.QSize(220, 300)
+        # From ColorThemePanel
+        hlayout = QtWidgets.QHBoxLayout()
+        f = qt_prefs.get_font(g.MAIN_FONT)
+
+        self.selector = SelectionBox(self)
+        self.selector.setMaximumWidth(120)
+        self.selector_items = ctrl.cm.list_available_themes()
+        self.selector.add_items(self.selector_items)
+        self.ui_manager.connect_element_to_action(self.selector, 'set_color_theme')
+        hlayout.addWidget(self.selector)
+        self.randomise = RandomiseButton()
+        ctrl.ui.connect_element_to_action(self.randomise,
+                                          'randomise_palette')
+        hlayout.addWidget(self.randomise, 1, QtCore.Qt.AlignRight)
+        self.store_favorite = QtWidgets.QPushButton('★')
+        self.store_favorite.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
+                                                                                   f.pointSize()))
+        self.store_favorite.setFixedSize(26, 20)
+        self.store_favorite.setEnabled(False)
+        ctrl.ui.connect_element_to_action(self.store_favorite,
+                                          'remember_palette')
+        hlayout.addWidget(self.store_favorite, 1, QtCore.Qt.AlignRight)
+
+        layout.addLayout(hlayout)
+        # paste ends
+
         the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
         self.editable_colors = ['content1', 'background1'] + the_rest
@@ -113,7 +142,9 @@ class ColorWheelPanel(Panel):
         self.selected_role = role
         self.update_colors()
         if update_selector:
+            self.role_selector.blockSignals(True)
             self.role_selector.setCurrentText(self.selected_role)
+            self.role_selector.blockSignals(False)
         self.update_matching()
 
     def update_matching(self):
@@ -141,14 +172,15 @@ class ColorWheelPanel(Panel):
         if color:
             self.selected_hsv = color.getHsvF()[:3]
         else:
-            self.selected_hsv = 0, 0, 0
+            # Create semi-random color to start with
+            self.selected_hsv = random.random(), 0.6, 0.75
+            self.send_color(*self.selected_hsv)
 
     def contrast_changed(self, value):
         if self._updating:
             return
         self.match_contrast = value
         self.send_color(*self.selected_hsv)
-
 
     def h_changed(self, value):
         if self._updating:
@@ -204,7 +236,7 @@ class ColorWheelPanel(Panel):
         self.g_spinner.setValue(color.green())
         self.b_spinner.setValue(color.blue())
         self.color_name.setText(f'{ctrl.cm.get_color_name(self.selected_hsv)}, '
-                                f'{ctrl.cm.get(self.selected_role).name()}')
+                                f'{color.name()}')
         self.contrast_spin.setValue(ctrl.cm.theme_contrast)
         self.color_wheel.update()
         self._updating = False
@@ -222,6 +254,27 @@ class ColorWheelPanel(Panel):
         ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
                           contrast=self.match_contrast)
 
+    def update_available_themes(self):
+        themes = ctrl.cm.list_available_themes()
+        if self.selector_items != themes:
+            self.selector.blockSignals(True)
+            self.selector_items = themes
+            self.selector.clear()
+            self.selector.add_items(self.selector_items)
+            self.selector.select_by_data(ctrl.cm.theme_key)
+            self.selector.blockSignals(False)
+
+    def showEvent(self, event):
+        """ Panel may have missed signals to update its contents when it was hidden: update all
+        that signals would update.
+        :param event:
+        :return:
+        """
+        self.update_available_themes()
+        self.update_colors()
+        super().showEvent(event)
+
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.
@@ -234,7 +287,10 @@ class ColorWheelPanel(Panel):
         :param value: value given to the field
         :return:
         """
-        if signal == 'palette_changed' or signal == 'color_theme_changed':
+        if signal == 'palette_changed':
+            self.update_colors()
+        elif signal == 'color_themes_changed':
+            self.update_available_themes()
             self.update_colors()
 
 

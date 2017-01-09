@@ -138,6 +138,10 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         setting them up. Subclass __init__:s must call finish_init at the end!
         :return:
         """
+        if self.isVisible() and not self._watched:
+            for signal in self.watchlist:
+                ctrl.add_watcher(self, signal)
+            self._watched = True
         self.set_folded(self.folded)
         if self.isFloating():
             self.move(self.initial_position())
@@ -292,7 +296,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
             pass
         if not self._watched:
             for signal in self.watchlist:
-                ctrl.add_watcher(signal, self)
+                ctrl.add_watcher(self, signal)
             self._watched = True
         QtWidgets.QDockWidget.showEvent(self, QShowEvent)
 
@@ -306,9 +310,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self._watched = False
         QtWidgets.QDockWidget.closeEvent(self, QCloseEvent)
 
-NONE = 0
-FLAG = 1
-CIRCLE = 2
 
 
 

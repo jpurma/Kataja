@@ -22,7 +22,7 @@ class ModeLabel(UIWidget, PanelButton):
         self.setFlat(True)
         self.setMinimumWidth(mw + 12)
         self.setMinimumHeight(24)
-        ctrl.add_watcher('ui_font_changed', self)
+        ctrl.add_watcher(self, 'ui_font_changed')
 
     def checkStateSet(self):
         val = self.isChecked()

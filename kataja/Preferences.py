@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Use these to debug
-disable_loading_preferences = True
+disable_loading_preferences = False
 disable_saving_preferences = False
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -195,8 +195,8 @@ class Preferences(object):
         self.projection_colorized = True
         self.projection_highlighter = False
         self.show_c_command = True
+        self.hide_edges_if_nodes_overlap = True
 
-        self.user_palettes = {}
         self.traces_are_grouped_together = False
         self.last_key_colors = {}
 
@@ -272,7 +272,6 @@ class Preferences(object):
                                  'on_change': 'prepare_easing_curve',
                           'help': 'Easing curve used to compute the intermediate steps in '
                                   'animations. Some options are just silly.'}
-        self.my_palettes = {}
 
         self.move_effect = False
         self._move_effect_ui = {'tab': 'Performance',
@@ -290,6 +289,7 @@ class Preferences(object):
         self.userspace_path = None
         # self.file_name = 'savetest.kataja'
 
+        self.custom_themes = {}
         self.custom_colors = {}
 
         self.gloss_strategy = 'message'

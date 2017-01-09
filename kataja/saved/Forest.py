@@ -167,7 +167,7 @@ class Forest(SavedObject):
             self.syntax.create_derivation(self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-        ctrl.add_watcher('palette_changed', self)
+        ctrl.add_watcher(self, 'palette_changed')
         ctrl.main.update_colors()
         self.add_all_to_scene()
         self.update_visualization()

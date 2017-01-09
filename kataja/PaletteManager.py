@@ -35,7 +35,7 @@ from PyQt5.QtGui import QColor as c
 from kataja.globals import FOREST
 from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
-from kataja.globals import DOCUMENT
+from kataja.globals import DOCUMENT, PREFS
 
 color_keys = [f'content{i}' for i in range(1, 4)] + [f'background{i}' for i in range(1, 3)] + \
              [f'accent{i}' for i in range(1, 9)] + [f'accent{i}tr' for i in range(1, 9)] + \
@@ -160,6 +160,30 @@ class PaletteManager:
         # Create some defaults
         self.activate_color_theme(self.default, try_to_remember=False)
 
+        # Keep an eye on relevant changes
+        ctrl.add_watcher(self, 'document_changed')
+        ctrl.add_watcher(self, 'color_themes_changed')
+
+    def update_custom_colors(self):
+        for key, rgba in prefs.custom_colors.items():
+            color = c.fromRgbF(*rgba)
+            if color:
+                self.d[key] = color
+        if 'custom_colors' in ctrl.settings.s_document:
+            for key, rgba in ctrl.settings.s_document['custom_colors'].items():
+                color = c.fromRgbF(*rgba)
+                if color:
+                    self.d[key] = color
+
+    def update_custom_themes(self):
+        self.custom_themes = OrderedDict()
+        for key in sorted(list(prefs.custom_themes.keys())):
+            self.custom_themes[key] = prefs.custom_themes[key]
+        sd = ctrl.settings.s_document.get('custom_themes', None)
+        if sd:
+            for key in sorted(list(sd.keys())):
+                self.custom_themes[key] = sd[key]
+
     def list_available_themes(self):
         l = [(data['name'], key) for key, data in self.default_themes.items()]
         ll = [(data['name'], key) for key, data in self.custom_themes.items()]
@@ -178,8 +202,8 @@ class PaletteManager:
             'contrast': self.theme_contrast,
             'colors': storage
         }
-        prefs.user_palettes[self.current_hex] = theme
-        self.custom_themes[self.current_hex] = theme
+        prefs.custom_themes[self.current_hex] = theme
+        self.update_custom_themes()
         ctrl.call_watchers(self, 'color_themes_changed')
         return self.current_hex, theme['name']
 
@@ -208,13 +232,13 @@ class PaletteManager:
             'colors': storage
         }
 
-        prefs.user_palettes[theme_key] = theme
+        prefs.custom_themes[theme_key] = theme
         self.custom_themes[theme_key] = theme
         return theme_key, theme_key
 
     def remove_custom_palette(self, theme_key):
-        if theme_key in prefs.user_palettes:
-            del prefs.user_palettes[theme_key]
+        if theme_key in prefs.custom_themes:
+            del prefs.custom_themes[theme_key]
         if theme_key in self.custom_themes:
             self.custom_themes.remove(theme_key)
 
@@ -234,7 +258,6 @@ class PaletteManager:
             self.theme_key = self.default
             data = self.default_themes[self.theme_key]
             log.error(f'Unable to find color theme "{theme_key}"')
-            print(self.custom_themes)
 
         self.hsv = data.get('hsv', [0.00, 0.29, 0.35])  # dark rose)
         contrast = data.get('contrast', 55)
@@ -295,18 +318,26 @@ class PaletteManager:
     def is_custom(self):
         return self.theme_key in self.custom_themes
 
-    def get(self, key) -> QColor:
+    def get(self, key, allow_none=False) -> QColor:
         """ Shortcut to palette dictionary (self.d) """
-        return self.d.get(key, None)
+        color = self.d.get(key, None)
+        if color or allow_none:
+            return color
+        log.critical(f"Missing color '{key}'.")
+        color = c(0, 0, 255)
+        self.set_color(key, color, can_save=False)
+        return color
 
-    def set_color(self, key, color, compute_companions=False, contrast=65):
+    def set_color(self, key, color, compute_companions=False, contrast=65, can_save=True):
         """ In its simplest, put a color to palette dict. If palette is not custom palette and
         color is not going to custom colors slot, then make a new palette and switch to use
         it."""
 
         if self.theme_key in self.default_themes and not key.startswith('custom'):
             new_key, name = self.create_custom_theme_from_modification(key, color, contrast)
+            ctrl.settings.set('color_theme', new_key, level=PREFS)
             ctrl.settings.set('color_theme', new_key, level=DOCUMENT)
+            self.update_custom_themes()
             ctrl.main.update_colors(randomise=False, animate=False)
             ctrl.call_watchers(self, 'color_themes_changed')
         else:
@@ -323,13 +354,24 @@ class PaletteManager:
                         self.d['background2'] = adjust_lightness(color, -8)
                     else:
                         self.d['background2'] = adjust_lightness(color, 8)
+            if key.startswith('custom') and can_save:
+                if 'custom_colors' in ctrl.settings.s_document:
+                    ctrl.settings.s_document['custom_colors'][key] = color.getRgbF()
+                else:
+                    ctrl.settings.s_document['custom_colors'] = {key: color.getRgbF()}
+                prefs.custom_colors[key] = color.getRgbF()
             if self.theme_key in self.custom_themes:
+                # same theme_data object also lives in prefs, updating it once does them both
                 theme_data = self.custom_themes[self.theme_key]
                 c = theme_data['colors']
                 for key, color in self.d.items():
                     c[key] = color.getRgbF()
+                if not self.theme_key in prefs.custom_themes:
+                    prefs.custom_themes[self.theme_key] = theme_data
+                elif prefs.custom_themes[self.theme_key] is not theme_data:
+                    prefs.custom_themes[self.theme_key] = theme_data
+
             ctrl.main.update_colors(randomise=False, animate=False)
-            # same theme_data object also lives in prefs, updating it once does them both
 
     def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
@@ -566,7 +608,11 @@ class PaletteManager:
         elif isinstance(color, QColor):
             cc = color
         else:
-            print('Unknown color: ', color)
+            log.critical('Unknown color: ', color)
+            return 'unknown'
+        if not cc:
+            log.critical('Unknown color: ', color)
+            return 'unknown'
         r, g, b, a = cc.getRgb()
         d_min = 100000
         best = 0
@@ -694,6 +740,22 @@ class PaletteManager:
                               self.broken(p['dark']), self.broken(p['mid']), self.broken(p['text']),
                               self.broken(p['bright_text']), p['base'], p['window'])
         return palette
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen.
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'document_changed':
+            self.update_custom_themes()
+            self.update_custom_colors()
+            ctrl.call_watchers(self, 'color_themes_changed')
+
 
 
 # HUSL colors and the code for creating them is from here:

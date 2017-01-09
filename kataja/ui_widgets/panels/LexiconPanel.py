@@ -57,6 +57,15 @@ class LexiconPanel(Panel):
         self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 
+    def showEvent(self, event):
+        """ Panel may have missed signals to update its contents when it was hidden: update all
+        that signals would update.
+        :param event:
+        :return:
+        """
+        self.prepare_lexicon()
+        super().showEvent(event)
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.

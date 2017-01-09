@@ -173,6 +173,7 @@ class Open(KatajaAction):
         ctrl.disable_undo()
         m.load_objects(data, m)
         ctrl.resume_undo()
+        ctrl.call_watchers(self.forest_keeper, 'document_changed')
         m.change_forest()
         log.info("Loaded '%s'." % filename)
 

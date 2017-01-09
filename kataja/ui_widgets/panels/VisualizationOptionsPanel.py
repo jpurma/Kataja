@@ -102,6 +102,15 @@ class VisualizationOptionsPanel(Panel):
             vp.toggle_options.setChecked(True)
         Panel.show(self)
 
+    def showEvent(self, event):
+        """ Panel may have missed signals to update its contents when it was hidden: update all
+        that signals would update.
+        :param event:
+        :return:
+        """
+        self.update_panel()
+        super().showEvent(event)
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.

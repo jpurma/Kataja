@@ -355,7 +355,7 @@ class Controller:
 
     # Watchers #####################################
 
-    def add_watcher(self, signal, obj):
+    def add_watcher(self, obj, signal):
         """
 
         :param signal:
@@ -393,6 +393,7 @@ class Controller:
         :param value: new value for field (optional)
         :return:
         """
+
         if not self.watchers_disabled:
             watchers = self.get_watchers(signal)
             for watcher in watchers:

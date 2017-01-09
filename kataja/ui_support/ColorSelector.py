@@ -37,7 +37,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         bg = ctrl.cm.get('background1')
         painter.fillRect(rect, bg)
-        c = ctrl.cm.get(self.color_key)
+        c = ctrl.cm.get(self.color_key, allow_none=True)
         if c:
             painter.setBrush(c)
             if self.selector.selected_color == self.color_key:
@@ -55,7 +55,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
             self.grad.setCenter(rect.center())
             painter.setBrush(self.grad)
             painter.drawRoundedRect(rect, 2, 2)
-            painter.setBrush(ctrl.cm.paper())
+            painter.setBrush(ctrl.cm.paper2())
             painter.setPen(QtCore.Qt.NoPen)
             painter.drawEllipse(rect.left() + 2, rect.top() + 2, rect.width() - 4, rect.height()
                                 - 4)
@@ -86,7 +86,6 @@ class ColorSelector(TableModelSelectionBox):
         self.role = role
         self.color_items = []
         model = self.model()
-        print(len(color_keys))
         for c in color_keys:
             item = QtGui.QStandardItem(LineColorIcon(c, self), '')
             item.setData(c)
@@ -128,7 +127,7 @@ class ColorSelector(TableModelSelectionBox):
         color_key = self.currentData()
         if not color_key:
             return
-        color = ctrl.cm.get(color_key)
+        color = ctrl.cm.get(color_key, allow_none=True)
         # launch a color dialog if color_id is unknown or clicking
         # already selected color
         prev_color = self.selected_color
@@ -136,7 +135,8 @@ class ColorSelector(TableModelSelectionBox):
         if (not color) or prev_color == color_key:
             wheel = ctrl.ui.get_panel('ColorWheelPanel')
             if (not wheel) or not wheel.isVisible():
-                ctrl.main.trigger_but_suppress_undo('toggle_panel_ColorWheelPanel')
+                ctrl.ui.toggle_panel(ctrl.ui.get_action('toggle_panel_ColorWheelPanel'),
+                                     'ColorWheelPanel')
         self.update_color_dialog()
         return color_key
 
@@ -148,7 +148,7 @@ class ColorSelector(TableModelSelectionBox):
             wheel.raise_()
 
     def showEvent(self, event):
-        ctrl.add_watcher('palette_changed', self)
+        ctrl.add_watcher(self, 'palette_changed')
         super().showEvent(event)
 
     def hideEvent(self, event):

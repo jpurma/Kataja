@@ -169,9 +169,9 @@ class UIManager:
         # Create UI panels, requires actions to exist
         self.create_panels()
         self.create_float_buttons()
-        ctrl.add_watcher('selection_changed', self)
-        ctrl.add_watcher('forest_changed', self)
-        ctrl.add_watcher('viewport_changed', self)
+        ctrl.add_watcher(self, 'selection_changed')
+        ctrl.add_watcher(self, 'forest_changed')
+        ctrl.add_watcher(self, 'viewport_changed')
 
 
     def disable_item(self, ui_key):

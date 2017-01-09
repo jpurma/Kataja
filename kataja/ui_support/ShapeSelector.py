@@ -15,7 +15,7 @@ class LineStyleIcon(QIcon):
         self.compose_icon()
 
     def compose_icon(self):
-        c = ctrl.cm.get(ctrl.settings.cached_active_edge('color_id') or 'content1')
+        c = ctrl.cm.get(ctrl.settings.cached_active_edge('color_id'))
         size = self.size_hint
 
         hidp = ctrl.main.devicePixelRatio()
@@ -63,9 +63,9 @@ class ShapeSelector(TableModelSelectionBox):
             item.setIcon(icon)
 
     def showEvent(self, event):
-        ctrl.add_watcher('active_edge_color_changed', self)
-        ctrl.add_watcher('palette_changed', self)
-        ctrl.add_watcher('scope_changed', self)
+        ctrl.add_watcher(self, 'active_edge_color_changed')
+        ctrl.add_watcher(self, 'palette_changed')
+        ctrl.add_watcher(self, 'scope_changed')
         super().showEvent(event)
 
     def hideEvent(self, event):

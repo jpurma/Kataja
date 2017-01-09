@@ -134,6 +134,15 @@ class StylePanel(Panel):
         items += [(ni[key]['name_pl'], key) for key in classes.node_types_order]
         self.scope_selector.add_items(items)
 
+    def showEvent(self, event):
+        """ Panel may have missed signals to update its contents when it was hidden: update all
+        that signals would update.
+        :param event:
+        :return:
+        """
+        self.update_selection()
+        super().showEvent(event)
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
         listen. These signals are declared in 'self.watchlist'.
