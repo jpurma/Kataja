@@ -1514,6 +1514,9 @@ class Node(Movable):
         called for each element.
         :param event:
         """
+        crossed_out_flag = event.modifiers() == QtCore.Qt.ShiftModifier
+        for edge in self.edges_up:
+            edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
         if not ctrl.dragged_focus:
             self.start_dragging(scene_pos)
@@ -1556,7 +1559,7 @@ class Node(Movable):
         # return True
         return False
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         """
 
         :param recipient:
@@ -1566,6 +1569,10 @@ class Node(Movable):
         """
         self.stop_moving()
         self.update()
+        for edge in self.edges_up:
+            edge.crossed_out_flag = False
+            if shift_down:
+                ctrl.forest.disconnect_node(edge=edge)
         if recipient and recipient.accepts_drops(self):
             self.release()
             message = recipient.drop(self)
@@ -1573,6 +1580,7 @@ class Node(Movable):
             self.lock()
             for node in ctrl.dragged_set:
                 node.lock()
+
             if self.use_physics():
                 message = 'moved node to {:.2f}, {:.2f}'.format(self.current_position[0],
                                                                 self.current_position[1])
@@ -1675,7 +1683,8 @@ class Node(Movable):
             ctrl.release(self)
             if ctrl.dragged_set:
                 x, y = to_tuple(event.scenePos())
-                message = self.drop_to(x, y, recipient=ctrl.drag_hovering_on)
+                message = self.drop_to(x, y, recipient=ctrl.drag_hovering_on, shift_down=
+                                       event.modifiers() == QtCore.Qt.ShiftModifier)
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
                 ctrl.main.action_finished(message)  # @UndefinedVariable

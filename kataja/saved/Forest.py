@@ -768,8 +768,6 @@ class Forest(SavedObject):
 
     def syntax_trees_as_string(self):
         """
-
-
         :return:
         """
         s = []
@@ -2033,8 +2031,7 @@ class Forest(SavedObject):
             edge.end.disconnect_in_syntax(edge)
         self.delete_edge(edge)
 
-    def disconnect_node(self, parent=None, child=None, edge_type='', ignore_missing=False,
-                        edge=None):
+    def disconnect_node(self, parent=None, child=None, edge_type='', edge=None):
         """ Removes and deletes a edge between two nodes. If asked to do so, can reset
         projections and trees ownerships, but doesn't do it automatically, as disconnecting is
         often part of more complex series of operations.
@@ -2056,12 +2053,8 @@ class Forest(SavedObject):
         # then remove the edge
         if not edge:
             edge = parent.get_edge_to(child, edge_type)
-            if not edge:
-                if ignore_missing:
-                    return
-                else:
-                    raise ForestError("Trying to remove edge that doesn't exist")
-        self.disconnect_edge(edge)
+        if edge:
+            self.disconnect_edge(edge)
         if hasattr(child, 'on_disconnect'):
             child.on_disconnect(parent)
 
@@ -2160,7 +2153,7 @@ class Forest(SavedObject):
 
                 if good_parents:
                     # normal case
-                    self.disconnect_node(node, child, ignore_missing=True)
+                    self.disconnect_node(node, child)
                     for parent in list(good_parents):
                         edge = parent.get_edge_to(node)
                         direction = edge.direction()

@@ -1,10 +1,13 @@
 from PyQt5 import QtWidgets
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
+from kataja.globals import CONSOLE_FONT
 from kataja.ui_widgets.Panel import Panel
 
 from kataja.ui_support.panel_utils import text_button
 
 __author__ = 'purma'
+
+stylesheet = 'QPlainTextEdit, QLineEdit {font-family: "%s"; font-size: %spx;}}'
 
 
 class LexiconPanel(Panel):
@@ -21,8 +24,10 @@ class LexiconPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
+        f = qt_prefs.get_font(CONSOLE_FONT)
         self.lextext = QtWidgets.QPlainTextEdit()
-        self.watchlist = ['forest_changed']
+        self.setStyleSheet(stylesheet % (f.family(), f.pointSize()))
+        self.watchlist = ['forest_changed', 'ui_font_changed']
         layout.addWidget(self.lextext)
         self.sentence_text = QtWidgets.QLineEdit()
         layout.addWidget(self.sentence_text)
@@ -80,4 +85,7 @@ class LexiconPanel(Panel):
         """
         if signal == 'forest_changed':
             self.prepare_lexicon()
+        if signal == 'ui_font_changed':
+            f = qt_prefs.get_font(CONSOLE_FONT)
+            self.setStyleSheet(stylesheet % (f.family(), f.pointSize()))
 

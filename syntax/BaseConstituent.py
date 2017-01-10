@@ -159,6 +159,9 @@ class BaseConstituent(IConstituent):
         else:
             self.heads = []
 
+    def set_heads(self, heads:list):
+        self.heads = heads
+
     def get_feature(self, key):
         """ Gets the first local feature (within this constituent, not of its children) with key
         'key'

@@ -122,6 +122,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.status_tip = ""
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
+        self.crossed_out_flag = False
         self._arrow_cut_point_start = None
         self._arrow_cut_point_end = None
         self._arrowhead_start_path = None
@@ -1091,6 +1092,15 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     painter.drawLine(self.control_points[0][0], self.control_points[0][1],
                                      self.adjusted_control_points[0][0],
                                      self.adjusted_control_points[0][1])
+        if self.crossed_out_flag:
+            cx, cy = to_tuple(self._true_path.pointAtPercent(0.5))
+            p = QtGui.QPen(ctrl.cm.ui())
+            p.setWidthF(1.0)
+            painter.setPen(p)
+            painter.drawLine(cx - 20, cy - 10, cx + 20, cy + 10)
+            painter.drawLine(cx - 20, cy + 10, cx + 20, cy - 10)
+
+
 
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.

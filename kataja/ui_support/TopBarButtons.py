@@ -16,7 +16,7 @@ class TopBarButtons(QtWidgets.QFrame):
         self._right_buttons = []
 
         # Left side
-        self.edit_mode_button = ModeLabel(['Free drawing mode', 'Derivation mode'],
+        self.edit_mode_button = ModeLabel(['Free drawing', 'Visualisation'],
                                           ui_key='edit_mode_label',
                                           parent=self)
         layout.addWidget(self.edit_mode_button)
@@ -27,7 +27,7 @@ class TopBarButtons(QtWidgets.QFrame):
         layout.addStretch(0)
 
         # Right side
-        self.view_mode_button = ModeLabel(['Show all objects', 'Show only syntactic objects'],
+        self.view_mode_button = ModeLabel(['All objects', 'Syntactic only'],
                                           ui_key='view_mode_label',
                                           parent=self)
         layout.addWidget(self.view_mode_button)

@@ -240,7 +240,7 @@ class PaletteManager:
         if theme_key in prefs.custom_themes:
             del prefs.custom_themes[theme_key]
         if theme_key in self.custom_themes:
-            self.custom_themes.remove(theme_key)
+            del self.custom_themes[theme_key]
         ctrl.call_watchers(self, 'color_themes_changed')
 
     def activate_color_theme(self, theme_key, try_to_remember=True):

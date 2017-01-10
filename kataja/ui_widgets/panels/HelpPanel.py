@@ -10,7 +10,7 @@ __author__ = 'purma'
 
 
 class HelpPanel(Panel):
-    """ Browse and build the lexicon """
+    """ Panel for showing help and instructions """
     default_text = """
     <h3>Welcome to Kataja!</h3>
     Try these:<br/>
@@ -32,23 +32,23 @@ class HelpPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
-        inner.setContentsMargins(0, 0, 0, 0)
+        inner.setContentsMargins(4, 4, 4, 4)
         self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QVBoxLayout()
-        self.label = QtWidgets.QTextBrowser()
+        self.browser = QtWidgets.QTextBrowser()
         layout.setContentsMargins(0, 0, 0, 0)
-        self.label.setContentsMargins(0, 0, 0, 0)
+        self.browser.setContentsMargins(0, 0, 0, 0)
         f = qt_prefs.get_font(UI_FONT)
         point_size = f.pointSize()
         if point_size < 14:
             point_size = 12
-        self.label.setStyleSheet('font-size: %spx;' % point_size)
-        self.label.setMinimumWidth(200)
-        self.label.setFrameStyle(QtWidgets.QFrame.NoFrame)
-        p = self.label.palette()
+        self.browser.setStyleSheet('font-size: %spx;' % point_size)
+        self.browser.setMinimumWidth(200)
+        self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
+        p = self.browser.palette()
         p.setColor(QtGui.QPalette.Base, ctrl.cm.transparent)
-        self.label.setPalette(p)
-        layout.addWidget(self.label)
+        self.browser.setPalette(p)
+        layout.addWidget(self.browser)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.watchlist = ['ui_font_changed']
@@ -58,10 +58,10 @@ class HelpPanel(Panel):
         ctrl.graph_view.setFocus()
 
     def set_text(self, text):
-        self.label.setHtml(text)
+        self.browser.setHtml(text)
 
     def text(self):
-        return self.label.toHtml()
+        return self.browser.toHtml()
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -80,5 +80,5 @@ class HelpPanel(Panel):
             point_size = f.pointSize()
             if point_size < 14:
                 point_size = 12
-            self.label.setStyleSheet('font-size: %spx;' % point_size)
+            self.browser.setStyleSheet('font-size: %spx;' % point_size)
 
