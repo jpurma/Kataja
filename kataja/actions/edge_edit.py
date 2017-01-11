@@ -68,9 +68,9 @@ class DisconnectEdgeStart(KatajaAction):
             return
         # Then do the cutting
         if edge.delete_on_disconnect():
-            ctrl.forest.disconnect_edge(edge)
+            ctrl.free_drawing.disconnect_edge(edge)
         else:
-            ctrl.forest.partial_disconnect(edge, start=True, end=False)
+            ctrl.free_drawing.partial_disconnect(edge, start=True, end=False)
         ctrl.ui.update_selections()
 
 
@@ -91,9 +91,9 @@ class DisconnectEdgeEnd(KatajaAction):
             return
         # Then do the cutting
         if edge.delete_on_disconnect():
-            ctrl.forest.disconnect_edge(edge)
+            ctrl.free_drawing.disconnect_edge(edge)
         else:
-            ctrl.forest.partial_disconnect(edge, start=False, end=True)
+            ctrl.free_drawing.partial_disconnect(edge, start=False, end=True)
         ctrl.ui.update_selections()
 
 
@@ -109,7 +109,7 @@ class NewArrow(KatajaAction):
         embed = self.get_ui_container()
         p1, p2 = embed.get_marker_points()
         text = embed.input_line_edit.text()
-        ctrl.forest.create_arrow(p2, p1, text)
+        ctrl.free_drawing.create_arrow(p2, p1, text)
         ctrl.ui.close_active_embed()
 
 
@@ -129,7 +129,7 @@ class StartArrowFromNode(KatajaAction):
         node = button.host
         ex, ey = node.bottom_center_magnet()
         end_pos = QtCore.QPointF(ex + 20, ey + 40)
-        ctrl.forest.create_arrow_from_node_to_point(node, end_pos)
+        ctrl.free_drawing.create_arrow_from_node_to_point(node, end_pos)
 
 
 class DeleteArrow(KatajaAction):
@@ -144,7 +144,7 @@ class DeleteArrow(KatajaAction):
         if not edge:
             return
         # Then do the cutting
-        ctrl.forest.disconnect_edge(edge)
+        ctrl.free_drawing.disconnect_edge(edge)
         ctrl.ui.update_selections()
 
 

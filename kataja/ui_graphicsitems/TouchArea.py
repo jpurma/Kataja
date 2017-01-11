@@ -191,7 +191,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
                 else:
                     h = 0
                 pos = QtCore.QPointF(x, y + h)
-                return ctrl.forest.create_node(pos=pos, node_type=node_type)
+                return ctrl.free_drawing.create_node(pos=pos, node_type=node_type)
             else:
                 print('received unknown command:', command, args)
         else:
@@ -412,7 +412,7 @@ class ConnectFeatureTouchArea(AddBelowTouchArea):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
-        ctrl.forest.add_feature_to_node(dropped_node, self.host)
+        ctrl.free_drawing.add_feature_to_node(dropped_node, self.host)
         return 'added feature %s to %s' % (dropped_node, self.host)
 
 
@@ -432,7 +432,7 @@ class ConnectCommentTouchArea(AddBelowTouchArea):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
-        ctrl.forest.add_comment_to_node(dropped_node, self.host)
+        ctrl.free_drawing.add_comment_to_node(dropped_node, self.host)
         return 'added comment %s to %s' % (dropped_node, self.host)
 
 
@@ -452,7 +452,7 @@ class ConnectGlossTouchArea(AddBelowTouchArea):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
-        ctrl.forest.add_gloss_to_node(dropped_node, self.host)
+        ctrl.free_drawing.add_gloss_to_node(dropped_node, self.host)
         return 'added gloss %s to %s' % (dropped_node, self.host)
 
 
@@ -523,7 +523,7 @@ class BranchingTouchArea(TouchArea):
         assert(self.host.start and self.host.end)
         adjustment = self.host.end.adjustment
         # host is an edge
-        ctrl.forest.insert_node_between(dropped_node, self.host.start,
+        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
                                         self.host.end,
                                         self._align_left,
                                         self.start_point)
@@ -796,10 +796,10 @@ class JointedTouchArea(TouchArea):
             return
         # host is a node
         assert isinstance(self.host, Node)
-        ctrl.forest.merge_to_top(self.host,
-                                 dropped_node,
-                                 merge_to_left=self._align_left,
-                                 pos=self.start_point)
+        ctrl.free_drawing.merge_to_top(self.host,
+                                       dropped_node,
+                                       merge_to_left=self._align_left,
+                                       pos=self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.adjustment
         return 'moved node %s to sibling of %s' % (
@@ -927,7 +927,7 @@ class ChildTouchArea(TouchArea):
         if not dropped_node:
             return
         # host is an edge
-        ctrl.forest.insert_node_between(dropped_node, self.host.start,
+        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
                                         self.host.end,
                                         self._align_left,
                                         self.start_point)

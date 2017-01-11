@@ -153,6 +153,10 @@ class Controller:
         return self.main.forest
 
     @property
+    def free_drawing(self):
+        return self.main.forest.free_drawing
+
+    @property
     def graph_scene(self):
         return self.main.graph_scene
 

@@ -233,55 +233,15 @@ class SwitchTraceMode(KatajaAction):
         multidomination = ctrl.settings.get('uses_multidomination')
 
         if grouped_traces and not multidomination:
-            ctrl.forest.traces_to_multidomination()
+            ctrl.forest.chain_manager.traces_to_multidomination()
             log.info('(t) use multidominance')
         elif (not grouped_traces) and not multidomination:
             log.info('(t) use traces, group them to one spot')
-            ctrl.forest.group_traces_to_chain_head()
+            ctrl.forest.chain_manager.group_traces_to_chain_head()
             ctrl.action_redraw = False
         elif multidomination:
             log.info('(t) use traces, show constituents in their base merge positions')
-            ctrl.forest.multidomination_to_traces()
-
-
-class ToggleMergeOrder(KatajaAction):
-    k_action_uid = 'merge_order_attribute'
-    k_command = 'Show merge &order'
-    k_shortcut = 'o'
-    k_checkable = True
-
-    def method(self):
-        """ Toggle showing numbers indicating merge orders
-        :return: None
-        """
-        if ctrl.settings.get('show_merge_order'):
-            log.info('(o) Hide merge order')
-            ctrl.settings.set('show_merge_order', False, level=FOREST)
-            ctrl.forest.remove_order_features('M')
-        else:
-            log.info('(o) Show merge order')
-            ctrl.settings.set('show_merge_order', True, level=FOREST)
-            ctrl.forest.add_order_features('M')
-
-
-class ToggleSelectOrder(KatajaAction):
-    k_action_uid = 'select_order_attribute'
-    k_command = 'Show select &Order'
-    k_shortcut = 'Shift+o'
-    k_checkable = True
-
-    def method(self):
-        """ Toggle showing numbers indicating order of lexical selection
-        :return: None
-        """
-        if ctrl.settings.get('show_select_order'):
-            log.info('(O) Hide select order')
-            ctrl.settings.set('show_select_order', False, level=FOREST)
-            ctrl.forest.remove_order_features('S')
-        else:
-            log.info('(O) Show select order')
-            ctrl.settings.set('show_select_order', True, level=FOREST)
-            ctrl.forest.add_order_features('S')
+            ctrl.forest.chain_manager.multidomination_to_traces()
 
 
 
@@ -377,7 +337,7 @@ class ToggleHighlighterProjection(KatajaAction):
         """ """
         ctrl.settings.set('projection_highlighter', not ctrl.settings.get(
             'projection_highlighter'), level=FOREST)
-        ctrl.forest.update_projection_display()
+        ctrl.forest.projection_manager.update_projection_display()
 
     def getter(self):
         return ctrl.settings.get('projection_highlighter')
@@ -393,7 +353,7 @@ class ToggleStrongLinesProjection(KatajaAction):
         """ """
         ctrl.settings.set('projection_strong_lines', not ctrl.settings.get(
             'projection_strong_lines'), level=FOREST)
-        ctrl.forest.update_projection_display()
+        ctrl.forest.projection_manager.update_projection_display()
 
     def getter(self):
         return ctrl.settings.get('projection_strong_lines')
@@ -409,7 +369,7 @@ class ToggleColorizedProjection(KatajaAction):
         """ """
         ctrl.settings.set('projection_colorized', not ctrl.settings.get(
             'projection_colorized'), level=FOREST)
-        ctrl.forest.update_projection_display()
+        ctrl.forest.projection_manager.update_projection_display()
 
     def getter(self):
         return ctrl.settings.get('projection_colorized')

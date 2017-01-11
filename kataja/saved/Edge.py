@@ -261,13 +261,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     self.start):
                     lv = False
                 elif not (self.start or self.end):
-                    ctrl.forest.delete_edge(self)
+                    ctrl.free_drawing.delete_edge(self)
                     return False
             elif self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
                 if self.end and self.end.locked_to_node is self.start:
                     lv = False
                 elif not (self.start or self.end):
-                    ctrl.forest.delete_edge(self)
+                    ctrl.free_drawing.delete_edge(self)
                     return False
 
         self._visible_by_logic = lv
@@ -1358,7 +1358,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         return ctrl.free_drawing_mode
 
-    ## Shape helpers #############################
+    # Shape helpers #############################
 
     def cached(self, key):
         return ctrl.settings.cached_edge(key, self)

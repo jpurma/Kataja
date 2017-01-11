@@ -1,3 +1,4 @@
+
 import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
 from kataja.singletons import ctrl

@@ -42,7 +42,7 @@ class KeyBackspace(KatajaAction):
         print('key_backspace - action')
         ctrl.multiselection_start() # don't update selections until all are removed
         for item in list(ctrl.selected):
-            ctrl.forest.delete_item(item)
+            ctrl.free_drawing.delete_item(item)
         ctrl.multiselection_end() # ok go update
 
 

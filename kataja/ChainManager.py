@@ -3,9 +3,8 @@ import string
 from collections import namedtuple
 
 from kataja.globals import FOREST
-from kataja.utils import time_me, caller, add_xy
+from kataja.utils import add_xy
 from kataja.singletons import ctrl
-
 
 
 # ### Chains #######################################################################
@@ -28,6 +27,12 @@ class ChainManager:
         self.chains = {}
         self.forest = forest
         self.traces_from_bottom = []
+
+    def traces_are_visible(self):
+        """ Helper method for checking if we need to deal with chains
+        :return:
+        """
+        return not ctrl.settings.get('uses_multidomination')
 
     def get_chain_head(self, chain_key):
         """
@@ -171,7 +176,7 @@ class ChainManager:
         for trace in self.traces_from_bottom:
             if trace.is_trace:
                 original = self.get_chain_head(trace.index)
-                self.forest.replace_node(trace, original)
+                self.forest.free_drawing.replace_node(trace, original)
         ctrl.settings.set('uses_multidomination', True, level=FOREST)
 
     def multidomination_to_traces(self):
@@ -185,8 +190,8 @@ class ChainManager:
                     if node.is_trace:
                         trace = node
                     else:
-                        trace = self.forest.create_trace_for(node)
-                    self.forest.replace_node(head, trace, only_for_parent=parent)
+                        trace = self.forest.free_drawing.create_trace_for(node)
+                    self.forest.free_drawing.replace_node(head, trace, only_for_parent=parent)
         ctrl.settings.set('traces_are_grouped_together', False, level=FOREST)
         ctrl.settings.set('uses_multidomination', False, level=FOREST)
 

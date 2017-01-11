@@ -35,6 +35,7 @@ from kataja.utils import time_me
 # add_undoable_field, finish_undoable_operation.
 # these all should operate on global dict, where each add_undoable_field
 # would announce the item and the field.
+from synobjs_to_nodes import synobjs_to_nodes
 
 
 class DerivationStep(SavedObject):
@@ -126,9 +127,10 @@ class DerivationStepManager(SavedObject):
             d_step.load_objects(frozen_data, ctrl.main)
             self.activated = True
             self.current = d_step
-            self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other,
-                                          d_step.msg, d_step.gloss, d_step.transferred,
-                                          d_step.mover)
+
+            synobjs_to_nodes(self.forest, d_step.synobjs, d_step.numeration, d_step.other,
+                             d_step.msg, d_step.gloss, d_step.transferred,
+                             d_step.mover)
             log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def next_derivation_step(self):

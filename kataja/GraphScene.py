@@ -449,13 +449,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if data and 'char' in data:
                     event.acceptProposedAction()
                     if ctrl.free_drawing_mode:
-                        node = ctrl.forest.create_node(pos=event.scenePos(),
-                                                       node_type=g.CONSTITUENT_NODE, text=data['char'])
+                        node = ctrl.free_drawing.create_node(pos=event.scenePos(),
+                                                             node_type=g.CONSTITUENT_NODE,
+                                                             text=data['char'])
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
                         ctrl.main.action_finished('Created constituent "%s"' % node)
                     else:
-                        node = ctrl.forest.create_comment_node(text=data['char'])
+                        node = ctrl.free_drawing.create_comment_node(text=data['char'])
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
                         ctrl.main.action_finished('Added "%s" as comment since we are in '
@@ -473,7 +474,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             node_type = int(node_type)
                         except TypeError:
                             pass
-                        node = ctrl.forest.create_node(pos=event.scenePos(), node_type=node_type)
+                        node = ctrl.free_drawing.create_node(pos=event.scenePos(),
+                                                             node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         if node_type != g.CONSTITUENT_NODE:
                             node.lock()
@@ -486,14 +488,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node = ctrl.forest.simple_parse(text)
                         ctrl.main.action_finished('Added tree based on "%s".' % text)
                     else:
-                        node = ctrl.forest.create_comment_node(text=text)
+                        node = ctrl.free_drawing.create_comment_node(text=text)
                         ctrl.main.action_finished('Added text as comment node since we are in '
                                                   'derivation mode and cannot change trees.')
             elif data.hasUrls():
                 for url in data.urls():
                     path = url.toString()
                     if path.endswith(('png', 'jpg', 'pdf')):
-                        node = ctrl.forest.create_comment_node(pixmap_path=url.toLocalFile())
+                        node = ctrl.free_drawing.create_comment_node(pixmap_path=url.toLocalFile())
                         ctrl.main.action_finished('Added image')
 
         ctrl.ui.remove_touch_areas()

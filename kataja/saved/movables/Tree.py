@@ -120,12 +120,38 @@ class Tree(Movable):
         """
         return not self.top.get_parents(similar=False, visible=False)
 
+    def add_node(self, node):
+        """ Add this node to given trees and possibly set it as parent for this graphicsitem.
+        :param node: Node
+        :return:
+        """
+        node.trees.add(self)
+        node.update_graphics_parent()
+
+    def remove_node(self, node, recursive_down=False):
+        """ Remove node from trees and remove the (graphicsitem) parenthood-relation.
+        :param node: Node
+        :param recursive_down: bool -- do recursively remove child nodes from tree too
+        :return:
+        """
+        if self in node.trees:
+            node.trees.remove(self)
+            node.update_graphics_parent()
+        if recursive_down:
+            for child in node.get_children(similar=False, visible=False):
+                legit = False
+                for parent in child.get_parents(similar=False, visible=False):
+                    if self in parent.trees:
+                        legit = True
+                if not legit:
+                    self.remove_node(child, recursive_down=True)
+
     def add_to_numeration(self, node):
         def add_children(node):
             if node not in self.sorted_nodes:
                 self.sorted_nodes.append(node)
                 if self not in node.trees:
-                    node.add_to_tree(self)
+                    self.add_node(node)
                 for child in node.get_children(similar=False, visible=False):
                     if child:  # undoing object creation may cause missing edge ends
                         add_children(child)
@@ -144,7 +170,7 @@ class Tree(Movable):
                         to_be_removed.add(item)
                         break
             for item in to_be_removed:
-                item.remove_from_tree(self)
+                self.remove_node(item)
             return
         sorted_constituents = []
         sorted_nodes = []
@@ -162,7 +188,7 @@ class Tree(Movable):
                         sorted_constituents.append(node)
                     sorted_nodes.append(node)
                     if self not in node.trees:
-                        node.add_to_tree(self)
+                        self.add_node(node)
                     for child in node.get_children(similar=False, visible=False):
                         if child: # undoing object creation may cause missing edge ends
                             add_children(child)
@@ -180,7 +206,7 @@ class Tree(Movable):
 
         to_be_removed = old_nodes - set(sorted_nodes)
         for item in to_be_removed:
-            item.remove_from_tree(self)
+            self.remove_node(item)
 
     def is_higher_in_tree(self, node_a, node_b):
         """ Compare two nodes, if node_a is higher, return True. Return False

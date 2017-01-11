@@ -164,7 +164,7 @@ class SaveGroupChanges(KatajaAction):
             group.update_shape()
             name = group.get_label_text() or ctrl.cm.get_color_name(group.color_key)
             if not group.persistent:
-                ctrl.forest.turn_selection_group_to_group(group)
+                ctrl.forest.free_drawing.turn_selection_group_to_group(group)
                 ctrl.deselect_objects()
 
             log.info("Saved group '%s'" % name)

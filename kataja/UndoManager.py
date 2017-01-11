@@ -100,7 +100,7 @@ class UndoManager:
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                ctrl.forest.delete_item(obj, ignore_consequences=True)
+                ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
             elif transition_type == DELETED:
                 ctrl.forest.add_to_scene(obj)
             affected.add(obj)
@@ -147,7 +147,7 @@ class UndoManager:
             if transition_type == CREATED:
                 ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
-                ctrl.forest.delete_item(obj, ignore_consequences=True)
+                ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
             affected.add(obj)
         ctrl.forest.edge_visibility_check()
         for obj, transitions, transition_type in snapshot.values():

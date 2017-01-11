@@ -129,7 +129,7 @@ class SyntaxConnection(SavedObject):
         forest.parser.string_into_forest(text)
         if ctrl.settings.get('uses_multidomination'):
             ctrl.settings.set('uses_multidomination', False, level=FOREST)
-            forest.traces_to_multidomination()
+            forest.chain_manager.traces_to_multidomination()
             # traces to multidomination will toggle uses_multidomination to True
 
     def get_constituent_from_lexicon(self, identifier):

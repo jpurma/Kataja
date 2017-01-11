@@ -51,7 +51,7 @@ class AddNode(KatajaAction):
         ntype = sender.data
         pos = QtCore.QPoint(random.random() * 60 - 25,
                             random.random() * 60 - 25)
-        node = ctrl.forest.create_node(pos=pos, node_type=ntype)
+        node = ctrl.free_drawing.create_node(pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
         log.info('Added new %s.' % nclass.display_name[0])
 
@@ -101,18 +101,18 @@ class CreateNewNodeFromText(KatajaAction):
         if node_type == g.ARROW:
             p1, p2 = embed.get_marker_points()
             text = embed.input_line_edit.text()
-            ctrl.forest.create_arrow(p2, p1, text)
+            ctrl.free_drawing.create_arrow(p2, p1, text)
         elif node_type == g.DIVIDER:
             p1, p2 = embed.get_marker_points()
             # fixme: finish this!
         elif node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
             if node:
-                ctrl.forest.create_tree_for(node)
+                ctrl.forest.tree_manager.create_tree_for(node)
         else:
-            node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
+            node = ctrl.free_drawing.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
             if node and node_type == g.CONSTITUENT_NODE:
-                ctrl.forest.create_tree_for(node)
+                ctrl.forest.tree_manager.create_tree_for(node)
         if node:
             node.lock()
         ctrl.ui.close_active_embed()
@@ -134,7 +134,7 @@ class RemoveMerger(KatajaAction):
         if not node:
             return
         ctrl.remove_from_selection(node)
-        ctrl.forest.delete_unnecessary_merger(node)
+        ctrl.free_drawing.delete_unnecessary_merger(node)
 
 
 class RemoveNode(KatajaAction):
@@ -148,7 +148,7 @@ class RemoveNode(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.remove_from_selection(node)
-        ctrl.forest.delete_node(node, ignore_consequences=False)
+        ctrl.free_drawing.delete_node(node, ignore_consequences=False)
 
 
 class AddTriangle(KatajaAction):
@@ -164,7 +164,7 @@ class AddTriangle(KatajaAction):
         if not node:
             return
         log.info('folding in %s' % node.as_bracket_string())
-        ctrl.forest.add_triangle_to(node)
+        ctrl.free_drawing.add_triangle_to(node)
         node.update_label()
         ctrl.deselect_objects()
 
@@ -182,7 +182,7 @@ class RemoveTriangle(KatajaAction):
         if not node:
             return
         log.info('unfolding from %s' % node.as_bracket_string())
-        ctrl.forest.remove_triangle_from(node)
+        ctrl.free_drawing.remove_triangle_from(node)
         ctrl.deselect_objects()
 
 
@@ -245,8 +245,8 @@ class AddTopLeft(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         top = self.get_host()
-        new_node = ctrl.forest.create_node(relative=top)
-        ctrl.forest.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
+        new_node = ctrl.free_drawing.create_node(relative=top)
+        ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
 
 
 class AddTopRight(KatajaAction):
@@ -257,8 +257,8 @@ class AddTopRight(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         top = self.get_host()
-        new_node = ctrl.forest.create_node(relative=top)
-        ctrl.forest.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
+        new_node = ctrl.free_drawing.create_node(relative=top)
+        ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
 
 
 class InnerAddSiblingLeft(KatajaAction):
@@ -270,7 +270,7 @@ class InnerAddSiblingLeft(KatajaAction):
         node = self.get_host()
         if isinstance(node, Edge):
             node = node.end
-        ctrl.forest.add_sibling_for_constituentnode(node, add_left=True)
+        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
 
 
 class InnerAddSiblingRight(KatajaAction):
@@ -283,7 +283,7 @@ class InnerAddSiblingRight(KatajaAction):
         node = self.get_host()
         if isinstance(node, Edge):
             node = node.end
-        ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
+        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
 
 
 class UnaryAddChildLeft(KatajaAction):
@@ -294,7 +294,7 @@ class UnaryAddChildLeft(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         node = self.get_host()
-        ctrl.forest.unary_add_child_for_constituentnode(node, add_left=True)
+        ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=True)
 
 
 class UnaryAddChildRight(KatajaAction):
@@ -305,7 +305,7 @@ class UnaryAddChildRight(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         node = self.get_host()
-        ctrl.forest.unary_add_child_for_constituentnode(node, add_left=False)
+        ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=False)
 
 
 class LeafAddSiblingLeft(KatajaAction):
@@ -316,7 +316,7 @@ class LeafAddSiblingLeft(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         node = self.get_host()
-        ctrl.forest.add_sibling_for_constituentnode(node, add_left=True)
+        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
 
 
 class LeafAddSiblingRight(KatajaAction):
@@ -327,7 +327,7 @@ class LeafAddSiblingRight(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         node = self.get_host()
-        ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
+        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
 
 
 class MergeToTop(KatajaAction):
@@ -339,7 +339,7 @@ class MergeToTop(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         node = self.get_host()
-        ctrl.forest.merge_to_top(node.get_top_node(), node, merge_to_left=True)
+        ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=True)
 
 
 # Floating buttons ##################################

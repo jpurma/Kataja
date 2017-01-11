@@ -292,10 +292,10 @@ class Node(Movable):
         """
         for parent in self.get_parents(similar=False, visible=False):
             if parent not in others:
-                ctrl.forest.disconnect_node(parent, self)
+                ctrl.free_drawing.disconnect_node(parent, self)
         for child in self.get_children(similar=False, visible=False):
             if child not in others:
-                ctrl.forest.disconnect_node(self, child)
+                ctrl.free_drawing.disconnect_node(self, child)
         ctrl.forest.remove_from_scene(self)
         return self
 
@@ -499,32 +499,6 @@ class Node(Movable):
         elif old_parent:
             self.current_position = self.current_scene_position
             self.setParentItem(None)
-
-    def add_to_tree(self, tree):
-        """ Add this node to given trees and possibly set it as parent for this graphicsitem.
-        :param tree: Tree
-        :return:
-        """
-        self.trees.add(tree)
-        self.update_graphics_parent()
-
-    def remove_from_tree(self, tree, recursive_down=False):
-        """ Remove node from trees and remove the (graphicsitem) parenthood-relation.
-        :param tree: Tree
-        :param recursive_down: bool -- do recursively remove child nodes from tree too
-        :return:
-        """
-        if tree in self.trees:
-            self.trees.remove(tree)
-            self.update_graphics_parent()
-        if recursive_down:
-            for child in self.get_children(similar=False, visible=False):
-                legit = False
-                for parent in child.get_parents(similar=False, visible=False):
-                    if tree in parent.trees:
-                        legit = True
-                if not legit:
-                    child.remove_from_tree(tree, recursive_down=True)
 
     def copy_position(self, other, ax=0, ay=0):
         """ Helper method for newly created items. Takes other item and copies movement related
@@ -1572,7 +1546,7 @@ class Node(Movable):
         for edge in self.edges_up:
             edge.crossed_out_flag = False
             if shift_down:
-                ctrl.forest.disconnect_node(edge=edge)
+                ctrl.free_drawing.disconnect_node(edge=edge)
         if recipient and recipient.accepts_drops(self):
             self.release()
             message = recipient.drop(self)

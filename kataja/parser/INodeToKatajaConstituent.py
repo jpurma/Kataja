@@ -29,6 +29,7 @@ class INodeToKatajaConstituent:
         self.forest = forest
         self.parser = None
         self.should_add_to_scene = True
+        self.temp_tree = None
 
     # @time_me
 
@@ -49,7 +50,7 @@ class INodeToKatajaConstituent:
             while result:
                 left = result.pop()
                 left.set_projection(None)
-                right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
+                right = ctrl.free_drawing.create_merger_node(left, right, new=left, head=left)
             result = right
         elif result:
             result = result[0]
@@ -77,10 +78,10 @@ class INodeToKatajaConstituent:
         :param inode:
         :return:
         """
-        self.forest.temp_tree = None
+        self.temp_tree = None
         result = self.inode_to_constituentnode(inode)
-        if self.forest.temp_tree:
-            self.forest.temp_tree.rebuild()
+        if self.temp_tree:
+            self.temp_tree.rebuild()
         return result
 
     def inode_to_constituentnode(self, inode):
@@ -121,22 +122,19 @@ class INodeToKatajaConstituent:
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
         constituent = ctrl.syntax.Constituent()
-        cn = f.create_node(synobj=constituent)
-        if not f.temp_tree:
-            f.temp_tree = f.create_tree_for(cn)
+        cn = f.free_drawing.create_node()
+        cn.syntactic_object = constituent
+        if not self.temp_tree:
+            self.temp_tree = f.tree_manager.create_tree_for(cn)
         else:
-            cn.add_to_tree(f.temp_tree)
-        if parsernode.parts:
-            f.add_merge_counter(cn)
-        else:
-            f.add_select_counter(cn)
+            self.temp_tree.add_node(cn)
         children.reverse()
         direction = g.LEFT
         if len(children) == 1:
             direction = g.NO_ALIGN
         for child in children:
             constituent.add_part(child.syntactic_object)
-            f.connect_node(parent=cn, child=child, direction=direction)
+            f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
             direction = g.RIGHT
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
