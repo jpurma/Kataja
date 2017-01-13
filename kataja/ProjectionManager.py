@@ -28,7 +28,7 @@ class ProjectionManager:
             chain.append(node)
             ends_here = True
             for parent in node.get_parents(similar=True, visible=False):
-                if node in parent.get_head_nodes():
+                if node in parent.heads:
                     ends_here = False
                     # create a copy of chain so that when the chain ends it will be added
                     # as separate chain to another projection branch
@@ -65,7 +65,7 @@ class ProjectionManager:
         new_heads = set()
         for node in self.forest.nodes.values():
             if node.node_type == CONSTITUENT_NODE:
-                if not node.get_head_nodes():
+                if not node.heads:
                     chains = ProjectionManager.compute_projection_chains_for(node)
                     if chains:
                         new_heads.add(node)

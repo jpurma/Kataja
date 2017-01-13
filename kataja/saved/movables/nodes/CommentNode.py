@@ -66,15 +66,13 @@ class CommentNode(Node):
                                                   'action': 'delete_arrow'},
                                  g.ADD_ARROW: {'action': 'start_arrow_from_node'}}
 
-
-
-    def __init__(self, text='comment', forest=None):
+    def __init__(self, label='comment'):
         self.image_object = None
-        Node.__init__(self, forest=forest)
-        if not text:
-            text = 'comment'
+        Node.__init__(self)
+        if not label:
+            label = 'comment'
         self.resizable = True
-        self.label = text
+        self.label = label
         self.physics_x = False
         self.physics_y = False
         self.image_path = None

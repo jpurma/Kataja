@@ -122,36 +122,3 @@ class SavedFieldWithGetter(SavedField):
         else:
             return value
 
-
-class SavedSynField(SavedField):
-    """ Descriptor that delegates attribute requests to syntactic_object.
-    It can be given "before_set" parameter, which should be a method in host object that is run
-    when value is set. If the property has different name in synobj than here it can be provided
-    with parameter "name_in_synobj"
-    """
-
-    def __init__(self, name, before_set=None, if_changed=None,
-                 name_in_synobj=None):
-        super().__init__(name, before_set=before_set, if_changed=if_changed)
-        self.name_in_synobj = name_in_synobj or name
-
-    def __get__(self, obj, objtype=None):
-        synob = obj._saved.get("syntactic_object")
-        if synob:
-            return getattr(synob, self.name_in_synobj)
-        else:
-            return obj._saved.get(self.name, None)
-
-    def __set__(self, obj, value):
-        if self.before_set:
-            value = self.before_set(obj, value)
-        synob = obj._saved.get("syntactic_object")
-        if synob:
-            if self.before_set:
-                value = self.before_set(obj, value)
-            old_value = getattr(synob, self.name_in_synobj)
-            setattr(synob, self.name_in_synobj, value)
-            if self.if_changed and value != old_value:
-                self.if_changed(obj, value)
-        else:
-            super().__set__(obj, value)

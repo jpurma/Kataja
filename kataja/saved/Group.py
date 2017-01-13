@@ -23,7 +23,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     scene_item = True
     is_widget = False
 
-    def __init__(self, forest=None, selection=None, persistent=True):
+    def __init__(self, selection=None, persistent=True):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # -- Fake as UIItem to make selection groups part of UI:
@@ -36,7 +36,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.is_fading_in = False
         self.is_fading_out = False
         # -- end faking as UIItem
-        self.forest = forest
         self.selection = []
         self.selection_with_children = []
         self.persistent = persistent
@@ -150,7 +149,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent:
-                self.forest.remove_group(self)
+                ctrl.free_drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -169,7 +168,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent:
-                self.forest.remove_group(self)
+                ctrl.free_drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -179,7 +178,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.update_shape()
         if remove:
             if self.persistent:
-                self.forest.remove_group(self)
+                ctrl.free_drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -199,7 +198,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         swc = []
         other_selections = set()
         if not self.allow_overlap:
-            for group in self.forest.groups.values():
+            for group in ctrl.forest.groups.values():
                 other_selections = other_selections | set(group.selection_with_children)
 
         def recursive_add_children(i):

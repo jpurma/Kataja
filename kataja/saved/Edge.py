@@ -71,7 +71,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type=''):
+    def __init__(self, start=None, end=None, edge_type=''):
         """
         :param Node start:
         :param Node end:
@@ -80,7 +80,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         SavedObject.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
-        self.forest = forest
         self.label_item = None
         self.edge_type = edge_type
         self.start = start
@@ -168,8 +167,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         if update_type == 1:
-            self.forest.store(self)
-            self.forest.add_to_scene(self)
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
         self.update_visibility()
         self.connect_end_points(self.start, self.end)
         self.update_end_points()
@@ -379,7 +378,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :param node:
         """
-        self.forest.set_edge_start(self, node)
+        ctrl.free_drawing.set_edge_start(self, node)
         self.make_relative_vector()
         self.update_shape()
 
@@ -388,7 +387,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :param node:
         """
-        self.forest.set_edge_end(self, node)
+        ctrl.free_drawing.set_edge_end(self, node)
         self.make_relative_vector()
         self.update_shape()
 

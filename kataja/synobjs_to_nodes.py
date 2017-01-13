@@ -49,6 +49,8 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     :param mover: single items to point out as special. This will form a group
     :return:
     """
+    free_drawing = forest.free_drawing
+
     if forest.syntax.display_modes:
         synobjs = forest.syntax.transform_trees_for_display(synobjs)
     node_keys_to_validate = set(forest.nodes.keys())
@@ -77,7 +79,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         else:
             node = forest.get_node(me)
             if node:
-                node.syntactic_object = me
                 if hasattr(me, 'label'):
                     node.label = me.label
                 #node.update_label()
@@ -114,7 +115,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     def connect_if_necessary(parent, child, edge_type):
         edge = parent.get_edge_to(child, edge_type)
         if not edge:
-            forest.connect_node(parent, child, edge_type=edge_type, mirror_in_syntax=False)
+            free_drawing.connect_node(parent, child, edge_type=edge_type)
         else:
             found_edges.add(edge.uid)
         #elif edge.uid in edge_keys_to_validate:
@@ -123,6 +124,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
 
     def recursive_create_edges(synobj):
         node = forest.get_node(synobj)
+        assert(node)
         if synobj in synobjs_done:
             return node
         synobjs_done.add(synobj)
@@ -189,9 +191,11 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                 if isinstance(syn_bare, ctrl.syntax.Feature):
                     y += 100
             if isinstance(syn_bare, ctrl.syntax.Constituent):
-                node = forest.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
+                node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=(x, y))
+                node.set_syntactic_object(syn_bare)
             elif isinstance(syn_bare, ctrl.syntax.Feature):
-                node = forest.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
+                node = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=(x, y))
+                node.set_syntactic_object(syn_bare)
             else:
                 continue
             if most_popular_tree:
@@ -205,7 +209,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             most_popular_tree.top = forest.get_node(tree_root)
             most_popular_tree.update_items()
         else:
-            forest.create_tree_for(forest.get_node(tree_root))
+            forest.tree_manager.create_tree_for(forest.get_node(tree_root))
 
     # for item in numeration:
     #    node, trees = recursive_create(item, set())
@@ -217,12 +221,12 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         node = forest.nodes.get(key, None)
         if node:
             # noinspection PyTypeChecker
-            forest.delete_node(node)
+            free_drawing.delete_node(node)
     for key in edge_keys_to_validate:
         edge = forest.edges.get(key, None)  # most of these should be deleted already by prev.
         if edge:
             # noinspection PyTypeChecker
-            forest.delete_edge(edge)
+            free_drawing.delete_edge(edge)
 
     f_mode = ctrl.settings.get('feature_positioning')
     shape = ctrl.settings.get('label_shape')
@@ -253,7 +257,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         if new_groups:
             if not old_groups:
                 for selection in new_groups:
-                    new_g = forest.create_group()
+                    new_g = free_drawing.create_group()
                     new_g.set_label_text('Transfer')
                     #new_g.fill = False
                     #new_g.outline = True
@@ -273,7 +277,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                         for item in selection:
                             group_to_add.add_node(item)
                     else:
-                        new_g = forest.create_group()
+                        new_g = free_drawing.create_group()
                         new_g.set_label_text('Transfer')
                         #new_g.fill = False
                         #new_g.outline = True
@@ -304,7 +308,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             old_group.clear(remove=False)
             group = old_group
         else:
-            group = forest.create_group()
+            group = free_drawing.create_group()
             group.purpose = 'mover'
             #group.set_label_text('Next mover')
             group.include_children = False

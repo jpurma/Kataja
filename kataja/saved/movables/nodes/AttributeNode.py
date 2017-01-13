@@ -63,8 +63,9 @@ def ordinal(value):
 
 
 class AttributeNode(Node):
-    """
-
+    """ AttributeNodes can be used for diagnostics, to e.g. show properties of nodes that are not
+    features and not participating in feature computation, but are otherwise interesting,
+    e.g. weights.
     """
     width = 20
     height = 20
@@ -79,7 +80,7 @@ class AttributeNode(Node):
 
     default_edge = g.ATTRIBUTE_EDGE
 
-    def __init__(self, forest=None, host=None, attribute_id=None, attribute_label='',
+    def __init__(self, forest=None, host=None, attribute_id=None, label='',
                  show_label=False, restoring=False):
         """
 
@@ -92,9 +93,9 @@ class AttributeNode(Node):
         :raise: 
         """
         self.help_text = ""
-        Node.__init__(self, forest=forest, syntactic_object=None)
+        Node.__init__(self)
         self.host = host
-        self.attribute_label = attribute_label or attribute_id
+        self.attribute_label = label or attribute_id
         self.attribute_id = attribute_id
         self._show_label = show_label
         # if self.attribute_label in color_map:

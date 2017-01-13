@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: UTF-8 -*-
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -22,24 +22,21 @@
 #
 # ############################################################################
 
+
+import collections
+import random
+import time
+
 import kataja.globals as g
-from kataja.saved.movables.Node import Node
-from kataja.uniqueness_generator import next_available_type_id
+
+from kataja.singletons import ctrl
+from kataja.utils import time_me
 
 
-class PropertyNode(Node):
-    """ This is somekind of a microfeature. I don't remember why it exists, but maybe time will tell. """
-    __qt_type_id__ = next_available_type_id()
-    width = 20
-    height = 20
-    node_type = g.PROPERTY_NODE
-    display_name = ('Property', 'Properties')
-    display = False
-    default_style = {'fancy': {'color_id': 'accent6', 'font_id': g.SMALL_CAPS, 'font-size': 10},
-                     'plain': {'color_id': 'accent6', 'font_id': g.SMALL_CAPS, 'font-size': 10}}
+@time_me
+def nodes_to_synobjs(forest, syntax, roots: list):
 
-    default_edge = g.PROPERTY_EDGE
+    all_nodes = forest.nodes.items()
 
-    def __init__(self, forest=None, property=None):
-        Node.__init__(self, forest=forest, syntactic_object=property)
-        # self.color = colors.text
+    for root in roots:
+        pass

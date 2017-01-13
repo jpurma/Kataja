@@ -39,8 +39,8 @@ class Tree(Movable):
     __qt_type_id__ = next_available_type_id()
     display_name = ('Tree', 'Trees')
 
-    def __init__(self, forest=None, top=None, numeration=False):
-        Movable.__init__(self, forest=forest)
+    def __init__(self, top=None, numeration=False):
+        Movable.__init__(self)
         self.top = top
         if is_constituent(top):
             self.sorted_constituents = [top]

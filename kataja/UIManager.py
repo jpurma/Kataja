@@ -357,7 +357,6 @@ class UIManager:
             if self.top_bar_buttons:
                 self.top_bar_buttons.update_position()
 
-
     def resize_ui(self, size):
         """
 
@@ -419,7 +418,7 @@ class UIManager:
                 self.update_touch_areas_for_selected_node(item)
                 self.update_buttons_for_selected_node(item)
                 if ctrl.settings.get('show_c_command'):
-                    if item.node_type == g.CONSTITUENT_NODE:
+                    if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
                         c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(
                             item)
                         for synobj in c_commanded_synobjs:
@@ -455,8 +454,7 @@ class UIManager:
                 if groupable_nodes:
                     # Create new group for this selection
                     if not self.selection_group:
-                        self.selection_group = Group(selection=groupable_nodes, persistent=False,
-                                                     forest=ctrl.forest)
+                        self.selection_group = Group(selection=groupable_nodes, persistent=False)
                         self.selection_group.update_colors(
                                 color_key=ctrl.forest.get_group_color_suggestion())
                         self.add_ui(self.selection_group)
@@ -760,7 +758,6 @@ class UIManager:
         panel.show()
         action = self.get_action('toggle_panel_%s' % panel_id)
         action.setChecked(True)
-
 
     def create_panels(self):
         """ Put actions to panels. Panel contents are defined at the top of

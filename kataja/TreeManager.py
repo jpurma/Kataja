@@ -103,7 +103,7 @@ class TreeManager:
         :param node:
         :return:
         """
-        tree = Tree(top=node, forest=self)
+        tree = Tree(top=node)
         self.f.add_to_scene(tree)
         self.f.trees.insert(0, tree)
         tree.show()

@@ -44,12 +44,7 @@ master_styles = {
             'shape_name': 'cubic', 'color_id': 'accent5', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 10
-        }, PROPERTY_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent5', 'pull': .40, 'visible': True,
-            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 10
         }
-
     }, 'plain': {
         ARROW: {
             'shape_name': 'cubic', 'color_id': 'accent4', 'pull': 0, 'visible': True,
@@ -85,10 +80,6 @@ master_styles = {
             'shape_name': 'linear', 'color_id': 'accent5', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BOTTOM_CENTER, 'end_connects_to': BOTTOM_CENTER
-        }, PROPERTY_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent5', 'pull': .40, 'visible': True,
-            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, ABSTRACT_EDGE: {
             'shape_name': 'linear', 'color_id': 'content1', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
@@ -106,6 +97,5 @@ names = {
     CONSTITUENT_EDGE: ('Constituent edge', 'Constituent edges'),
     FEATURE_EDGE: ('Feature edge', 'Feature edges'),
     GLOSS_EDGE: ('Gloss edge', 'Gloss edges'),
-    PROPERTY_EDGE: ('Property edge', 'Property edges'),
     ABSTRACT_EDGE: ('Abstract edge', 'Abstract edges')
 }

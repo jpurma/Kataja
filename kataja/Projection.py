@@ -80,7 +80,7 @@ class Projection:
         """ If node has head, then start from this node, and
         move upwards labeling the nodes that also use the same head.
 
-        If head is None, then remove label and display_label.
+        If head is None, then remove label.
         :return:
         """
         xbar = ctrl.settings.get('use_xbar_aliases')
@@ -92,19 +92,17 @@ class Projection:
                         node.label = label
                         node.update_label()
             return
-        head_base = strip_xbars(str(self.head.display_label or self.head.label))
+        head_base = strip_xbars(str(self.head.label or self.head.get_syn_label()))
         if head_base != str(self.head.label):
-            self.head.display_label = head_base
+            self.head.label = head_base
         for chain in self.chains:
-            new_display_label = head_base + '´'
+            new_label = head_base + '´'
             for node in chain[1:-1]:
-                if str(node.display_label) != new_display_label or node.label != label:
-                    node.label = label
-                    node.display_label = new_display_label
+                if str(node.label) != new_label:
+                    node.label = new_label
                     node.update_label()
             node = chain[-1]
-            new_alias = head_base + 'P'
-            if str(node.display_label) != new_display_label or node.label != label:
-                node.label = label
-                node.display_label = new_display_label
+            new_label = head_base + 'P'
+            if str(node.display_label) != new_label:
+                node.label = new_label
                 node.update_label()

@@ -110,7 +110,7 @@ class CreateNewNodeFromText(KatajaAction):
             if node:
                 ctrl.forest.tree_manager.create_tree_for(node)
         else:
-            node = ctrl.free_drawing.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
+            node = ctrl.free_drawing.create_node(pos=p2, node_type=node_type, text=text)
             if node and node_type == g.CONSTITUENT_NODE:
                 ctrl.forest.tree_manager.create_tree_for(node)
         if node:
@@ -226,7 +226,7 @@ class SetHeadConstituent(KatajaAction):
         checked = self.sender().checkedButton()
         head = checked.my_value
         host = self.get_host()
-        host.set_projection(head)
+        host.set_heads(head)
         embed = self.get_ui_container()
         if embed:
             embed.update_fields()

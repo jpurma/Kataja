@@ -43,8 +43,7 @@ def export_visible_items(path = 'tempdata.json', scene = None, forest = None, pr
     for n, node in enumerate(scene.visible_nodes()):
         nobj = collections.OrderedDict([('Type', 'ConstituentNode'),
         ('location', node.current_position),
-        ('label', node.cosmetic_label or node.constituent.label),
-        ('display_label', node.cosmetic_label),
+        ('label', node.label or node.syntactic_object.label),
         ('parents', [x.key for x in node.get_parents(similar=False, visible=True)]),
         ('children', [x.key for x in node.get_children(similar=False, visible=True)]),
         ('edges', [x.key for x in node.relations_down])

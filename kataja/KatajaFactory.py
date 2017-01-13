@@ -44,7 +44,6 @@ class KatajaFactory:
         from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
         from kataja.saved.movables.nodes.FeatureNode import FeatureNode
         from kataja.saved.movables.nodes.GlossNode import GlossNode
-        from kataja.saved.movables.nodes.PropertyNode import PropertyNode
         from kataja.saved.Group import Group
         from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
         from kataja.saved.Edge import Edge
@@ -56,13 +55,13 @@ class KatajaFactory:
         from syntax.ConfigurableConstituent import BaseConstituent
 
         self.default_models = {ConstituentNode, AttributeNode, FeatureNode,
-                               GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
+                               GlossNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, BaseConstituent, BaseFeature, Tree,
                                Group, KatajaDocument, SyntaxConnection}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
-                                     g.ATTRIBUTE_NODE: AttributeNode, g.PROPERTY_NODE: PropertyNode,
+                                     g.ATTRIBUTE_NODE: AttributeNode,
                                      g.COMMENT_NODE: CommentNode}
         # g.ABSTRACT_NODE: Node,
 
@@ -146,16 +145,6 @@ class KatajaFactory:
                 found = self.find_base_model(base)
                 if found:
                     return found
-
-    def remove_class(self, class_name):
-        """ Remove mappings that replace original class with plugin's class """
-        for replaced, class_item_candidate in list(self.base_name_to_plugin_class.items()):
-            role = get_role(class_item_candidate)
-            if role == class_name:
-                del self.base_name_to_plugin_class[replaced]
-                break
-        if class_name in self.plugin_name_to_base_class:
-            del self.plugin_name_to_base_class[class_name]
 
     def create(self, object_class_name, *args, **kwargs):
         """ Create empty kataja object stubs, to be loaded with correct values.

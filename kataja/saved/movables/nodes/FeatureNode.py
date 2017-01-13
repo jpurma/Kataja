@@ -25,11 +25,10 @@
 import random
 
 import kataja.globals as g
-from kataja.SavedField import SavedSynField
+from kataja.SavedField import SavedField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
-from kataja.parser.INodes import as_html
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.saved.Edge import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 
@@ -67,8 +66,8 @@ class FeatureNode(Node):
 
     default_edge = g.FEATURE_EDGE
 
-    def __init__(self, forest=None, syntactic_object=None):
-        Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
+    def __init__(self, label=''):
+        Node.__init__(self)
         self.repulsion = 0.25
         self._gravity = 2.5
         self.z_value = 60
@@ -124,7 +123,7 @@ class FeatureNode(Node):
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
         into just one field value that is allowed to be edited, in constituentnode this is
-        either label or display_label. This can be overridden in syntactic object by having
+        either label synobj's label. This can be overridden in syntactic object by having
         'compose_html_for_editing' -method there. The method returns a tuple,
           (field_name, html).
         :return:
@@ -248,44 +247,6 @@ class FeatureNode(Node):
         else:
             return qt_prefs.no_brush
 
-    def connect_in_syntax(self, edge):
-        """ Implement this if connecting this node (using this edge) needs to be
-         reflected in syntax. Remember to verify it already isn't there.
-        :param edge:
-        :return:
-        """
-        if edge.edge_type is not g.FEATURE_EDGE:  # fixme: include CHECKING_EDGE
-            # We care only for constituent relations
-            return
-        assert edge.end is self
-        s = edge.start
-        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
-            # Calling syntax!
-            constituent = s.syntactic_object
-            feature = self.syntactic_object
-            if not constituent.has_feature(feature):
-                constituent.add_feature(feature)
-                print('have to add feature')
-                raise hell
-
-    def disconnect_in_syntax(self, edge):
-        """ Implement this if disconnecting this node (using this edge) needs
-        to be reflected in syntax. Remember to verify it already isn't there.
-        :param edge:
-        :return:
-        """
-        if edge.edge_type is not g.FEATURE_EDGE:  # fixme: include CHECKING_EDGE
-            # We care only for constituent relations
-            return
-        assert edge.end is self
-        s = edge.start
-        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
-            # Calling syntax!
-            constituent = s.syntactic_object
-            feature = self.syntactic_object
-            if constituent.has_feature(feature):
-                constituent.remove_feature(feature)
-
     def special_connection_point(self, edge, sx, sy, ex, ey, start=False):
         f_align = ctrl.settings.get('feature_positioning')
         br = self.boundingRect()
@@ -331,6 +292,6 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    name = SavedSynField("name")
-    value = SavedSynField("value")
-    family = SavedSynField("family")
+    name = SavedField("name")
+    value = SavedField("value")
+    family = SavedField("family")

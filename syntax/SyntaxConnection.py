@@ -2,6 +2,7 @@ from kataja.SavedObject import SavedObject
 from kataja.KatajaFactory import KatajaFactory
 from kataja.globals import FOREST
 from kataja.singletons import ctrl, classes
+from kataja.nodes_to_synobjs import nodes_to_synobjs
 
 
 class SyntaxConnection(SavedObject):
@@ -114,11 +115,21 @@ class SyntaxConnection(SavedObject):
             _pick_leaves(child)
         return [l.syntactic_object for l in leaves]
 
-
     def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
         raise NotImplementedError
+
+    def nodes_to_synobjs(self, forest, roots):
+        """ Wrapper for function to update all syntactic objects to correspond with the current
+        node graph, if possible. It can be complicated and it is sensitive to modifications in
+        syntax, so it is in its own file.
+
+        :return:
+        """
+        syntax = self
+        return nodes_to_synobjs(forest, syntax, roots)
+
 
     def create_derivation(self, forest):
         """ This is always called to initially turn syntax available here and some input into a
@@ -126,7 +137,9 @@ class SyntaxConnection(SavedObject):
         :return:
         """
         text = self.sentence.strip()
-        forest.parser.string_into_forest(text)
+        print('create derivation called w. sentence: ', text)
+        roots = forest.parser.string_into_forest(text)
+        self.nodes_to_synobjs(forest, roots)
         if ctrl.settings.get('uses_multidomination'):
             ctrl.settings.set('uses_multidomination', False, level=FOREST)
             forest.chain_manager.traces_to_multidomination()

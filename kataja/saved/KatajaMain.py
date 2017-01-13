@@ -268,12 +268,15 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
-        if hasattr(self.active_plugin_setup, 'plugin_parts'):
-            for classobj in self.active_plugin_setup.plugin_parts:
-                class_name = classobj.__name__
-                if class_name:
-                    log.info('removing %s' % class_name)
-                    classes.remove_class(class_name)
+        # print(classes.base_name_to_plugin_class)
+        # if hasattr(self.active_plugin_setup, 'plugin_parts'):
+        #     for classobj in self.active_plugin_setup.plugin_parts:
+        #         class_name = classobj.__name__
+        #         if class_name:
+        #             log.info(f'removing {class_name}')
+        #             print(f'removing {class_name}')
+        #             classes.remove_class(class_name)
+        classes.restore_default_classes()
         self.init_forest_keepers()
         ctrl.resume_undo()
         prefs.active_plugin_name = ''

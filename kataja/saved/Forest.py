@@ -23,31 +23,25 @@
 # ############################################################################
 
 
-import itertools
-import random
-import string
-import time
-
 from PyQt5 import QtWidgets
+from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 
 import kataja.globals as g
-from kataja.FreeDrawing import FreeDrawing
-from kataja.TreeManager import TreeManager
-from kataja.ProjectionManager import ProjectionManager
 from kataja.ChainManager import ChainManager
+from kataja.FreeDrawing import FreeDrawing
+from kataja.ProjectionManager import ProjectionManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
+from kataja.TreeManager import TreeManager
 from kataja.UndoManager import UndoManager
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
-from kataja.saved.movables.Presentation import TextArea
 from kataja.saved.movables.Tree import Tree
-from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
-from kataja.singletons import ctrl, qt_prefs, classes, log
+from kataja.singletons import ctrl, classes
 from kataja.utils import time_me
 
 
@@ -271,7 +265,7 @@ class Forest(SavedObject):
         for tree in self.trees:
             if tree.numeration:
                 return tree
-        tree = Tree(forest=self, numeration=True)
+        tree = Tree(numeration=True)
         self.add_to_scene(tree)
         self.trees.append(tree)
         tree.show()
@@ -465,6 +459,8 @@ class Forest(SavedObject):
         :param constituent: syntax.BaseConstituent
         :return: kataja.ConstituentNode
         """
+        if not constituent:
+            return None
         return self.nodes_from_synobs.get(constituent.uid, None)
 
     def get_constituent_edges(self):
@@ -762,7 +758,7 @@ class Forest(SavedObject):
     @time_me
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.FOREST)
-        ctrl.settings.set('show_display_labels', not syntactic_mode, level=g.FOREST)
+        ctrl.settings.set('show_node_labels', not syntactic_mode, level=g.FOREST)
         for node in list(self.nodes.values()):
             node.update_label()
             node.update_label_visibility()

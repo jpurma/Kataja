@@ -7,7 +7,6 @@ import kataja.globals as g
 from parser.deprecated.BaseParser import BaseParser
 
 # Deprecated -- INodeToKatajaConstituent is the one currently used
-
 class LayeredParser(BaseParser):
     # ### Layered parser ########################################################
 

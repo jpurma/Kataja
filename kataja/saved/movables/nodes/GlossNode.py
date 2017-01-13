@@ -53,11 +53,11 @@ class GlossNode(Node):
 
     default_edge = g.GLOSS_EDGE
 
-    def __init__(self, text='', forest=None):
-        Node.__init__(self, forest=forest)
-        if not text:
-            text = 'gloss'
-        self.label = text
+    def __init__(self, label=''):
+        Node.__init__(self)
+        if not label:
+            label = 'gloss'
+        self.label = label
 
     @property
     def hosts(self):

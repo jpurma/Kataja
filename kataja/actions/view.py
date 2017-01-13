@@ -381,8 +381,8 @@ class ToggleShowDisplayLabel(KatajaAction):
     k_tooltip = 'Show display labels for nodes when available'
 
     def method(self):
-        v = not ctrl.settings.get('show_display_labels')
-        ctrl.settings.set('show_display_labels', v, level=FOREST)
+        v = not ctrl.settings.get('show_node_labels')
+        ctrl.settings.set('show_node_labels', v, level=FOREST)
         for node in ctrl.forest.nodes.values():
             node.update_label()
             node.update_label_visibility()
@@ -392,7 +392,7 @@ class ToggleShowDisplayLabel(KatajaAction):
             return self.command % 'Hide'
 
     def getter(self):
-        return ctrl.settings.get('show_display_labels')
+        return ctrl.settings.get('show_node_labels')
 
 
 class ToggleFeatureDisplayMode(KatajaAction):

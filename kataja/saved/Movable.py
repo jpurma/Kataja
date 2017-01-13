@@ -82,13 +82,12 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     When nodes that don't use physics are dragged, the adjustment.
 
     """
-    def __init__(self, forest=None):
+    def __init__(self):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
         self._dragged = False
-        self.forest = forest
         self.trees = set() # each Movable belongs to some trees, either formed by Movable
         # alone or set of Movables. Tree has abstract position adjustment information.
 
@@ -123,7 +122,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         return self.__qt_type_id__
 
     def late_init(self):
-        assert(self.forest)
+        pass
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
@@ -272,7 +271,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             return True, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():
-            movement = self.forest.visualization.calculate_movement(self)
+            movement = ctrl.forest.visualization.calculate_movement(self)
             md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
             self.current_position = add_xy(self.current_position, movement)
@@ -563,4 +562,3 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     locked = SavedField("locked")
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
-    forest = SavedField("forest")

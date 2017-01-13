@@ -103,41 +103,40 @@ class FreeDrawing:
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, relative=None, pos=None, node_type=1, text=''):
+    def create_node(self, label='', relative=None, pos=None, node_type=1):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
+        :param label: label text for node, behaviour depends on node type, usually main text content
         :param relative: node will be relative to given node, pos will be interpreted relative to
         given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
-        :param text: label text for node, behaviour depends on node type
         :return:
         """
-        f = self.f
         node_class = classes.nodes.get(node_type)
-        node = node_class(text, forest=f)
+        node = node_class(label=label)
         node.after_init()
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
         # then lock this node.
-        if f.visualization:
-            f.visualization.reset_node(node)
+        if self.f.visualization:
+            self.f.visualization.reset_node(node)
         # it should however inherit settings from relative, if such are given
         if relative:
             node.copy_position(relative)
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
-        f.add_to_scene(node)
+        self.f.add_to_scene(node)
         return node
 
     def create_gloss_node(self, host):
-        gn = self.create_node(relative=host, node_type=g.GLOSS_NODE, text='gloss')
+        gn = self.create_node(label='gloss', relative=host, node_type=g.GLOSS_NODE)
         self.connect_node(host, child=gn)
         return gn
 
     def create_comment_node(self, text=None, host=None, pixmap_path=None):
-        cn = self.create_node(relative=host, text=text, node_type=g.COMMENT_NODE)
+        cn = self.create_node(label=text, relative=host, node_type=g.COMMENT_NODE)
         if host:
             self.connect_node(host, child=cn)
         if pixmap_path:
@@ -154,7 +153,7 @@ class FreeDrawing:
         :return:
         """
         AN = AttributeNode(forest=self.f, host=host, attribute_id=attribute_id,
-                           attribute_label=attribute_label,
+                           label=attribute_label,
                            show_label=show_label)
         self.connect_node(host, child=AN)
         self.f.add_to_scene(AN)
@@ -170,7 +169,7 @@ class FreeDrawing:
         :param fade:
         :return:
         """
-        rel = Edge(forest=self.f, start=start, end=end, edge_type=edge_type)
+        rel = Edge(start=start, end=end, edge_type=edge_type)
         rel.after_init()
         self.f.store(rel)
         self.f.add_to_scene(rel)
@@ -706,7 +705,7 @@ class FreeDrawing:
         else:
             left = old_node
             right = new_node
-        parent_info = [(e.start, e.direction(), e.start.get_head_nodes()) for e in
+        parent_info = [(e.start, e.direction(), e.start.heads) for e in
                        old_node.get_edges_up(similar=True, visible=False)]
 
         for op, align, head in parent_info:
@@ -726,10 +725,10 @@ class FreeDrawing:
         for op, align, head in parent_info:
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.copy_position(old_node)
-        merger_node.set_projection(old_node)
+        merger_node.heads = [old_node]
         for op, align, head_nodes in parent_info:
             if old_node in head_nodes:
-                op.set_projection(head_nodes)  # fixme: not sure if we treat multiple heads right
+                op.heads = list(head_nodes)  # fixme: not sure if we treat multiple heads right
                 # here
 
     def merge_to_top(self, top, new, merge_to_left=True, pos=None):
@@ -806,7 +805,7 @@ class FreeDrawing:
         # store the projection and alignment info before disconnecting the edges
         heads = []
         if parent.node_type == g.CONSTITUENT_NODE:
-            heads = parent.get_head_nodes()
+            heads = parent.heads
 
         direction = edge.direction()
         self.disconnect_edge(edge)
@@ -836,10 +835,10 @@ class FreeDrawing:
         # projections
         if heads:
             if child in heads:
-                merger_node.set_projection(heads)
+                merger_node.set_heads(heads)
                 heads.remove(child)
                 heads.append(merger_node)
-                parent.set_projection(heads)
+                parent.set_heads(heads)
 
         # chains
         if self.f.chain_manager.traces_are_visible():
@@ -860,7 +859,7 @@ class FreeDrawing:
         merger_node.current_position = pos
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
-        merger_node.set_projection(head)
+        merger_node.set_heads(head)
         return merger_node
 
     # ### Triangles ##############################################
@@ -943,8 +942,8 @@ class FreeDrawing:
         group.copy_from(selection_group)
 
     def create_group(self):
-        group = Group(selection=[], persistent=True, forest=self)
-        self.add_to_scene(group)
+        group = Group(selection=[], persistent=True)
+        self.f.add_to_scene(group)
         self.poke('groups')
         self.groups[group.uid] = group
         return group

@@ -33,8 +33,8 @@ class VisualizationOptionsPanel(Panel):
         hlayout = box_row(layout)
         layout.addLayout(hlayout)
         ui = self.ui_manager
-        self.show_display_labels = checkbox(ui, inner, hlayout,
-                                               'Show display labels', 'toggle_show_display_label')
+        self.show_node_labels = checkbox(ui, inner, hlayout, 'Show node labels',
+                                         'toggle_show_node_label')
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
 
@@ -75,7 +75,7 @@ class VisualizationOptionsPanel(Panel):
         self.widget().updateGeometry()
         self.widget().update()
         s = ctrl.settings
-        set_value(self.show_display_labels, s.get('show_display_labels'))
+        set_value(self.show_node_labels, s.get('show_node_labels'))
         set_value(self.highlighter_button, s.get('projection_highlighter'))
         set_value(self.strong_lines_button, s.get('projection_strong_lines'))
         set_value(self.colorize_button, s.get('projection_colorized'))

@@ -183,12 +183,13 @@ class Preferences(object):
                                                   'use multiples of "edge width" as padding '
                                                   'between trees.'}
 
-        self.show_display_labels = True
-        self._show_display_labels_ui = {'tab': 'Drawing',
-                                        'help': "If nodes have 'display labels', aliases that "
-                                                "are not used for syntactic computation, "
-                                                "show them instead of syntactic labels. "}
-
+        self.show_node_labels = True
+        self._show_node_labels_ui = {'tab': 'Drawing',
+                                     'help': "Nodes can have their own labels defined. "
+                                             "These are aliases that are not used for"
+                                             "syntactic computation but may help readability"
+                                             "Either show them and syntactic labels or show "
+                                             "only syntactic labels. "}
         self.inner_labels = 1
         self.feature_positioning = 2
         self.projection_strong_lines = True

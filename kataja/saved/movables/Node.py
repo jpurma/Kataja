@@ -101,13 +101,13 @@ class Node(Movable):
                              g.REMOVE_NODE: {'action': 'remove_node',
                                              'condition': 'free_drawing_mode'}}
 
-    def __init__(self, forest=None, syntactic_object=None):
+    def __init__(self):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
-        Movable.__init__(self, forest=forest)
-        self.syntactic_object = syntactic_object
+        Movable.__init__(self)
+        self.syntactic_object = None
 
         self._label_visible = True
         self._label_qdocument = None
@@ -157,6 +157,14 @@ class Node(Movable):
         #self.fade_in()
         self.update_visibility()
 
+    def set_syntactic_object(self, synobj):
+        old = self.syntactic_object
+        self.syntactic_object = synobj
+        if ctrl.forest and synobj:
+            ctrl.forest.nodes_from_synobs[synobj.uid] = self
+        if ctrl.forest and old and not synobj:
+            del ctrl.forest.nodes_from_synobs[old.uid]
+
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
         return self.__class__.default_edge
@@ -175,7 +183,7 @@ class Node(Movable):
         self.update_bounding_rect()
         self.update_visibility()
         self.announce_creation()
-        self.forest.store(self)
+        ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
@@ -188,10 +196,10 @@ class Node(Movable):
         super().after_model_update(updated_fields, update_type)
 
         if update_type == 1:  # CREATE
-            self.forest.store(self)
-            self.forest.add_to_scene(self)
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
         if update_type == 2:  # DELETE
-            self.forest.remove_from_scene(self, fade_out=False)
+            ctrl.forest.remove_from_scene(self, fade_out=False)
             return
 
         if 'folding_towards' in updated_fields:
@@ -272,7 +280,7 @@ class Node(Movable):
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
         into just one field value that is allowed to be edited, in constituentnode this is
-        either label or display_label. This can be overridden in syntactic object by having
+        either label or synobj's label. This can be overridden in syntactic object by having
         'compose_html_for_editing' -method there. The method returns a tuple,
           (field_name, html).
         :return:
@@ -284,6 +292,11 @@ class Node(Movable):
 
         return 'label', as_html(self.label)
 
+    def synobj_to_node(self):
+        """ Update node's values from its synobj. Subclasses implement this.
+        :return:
+        """
+        pass
 
     def cut(self, others):
         """
@@ -320,7 +333,7 @@ class Node(Movable):
         return self.triangle
 
     def if_changed_triangle(self, value):
-        if self.forest:
+        if ctrl.forest:
             self.update_label()
 
     def can_have_triangle(self):
@@ -665,7 +678,7 @@ class Node(Movable):
         :param return_set: Return result as a set which may contain more than 1 roots.  """
         s = set()
 
-        for tree in self.forest:
+        for tree in ctrl.forest:
             if self in tree:
                 if return_set:
                     s.add(tree.top)
@@ -833,34 +846,6 @@ class Node(Movable):
             if edge:
                 edge.hide()
 
-    # Reflecting structural changes in syntax
-    # Nodes are connected and disconnected to each other by user, through UI,
-    # and these connections may have different syntactical meaning.
-    # Each node type can define how connect or disconnect affects syntactic
-    # elements.
-    #
-    # These are called in all forest's connect and disconnect -activities,
-    # so they get called also when the connection was initiated from syntax.
-    # In these cases methods should be smart enough to notice that the
-    # connection is already there and not duplicate it.
-    # ########################################
-
-    def connect_in_syntax(self, edge):
-        """ Implement this if connecting this node (using this edge) needs to be
-         reflected in syntax. Remember to verify it already isn't there.
-        :param edge:
-        :return:
-        """
-        pass
-
-    def disconnect_in_syntax(self, edge):
-        """ Implement this if disconnecting this node (using this edge) needs
-        to be reflected in syntax. Remember to verify it already isn't there.
-        :param edge:
-        :return:
-        """
-        pass
-
     def reset_style(self):
         ctrl.settings.reset_node_style(node=self)
         self.update_label()
@@ -964,18 +949,8 @@ class Node(Movable):
                               self.label_object.is_quick_editing()
         self.label_object.setVisible(self._label_visible)
 
-    @property
-    def raw_label(self):
-        """ Get the unparsed raw version of label (str)
-        :return:
-        """
-        return self.label
-
-    @property
-    def label_html(self):
-        """ Label as string
-        :return:
-        """
+    def label_as_html(self) -> str:
+        """ Label as string """
         return as_html(self.label)
 
     def update_status_tip(self):
@@ -1196,7 +1171,7 @@ class Node(Movable):
         self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
-        self.forest.animation_started(str(self.uid) + '_fold')
+        ctrl.forest.animation_started(str(self.uid) + '_fold')
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
@@ -1206,7 +1181,7 @@ class Node(Movable):
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents(similar=False, visible=False):
             self.folding_towards.update_visibility()
-        self.forest.animation_finished(str(self.uid) + '_fold')
+        ctrl.forest.animation_finished(str(self.uid) + '_fold')
 
     def on_press(self, value):
         """ Testing if we can add some push-depth effect.
@@ -1510,7 +1485,7 @@ class Node(Movable):
         if d.tree_top:
             dx, dy = d.tree_top.drag_data.distance_from_pointer
             d.tree_top.dragged_to((nx + dx, ny + dy))
-            for edge in self.forest.edges.values():
+            for edge in ctrl.forest.edges.values():
                 edge.make_path()
                 edge.update()
         else:
@@ -1775,7 +1750,7 @@ class Node(Movable):
         if changed:
             # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
             # visible
-            self.forest.order_edge_visibility_check()
+            ctrl.forest.order_edge_visibility_check()
         return changed
 
     def update_label_shape(self):

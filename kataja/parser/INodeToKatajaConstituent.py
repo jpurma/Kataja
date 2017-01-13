@@ -49,7 +49,7 @@ class INodeToKatajaConstituent:
             right = result.pop()
             while result:
                 left = result.pop()
-                left.set_projection(None)
+                left.set_heads(None)
                 right = ctrl.free_drawing.create_merger_node(left, right, new=left, head=left)
             result = right
         elif result:
@@ -64,6 +64,7 @@ class INodeToKatajaConstituent:
         """
         if not string:
             return None
+        print('string into forest: ', string)
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
@@ -101,8 +102,7 @@ class INodeToKatajaConstituent:
         :param node:
         :return:
         """
-        constituent = ctrl.syntax.Constituent(str(hash(tnode)))
-        cn = self.forest.create_node(synobj=constituent)
+        cn = self.forest.free_drawing.create_node()
         cn.label = tnode
         cn.update_label()
         return cn
@@ -121,9 +121,7 @@ class INodeToKatajaConstituent:
                 child = self.parsernodes_to_constituentnodes(nnode)
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
-        constituent = ctrl.syntax.Constituent()
         cn = f.free_drawing.create_node()
-        cn.syntactic_object = constituent
         if not self.temp_tree:
             self.temp_tree = f.tree_manager.create_tree_for(cn)
         else:
@@ -133,10 +131,10 @@ class INodeToKatajaConstituent:
         if len(children) == 1:
             direction = g.NO_ALIGN
         for child in children:
-            constituent.add_part(child.syntactic_object)
             f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
             direction = g.RIGHT
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
+        # disabled because derivation steps work on constituents, not nodes
         #f.derivation_steps.save_and_create_derivation_step([cn])
         return cn
