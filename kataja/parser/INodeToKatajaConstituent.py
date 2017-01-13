@@ -73,6 +73,20 @@ class INodeToKatajaConstituent:
         self.should_add_to_scene = old_should_add
         return result
 
+    def get_root_word(self, inode):
+        print('getting root word from:', inode)
+        if not inode:
+            return ''
+        if isinstance(inode, list):
+            inode = inode[0]
+        if isinstance(inode, ITextNode):
+            print('now in inode: ', inode)
+            for part in inode.parts:
+                return str(part)
+        else:
+            return str(inode)
+
+
     def inode_into_tree(self, inode):
         """ Parses inode into constituentnodes, but prepare a temporary trees that can be assigned
         for created nodes so they don't each end up creating their own trees or get lost.

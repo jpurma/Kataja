@@ -139,6 +139,7 @@ class SyntaxConnection(SavedObject):
         text = self.sentence.strip()
         print('create derivation called w. sentence: ', text)
         roots = forest.parser.string_into_forest(text)
+        forest.free_drawing.definitions_to_nodes(self.lexicon)
         self.nodes_to_synobjs(forest, roots)
         if ctrl.settings.get('uses_multidomination'):
             ctrl.settings.set('uses_multidomination', False, level=FOREST)

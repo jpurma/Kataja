@@ -776,14 +776,15 @@ class Node(Movable):
             max_height = 0
             for fnode in children:
                 if fnode.locked_to_node is self:
-                    w = fnode.width
+                    w = fnode.width / 2
+                    total_width += w - 2
                     nods.append((fnode, total_width))
-                    total_width += w - 4
+                    total_width += w - 2
                     if fnode.height > max_height:
                         max_height = fnode.height
             if nods:
-                left_margin = (total_width / -2) + center_x
-                left_margin += nods[0][0].width / 2
+                left_margin = (total_width / -2) #+ center_x
+                #left_margin += nods[0][0].width / 2
                 y = bottom_y + (max_height / 2)
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
@@ -798,7 +799,7 @@ class Node(Movable):
             right_nods = []
             for fnode in children:
                 if fnode.locked_to_node is self:
-                    if fnode.syntactic_object.value in ['-', '=', '✓-', '✓=']:
+                    if fnode.value in ['-', '=', '✓-', '✓=']:
                         right_nods.append(fnode)
                     else:
                         left_nods.append(fnode)

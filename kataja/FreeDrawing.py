@@ -103,7 +103,7 @@ class FreeDrawing:
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, label='', relative=None, pos=None, node_type=1):
+    def create_node(self, label='', relative=None, pos=None, node_type=1, **kw):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param label: label text for node, behaviour depends on node type, usually main text content
@@ -114,7 +114,7 @@ class FreeDrawing:
         :return:
         """
         node_class = classes.nodes.get(node_type)
-        node = node_class(label=label)
+        node = node_class(label=label, **kw)
         node.after_init()
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
@@ -130,9 +130,17 @@ class FreeDrawing:
         self.f.add_to_scene(node)
         return node
 
-    def create_gloss_node(self, host):
-        gn = self.create_node(label='gloss', relative=host, node_type=g.GLOSS_NODE)
-        self.connect_node(host, child=gn)
+    def create_feature_node(self, label='feature', value='', family='', host=None):
+        gn = self.create_node(label=label, value=value, family=family, relative=host,
+                              node_type=g.FEATURE_NODE)
+        if host:
+            self.connect_node(host, child=gn)
+        return gn
+
+    def create_gloss_node(self, label='gloss', host=None):
+        gn = self.create_node(label=label, relative=host, node_type=g.GLOSS_NODE)
+        if host:
+            self.connect_node(host, child=gn)
         return gn
 
     def create_comment_node(self, text=None, host=None, pixmap_path=None):
@@ -963,5 +971,38 @@ class FreeDrawing:
             if 'accent%s' % i not in color_keys:
                 return 'accent%s' % i
 
-
-
+    def definitions_to_nodes(self, defs):
+        print(defs)
+        leaves = {}
+        print('****** leaves ******')
+        for node in self.f.nodes.values():
+            if node.is_leaf(only_similar=True, only_visible=False):
+                leaves[self.f.parser.get_root_word(node.label)] = node
+        print(leaves.keys())
+        print('****** defs ******')
+        for key, deffy in defs.items():
+            if not key in leaves:
+                print('missing key ', key)
+                continue
+            parts = [x.strip() for x in deffy.split(',')]
+            node = leaves[key]
+            print('deffy: ', deffy)
+            for part in parts:
+                if (part.startswith("'") and part.endswith("'")) or \
+                        (part.startswith('"') and part.endswith('"')):
+                    # gloss node
+                    label = part[1:-1]
+                    gloss = self.create_gloss_node(label=label, host=node)
+                elif part:
+                    if ':' in part:
+                        fparts = part.split(':')
+                    else:
+                        fparts = [part]
+                    family = ''
+                    value = ''
+                    if len(fparts) > 2:
+                        family = fparts[2]
+                    if len(fparts) > 1:
+                        value = fparts[1]
+                    feature = self.create_feature_node(label=fparts[0], value=value, family=family,
+                                                       host=node)

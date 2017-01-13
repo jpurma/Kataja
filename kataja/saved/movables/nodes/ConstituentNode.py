@@ -646,7 +646,7 @@ class ConstituentNode(Node):
             if gloss_node and not syn_gloss:
                 ctrl.free_drawing.delete_node(gloss_node)
             elif syn_gloss and not gloss_node:
-                ctrl.free_drawing.create_gloss_node(self)
+                ctrl.free_drawing.create_gloss_node(host=self)
             elif syn_gloss and gloss_node:
                 gloss_node.update_label()
 

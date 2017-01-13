@@ -58,6 +58,7 @@ class GlossNode(Node):
         if not label:
             label = 'gloss'
         self.label = label
+        self._gravity = 1.5
 
     @property
     def hosts(self):

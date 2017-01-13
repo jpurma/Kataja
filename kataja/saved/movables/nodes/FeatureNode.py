@@ -66,8 +66,11 @@ class FeatureNode(Node):
 
     default_edge = g.FEATURE_EDGE
 
-    def __init__(self, label=''):
+    def __init__(self, label='', value='', family=''):
         Node.__init__(self)
+        self.name = label
+        self.value = value
+        self.family = family
         self.repulsion = 0.25
         self._gravity = 2.5
         self.z_value = 60
@@ -118,7 +121,7 @@ class FeatureNode(Node):
         if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
 
-        return str(self.syntactic_object), ''
+        return str(self), ''
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -284,7 +287,21 @@ class FeatureNode(Node):
         return self.current_scene_position, 0
 
     def __str__(self):
-        return 'feature %s' % self.syntactic_object
+        if self.syntactic_object:
+            return str(self.syntactic_object)
+        s = []
+        signs = ('+', '-', '=', 'u', '✓')
+        if self.value and (len(self.value) == 1 and self.value in signs or \
+           len(self.value) == 2 and self.value[1] in signs):
+            s.append(self.value + str(self.name))
+        elif self.value or self.family:
+            s.append(str(self.name))
+            s.append(str(self.value))
+            if self.family:
+                s.append(str(self.family))
+        else:
+            s.append(str(self.name))
+        return ":".join(s)
 
     # ############## #
     #                #
