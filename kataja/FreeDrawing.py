@@ -972,21 +972,16 @@ class FreeDrawing:
                 return 'accent%s' % i
 
     def definitions_to_nodes(self, defs):
-        print(defs)
         leaves = {}
-        print('****** leaves ******')
         for node in self.f.nodes.values():
             if node.is_leaf(only_similar=True, only_visible=False):
                 leaves[self.f.parser.get_root_word(node.label)] = node
-        print(leaves.keys())
-        print('****** defs ******')
         for key, deffy in defs.items():
             if not key in leaves:
                 print('missing key ', key)
                 continue
             parts = [x.strip() for x in deffy.split(',')]
             node = leaves[key]
-            print('deffy: ', deffy)
             for part in parts:
                 if (part.startswith("'") and part.endswith("'")) or \
                         (part.startswith('"') and part.endswith('"')):

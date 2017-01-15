@@ -80,9 +80,9 @@ class LatexToINode:
             #    break
             #elif c == self.lbracket and not self.math_mode:
             #    break
-            elif c in ['&', '<', '>']:
-                self.feed.pop()
-                node.append(html.escape(c))
+            #elif c in ['&', '<', '>'] and False:
+            #    self.feed.pop()
+            #    node.append(html.escape(c))
             else:
                 self.feed.pop()
                 node.append(c)

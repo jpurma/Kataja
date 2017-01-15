@@ -155,6 +155,18 @@ class QDocumentToINode:
             else:
                 b = b.next()
                 count += 1
-
-        return rows
+        # Return one node or one string instead of rows
+        has_nodes = False
+        for row in rows:
+            if isinstance(row, ITextNode):
+                has_nodes = True
+                break
+        if has_nodes:
+            parts = []
+            for row in rows:
+                parts.append(row)
+                parts.append('\n')
+            return ITextNode(parts=parts)
+        else:
+            return '\n'.join(rows)
 

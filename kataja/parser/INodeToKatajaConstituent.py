@@ -64,7 +64,6 @@ class INodeToKatajaConstituent:
         """
         if not string:
             return None
-        print('string into forest: ', string)
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
@@ -74,13 +73,9 @@ class INodeToKatajaConstituent:
         return result
 
     def get_root_word(self, inode):
-        print('getting root word from:', inode)
         if not inode:
             return ''
-        if isinstance(inode, list):
-            inode = inode[0]
         if isinstance(inode, ITextNode):
-            print('now in inode: ', inode)
             for part in inode.parts:
                 return str(part)
         else:

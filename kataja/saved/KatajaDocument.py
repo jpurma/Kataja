@@ -198,7 +198,6 @@ class KatajaDocument(SavedObject):
                 syn = syntax_class()
                 syn.sentence = buildstring
                 syn.lexicon = definitions
-                print(syn.lexicon)
                 forest = Forest(gloss_text=gloss_text,
                                 comments=comments,
                                 syntax=syn)

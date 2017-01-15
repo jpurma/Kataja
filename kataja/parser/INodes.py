@@ -12,10 +12,11 @@ instead.
 
 
 def as_html(item):
-    if isinstance(item, list):
-        return '<br/>'.join([str(i) for i in item])
+    if isinstance(item, ITextNode):
+        return item.as_html()
     else:
-        return str(item)
+        return html.escape(item).replace('\n', '<br/>').replace('\r', '<br/>')
+
 
 
 class ITextNode:
@@ -154,6 +155,31 @@ class ITextNode:
             else:
                 return self
 
+    def splitlines(self):
+        """ This is shallow splitline, it doesn't go inside other INodes to look for linebreaks
+        :return:
+        """
+        lines = []
+        line = []
+        for part in self.parts:
+            if part == '\n' or part == '\r':
+                if len(line) > 1:
+                    lines.append(ITextNode(parts=line))
+                elif line:
+                    lines.append(line[0])
+                else:
+                    lines.append('')
+                line = []
+            else:
+                line.append(part)
+        if len(line) > 1:
+            lines.append(ITextNode(parts=line))
+        elif line:
+            lines.append(line[0])
+        else:
+            lines.append('')
+        return lines
+
     def is_plain_string(self):
         """ Check if this ITextNode contains only strings or ITextNodes that
         can be represented as plain strings
@@ -183,16 +209,17 @@ class ITextNode:
     def is_empty_for_view(self):
         return self.is_empty()
 
-    def as_html(self):
-        s = []
+    def _as_html(self, s):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                p = part.as_html()
+                part._as_html(s)
             else:
-                p = str(part)
-            s.append(p)
-        ss = ''.join(s)
-        return ss.replace('\n', '<br/>')
+                s.append(str(html.escape(part)))
+
+    def as_html(self):
+        s = []
+        self._as_html(s)
+        return ''.join(s).replace('\n', '<br/>').replace('\r', '<br/>')
 
     def as_latex(self):
         s = []
@@ -243,21 +270,19 @@ class ICommandNode(ITextNode):
         """
         return False
 
-    def as_html(self):
-        s = []
+    def _as_html(self, s):
         if self.command in command_to_html:
             tag = command_to_html[self.command]
             if tag and self.parts:
                 s.append('<%s>' % tag)
-                s.append(ITextNode.as_html(self))
+                ITextNode._as_html(self, s)
                 s.append('</%s>' % tag)
             elif tag:
                 s.append('<%s/>' % tag)
             else:
-                s.append(ITextNode.as_html(self))
+                ITextNode._as_html(self, s)
         elif self.command in latex_to_unicode:
             s.append(latex_to_unicode[self.command][0])
-        return ''.join(s)
 
     def as_latex(self):
         s = []
@@ -271,7 +296,8 @@ class ICommandNode(ITextNode):
                 s.append('\%s ' % command)
             else:
                 s.append(ITextNode.as_latex())
-        return ''.join(s)
+        ss = ''.join(s)
+        return ss.replace('\n', '\\')
 
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the command remains even if it has
@@ -304,6 +330,31 @@ class ICommandNode(ITextNode):
     def __repr__(self):
         return 'ICommandNode(command=%r, parts=%r)' % (self.command,
                                                        self.parts)
+
+    def splitlines(self):
+        """ This is shallow splitline, it doesn't go inside other INodes to look for linebreaks
+        :return:
+        """
+        lines = []
+        line = []
+        for part in self.parts:
+            if part == '\n' or part == '\r':
+                if len(line) > 1:
+                    lines.append(ICommandNode(command=self.command, parts=line))
+                elif line:
+                    lines.append(line[0])
+                else:
+                    lines.append('')
+                line = []
+            else:
+                line.append(part)
+        if len(line) > 1:
+            lines.append(ICommandNode(command=self.command, parts=line))
+        elif line:
+            lines.append(line[0])
+        else:
+            lines.append('')
+        return lines
 
 
 class IParserNode(ITextNode):

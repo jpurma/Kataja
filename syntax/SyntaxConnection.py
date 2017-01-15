@@ -172,11 +172,11 @@ class SyntaxConnection(SavedObject):
             merge_type = self.rules['merge_types']
         if merge_type == 'set_merge':
             head = a
-            c = self.Constituent(parts=[a, b])
+            c = self.create_constituent(parts=[a, b])
             c.set_head(head)
             return c
         elif merge_type == 'pair_merge':
-            c = self.Constituent(parts=[a, b])
+            c = self.create_constituent(parts=[a, b])
             c.set_head((a, b))
             return c
         else:
@@ -310,11 +310,11 @@ class SyntaxConnection(SavedObject):
     def create_constituent(self, **kw):
         """ Create constituent with provided values and return it
         :param kw:
-        :return: IConstituent
+        :return: Constituent
         """
 
         const = self.Constituent(**kw)
-        self.constituents[const.key] = const
+        self.constituents[const.uid] = const
         return const
 
     def get_constituent(self, key):
@@ -400,6 +400,8 @@ class SyntaxConnection(SavedObject):
     def create_feature(self, **kw):
         """ Create feature with provided values and return it
         :param kw:
-        :return: IConstituent
+        :return: Feature
         """
-        raise NotImplementedError
+        feature = self.Feature(**kw)
+        self.features[feature.uid] = feature
+        return feature

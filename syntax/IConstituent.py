@@ -1,7 +1,4 @@
 # coding=utf-8
-""" BaseConstituent is a default constituent used in syntax.
-It uses getters and setters so that other compatible implementations can be built using the same interface.
-It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -25,42 +22,76 @@ It is a primary datatype, needs to support saving and loading. """
 #
 # ############################################################################
 
+from abc import ABCMeta, abstractmethod
 
-from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
-from syntax.BaseFeature import BaseFeature
-# from copy import deepcopy
 
-class IConstituent(SavedObject):
-    """ IConstituent is the interface for constituents in syntax. """
+class IConstituent(metaclass=ABCMeta):
+    """ IConstituent is an abstract/interface class to help define your own
+    Constituent implementations. If you inherit IConstituent, all of its methods have to be
+    implemented or build fails. (It is better to fail at this stage.)
+    BaseConstituent is the default implementation."""
 
     syntactic_object = True
     editable = {}
     addable = []
 
+    @abstractmethod
     def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
-        super().__init__(**kw)
-        self.label = None
-        self.parts = None
-        self.features = None
-        self.head = None
+        NotImplemented
 
+    @abstractmethod
+    def __str__(self):
+        return NotImplemented
+
+    @abstractmethod
+    def __repr__(self):
+        return NotImplemented
+
+    @abstractmethod
     def __contains__(self, c):
-        raise NotImplementedError
+        return NotImplemented
 
-    def get_feature(self, key):
-        """ Gets the local feature (within this constituent, not of its children) with key 'key'
-        :param key: string for identifying feature type
-        :return: feature object
+    @abstractmethod
+    def get_features(self):
+        """ Getter for features, redundant for BaseConstituent (you could use c.features ) but it
+        is better to use this consistently for compatibility with other implementations for
+        constituent.
+        :return:
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
+    def get_parts(self):
+        """ Getter for parts, redundant for BaseConstituent (you could use c.parts ) but it
+        is better to use this consistently for compatibility with other implementations for
+        constituent.
+        :return:
+        """
+        return NotImplemented
+
+    @abstractmethod
+    def print_tree(self):
+        """ Bracket trees representation of the constituent structure. Now it is same as str(self).
+        :return: str
+        """
+        return NotImplemented
+
+    @abstractmethod
+    def can_add_part(self, **kw):
+        """
+        :param kw:
+        :return:
+        """
+        return NotImplemented
+
+    @abstractmethod
     def add_part(self, new_part):
-        """ Add constitutive part to this constituent
+        """ Add constitutive part to this constituent (append to parts)
         :param new_part:
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def insert_part(self, new_part, index=0):
         """ Insert constitutive part to front of the parts list. Usefulness
         depends on the linearization method.
@@ -68,79 +99,99 @@ class IConstituent(SavedObject):
         :param index:
         :return:
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def remove_part(self, part):
         """ Remove constitutive part
         :param part:
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def replace_part(self, old_part, new_part):
         """
         :param old_part:
         :param new_part:
         :return:
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def set_head(self, head):
         """
 
         :param head:
         :return:
         """
+        return NotImplemented
+
+    @abstractmethod
+    def set_heads(self, heads:list):
+        return NotImplemented
+
+    @abstractmethod
+    def get_feature(self, key):
+        """ Gets the first local feature (within this constituent, not of its children) with key
+        'key'
+        :param key: string for identifying feature type
+        :return: feature object
+        """
+        return NotImplemented
+
+    @abstractmethod
+    def get_secondary_label(self):
+        """ Visualisation can switch between showing labels and some other information in label
+        space. If you want to support this, have "support_secondary_labels = True"
+        in SyntaxConnection and provide something from this getter.
+        :return:
+        """
         raise NotImplementedError
 
+    @abstractmethod
     def has_feature(self, key):
         """ Check the existence of feature within this constituent
         :param key: string for identifying feature type or Feature instance
         :return: bool
         """
-        raise NotImplementedError
+        return NotImplemented
 
-    def set_feature(self, key, value, family=''):
-        """ Set constituent to have a certain feature. If the value given is Feature instance, then it is used,
-        otherwise a new Feature is created or existing one modified.
-        :param key: str, the key for finding the feature
-        :param value:
-        :param family: string, optional. If new feature belongs to a certain feature family, e.g. phi features.
+    @abstractmethod
+    def add_feature(self, feature):
+        """ Add an existing Feature object to this constituent.
+        :param feature:
+        :return:
         """
-        raise NotImplementedError
+        return NotImplemented
 
-    def remove_feature(self, key):
+    @abstractmethod
+    def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
-        :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
+        :param fname: str, the name for finding the feature or for convenience, a feature
+        instance to be removed
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def is_leaf(self):
         """ Check if the constituent is leaf constituent (no children) or inside a trees (has children).
         :return: bool
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def ordered_parts(self):
         """ Tries to do linearization between two elements according to theory being used.
         Easiest, default case is to just store the parts as a list and return the list in its original order.
         This is difficult to justify theoretically, though.
         :return: len 2 list of ordered nodes, or empty list if cannot be ordered.
         """
-        raise NotImplementedError
+        return NotImplemented
 
+    @abstractmethod
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent
         """
-        raise NotImplementedError
+        return NotImplemented
 
-    # ############## #
-    #                #
-    #  Save support  #
-    #                #
-    # ############## #
-
-    features = SavedField("features")
-    label = SavedField("label")
-    parts = SavedField("parts")
-    head = SavedField("head")

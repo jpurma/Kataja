@@ -120,6 +120,7 @@ class Node(Movable):
         self.text_parse_mode = 1
         self._magnets = []
         self.status_tip = ""
+        self.is_syntactically_valid = False
         self.width = 0
         self.height = 0
         self.is_trace = False

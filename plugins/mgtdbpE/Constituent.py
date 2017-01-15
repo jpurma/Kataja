@@ -83,23 +83,6 @@ class PlainConstituent:
         else:
             raise TypeError
 
-
-    def set_feature(self, key, value, family=''):
-        """ Set constituent to have a certain feature. If the value given is Feature
-        instance, then it is used,
-        otherwise a new Feature is created or existing one modified.
-        :param key: str, the key for finding the feature
-        :param value:
-        :param family: string, optional. If new feature belongs to a certain feature family,
-        e.g. phi features.
-        """
-        if isinstance(value, Feature):
-            if value not in self.features:
-                self.features.append(value)
-        else:
-            new_f = Feature(value=value, name=key)
-            self.features.append(new_f)
-
     def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
         :param fname: str, the name for finding the feature or for convenience, a feature

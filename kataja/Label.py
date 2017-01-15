@@ -203,10 +203,10 @@ class Label(QtWidgets.QGraphicsItem):
         else:
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
         html, lower_html = self._host.compose_html_for_viewing()
-        if html in ['<', '>', '&']:
-            html = escape(html)
-        if lower_html in ['<', '>', '&']:
-            lower_html = escape(lower_html)
+        #if html in ['<', '>', '&']:
+        #    html = escape(html)
+        #if lower_html in ['<', '>', '&']:
+        #    lower_html = escape(lower_html)
 
         if self.label_shape == SCOPEBOX:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
@@ -219,7 +219,6 @@ class Label(QtWidgets.QGraphicsItem):
             if lower_html:
                 html += lower_html.replace('<br/>', '')
         if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
-            #self.prepareGeometryChange()
             if self.html != html:
                 if is_card:
                     self.editable_doc.setTextWidth(self.card_size[0])
@@ -239,7 +238,6 @@ class Label(QtWidgets.QGraphicsItem):
                         self.lower_doc.setTextWidth(-1)
                     self.lower_part.setHtml(self.lower_html)
                 ctrl.qdocument_parser.process(self.lower_doc)
-                #self.prepareGeometryChange()
             else:
                 self.lower_html = ''
                 if self.lower_part:

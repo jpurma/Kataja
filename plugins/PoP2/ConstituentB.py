@@ -115,15 +115,6 @@ class Constituent(MyBaseClass):  # collections.UserList):
             feat = Feature(feat)
         self.features.append(feat)
 
-
-    def set_feature(self, key, value, family=''):
-        """ Inherited from BaseConstituent
-        """
-        self.poke('features')
-        feat = Feature(key)
-        self.features.append(feat)
-
-
     def remove_feature(self, feat):
         self.poke('features')
         self.features.remove(feat)

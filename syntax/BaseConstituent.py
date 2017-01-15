@@ -1,7 +1,4 @@
 # coding=utf-8
-""" BaseConstituent is a default constituent used in syntax.
-It uses getters and setters so that other compatible implementations can be built using the same interface.
-It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -26,16 +23,28 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
+from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from syntax.IConstituent import IConstituent
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy
 
 
-class BaseConstituent(IConstituent):
+class BaseConstituent(SavedObject, IConstituent):
     """ BaseConstituent is a default constituent used in syntax.
-    It uses getters and setters so that other compatible implementations can be built using the same interface.
-    It is a primary datatype, needs to support saving and loading. """
+    IConstituent inherited here gives the abstract blueprint of what methods Constituents should
+    implement -- it is an optional aid to validate that your Constituent is about ok.
+    Constituents need to inherit SavedObject and use SavedFields for saving permanent data,
+    otherwise structures won't get saved properly, undo and snapshots won't work.
+
+    Object inheritance is not used to recognise what are constituent implementations and what
+    are not, instead classes have attribute 'role' that tells what part they play in e.g. plugin.
+    So your implementation of Constituent needs at least to have role = "Constituent", but not
+    necessarily inherit BaseConstituent or IConstituent.
+
+    However, often it is easisest just to inherit BaseConstituent and make minor modifications
+    to it.
+    """
 
     # info for kataja engine
     syntactic_object = True
@@ -48,11 +57,11 @@ class BaseConstituent(IConstituent):
 
     def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
-        It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
-        Extending this needs to take account if new elements should also be treated as savable, e.g. put them into
-        . and make necessary property and setter.
+        It is Savable, which means that the actual values are stored in separate object that is
+        easily dumped to file. Extending this needs to take account if new elements should also
+        be treated as savable, e.g. put them into. and make necessary property and setter.
          """
-        super().__init__(**kw)
+        SavedObject.__init__(self, **kw)
         self.label = label
         if head:
             self.heads = [head]
@@ -201,25 +210,6 @@ class BaseConstituent(IConstituent):
         else:
             raise TypeError
 
-
-    def set_feature(self, key, value, family=''):
-        """ Set constituent to have a certain feature. If the value given is Feature
-        instance, then it is used,
-        otherwise a new Feature is created or existing one modified.
-        :param key: str, the key for finding the feature
-        :param value:
-        :param family: string, optional. If new feature belongs to a certain feature family,
-        e.g. phi features.
-        """
-        if isinstance(value, BaseFeature):
-            if value not in self.features:
-                self.poke('features')
-                self.features.append(value)
-        else:
-            self.poke('features')
-            new_f = BaseFeature(value=value, name=key)
-            self.features.append(new_f)
-
     def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
         :param fname: str, the name for finding the feature or for convenience, a feature
@@ -278,3 +268,4 @@ class BaseConstituent(IConstituent):
     label = SavedField("label")
     parts = SavedField("parts")
     heads = SavedField("heads")
+

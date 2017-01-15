@@ -18,7 +18,7 @@ def as_html(value):
     elif isinstance(value, ITextNode):
         return value.as_html()
     else:
-        return value
+        return value.replace('\n', '<br/>')
 
 
 def as_latex(value):

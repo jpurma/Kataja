@@ -217,7 +217,43 @@ class ConstituentNode(Node):
                     first.remove_prefix('.')
                 else:
                     rows[0] = first[1:]
-        self.label = rows
+        # ########### Flatten rows of label into one string/ITextNode/ICommandNode
+        # It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and
+        # ICommandNode + ... all need different ways to join them
+
+        if len(rows) > 1:
+            last_row = None
+            while rows:
+                row = rows.pop()
+                if last_row is not None:
+                    if isinstance(row, ICommandNode):
+                        if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
+                            last_row = ITextNode(parts=[row, '\n', last_row])
+                        else:
+                            last_row.parts = [row, '\n'] + last_row.parts
+                    elif isinstance(row, ITextNode):
+                        if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
+                            row.parts.append('\n')
+                            row.parts.append(last_row)
+                            last_row = row
+                        else:
+                            row.parts.append('\n')
+                            row.parts += last_row.parts
+                            last_row = row
+                    elif isinstance(last_row, ICommandNode):
+                        row = ITextNode(parts=[row, '\n', last_row])
+                        last_row = row
+                    elif isinstance(last_row, ITextNode):
+                        last_row.parts = [row, '\n'] + last_row.parts
+                    else:
+                        last_row = row + '\n' + last_row
+                else:
+                    last_row = row
+            self.label = last_row
+        elif len(rows) == 1:
+            self.label = rows[0]
+        else:
+            self.label = ''
 
     # Editing with NodeEditEmbed and given editable-template
     def update_preview(self):
@@ -295,8 +331,6 @@ class ConstituentNode(Node):
                     return self.label.as_html().split('<br/>')[0]
                 elif isinstance(self.label, str):
                     return self.label.splitlines()[0]
-                elif isinstance(self.label, list):
-                    return str(self.label[0])
             else:
                 return self.label_as_html()
 
@@ -702,37 +736,6 @@ class ConstituentNode(Node):
         return self.is_dragging_this_type(g.COMMENT_NODE)
 
     # ### Features #########################################
-    # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to
-    # ConstituentNode and let Forest's
-    # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't
-    #  be modifying its
-    # syntactic component.
-    # def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
-    #     """ Convenience method for assigning a new feature node related to this constituent.
-    #     can take syntactic feature, which is assumed to be already assigned for the syntactic
-    # constituent.
-    #         Can take key, value pair to create new syntactic feature object, and then a proper
-    # feature object is created from this.
-    #     :param syntactic_feature:
-    #     :param key:
-    #     :param value:
-    #     :param string:
-    #     """
-    #     assert self.syntactic_object
-    #     if syntactic_feature:
-    #         if ctrl.forest.settings.draw_features:
-    #             ctrl.forest.create_feature_node(self, syntactic_feature)
-    #     elif key:
-    #         sf = self.syntactic_object.set_feature(key, value)
-    #         self.set_feature(syntactic_feature=sf)
-    #     elif string:
-    #         features = ctrl.forest.parse_features(string, self)
-    #         if 'gloss' in features:
-    #             self.gloss = features['gloss']
-    #             del features['gloss']
-    #         for feature in features.values():
-    #             self.set_feature(syntactic_feature=feature)
-    #         self.update_features()
 
     def get_features(self):
         """ Returns FeatureNodes """

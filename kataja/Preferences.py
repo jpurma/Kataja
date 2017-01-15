@@ -265,10 +265,10 @@ class Preferences(object):
         self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
         self._fps_in_msec = 1000 / self.FPS
 
-        self.move_frames = 12
+        self.move_frames = 22
         self._move_frames_ui = {'tab': 'Performance', 'range': (0, 30),
                                 'on_change': 'prepare_easing_curve', 'label': 'Animation frames'}
-        self.curve = 'InQuad'
+        self.curve = 'InQuint'
         self._curve_ui = {'tab': 'Performance', 'choices': curves,
                                  'on_change': 'prepare_easing_curve',
                           'help': 'Easing curve used to compute the intermediate steps in '
