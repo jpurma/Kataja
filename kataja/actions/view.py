@@ -304,8 +304,8 @@ class ChangeVisualisation(KatajaAction):
             log.info(visualization_key)
 
 
-class ToggleInnerLabels(KatajaAction):
-    k_action_uid = 'toggle_inner_labels'
+class ToggleLabelTextModes(KatajaAction):
+    k_action_uid = 'toggle_label_text_mode'
     k_command = 'Use labels in inner nodes'
     k_undoable = True
     k_shortcut = 'l'
@@ -313,19 +313,19 @@ class ToggleInnerLabels(KatajaAction):
 
     def method(self):
         """ """
-        now = ctrl.settings.get('inner_labels')
+        now = ctrl.settings.get('label_text_mode')
         now += 1
-        if ctrl.forest.syntax.supports_secondary_labels:
-            if now == 3:
-                now = 0
-        else:
-            if now == 2:
-                now = 0
-        ctrl.settings.set('inner_labels', now, level=DOCUMENT)
+        if now == g.SECONDARY_LABELS and not ctrl.forest.syntax.supports_secondary_labels:
+            now = 0
+        elif now == g.SECONDARY_LABELS + 1:
+            now = 0
+        ctrl.settings.set('label_text_mode', now, level=DOCUMENT)
         ctrl.forest.update_label_shape()
+        mode_text = prefs.get_ui_text_for_choice(now, 'label_text_mode')
+        return f'Set label text mode to: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get('inner_labels')
+        return ctrl.settings.get('label_text_mode')
 
 class ToggleHighlighterProjection(KatajaAction):
     k_action_uid = 'toggle_highlighter_projection'

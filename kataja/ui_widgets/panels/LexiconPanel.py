@@ -7,7 +7,7 @@ from kataja.ui_support.panel_utils import text_button
 
 __author__ = 'purma'
 
-stylesheet = 'QPlainTextEdit, QLineEdit {font-family: "%s"; font-size: %spx;}}'
+stylesheet = 'QPlainTextEdit, QLineEdit {font-family: "%s"; font-size: %spx;}'
 
 
 class LexiconPanel(Panel):

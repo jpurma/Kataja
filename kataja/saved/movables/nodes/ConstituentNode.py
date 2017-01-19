@@ -282,18 +282,11 @@ class ConstituentNode(Node):
         displayed. Node itself can be visible even when its label is not.
         :return:
         """
-        if not self.label_object:
+        lo = self.label_object
+        if not lo:
             self.update_label()
-        if not ctrl.settings.get('inner_labels'):
-            if self.is_leaf(only_similar=True, only_visible=True):
-                self._label_visible = self.label_object.has_content() or \
-                                      self.label_object.is_quick_editing()
-            else:
-                self._label_visible = self.label_object.is_quick_editing()
-        else:
-            self._label_visible = self.label_object.has_content() or \
-                                  self.label_object.is_quick_editing()
-        self.label_object.setVisible(self._label_visible)
+        self._label_visible = lo.has_content() or lo.is_quick_editing()
+        lo.setVisible(self._label_visible)
 
 
     # Other properties
@@ -431,22 +424,34 @@ class ConstituentNode(Node):
 
         html = []
         lower_html = []
-        syntactic_mode = ctrl.settings.get('syntactic_mode')
-        node_labels = ctrl.settings.get('show_node_labels')
-        inner_labels = ctrl.settings.get('inner_labels')
 
-        leaf = self.is_leaf(only_similar=True, only_visible=False)
-        if self.triangle and not leaf:
-            lower_html.append(self.get_triangle_text())
-        if inner_labels == 2 and self.syntactic_object:  # use secondary labels
-            html.append(as_html(self.syntactic_object.get_secondary_label()))
-        elif node_labels and self.label:
-            html.append(as_html(self.label))
-        else:
+        syntactic_mode = ctrl.settings.get('syntactic_mode')
+        label_text_mode = ctrl.settings.get('label_text_mode')
+        l = ''
+        if label_text_mode == g.NODE_LABELS:
+            if self.label:
+                l = as_html(self.label)
+            elif self.syntactic_object:
+                l = as_html(self.syntactic_object.label)
+        elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
+            if self.label:
+                l = as_html(self.label)
+            elif self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
+                l = as_html(self.syntactic_object.label)
+        elif label_text_mode == g.SYN_LABELS:
             if self.syntactic_object:
-                html.append(str(self.syntactic_object.label))
-            if self.index and not syntactic_mode:
-                html.append('<sub>%s</sub>' % self.index)
+                l = as_html(self.syntactic_object.label)
+        elif label_text_mode == g.SYN_LABELS_FOR_LEAVES:
+            if self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
+                l = as_html(self.syntactic_object.label)
+        elif label_text_mode == g.SECONDARY_LABELS:
+            if self.syntactic_object:
+                l = as_html(self.syntactic_object.get_secondary_label())
+
+        if l:
+            html.append(l)
+        if self.index and not syntactic_mode:
+            html.append('<sub>%s</sub>' % self.index)
 
         if self.gloss and self.should_show_gloss_in_label():
             if html:
@@ -454,6 +459,10 @@ class ConstituentNode(Node):
             html.append(as_html(self.gloss))
         if html and html[-1] == '<br/>':
             html.pop()
+
+        if self.triangle and not self.is_leaf(only_similar=True, only_visible=False):
+            lower_html.append(self.get_triangle_text())
+
         return ''.join(html), ''.join(lower_html)
 
     def compose_html_for_editing(self):
@@ -468,14 +477,19 @@ class ConstituentNode(Node):
         # Allow custom syntactic objects to override this
         if hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
-
-        node_labels = ctrl.settings.get('show_node_labels')
-        if node_labels and self.label:
-            return 'label', as_html(self.label)
-        elif self.syntactic_object:
-            return 'synlabel', as_html(self.syntactic_object.label)
-        else:
-            return 'label', ''
+        label_text_mode = ctrl.settings.get('label_text_mode')
+        if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
+            if self.label:
+                return 'label', as_html(self.label)
+            elif self.syntactic_object:
+                return 'synlabel', as_html(self.syntactic_object.label)
+            else:
+                return ''
+        elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
+            if self.syntactic_object:
+                return 'synlabel', as_html(self.syntactic_object.label)
+            else:
+                return ''
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

@@ -160,7 +160,6 @@ class BaseConstituent(SavedObject, IConstituent):
         :param head:
         :return:
         """
-        print('set_head called with ', head)
         if isinstance(head, list):
             self.heads = head
         elif head:

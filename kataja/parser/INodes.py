@@ -221,15 +221,17 @@ class ITextNode:
         self._as_html(s)
         return ''.join(s).replace('\n', '<br/>').replace('\r', '<br/>')
 
-    def as_latex(self):
-        s = []
+    def _as_latex(self, s):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                s.append(part.as_latex())
+                part._as_latex(s)
             else:
-                s.append(str(part))
-        ss = ''.join(s)
-        return ss.replace('\n', '\\')
+                str(part)
+
+    def as_latex(self):
+        s = []
+        self._as_latex(s)
+        return ''.join(s).replace('\n', '\\').replace('\r', '\\')
 
     def as_plain(self):
         r = []
@@ -284,20 +286,17 @@ class ICommandNode(ITextNode):
         elif self.command in latex_to_unicode:
             s.append(latex_to_unicode[self.command][0])
 
-    def as_latex(self):
-        s = []
+    def _as_latex(self, s):
         if self.command in command_to_latex:
             command = command_to_latex[self.command]
             if command and self.parts:
                 s.append('\%s{' % command)
-                s.append(ITextNode.as_latex(self))
+                ITextNode._as_latex(self, s)
                 s.append('}')
             elif command:
                 s.append('\%s ' % command)
             else:
-                s.append(ITextNode.as_latex())
-        ss = ''.join(s)
-        return ss.replace('\n', '\\')
+                ITextNode._as_latex(self, s)
 
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the command remains even if it has

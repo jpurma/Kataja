@@ -203,6 +203,9 @@ class Label(QtWidgets.QGraphicsItem):
         else:
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
         html, lower_html = self._host.compose_html_for_viewing()
+        if html is None:
+            print('problems ahead:')
+            print(self._host, self._host.node_type, self._host.syntactic_object)
         #if html in ['<', '>', '&']:
         #    html = escape(html)
         #if lower_html in ['<', '>', '&']:
@@ -322,7 +325,6 @@ class Label(QtWidgets.QGraphicsItem):
             else:
                 self.editable_doc.setTextWidth(-1)
             self.edited_field, self.editable_html = self._host.compose_html_for_editing()
-            self.editable_html = self.editable_html.replace('\n', '<br/>')
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
@@ -368,11 +370,13 @@ class Label(QtWidgets.QGraphicsItem):
         :return:
         """
         parsed_parts = ctrl.qdocument_parser.process(self.editable_doc)
+        print('parsed parts: ', parsed_parts)
         my_editable = self.editable.get(self.edited_field, {})
         setter = my_editable.get('setter', '')
         if setter:
             setter_method = getattr(self._host, setter, None)
             if setter_method and callable(setter_method):
+                print('setter: ', setter)
                 setter_method(parsed_parts)
             else:
                 print('missing setter!')

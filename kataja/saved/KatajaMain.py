@@ -138,7 +138,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
-        ctrl.add_watcher(self, 'ui_font_changed')
         self.ui_manager = UIManager(self)
         self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
@@ -654,6 +653,25 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         self.update()
 
+    ### Applying specific preferences globally.
+    # These are on_change -methods for various preferences -- these are called if changing a
+    # preference should have immediate consequences. They are hosted here because they need to
+    # have access to prefs, qt_prefs, main etc.
+
+    def prepare_easing_curve(self):
+        qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
+
+    def update_color_theme(self):
+        self.change_color_theme(prefs.color_theme, force=True)
+
+    def update_visualization(self):
+        ctrl.forest.set_visualization(prefs.visualization)
+        self.main.redraw()
+
+    def resize_ui_font(self):
+        qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)
+        self.update_style_sheet()
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.
@@ -666,8 +684,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param value: value given to the field
         :return:
         """
-        if signal == 'ui_font_changed':
-            self.update_style_sheet()
+        pass
 
     # ############## #
     #                #

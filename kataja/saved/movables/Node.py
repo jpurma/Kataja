@@ -108,6 +108,7 @@ class Node(Movable):
         Constituents, Features etc. """
         Movable.__init__(self)
         self.syntactic_object = None
+        self.label = ''
 
         self._label_visible = True
         self._label_qdocument = None
@@ -333,19 +334,12 @@ class Node(Movable):
     def has_triangle(self):
         return self.triangle
 
-    def if_changed_triangle(self, value):
-        if ctrl.forest:
-            self.update_label()
-
     def can_have_triangle(self):
         return not self.triangle
 
     def if_changed_font(self, value):
         if self.label_object:
             self.label_object.set_font(qt_prefs.get_font(value))
-
-    def if_changed_folding_towards(self, value):
-        self.update_position()
 
     # Non-model-based properties ########################################
 
@@ -1809,7 +1803,7 @@ class Node(Movable):
     edges_up = SavedField("edges_up")
     edges_down = SavedField("edges_down")
     user_size = SavedField("user_size")
-    triangle = SavedField("triangle", if_changed=if_changed_triangle)
+    triangle = SavedField("triangle")
     folded_away = SavedField("folded_away")
-    folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)
+    folding_towards = SavedField("folding_towards")
 

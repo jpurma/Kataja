@@ -170,7 +170,7 @@ class UIManager:
         ctrl.add_watcher(self, 'selection_changed')
         ctrl.add_watcher(self, 'forest_changed')
         ctrl.add_watcher(self, 'viewport_changed')
-
+        ctrl.add_watcher(self, 'ui_font_changed')
 
     def disable_item(self, ui_key):
         """ Disable ui_item, assuming it can be disabled (buttons etc).
@@ -332,31 +332,6 @@ class UIManager:
         """
         return self._items_by_host.get(obj.uid, [])
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to
-        listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act
-         accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'selection_changed':
-            self.update_selections()
-            self.update_actions()
-        elif signal == 'forest_changed':
-            self.clear_items()
-            self.update_actions()
-        elif signal == 'viewport_changed':
-            self.update_positions()
-            if self.top_bar_buttons:
-                self.top_bar_buttons.update_position()
-
     def resize_ui(self, size):
         """
 
@@ -456,7 +431,7 @@ class UIManager:
                     if not self.selection_group:
                         self.selection_group = Group(selection=groupable_nodes, persistent=False)
                         self.selection_group.update_colors(
-                                color_key=ctrl.forest.get_group_color_suggestion())
+                                color_key=ctrl.free_drawing.get_group_color_suggestion())
                         self.add_ui(self.selection_group)
                     # or update existing selection
                     else:
@@ -1338,3 +1313,30 @@ class UIManager:
     #         self.get_ui_activity_marker().hide()
     #         self.killTimer(self._timer_id)
     #         self._timer_id = 0
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to
+        listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act
+         accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'selection_changed':
+            self.update_selections()
+            self.update_actions()
+        elif signal == 'forest_changed':
+            self.clear_items()
+            self.update_actions()
+        elif signal == 'viewport_changed':
+            self.update_positions()
+            if self.top_bar_buttons:
+                self.top_bar_buttons.update_position()
+        elif signal == 'ui_font_changed':
+            self.redraw_panels()

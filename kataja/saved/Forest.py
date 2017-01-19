@@ -81,6 +81,7 @@ class Forest(SavedObject):
         self.free_drawing = FreeDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
+        self.old_label_mode = 0
         self.trees = []
         self.nodes = {}
         self.edges = {}
@@ -197,6 +198,13 @@ class Forest(SavedObject):
         self.traces_to_draw = {}
         self.comments = []
         self.gloss_text = ''
+
+    def forest_edited(self):
+        """ Called after forest editing/free drawing actions that have changed the node graph.
+        Analyse the node graph and update/rebuild syntactic objects according to graph.
+        :return:
+        """
+        self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
 
     @staticmethod
     def list_nodes(first):
@@ -758,7 +766,18 @@ class Forest(SavedObject):
     @time_me
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.FOREST)
-        ctrl.settings.set('show_node_labels', not syntactic_mode, level=g.FOREST)
+        label_text_mode = ctrl.settings.get('label_text_mode')
+        if syntactic_mode:
+            self.old_label_mode = label_text_mode
+            if label_text_mode == g.NODE_LABELS:
+                ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=g.FOREST)
+            elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
+                ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.FOREST)
+        else:
+            if self.old_label_mode == g.NODE_LABELS or \
+                            self.old_label_mode == g.NODE_LABELS_FOR_LEAVES:
+                ctrl.settings.set('label_text_mode', label_text_mode, level=g.FOREST)
+
         for node in list(self.nodes.values()):
             node.update_label()
             node.update_label_visibility()

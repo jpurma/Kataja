@@ -161,7 +161,7 @@ class Preferences(object):
                                         'Visualizations may override this.',
                                 'order': 30}
 
-        self.use_magnets = 1
+        self.use_magnets = 3
         self._use_magnets_ui = {'tab': 'Drawing', 'choices':
                                 [(0, 'Aim at center of node'),
                                  (1, 'Magnets at top and bottom'),
@@ -184,13 +184,25 @@ class Preferences(object):
                                                   'between trees.'}
 
         self.show_node_labels = True
-        self._show_node_labels_ui = {'tab': 'Drawing',
-                                     'help': "Nodes can have their own labels defined. "
-                                             "These are aliases that are not used for"
-                                             "syntactic computation but may help readability"
-                                             "Either show them and syntactic labels or show "
-                                             "only syntactic labels. "}
-        self.inner_labels = 1
+        #self._show_node_labels_ui = {'tab': 'Drawing',
+        #                             'help': "Nodes can have their own labels defined. "
+        #                                     "These are aliases that are not used for"
+        #                                     "syntactic computation but may help readability"
+        #                                     "Either show them and syntactic labels or show "
+        #                                     "only syntactic labels. "}
+        self.label_text_mode = 2
+        self._label_text_mode_ui = {'tab': 'Drawing',
+                                    'choices': [(SYN_LABELS, 'Syntactic labels (Bare phrase structure)'),
+                                            (SYN_LABELS_FOR_LEAVES, 'Syntactic labels for leaves'),
+                                            (NODE_LABELS, 'Node labels or syntactic labels'),
+                                            (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
+                                            (XBAR_LABELS, 'Attempt automatic X-bar labeling'),
+                                            (SECONDARY_LABELS, 'Secondary labels (if syntax supports)')],
+                                    'label': 'Node label text',
+                                    'help': 'Should the tree show freely editable labels (node '
+                                            'labels) or labels used in syntactic computation. ',
+                                    'order': 2}
+
         self.feature_positioning = 2
         self.projection_strong_lines = True
         self.projection_colorized = True
@@ -329,6 +341,19 @@ class Preferences(object):
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
             setattr(self, key, getattr(source, key))
+
+    # ##### Reuse preferences display data
+
+    def get_display_data(self, pref_name):
+        return getattr(self, f'_{pref_name}_ui', {})
+
+    def get_ui_text_for_choice(self, choice, pref_name):
+        display_data = self.get_display_data(pref_name)
+        if display_data:
+            for value, text in display_data.get('choices', []):
+                if value == choice:
+                    return text
+        return ''
 
     # ##### Save & Load ########################################
 
