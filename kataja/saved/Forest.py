@@ -776,8 +776,7 @@ class Forest(SavedObject):
         else:
             if self.old_label_mode == g.NODE_LABELS or \
                             self.old_label_mode == g.NODE_LABELS_FOR_LEAVES:
-                ctrl.settings.set('label_text_mode', label_text_mode, level=g.FOREST)
-
+                ctrl.settings.set('label_text_mode', self.old_label_mode, level=g.FOREST)
         for node in list(self.nodes.values()):
             node.update_label()
             node.update_label_visibility()

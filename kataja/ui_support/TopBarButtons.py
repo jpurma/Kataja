@@ -29,7 +29,7 @@ class TopBarButtons(QtWidgets.QFrame):
         # Right side
         self.view_mode_button = ModeLabel(['All objects', 'Syntactic only'],
                                           ui_key='view_mode_label',
-                                          parent=self)
+                                          parent=self, icon=qt_prefs.eye_icon)
         layout.addWidget(self.view_mode_button)
         ui.add_ui(self.view_mode_button)
         self._right_buttons.append(self.view_mode_button)

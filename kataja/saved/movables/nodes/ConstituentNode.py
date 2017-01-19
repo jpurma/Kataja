@@ -115,7 +115,7 @@ class ConstituentNode(Node):
         g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
                           'action': 'add_top_right'},
         g.MERGE_TO_TOP: {'condition': ['not:is_top_node', 'free_drawing_mode'],
-                          'action': 'merge_to_top'},
+                         'action': 'merge_to_top'},
         g.INNER_ADD_SIBLING_LEFT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
                                    'place': 'edge_up',
                                    'action': 'inner_add_sibling_left'},

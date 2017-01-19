@@ -1100,7 +1100,7 @@ class Node(Movable):
         w4 = (self.width - 2) / 4.0
         w2 = (self.width - 2) / 2.0
         h2 = (self.height - 2) / 2.0
-        y_max = y + self.height
+        y_max = y + self.height - 4
         x_max = x + self.width
         self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
                          (x, y + h2), (x_max, y + h2),

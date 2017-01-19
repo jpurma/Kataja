@@ -571,7 +571,7 @@ class QtPreferences:
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.card_icon = icon('card48.png')
-        self.eye_icon = icon('eye_shut48.png')
+        self.eye_icon = icon('eye48.png')
         self.info_icon = icon('info48.png')
         self.undo_icon = icon('undo48.png')
         self.redo_icon = icon('redo48.png')

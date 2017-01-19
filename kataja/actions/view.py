@@ -244,7 +244,6 @@ class SwitchTraceMode(KatajaAction):
             ctrl.forest.chain_manager.multidomination_to_traces()
 
 
-
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'
     k_command = '&Zoom to fit'
@@ -314,12 +313,27 @@ class ToggleLabelTextModes(KatajaAction):
     def method(self):
         """ """
         now = ctrl.settings.get('label_text_mode')
-        now += 1
-        if now == g.SECONDARY_LABELS and not ctrl.forest.syntax.supports_secondary_labels:
-            now = 0
-        elif now == g.SECONDARY_LABELS + 1:
-            now = 0
+        syn_mode = ctrl.settings.get('syntactic_mode')
+        support_secondary = ctrl.forest.syntax.supports_secondary_labels
+        # some labels are not allowed in syn mode.
+        ok = False
+        while not ok:
+            now += 1
+            if now == g.SECONDARY_LABELS and not support_secondary:
+                ok = False
+            elif now == g.NODE_LABELS_FOR_LEAVES and syn_mode:
+                ok = False
+            elif now == g.NODE_LABELS and syn_mode:
+                ok = False
+            elif now == g.XBAR_LABELS and syn_mode:
+                ok = False
+            elif now > g.SECONDARY_LABELS:
+                ok = False
+                now = -1
+            else:
+                ok = True
         ctrl.settings.set('label_text_mode', now, level=DOCUMENT)
+        ctrl.settings.set('label_text_mode', now, level=FOREST)
         ctrl.forest.update_label_shape()
         mode_text = prefs.get_ui_text_for_choice(now, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'

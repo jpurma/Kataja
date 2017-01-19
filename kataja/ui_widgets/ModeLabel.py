@@ -10,9 +10,10 @@ class ModeLabel(UIWidget, PanelButton):
 
     permanent_ui = True
 
-    def __init__(self, text_options, ui_key, parent=None):
+    def __init__(self, text_options, ui_key, parent=None, icon=None):
         UIWidget.__init__(self, ui_key=ui_key)
-        PanelButton.__init__(self, None, text_options[0], size=24, parent=parent)
+        self.negated_icon = None
+        PanelButton.__init__(self, icon, text_options[0], size=24, parent=parent)
         self.setCheckable(True)
         self.text_options = text_options
         font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
@@ -28,13 +29,43 @@ class ModeLabel(UIWidget, PanelButton):
         val = self.isChecked()
         if val:
             self.setText(self.text_options[1])
+            if self.negated_icon:
+                self.setIcon(self.negated_icon)
         else:
             self.setText(self.text_options[0])
+            if self.normal_icon:
+                self.setIcon(self.normal_icon)
         self.updateGeometry()
         self.update_position()
 
     def update_colors(self):
         self.compose_icon()
+
+    def compose_icon(self):
+        """ Redraw the image to be used as a basis for icon, this is necessary
+        to update the overlay color.
+        :return:
+        """
+        super().compose_icon()
+        c = ctrl.cm.paper()
+        if self.pixmap:
+            image = QtGui.QImage(self.base_image)
+            painter = QtGui.QPainter(image)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+            painter.fillRect(image.rect(), c)
+            painter.end()
+        elif self.draw_method:
+            image = QtGui.QImage(self.base_image)
+            painter = QtGui.QPainter(image)
+            #painter.setDevicePixelRatio(2.0)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setPen(c)
+            self.draw_method(painter, image.rect(), c)
+            painter.end()
+        else:
+            return
+        self.negated_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
