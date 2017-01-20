@@ -79,7 +79,7 @@ class SwitchPlugin(KatajaAction):
 class ReloadPlugin(KatajaAction):
     k_action_uid = 'reload_plugin'
     k_command = '&Reload plugins'
-    k_shortcut = 'Ctrl+r'
+    k_shortcut = 'Ctrl+Shift+r'
     k_undoable = False
 
     def method(self):

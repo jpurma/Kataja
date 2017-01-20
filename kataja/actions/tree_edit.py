@@ -2,6 +2,7 @@
 import random
 
 from PyQt5 import QtCore
+from PyQt5.QtGui import QKeySequence
 
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
@@ -59,7 +60,7 @@ class AddNode(KatajaAction):
 class CloseEmbed(KatajaAction):
     k_action_uid = 'close_embed'
     k_command = 'Close panel'
-    k_shortcut = 'Escape'
+    k_shortcut = QKeySequence(QKeySequence.Close)
     k_shortcut_context = 'parent_and_children'
     k_undoable = False
 

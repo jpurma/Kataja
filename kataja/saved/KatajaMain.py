@@ -83,7 +83,8 @@ ModeLabel:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s;
                           color: %(paper)s}
 ModeLabel:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
                          color: %(ui_lighter)s}
-PanelButton {border: 1px transparent none}
+VisButton {font-size: %(ui_font_larger)spx; color: %(ui)s;}
+PanelButton {border: 1px transparent none;}
 PanelButton:hover {border: 1px solid %(ui)s; border-radius: 3}
 PanelButton:pressed {border: 2px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}

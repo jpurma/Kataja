@@ -82,7 +82,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         to view window."""
         mw = prefs.edge_width
         mh = prefs.edge_height
-        margins = QtCore.QMarginsF(mw, mh, mw, mh)
+        margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
         use_current_positions = len(ctrl.forest.nodes) < 25
         vr = self.visible_rect(current=use_current_positions) + margins
         if self._cached_visible_rect and not force:

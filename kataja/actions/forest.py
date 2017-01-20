@@ -65,7 +65,7 @@ class SwitchEditMode(KatajaAction):
 class NextForest(KatajaAction):
     k_action_uid = 'next_forest'
     k_command = 'Next forest'
-    k_shortcut = '.'
+    k_shortcut = 's'
     k_undoable = False
     k_tooltip = 'Switch to next forest'
 
@@ -75,13 +75,13 @@ class NextForest(KatajaAction):
         """
         i, forest = ctrl.main.forest_keeper.next_forest()
         ctrl.main.change_forest()
-        return 'Next forest (.): %s: %s' % (i + 1, forest.textual_form())
+        return f'Next forest ({NextForest.k_shortcut}): {i + 1}: {forest.textual_form()}'
 
 
 class PreviousForest(KatajaAction):
     k_action_uid = 'previous_forest'
     k_command = 'Previous forest'
-    k_shortcut = ','
+    k_shortcut = 'w'
     k_undoable = False
     k_tooltip = 'Switch to previous forest'
 
@@ -91,31 +91,38 @@ class PreviousForest(KatajaAction):
         """
         i, forest = ctrl.main.forest_keeper.prev_forest()
         ctrl.main.change_forest()
-        return 'Previous forest (,): %s: %s' % (i + 1, forest.textual_form())
+        return f'Previous forest ({PreviousForest.k_shortcut}): {i + 1}: {forest.textual_form()}'
 
 
 class NextStep(KatajaAction):
     k_action_uid = 'next_derivation_step'
     k_command = 'Next derivation step'
-    k_shortcut = '>'
+    k_shortcut = 'd'
     k_undoable = False
     k_tooltip = 'Move to next frame in animation / derivation'
 
     def method(self):
-        """ User action "step forward (>)", Move to next derivation step """
+        """ User action "step forward", Move to next derivation step """
         ctrl.forest.derivation_steps.next_derivation_step()
+        i = ctrl.forest.derivation_steps.derivation_step_index
+        max_i = len(ctrl.forest.derivation_steps.derivation_steps)
+        return f'Next derivation step ({NextStep.k_shortcut}): {i + 1}/{max_i}'
+
 
 
 class PreviousStep(KatajaAction):
     k_action_uid = 'prev_derivation_step'
     k_command = 'Previous derivation step'
-    k_shortcut = '<'
+    k_shortcut = 'a'
     k_undoable = False
     k_tooltip = 'Move to previous frame in animation / derivation'
 
     def method(self):
-        """ User action "step backward (<)" , Move backward in derivation steps """
+        """ User action "step backward" , Move backward in derivation steps """
         ctrl.forest.derivation_steps.previous_derivation_step()
+        i = ctrl.forest.derivation_steps.derivation_step_index
+        max_i = len(ctrl.forest.derivation_steps.derivation_steps)
+        return f'Previous derivation step ({PreviousStep.k_shortcut}): {i + 1}/{max_i}'
 
 
 class DeriveFromLexicon(KatajaAction):
@@ -123,6 +130,7 @@ class DeriveFromLexicon(KatajaAction):
     k_command = 'Derive again from lexicon'
     k_undoable = False
     k_tooltip = 'Derive current sentence again with this lexicon'
+    k_shortcut = 'Ctrl+r'
 
     def enabler(self):
         return ctrl.syntax.supports_editable_lexicon

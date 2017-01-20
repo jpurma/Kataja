@@ -2,6 +2,8 @@
 import random
 
 from PyQt5 import QtGui
+from PyQt5.QtGui import QKeySequence
+
 from kataja.KatajaAction import KatajaAction
 
 from kataja.singletons import ctrl
@@ -38,7 +40,7 @@ from kataja.singletons import ctrl
 class ToggleItalic(KatajaAction):
     k_action_uid = 'toggle_italic'
     k_command = 'Toggle italics'
-    k_shortcut = 'Ctrl+i'
+    k_shortcut = QKeySequence(QKeySequence.Italic)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -58,7 +60,7 @@ class ToggleItalic(KatajaAction):
 class ToggleBold(KatajaAction):
     k_action_uid = 'toggle_bold'
     k_command = 'Toggle bold'
-    k_shortcut = 'Ctrl+b'
+    k_shortcut = QKeySequence(QKeySequence.Bold)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -81,7 +83,7 @@ class ToggleBold(KatajaAction):
 class ToggleUnderline(KatajaAction):
     k_action_uid = 'toggle_underline'
     k_command = 'Toggle underline'
-    k_shortcut = 'Ctrl+u'
+    k_shortcut = QKeySequence(QKeySequence.Underline)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -144,7 +146,7 @@ class ToggleSubscript(KatajaAction):
 class ToggleSuperscript(KatajaAction):
     k_action_uid = 'toggle_superscript'
     k_command = 'Toggle superscript'
-    k_shortcut = 'Ctrl+'
+    k_shortcut = 'Ctrl+^'
     k_shortcut_context = 'parent_and_children'
 
     def method(self):

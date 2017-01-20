@@ -32,6 +32,8 @@ from kataja.utils import time_me
 @time_me
 def nodes_to_synobjs(forest, syntax, roots: list):
 
+    if roots is None:
+        roots = []
 
     visited_nodes = set()
     converted_nodes = set()

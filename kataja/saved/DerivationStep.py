@@ -131,7 +131,8 @@ class DerivationStepManager(SavedObject):
             synobjs_to_nodes(self.forest, d_step.synobjs, d_step.numeration, d_step.other,
                              d_step.msg, d_step.gloss, d_step.transferred,
                              d_step.mover)
-            log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
+            if msg:
+                log.info(msg)
 
     def next_derivation_step(self):
         """

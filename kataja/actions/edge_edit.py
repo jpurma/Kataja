@@ -100,8 +100,8 @@ class DisconnectEdgeEnd(KatajaAction):
 class NewArrow(KatajaAction):
     k_action_uid = 'new_arrow'
     k_command = 'New arrow'
-    k_shortcut = 'a'
-    k_shortcut_context = 'parent_and_children'
+    # k_shortcut = 'a'
+    #k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ Create a new arrow into embed menu's location
@@ -151,8 +151,8 @@ class DeleteArrow(KatajaAction):
 class NewDivider(KatajaAction):
     k_action_uid = 'new_divider'
     k_command = 'New divider'
-    k_shortcut = 'd'
-    k_shortcut_context = 'parent_and_children'
+    #k_shortcut = 'd'
+    #k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ Create a new divider into embed menu's location

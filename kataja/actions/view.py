@@ -302,6 +302,12 @@ class ChangeVisualisation(KatajaAction):
             ctrl.forest.set_visualization(visualization_key)
             log.info(visualization_key)
 
+    def getter(self):
+        if ctrl.forest and ctrl.forest.visualization:
+            if self.args:
+                return ctrl.forest.visualization.say_my_name() == self.args[0]
+            return ctrl.forest.visualization.say_my_name()
+
 
 class ToggleLabelTextModes(KatajaAction):
     k_action_uid = 'toggle_label_text_mode'

@@ -9,6 +9,8 @@ import time
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
+
 from kataja.KatajaAction import KatajaAction
 
 from kataja.singletons import ctrl, prefs, log
@@ -54,7 +56,7 @@ class NewStructure(KatajaAction):
     k_action_uid = 'new_forest'
     k_command = '&New forest'
     k_tooltip = 'Create a new forest after the current one'
-    k_shortcut = 'Ctrl+n'
+    k_shortcut = QKeySequence(QKeySequence.New)
     k_undoable = False
 
     def method(self):
@@ -99,7 +101,7 @@ class SwitchProject(KatajaAction):
 class Open(KatajaAction):
     k_action_uid = 'open'
     k_command = '&Open'
-    k_shortcut = 'Ctrl+o'
+    k_shortcut = QKeySequence(QKeySequence.Open)
     k_undoable = False
 
     def method(self, filename=''):
@@ -181,7 +183,7 @@ class Open(KatajaAction):
 class Save(KatajaAction):
     k_action_uid = 'save'
     k_command = '&Save'
-    k_shortcut = 'Ctrl+s'
+    k_shortcut = QKeySequence(QKeySequence.Save)
     k_undoable = False
 
     def save_as(self):
@@ -261,7 +263,7 @@ class Save(KatajaAction):
 class SaveAs(Save):
     k_action_uid = 'save_as'
     k_command = 'Save as'
-    k_shortcut = ''
+    k_shortcut = QKeySequence(QKeySequence.SaveAs)
     k_undoable = False
 
     def method(self, filename=''):
@@ -272,7 +274,7 @@ class SaveAs(Save):
 class PrintToFile(KatajaAction):
     k_action_uid = 'print_pdf'
     k_command = '&Print'
-    k_shortcut = 'Ctrl+p'
+    k_shortcut = QKeySequence(QKeySequence.Print)
     k_undoable = False
     k_tooltip = 'Capture as image'
 
@@ -338,7 +340,7 @@ class PrintToFile(KatajaAction):
 class OpenPreferences(KatajaAction):
     k_action_uid = 'preferences'
     k_command = 'Preferences'
-    k_shortcut = '^'
+    k_shortcut = QKeySequence(QKeySequence.Preferences)
     k_undoable = False
 
     def method(self):
@@ -353,7 +355,7 @@ class OpenPreferences(KatajaAction):
 class Quit(KatajaAction):
     k_action_uid = 'quit'
     k_command = '&Quit'
-    k_shortcut = 'Ctrl+q'
+    k_shortcut = QKeySequence(QKeySequence.Quit)
     k_undoable = False
 
     def method(self):

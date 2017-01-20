@@ -178,11 +178,13 @@ class OverlayButton(UIWidget, PanelButton):
                              color_key=color_key, draw_method=draw_method, tooltip=tooltip)
 
     def mousePressEvent(self, event):
-        self.setIcon(self.hover_icon)
+        if self.hover_icon:
+            self.setIcon(self.hover_icon)
         PanelButton.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        self.setIcon(self.normal_icon)
+        if self.normal_icon:
+            self.setIcon(self.normal_icon)
         PanelButton.mouseReleaseEvent(self, event)
 
 
@@ -206,6 +208,36 @@ class TopRowButton(OverlayButton):
         else:
             self.setMinimumSize(size+2, size)
             self.setMaximumSize(size+2, size)
+
+
+class VisButton(OverlayButton):
+
+    permanent_ui = True
+
+    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
+                 size=24, tooltip=None):
+        super().__init__(None, ui_key=ui_key,
+                         parent=parent,
+                         pixmap=pixmap,
+                         text=text,
+                         draw_method=draw_method,
+                         tooltip=tooltip,
+                         size=size,
+                         color_key='accent8')
+        if isinstance(size, tuple):
+            self.setMinimumSize(size[0], size[1])
+            self.setMaximumSize(size[0], size[1])
+        else:
+            self.setMinimumSize(size, size)
+            self.setMaximumSize(size, size)
+
+    def update_colors(self):
+        pass
+
+    def event(self, e):
+        return QtWidgets.QPushButton.event(self, e)
+
+
 
 
 class QuickEditButton(OverlayButton):

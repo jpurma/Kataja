@@ -1,4 +1,5 @@
 # coding=utf-8
+from PyQt5.QtGui import QKeySequence
 
 from kataja.singletons import ctrl, log
 from kataja.KatajaAction import KatajaAction
@@ -82,7 +83,7 @@ class ToggleFullScreen(KatajaAction):
     k_action_uid = 'fullscreen_mode'
     k_command = 'Fullscreen'
     k_undoable = False
-    k_shortcut = 'Ctrl+f'
+    k_shortcut = QKeySequence(QKeySequence.FullScreen)
     k_checkable = True
 
     def method(self):
