@@ -37,7 +37,7 @@ from kataja.visualizations.available import action_key
 class SwitchViewMode(KatajaAction):
     k_action_uid = 'switch_view_mode'
     k_command = 'Show only syntactic objects'
-    k_tooltip = 'Show only syntactic objects or show all objects (Shift+b)'
+    k_tooltip = 'Show only syntactic objects or show all objects'
     k_shortcut = 'Shift+b'
     k_undoable = False
 
@@ -202,17 +202,16 @@ class ToggleLabelShape(KatajaAction):
             bs += 1
             if bs > 4:
                 bs = 0
-
         if bs == g.NORMAL:
-            m = '(b) Node shape: Simple'
+            m = 'Node shape: Simple'
         elif bs == g.SCOPEBOX:
-            m = '(b) Node shape: Scopeboxes'
+            m = 'Node shape: Scopeboxes'
         elif bs == g.BRACKETED:
-            m = '(b) Node shape: Bracket bars'
+            m = 'Node shape: Bracket bars'
         elif bs == g.BOX:
-            m = '(b) Node shape: Boxes'
+            m = 'Node shape: Boxes'
         elif bs == g.CARD:
-            m = '(b) Node shape: Cards'
+            m = 'Node shape: Cards'
         ctrl.settings.set('label_shape', bs, level=DOCUMENT)
         ctrl.forest.update_label_shape()
         return m
@@ -220,7 +219,7 @@ class ToggleLabelShape(KatajaAction):
 
 class SwitchTraceMode(KatajaAction):
     k_action_uid = 'trace_mode'
-    k_command = 'Show &traces'
+    k_command = 'Show traces'
     k_shortcut = 't'
     k_checkable = True
 
@@ -234,19 +233,19 @@ class SwitchTraceMode(KatajaAction):
 
         if grouped_traces and not multidomination:
             ctrl.forest.chain_manager.traces_to_multidomination()
-            log.info('(t) use multidominance')
+            log.info('use multidominance')
         elif (not grouped_traces) and not multidomination:
-            log.info('(t) use traces, group them to one spot')
+            log.info('use traces, group them to one spot')
             ctrl.forest.chain_manager.group_traces_to_chain_head()
             ctrl.action_redraw = False
         elif multidomination:
-            log.info('(t) use traces, show constituents in their base merge positions')
+            log.info('use traces, show constituents in their base merge positions')
             ctrl.forest.chain_manager.multidomination_to_traces()
 
 
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'
-    k_command = '&Zoom to fit'
+    k_command = 'Zoom to fit'
     k_shortcut = 'z'
     k_undoable = False
 
@@ -255,7 +254,6 @@ class ZoomToFit(KatajaAction):
         available as user action
         """
         ctrl.graph_scene.fit_to_window(force=True)
-        return "Zoom to fit"
 
 
 class TogglePanMode(KatajaAction):
@@ -275,7 +273,7 @@ class TogglePanMode(KatajaAction):
 class ToggleSelectMode(KatajaAction):
     k_action_uid = 'toggle_select_mode'
     k_command = 'Select mode'
-    k_shortcut = 's'
+    k_shortcut = 'p'
     k_undoable = False
 
     def method(self):
@@ -300,7 +298,6 @@ class ChangeVisualisation(KatajaAction):
             action.setChecked(True)
         if visualization_key:
             ctrl.forest.set_visualization(visualization_key)
-            log.info(visualization_key)
 
     def getter(self):
         if ctrl.forest and ctrl.forest.visualization:
@@ -311,10 +308,10 @@ class ChangeVisualisation(KatajaAction):
 
 class ToggleLabelTextModes(KatajaAction):
     k_action_uid = 'toggle_label_text_mode'
-    k_command = 'Use labels in inner nodes'
+    k_command = 'Switch label text mode'
     k_undoable = True
     k_shortcut = 'l'
-    k_tooltip = 'Switch what to show as label text in inner nodes'
+    k_tooltip = 'Switch what to show as label text'
 
     def method(self):
         """ """

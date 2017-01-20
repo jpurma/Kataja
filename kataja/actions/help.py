@@ -31,7 +31,7 @@ from kataja.KatajaAction import KatajaAction
 
 class Help(KatajaAction):
     k_action_uid = 'help'
-    k_command = '&Help'
+    k_command = 'Help'
     k_shortcut = 'h'
     k_undoable = False
 

@@ -27,7 +27,7 @@ import logging
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from kataja.singletons import ctrl, log
+from kataja.singletons import ctrl, log, running_environment
 from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
@@ -178,8 +178,9 @@ class KatajaAction(QtWidgets.QAction):
         self.setCheckable(self.k_checkable)
         if self.tip:
             #if ctrl.main.use_tooltips:
-            self.setToolTip(self.tip)
-            self.setStatusTip(self.tip)
+            tws = self.tip_with_shortcut()
+            self.setToolTip(tws)
+            self.setStatusTip(tws)
 
     def method(self, *args):
         pass
@@ -222,8 +223,14 @@ class KatajaAction(QtWidgets.QAction):
         if self.disable_undo_and_message:
             ctrl.main.action_finished(undoable=False)
         else:
-            ctrl.main.action_finished(m=message or self.command,
-                                      undoable=self.undoable and not ctrl.undo_disabled,
+            sc = self.shortcut()
+            if sc:
+                sc = sc.toString()
+                sc = sc.replace('Ctrl', running_environment.cmd_or_ctrl)
+                reply = f'({sc}) {message or self.command}'
+            else:
+                reply = message or self.command
+            ctrl.main.action_finished(m=reply, undoable=self.undoable and not ctrl.undo_disabled,
                                       error=error)
 
     def update_action(self):
@@ -236,6 +243,16 @@ class KatajaAction(QtWidgets.QAction):
         val = self.getter()
         if val is not None:
             self.set_displayed_value(val)
+
+    def tip_with_shortcut(self):
+        sc = self.shortcut()
+        if sc:
+            if isinstance(sc, QtGui.QKeySequence):
+                sc = sc.toString()
+                sc = sc.replace('Ctrl', running_environment.cmd_or_ctrl)
+            return f'{self.tip} ({sc})'
+        else:
+            return self.tip
 
     def update_ui_value(self):
         """ This can be called for manually updating the field values for element, e.g. when

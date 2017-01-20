@@ -111,7 +111,7 @@ class CreateNewNodeFromText(KatajaAction):
             if node:
                 ctrl.forest.tree_manager.create_tree_for(node)
         else:
-            node = ctrl.free_drawing.create_node(pos=p2, node_type=node_type, text=text)
+            node = ctrl.free_drawing.create_node(pos=p2, node_type=node_type, label=text)
             if node and node_type == g.CONSTITUENT_NODE:
                 ctrl.forest.tree_manager.create_tree_for(node)
         if node:

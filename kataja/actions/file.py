@@ -54,7 +54,7 @@ file_extensions = {'pickle': '.kataja', 'pickle.zipped': '.zkataja',
 
 class NewStructure(KatajaAction):
     k_action_uid = 'new_forest'
-    k_command = '&New forest'
+    k_command = 'New forest'
     k_tooltip = 'Create a new forest after the current one'
     k_shortcut = QKeySequence(QKeySequence.New)
     k_undoable = False
@@ -100,7 +100,7 @@ class SwitchProject(KatajaAction):
 
 class Open(KatajaAction):
     k_action_uid = 'open'
-    k_command = '&Open'
+    k_command = 'Open'
     k_shortcut = QKeySequence(QKeySequence.Open)
     k_undoable = False
 
@@ -182,7 +182,7 @@ class Open(KatajaAction):
 
 class Save(KatajaAction):
     k_action_uid = 'save'
-    k_command = '&Save'
+    k_command = 'Save'
     k_shortcut = QKeySequence(QKeySequence.Save)
     k_undoable = False
 
@@ -273,7 +273,7 @@ class SaveAs(Save):
 
 class PrintToFile(KatajaAction):
     k_action_uid = 'print_pdf'
-    k_command = '&Print'
+    k_command = 'Print'
     k_shortcut = QKeySequence(QKeySequence.Print)
     k_undoable = False
     k_tooltip = 'Capture as image'
@@ -354,7 +354,7 @@ class OpenPreferences(KatajaAction):
 
 class Quit(KatajaAction):
     k_action_uid = 'quit'
-    k_command = '&Quit'
+    k_command = 'Quit'
     k_shortcut = QKeySequence(QKeySequence.Quit)
     k_undoable = False
 

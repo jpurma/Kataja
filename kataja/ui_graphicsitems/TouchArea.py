@@ -76,7 +76,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if action:
             action.connect_element(self)
         if action and action.tip:
-            self.set_tip(action.tip)
+            self.set_tip(action.tip_with_shortcut())
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events

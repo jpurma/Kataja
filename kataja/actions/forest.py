@@ -36,8 +36,7 @@ class SwitchEditMode(KatajaAction):
     k_shortcut = 'Ctrl+Shift+Space'
     k_undoable = False
 
-    k_tooltip = 'Switch between free editing and derivation-based visualisation (%s+Shift+Space)' % \
-                running_environment.cmd_or_ctrl
+    k_tooltip = 'Switch between free editing and derivation-based visualisation'
 
     def method(self, free_edit=None):
         """ Switch between visualisation mode and free edit mode
@@ -75,7 +74,7 @@ class NextForest(KatajaAction):
         """
         i, forest = ctrl.main.forest_keeper.next_forest()
         ctrl.main.change_forest()
-        return f'Next forest ({NextForest.k_shortcut}): {i + 1}: {forest.textual_form()}'
+        return f'Next forest: {i + 1}: {forest.textual_form()}'
 
 
 class PreviousForest(KatajaAction):
@@ -91,7 +90,7 @@ class PreviousForest(KatajaAction):
         """
         i, forest = ctrl.main.forest_keeper.prev_forest()
         ctrl.main.change_forest()
-        return f'Previous forest ({PreviousForest.k_shortcut}): {i + 1}: {forest.textual_form()}'
+        return f'Previous forest: {i + 1}: {forest.textual_form()}'
 
 
 class NextStep(KatajaAction):
@@ -106,7 +105,7 @@ class NextStep(KatajaAction):
         ctrl.forest.derivation_steps.next_derivation_step()
         i = ctrl.forest.derivation_steps.derivation_step_index
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
-        return f'Next derivation step ({NextStep.k_shortcut}): {i + 1}/{max_i}'
+        return f'Next derivation step: {i + 1}/{max_i}'
 
 
 
@@ -122,7 +121,7 @@ class PreviousStep(KatajaAction):
         ctrl.forest.derivation_steps.previous_derivation_step()
         i = ctrl.forest.derivation_steps.derivation_step_index
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
-        return f'Previous derivation step ({PreviousStep.k_shortcut}): {i + 1}/{max_i}'
+        return f'Previous derivation step: {i + 1}/{max_i}'
 
 
 class DeriveFromLexicon(KatajaAction):

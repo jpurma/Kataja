@@ -35,18 +35,20 @@ class NavigationPanel(Panel):
         layout.addWidget(treeset_counter, 0, 1, 1, 1)
         self.treeset_counter = treeset_counter
 
-        prev_tree = TwoColorButton(qt_prefs.left_arrow, '', self)
+        action = ctrl.ui.get_action('previous_forest')
+        prev_tree = TwoColorButton(qt_prefs.left_arrow, action.k_shortcut, self)
         prev_tree.setMinimumWidth(72)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         self.prev_tree = prev_tree
         ui = self.ui_manager
-        ui.connect_element_to_action(prev_tree, 'previous_forest')
+        ui.connect_element_to_action(prev_tree, action.k_action_uid)
 
-        next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
+        action = ctrl.ui.get_action('next_forest')
+        next_tree = TwoColorButton(qt_prefs.right_arrow, action.k_shortcut, self)
         next_tree.setMinimumWidth(72)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         self.next_tree = next_tree
-        ui.connect_element_to_action(next_tree, 'next_forest')
+        ui.connect_element_to_action(next_tree, action.k_action_uid)
 
         new_tree = text_button(ui, layout, text='New forest', action='new_forest', x=0, y=3)
 
@@ -57,17 +59,19 @@ class NavigationPanel(Panel):
         layout.addWidget(derivation_counter, 2, 1, 1, 1)
         self.derivation_counter = derivation_counter
 
-        prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
+        action = ctrl.ui.get_action('prev_derivation_step')
+        prev_der = TwoColorButton(qt_prefs.left_arrow, action.k_shortcut, self)
         prev_der.setMaximumHeight(20)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
-        ui.connect_element_to_action(prev_der, 'prev_derivation_step')
+        ui.connect_element_to_action(prev_der, action.k_action_uid)
 
-        next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
+        action = ctrl.ui.get_action('next_derivation_step')
+        next_der = TwoColorButton(qt_prefs.right_arrow, action.k_shortcut, self)
         next_der.setMaximumHeight(20)
         layout.addWidget(next_der, 3, 1, 1, 1)
         self.next_der = next_der
-        ui.connect_element_to_action(next_der, 'next_derivation_step')
+        ui.connect_element_to_action(next_der, action.k_action_uid)
         inner.setLayout(layout)
         if False: #ctrl.forest.supports_derivation:
             self.der_label.hide()
