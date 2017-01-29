@@ -72,8 +72,6 @@ class VisualizationOptionsPanel(Panel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        self.widget().updateGeometry()
-        self.widget().update()
         s = ctrl.settings
         set_value(self.show_node_labels, s.get('show_node_labels'))
         set_value(self.highlighter_button, s.get('projection_highlighter'))

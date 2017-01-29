@@ -834,8 +834,11 @@ class UIManager:
         """
         if isinstance(action, str):
             kataja_action = self.get_action(action)
-            assert kataja_action
-            kataja_action.connect_element(element, tooltip_suffix)
+            if not kataja_action:
+                print('missing action:', action)
+                log.error(f'trying to connect non-existing action: {action}')
+            else:
+                kataja_action.connect_element(element, tooltip_suffix)
         elif isinstance(action, KatajaAction):
             action.connect_element(element, tooltip_suffix)
 

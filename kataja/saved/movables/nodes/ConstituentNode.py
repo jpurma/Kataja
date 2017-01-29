@@ -23,7 +23,7 @@
 # ############################################################################
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.parser.INodes import ITextNode, ICommandNode
+from kataja.parser.INodes import ITextNode, ICommandNode, as_text
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
 from kataja.uniqueness_generator import next_available_type_id
@@ -343,12 +343,12 @@ class ConstituentNode(Node):
         """ Hovering status tip """
 
         if self.label:
-            label = f'Label: "{self.label_as_html()}" '
+            label = f'Label: "{as_text(self.label)}" '
         else:
             label = ''
         syn_label = self.get_syn_label()
         if syn_label:
-            syn_label = f' Constituent: "{syn_label}" '
+            syn_label = f' Constituent: "{as_text(syn_label)}" '
         else:
             syn_label = ''
         if self.is_trace:
@@ -368,8 +368,8 @@ class ConstituentNode(Node):
                           f"{self.zValue()}/{self.z_value})"
 
     def short_str(self):
-        label = as_html(self.label)
-        syn_label = as_html(self.get_syn_label())
+        label = as_text(self.label)
+        syn_label = as_text(self.get_syn_label())
         if label and syn_label:
             return f'{label} ({syn_label})'
         else:
@@ -391,8 +391,8 @@ class ConstituentNode(Node):
             return self.label
 
     def __str__(self):
-        label = as_html(self.label)
-        syn_label = as_html(self.get_syn_label())
+        label = as_text(self.label)
+        syn_label = as_text(self.get_syn_label())
         if label and syn_label:
             return f'{label} ({syn_label})'
         else:

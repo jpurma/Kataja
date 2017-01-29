@@ -170,10 +170,10 @@ class Preferences(object):
                                         'and magnet placement may be affected by parent node',
                                 'order': 40}
 
-        self.edge_width = 20  # 20
+        self.edge_width = 22  # 20
         self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 20}
 
-        self.edge_height = 20
+        self.edge_height = 22
         self._edge_height_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 21,
                                 'help': 'Default width and height for branches'}
 

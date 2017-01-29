@@ -17,6 +17,11 @@ def as_html(item):
     else:
         return html.escape(item).replace('\n', '<br/>').replace('\r', '<br/>')
 
+def as_text(item):
+    if isinstance(item, ITextNode):
+        return item.as_plain()
+    else:
+        return str(item)
 
 
 class ITextNode:
@@ -226,20 +231,23 @@ class ITextNode:
             if isinstance(part, ITextNode):
                 part._as_latex(s)
             else:
-                str(part)
+                s.append(str(part))
 
     def as_latex(self):
         s = []
         self._as_latex(s)
         return ''.join(s).replace('\n', '\\').replace('\r', '\\')
 
-    def as_plain(self):
-        r = []
+    def _as_plain(self, s):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                r.append(part.as_plain())
+                part._as_plain(s)
             else:
-                r.append(str(part))
+                s.append(str(part))
+
+    def as_plain(self):
+        r = []
+        self._as_plain(r)
         return ''.join(r)
 
     def __str__(self):
@@ -323,9 +331,6 @@ class ICommandNode(ITextNode):
     def is_empty(self):
         return not (self.command or self.parts)
 
-    def __str__(self):
-        return self.as_html()
-
     def __repr__(self):
         return 'ICommandNode(command=%r, parts=%r)' % (self.command,
                                                        self.parts)
@@ -401,7 +406,6 @@ class IParserNode(ITextNode):
                 if found:
                     self.index = found
                     break
-
 
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the template node remains even if it

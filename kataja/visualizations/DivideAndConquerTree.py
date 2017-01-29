@@ -112,77 +112,69 @@ class DivideAndConquerTree(BalancedTree):
             node_offset_y = br.y()
             node_top_row = mnode.get_top_y()
             relative_start_height = (node_offset_y + node_top_row) / node_height
-            height_in_rows = max((1, math.ceil(node_height / float(edge_height or 1)) - 1))
+            eh = edge_height or 1
+            height_in_rows = math.ceil(node_height / eh) or 1
             start_height = max(int(relative_start_height * height_in_rows), 0)
             width_in_columns = math.ceil(node_width / float(edge_width or 1)) + 1
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
-        def _build_grid(node, parent=None, done:set=None):
+        def _build_grid(node, parent=None, done: set=None):
             if self.forest.should_we_draw(node, parent) and node not in done:
+                nleft, ntop, nw, nh = _get_grid_size(node)
                 done.add(node)
                 grids = []
                 children = node.get_children(similar=True, visible=True)
+                last_drawn_child = None
                 for child in children:
                     grid = _build_grid(child, parent=node, done=done)
                     if grid:
                         grids.append(grid)
+                        last_drawn_child = child
                 # Recursion base case
                 if not grids:
                     g = Grid()
-                    gleft, gtop, gwidth, gheight = _get_grid_size(node)
-                    g.set(0, 0, node, w=gwidth, h=gheight, left=gleft, top=gtop)
-                    return g
+                    x = 0
+                    need_rows = 0
                 elif len(grids) == 1:
-                    # hmmmm
-                    _add_merger_node(grids[0], node)
-                    return grids[0]
+                    g = grids[0]
+                    cleft, ctop, cw, ch = _get_grid_size(last_drawn_child)
+                    cx, cy = g.find_in_grid(last_drawn_child)
+                    if cw >= nw:
+                        x = cx
+                    else:
+                        x = cx - ((nw - cw) // 2)
+                        if x < 0:
+                            g.insert_columns(-x)
+                            nleft -= x
+                            x = 0
+                    g.insert_row()
+                    need_rows = nh + ntop
                 else:
-                    combined = grids[0]
+                    g = grids[0]
                     for right_grid in grids[1:]:
-                        combined.merge_grids(right_grid)
-                    _add_merger_node(combined, node)
-                    return combined
+                        g.merge_grids(right_grid)
+                    sx = 0
+                    size = 0
+                    nleft, ntop, nw, nh = _get_grid_size(node)
+                    children = node.get_children(similar=True, visible=True)
+                    for child in children:
+                        size += 1
+                        nx, ny = g.find_in_grid(child)
+                        sx += nx
+                    if size:
+                        x = sx // size
+                    else:
+                        x = 0
+                    g.insert_row()
+                    need_rows = nh + ntop
+                while need_rows:
+                    g.insert_row()
+                    need_rows -= 1
+                g.set(x, 0, node, w=nw, h=nh, left=nleft, top=ntop)
+                return g
             else:
                 return Grid()
-
-        def _add_merger_node(grid, node):
-            sx = 0
-            size = 0
-            nleft, ntop, nw, nh = _get_grid_size(node)
-            children = node.get_children(similar=True, visible=True)
-            if len(children) == 1:
-                cleft, ctop, cw, ch = _get_grid_size(children[0])
-                cx, cy = grid.find_in_grid(children[0])
-                if cw >= nw:
-                    x = cx
-                else:
-                    x = cx - ((nw - cw) // 2)
-                    if x < 0:
-                        grid.insert_columns(-x)
-                        nleft -= x
-                        x = 0
-            else:
-                for child in children:
-                    size += 1
-                    nx, ny = grid.find_in_grid(child)
-                    sx += nx
-                if size:
-                    x = sx // size
-                else:
-                    x = 0
-            grid.insert_row()
-            need_rows = nh + ntop
-            while need_rows:
-                grid.insert_row()
-                need_rows -= 1
-            grid.set(x, 0, node, w=nw, h=nh, left=nleft, top=ntop)
-            # this doesn't work because of potential xy_adjustment in grid
-            #for child in children:
-            #    nx, ny = grid.find_in_grid(child)
-            #    path = grid.pixelated_path(x, 0, nx, ny)
-            #    grid.fill_path(path)
-            return grid
 
         merged_grid = _build_grid(node=tree.top, done=set())
 
