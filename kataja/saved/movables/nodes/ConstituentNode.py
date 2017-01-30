@@ -63,6 +63,13 @@ class ConstituentNode(Node):
                 'synlabel': dict(name='Computational label', prefill='label',
                                  tooltip='Label used for computations, plain string', width=160,
                                  focus=True, syntactic=True, order=10, on_edit='update_preview'),
+                'triangle': dict(name='Triangle', input_type='checkbox', order=35,
+                                 on_edit='update_preview', tooltip='Draw a triangle on top of a '
+                                                                   'node to mark an unanalysed '
+                                                                   'part of a sentence'),
+                'triangle_row': dict(name='below label row', align='line-end', width=20,
+                                     prefill='1', order=36, tooltip='Triangle is inserted below '
+                                                                    'this row in label'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Optional index for linking multiple instances', order=11,
                               on_edit='update_preview'),
@@ -157,6 +164,7 @@ class ConstituentNode(Node):
         self.index = ''
         self.label = label
         self.gloss = ''
+        self.triangle_row = 1
 
         self.is_trace = False
         self.merge_order = 0
@@ -200,23 +208,35 @@ class ConstituentNode(Node):
         :param parsernode:
         :return:
         """
+
+        def remove_dot_label(inode, row_n):
+            for i, part in enumerate(list(inode.parts)):
+                if isinstance(part, str):
+                    if part.startswith('.'):
+                        inode.parts[i] = part[1:]
+                    return True
+                elif isinstance(part, ICommandNode) and part.command == 'qroof':
+                    self.triangle_row = row_n
+                    continue
+                else:
+                    return remove_dot_label(part, row_n)
+
         if parsernode.index:
             self.index = parsernode.index
+        if parsernode.has_triangle:
+            self.triangle = True
         rows = parsernode.label_rows
         # Remove dotlabel
-        if len(rows):
-            first = rows[0]
-            sfirst = str(first)
-            if len(sfirst) > 1 and sfirst.startswith('.'):
-                if isinstance(first, ICommandNode):
-                    if first.parts:
-                        rows[0] = first.parts[0]
-                    else:
-                        rows[0] = ''
-                if isinstance(first, ITextNode):
-                    first.remove_prefix('.')
-                else:
-                    rows[0] = first[1:]
+
+        for i, row in enumerate(list(rows)):
+            if isinstance(row, str):
+                if row.startswith('.'):
+                    rows[i] = row[1:]
+                break
+            stop = remove_dot_label(row, i)
+            if stop:
+                break
+        # △
         # ########### Flatten rows of label into one string/ITextNode/ICommandNode
         # It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and
         # ICommandNode + ... all need different ways to join them
@@ -254,6 +274,7 @@ class ConstituentNode(Node):
             self.label = rows[0]
         else:
             self.label = ''
+        print('label:', repr(self.label))
 
     # Editing with NodeEditEmbed and given editable-template
     def update_preview(self):
@@ -267,8 +288,11 @@ class ConstituentNode(Node):
         while not hasattr(embed, 'fields') and surefail < 5:
             embed = embed.parent()
             surefail += 1
+
         index = embed.fields.get('index', None)
         label = embed.fields.get('label', None)
+        triangle = embed.fields.get('triangle', None)
+        triangle_row = embed.fields.get('triangle_row', None)
         preview = embed.fields.get('preview', None)
         index_text = as_html(index.text())
         label_text = as_html(label.inode_text())
@@ -838,5 +862,6 @@ class ConstituentNode(Node):
     index = SavedField("index")
     gloss = SavedField("gloss", if_changed=update_gloss)
     heads = SavedField("heads")
+    triangle_row = SavedField("triangle_row")
     original_parent = SavedField("original_parent")
 

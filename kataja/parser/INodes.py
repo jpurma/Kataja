@@ -306,6 +306,20 @@ class ICommandNode(ITextNode):
             else:
                 ITextNode._as_latex(self, s)
 
+    def _as_plain(self, s):
+        if not self.parts:
+            unic = latex_to_unicode.get(self.command, None)
+            if unic:
+                s.append(unic[0])
+        else:
+            if self.command == 'qroof':
+                s.append('△')
+            for part in self.parts:
+                if isinstance(part, ITextNode):
+                    part._as_plain(s)
+                else:
+                    s.append(str(part))
+
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the command remains even if it has
         empty scope
@@ -380,6 +394,7 @@ class IParserNode(ITextNode):
         ITextNode.__init__(self, parts=parts)
         self.label_rows = label_rows or []
         self.index = None
+        self.has_triangle = False
 
     def is_empty(self):
         return not (self.label_rows or self.parts)
@@ -413,6 +428,10 @@ class IParserNode(ITextNode):
         :param keep_node:
         :return:
         """
+        #print('tidying parsernode')
+        #t = ITextNode.tidy(self, keep_node=True)
+        #print(repr(t.label_rows))
+        #return t
         return ITextNode.tidy(self, keep_node=True)
 
     def is_plain_string(self):

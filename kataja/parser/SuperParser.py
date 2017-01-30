@@ -4,7 +4,7 @@ import time
 
 from kataja.parser.HTMLToINode import HTMLToINode
 from kataja.parser.LatexToINode import LatexToINode
-from kataja.parser.INodes import IParserNode, ITextNode
+from kataja.parser.INodes import IParserNode, ITextNode, ICommandNode
 from kataja.utils import time_me
 
 class SuperParser:
@@ -233,6 +233,15 @@ class SuperParser:
             :param parts_list: list of strings or lists
             :tidy_up: tidy all contained inodes, do it once
         """
+        def has_triangle(inode):
+            if isinstance(inode, ICommandNode) and inode.command == 'qroof':
+                return inode
+            elif isinstance(inode, ITextNode):
+                for part in inode.parts:
+                    found = has_triangle(part)
+                    if found:
+                        return found
+
         node = IParserNode()
         deep = any([isinstance(part, list) for part in parts_list])
 
@@ -240,20 +249,30 @@ class SuperParser:
             if isinstance(part, list):
                 node.parts.append(self.parse_parts(part, tidy_up=False))
             else:
-                result = self.parse_word(part)
+                rows_of_words = self.parse_word(part)
                 tidy_rows = []
-                for row in result:
+                found_triangle = None
+                for row in rows_of_words:
                     if isinstance(row, ITextNode):
                         row = row.tidy(keep_node=False)
+                        found = has_triangle(row)
+                        if found:
+                            found_triangle = found
                     tidy_rows.append(row)
-                if result and self.dot_label and str(tidy_rows[0]).startswith('.'):
+                if rows_of_words and self.dot_label and str(tidy_rows[0]).startswith('.'):
                     node.label_rows = tidy_rows
+                    if found_triangle:
+                        node.has_triangle = found_triangle
                 elif (not node.label_rows) and tidy_rows and (self.treebank or deep):
                     node.label_rows = tidy_rows
+                    if found_triangle:
+                        node.has_triangle = found_triangle
                 else:
                     new_part = IParserNode()
                     new_part.label_rows = tidy_rows
                     new_part.check_for_index()
+                    if found_triangle:
+                        new_part.has_triangle = found_triangle
                     node.parts.append(new_part)
         if tidy_up:
             node = node.tidy(keep_node=True)

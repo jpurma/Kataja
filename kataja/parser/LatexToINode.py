@@ -192,7 +192,10 @@ class LatexToINode:
             if c == '{':
                 new_node = self.parse_curlies()
                 parts.append(new_node)
+                print(repr(new_node))
+                break
             elif c == '}':
+                print('odd ending curly')
                 break
             elif c == '\\':
                 if not command:
