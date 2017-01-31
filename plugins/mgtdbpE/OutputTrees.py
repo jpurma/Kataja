@@ -322,7 +322,10 @@ class BareTree:
             if self.label == '<':
                 self.const.heads = [parts[0]]
             elif self.label == '>':
-                self.const.heads = [parts[1]]
+                if len(parts) > 1:
+                    self.const.heads = [parts[1]]
+                else:
+                    self.const.heads = []
         self.const.parts = parts
         if not parts:
             self.const.features = self.features
@@ -479,6 +482,7 @@ class TracelessXBarTree:
         if dtree:
             self.const = dtree
             self.label = dtree.label
+            assert isinstance(dtree.label, str)
             if dtree.features:
                 self.features = dtree.features
                 for f in dtree.features:

@@ -151,6 +151,7 @@ class PaletteManager:
         self.current_hex = ''
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
+        self.background_lightness = 0.5
         self.custom = False
         # Theme management
         self.default_themes = color_themes
@@ -307,6 +308,7 @@ class PaletteManager:
             self.hsv = list(color.getHsvF())[:3]
             self.gradient.setColorAt(1, self.d['background1'])
             self.gradient.setColorAt(0, self.d['background1'].lighter())
+            self.background_lightness = self.d['background1'].lightnessF()
 
         else:
             self.compute_palette(self.hsv, contrast=contrast, faded=faded)
@@ -371,6 +373,7 @@ class PaletteManager:
                 elif prefs.custom_themes[self.theme_key] is not theme_data:
                     prefs.custom_themes[self.theme_key] = theme_data
 
+            self.background_lightness = self.d['background1'].lightnessF()
             ctrl.main.update_colors(randomise=False, animate=False)
 
     def update_colors(self, randomise=False):
@@ -415,6 +418,7 @@ class PaletteManager:
         self.current_hex = self.d['content1'].name()
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
+        self.background_lightness = self.d['background1'].lightnessF()
 
     def compute_palette(self, hsv, contrast=55, faded=False):
         """ Create/get root color and build palette around it.
@@ -462,6 +466,7 @@ class PaletteManager:
         self.d['background2'] = background2
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
+        self.background_lightness = background1.lightnessF()
 
     # Getters for common color roles ###########################################
 

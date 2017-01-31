@@ -941,10 +941,6 @@ class Node(Movable):
                               self.label_object.is_quick_editing()
         self.label_object.setVisible(self._label_visible)
 
-    def label_as_html(self) -> str:
-        """ Label as string """
-        return as_html(self.label)
-
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node
         :return: None
@@ -1772,9 +1768,7 @@ class Node(Movable):
                 r.moveTop(r.y() + h_adj)
             self.halo_item = QtWidgets.QGraphicsEllipseItem(r)
             self.halo_item.setParentItem(self)
-            c = ctrl.cm.transparent(self.contextual_color, opacity=60)
-            self.halo_item.setPen(c)
-            self.halo_item.setBrush(c)
+            self.update_halo()
             effect = QtWidgets.QGraphicsBlurEffect()
             effect.setBlurRadius(8)
             self.halo_item.setGraphicsEffect(effect)
@@ -1782,9 +1776,7 @@ class Node(Movable):
         if (not value) and self.halo_item:
             if prefs.glow_effect:
                 self.halo = True
-                c = ctrl.cm.transparent(self.contextual_color, opacity=60)
-                self.halo_item.setPen(c)
-                self.halo_item.setBrush(c)
+                self.update_halo()
             else:
                 self.halo = False
                 self.halo_item.hide()
@@ -1796,7 +1788,10 @@ class Node(Movable):
         self.update()
 
     def update_halo(self):
-        c = ctrl.cm.transparent(self.contextual_color, opacity=60)
+        op = 1 - ctrl.cm.background_lightness
+        op *= op * op
+        op = 0.40 + op / 3
+        c = ctrl.cm.transparent(self.contextual_color, opacity=op * 100)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 

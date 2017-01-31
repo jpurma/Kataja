@@ -136,10 +136,9 @@ class Label(QtWidgets.QGraphicsItem):
         self.text_align = CENTER_ALIGN
         self.label_shape = NORMAL
         self._font = None
-        self.html = ''
+        self.editable_html = ''
         self.lower_html = ''
         self.edited_field = ''
-        self.editable_html = ''
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
@@ -166,7 +165,7 @@ class Label(QtWidgets.QGraphicsItem):
         return self.__qt_type_id__
 
     def __str__(self):
-        return 'Label:' + self.html + self.lower_html
+        return 'Label:' + self.editable_html + self.lower_html
 
     def init_lower_part(self):
         self.lower_part = QtWidgets.QGraphicsTextItem(self)
@@ -206,10 +205,6 @@ class Label(QtWidgets.QGraphicsItem):
         if html is None:
             print('problems ahead:')
             print(self._host, self._host.node_type, self._host.syntactic_object)
-        #if html in ['<', '>', '&']:
-        #    html = escape(html)
-        #if lower_html in ['<', '>', '&']:
-        #    lower_html = escape(lower_html)
 
         if self.label_shape == SCOPEBOX:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
@@ -222,12 +217,12 @@ class Label(QtWidgets.QGraphicsItem):
             if lower_html:
                 html += lower_html.replace('<br/>', '')
         if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
-            if self.html != html:
+            if self.editable_html != html:
                 if is_card:
                     self.editable_doc.setTextWidth(self.card_size[0])
                 else:
                     self.editable_doc.setTextWidth(-1)
-                self.html = html
+                self.editable_html = html
                 self.editable_part.setHtml(html)
             ctrl.qdocument_parser.process(self.editable_doc)
             if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
@@ -245,7 +240,7 @@ class Label(QtWidgets.QGraphicsItem):
                 self.lower_html = ''
                 if self.lower_part:
                     self.remove_lower_part()
-            self._previous_values = (self.label_shape, self.html, self.lower_html, is_card)
+            self._previous_values = (self.label_shape, self.editable_html, self.lower_html, is_card)
         self.resize_label()
 
     def is_card(self):
@@ -278,7 +273,7 @@ class Label(QtWidgets.QGraphicsItem):
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
-        return not (self.html or self.lower_html)
+        return not (self.editable_html or self.lower_html)
 
 
     def cursor(self):
@@ -288,7 +283,7 @@ class Label(QtWidgets.QGraphicsItem):
         return self.editable_part.textCursor().charFormat()
 
     def has_content(self) -> bool:
-        return bool(self.html or self.lower_html)
+        return bool(self.editable_html or self.lower_html)
 
     def get_top_y(self) -> int:
         return self.y_offset
@@ -402,7 +397,7 @@ class Label(QtWidgets.QGraphicsItem):
 
     def resize_label(self):
         self.prepareGeometryChange()
-        # Width
+        # ------------------- Width -------------------
         user_width, user_height = self.get_max_size_from_host()
         if self.is_card():
             width = self.card_size[0]
@@ -429,7 +424,7 @@ class Label(QtWidgets.QGraphicsItem):
         if self.lower_html:
             self.lower_part.setTextWidth(width)
 
-        # Height
+        # ------------------- Height -------------------
         self.triangle_is_present = self._host.triangle \
                                    and self.label_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
         if self.is_card():
@@ -453,20 +448,14 @@ class Label(QtWidgets.QGraphicsItem):
         self.height = total_height
         # middle line is 0
         if self.triangle_is_present:
-            if self._host.is_leaf(only_visible=False, only_similar=True):
-                # if triangled is leaf, put upper part below the triangle so it can be edited.
-                self.upper_part_y = self.triangle_height
-                self.triangle_y = 0
-                self.lower_part_y = self.triangle_height
+            # if triangled is not leaf, editing should target the upper part and leave
+            # the combination of leaves alone
+            self.upper_part_y = 0
+            if self.editable_html:
+                self.triangle_y = self.editable_doc.size().height()
             else:
-                # if triangled is not leaf, editing should target the upper part and leave
-                # the combination of leaves alone
-                self.upper_part_y = 0
-                if self.editable_html:
-                    self.triangle_y = self.editable_doc.size().height()
-                else:
-                    self.triangle_y = 0
-                self.lower_part_y = self.triangle_y + self.triangle_height
+                self.triangle_y = 0
+            self.lower_part_y = self.triangle_y + self.triangle_height
         elif self.label_shape == g.CARD and self._host.triangle:
             # no lower part, no triangle
             self.upper_part_y = 0

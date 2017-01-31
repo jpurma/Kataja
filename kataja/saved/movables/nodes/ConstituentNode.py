@@ -340,65 +340,42 @@ class ConstituentNode(Node):
         if gs:
             return gs[0]
 
-    def get_triangle_text(self, included=None):
-        """ Label with triangled elements concatenated into it
-        :return:
-        """
-        if not included:
-            included = set()
-        children = self.get_children(visible=False, similar=True)
-        if children:
-            parts = []
-            for node in children:
-                if node not in included:
-                    included.add(node)
-                    nodestr = node.get_triangle_text(included)
-                    if nodestr:
-                        parts.append(nodestr)
-            return ' '.join(parts)
-        else:
-            syntactic_mode = ctrl.settings.get('syntactic_mode')
-            if (not syntactic_mode) and self.label:
-                if isinstance(self.label, ITextNode):
-                    return self.label.as_html().split('<br/>')[0]
-                elif isinstance(self.label, str):
-                    return self.label.splitlines()[0]
-            else:
-                return self.label_as_html()
-
-
-    def recursive_lower_html(self, included=None):
+    def recursive_lower_html(self, lower_html, included, syntactic_mode, label_text_mode):
         """ Build lower part (part under triangle) of html label.
         :return:
         """
-        if not included:
-            included = set()
         children = self.get_children(visible=False, similar=True)
         if children:
-            parts = []
             for node in children:
                 if node not in included:
                     included.add(node)
-                    nodestr = node.get_triangle_text(included)
-                    if nodestr:
-                        parts.append(nodestr)
-            return ' '.join(parts)
+                    node.recursive_lower_html(lower_html, included, syntactic_mode, label_text_mode)
+            return ''
         else:
-            syntactic_mode = ctrl.settings.get('syntactic_mode')
-            if (not syntactic_mode) and self.label:
-                if isinstance(self.label, ITextNode):
-                    return self.label.as_html().split('<br/>')[0]
-                elif isinstance(self.label, str):
-                    return self.label.splitlines()[0]
-            else:
-                return self.label_as_html()
-
-
-    def label_as_html(self) -> str:
-        """ Label, reliably a string
-        :return:
-        """
-        return as_html(self.label)
+            l = ''
+            part = ''
+            if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
+                if self.label:
+                    l = self.label
+                elif self.syntactic_object:
+                    l = self.syntactic_object.label
+            elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
+                if self.syntactic_object:
+                    l = self.syntactic_object.label
+            elif label_text_mode == g.SECONDARY_LABELS:
+                if self.syntactic_object:
+                    l = self.syntactic_object.get_secondary_label()
+            if l:
+                l = as_html(l)
+                lines = l.split('<br/>')
+                if self.triangle_row < 0:
+                    if len(lines) >= abs(self.triangle_row):
+                        part = lines[self.triangle_row]
+                elif len(lines) > self.triangle_row:
+                    part = lines[self.triangle_row]
+                if part:
+                    lower_html.append(part)
+            return part
 
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
@@ -490,35 +467,51 @@ class ConstituentNode(Node):
             return self.syntactic_object.compose_html_for_viewing(self)
 
         html = []
-        lower_html = []
+        lower_html_parts = []
 
         syntactic_mode = ctrl.settings.get('syntactic_mode')
         label_text_mode = ctrl.settings.get('label_text_mode')
         l = ''
         if label_text_mode == g.NODE_LABELS:
             if self.label:
-                l = as_html(self.label)
+                l = self.label
             elif self.syntactic_object:
-                l = as_html(self.syntactic_object.label)
+                l = self.syntactic_object.label
         elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
-                l = as_html(self.label)
+                l = self.label
             elif self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
-                l = as_html(self.syntactic_object.label)
+                l = self.syntactic_object.label
         elif label_text_mode == g.SYN_LABELS:
             if self.syntactic_object:
-                l = as_html(self.syntactic_object.label)
+                l = self.syntactic_object.label
         elif label_text_mode == g.SYN_LABELS_FOR_LEAVES:
             if self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
-                l = as_html(self.syntactic_object.label)
+                l = self.syntactic_object.label
         elif label_text_mode == g.SECONDARY_LABELS:
             if self.syntactic_object:
-                l = as_html(self.syntactic_object.get_secondary_label())
+                l = self.syntactic_object.get_secondary_label()
 
         if l:
+            l = as_html(l)
+        #if self.index and not syntactic_mode:
+        #    html.append('<sub>%s</sub>' % self.index)
+        if self.triangle:
+            # collect portions of labels from this node and nodes below it to lower_html_parts
+            lower_part = self.recursive_lower_html(lower_html_parts, set(), syntactic_mode,
+                                                   label_text_mode)
+            # for this node, remove from upper_html the part that was used for lower_html
+            if lower_part in l:
+                new_lines = []
+                found = False
+                for line in reversed(l.split('<br/>')):
+                    if (not found) and line == lower_part:
+                        found = True
+                    else:
+                        new_lines.append(line)
+                l = '<br/>'.join(reversed(new_lines))
+        if l:
             html.append(l)
-        if self.index and not syntactic_mode:
-            html.append('<sub>%s</sub>' % self.index)
 
         if self.gloss and self.should_show_gloss_in_label():
             if html:
@@ -526,11 +519,7 @@ class ConstituentNode(Node):
             html.append(as_html(self.gloss))
         if html and html[-1] == '<br/>':
             html.pop()
-
-        if self.triangle and not self.is_leaf(only_similar=True, only_visible=False):
-            lower_html.append(self.get_triangle_text())
-
-        return ''.join(html), ''.join(lower_html)
+        return ''.join(html), ' '.join(lower_html_parts)
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label

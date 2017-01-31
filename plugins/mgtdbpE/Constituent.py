@@ -142,7 +142,7 @@ class Constituent(BaseConstituent):
 
     def __init__(self, label='', features=None, parts=None, index_str=None):
         super().__init__(label=label, parts=parts, features=features)
-        self.label = label or []
+        self.label = label or ''
         self.features = features or []
         self.parts = parts or []
         self.index_str = index_str
