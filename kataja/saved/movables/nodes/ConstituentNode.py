@@ -316,18 +316,6 @@ class ConstituentNode(Node):
             parsed += '<sub>' + index_text + '</sub>'
         preview.setText(parsed)
 
-    def update_label_visibility(self):
-        """ Check if the label of the node has any content -- should it be
-        displayed. Node itself can be visible even when its label is not.
-        :return:
-        """
-        lo = self.label_object
-        if not lo:
-            self.update_label()
-        self._label_visible = lo.has_content() or lo.is_quick_editing()
-        lo.setVisible(self._label_visible)
-
-
     # Other properties
 
 

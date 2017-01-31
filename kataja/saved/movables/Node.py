@@ -938,7 +938,8 @@ class Node(Movable):
         if not self.label_object:
             self.update_label()
         self._label_visible = self.label_object.has_content() or \
-                              self.label_object.is_quick_editing()
+                              self.label_object.is_quick_editing() or \
+                              self.label_object.is_card()
         self.label_object.setVisible(self._label_visible)
 
     def update_status_tip(self):
@@ -1009,7 +1010,7 @@ class Node(Movable):
             pen.setWidth(0.5)
             brush = ctrl.cm.paper2()
             rect = True
-        elif ls == g.CARD and self.is_leaf(only_visible=True, only_similar=True):
+        elif self.label_object.is_card():
             brush = ctrl.cm.paper2()
             rect = True
             # make a deck of cards based on how many cards are folded into triangle

@@ -605,7 +605,7 @@ class Forest(SavedObject):
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.label_shape = shape
-                node.label_object.update_label()
+                node.update_label()
 
         parents = []
         for node in self.nodes.values():
