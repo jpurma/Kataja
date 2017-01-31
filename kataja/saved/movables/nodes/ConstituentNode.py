@@ -21,11 +21,13 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from PyQt5 import QtWidgets
+
 import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.parser.INodes import ITextNode, ICommandNode, as_text
 from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.parser.INodes import as_html
 from kataja.utils import time_me
@@ -57,19 +59,24 @@ class ConstituentNode(Node):
     wraps = 'constituent'
 
     editable = {'label': dict(name='Displayed label', prefill='label',
-                              tooltip='Rich text representing the constituent',
+                              tooltip='Freeform label or text for ',
                               input_type='expandingtext', order=15,
                               on_edit='update_preview'),
-                'synlabel': dict(name='Computational label', prefill='label',
-                                 tooltip='Label used for computations, plain string', width=160,
+                'synlabel': dict(name='Syntactic label', prefill='label',
+                                 tooltip='Label used in syntactic computations, plain string. '
+                                         'Visible in <i>syntactic mode</i> or if <i>Displayed '
+                                         'label</i> is empty.',
+                                 width=160,
                                  focus=True, syntactic=True, order=10, on_edit='update_preview'),
                 'triangle': dict(name='Triangle', input_type='checkbox', order=35,
                                  on_edit='update_preview', tooltip='Draw a triangle on top of a '
                                                                    'node to mark an unanalysed '
                                                                    'part of a sentence'),
-                'triangle_row': dict(name='below label row', align='line-end', width=20,
-                                     prefill='1', order=36, tooltip='Triangle is inserted below '
-                                                                    'this row in label'),
+                'triangle_row': dict(name='label row under triangle', align='line-end', width=20,
+                                     prefill=-1, order=36, min=-4, max=4, input_type='spinbox',
+                                     tooltip='Use this row of <i>Displayed label</i> '
+                                             'as text under the triangle, '
+                                             'use negative numbers to count from bottom'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Optional index for linking multiple instances', order=11,
                               on_edit='update_preview'),
@@ -164,14 +171,13 @@ class ConstituentNode(Node):
         self.index = ''
         self.label = label
         self.gloss = ''
-        self.triangle_row = 1
+        self.triangle_row = -1
 
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
         self.original_parent = None
         self.in_projections = []
-        self.halo = False
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -189,6 +195,8 @@ class ConstituentNode(Node):
         self.update_visibility()
         self.update_status_tip()
         self.announce_creation()
+        if prefs.glow_effect:
+            self.toggle_halo(True)
         ctrl.forest.store(self)
 
     @staticmethod
@@ -217,14 +225,13 @@ class ConstituentNode(Node):
                     return True
                 elif isinstance(part, ICommandNode) and part.command == 'qroof':
                     self.triangle_row = row_n
+                    self.triangle = True
                     continue
                 else:
                     return remove_dot_label(part, row_n)
 
         if parsernode.index:
             self.index = parsernode.index
-        if parsernode.has_triangle:
-            self.triangle = True
         rows = parsernode.label_rows
         # Remove dotlabel
 
@@ -247,24 +254,31 @@ class ConstituentNode(Node):
                 row = rows.pop()
                 if last_row is not None:
                     if isinstance(row, ICommandNode):
+                        # commandnode + commandnode, commandnode + str
                         if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
                             last_row = ITextNode(parts=[row, '\n', last_row])
+                        # commandnode + textnode
                         else:
                             last_row.parts = [row, '\n'] + last_row.parts
                     elif isinstance(row, ITextNode):
+                        # textnode + commandnode, textnode + str
                         if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
                             row.parts.append('\n')
                             row.parts.append(last_row)
                             last_row = row
+                        # textnode + textnode
                         else:
                             row.parts.append('\n')
                             row.parts += last_row.parts
                             last_row = row
+                    # str + commandnode
                     elif isinstance(last_row, ICommandNode):
                         row = ITextNode(parts=[row, '\n', last_row])
                         last_row = row
+                    # str + textnode
                     elif isinstance(last_row, ITextNode):
                         last_row.parts = [row, '\n'] + last_row.parts
+                    # str + str
                     else:
                         last_row = row + '\n' + last_row
                 else:
@@ -274,7 +288,6 @@ class ConstituentNode(Node):
             self.label = rows[0]
         else:
             self.label = ''
-        print('label:', repr(self.label))
 
     # Editing with NodeEditEmbed and given editable-template
     def update_preview(self):
@@ -292,9 +305,11 @@ class ConstituentNode(Node):
         index = embed.fields.get('index', None)
         label = embed.fields.get('label', None)
         triangle = embed.fields.get('triangle', None)
-        triangle_row = embed.fields.get('triangle_row', None)
+        triangle_row = embed.fields.get('triangle_row', -1)
         preview = embed.fields.get('preview', None)
         index_text = as_html(index.text())
+        print('preview inode_text: ', label.inode_text())
+        print('same as html: ', as_html(label.inode_text()))
         label_text = as_html(label.inode_text())
         parsed = label_text
         if index_text:
@@ -350,6 +365,34 @@ class ConstituentNode(Node):
                     return self.label.splitlines()[0]
             else:
                 return self.label_as_html()
+
+
+    def recursive_lower_html(self, included=None):
+        """ Build lower part (part under triangle) of html label.
+        :return:
+        """
+        if not included:
+            included = set()
+        children = self.get_children(visible=False, similar=True)
+        if children:
+            parts = []
+            for node in children:
+                if node not in included:
+                    included.add(node)
+                    nodestr = node.get_triangle_text(included)
+                    if nodestr:
+                        parts.append(nodestr)
+            return ' '.join(parts)
+        else:
+            syntactic_mode = ctrl.settings.get('syntactic_mode')
+            if (not syntactic_mode) and self.label:
+                if isinstance(self.label, ITextNode):
+                    return self.label.as_html().split('<br/>')[0]
+                elif isinstance(self.label, str):
+                    return self.label.splitlines()[0]
+            else:
+                return self.label_as_html()
+
 
     def label_as_html(self) -> str:
         """ Label, reliably a string
@@ -787,19 +830,6 @@ class ConstituentNode(Node):
         feature_strings = [str(f) for f in features]
         return ', '.join(feature_strings)
 
-    # ### Selection ########################################################
-
-    def update_selection_status(self, selected):
-        """
-
-        :param selected:
-        """
-
-        super().update_selection_status(selected)
-        if ctrl.cm.use_glow():
-            self.effect.setEnabled(selected)
-            self.update()
-
     # ### Checks for callable actions ####
 
     def can_top_merge(self):
@@ -836,11 +866,6 @@ class ConstituentNode(Node):
         """
         pass
 
-    # ###### Halo for showing some association with selected node (e.g. c-command) ######
-
-    def toggle_halo(self, value):
-        self.halo = value
-        self.update()
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -849,8 +874,6 @@ class ConstituentNode(Node):
         :param widget:
         nodes it is the label of the node that needs complex painting """
         super().paint(painter, option, widget=widget)
-        if self.halo:
-            painter.drawEllipse(self.inner_rect)
 
     # ############## #
     #                #

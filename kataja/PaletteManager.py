@@ -149,7 +149,6 @@ class PaletteManager:
         self._palette = None
         self._accent_palettes = {}
         self.current_hex = ''
-        self.transparent = Qt.transparent
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.custom = False
@@ -534,8 +533,13 @@ class PaletteManager:
         else:
             return color.darker(160)
 
-    def lighter(self, color) -> QColor:
+    def lighter(self, color:QColor) -> QColor:
         return color.lighter(110)
+
+    def transparent(self, color:QColor, opacity=50) -> QColor:
+        c = QColor(color)
+        c.setAlpha(opacity)
+        return c
 
     def inactive(self, color) -> QColor:
         """
@@ -589,12 +593,6 @@ class PaletteManager:
         :return:
         """
         return self.d['background1'].value() < 100
-
-    def use_glow(self) -> bool:
-        """ In dark backgrounds the glow effect is nice, in light we prefer not.
-        :return: boolean
-        """
-        return prefs.glow_effect and self.light_on_dark()
 
     def get_color_name(self, color) -> str:
         """ Try to find the closest matching color from a dictionary of color names

@@ -2,23 +2,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import open_symbol_data
-from kataja.parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode, as_html, as_text
 import kataja.globals as g
-
-
-def as_html(value):
-    if isinstance(value, list):
-        html_rows = []
-        for row in value:
-            if isinstance(row, ITextNode):
-                html_rows.append(row.as_html())
-            else:
-                html_rows.append(row)
-        return '\n'.join(html_rows)
-    elif isinstance(value, ITextNode):
-        return value.as_html()
-    else:
-        return value.replace('\n', '<br/>')
 
 
 def as_latex(value):
@@ -175,11 +160,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
                 parser = ctrl.html_field_parser
             else:
                 raise ValueError
-            inode_rows = []
-            old_lines = self.text().splitlines()
-            for row in old_lines:
-                inode_rows.append(parser.process(row))
-            return inode_rows
+            return parser.process(self.text())
         else:
             return self.raw_text
 

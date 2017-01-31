@@ -97,7 +97,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         for item in self._left_buttons:
             min_width += item.width()
         self.setMinimumWidth(min_width)
-        self.update_position()
+        #self.update_position()
 
     def connect_to(self, node, doc):
         self.host_node = node
@@ -109,7 +109,11 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         """
         sh = self.sizeHint()
         self.resize(sh)
-        self.move(ctrl.ui.top_bar_buttons.left_edge_of_right_buttons() - sh.width() - 8, 2)
+        if self.host_node:
+            scene_pos = self.host_node.scenePos()
+            view_pos = self.parentWidget().mapFromScene(scene_pos)
+            self.move(view_pos.x() - sh.width() / 2, 36)
+        #self.move(ctrl.ui.top_bar_buttons.left_edge_of_right_buttons() - sh.width() - 8, 36)
 
     def update_formats(self, char_format):
         if char_format != self.current_format:

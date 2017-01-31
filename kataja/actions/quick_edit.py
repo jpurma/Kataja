@@ -160,7 +160,7 @@ class ToggleSuperscript(KatajaAction):
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
         else:
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
-        cursor = ctrl.text_editor_focus.text_cursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)

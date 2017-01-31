@@ -35,7 +35,7 @@ from kataja.saved.Movable import Movable
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me
+from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me, create_blur_effect
 from kataja.parser.INodes import as_html
 
 call_counter = [0]
@@ -132,6 +132,8 @@ class Node(Movable):
         # Visibility flags
         self._node_type_visible = True
         self._node_in_triangle = False
+        self.halo = False
+        self.halo_item = None
 
         self.in_scene = False
 
@@ -153,9 +155,6 @@ class Node(Movable):
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(self.z_value)
-        self.effect = create_shadow_effect(ctrl.cm.selection())
-        # self.effect = create_shadow_effect(self.color)
-        self.setGraphicsEffect(self.effect)
         #self.fade_in()
         self.update_visibility()
 
@@ -185,6 +184,8 @@ class Node(Movable):
         self.update_bounding_rect()
         self.update_visibility()
         self.announce_creation()
+        if prefs.glow_effect:
+            self.toggle_halo(True)
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
@@ -366,9 +367,6 @@ class Node(Movable):
         :return:
         """
         self._hovering = True
-        if ctrl.cm.use_glow():
-            self.effect.setColor(self.contextual_color)
-            self.effect.setEnabled(True)
         self.prepareGeometryChange()
         self.update()
         if self.zValue() < 150:
@@ -380,8 +378,6 @@ class Node(Movable):
         """ Stop all hovering effects
         :return:
         """
-        # if ctrl.cm.use_glow():
-        #    self.effect.setEnabled(False)
         self._hovering = False
         self.prepareGeometryChange()
         self.setZValue(self.z_value)
@@ -1038,7 +1034,9 @@ class Node(Movable):
         elif ctrl.pressed is self or ctrl.is_selected(self):
             if rect:
                 brush = ctrl.cm.paper()
-            rect = True
+            if not hasattr(self, 'halo'):
+                rect = True
+
         #elif self.has_empty_label() and self.node_alone():
         #    pen.setStyle(QtCore.Qt.DotLine)
         #    rect = True
@@ -1312,7 +1310,8 @@ class Node(Movable):
         else:
             self.setZValue(200)
             if ctrl.main.use_tooltips:
-                self.setToolTip("Edit with keyboard, click the cog to inspect the node")
+                self.setToolTip("Click to edit node text, click (i) to inspect and edit field by "
+                                "field")
             if ctrl.single_selection() and not ctrl.multiselection_delay:
                 if ctrl.settings.get('single_click_editing'):
                     self.label_object.set_quick_editing(True)
@@ -1561,7 +1560,6 @@ class Node(Movable):
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.0)
         self.anim.start()
-        self.effect.setEnabled(False)
 
     def cancel_dragging(self):
         """ Fixme: not called by anyone
@@ -1684,8 +1682,7 @@ class Node(Movable):
         """
         Movable.start_moving(self)
         if prefs.move_effect:
-            self.effect.setColor(self.contextual_color)
-            self.effect.setEnabled(True)
+            self.toggle_halo(True)
         for edge in self.edges_down:
             edge.start_node_started_moving()
         for edge in self.edges_up:
@@ -1700,8 +1697,8 @@ class Node(Movable):
         """
         Movable.stop_moving(self)
         if prefs.move_effect:
-            if not (ctrl.is_selected(self) or self._hovering):
-                self.effect.setEnabled(False)
+            if not ctrl.is_selected(self):
+                self.toggle_halo(False)
         for edge in self.edges_down:
             edge.start_node_stopped_moving()
         for edge in self.edges_up:
@@ -1756,6 +1753,52 @@ class Node(Movable):
         if self.label_object:
             return self.label_object.is_quick_editing()
         return False
+
+    # ###### Halo for showing some association with selected node (e.g. c-command) ######
+
+    def toggle_halo(self, value):
+        if value and not self.halo_item:
+            self.halo = True
+            r = QtCore.QRectF(self.inner_rect)
+            iw = r.width()
+            ih = r.height()
+            if iw > ih:
+                w_adj = (iw - ih) / 2
+                r.setWidth(ih)
+                r.moveLeft(r.x() + w_adj)
+            elif ih > iw:
+                h_adj = (ih - iw) / 2
+                r.setHeight(iw)
+                r.moveTop(r.y() + h_adj)
+            self.halo_item = QtWidgets.QGraphicsEllipseItem(r)
+            self.halo_item.setParentItem(self)
+            c = ctrl.cm.transparent(self.contextual_color, opacity=60)
+            self.halo_item.setPen(c)
+            self.halo_item.setBrush(c)
+            effect = QtWidgets.QGraphicsBlurEffect()
+            effect.setBlurRadius(8)
+            self.halo_item.setGraphicsEffect(effect)
+            self.halo_item.show()
+        if (not value) and self.halo_item:
+            if prefs.glow_effect:
+                self.halo = True
+                c = ctrl.cm.transparent(self.contextual_color, opacity=60)
+                self.halo_item.setPen(c)
+                self.halo_item.setBrush(c)
+            else:
+                self.halo = False
+                self.halo_item.hide()
+                self.halo_item.setParentItem(None)
+                scene = self.halo_item.scene()
+                if scene:
+                    scene.removeItem(self.halo_item)
+                self.halo_item = None
+        self.update()
+
+    def update_halo(self):
+        c = ctrl.cm.transparent(self.contextual_color, opacity=60)
+        self.halo_item.setPen(c)
+        self.halo_item.setBrush(c)
 
     # noinspection PyTypeChecker
     def check_conditions(self, cond):

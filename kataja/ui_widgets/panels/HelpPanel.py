@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.globals import UI_FONT
 from kataja.singletons import ctrl, qt_prefs
@@ -46,7 +46,7 @@ class HelpPanel(Panel):
         self.browser.setMinimumWidth(200)
         self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.browser.palette()
-        p.setColor(QtGui.QPalette.Base, ctrl.cm.transparent)
+        p.setColor(QtGui.QPalette.Base, QtCore.Qt.transparent)
         self.browser.setPalette(p)
         layout.addWidget(self.browser)
         inner.setLayout(layout)

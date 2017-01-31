@@ -323,7 +323,7 @@ def create_shadow_effect(color):
     :return: QGraphicsDropShadowEffect
     """
     effect = QtWidgets.QGraphicsDropShadowEffect()
-    effect.setBlurRadius(20)
+    effect.setBlurRadius(10)
     effect.setColor(color)
     effect.setOffset(0, 5)
     effect.setEnabled(False)

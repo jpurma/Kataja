@@ -243,11 +243,11 @@ class UIManager:
         panel = self.get_panel('HelpPanel')
         if panel:
             if filename:
-                panel.label.setSearchPaths([searchpath])
-                panel.label.setSource(QtCore.QUrl(filename))
+                panel.browser.setSearchPaths([searchpath])
+                panel.browser.setSource(QtCore.QUrl(filename))
             else:
                 panel.set_text(panel.default_text)
-                panel.label.setSearchPaths([])
+                panel.browser.setSearchPaths([])
 
     def add_ui(self, item, show=True):
         """
@@ -392,6 +392,8 @@ class UIManager:
             elif isinstance(item, Node):
                 self.update_touch_areas_for_selected_node(item)
                 self.update_buttons_for_selected_node(item)
+                if item.node_type == g.CONSTITUENT_NODE:
+                    item.toggle_halo(True)
                 if ctrl.settings.get('show_c_command'):
                     if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
                         c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(

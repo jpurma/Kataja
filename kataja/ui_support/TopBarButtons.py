@@ -32,6 +32,11 @@ class TopBarButtons(QtWidgets.QFrame):
         ui.add_ui(self.view_mode_button)
         ui.connect_element_to_action(self.view_mode_button, 'switch_view_mode')
 
+        layout.addStretch(0)
+
+        view_label = QtWidgets.QLabel("Visualisation:")
+        layout.addWidget(view_label)
+
         #self.vis_mode_buttons = []
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut

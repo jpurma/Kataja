@@ -119,6 +119,10 @@ class NodeEditEmbed(UIEmbed):
                 field_first = False
             elif itype == 'preview':
                 field = PreviewLabel(self, tip=tt, font=smaller_font)
+            elif itype == 'spinbox':
+                field = QtWidgets.QSpinBox(self)
+                field.setMinimum(d.get('min', -1))
+                field.setMaximum(d.get('max', 4))
             else:
                 raise NotImplementedError
 
@@ -188,6 +192,9 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, d['getter'])()
             else:
                 value = getattr(self.host, field_name, '')
+            if 'enabler' in d:
+                enabled = getattr(self.host, d['enabler'])()
+                field.setEnabled(bool(enabled) )
             itype = d.get('input_type', 'text')
             if itype == 'expandingtext':
                 value = as_html(value)
@@ -203,6 +210,17 @@ class NodeEditEmbed(UIEmbed):
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
                                                                        op_func, None)
                 field.update_selections(op_func())
+            elif itype == 'spinbox':
+                if not isinstance(value, int):
+                    if not value:
+                        value = 0
+                    else:
+                        try:
+                            value = int(value)
+                        except TypeError:
+                            value = int(d.get('prefill', 0))
+                field.setValue(value)
+
 
     def submit_values(self):
         """ Submit field values back to object based on template
@@ -216,7 +234,7 @@ class NodeEditEmbed(UIEmbed):
                 value = field.text()
             elif itype == 'expandingtext':
                 value = field.inode_text()
-            elif itype in ['multibutton', 'radiobutton', 'checkbox', 'preview']:
+            elif itype in ['multibutton', 'radiobutton', 'checkbox', 'preview', 'spinbox']:
                 # buttons take action immediately when clicked and preview cannot be edited
                 continue
             else:

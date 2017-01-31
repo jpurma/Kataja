@@ -288,12 +288,11 @@ class Preferences(object):
 
         self.move_effect = False
         self._move_effect_ui = {'tab': 'Performance',
-                                'help': "Adds movement blur. Experimental and quite broken, "
-                                        "especially in high DPI displays."}
+                                'help': "Highlight moving nodes. "}
         self.glow_effect = False
         self._glow_effect_ui = {'tab': 'Performance',
-                                "help": "Glow effect for selected nodes. "
-                                        "Doesn't work well on high DPI screens."}
+                                "help": "Glow effect for selected nodes. Artistic effect for dark "
+                                        "backgrounds, but may look messy on print."}
 
         # self.blender_app_path =
         # '/Applications/blender.app/Contents/MacOS/blender'

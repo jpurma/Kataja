@@ -15,7 +15,8 @@ def as_html(item):
     if isinstance(item, ITextNode):
         return item.as_html()
     else:
-        return html.escape(item).replace('\n', '<br/>').replace('\r', '<br/>')
+        return html.escape(item).replace('\n', '<br/>').replace('\r', '<br/>').replace('  ',
+                                                                                       ' &nbsp;')
 
 def as_text(item):
     if isinstance(item, ITextNode):

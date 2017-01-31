@@ -118,7 +118,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
                 focus_point = self.host.scenePos()
             else:
                 return
-
+        self.update_size()
         view = self.parent()
         w = self.size().width()
         h = self.size().height()

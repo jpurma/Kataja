@@ -1145,8 +1145,6 @@ class StartArrowTouchArea(AddBelowTouchArea):
             painter.drawRoundedRect(self.boundingRect(), 4, 4)
 
 
-
-
 class MergeToTop(BranchingTouchArea):
     """ TouchArea that connects to nodes and has \-shape.  """
     __qt_type_id__ = next_available_type_id()
@@ -1160,8 +1158,7 @@ class MergeToTop(BranchingTouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
-        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+
         sx, sy = self.host.magnet(0)
         self.start_point = sx, sy
         if end_point:
@@ -1171,10 +1168,6 @@ class MergeToTop(BranchingTouchArea):
             ey = sy - 10
             self.end_point = ex, ey
         self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0), alignment=g.LEFT,
-                                                    curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -1188,23 +1181,62 @@ class MergeToTop(BranchingTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        if self._fill_path:
-            painter.fillPath(self._path, c)
-        else:
-            painter.drawPath(self._path)
+        dx = self.start_point[0] - self.end_point[0]
+        dy = self.start_point[1] - self.end_point[1]
+        l = QtCore.QLineF(dx, dy, 0, 0)
+
         if self._hovering:
-            if len(self.host.trees) == 1:
-                top = list(self.host.trees)[0].top
-                scene_point = QtCore.QPointF(*top.current_scene_position)
-                end_point = self.mapFromScene(scene_point)
-                path = QtGui.QPainterPath(QtCore.QPointF(0, 0))
-                path.quadTo(QtCore.QPointF(end_point.x() - 200, end_point.y()), end_point)
-                painter.drawPath(path)
-            else:
+            if len(self.host.trees) != 1:
+                painter.drawLine(l)
                 painter.save()
                 painter.setBrush(ctrl.cm.ui())
                 painter.rotate(20)
                 draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
                 painter.restore()
                 draw_plus(painter, 4, 0)
+                return
+            else:
+                top = list(self.host.trees)[0].top
+                lmx, lmy = top.magnet(5)
+                scene_point = QtCore.QPointF(lmx, lmy)
+                end_point = self.mapFromScene(scene_point)
+                path = QtGui.QPainterPath(QtCore.QPointF(dx, dy))
+                path.quadTo(QtCore.QPointF(end_point.x() - 200, end_point.y()), end_point)
+                painter.drawPath(path)
+                l = QtCore.QLineF(QtCore.QPointF(end_point.x() - 200, end_point.y()), end_point)
+        else:
+            painter.drawLine(l)
 
+        l2x = l.p2().x()
+        l2 = l.p2()
+        l2y = l.p2().y()
+        head_size = 8.0
+        back = head_size / -2
+        # Draw the arrows if there's enough room.
+        ll = l.length()
+        if ll >= 1 and ll + back > 0:
+            angle = math.acos(l.dx() / ll)  # acos has to be <= 1.0
+        else:
+            return
+        prop = back / ll
+        if l.dy() >= 0:
+            angle = (math.pi * 2.0) - angle
+        destArrowP1 = QtCore.QPointF((math.sin(angle - math.pi / 3) * head_size) + l2x,
+                         (math.cos(angle - math.pi / 3) * head_size) + l2y)
+        destArrowP2 = QtCore.QPointF((math.sin(angle - math.pi + math.pi / 3) * head_size) + l2x,
+                         (math.cos(angle - math.pi + math.pi / 3) * head_size) + l2y)
+        l2c = QtCore.QPointF(l.dx() * prop + l2x, l.dy() * prop + l2y)
+        painter.setBrush(c)
+        painter.drawPolygon(QtGui.QPolygonF([l2, destArrowP1, l2c, destArrowP2]))
+
+    def drop(self, dropped_node):
+        """
+        Connect dropped node to host of this TouchArea.
+        Connection depends on which merge area this is:
+        top left, top right, left, right
+        :param dropped_node:
+        """
+        pass
+
+    def accepts_drops(self, dragged):
+        return False

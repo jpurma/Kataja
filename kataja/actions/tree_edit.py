@@ -122,6 +122,7 @@ class CreateNewNodeFromText(KatajaAction):
 class RemoveMerger(KatajaAction):
     k_action_uid = 'remove_merger'
     k_command = 'Remove merger'
+    k_tooltip = "Remove intermediate node (If binary branching is assumed, these shouldn't exist.)"
 
     def method(self):
         """ In cases where there another part of binary merge is removed,

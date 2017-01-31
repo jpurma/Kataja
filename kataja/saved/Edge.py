@@ -553,8 +553,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                  edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path,
                  curve_dir_start=self._curve_dir_start, curve_dir_end=self._curve_dir_end)
 
-        self._path, self._true_path, self.control_points, self.adjusted_control_points = \
-            SHAPE_PRESETS[self.shape_name].path(**c)
+        method = SHAPE_PRESETS[self.shape_name].path
+
+        self._path, self._true_path, self.control_points, self.adjusted_control_points = method(**c)
         uses_pen = c.get('thickness', 0)
 
         if self._use_simple_path:
@@ -1244,8 +1245,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """ Low level toggle off things that slow drawing
         :return: None
         """
-        if prefs.move_effect:
-            self._use_simple_path = True
+        pass
+        #if prefs.move_effect:
+        #    self._use_simple_path = True
 
     def start_node_stopped_moving(self):
         """ Called if the end node has started moving.
@@ -1268,8 +1270,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         self._make_fat_path = True
-        if prefs.move_effect:
-            self._use_simple_path = False
+        #if prefs.move_effect:
+        #    self._use_simple_path = False
 
     def fade_in(self, s=150):
         """ Simple fade effect. The object exists already when fade starts.
