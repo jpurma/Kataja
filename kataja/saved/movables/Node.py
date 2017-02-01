@@ -790,7 +790,7 @@ class Node(Movable):
             right_nods = []
             for fnode in children:
                 if fnode.locked_to_node is self:
-                    if fnode.value in ['-', '=', '✓-', '✓=']:
+                    if fnode.value in ['-', '=', '✓-', '✓='] or (fnode.syntactic_object and fnode.syntactic_object.value in ['-', '=', '✓-', '✓=']):
                         right_nods.append(fnode)
                     else:
                         left_nods.append(fnode)

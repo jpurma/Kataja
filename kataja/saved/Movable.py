@@ -222,7 +222,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         return 0
 
-    def move(self, md):
+    def move(self, md: dict) -> (bool, bool):
         """ Do one frame of movement: either move towards target position or
         take a step according to algorithm
         1. item folding towards position in part of animation to disappear etc.

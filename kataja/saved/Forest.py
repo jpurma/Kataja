@@ -548,11 +548,21 @@ class Forest(SavedObject):
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
+            x = 0
+            first = True
             for tree in self.trees:
                 if tree.top:
-                    self.visualization.prepare_to_normalise(tree)
+                    #self.visualization.prepare_to_normalise(tree)
                     self.visualization.draw_tree(tree)
-                    self.visualization.normalise_movers(tree)
+                    self.visualization.normalise_to_origo(tree)
+                    #self.visualization.normalise_movers_to_top(tree)
+                    br = tree.boundingRect()
+                    if not first:
+                        x -= br.left()
+                    tree.move_to(x, 0)
+                    x += br.right()
+                    tree.start_moving()
+                    first = False
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
         sc.start_animations()

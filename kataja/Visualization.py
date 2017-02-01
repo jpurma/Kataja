@@ -152,7 +152,21 @@ class BaseVisualization:
         """ Subclasses implement this """
         pass
 
-    def normalise_movers(self, tree):
+    def normalise_to_origo(self, tree):
+        if tree not in self.forest.trees:
+            return
+        top_x, top_y = tree.top.target_position
+        for node in tree.sorted_nodes:
+            if node.locked_to_node:
+                continue
+            elif node.physics_x and node.physics_y:
+                continue
+            pass
+            node.target_position = node.target_position[0] - top_x, node.target_position[1] - top_y
+            node.start_moving()  # restart moving since we shifted the end point
+        tree.tree_changed = True
+
+    def normalise_movers_to_top(self, tree):
         if tree not in self.forest.trees:
             return
         i = self.forest.trees.index(tree)
@@ -165,7 +179,6 @@ class BaseVisualization:
                 continue
             elif node.physics_x and node.physics_y:
                 continue
-            pass
             node.target_position = node.target_position[0] + dx, node.target_position[1] + dy
             if node.target_position != node.current_position:
                 node.start_moving()  # restart moving since we shifted the end point

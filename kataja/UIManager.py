@@ -1204,9 +1204,11 @@ class UIManager:
         """
         # Constituent edges don't have cut-button at the start
         # if edge.edge_type is not g.CONSTITUENT_EDGE:
-        if edge.start:
+        if edge.start and edge.end:
+            self.get_or_create_button(edge, g.CUT_EDGE, 'disconnect_edge')
+        elif edge.start:
             self.get_or_create_button(edge, g.CUT_FROM_START_BUTTON, 'disconnect_edge_start')
-        if edge.end:
+        elif edge.end:
             self.get_or_create_button(edge, g.CUT_FROM_END_BUTTON, 'disconnect_edge_end')
 
     def add_quick_edit_buttons_for(self, node, doc):

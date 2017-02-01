@@ -51,6 +51,27 @@ class EditEdgeLabelEnterText(KatajaAction):
         ctrl.ui.close_active_embed()
 
 
+class DisconnectEdge(KatajaAction):
+    k_action_uid = 'disconnect_edge'
+    k_command = 'Disconnect nodes'
+    k_tooltip = 'Disconnect nodes and remove this edge.'
+
+    def method(self):
+        """ Remove connection between two nodes, this is triggered from the edge.
+        :return: None
+        """
+        # Find the triggering edge
+        button = self.get_ui_container()
+        if not button:
+            return
+        edge = button.host
+        if not edge:
+            return
+        # Then do the cutting
+        ctrl.free_drawing.disconnect_edge(edge)
+        ctrl.ui.update_selections()
+
+
 class DisconnectEdgeStart(KatajaAction):
     k_action_uid = 'disconnect_edge_start'
     k_command = 'Disconnect edge from start'

@@ -304,6 +304,25 @@ class CutFromEndButton(OverlayButton):
             self.move(ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(x, y)))
 
+class CutEdgeButton(OverlayButton):
+
+    def __init__(self, host, parent=None):
+        super().__init__(host, pixmap=qt_prefs.cut_icon,
+                         tooltip='Disconnect edge',
+                         parent=parent,
+                         size=16,
+                         color_key='accent3')
+
+    def update_position(self):
+        """ Put button left and below the starting point of edge.
+        """
+        if self.host:
+            p = self.host.get_point_at(0.7)
+            if abs(self.host.start_point[0] - self.host.end_point[0]) < 10:
+                p.setX(p.x() + 15)
+            p.setY(p.y() - 30)
+            self.move(ctrl.main.graph_view.mapFromScene(p))
+
 
 class AddTriangleButton(OverlayButton):
 

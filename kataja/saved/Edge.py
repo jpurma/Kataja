@@ -1104,7 +1104,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
-        :param d: int
+        :param d: float
         :return: QPoint
         """
         if not self._true_path:

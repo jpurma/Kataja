@@ -603,7 +603,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        for node in f.nodes.values():
+        for node in chain(f.nodes.values(), f.trees):
             if not node.isVisible():
                 continue
             # Computed movement
