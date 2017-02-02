@@ -23,9 +23,9 @@ def as_html(item, omit_triangle=False) -> str:
         return html.escape(item).replace('\n', '<br/>\n').replace('\r', '<br/>\r').replace('  ',
                                                                                        ' &nbsp;')
 
-def as_text(item):
+def as_text(item, omit_triangle=False):
     if isinstance(item, ITextNode):
-        return item.as_plain()
+        return item.as_plain(omit_triangle=omit_triangle)
     else:
         return str(item)
 
@@ -34,7 +34,6 @@ def extract_triangle(item):
     if isinstance(item, ITextNode):
         for part in list(item.parts):
             if isinstance(part, ICommandNode) and part.command == 'qroof':
-                item.parts.remove(part)
                 return part
             found = extract_triangle(part)
             if found:
@@ -259,16 +258,16 @@ class ITextNode:
         self._as_latex(s)
         return ''.join(s).replace('\n', '\\').replace('\r', '\\')
 
-    def _as_plain(self, s):
+    def _as_plain(self, s, omit_triangle=False):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                part._as_plain(s)
+                part._as_plain(s, omit_triangle=omit_triangle)
             else:
                 s.append(str(part))
 
-    def as_plain(self):
+    def as_plain(self, omit_triangle=False):
         r = []
-        self._as_plain(r)
+        self._as_plain(r, omit_triangle=omit_triangle)
         return ''.join(r)
 
     def __str__(self):
@@ -333,7 +332,9 @@ class ICommandNode(ITextNode):
         else:
             ITextNode._as_html(self, s)
 
-    def _as_plain(self, s):
+    def _as_plain(self, s, omit_triangle=False):
+        if omit_triangle and self.command == 'qroof':
+            return
         if not self.parts:
             unic = latex_to_unicode.get(self.command, None)
             if unic:
@@ -343,7 +344,7 @@ class ICommandNode(ITextNode):
                 s.append('△')
             for part in self.parts:
                 if isinstance(part, ITextNode):
-                    part._as_plain(s)
+                    part._as_plain(s, omit_triangle=omit_triangle)
                 else:
                     s.append(str(part))
 

@@ -178,6 +178,7 @@ class ChainManager:
                 original = self.get_chain_head(trace.index)
                 self.forest.free_drawing.replace_node(trace, original)
         ctrl.settings.set('uses_multidomination', True, level=FOREST)
+        ctrl.forest.forest_edited()
 
     def multidomination_to_traces(self):
         """ Switch multidominated elements to use traces instead  """
@@ -194,6 +195,7 @@ class ChainManager:
                     self.forest.free_drawing.replace_node(head, trace, only_for_parent=parent)
         ctrl.settings.set('traces_are_grouped_together', False, level=FOREST)
         ctrl.settings.set('uses_multidomination', False, level=FOREST)
+        ctrl.forest.forest_edited()
 
     def next_free_index(self):
         """ Return the next available letter suitable for indexes (i, j, k, l...)

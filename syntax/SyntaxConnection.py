@@ -130,7 +130,6 @@ class SyntaxConnection(SavedObject):
         syntax = self
         return nodes_to_synobjs(forest, syntax, roots)
 
-
     def create_derivation(self, forest):
         """ This is always called to initially turn syntax available here and some input into a
         structure. Resulting structures are used to populate a forest.
@@ -160,23 +159,28 @@ class SyntaxConnection(SavedObject):
         """
         return self.lexicon.get(identifier)
 
-
-    def merge(self, a, b, merge_type=None):
+    def merge(self, a, b, merge_type=None, c=None):
         """ Do Merge of given type, return result
         :param a:
         :param b:
         :param merge_type:
+        :param c: result of merge if we are updating/redoing an existing merge (this
+                  behavior isn't part of syntax)
         :return:
         """
         if not merge_type:
             merge_type = self.rules['merge_types']
         if merge_type == 'set_merge':
             head = a
-            c = self.create_constituent(parts=[a, b])
+            if not c:
+                c = self.create_constituent()
+            c.parts = [a, b]
             c.set_head(head)
             return c
         elif merge_type == 'pair_merge':
-            c = self.create_constituent(parts=[a, b])
+            if not c:
+                c = self.create_constituent()
+            c.parts = [a, b]
             c.set_head((a, b))
             return c
         else:
@@ -188,7 +192,7 @@ class SyntaxConnection(SavedObject):
         :param B:
         :return:
         """
-        return self.merge(A, B)
+        return self.merge(A, B, merge_type='set_merge')
 
     def pair_merge(self, A, B):
         """ Do pair merge of two constituent.
@@ -196,7 +200,7 @@ class SyntaxConnection(SavedObject):
         :param B:
         :return:
         """
-        return self.merge(A, B)
+        return self.merge(A, B, merge_type='pair_merge')
 
     def merge_to_top(self, A, B, dir="<"):
         """
@@ -209,6 +213,39 @@ class SyntaxConnection(SavedObject):
             return self.merge(A, B)
         else:
             return self.merge(B, A)
+
+    def use_labeling_algorithm(self, merged):
+        """ Kind of basic labeling.
+        Labeling and set_head are two ways of doing the same thing, I have not yet decided if both
+        should be supported.
+        :param merged:
+        :return:
+        """
+        if len(merged.parts) == 0:
+            # leaf should have label of its own
+            pass
+        elif len(merged.parts) == 1:
+            # monobranches may exist temporarily because of free drawing
+            merged.label = merged.parts[0].label
+        elif len(merged.parts) == 2:
+            # a common assumption is that in external merge the merged element is head and in
+            # internal merge the element that is not raised is head. Raised element can be
+            # recognised by being dominated by the other.
+            # if both are leaves, there is no good way to yet decide which one is head. the left
+            # one is head.
+            a, b = merged.parts
+            if (not a.parts) and (not b.parts):
+                merged.label = a.label
+            elif a.parts and not b.parts:
+                merged.label = b.label
+            elif b.parts and not a.parts:
+                merged.label = a.label
+            elif self.dominates(b, a):
+                merged.label = b.label
+            elif self.dominates(a, b):
+                merged.label = a.label
+            else:
+                merged.label = a.label
 
     def linearize(self, a, linearization_type=None):
         """ Do linearisation for a structure, there may be various algorithms
@@ -303,6 +340,16 @@ class SyntaxConnection(SavedObject):
         """
         return None
 
+    def dominates(self, higher, lower):
+        if lower in higher.parts:
+            return True
+        for part in higher.parts:
+            yes = self.dominates(part, lower)
+            if yes:
+                return True
+        return False
+
+
     # Direct editing of FL constructs ##########################
     # these methods don't belong to assumed capabilities of FL, they are to allow Kataja editing
     # capabilities to directly create and modify FL structures.
@@ -312,7 +359,7 @@ class SyntaxConnection(SavedObject):
         :param kw:
         :return: Constituent
         """
-
+        print('creating constituent')
         const = self.Constituent(**kw)
         self.constituents[const.uid] = const
         return const
@@ -402,6 +449,7 @@ class SyntaxConnection(SavedObject):
         :param kw:
         :return: Feature
         """
+        print('creating feature')
         feature = self.Feature(**kw)
         self.features[feature.uid] = feature
         return feature

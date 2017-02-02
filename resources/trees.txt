@@ -1,7 +1,7 @@
 
  [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
   [.T\\$[$+past$]$\\$[$NOM$]$ ]
-  [.VP [.VP \qroof{Donald\\poof}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
+  [.VP [.VP \qroof{Donald}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
     [.vP [.DP\\$<\Theta>$ t~$_j$ ]
       [.v [.v\\$[$ACC$]$\\$<\Theta>$$<\Theta>$ t~$_i$ ]
       \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]

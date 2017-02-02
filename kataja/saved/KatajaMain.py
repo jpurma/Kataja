@@ -39,6 +39,7 @@ import traceback
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+import time
 
 import kataja.globals as g
 from syntax.SyntaxConnection import SyntaxConnection
@@ -639,6 +640,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         return savedata
 
     def update_colors(self, randomise=False, animate=True):
+        t = time.time()
         cm = self.color_manager
         old_gradient_base = cm.paper()
         cm.update_colors(randomise=randomise)

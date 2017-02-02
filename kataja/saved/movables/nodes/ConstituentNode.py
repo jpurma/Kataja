@@ -58,8 +58,9 @@ class ConstituentNode(Node):
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
 
-    editable = {'label': dict(name='Displayed label', prefill='label',
-                              tooltip='Freeform label or text for ',
+    editable = {'label': dict(name='Node label', prefill='label',
+                              tooltip='Freeform label or text for node, has no '
+                                      'effect for syntactic computation',
                               input_type='expandingtext', order=15,
                               on_edit='update_preview'),
                 'synlabel': dict(name='Syntactic label', prefill='label',
@@ -519,16 +520,21 @@ class ConstituentNode(Node):
         label_text_mode = ctrl.settings.get('label_text_mode')
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
-                return 'label', as_html(self.label)
+                if self.triangle:
+                    lower_part = extract_triangle(self.label)
+                    return 'node label', as_html(self.label, omit_triangle=True) + \
+                           '<br/>' + as_html(lower_part or '')
+                else:
+                    return 'node label', as_html(self.label)
             elif self.syntactic_object:
-                return 'synlabel', as_html(self.syntactic_object.label)
+                return 'syntactic label', as_html(self.syntactic_object.label)
             else:
-                return ''
+                return '', ''
         elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
             if self.syntactic_object:
-                return 'synlabel', as_html(self.syntactic_object.label)
+                return 'syntactic label', as_html(self.syntactic_object.label)
             else:
-                return ''
+                return '', ''
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

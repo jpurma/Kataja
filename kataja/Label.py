@@ -218,12 +218,15 @@ class Label(QtWidgets.QGraphicsItem):
                 html += lower_html.replace('<br/>', '')
         if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
             if self.editable_html != html:
+                self.editable_doc.blockSignals(True)
                 if is_card:
                     self.editable_doc.setTextWidth(self.card_size[0])
                 else:
                     self.editable_doc.setTextWidth(-1)
                 self.editable_html = html
                 self.editable_part.setHtml(html)
+                self.editable_doc.blockSignals(False)
+
             ctrl.qdocument_parser.process(self.editable_doc)
             if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
                 if not self.lower_part:
@@ -241,6 +244,7 @@ class Label(QtWidgets.QGraphicsItem):
                 if self.lower_part:
                     self.remove_lower_part()
             self._previous_values = (self.label_shape, self.editable_html, self.lower_html, is_card)
+
         self.resize_label()
 
     def is_card(self):

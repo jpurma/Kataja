@@ -21,8 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
-
+import time
 from PyQt5 import QtWidgets
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 
@@ -775,6 +774,7 @@ class Forest(SavedObject):
     # View mode
     @time_me
     def change_view_mode(self, syntactic_mode):
+        t = time.time()
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.FOREST)
         label_text_mode = ctrl.settings.get('label_text_mode')
         if syntactic_mode:
@@ -787,10 +787,10 @@ class Forest(SavedObject):
             if self.old_label_mode == g.NODE_LABELS or \
                             self.old_label_mode == g.NODE_LABELS_FOR_LEAVES:
                 ctrl.settings.set('label_text_mode', self.old_label_mode, level=g.FOREST)
-        for node in list(self.nodes.values()):
+        nodes = list(self.nodes.values())
+        for node in nodes:
             node.update_label()
-            node.update_label_visibility()
-            node.update_visibility()
+            node.update_visibility(skip_label=True)
         ctrl.call_watchers(self, 'view_mode_changed', value=syntactic_mode)
         if syntactic_mode:
             if ctrl.main.color_manager.paper().value() < 100:

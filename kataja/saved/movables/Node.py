@@ -25,6 +25,7 @@
 import itertools
 import math
 
+import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
@@ -293,7 +294,7 @@ class Node(Movable):
         if hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
 
-        return 'label', as_html(self.label)
+        return 'node label', as_html(self.label)
 
     def synobj_to_node(self):
         """ Update node's values from its synobj. Subclasses implement this.
@@ -922,6 +923,7 @@ class Node(Movable):
         """
         :return:
         """
+        t = time.time()
         if not self.label_object:
             self.label_object = Label(parent=self)
         self.label_object.update_font()
@@ -1717,7 +1719,7 @@ class Node(Movable):
         """
         return ctrl.free_drawing_mode
 
-    def update_visibility(self, fade_in=True, fade_out=True) -> bool:
+    def update_visibility(self, fade_in=True, fade_out=True, skip_label=False) -> bool:
         """ see Movable.update_visibility
         This is called logical visibility and can be checked with is_visible().
         Qt's isVisible() checks for scene visibility. Items that are e.g. fading away
@@ -1726,7 +1728,8 @@ class Node(Movable):
         false for scene visibility.
         """
         # Label
-        self.update_label_visibility()
+        if not skip_label:
+            self.update_label_visibility()
 
         if ctrl.settings.get('syntactic_mode'):
             self._node_type_visible = self.is_syntactic
