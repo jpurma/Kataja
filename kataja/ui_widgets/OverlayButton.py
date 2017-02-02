@@ -238,8 +238,6 @@ class VisButton(OverlayButton):
         return QtWidgets.QPushButton.event(self, e)
 
 
-
-
 class QuickEditButton(OverlayButton):
 
     permanent_ui = True
@@ -303,6 +301,7 @@ class CutFromEndButton(OverlayButton):
             y -= self.h2
             self.move(ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(x, y)))
+
 
 class CutEdgeButton(OverlayButton):
 

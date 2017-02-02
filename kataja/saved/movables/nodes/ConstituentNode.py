@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.parser.INodes import ITextNode, ICommandNode, as_text
+from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
@@ -71,12 +71,9 @@ class ConstituentNode(Node):
                 'triangle': dict(name='Triangle', input_type='checkbox', order=35,
                                  on_edit='update_preview', tooltip='Draw a triangle on top of a '
                                                                    'node to mark an unanalysed '
-                                                                   'part of a sentence'),
-                'triangle_row': dict(name='label row under triangle', align='line-end', width=20,
-                                     prefill=-1, order=36, min=-4, max=4, input_type='spinbox',
-                                     tooltip='Use this row of <i>Displayed label</i> '
-                                             'as text under the triangle, '
-                                             'use negative numbers to count from bottom'),
+                                                                   'part of a sentence. The '
+                                                                   'bottom line of label is drawn'
+                                                                   'below the triangle.'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Optional index for linking multiple instances', order=11,
                               on_edit='update_preview'),
@@ -171,7 +168,6 @@ class ConstituentNode(Node):
         self.index = ''
         self.label = label
         self.gloss = ''
-        self.triangle_row = -1
 
         self.is_trace = False
         self.merge_order = 0
@@ -224,7 +220,6 @@ class ConstituentNode(Node):
                         inode.parts[i] = part[1:]
                     return True
                 elif isinstance(part, ICommandNode) and part.command == 'qroof':
-                    self.triangle_row = row_n
                     self.triangle = True
                     continue
                 else:
@@ -305,7 +300,6 @@ class ConstituentNode(Node):
         index = embed.fields.get('index', None)
         label = embed.fields.get('label', None)
         triangle = embed.fields.get('triangle', None)
-        triangle_row = embed.fields.get('triangle_row', -1)
         preview = embed.fields.get('preview', None)
         index_text = as_html(index.text())
         print('preview inode_text: ', label.inode_text())
@@ -354,13 +348,14 @@ class ConstituentNode(Node):
                 if self.syntactic_object:
                     l = self.syntactic_object.get_secondary_label()
             if l:
-                l = as_html(l)
-                lines = l.split('<br/>')
-                if self.triangle_row < 0:
-                    if len(lines) >= abs(self.triangle_row):
-                        part = lines[self.triangle_row]
-                elif len(lines) > self.triangle_row:
-                    part = lines[self.triangle_row]
+                qroof_content = extract_triangle(l)
+                if qroof_content:
+                    part = as_html(qroof_content)
+                else:
+                    l = as_html(l)
+                    lines = l.split('<br/>')
+                    if lines:
+                        part = lines[-1]
                 if part:
                     lower_html.append(part)
             return part
@@ -481,7 +476,7 @@ class ConstituentNode(Node):
                 l = self.syntactic_object.get_secondary_label()
 
         if l:
-            l = as_html(l)
+            l = as_html(l, omit_triangle=True)
         #if self.index and not syntactic_mode:
         #    html.append('<sub>%s</sub>' % self.index)
         if self.triangle:
@@ -862,6 +857,5 @@ class ConstituentNode(Node):
     index = SavedField("index")
     gloss = SavedField("gloss", if_changed=update_gloss)
     heads = SavedField("heads")
-    triangle_row = SavedField("triangle_row")
     original_parent = SavedField("original_parent")
 

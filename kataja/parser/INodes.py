@@ -11,11 +11,16 @@ instead.
 """
 
 
-def as_html(item):
+def as_html(item, omit_triangle=False) -> str:
+    """ INodes to html, or if called on string, string as escaped html.
+    :param item: INode or str
+    :param omit_triangle: don't include content inside \qroof{ }.
+    :return: str
+    """
     if isinstance(item, ITextNode):
-        return item.as_html()
+        return item.as_html(omit_triangle=omit_triangle)
     else:
-        return html.escape(item).replace('\n', '<br/>').replace('\r', '<br/>').replace('  ',
+        return html.escape(item).replace('\n', '<br/>\n').replace('\r', '<br/>\r').replace('  ',
                                                                                        ' &nbsp;')
 
 def as_text(item):
@@ -23,6 +28,17 @@ def as_text(item):
         return item.as_plain()
     else:
         return str(item)
+
+
+def extract_triangle(item):
+    if isinstance(item, ITextNode):
+        for part in list(item.parts):
+            if isinstance(part, ICommandNode) and part.command == 'qroof':
+                item.parts.remove(part)
+                return part
+            found = extract_triangle(part)
+            if found:
+                return found
 
 
 class ITextNode:
@@ -215,17 +231,21 @@ class ITextNode:
     def is_empty_for_view(self):
         return self.is_empty()
 
-    def _as_html(self, s):
+    def _as_html(self, s, omit_triangle=False):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                part._as_html(s)
+                part._as_html(s, omit_triangle=omit_triangle)
             else:
                 s.append(str(html.escape(part)))
 
-    def as_html(self):
+    def as_html(self, omit_triangle=False) -> str:
+        """ INodes to html
+        :param omit_triangle: don't include content inside \qroof{ }.
+        :return: str
+        """
         s = []
-        self._as_html(s)
-        return ''.join(s).replace('\n', '<br/>').replace('\r', '<br/>')
+        self._as_html(s, omit_triangle=omit_triangle)
+        return ''.join(s).replace('\n', '<br/>\n').replace('\r', '<br/>\r')
 
     def _as_latex(self, s):
         for part in self.parts:
@@ -281,19 +301,23 @@ class ICommandNode(ITextNode):
         """
         return False
 
-    def _as_html(self, s):
+    def _as_html(self, s, omit_triangle=False):
+        if omit_triangle and self.command == 'qroof':
+            return
         if self.command in command_to_html:
             tag = command_to_html[self.command]
             if tag and self.parts:
                 s.append('<%s>' % tag)
-                ITextNode._as_html(self, s)
+                ITextNode._as_html(self, s, omit_triangle=omit_triangle)
                 s.append('</%s>' % tag)
             elif tag:
-                s.append('<%s/>' % tag)
+                s.append('<%s/>\n' % tag)
             else:
-                ITextNode._as_html(self, s)
+                ITextNode._as_html(self, s, omit_triangle=omit_triangle)
         elif self.command in latex_to_unicode:
             s.append(latex_to_unicode[self.command][0])
+        else:
+            ITextNode._as_html(self, s, omit_triangle=omit_triangle)
 
     def _as_latex(self, s):
         if self.command in command_to_latex:
@@ -306,6 +330,8 @@ class ICommandNode(ITextNode):
                 s.append('\%s ' % command)
             else:
                 ITextNode._as_latex(self, s)
+        else:
+            ITextNode._as_html(self, s)
 
     def _as_plain(self, s):
         if not self.parts:
