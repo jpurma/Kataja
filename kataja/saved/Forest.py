@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import string
 import time
 from PyQt5 import QtWidgets
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
@@ -267,6 +268,19 @@ class Forest(SavedObject):
         :return:
         """
         return (x for x in self.nodes.values() if x.is_visible())
+
+    def get_nodes_by_index(self, index) -> (Node, set):
+        head = None
+        traces = set()
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE:
+                if node.index == index:
+                    if node.is_trace:
+                        traces.add(node)
+                    else:
+                        head = node
+        return head, traces
+
 
     def get_numeration(self):
         for tree in self.trees:

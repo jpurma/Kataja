@@ -11,17 +11,41 @@ instead.
 """
 
 
-def as_html(item, omit_triangle=False) -> str:
+def as_html(item, omit_triangle=False, include_index='') -> str:
     """ INodes to html, or if called on string, string as escaped html.
     :param item: INode or str
     :param omit_triangle: don't include content inside \qroof{ }.
+    :param include_index: add <sub>index</sub> at the first line and remove other occurences
     :return: str
     """
-    if isinstance(item, ITextNode):
-        return item.as_html(omit_triangle=omit_triangle)
+    if not item:
+        h = ''
+    elif isinstance(item, ITextNode):
+        h = item.as_html(omit_triangle=omit_triangle)
     else:
-        return html.escape(item).replace('\n', '<br/>\n').replace('\r', '<br/>\r').replace('  ',
-                                                                                       ' &nbsp;')
+        h = html.escape(item).replace('\n', '<br/>\n').replace('\r', '<br/>\r').\
+            replace('  ', ' &nbsp;')
+    if include_index:
+        index_html = f'<sub>{include_index}</sub>'
+        if h:
+            # Make sure that index is at the end of the first line or somewhere in first line
+            # Remove other occurences.
+            lines = h.splitlines(keepends=True)
+            if len(lines) == 1:
+                return h + index_html
+            first_line = lines[0]
+            new_lines = []
+            if index_html not in first_line:
+                first_line.replace('</br>', f'{index_html}<br/>')
+            new_lines.append(first_line)
+            for line in lines[1:]:
+                line.replace(index_html, '')
+                new_lines.append(line)
+            return ''.join(new_lines)
+        else:
+            return index_html
+    return h
+
 
 def as_text(item, omit_triangle=False):
     if isinstance(item, ITextNode):
@@ -433,7 +457,7 @@ class IParserNode(ITextNode):
         """
         def find_index(part):
             if isinstance(part, ICommandNode) and part.command == 'sub':
-                return ITextNode.as_html(part)
+                return ITextNode.as_plain(part)
             elif isinstance(part, ITextNode):
                 for p in part.parts:
                     found = find_index(p)

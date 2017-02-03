@@ -369,13 +369,11 @@ class Label(QtWidgets.QGraphicsItem):
         :return:
         """
         parsed_parts = ctrl.qdocument_parser.process(self.editable_doc)
-        print('parsed parts: ', parsed_parts)
         my_editable = self.editable.get(self.edited_field, {})
         setter = my_editable.get('setter', '')
         if setter:
             setter_method = getattr(self._host, setter, None)
             if setter_method and callable(setter_method):
-                print('setter: ', setter)
                 setter_method(parsed_parts)
             else:
                 print('missing setter!')

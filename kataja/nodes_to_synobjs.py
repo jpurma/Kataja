@@ -65,12 +65,21 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     visited_nodes = set()
     converted_nodes = set()
     checking_features = set()
+    found_copies = {}
+
 
     def convert_node(node):
         if node in visited_nodes or node in converted_nodes:
             return
         visited_nodes.add(node)
         if node.node_type == g.CONSTITUENT_NODE:
+            if node.index and node.is_trace:
+                head, traces = forest.get_nodes_by_index(node.index)
+                if head not in converted_nodes:
+                    convert_node(head)
+                node.syntactic_object = head.syntactic_object
+                converted_nodes.add(node)
+                return
             children = node.get_children(visible=False, similar=True)
             feature_nodes = node.get_children(visible=False, similar=False, of_type=g.FEATURE_EDGE)
             features = []

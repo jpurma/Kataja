@@ -379,9 +379,14 @@ class ConstituentNode(Node):
             syn_label = f' Constituent: "{as_text(syn_label)}" '
         else:
             syn_label = ''
+        if self.index:
+            index = f' Index: "{self.index}"'
+        else:
+            index = ''
+
         if self.is_trace:
             name = "Trace"
-        if self.is_leaf():
+        elif self.is_leaf():
             name = "Leaf "
         # elif self.is_top_node():
         #    name = "Set %s" % self.set_string() # "Root constituent"
@@ -391,7 +396,7 @@ class ConstituentNode(Node):
             adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
         else:
             adjustment = ''
-        self.status_tip = f"{name} ({label}{syn_label} pos: ({self.current_scene_position[0]:.1f}, " \
+        self.status_tip = f"{name} ({label}{syn_label}{index} pos: ({self.current_scene_position[0]:.1f}, " \
                           f"{self.current_scene_position[1]:.1f}){adjustment} z-index: " \
                           f"{self.zValue()}/{self.z_value})"
 
@@ -476,8 +481,7 @@ class ConstituentNode(Node):
             if self.syntactic_object:
                 l = self.syntactic_object.get_secondary_label()
 
-        if l:
-            l = as_html(l, omit_triangle=True)
+        l = as_html(l, omit_triangle=True, include_index=self.index)
         #if self.index and not syntactic_mode:
         #    html.append('<sub>%s</sub>' % self.index)
         if self.triangle:

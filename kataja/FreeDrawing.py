@@ -21,7 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
+import string
 
 import kataja.globals as g
 from kataja.errors import ForestError
@@ -32,6 +32,7 @@ from kataja.saved.movables.Presentation import Image
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
+from kataja.nodes_to_synobjs import figure_out_syntactic_label
 
 
 class FreeDrawing:
@@ -50,6 +51,7 @@ class FreeDrawing:
         self.edge_types = set()
         self.node_types = set()
         self._marked_for_deletion = set()
+        self.label_rotator = 0
 
     @property
     def nodes(self):
@@ -100,6 +102,11 @@ class FreeDrawing:
         """
         pass
 
+    def next_free_label(self):
+        self.label_rotator += 1
+        if self.label_rotator == len(string.ascii_uppercase):
+            self.label_rotator = 0
+        return string.ascii_uppercase[self.label_rotator]
 
     # ### Primitive creation of forest objects ################################
 
@@ -207,10 +214,10 @@ class FreeDrawing:
         if not index:
             index = self.f.chain_manager.next_free_index()
             node.index = index
-        assert index
-        trace = self.create_node(relative=node)
+        trace = self.create_node(label='t', relative=node)
         trace.is_trace = True
         trace.index = index
+        trace.update_label()
         return trace
 
     def create_arrow(self, p1, p2, text=None):
@@ -684,7 +691,8 @@ class FreeDrawing:
         :param add_left:
         :return:
         """
-        new_node = self.create_node(relative=old_node)
+        label = self.next_free_label()
+        new_node = self.create_node(label=label, relative=old_node)
         children = old_node.get_children(similar=True, visible=False)
 
         if len(children) != 1:
@@ -705,7 +713,7 @@ class FreeDrawing:
         :return:
         """
 
-        new_node = self.create_node(relative=old_node)
+        new_node = self.create_node(label=self.next_free_label(), relative=old_node)
 
         if add_left:
             left = new_node
@@ -863,7 +871,19 @@ class FreeDrawing:
         """
         if not pos:
             pos = (0, 0)
-        merger_node = self.create_node(relative=right)
+        label = ''
+        if head:
+            if isinstance(head, Node):
+                label = figure_out_syntactic_label(head)
+            elif isinstance(head, list):
+                if len(head) == 1:
+                    label = figure_out_syntactic_label(head[0])
+                if len(head) == 2:
+                    l1 = figure_out_syntactic_label(head[0])
+                    l2 = figure_out_syntactic_label(head[1])
+                    label = f"({l1}, {l2})"
+
+        merger_node = self.create_node(label=label, relative=right)
         merger_node.current_position = pos
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)

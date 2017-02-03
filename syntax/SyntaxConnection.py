@@ -174,12 +174,14 @@ class SyntaxConnection(SavedObject):
             head = a
             if not c:
                 c = self.create_constituent()
+            c.features = []
             c.parts = [a, b]
             c.set_head(head)
             return c
         elif merge_type == 'pair_merge':
             if not c:
                 c = self.create_constituent()
+            c.features = []
             c.parts = [a, b]
             c.set_head((a, b))
             return c
@@ -359,7 +361,6 @@ class SyntaxConnection(SavedObject):
         :param kw:
         :return: Constituent
         """
-        print('creating constituent')
         const = self.Constituent(**kw)
         self.constituents[const.uid] = const
         return const
@@ -449,7 +450,6 @@ class SyntaxConnection(SavedObject):
         :param kw:
         :return: Feature
         """
-        print('creating feature')
         feature = self.Feature(**kw)
         self.features[feature.uid] = feature
         return feature
