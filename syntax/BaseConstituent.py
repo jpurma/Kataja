@@ -55,7 +55,7 @@ class BaseConstituent(SavedObject, IConstituent):
                }
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
-    def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is
         easily dumped to file. Extending this needs to take account if new elements should also
@@ -63,10 +63,6 @@ class BaseConstituent(SavedObject, IConstituent):
          """
         SavedObject.__init__(self, **kw)
         self.label = label
-        if head:
-            self.heads = [head]
-        else:
-            self.heads = []
         self.features = features or []
         self.parts = parts or []
 
@@ -154,22 +150,6 @@ class BaseConstituent(SavedObject, IConstituent):
         else:
             raise IndexError
 
-    def set_head(self, head):
-        """
-
-        :param head:
-        :return:
-        """
-        if isinstance(head, list):
-            self.heads = head
-        elif head:
-            self.heads = [head]
-        else:
-            self.heads = []
-
-    def set_heads(self, heads:list):
-        self.heads = heads
-
     def get_feature(self, key):
         """ Gets the first local feature (within this constituent, not of its children) with key
         'key'
@@ -251,8 +231,7 @@ class BaseConstituent(SavedObject, IConstituent):
         new_features = self.features.copy()
         nc = self.__class__(label=self.label,
                             parts=new_parts,
-                            features=new_features,
-                            heads=self.heads)
+                            features=new_features)
         return nc
 
 
@@ -266,5 +245,4 @@ class BaseConstituent(SavedObject, IConstituent):
     sourcestring = SavedField("sourcestring")
     label = SavedField("label")
     parts = SavedField("parts")
-    heads = SavedField("heads")
 

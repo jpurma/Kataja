@@ -8,7 +8,7 @@ except ImportError:
     in_kataja = False
 
 class PlainConstituent:
-    def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new elements should also be treated as savable, e.g. put them into
@@ -16,10 +16,6 @@ class PlainConstituent:
          """
         super().__init__(**kw)
         self.label = label
-        if head:
-            self.heads = [head]
-        else:
-            self.heads = []
         self.features = features or []
         self.parts = parts or []
         self.secondary_label = ''
@@ -123,8 +119,7 @@ class PlainConstituent:
         new_features = self.features.copy()
         nc = self.__class__(label=self.label,
                             parts=new_parts,
-                            features=new_features,
-                            heads=self.heads)
+                            features=new_features)
         return nc
 
 if not in_kataja:

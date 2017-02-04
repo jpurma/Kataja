@@ -1,32 +1,22 @@
 # coding=utf-8
 import string
-from collections import namedtuple
+from collections import defaultdict
 
-from kataja.globals import FOREST
-from kataja.utils import add_xy
+from kataja.globals import FOREST, CONSTITUENT_NODE
 from kataja.singletons import ctrl
 
 
-# ### Chains #######################################################################
-
-# chains should hold tuples of (node, parent), where node can be either real node or trace, and
-# the parent provides the reliable/restorable identity/location for the trace.
-
-ChainItem = namedtuple('ChainItem', ['node', 'parent', 'is_head'])
-
 
 class ChainManager:
-    """ Manages switching between trace views and multidomination views, and handles side-effect when forest operation
-    should behave differently between the cases.
+    """ Manages switching between trace views and multidomination views, and handles side-effect
+    when forest operation should behave differently between the cases.
 
-    Chain manager doesn't save its state, its structures are purely derivative from information already existing in
-    the trees.
+    Chain manager doesn't save its state, its structures are purely derivative from information
+    already existing in the trees.
     """
 
     def __init__(self, forest):
-        self.chains = {}
         self.forest = forest
-        self.traces_from_bottom = []
 
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains
@@ -34,182 +24,96 @@ class ChainManager:
         """
         return not ctrl.settings.get('uses_multidomination')
 
-    def get_chain_head(self, chain_key):
-        """
-
-        :param chain_key:
-        :return: :raise 'F broken chain':
-        """
-        chain = self.chains[chain_key]
-        for node, parent, is_head in chain:
-            if is_head:
-                return node
-        raise Exception('F broken chain')
-
-    def rebuild_chains(self, stop_count=0):
-        """ Process for building chains depends on if the trees currently is using multidomination or not.
-        Chains shouldn't include elements that are not really in the trees right now.
-        :param stop_count: to avoid infinite recursion if the trees is seriously broken
-        :return:
-        """
-        if ctrl.settings.get('uses_multidomination'):
-            self.rebuild_chains_from_multidomination()
-        else:
-            self.rebuild_chains_from_traces()
-        # Verify that each chain has one head
-        for key, chain in self.chains.items():
-            heads = [chain_item for chain_item in chain if chain_item.is_head]
-            if len(heads) > 1:
-                for item in heads[1:]:
-                    item.node.is_trace = True
-                if stop_count < 5:
-                    stop_count += 1
-                    self.rebuild_chains(stop_count=stop_count)
-            elif len(heads) == 0:
-                chain[0].node.is_trace = False
-                if stop_count < 5:
-                    stop_count += 1
-                    self.rebuild_chains(stop_count=stop_count)
-
-    def rebuild_chains_from_traces(self):
-        """ When building chains from traces, usually the first member is the head, but the trees may be given in a
-         form where this isn't the case.
-        :return:
-        """
-
-        #print('rebuild chains from traces called')
-        f = self.forest
-        self.chains = {}
-        self.traces_from_bottom = []
-
-        # recursive method for collecting usage of a trace/node, counted from bottom up.
-        def _bottom_right_count_traces(node, parent):
-            children = node.get_children(visible=True, similar=True, reverse=True)
-            # right first for bottom-up!
-            for child in children:
-                _bottom_right_count_traces(child, node)
-            # then this node:
-            if getattr(node, 'index', None):
-                if node.index in self.chains:
-                    chain = self.chains[node.index]
+    def _get_heads_and_traces(self):
+        heads = {}
+        traces = defaultdict(list)
+        for node in self.forest.nodes.values():
+            if node.node_type != CONSTITUENT_NODE:
+                continue
+            if node.index:
+                if node.is_trace:
+                    traces[node.index].append(node)
                 else:
-                    chain = []
-                chain.append(ChainItem(node, parent, not node.is_trace))
-                self.traces_from_bottom.append(node)
-                self.chains[node.index] = chain
-
-        for tree in f.trees:
-            if tree.top:
-                _bottom_right_count_traces(tree.top, None)
-
-        for key, values in self.chains.items():
-            values.reverse()
-            self.chains[key] = values
-            # print('used trace-based rebuild, received chains: ', self.chains)
-            # print(self.traces_from_bottom)
-
-    def rebuild_chains_from_multidomination(self):
-        """ When building chains from multidomination, the end result should consist of list of
-        (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in trees,
-        and the rest are other appearances top down. The node remains the same, parent is different. """
-
-        #print('rebuild chains from md called')
-        f = self.forest
-        self.chains = {}
-        self.traces_from_bottom = []
-
-        # recursive method for collecting usage of a node, counted from bottom up.
-        def _bottom_right_count_parents(node, parent, c):
-            for child in node.get_children(visible=True, similar=True, reverse=True):
-                c = _bottom_right_count_parents(child, node, c)
-            if hasattr(node, 'index') and node.index:
-                c += 1
-                if node.index in self.chains:
-                    chain = self.chains[node.index]
-                else:
-                    chain = []
-                for d, item in chain:
-                    if item.parent is parent:
-                        return c
-                chain.append((c, ChainItem(node, parent, not node.is_trace)))
-                self.traces_from_bottom.append(node)
-                self.chains[node.index] = chain
-            return c
-
-        count = 0
-        for tree in f.trees:
-            if tree.top:
-                count = _bottom_right_count_parents(tree.top, None, count)
-
-        # If chains are built from multidomination, they need to be sorted and sorting indexes removed
-        for key, values in list(self.chains.items()):
-            values.sort(reverse=True)
-            # print('after sorting:' ,values)
-            values = [v for i, v in values]
-            new_values = [values.pop(0)]
-            for node, parent, is_trace in values:
-                new_values.append(ChainItem(node=node, parent=parent, is_head=False))
-            self.chains[key] = new_values
-            # print('used multidomination-based rebuild, received chains: ', self.chains)
+                    heads[node.index] = node
+        return heads, traces
 
     def group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
-        self.rebuild_chains()
-        y_adjust = {}
-        for key, chain in self.chains.items():
-            head = self.get_chain_head(key)
-            for node, parent, is_head in chain:
-                if not is_head:
-                    if key not in y_adjust:
-                        y_adjust[key] = 0, head.boundingRect().height()
-                    dx, dy = y_adjust[key]
-                    node.use_adjustment = False
-                    node.adjustment = (0, 0)
-                    node.move_to(*add_xy(head.current_position, (-dx, dy)), can_adjust=False)
-                    y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
+        heads, traces = self._get_heads_and_traces()
+        for index, traces in traces.items():
+            if index in heads:
+                original = heads[index]
+                dx, dy = original.target_position
+                dy += original.height / 2 + 4
+                for trace in traces:
+                    trace.use_adjustment = False
+                    trace.adjustment = (0, 0)
+                    trace.move_to(dx, dy, can_adjust=False)
+                    dx += 10
+                    dy += trace.height
         ctrl.settings.set('traces_are_grouped_together', True, level=FOREST)
         ctrl.settings.set('uses_multidomination', False, level=FOREST)
 
     def traces_to_multidomination(self):
-        """Switch traces to multidominant originals, also mirror changes in syntax  """
-        self.rebuild_chains()
-        for trace in self.traces_from_bottom:
-            if trace.is_trace:
-                original = self.get_chain_head(trace.index)
-                self.forest.free_drawing.replace_node(trace, original)
+        """Switch traces to multidominant originals, as they are in syntax """
+        heads, traces = self._get_heads_and_traces()
+        for index, traces in traces.items():
+            if index in heads:
+                original = heads[index]
+                for trace in traces:
+                    self.forest.free_drawing.replace_node(trace, original)
         ctrl.settings.set('uses_multidomination', True, level=FOREST)
-        ctrl.forest.forest_edited()
+        self.forest.forest_edited()
 
     def multidomination_to_traces(self):
-        """ Switch multidominated elements to use traces instead  """
-        self.rebuild_chains()
-        # each instance in chain that is not in head position is replaced with a trace
-        for key, chain in self.chains.items():
-            head = self.get_chain_head(key)
-            for node, parent, is_head in chain:
-                if not is_head:
-                    if node.is_trace:
-                        trace = node
-                    else:
-                        trace = self.forest.free_drawing.create_trace_for(node)
-                    self.forest.free_drawing.replace_node(head, trace, only_for_parent=parent)
+        def _find_paths_up(n, depth):
+            pars = n.get_parents(similar=True, visible=False)
+            if pars:
+                for par in pars:
+                    _find_paths_up(par, depth + 1)
+            else:
+                paths_up.append(depth)
+
+        parents = defaultdict(list)
+        originals = {}
+
+        for node in self.forest.nodes.values():
+            if node.node_type != CONSTITUENT_NODE:
+                continue
+            if node.index:
+                originals[node.index] = node
+                for parent in node.get_parents(similar=True, visible=False):
+                    paths_up = []
+                    _find_paths_up(parent, 0)
+                    parents[node.index].append((max(paths_up), parent))
+                # we leave open case [A A], it will get random order, but who cares
+                parents[node.index].sort()
+        # replace all but highest instance with traces
+        for index, original in originals.items():
+            if len(parents) > 1:
+                for foo, parent in parents[index][1:]:
+                    trace = self.forest.free_drawing.create_trace_for(original)
+                    self.forest.free_drawing.replace_node(original, trace, only_for_parent=parent)
         ctrl.settings.set('traces_are_grouped_together', False, level=FOREST)
         ctrl.settings.set('uses_multidomination', False, level=FOREST)
-        ctrl.forest.forest_edited()
+        self.forest.forest_edited()
 
     def next_free_index(self):
         """ Return the next available letter suitable for indexes (i, j, k, l...)
+        When lowercase alphabet run out, use integers instead. They wont run out too soon.
         :return:
         """
-        max_found = 7  # 'h'
+        max_letter = 'h'
+        max_number = 0
         for node in self.forest.nodes.values():
             index = getattr(node, 'index', None)
-            if index and len(index) == 1 and index[0].isalpha():
-                pos = string.ascii_letters.find(index[0])
-                if pos > max_found:
-                    max_found = pos
-        max_found += 1
-        if max_found == len(string.ascii_letters):
-            assert False
-        return string.ascii_letters[max_found]
+            if index:
+                if len(index) == 1 and index.isalpha() and index > max_letter:
+                    max_letter = index
+                elif index.isdigit() and int(index) > max_number:
+                    max_number = int(index)
+        if max_letter < 'z':
+            return string.ascii_letters[string.ascii_letters.index(max_letter) + 1]
+        else:
+            return str(max_number + 1)
 

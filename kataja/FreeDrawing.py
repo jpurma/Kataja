@@ -782,8 +782,8 @@ class FreeDrawing:
             tree.update_items()
         merger_node.copy_position(top)
 
-        if self.f.chain_manager.traces_are_visible():
-            self.f.chain_manager.rebuild_chains()
+        #if self.f.chain_manager.traces_are_visible():
+        #    self.f.chain_manager.rebuild_chains()
 
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a trees: a new merge is created
@@ -857,8 +857,8 @@ class FreeDrawing:
                 parent.set_heads(heads)
 
         # chains
-        if self.f.chain_manager.traces_are_visible():
-            self.f.chain_manager.rebuild_chains()
+        #if self.f.chain_manager.traces_are_visible():
+        #    self.f.chain_manager.rebuild_chains()
 
     def create_merger_node(self, left=None, right=None, pos=None, new=None, head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges

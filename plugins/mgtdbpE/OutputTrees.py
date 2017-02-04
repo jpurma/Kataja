@@ -318,14 +318,6 @@ class BareTree:
             else:
                 parts.append(self.part1.to_constituent(done))
         self.const.label = self.label
-        if parts:
-            if self.label == '<':
-                self.const.heads = [parts[0]]
-            elif self.label == '>':
-                if len(parts) > 1:
-                    self.const.heads = [parts[1]]
-                else:
-                    self.const.heads = []
         self.const.parts = parts
         if not parts:
             self.const.features = self.features
@@ -591,11 +583,6 @@ class TracelessXBarTree:
             self.const.label = self.label
             self.const.features = []
             self.const.parts = parts
-            if self.head:
-                if self.head == self.part0:
-                    self.const.heads = [self.part0.const]
-                elif self.head == self.part1:
-                    self.const.heads = [self.part1.const]
         else:
             head = Constituent(label=self.label, features=self.features)
             self.const.label = self.category

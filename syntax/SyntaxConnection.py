@@ -171,19 +171,16 @@ class SyntaxConnection(SavedObject):
         if not merge_type:
             merge_type = self.rules['merge_types']
         if merge_type == 'set_merge':
-            head = a
             if not c:
                 c = self.create_constituent()
             c.features = []
             c.parts = [a, b]
-            c.set_head(head)
             return c
         elif merge_type == 'pair_merge':
             if not c:
                 c = self.create_constituent()
             c.features = []
             c.parts = [a, b]
-            c.set_head((a, b))
             return c
         else:
             raise NotImplementedError

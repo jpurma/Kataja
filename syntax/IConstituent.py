@@ -36,7 +36,7 @@ class IConstituent(metaclass=ABCMeta):
     addable = []
 
     @abstractmethod
-    def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, **kw):
         NotImplemented
 
     @abstractmethod
@@ -115,19 +115,6 @@ class IConstituent(metaclass=ABCMeta):
         :param new_part:
         :return:
         """
-        return NotImplemented
-
-    @abstractmethod
-    def set_head(self, head):
-        """
-
-        :param head:
-        :return:
-        """
-        return NotImplemented
-
-    @abstractmethod
-    def set_heads(self, heads:list):
         return NotImplemented
 
     @abstractmethod

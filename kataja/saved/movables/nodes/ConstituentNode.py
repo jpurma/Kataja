@@ -284,6 +284,10 @@ class ConstituentNode(Node):
             self.label = rows[0]
         else:
             self.label = ''
+        if self.index:
+            base = as_html(self.label)
+            if base.strip().startswith('t<sub>'):
+                self.is_trace = True
 
     # Editing with NodeEditEmbed and given editable-template
     def update_preview(self):
@@ -690,22 +694,26 @@ class ConstituentNode(Node):
         """ Make sure that node's heads reflect synobjs heads.
         :return:
         """
-        if self.syntactic_object:
-            if hasattr(self.syntactic_object, 'heads'):
-                heads = []
-                for head in self.syntactic_object.heads:
-                    node = ctrl.forest.get_node(head)
-                    if node:
-                        heads.append(node)
-                self.heads = heads
-                return
-            elif hasattr(self.syntactic_object, 'head'):
-                node = ctrl.forest.get_node(self.syntactic_object.head)
-                if node:
-                    self.heads = [node]
-                    return
         self.heads = []
-        return
+        if self.syntactic_object:
+            synlabel = self.syntactic_object.label
+            parts = self.syntactic_object.parts
+            if len(parts) == 0:
+                self.heads = [self]
+            if len(parts) == 1:
+                if parts[0].label == synlabel:
+                    self.heads = [ctrl.forest.get_node(parts[0])]
+                else:
+                    self.heads = [self]
+            elif len(parts) == 2:
+                if parts[0].label == synlabel:
+                    self.heads = [ctrl.forest.get_node(parts[0])]
+                elif parts[1].label == synlabel:
+                    self.heads = [ctrl.forest.get_node(parts[1])]
+                elif synlabel == f"({parts[0].label}, {parts[1].label})":
+                    self.heads = [ctrl.forest.get_node(parts[0]), ctrl.forest.get_node(parts[1])]
+                elif synlabel == f"({parts[1].label}, {parts[0].label})":
+                    self.heads = [ctrl.forest.get_node(parts[1]), ctrl.forest.get_node(parts[0])]
 
     @property
     def contextual_color(self):
