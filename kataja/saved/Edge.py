@@ -24,6 +24,7 @@
 
 import math
 
+import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
@@ -34,7 +35,7 @@ from kataja.SavedObject import SavedObject
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, add_xy, sub_xy
+from kataja.utils import to_tuple, add_xy, sub_xy, time_me
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -128,7 +129,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._arrowhead_end_path = None
         self._cached_cp_rect = None
         self._use_labels = None
-        self._relative_vector = None
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -156,7 +156,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         self.connect_end_points(self.start, self.end)
         self.setZValue(self.cached('z_value'))
-        self.update_end_points()
+        #self.update_end_points()
         self.update_visibility()
         self.announce_creation()
 
@@ -171,7 +171,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ctrl.forest.add_to_scene(self)
         self.update_visibility()
         self.connect_end_points(self.start, self.end)
-        self.update_end_points()
+        #self.update_end_points()
 
     def cut(self, others=None):
         """ If edge ends are not included, set them to None, otherwise cut the edge as it is.
@@ -251,13 +251,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             lv = False
         else:
             if self.edge_type == g.CONSTITUENT_EDGE:
-                if self.start and not self.start.is_visible():
-                    lv = False
-                elif self.end and not self.end.is_visible():
+                if self.end and not self.end.is_visible():
                     lv = False
                 elif self.start and ctrl.forest.visualization and not \
-                        ctrl.forest.visualization.show_edges_for(
-                    self.start):
+                        ctrl.forest.visualization.show_edges_for(self.start):
                     lv = False
                 elif not (self.start or self.end):
                     ctrl.free_drawing.delete_edge(self)
@@ -362,24 +359,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def is_visible(self) -> bool:
         return self._visible_by_logic
 
-    def make_relative_vector(self):
-        """ Relative vector helps to keep the shape of a line when another,
-        attached end moves.
-         It applies only to lines where the other end is attached to node.
-        :return:
-        """
-        if self.start and not self.end:
-            self._relative_vector = sub_xy(self.end_point, self.start.current_scene_position)
-        elif self.end and not self.start:
-            self._relative_vector = sub_xy(self.end.current_scene_position, self.start_point)
-
     def connect_start_to(self, node):
         """
 
         :param node:
         """
         ctrl.free_drawing.set_edge_start(self, node)
-        self.make_relative_vector()
         self.update_shape()
 
     def connect_end_to(self, node):
@@ -388,7 +373,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param node:
         """
         ctrl.free_drawing.set_edge_end(self, node)
-        self.make_relative_vector()
         self.update_shape()
 
     def set_start_point(self, p, y=None):
@@ -406,7 +390,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.fixed_start_point = p
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
             self.fixed_start_point = p.x(), p.y()
-        self.make_relative_vector()
 
     def set_end_point(self, p, y=None):
         """ Convenience method for setting end point: accepts QPoint(F)s,
@@ -422,7 +405,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.fixed_end_point = p
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
             self.fixed_end_point = p.x(), p.y()
-        self.make_relative_vector()
 
     def is_broken(self) -> bool:
         """ If this edge should be a connection between two nodes and either
@@ -531,7 +513,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         return new_x, new_y
 
     # ### Derivative features ############################################
-    # @time_me
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
@@ -636,22 +617,17 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :return:
         """
-        if not self._relative_vector:
-            self.make_relative_vector()
-            self.update_status_tip()
 
         if self.start and self.end:
             sx, sy = self.start.current_scene_position
             ex, ey = self.end.current_scene_position
         elif self.start:
+            ex, ey = self.end_point
             sx, sy = self.start.current_scene_position
-            ex = sx + self._relative_vector[0]
-            ey = sy + self._relative_vector[1]
             self._computed_end_point = ex, ey
         elif self.end:
+            sx, sy = self.start_point
             ex, ey = self.end.current_scene_position
-            sx = ex - self._relative_vector[0]
-            sy = ey - self._relative_vector[1]
             self._computed_start_point = sx, sy
         else:
             return
@@ -661,7 +637,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 self._computed_start_point, self._curve_dir_start = \
                     self.start.special_connection_point(self, sx, sy, ex, ey, start=True)
             elif connection_style == CONNECT_TO_CENTER:
-                self._computed_start_point = self.start.current_scene_position
+                self._computed_start_point = sx, sy
                 if abs(sx - ex) < abs(sy - ey):
                     if sy < ey:
                         self._curve_dir_start = BOTTOM_SIDE
@@ -734,14 +710,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                             else:
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
                                 self._curve_dir_start = TOP_SIDE
-
         if self.end:
             connection_style = self.cached('end_connects_to')
             if connection_style == SPECIAL:
                 self._computed_end_point, self._curve_dir_end = self.end.special_connection_point(
                     self, sx, sy, ex, ey, start=False)
             elif connection_style == CONNECT_TO_CENTER:
-                self._computed_end_point = self.end.current_scene_position
+                self._computed_end_point = ex, ey
                 if abs(sx - ex) < abs(sy - ey):
                     if sy > ey:
                         self._curve_dir_end = BOTTOM_SIDE
@@ -756,6 +731,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     CONNECT_TO_MAGNETS:
                 self._computed_end_point = self.end.top_center_magnet()
                 self._curve_dir_end = TOP_SIDE
+
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of end node to
                 # center of start node / start_point. It is simple, but the point can be in any of
@@ -812,7 +788,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
                                 self._curve_dir_end = BOTTOM_SIDE
 
-
     def connect_end_points(self, start, end):
         """
 
@@ -829,7 +804,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.end = end
         else:
             self.end = None
-        self.make_relative_vector()
         self.update_status_tip()
 
     def update_status_tip(self):
@@ -1363,9 +1337,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def cached(self, key):
         return ctrl.settings.cached_edge(key, self)
-
-    def connection_style_at_start(self):
-        return self.cached('start_connects_to')
 
     def set_arrowhead_at_start(self, value):
         ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge=self)

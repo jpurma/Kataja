@@ -125,6 +125,7 @@ class Tree(Movable):
         :param node: Node
         :return:
         """
+        node.poke('trees')
         node.trees.add(self)
         node.update_graphics_parent()
 
@@ -135,6 +136,7 @@ class Tree(Movable):
         :return:
         """
         if self in node.trees:
+            node.poke('trees')
             node.trees.remove(self)
             node.update_graphics_parent()
         if recursive_down:

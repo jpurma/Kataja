@@ -361,6 +361,7 @@ class AddConstituentTouchArea(TouchArea):
         """
         if isinstance(dropped_node, str):
             self.make_node_from_string(dropped_node)
+        ctrl.forest.forest_edited()
 
 
 class AddBelowTouchArea(TouchArea):
@@ -413,6 +414,7 @@ class ConnectFeatureTouchArea(AddBelowTouchArea):
         if not dropped_node:
             return
         ctrl.free_drawing.add_feature_to_node(dropped_node, self.host)
+        ctrl.forest.forest_edited()
         return 'added feature %s to %s' % (dropped_node, self.host)
 
 
@@ -433,6 +435,7 @@ class ConnectCommentTouchArea(AddBelowTouchArea):
         if not dropped_node:
             return
         ctrl.free_drawing.add_comment_to_node(dropped_node, self.host)
+        ctrl.forest.forest_edited()
         return 'added comment %s to %s' % (dropped_node, self.host)
 
 
@@ -453,6 +456,7 @@ class ConnectGlossTouchArea(AddBelowTouchArea):
         if not dropped_node:
             return
         ctrl.free_drawing.add_gloss_to_node(dropped_node, self.host)
+        ctrl.forest.forest_edited()
         return 'added gloss %s to %s' % (dropped_node, self.host)
 
 
@@ -530,6 +534,7 @@ class BranchingTouchArea(TouchArea):
 
         for node in ctrl.dragged_set:
             node.adjustment = adjustment
+        ctrl.forest.forest_edited()
         return 'moved node %s to sibling of %s' % (dropped_node, self.host)
 
 
@@ -802,6 +807,7 @@ class JointedTouchArea(TouchArea):
                                        pos=self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.adjustment
+        ctrl.forest.forest_edited()
         return 'moved node %s to sibling of %s' % (
             dropped_node, self.host)
 
@@ -935,6 +941,7 @@ class ChildTouchArea(TouchArea):
             node.adjustment = self.host.end.adjustment
         message = 'moved node %s to sibling of %s' % (
             dropped_node, self.host)
+        ctrl.forest.forest_edited()
         return message
 
 

@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from kataja.globals import FOREST, CONSTITUENT_NODE
 from kataja.singletons import ctrl
-
+from utils import time_me
 
 
 class ChainManager:
@@ -37,6 +37,7 @@ class ChainManager:
                     heads[node.index] = node
         return heads, traces
 
+    @time_me
     def group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
         heads, traces = self._get_heads_and_traces()
@@ -54,6 +55,7 @@ class ChainManager:
         ctrl.settings.set('traces_are_grouped_together', True, level=FOREST)
         ctrl.settings.set('uses_multidomination', False, level=FOREST)
 
+    @time_me
     def traces_to_multidomination(self):
         """Switch traces to multidominant originals, as they are in syntax """
         heads, traces = self._get_heads_and_traces()
@@ -65,6 +67,7 @@ class ChainManager:
         ctrl.settings.set('uses_multidomination', True, level=FOREST)
         self.forest.forest_edited()
 
+    @time_me
     def multidomination_to_traces(self):
         def _find_paths_up(n, depth):
             pars = n.get_parents(similar=True, visible=False)

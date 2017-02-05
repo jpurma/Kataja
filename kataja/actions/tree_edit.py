@@ -52,9 +52,11 @@ class AddNode(KatajaAction):
         ntype = sender.data
         pos = QtCore.QPoint(random.random() * 60 - 25,
                             random.random() * 60 - 25)
-        node = ctrl.free_drawing.create_node(pos=pos, node_type=ntype)
+        label = ctrl.free_drawing.next_free_label()
+        node = ctrl.free_drawing.create_node(label=label, pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
         log.info('Added new %s.' % nclass.display_name[0])
+        ctrl.forest.forest_edited()
 
 
 class CloseEmbed(KatajaAction):
@@ -108,15 +110,16 @@ class CreateNewNodeFromText(KatajaAction):
             # fixme: finish this!
         elif node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
-            if node:
-                ctrl.forest.tree_manager.create_tree_for(node)
+            #if node:
+            #    ctrl.forest.tree_manager.create_tree_for(node)
         else:
             node = ctrl.free_drawing.create_node(pos=p2, node_type=node_type, label=text)
-            if node and node_type == g.CONSTITUENT_NODE:
-                ctrl.forest.tree_manager.create_tree_for(node)
+            #if node and node_type == g.CONSTITUENT_NODE:
+            #    ctrl.forest.tree_manager.create_tree_for(node)
         if node:
             node.lock()
         ctrl.ui.close_active_embed()
+        ctrl.forest.forest_edited()
 
 
 class RemoveMerger(KatajaAction):
@@ -137,6 +140,7 @@ class RemoveMerger(KatajaAction):
             return
         ctrl.remove_from_selection(node)
         ctrl.free_drawing.delete_unnecessary_merger(node)
+        ctrl.forest.forest_edited()
 
 
 class RemoveNode(KatajaAction):
@@ -151,6 +155,7 @@ class RemoveNode(KatajaAction):
         node = self.get_host()
         ctrl.remove_from_selection(node)
         ctrl.free_drawing.delete_node(node, ignore_consequences=False)
+        ctrl.forest.forest_edited()
 
 
 class AddTriangle(KatajaAction):
@@ -202,6 +207,7 @@ class FinishEditingNode(KatajaAction):
         if embed and embed.host:
             embed.submit_values()
         ctrl.ui.close_active_embed()
+        ctrl.forest.forest_edited()
 
 
 class ToggleRawEditing(KatajaAction):
@@ -232,6 +238,7 @@ class SetHeadConstituent(KatajaAction):
         embed = self.get_ui_container()
         if embed:
             embed.update_fields()
+        ctrl.forest.forest_edited()
 
     def enabler(self):
         return ctrl.free_drawing_mode
@@ -247,8 +254,10 @@ class AddTopLeft(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         top = self.get_host()
-        new_node = ctrl.free_drawing.create_node(relative=top)
+        label = ctrl.free_drawing.next_free_label()
+        new_node = ctrl.free_drawing.create_node(label=label, relative=top)
         ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
+        ctrl.forest.forest_edited()
 
 
 class AddTopRight(KatajaAction):
@@ -259,8 +268,10 @@ class AddTopRight(KatajaAction):
         """ """
         ctrl.release_editor_focus()
         top = self.get_host()
-        new_node = ctrl.free_drawing.create_node(relative=top)
+        label = ctrl.free_drawing.next_free_label()
+        new_node = ctrl.free_drawing.create_node(label=label, relative=top)
         ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
+        ctrl.forest.forest_edited()
 
 
 class InnerAddSiblingLeft(KatajaAction):
@@ -273,6 +284,7 @@ class InnerAddSiblingLeft(KatajaAction):
         if isinstance(node, Edge):
             node = node.end
         ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
+        ctrl.forest.forest_edited()
 
 
 class InnerAddSiblingRight(KatajaAction):
@@ -286,6 +298,7 @@ class InnerAddSiblingRight(KatajaAction):
         if isinstance(node, Edge):
             node = node.end
         ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
+        ctrl.forest.forest_edited()
 
 
 class UnaryAddChildLeft(KatajaAction):
@@ -297,6 +310,7 @@ class UnaryAddChildLeft(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=True)
+        ctrl.forest.forest_edited()
 
 
 class UnaryAddChildRight(KatajaAction):
@@ -308,6 +322,7 @@ class UnaryAddChildRight(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=False)
+        ctrl.forest.forest_edited()
 
 
 class LeafAddSiblingLeft(KatajaAction):
@@ -319,6 +334,7 @@ class LeafAddSiblingLeft(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
+        ctrl.forest.forest_edited()
 
 
 class LeafAddSiblingRight(KatajaAction):
@@ -330,6 +346,7 @@ class LeafAddSiblingRight(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
+        ctrl.forest.forest_edited()
 
 
 class MergeToTop(KatajaAction):
@@ -342,6 +359,7 @@ class MergeToTop(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=True)
+        ctrl.forest.forest_edited()
 
 
 # Floating buttons ##################################

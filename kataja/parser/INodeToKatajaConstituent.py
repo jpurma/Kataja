@@ -130,10 +130,10 @@ class INodeToKatajaConstituent:
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
         cn = f.free_drawing.create_node()
-        if not self.temp_tree:
-            self.temp_tree = f.tree_manager.create_tree_for(cn)
-        else:
-            self.temp_tree.add_node(cn)
+        #if not self.temp_tree:
+        #    self.temp_tree = f.tree_manager.create_tree_for(cn)
+        #else:
+        #    self.temp_tree.add_node(cn)
         children.reverse()
         direction = g.LEFT
         if len(children) == 1:

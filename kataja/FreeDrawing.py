@@ -23,6 +23,8 @@
 # ############################################################################
 import string
 
+import time
+
 import kataja.globals as g
 from kataja.errors import ForestError
 from kataja.saved.Edge import Edge
@@ -33,6 +35,7 @@ from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
+from kataja.utils import time_me
 
 
 class FreeDrawing:
@@ -380,8 +383,6 @@ class FreeDrawing:
         edge.end = None
         # -- scene --
         self.f.remove_from_scene(edge)
-        # -- Order update for trees
-        self.f.tree_manager.reserve_update_for_trees()
         # -- undo stack --
         edge.announce_deletion()
         # -- remove circularity block
@@ -595,7 +596,7 @@ class FreeDrawing:
 
         # add new node to relevant groups
         # and remove old node from them
-        for group in list(self.groups.values()):
+        for group in self.groups.values():
             if old_node in group:
                 group.add_node(new_node)
                 group.remove_node(old_node)
@@ -730,9 +731,9 @@ class FreeDrawing:
         merger_node = self.create_merger_node(left=left, right=right, new=new_node)
 
         # Fix trees to include new node and especially the new merger node
-        for tree in set(old_node.trees):
-            tree.recalculate_top()
-            tree.update_items()
+        #for tree in set(old_node.trees):
+        #    tree.recalculate_top()
+        #    tree.update_items()
 
         for group in self.groups.values():
             if old_node in group:
@@ -777,9 +778,9 @@ class FreeDrawing:
         merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new)
 
         # Fix trees to include the new merger node
-        for tree in set(top.trees):
-            tree.recalculate_top()
-            tree.update_items()
+        #for tree in set(top.trees):
+        #    tree.recalculate_top()
+        #    tree.update_items()
         merger_node.copy_position(top)
 
         #if self.f.chain_manager.traces_are_visible():

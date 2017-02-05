@@ -204,6 +204,7 @@ class Forest(SavedObject):
         Analyse the node graph and update/rebuild syntactic objects according to graph.
         :return:
         """
+        self.tree_manager.update_trees()
         self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
 
     @staticmethod
@@ -395,7 +396,6 @@ class Forest(SavedObject):
         elif isinstance(item, Edge):
             self.poke('edges')
             self.edges[item.uid] = item
-            self.tree_manager.reserve_update_for_trees()
             self.free_drawing.edge_types.add(item.edge_type)
         else:
             key = getattr(item, 'uid', '') or getattr(item, 'key', '')
@@ -553,7 +553,7 @@ class Forest(SavedObject):
         assert self.is_parsed
         sc = ctrl.graph_scene
         sc.stop_animations()
-        self.tree_manager.update_trees()
+        #self.tree_manager.update_trees()
         for tree in self.trees:
             if tree.top:
                 tree.top.update_visibility()  # fixme

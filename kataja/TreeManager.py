@@ -1,4 +1,7 @@
+from collections import Counter, defaultdict
+
 from kataja.saved.movables.Tree import Tree
+from kataja.utils import time_me
 
 
 class TreeManager:
@@ -7,15 +10,6 @@ class TreeManager:
         self.f = forest
         self._update_trees = True
 
-    def get_tree_by_top(self, top_node):
-        """ Return tree where this node is the top node
-        :param top_node:
-        :return:
-        """
-        for tree in self.f.trees:
-            if tree.top is top_node:
-                return tree
-
     def reserve_update_for_trees(self, value=None):
         """ Tree members may have changed, go through them when updating them the next time.
         :param value: not used, it is for BaseModel compatibility
@@ -23,80 +17,48 @@ class TreeManager:
         """
         self._update_trees = True
 
+    @time_me
     def update_trees(self):
-        """ Rebuild all trees, but try to be little smart about it: Tree where one node is added
-        to top should keep its identity, and just reset the top node to be the new node.
-        :return:
-        """
-        invalid_trees = []
+        def count_top_nodes_for_each_node(top, n, btrees):
+            tops_for_node[n].append(top)
+            for tree in n.trees:
+                if tree not in btrees:
+                    btrees.append(tree)
+            for child in n.get_children(similar=False, visible=False):
+                count_top_nodes_for_each_node(top, child, btrees)
+
+        tree_candidates = []
         valid_tops = set()
-        invalid_tops = set()
-        for tree in self.f.trees:
-            if not tree.top:
-                if not tree.numeration:
-                    print('tree without top, removing it')
-                    self.remove_tree(tree)
-            elif not tree.top.is_top_node():
-                invalid_trees.append(tree)
-                invalid_tops.add(tree.top)
-            elif tree.top in tree.deleted_nodes:
-                invalid_trees.append(tree)
-                invalid_tops.add(tree.top)
-            else:
-                valid_tops.add(tree.top)
-        invalid_tops -= valid_tops
-        top_nodes = set()
+        used_trees = set()
+        tops_for_node = defaultdict(list)
+
         for node in self.f.nodes.values():
-            if node.is_top_node():
-                top_nodes.add(node)
-        unassigned_top_nodes = top_nodes - valid_tops
-        # In   (Empty)
-        #       /  \
-        #     TrA  (Empty)
-        #
-        # Have TrA to take over the empty nodes
-        for node in list(unassigned_top_nodes):
-            for child in node.get_children(similar=False, visible=False):
-                if child in invalid_tops:
-                    tree = self.get_tree_by_top(child)
-                    tree.top = child
-                    tree.update_items()
-                    invalid_tops.remove(child)
-                    invalid_trees.remove(tree)
-                    unassigned_top_nodes.remove(node)
-                    break
+            if not node.get_parents(similar=True, visible=True):
+                valid_tops.add(node)
+        for node in valid_tops:
+            if len(node.trees) > 1:
+                raise IndexError
+            best_trees = list(node.trees)
+            count_top_nodes_for_each_node(node, node, best_trees)
+            tree_candidates.append((node, best_trees))
 
-        # Create new trees for other unassigned nodes:
-        for node in unassigned_top_nodes:
-            self.create_tree_for(node)
-        # Remove trees that are part of some other tree
-        for tree in invalid_trees:
-            self.remove_tree(tree)
-
-        if self._update_trees:
-            for tree in self.f.trees:
+        for top, best_trees in tree_candidates:
+            available_trees = [t for t in best_trees if t not in used_trees]
+            if available_trees:
+                tree = available_trees[0]
+                used_trees.add(tree)
+                tree.top = top
                 tree.update_items()
-
-        self._update_trees = False
-
-        # Remove this if we found it to be unnecessary -- it is slow, and these problems
-        # shouldn't happen -- this is more for debugging
-        # Go through all nodes and check if they are ok.
-        if True:
-            for node in self.f.nodes.values():
-                if node.is_top_node():
-                    if not self.get_tree_by_top(node):
-                        print('no tree found for potential top node: ', node)
-                else:
-                    # either parent should have the same trees or parents together should have same
-                    # trees
-                    union = set()
-                    for parent in node.get_parents(similar=False, visible=False):
-                        union |= parent.trees
-                    problems = node.trees ^ union
-                    if problems:
-                        print('problem with trees: node %s belongs to trees %s, but its parents '
-                              'belong to trees %s' % (node, node.trees, union))
+            else:
+                tree = self.create_tree_for(top)
+                used_trees.add(tree)
+        for node, tops in tops_for_node.items():
+            for tree in list(node.trees):
+                if tree.top not in tops:
+                    tree.remove_node(node)
+        for tree in self.f.trees:
+            if tree not in used_trees:
+                self.remove_tree(tree)
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
