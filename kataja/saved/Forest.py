@@ -205,6 +205,7 @@ class Forest(SavedObject):
         :return:
         """
         self.tree_manager.update_trees()
+        self.projection_manager.update_projections()
         self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
 
     @staticmethod
@@ -557,7 +558,7 @@ class Forest(SavedObject):
         for tree in self.trees:
             if tree.top:
                 tree.top.update_visibility()  # fixme
-        self.projection_manager.update_projections()
+        #self.projection_manager.update_projections()
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()

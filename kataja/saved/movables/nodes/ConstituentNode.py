@@ -168,12 +168,12 @@ class ConstituentNode(Node):
 
         self.index = ''
         self.label = label
+        self.autolabel = ''
         self.gloss = ''
 
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
-        self.original_parent = None
         self.in_projections = []
 
         # ### Cycle index stores the order when node was originally merged to structure.
@@ -484,6 +484,9 @@ class ConstituentNode(Node):
         elif label_text_mode == g.SECONDARY_LABELS:
             if self.syntactic_object:
                 l = self.syntactic_object.get_secondary_label()
+        elif label_text_mode == g.XBAR_LABELS:
+            l = self.autolabel
+
 
         l = as_html(l, omit_triangle=True, include_index=self.index)
         #if self.index and not syntactic_mode:
@@ -827,7 +830,7 @@ class ConstituentNode(Node):
         :return:
         """
         top = self.get_top_node()
-        return self is not top and self not in top.get_children()
+        return self is not top and self not in top.get_children(similar=True, visible=False)
 
     # ### Dragging #####################################################################
 
@@ -875,5 +878,4 @@ class ConstituentNode(Node):
     index = SavedField("index")
     gloss = SavedField("gloss", if_changed=update_gloss)
     heads = SavedField("heads")
-    original_parent = SavedField("original_parent")
 

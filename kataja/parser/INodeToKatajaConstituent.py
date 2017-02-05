@@ -67,7 +67,7 @@ class INodeToKatajaConstituent:
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
         self.parser = SuperParser(string)
-        result = [self.inode_into_tree(inode) for inode in self.parser.nodes]
+        result = [self.inode_to_constituentnode(inode) for inode in self.parser.nodes]
         self.should_add_to_scene = old_should_add
         return result
 
@@ -80,19 +80,6 @@ class INodeToKatajaConstituent:
         else:
             return str(inode)
 
-
-    def inode_into_tree(self, inode):
-        """ Parses inode into constituentnodes, but prepare a temporary trees that can be assigned
-        for created nodes so they don't each end up creating their own trees or get lost.
-        :param inode:
-        :return:
-        """
-        self.temp_tree = None
-        result = self.inode_to_constituentnode(inode)
-        if self.temp_tree:
-            self.temp_tree.rebuild()
-        return result
-
     def inode_to_constituentnode(self, inode):
         """
 
@@ -100,9 +87,11 @@ class INodeToKatajaConstituent:
         :return:
         """
         if isinstance(inode, IParserNode):
-            return self.parsernodes_to_constituentnodes(inode)
+            cnode = self.parsernodes_to_constituentnodes(inode)
         elif isinstance(inode, ITextNode):
-            return self.textnode_to_constituentnode(inode)
+            cnode = self.textnode_to_constituentnode(inode)
+        self.forest.projection_manager.guess_heads(cnode)
+        return cnode
 
     def textnode_to_constituentnode(self, tnode):
         """
@@ -110,8 +99,7 @@ class INodeToKatajaConstituent:
         :param node:
         :return:
         """
-        cn = self.forest.free_drawing.create_node()
-        cn.label = tnode
+        cn = self.forest.free_drawing.create_node(label=tnode)
         cn.update_label()
         return cn
 

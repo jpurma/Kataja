@@ -2,7 +2,7 @@
 import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
 from kataja.singletons import ctrl
-from kataja.saved.movables.nodes.ConstituentNode import strip_xbars
+from kataja.parser.INodes import as_text
 
 
 class Projection:
@@ -10,6 +10,16 @@ class Projection:
     used to draw these as separate graphicsitems, but these can be as well
     presented by modifying existing edges and nodes.
     """
+
+    @staticmethod
+    def get_base_label(node):
+        head_part = as_text(node.label, omit_triangle=True)
+        if head_part:
+            head_part = head_part.splitlines()[0].strip()
+            last_char = head_part[-1]
+            if len(head_part) > 1 and last_char in ('P', "'", "´"):
+                head_part = head_part[:-1]
+        return head_part
 
     def __init__(self, head, chains, rotator):
         super().__init__()
@@ -22,14 +32,14 @@ class Projection:
         self.visual = None
         self._changes = False
         if head and chains:
-            self.fix_labels()
+            self.update_autolabels()
 
     def update_chains(self, chains):
         changes = chains != self.chains
         self.chains = chains
         if changes:
             self._changes = True
-            self.fix_labels()
+            self.update_autolabels()
 
     def add_visual(self):
         self.visual = ProjectionVisual(self)
@@ -53,10 +63,6 @@ class Projection:
     def set_visuals(self, strong_lines, colorized, highlighter):
         self.colorized = colorized
         self.strong_lines = strong_lines
-        if colorized:
-            color_id = self.color_id
-        else:
-            color_id = None
         for edge in self.get_edges():
             edge.in_projections.append(self)
         for chain in self.chains:
@@ -76,33 +82,25 @@ class Projection:
             ctrl.forest.remove_from_scene(self.visual)
             self.visual = None
 
-    def fix_labels(self):
-        """ If node has head, then start from this node, and
-        move upwards labeling the nodes that also use the same head.
-
-        If head is None, then remove label.
+    def update_autolabels(self):
+        """ Compute x-bar labels and put them to node.autolabel
         :return:
         """
         xbar = ctrl.settings.get('use_xbar_aliases')
-        label = self.head.label
-        if not xbar:
+        base_label = Projection.get_base_label(self.head)
+        if xbar:
             for chain in self.chains:
-                for node in chain[1:]:
-                    if node.label != label:
-                        node.label = label
-                        node.update_label()
-            return
-        head_base = strip_xbars(str(self.head.label or self.head.get_syn_label()))
-        if head_base != str(self.head.label):
-            self.head.label = head_base
-        for chain in self.chains:
-            new_label = head_base + '´'
-            for node in chain[1:-1]:
-                if str(node.label) != new_label:
-                    node.label = new_label
+                last = len(chain) - 1
+                for i, node in enumerate(chain):
+                    if i == 0:
+                        node.autolabel = base_label
+                    elif i == last:
+                        node.autolabel = base_label + 'P'
+                    else:
+                        node.autolabel = base_label + '´'
                     node.update_label()
-            node = chain[-1]
-            new_label = head_base + 'P'
-            if str(node.display_label) != new_label:
-                node.label = new_label
-                node.update_label()
+        else:
+            for chain in self.chains:
+                for i, node in enumerate(chain):
+                    node.autolabel = base_label
+                    node.update_label()
