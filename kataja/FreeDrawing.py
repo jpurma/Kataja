@@ -330,7 +330,7 @@ class FreeDrawing:
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
 
-    def delete_edge(self, edge, ignore_consequences=False):
+    def delete_edge(self, edge, ignore_consequences=False, fade=True):
         """ remove from scene and remove references from nodes
         :param edge:
         :param ignore_consequences: don't try to fix things like connections,
@@ -338,10 +338,10 @@ class FreeDrawing:
         """
         # block circular deletion calls
         if edge in self._marked_for_deletion:
+            print('already marked for deletion')
             return
         else:
             self._marked_for_deletion.add(edge)
-
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
@@ -378,11 +378,8 @@ class FreeDrawing:
                     break
             if not found:
                 self.edge_types.remove(my_type)
-        # -- make sure that edge is not accidentally restored while fading away
-        edge.start = None
-        edge.end = None
         # -- scene --
-        self.f.remove_from_scene(edge)
+        self.f.remove_from_scene(edge, fade_out=fade)
         # -- undo stack --
         edge.announce_deletion()
         # -- remove circularity block

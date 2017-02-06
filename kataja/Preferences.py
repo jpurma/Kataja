@@ -629,10 +629,8 @@ class QtPreferences:
         # x)/self.move_frames)-curve.valueForProgress(float(
         # x)/self.move_frames) for x in range(self.move_frames)]
         s = sum(self.easing_curve)
-        print(s)
         self.easing_curve = [x / s for x in self.easing_curve]
         self.curve = curve
-        print(self.easing_curve)
 
     def prepare_fonts(self, fonts_dict, running_environment, log):
         """

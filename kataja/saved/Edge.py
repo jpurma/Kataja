@@ -160,21 +160,24 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.update_visibility()
         self.announce_creation()
 
-    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+    def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
         :param updated_fields: field keys of updates
-        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
-        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-        if transition_type == g.CREATED or (revert_transition and transition_type == g.DELETED):
+
+        print('edge after_model_update (1=CREATED, -1=DELETED), ', transition_type)
+        if transition_type == g.CREATED:
+            print('re-creating edge')
             ctrl.forest.store(self)
             ctrl.forest.add_to_scene(self)
-        elif transition_type == g.DELETED or (revert_transition and transition_type == g.CREATED):
-            ctrl.forest.remove_from_scene(self, fade_out=False)
+            print(self.start, self.end)
+        elif transition_type == g.DELETED:
+            ctrl.free_drawing.delete_edge(self, fade=False)
             return
-        self.update_visibility()
         self.connect_end_points(self.start, self.end)
+        self.update_visibility()
         #self.update_end_points()
 
     def cut(self, others=None):

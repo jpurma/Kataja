@@ -105,7 +105,7 @@ HIGHLIGHT_PROJECTIONS = 2
 
 # Creation/Deletion flags
 CREATED = 1
-DELETED = 2
+DELETED = -1
 
 # Font roles
 FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),

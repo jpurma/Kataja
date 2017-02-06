@@ -101,11 +101,10 @@ class Forest(SavedObject):
         self._do_edge_visibility_check = False
         #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
-    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+    def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
         :param updated_fields: field keys of updates
-        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
-        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
         if 'nodes' in updated_fields:
@@ -443,7 +442,7 @@ class Forest(SavedObject):
         elif isinstance(item, QtWidgets.QGraphicsItem):
             sc = item.scene()
             if sc == self.scene:
-                # print('..removing from scene ', item.uid)
+                #print('..removing from scene ', item.uid)
                 sc.removeItem(item)
             elif sc:
                 print('unknown scene for item %s : %s ' % (item, sc))

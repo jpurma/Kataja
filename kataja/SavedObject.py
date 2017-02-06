@@ -174,7 +174,8 @@ class SavedObject(object):
                 setattr(self, key, copy.copy(old))
             else:
                 setattr(self, key, old)
-        self.after_model_update(transitions.keys(), transition_type, revert_transition=True)
+        transition_type = -transition_type  # revert transition
+        self.after_model_update(transitions.keys(), transition_type)
 
 
     def move_to_later(self, transitions, transition_type):
@@ -190,15 +191,14 @@ class SavedObject(object):
                 setattr(self, key, copy.copy(new))
             else:
                 setattr(self, key, new)
-        self.after_model_update(transitions.keys(), transition_type, revert_transition=False)
+        self.after_model_update(transitions.keys(), transition_type)
 
-    def after_model_update(self, changed_fields, transition_type, revert_transition=False):
-        """ Override this to update derivative values when restoring objects
-        :param changed_fields:
-        :param transition_type:
-        :return:
+    def after_model_update(self, changed_fields, transition_type):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
+        :return: None
         """
-        pass
 
     def can_have_setting(self, key):
         return key in self.allowed_settings

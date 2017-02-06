@@ -189,14 +189,15 @@ class Node(Movable):
             self.toggle_halo(True)
         ctrl.forest.store(self)
 
-    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+    def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
         :param updated_fields: field keys of updates
-        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
-        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-        super().after_model_update(updated_fields, transition_type, revert_transition)
+        super().after_model_update(updated_fields, transition_type)
+        if transition_type == g.DELETED:
+            return
 
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.

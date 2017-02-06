@@ -128,18 +128,17 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     def late_init(self):
         pass
 
-    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+    def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
         :param updated_fields: field keys of updates
-        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
-        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-        print('movable after_model_update, ', transition_type, revert_transition)
-        if transition_type == CREATED or (revert_transition and transition_type == DELETED):
+        #print('movable after_model_update, ', transition_type, revert_transition)
+        if transition_type == CREATED:
             ctrl.forest.store(self)
             ctrl.forest.add_to_scene(self)
-        elif transition_type == DELETED or (revert_transition and transition_type == CREATED):
+        elif transition_type == DELETED:
             ctrl.forest.remove_from_scene(self, fade_out=False)
             return
         self.update_position()
