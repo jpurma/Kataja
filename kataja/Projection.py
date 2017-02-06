@@ -13,7 +13,7 @@ class Projection:
 
     @staticmethod
     def get_base_label(node):
-        head_part = as_text(node.label, omit_triangle=True)
+        head_part = as_text(node.label, omit_triangle=True, omit_index=True)
         if head_part:
             head_part = head_part.splitlines()[0].strip()
             last_char = head_part[-1]
@@ -86,16 +86,20 @@ class Projection:
         """ Compute x-bar labels and put them to node.autolabel
         :return:
         """
-        xbar = ctrl.settings.get('use_xbar_aliases')
+        xbar = ctrl.settings.get('use_xbar_aliases') or True
         base_label = Projection.get_base_label(self.head)
         if xbar:
             for chain in self.chains:
+                if len(chain) > 1 and len(chain[1].get_children(visible=False, similar=True)) == 1:
+                    chain[0].autolabel = Projection.get_base_label(self.head)
+                    base_label = Projection.get_base_label(chain[1])
+                    chain = chain[1:]
                 last = len(chain) - 1
                 for i, node in enumerate(chain):
-                    if i == 0:
-                        node.autolabel = base_label
-                    elif i == last:
+                    if i == last:
                         node.autolabel = base_label + 'P'
+                    elif i == 0:
+                        node.autolabel = base_label
                     else:
                         node.autolabel = base_label + '´'
                     node.update_label()

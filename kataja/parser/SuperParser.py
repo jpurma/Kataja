@@ -277,8 +277,6 @@ class SuperParser:
         if tidy_up:
             node = node.tidy(keep_node=True)
         node.check_for_index()
-        if node.index:
-            print('found index: ', node.index)
         return node
 
     def parse_word(self, string):

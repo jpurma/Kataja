@@ -51,11 +51,19 @@ def as_html(item, omit_triangle=False, include_index='') -> str:
     return h
 
 
-def as_text(item, omit_triangle=False):
+def as_text(item, omit_triangle=False, omit_index=False, omit_outmost=False, single_line=False):
     if isinstance(item, ITextNode):
-        return item.as_plain(omit_triangle=omit_triangle)
+        if omit_outmost:
+            r = []
+            ITextNode._as_plain(item, r, omit_triangle=omit_triangle, omit_index=omit_index)
+            return ''.join(r)
+        s = item.as_plain(omit_triangle=omit_triangle, omit_index=omit_index)
     else:
-        return str(item)
+        s = str(item)
+    if single_line:
+        return s.replace('\n', ' ')
+    else:
+        return s
 
 
 def extract_triangle(item):
@@ -286,16 +294,16 @@ class ITextNode:
         self._as_latex(s)
         return ''.join(s).replace('\n', '\\').replace('\r', '\\')
 
-    def _as_plain(self, s, omit_triangle=False):
+    def _as_plain(self, s, omit_triangle=False, omit_index=False):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                part._as_plain(s, omit_triangle=omit_triangle)
+                part._as_plain(s, omit_triangle=omit_triangle, omit_index=omit_index)
             else:
                 s.append(str(part))
 
-    def as_plain(self, omit_triangle=False):
+    def as_plain(self, omit_triangle=False, omit_index=False):
         r = []
-        self._as_plain(r, omit_triangle=omit_triangle)
+        self._as_plain(r, omit_triangle=omit_triangle, omit_index=omit_index)
         return ''.join(r)
 
     def __str__(self):
@@ -360,19 +368,26 @@ class ICommandNode(ITextNode):
         else:
             ITextNode._as_html(self, s)
 
-    def _as_plain(self, s, omit_triangle=False):
-        if omit_triangle and self.command == 'qroof':
-            return
+    def _as_plain(self, s, omit_triangle=False, omit_index=False):
         if not self.parts:
             unic = latex_to_unicode.get(self.command, None)
             if unic:
                 s.append(unic[0])
         else:
+
             if self.command == 'qroof':
+                if omit_triangle:
+                    return
                 s.append('△')
+            elif self.command == 'sub':
+                if omit_index:
+                    return
+                s.append('_')
+            elif self.command == 'sup':
+                s.append('^')
             for part in self.parts:
                 if isinstance(part, ITextNode):
-                    part._as_plain(s, omit_triangle=omit_triangle)
+                    part._as_plain(s, omit_triangle=omit_triangle, omit_index=omit_index)
                 else:
                     s.append(str(part))
 
@@ -461,7 +476,7 @@ class IParserNode(ITextNode):
         """
         def find_index(part):
             if isinstance(part, ICommandNode) and part.command == 'sub':
-                return ITextNode.as_plain(part)
+                return as_text(part, omit_outmost=True)
             elif isinstance(part, ITextNode):
                 for p in part.parts:
                     found = find_index(p)

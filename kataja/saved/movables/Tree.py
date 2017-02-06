@@ -5,6 +5,7 @@ from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
+from kataja.utils import time_me
 
 __author__ = 'purma'
 
@@ -55,7 +56,6 @@ class Tree(Movable):
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None
-        self.deleted_nodes = set()
         self.setZValue(100)
 
     def __repr__(self):
@@ -73,9 +73,18 @@ class Tree(Movable):
         self.update_items()
         self.announce_creation()
 
-    def after_model_update(self, updated_fields, update_type):
-        super().after_model_update(updated_fields, update_type)
-        self.update_items()
+    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :return: None
+        """
+        super().after_model_update(updated_fields, transition_type, revert_transition)
+        if transition_type == g.DELETED or revert_transition and transition_type == g.CREATED:
+            pass
+        else:
+            self.update_items()
 
     def rebuild(self):
         self.recalculate_top()
@@ -96,7 +105,7 @@ class Tree(Movable):
             """
             passed.add(node)
             for parent in node.get_parents(similar=False, visible=False):
-                if parent not in passed and parent not in self.deleted_nodes:
+                if parent not in passed:
                     return walk_to_top(parent)
             return node
         if self.top: # hopefully it is a short walk
@@ -159,6 +168,7 @@ class Tree(Movable):
                         add_children(child)
         add_children(node)
 
+    @time_me
     def update_items(self):
         """ Check that all children of top item are included in this trees and create the sorted
         lists of items. Make sure there is a top item before calling this!
@@ -185,19 +195,18 @@ class Tree(Movable):
             """
             if node not in used:
                 used.add(node)
-                if node not in self.deleted_nodes:
-                    if is_constituent(node):
-                        sorted_constituents.append(node)
-                    sorted_nodes.append(node)
-                    if self not in node.trees:
-                        self.add_node(node)
-                    for child in node.get_children(similar=False, visible=False):
-                        if child: # undoing object creation may cause missing edge ends
-                            add_children(child)
+                if is_constituent(node):
+                    sorted_constituents.append(node)
+                sorted_nodes.append(node)
+                if self not in node.trees:
+                    self.add_node(node)
+                for child in node.get_children(similar=False, visible=False):
+                    if child: # undoing object creation may cause missing edge ends
+                        add_children(child)
 
         old_nodes = set(self.sorted_nodes)
 
-        if is_constituent(self.top) and self.top not in self.deleted_nodes:
+        if is_constituent(self.top):
             add_children(self.top)
 
         self.sorted_constituents = sorted_constituents
@@ -291,7 +300,7 @@ class Tree(Movable):
     #         node.move_to(nx - tx, ny - ty)
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        if self.numeration:
+        if self.numeration: #or True:
             br = self.boundingRect()
             painter.drawRect(br)
             #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))

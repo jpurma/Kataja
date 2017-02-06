@@ -24,9 +24,11 @@
 
 import random
 
+import math
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, NO_ALIGN
+from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, \
+    NO_ALIGN, DELETED, CREATED
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
@@ -94,9 +96,11 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         # MOVE_TO -elements
         self.target_position = 0, 0
         self.adjustment = 0, 0
+        self._start_position = 0, 0
+        self._move_frames = 0
         self._move_counter = 0
         self._use_easing = True
-        self._step = None
+        self._distance = None
         self.unmoved = True  # flag to distinguish newly created nodes
         self.after_move_function = None
         self.use_adjustment = False
@@ -124,17 +128,20 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     def late_init(self):
         pass
 
-    def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run
-        the side-effects of various
-        setters in an order that makes sense.
-        :param updated_fields: list of names of elements that have been updated.
-        :param update_type: can be CREATED or DELETED -- in case of DELETED,
-        it may be that elements have
-        not changed, but the object should go the deletion routines. It can
-        get a bit complicated.
+    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
         :return: None
         """
+        print('movable after_model_update, ', transition_type, revert_transition)
+        if transition_type == CREATED or (revert_transition and transition_type == DELETED):
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
+        elif transition_type == DELETED or (revert_transition and transition_type == CREATED):
+            ctrl.forest.remove_from_scene(self, fade_out=False)
+            return
         self.update_position()
 
     def use_physics(self):
@@ -256,16 +263,22 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             if about_there(position, self.target_position):
                 self.stop_moving()
                 return False, False
+            self._move_counter -= 1
             # move a precalculated step
             if self._use_easing:
-                movement = multiply_xy(self._step, qt_prefs.easing_curve[self._move_counter - 1])
+                if self._move_frames != self._move_counter:
+                    time_f = 1 - (self._move_counter / self._move_frames)
+                    f = qt_prefs.curve.valueForProgress(time_f)
+                else:
+                    f = 0
+                movement = multiply_xy(self._distance, f)
+                self.current_position = add_xy(self._start_position, movement)
             else:
                 movement = div_xy(sub_xy(self.target_position, position), self._move_counter)
-            self._move_counter -= 1
+                self.current_position = add_xy(self.current_position, movement)
             # if move counter reaches zero, stop and do clean-up.
             if not self._move_counter:
                 self.stop_moving()
-            self.current_position = add_xy(self.current_position, movement)
             if self.locked_to_node:
                 self.locked_to_node.update_bounding_rect()
             return True, False
@@ -304,8 +317,23 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return: None
         """
         self._use_easing = True
-        self._move_counter = prefs.move_frames
-        self._step = sub_xy(self.target_position, self.current_position)
+        dx, dy = sub_xy(self.target_position, self.current_position)
+        d = math.sqrt(dx * dx + dy * dy)
+        self._distance = dx, dy
+        # this scales nicely:
+        # d = 0 -> p = 0
+        # d = 50 -> p = 0.5849
+        # d = 100 -> p = 1
+        # d = 200 -> p = 1.5849
+        # d = 500 -> p = 2.5849
+        # d = 1000 -> p = 3.4594
+        p = math.log2(d * 0.01 + 1)
+        self._move_frames = int(p * prefs.move_frames)
+        if self._move_frames == 0:
+            self._move_frames = 1
+        #self._move_frames = prefs.move_frames
+        self._move_counter = self._move_frames
+        self._start_position = self.current_position
         # self.adjustment affects both elements in the previous subtraction, so it can be ignored
         ctrl.graph_scene.item_moved()
 

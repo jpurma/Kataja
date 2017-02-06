@@ -189,22 +189,14 @@ class Node(Movable):
             self.toggle_halo(True)
         ctrl.forest.store(self)
 
-    def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run
-        the side-effects of various
-        setters in an order that makes sense.
-        :param updated_fields: list of names of elements that have been updated.
-        :param update_type: g.DELETE or g.CREATE
+    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
         :return: None
         """
-        super().after_model_update(updated_fields, update_type)
-
-        if update_type == 1:  # CREATE
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
-        if update_type == 2:  # DELETE
-            ctrl.forest.remove_from_scene(self, fade_out=False)
-            return
+        super().after_model_update(updated_fields, transition_type, revert_transition)
 
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.
@@ -1734,7 +1726,6 @@ class Node(Movable):
         if ctrl.settings.get('syntactic_mode'):
             self._node_type_visible = self.is_syntactic
         else:
-            self._node_type_visible = True
             self._node_type_visible = True
         self._node_in_triangle = self.folded_away or self.folding_towards
 

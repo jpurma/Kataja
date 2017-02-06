@@ -44,6 +44,7 @@ class KeyBackspace(KatajaAction):
         for item in list(ctrl.selected):
             ctrl.free_drawing.delete_item(item)
         ctrl.multiselection_end() # ok go update
+        ctrl.forest.forest_edited()
 
 
 class KeyLeft(KatajaAction):

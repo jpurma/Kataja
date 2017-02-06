@@ -269,8 +269,8 @@ class FreeDrawing:
             return
         else:
             self._marked_for_deletion.add(node)
-        for tree in node.trees:
-            tree.deleted_nodes.add(node)
+        #for tree in node.trees:
+        #    tree.deleted_nodes.add(node)
 
         # -- connections to other nodes --
         if not ignore_consequences:
@@ -715,6 +715,7 @@ class FreeDrawing:
         """
 
         new_node = self.create_node(label=self.next_free_label(), relative=old_node)
+        new_node.heads = [new_node]
 
         if add_left:
             left = new_node
@@ -722,31 +723,22 @@ class FreeDrawing:
         else:
             left = old_node
             right = new_node
-        parent_info = [(e.start, e.direction(), e.start.heads) for e in
+        parent_info = [(e.start, e.direction()) for e in
                        old_node.get_edges_up(similar=True, visible=False)]
 
-        for op, align, head in parent_info:
+        for op, align in parent_info:
             self.disconnect_node(parent=op, child=old_node)
 
         merger_node = self.create_merger_node(left=left, right=right, new=new_node)
-
-        # Fix trees to include new node and especially the new merger node
-        #for tree in set(old_node.trees):
-        #    tree.recalculate_top()
-        #    tree.update_items()
 
         for group in self.groups.values():
             if old_node in group:
                 group.add_node(merger_node)
 
-        for op, align, head in parent_info:
+        for op, align in parent_info:
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.copy_position(old_node)
-        merger_node.heads = [old_node]
-        for op, align, head_nodes in parent_info:
-            if old_node in head_nodes:
-                op.heads = list(head_nodes)  # fixme: not sure if we treat multiple heads right
-                # here
+        merger_node.heads = list(old_node.heads)
 
     def merge_to_top(self, top, new, merge_to_left=True, pos=None):
         """
@@ -840,26 +832,13 @@ class FreeDrawing:
         merger_node.current_position = merger_node.scene_position_to_tree_position(p)
         self.connect_node(parent, merger_node, direction=direction)
 
-        # trees
-        for tree in list(parent.trees):
-            tree.update_items()
-
         # groups
         for group in self.groups.values():
             if parent in group:
                 group.add_node(merger_node)
 
         # projections
-        if heads:
-            if child in heads:
-                merger_node.set_heads(heads)
-                heads.remove(child)
-                heads.append(merger_node)
-                parent.set_heads(heads)
-
-        # chains
-        #if self.f.chain_manager.traces_are_visible():
-        #    self.f.chain_manager.rebuild_chains()
+        merger_node.set_heads(heads)
 
     def create_merger_node(self, left=None, right=None, pos=None, new=None, head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges

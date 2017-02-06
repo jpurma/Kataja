@@ -45,7 +45,7 @@ class UndoManager:
         self._current = 0
 
     def can_undo(self):
-        return self._current > 0
+        return self._current >= 0
 
     def can_redo(self):
         return self._current < len(self._stack) - 1
@@ -67,7 +67,9 @@ class UndoManager:
         # print('items in undo pile:', len(ctrl.undo_pile))
         for obj in ctrl.undo_pile:
             transitions, transition_type = obj.transitions()
-            snapshot[obj.uid] = (obj, transitions, transition_type)
+            if transitions or transition_type:
+                #print(obj, '----', transition_type, '----',  transitions)
+                snapshot[obj.uid] = (obj, transitions, transition_type)
             obj.flush_history()
         # ...
         if snapshot:
@@ -89,36 +91,16 @@ class UndoManager:
         """
         if not self._stack:
             return
-        if self._current == 0:
-            log.info('undo [%s]: Cannot undo further' % self._current)
-            return
+        #if self._current == 0:
+        #    log.info('undo [%s]: Cannot undo further' % self._current)
+        #    return
         ctrl.disable_undo()
         ctrl.multiselection_start()
         ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
-        affected = set()
         for obj, transitions, transition_type in snapshot.values():
-            obj.revert_to_earlier(transitions)
-            if transition_type == CREATED:
-                ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
-            elif transition_type == DELETED:
-                ctrl.forest.add_to_scene(obj)
-            affected.add(obj)
-            if hasattr(obj, 'update_visibility'):
-                obj.update_visibility()
+            obj.revert_to_earlier(transitions, transition_type)
         ctrl.forest.edge_visibility_check()
-        for obj, transitions, transition_type in snapshot.values():
-            if transition_type == CREATED:
-                revtt = DELETED
-            elif transition_type == DELETED:
-                revtt = CREATED
-            else:
-                revtt = transition_type
-            obj.after_model_update(transitions.keys(), revtt)
-            if getattr(obj.__class__, 'syntactic_object', False):
-                node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
-                if node and node not in affected:
-                    node.after_model_update([], revtt)
         ctrl.forest.flush_and_rebuild_temporary_items()
         log.info('undo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
@@ -127,6 +109,61 @@ class UndoManager:
         ctrl.forest.halt_drawing = False
 
         print('-------undo finished', self._current)
+
+    # def undo_old(self):
+    #     """ Move backward in the undo stack
+    #     :return: None
+    #     """
+    #     if not self._stack:
+    #         return
+    #     #if self._current == 0:
+    #     #    log.info('undo [%s]: Cannot undo further' % self._current)
+    #     #    return
+    #     ctrl.disable_undo()
+    #     ctrl.multiselection_start()
+    #     ctrl.forest.halt_drawing = True
+    #     msg, snapshot = self._stack[self._current]
+    #     affected = set()
+    #     for obj, transitions, transition_type in snapshot.values():
+    #         obj.revert_to_earlier(transitions)
+    #         if transition_type == CREATED:
+    #             ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
+    #         elif transition_type == DELETED:
+    #             print('restoring object: ', obj)
+    #             ctrl.forest.add_to_scene(obj)
+    #         affected.add(obj)
+    #         if hasattr(obj, 'update_visibility'):
+    #             obj.update_visibility()
+    #             if not obj.isVisible():
+    #                 print('not visible')
+    #     ctrl.forest.edge_visibility_check()
+    #     for obj, transitions, transition_type in snapshot.values():
+    #         if transition_type == CREATED:
+    #             revtt = DELETED
+    #         elif transition_type == DELETED:
+    #             revtt = CREATED
+    #         else:
+    #             revtt = transition_type
+    #         obj.after_model_update(transitions.keys(), revtt)
+    #         if getattr(obj.__class__, 'syntactic_object', False):
+    #             node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
+    #             if node and node not in affected:
+    #                 node.after_model_update([], revtt)
+    #     ctrl.forest.flush_and_rebuild_temporary_items()
+    #     for node in ctrl.forest.nodes.values():
+    #         if not node.isVisible():
+    #             print('hidden node: ', node)
+    #         elif not node._visible_by_logic:
+    #             print('logic says hide:', node)
+    #         elif node.is_fading_in:
+    #             print('node is fading in: ', node)
+    #     log.info('undo [%s]: %s' % (self._current, msg))
+    #     ctrl.multiselection_end()
+    #     ctrl.resume_undo()
+    #     self._current -= 1
+    #     ctrl.forest.halt_drawing = False
+    #
+    #     print('-------undo finished', self._current)
 
     def redo(self):
         """ Move forward in the undo stack
@@ -141,21 +178,9 @@ class UndoManager:
         ctrl.multiselection_start()
         ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
-        affected = set()
         for obj, transitions, transition_type in snapshot.values():
-            obj.move_to_later(transitions)
-            if transition_type == CREATED:
-                ctrl.forest.add_to_scene(obj)
-            elif transition_type == DELETED:
-                ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
-            affected.add(obj)
+            obj.move_to_later(transitions, transition_type)
         ctrl.forest.edge_visibility_check()
-        for obj, transitions, transition_type in snapshot.values():
-            obj.after_model_update(transitions.keys(), transition_type)
-            if getattr(obj.__class__, 'syntactic_object', False):
-                node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
-                if node and node not in affected:
-                    node.after_model_update([], transition_type)
         ctrl.forest.flush_and_rebuild_temporary_items()
         log.info('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()

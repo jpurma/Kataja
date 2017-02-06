@@ -154,14 +154,14 @@ class SavedObject(object):
         :return: None
         """
         self._history = {}
-        self._cd = {}
+        self._cd = 0
 
     # don't know yet what to do with synobjs:
     #                elif attr_name.endswith('_synobj') and getattr(self,
     # attr_name, False):
     #                    transitions[attr_name] = (True, True)
 
-    def revert_to_earlier(self, transitions):
+    def revert_to_earlier(self, transitions, transition_type):
         """ Restore to earlier version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old,
         new) -pairs
@@ -174,8 +174,10 @@ class SavedObject(object):
                 setattr(self, key, copy.copy(old))
             else:
                 setattr(self, key, old)
+        self.after_model_update(transitions.keys(), transition_type, revert_transition=True)
 
-    def move_to_later(self, transitions):
+
+    def move_to_later(self, transitions, transition_type):
         """ Move to later version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old,
         new) -pairs
@@ -188,8 +190,9 @@ class SavedObject(object):
                 setattr(self, key, copy.copy(new))
             else:
                 setattr(self, key, new)
+        self.after_model_update(transitions.keys(), transition_type, revert_transition=False)
 
-    def after_model_update(self, changed_fields, transition_type):
+    def after_model_update(self, changed_fields, transition_type, revert_transition=False):
         """ Override this to update derivative values when restoring objects
         :param changed_fields:
         :param transition_type:

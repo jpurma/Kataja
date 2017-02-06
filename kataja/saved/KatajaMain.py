@@ -390,6 +390,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 print('no derivation steps')
         self.forest.prepare_for_drawing()
         ctrl.resume_undo()
+        #if self.forest.undo_manager.
 
     def redraw(self):
         """ Call for forest redraw

@@ -213,7 +213,7 @@ class Preferences(object):
         self.traces_are_grouped_together = False
         self.last_key_colors = {}
 
-        self.use_xbar_aliases = False
+        self.use_xbar_aliases = True
 
         self.single_click_editing = False
         self._single_click_editing_ui = {'tab': 'General', 'label': 'Single click editing',
@@ -445,6 +445,7 @@ class QtPreferences:
 
     def __init__(self):  # called to create a placeholder in early imports
         self.easing_curve = []
+        self.curve = None
         self.fonts = {}
         self.font_space_width = 0
         self.font_bracket_width = 0
@@ -628,7 +629,10 @@ class QtPreferences:
         # x)/self.move_frames)-curve.valueForProgress(float(
         # x)/self.move_frames) for x in range(self.move_frames)]
         s = sum(self.easing_curve)
+        print(s)
         self.easing_curve = [x / s for x in self.easing_curve]
+        self.curve = curve
+        print(self.easing_curve)
 
     def prepare_fonts(self, fonts_dict, running_environment, log):
         """

@@ -77,8 +77,20 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.update_shape()
         self.update_colors()
 
-    def after_model_update(self, changed_fields, transition_type):
-        if changed_fields:
+    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
+        :return: None
+        """
+        if transition_type == g.CREATED or (revert_transition and transition_type == g.DELETED):
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
+        elif transition_type == g.DELETED or (revert_transition and transition_type == g.CREATED):
+            ctrl.forest.remove_from_scene(self, fade_out=False)
+            return
+        if updated_fields:
             self.update_selection(self.selection)
             self.update_shape()
             self.update_colors()

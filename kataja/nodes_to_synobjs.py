@@ -33,8 +33,8 @@ from kataja.parser.INodes import as_text, extract_triangle
 def figure_out_syntactic_label(cn):
     if cn.triangle:
         # as_text -function puts triangle symbol before triangle content, [1:] removes it.
-        return as_text(extract_triangle(cn.label))[1:]
-    l = as_text(cn.label)
+        return as_text(extract_triangle(cn.label), omit_index=True)[1:]
+    l = as_text(cn.label, omit_index=True)
     if l:
         return l.splitlines()[0]
     else:
@@ -67,6 +67,18 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     checking_features = set()
     found_copies = {}
 
+    def define_label(node):
+        n = len(node.heads)
+        if n == 0:
+            return ''
+        elif n == 1:
+            return figure_out_syntactic_label(node.heads[0])
+        else:
+            l = []
+            for head in node.heads:
+                l.append(figure_out_syntactic_label(head))
+            joined = ', '.join(l)
+            return f'({joined})'
 
     def convert_node(node):
         if node in visited_nodes or node in converted_nodes:
@@ -106,7 +118,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                 n1, n2 = children
                 synobj = syntax.merge(n1.syntactic_object, n2.syntactic_object,
                                       c=node.syntactic_object)
-                syntax.use_labeling_algorithm(synobj)
+                synobj.label = define_label(node)
                 node.is_syntactically_valid = True
                 node.set_syntactic_object(synobj)
                 if features:
@@ -121,13 +133,13 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                 if not synobj:
                     synobj = syntax.create_constituent(label='')
                 synobj.parts = [n1.syntactic_object]
-                syntax.use_labeling_algorithm(synobj)
+                synobj.label = define_label(node)
                 node.is_syntactically_valid = False
                 node.set_syntactic_object(synobj)
                 if features:
                     synobj.features += features
             elif len(children) == 0:
-                label = figure_out_syntactic_label(node)
+                label = define_label(node)
                 synobj = node.syntactic_object
                 if not synobj:
                     synobj = syntax.create_constituent(label=label)
@@ -137,7 +149,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
             else:
                 for child in children:
                     convert_node(child)
-                label = figure_out_syntactic_label(node)
+                label = define_label(node)
                 synobj = node.syntactic_object
                 if not synobj:
                     synobj = syntax.create_constituent(label=label)

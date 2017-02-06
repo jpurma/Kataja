@@ -56,7 +56,6 @@ class ProjectionManager:
                 else:
                     _guess_head(child)
                 heads += child.heads
-                print(heads)
             else:
                 for child in children:
                     if child.is_trace and child.index in originals:
@@ -67,11 +66,14 @@ class ProjectionManager:
                             head_part_of_child = _guess_head(child)
                     else:
                         head_part_of_child = _guess_head(child)
+                    #print('head_part_of_child: %r , head_part: %r' % (head_part_of_child,
+                    # head_part))
                     if head_part_of_child:
                         if head_part_of_child == head_part:
+                            #print('match')
                             heads += child.heads
+                            #print(heads)
             node.set_heads(heads)
-            print(repr(node.label), 'head_part: ', repr(head_part), heads, len(children))
             return head_part
 
         _guess_head(root)
@@ -96,7 +98,8 @@ class ProjectionManager:
                 node.autolabel = ''
 
         for head, chain in list(chains.items()):
-            print(head, chain)
+            if head not in chain:
+                print('head %s not in chain: %s' % (str(head), str(chain)))
             chain.remove(head)
             ordered_chains = [[head]]
             progress = True

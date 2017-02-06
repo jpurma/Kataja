@@ -101,12 +101,11 @@ class Forest(SavedObject):
         self._do_edge_visibility_check = False
         #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
-    def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated (e.g. by
-        undo),
-        to run the side-effects of various setters in an order that makes sense.
-        :param update_type:
-        :param updated_fields: list of names of elements that have been updated.
+    def after_model_update(self, updated_fields, transition_type, revert_transition=False):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param revert_transition: we just reverted given transition -- CREATED becomes DELETED etc.
         :return: None
         """
         if 'nodes' in updated_fields:
@@ -154,6 +153,7 @@ class Forest(SavedObject):
             self.syntax.create_derivation(self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
+            self.forest_edited()
         ctrl.add_watcher(self, 'palette_changed')
         ctrl.main.update_colors()
         self.add_all_to_scene()

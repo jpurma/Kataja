@@ -8,14 +8,6 @@ class TreeManager:
 
     def __init__(self, forest):
         self.f = forest
-        self._update_trees = True
-
-    def reserve_update_for_trees(self, value=None):
-        """ Tree members may have changed, go through them when updating them the next time.
-        :param value: not used, it is for BaseModel compatibility
-        :return:
-        """
-        self._update_trees = True
 
     @time_me
     def update_trees(self):
@@ -60,6 +52,7 @@ class TreeManager:
             if tree not in used_trees:
                 self.remove_tree(tree)
 
+    @time_me
     def create_tree_for(self, node):
         """ Create new trees around given node.
         :param node:

@@ -106,6 +106,8 @@ class Undo(KatajaAction):
         :return: None
         """
         ctrl.forest.undo_manager.undo()
+        ctrl.forest.forest_edited()  # <-- watch out if this is correct thing to do in
+        # visualisation mode
 
     def enabler(self):
         return bool(ctrl.forest and ctrl.forest.undo_manager.can_undo())
@@ -123,6 +125,8 @@ class Redo(KatajaAction):
         :return: None
         """
         ctrl.forest.undo_manager.redo()
+        ctrl.forest.forest_edited()  # <-- watch out if this is correct thing to do in
+        # visualisation mode
 
     def enabler(self):
         return bool(ctrl.forest and ctrl.forest.undo_manager.can_redo())

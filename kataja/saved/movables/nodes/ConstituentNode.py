@@ -400,9 +400,9 @@ class ConstituentNode(Node):
             adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
         else:
             adjustment = ''
+        heads = ', '.join([as_text(x.label) for x in self.heads])
         self.status_tip = f"{name} ({label}{syn_label}{index} pos: ({self.current_scene_position[0]:.1f}, " \
-                          f"{self.current_scene_position[1]:.1f}){adjustment} z-index: " \
-                          f"{self.zValue()}/{self.z_value})"
+                          f"{self.current_scene_position[1]:.1f}){adjustment} head: {heads})"
 
     def short_str(self):
         label = as_text(self.label)
@@ -428,12 +428,12 @@ class ConstituentNode(Node):
             return self.label
 
     def __str__(self):
-        label = as_text(self.label)
-        syn_label = as_text(self.get_syn_label())
+        label = as_text(self.label, single_line=True)
+        syn_label = as_text(self.get_syn_label(), single_line=True)
         if label and syn_label:
-            return f'{label} ({syn_label})'
+            return f'CN {label} ({syn_label})'
         else:
-            return label or syn_label or "no label"
+            return f'CN {label or syn_label or "no label"}'
 
     def get_syn_label(self):
         if self.syntactic_object:
