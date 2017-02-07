@@ -102,7 +102,8 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if self._hovering:
             return ctrl.cm.hovering(ctrl.cm.ui())
         else:
-            return ctrl.cm.ui_tr()
+            return ctrl.cm.ui()
+            #return ctrl.cm.ui_tr()
 
     def boundingRect(self):
         """
@@ -482,6 +483,7 @@ class BranchingTouchArea(TouchArea):
     nodes in middle of the trees. """
 
     __qt_type_id__ = next_available_type_id()
+    spot_size = end_spot_size * 0.5
 
     def boundingRect(self):
         """
@@ -493,23 +495,22 @@ class BranchingTouchArea(TouchArea):
             self.update_end_points()
             assert self.end_point
         # Bounding rect that includes the tail and end spot ellipse
-        #ex, ey = self.end_point
-        #sx, sy = self.start_point
         ex, ey = 0, 0
         sx, sy = sub_xy(self.start_point, self.end_point)
-        e2 = end_spot_size * 2
+        ss2 = BranchingTouchArea.spot_size * 2
+        ss = BranchingTouchArea.spot_size
         if sx < ex:
-            w = max((ex - sx + end_spot_size, e2))
-            x = min((sx, ex - end_spot_size))
+            w = max((ex - sx + ss, ss2))
+            x = min((sx, ex - ss))
         else:
-            w = max((sx - ex + end_spot_size, e2))
-            x = ex - end_spot_size
+            w = max((sx - ex + ss, ss2))
+            x = ex - ss
         if sy < ey:
-            h = max((ey - sy + end_spot_size, e2))
-            y = min((sy, ey - end_spot_size))
+            h = max((ey - sy + ss, ss2))
+            y = min((sy, ey - ss))
         else:
-            h = max((sy - ey + end_spot_size, e2))
-            y = ey - end_spot_size
+            h = max((sy - ey + ss, ss2))
+            y = ey - ss
         r = QtCore.QRectF(x, y, w, h)
         return r
 
@@ -558,15 +559,13 @@ class LeftAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge=e)
-        self._fill_path = e.is_filled()
-        sx, sy = to_tuple(e.get_point_at(0.5))
+        sx, sy = to_tuple(e.get_point_at(0.4))
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
         else:
-            d = e.get_angle_at(0.5)
-            d -= 90 # 75
+            d = e.get_angle_at(0.4)
+            d -= 60 # 75
             angle = math.radians(-d)
             dx = math.cos(angle)
             dy = math.sin(angle)
@@ -575,11 +574,6 @@ class LeftAddSibling(BranchingTouchArea):
             y = sy + dy * l
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
-                                  alignment=g.LEFT,
-                                  curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -593,15 +587,12 @@ class LeftAddSibling(BranchingTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        if self._fill_path:
-            painter.fillPath(self._path, c)
-        else:
-            painter.drawPath(self._path)
+        painter.drawLine(*sub_xy(self.start_point, self.end_point), 0, 0)
         if self._hovering:
             painter.save()
             painter.setBrush(ctrl.cm.ui())
-            painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            painter.rotate(-20)
+            draw_leaf(painter, 0, BranchingTouchArea.spot_size / 2, BranchingTouchArea.spot_size)
             painter.restore()
             draw_plus(painter, 4, 0)
 
@@ -630,15 +621,13 @@ class RightAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge=e)
-        self._fill_path = e.is_filled()
-        sx, sy = to_tuple(e.get_point_at(0.5))
+        sx, sy = to_tuple(e.get_point_at(0.4))
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
         else:
-            d = e.get_angle_at(0.5)
-            d += 90 # 75
+            d = e.get_angle_at(0.4)
+            d += 60 # 75
             angle = math.radians(-d)
             dx = math.cos(angle)
             dy = math.sin(angle)
@@ -647,11 +636,6 @@ class RightAddSibling(BranchingTouchArea):
             y = sy + dy * l
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
-                                  alignment=g.RIGHT,
-                                  curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -665,15 +649,12 @@ class RightAddSibling(BranchingTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        if self._fill_path:
-            painter.fillPath(self._path, c)
-        else:
-            painter.drawPath(self._path)
+        painter.drawLine(*sub_xy(self.start_point, self.end_point), 0, 0)
         if self._hovering:
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, BranchingTouchArea.spot_size / 2, BranchingTouchArea.spot_size)
             painter.restore()
             draw_plus(painter, 14, 0)
 

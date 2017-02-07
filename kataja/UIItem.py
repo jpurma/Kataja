@@ -32,6 +32,7 @@ class UIItem:
         self.role = role  # optional way to identify if cannot be distinguished w. class
         self.host = host
         self.watchlist = []
+        self.priority = 10
         self.is_fading_in = False
         self.is_fading_out = False
         self._fade_in_anim = None

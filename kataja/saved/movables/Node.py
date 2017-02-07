@@ -195,8 +195,12 @@ class Node(Movable):
         :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-        super().after_model_update(updated_fields, transition_type)
-        if transition_type == g.DELETED:
+        if transition_type == g.CREATED:
+            print('*** re-creating node')
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
+        elif transition_type == g.DELETED:
+            ctrl.free_drawing.delete_node(self, touch_edges=False, fade=False)
             return
 
         if 'folding_towards' in updated_fields:
@@ -207,8 +211,9 @@ class Node(Movable):
                 self.folded_away = False
                 self.update_position()
                 #self.fade_in()
-        self.update_visibility()
+        self.update_position()
         self.update_label()
+        self.update_visibility()
 
     @staticmethod
     def create_synobj(label, forest):
@@ -996,7 +1001,7 @@ class Node(Movable):
         rect = False
         brush = Qt.NoBrush
 
-        if False:
+        if not self.edges_up:
             painter.setPen(pen)
             painter.drawLine(0, 0, 0, 2)
             painter.drawRect(self.label_rect)

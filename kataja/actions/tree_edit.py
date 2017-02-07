@@ -154,7 +154,7 @@ class RemoveNode(KatajaAction):
         ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.remove_from_selection(node)
-        ctrl.free_drawing.delete_node(node, ignore_consequences=False)
+        ctrl.free_drawing.delete_node(node, touch_edges=True)
         ctrl.forest.forest_edited()
 
 

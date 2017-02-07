@@ -21,7 +21,6 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
@@ -187,6 +186,31 @@ class OverlayButton(UIWidget, PanelButton):
             self.setIcon(self.normal_icon)
         PanelButton.mouseReleaseEvent(self, event)
 
+    def avoid_overlaps(self, pos, step_x, step_y):
+        if not self.host:
+            return
+        items = list(ctrl.ui.get_uis_for(self.host))
+        if hasattr(self.host, 'edges_up'):
+            for edge in self.host.edges_up:
+                items += ctrl.ui.get_uis_for(edge)
+        my_ge = self.geometry()
+        my_ge.moveTopLeft(pos)
+        step = QtCore.QPoint(step_x, step_y)
+        for item in items:
+            if item.priority < self.priority:
+                if isinstance(item, QtWidgets.QGraphicsItem):
+                    br = item.sceneBoundingRect()
+                    ge = ctrl.graph_view.mapFromScene(
+                        br).boundingRect()
+                elif isinstance(item, QtWidgets.QWidget):
+                    ge = item.geometry()
+                else:
+                    continue
+                while my_ge.intersects(ge):
+                    pos += step
+                    my_ge.moveTopLeft(pos)
+        return pos
+
 
 class TopRowButton(OverlayButton):
 
@@ -268,6 +292,7 @@ class CutFromStartButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 54
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -276,8 +301,9 @@ class CutFromStartButton(OverlayButton):
             x, y = self.host.start_point
             x += self.w2
             y -= self.h2
-            self.move(ctrl.main.graph_view.mapFromScene(
-                QtCore.QPointF(x, y)))
+            pos = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y))
+            pos = self.avoid_overlaps(pos, 8, -8)
+            self.move(pos)
 
 
 class CutFromEndButton(OverlayButton):
@@ -288,6 +314,7 @@ class CutFromEndButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 55
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -299,8 +326,9 @@ class CutFromEndButton(OverlayButton):
             else:
                 x -= self.width()
             y -= self.h2
-            self.move(ctrl.main.graph_view.mapFromScene(
-                QtCore.QPointF(x, y)))
+            pos = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y))
+            pos = self.avoid_overlaps(pos, -8, 0)
+            self.move(pos)
 
 
 class CutEdgeButton(OverlayButton):
@@ -311,6 +339,7 @@ class CutEdgeButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent3')
+        self.priority = 50
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -320,7 +349,9 @@ class CutEdgeButton(OverlayButton):
             if abs(self.host.start_point[0] - self.host.end_point[0]) < 10:
                 p.setX(p.x() + 15)
             p.setY(p.y() - 30)
-            self.move(ctrl.main.graph_view.mapFromScene(p))
+            pos = ctrl.main.graph_view.mapFromScene(p)
+            self.avoid_overlaps(pos, 0, -8)
+            self.move(pos)
 
 
 class AddTriangleButton(OverlayButton):
@@ -331,6 +362,7 @@ class AddTriangleButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 30
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -339,8 +371,9 @@ class AddTriangleButton(OverlayButton):
             x, y = self.host.centered_scene_position
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 +
                                                                  self.h2))
-            print(y, y + self.host.height / 2, self.host.height)
-            self.move(p - QtCore.QPoint(self.w2 + 4, 0))
+            pos = p - QtCore.QPoint(self.w2 + 4, 0)
+            pos = self.avoid_overlaps(pos, 0, 8)
+            self.move(pos)
 
 
 class RemoveTriangleButton(OverlayButton):
@@ -351,6 +384,8 @@ class RemoveTriangleButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 30
+
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -358,7 +393,9 @@ class RemoveTriangleButton(OverlayButton):
         if self.host:
             x, y = self.host.centered_scene_position
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 + self.h2))
-            self.move(p - QtCore.QPoint(self.w2 + 4, 0))
+            pos = p - QtCore.QPoint(self.w2 + 4, 0)
+            self.avoid_overlaps(pos, 0, 8)
+            self.move(pos)
 
 
 class RemoveMergerButton(OverlayButton):
@@ -372,6 +409,7 @@ class RemoveMergerButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 99
 
     def update_position(self):
         """ """
@@ -379,10 +417,7 @@ class RemoveMergerButton(OverlayButton):
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
-        if ctrl.ui.quick_edit_buttons:  # avoid overlap with button bar
-            qeb = ctrl.ui.quick_edit_buttons.geometry()
-            while qeb.contains(p):
-                p += QtCore.QPoint(0, 10)
+        p = self.avoid_overlaps(p, 16, 0)
         self.move(p)
 
     def enterEvent(self, event):
@@ -404,24 +439,16 @@ class RemoveNodeButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent3')
+        self.priority = 100
 
     def update_position(self):
         """ """
+
         x, y = self.host.centered_scene_position
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
-        if ctrl.ui.quick_edit_buttons:  # avoid overlap with button bar
-            qeb = ctrl.ui.quick_edit_buttons.geometry()
-            while qeb.contains(p):
-                p += QtCore.QPoint(0, 10)
-        # avoid overlap with node editor button
-        ne_button = ctrl.ui.get_ui_by_type(host=self.host, ui_type=g.NODE_EDITOR_BUTTON)
-        if ne_button:
-            neb = ne_button.geometry()
-            while neb.contains(p + QtCore.QPoint(8, 10)):
-                p += QtCore.QPoint(16, 0)
-
+        p = self.avoid_overlaps(p, 16, 0)
         self.move(p)
 
     def enterEvent(self, event):
@@ -475,6 +502,7 @@ class NodeEditorButton(OverlayButton):
                          parent=parent,
                          size=16,
                          color_key='accent8')
+        self.priority = 25
 
     def update_position(self):
         """ """
@@ -483,6 +511,7 @@ class NodeEditorButton(OverlayButton):
         p = QtCore.QPointF(x + (self.host.width / 2), y)
         p = ctrl.main.graph_view.mapFromScene(p) + adjust
         p = p.toPoint()
+        p = self.avoid_overlaps(p, 8, 0)
         self.move(p)
 
     def enterEvent(self, event):

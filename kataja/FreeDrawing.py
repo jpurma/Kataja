@@ -254,11 +254,12 @@ class FreeDrawing:
     # also removed
     # from items that reference to it.
 
-    def delete_node(self, node, ignore_consequences=False):
+    def delete_node(self, node, touch_edges=True, fade=True):
         """ Delete given node and its children and fix the trees accordingly
         :param node:
-        :param ignore_consequences: don't try to fix things like connections,
+        :param touch_edges: don't try to set edge ends.
         just delete.
+        :param fade: fade or disappear instantly
         Note: This and other complicated revisions assume that the target trees is 'normalized' by
         replacing multidomination with traces. Each node can have only one parent.
         This makes calculation easier, just remember to call multidomination_to_traces and
@@ -269,11 +270,9 @@ class FreeDrawing:
             return
         else:
             self._marked_for_deletion.add(node)
-        #for tree in node.trees:
-        #    tree.deleted_nodes.add(node)
 
         # -- connections to other nodes --
-        if not ignore_consequences:
+        if touch_edges:
             for edge in list(node.edges_down):
                 if edge.end:
                     if edge.end.node_type == node.node_type:
@@ -310,19 +309,12 @@ class FreeDrawing:
         if not found:
             if my_type in self.node_types:
                 self.node_types.remove(my_type)
-        # -- trees --
-        old_trees = set(node.trees)
-        for tree in old_trees:
-            if tree.top is node:
-                tree.remove_node(node, recursive_down=False)
-            else:
-                tree.update_items()
         if node.parentItem():
             node.setParentItem(None)
         if hasattr(node, 'on_delete'):
             node.on_delete()
         # -- scene --
-        self.f.remove_from_scene(node)
+        self.f.remove_from_scene(node, fade_out=fade)
         # -- undo stack --
         node.announce_deletion()
         # -- remove from selection
@@ -330,7 +322,7 @@ class FreeDrawing:
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
 
-    def delete_edge(self, edge, ignore_consequences=False, fade=True):
+    def delete_edge(self, edge, touch_nodes=True, fade=True):
         """ remove from scene and remove references from nodes
         :param edge:
         :param ignore_consequences: don't try to fix things like connections,
@@ -347,7 +339,7 @@ class FreeDrawing:
         end_node = edge.end
         # -- selections --
         ctrl.remove_from_selection(edge)
-        if not ignore_consequences:
+        if touch_nodes:
             if start_node:
                 if edge in start_node.edges_down:
                     start_node.poke('edges_down')
@@ -394,9 +386,9 @@ class FreeDrawing:
         """
         if isinstance(item, Edge):
             start = item.start
-            self.delete_edge(item, ignore_consequences=ignore_consequences)
+            self.delete_edge(item, touch_nodes=not ignore_consequences)
         elif isinstance(item, Node):
-            self.delete_node(item, ignore_consequences=ignore_consequences)
+            self.delete_node(item, touch_edges=not ignore_consequences)
 
     # ## Free edges ###############################
 
@@ -617,7 +609,7 @@ class FreeDrawing:
 
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
-            self.delete_node(old_node, ignore_consequences=True)
+            self.delete_node(old_node, touch_edges=False)
 
     # ########### Complex node operations ##############################
 
@@ -636,10 +628,8 @@ class FreeDrawing:
         else:
             i = ''
         children = list(node.get_children(similar=True, visible=False))
-        trees = set(node.trees)
         for child in list(children):
             parents = node.get_parents(similar=True, visible=False)
-            parents_children = set()
             bad_parents = []
             good_parents = []
             for parent in list(parents):
@@ -675,12 +665,6 @@ class FreeDrawing:
             self.delete_node(node)
             for parent in list(bad_parents):
                 self.delete_node(parent)
-                # if right.is_placeholder():
-                # self.delete_node(right)
-                # if left.is_placeholder():
-                # self.delete_node(left)
-        for tree in list(trees):
-            tree.update_items()
 
     def unary_add_child_for_constituentnode(self, old_node: ConstituentNode, add_left=True):
         """
@@ -764,16 +748,9 @@ class FreeDrawing:
         else:
             left = top
             right = new
-        merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new)
-
-        # Fix trees to include the new merger node
-        #for tree in set(top.trees):
-        #    tree.recalculate_top()
-        #    tree.update_items()
+        merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new,
+                                              heads=top.heads)
         merger_node.copy_position(top)
-
-        #if self.f.chain_manager.traces_are_visible():
-        #    self.f.chain_manager.rebuild_chains()
 
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a trees: a new merge is created
@@ -837,34 +814,34 @@ class FreeDrawing:
         # projections
         merger_node.set_heads(heads)
 
-    def create_merger_node(self, left=None, right=None, pos=None, new=None, head=None):
+    def create_merger_node(self, left=None, right=None, pos=None, new=None, heads=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
         :param right:
         :param pos:
         :param new: which one is the new node to add. This connection is animated in.
-        :param head: which one is head?
+        :param heads: which one is head?
         """
         if not pos:
             pos = (0, 0)
         label = ''
-        if head:
-            if isinstance(head, Node):
-                label = figure_out_syntactic_label(head)
-            elif isinstance(head, list):
-                if len(head) == 1:
-                    label = figure_out_syntactic_label(head[0])
-                if len(head) == 2:
-                    l1 = figure_out_syntactic_label(head[0])
-                    l2 = figure_out_syntactic_label(head[1])
+        if heads:
+            if isinstance(heads, Node):
+                label = figure_out_syntactic_label(heads)
+            elif isinstance(heads, list):
+                if len(heads) == 1:
+                    label = figure_out_syntactic_label(heads[0])
+                if len(heads) == 2:
+                    l1 = figure_out_syntactic_label(heads[0])
+                    l2 = figure_out_syntactic_label(heads[1])
                     label = f"({l1}, {l2})"
 
         merger_node = self.create_node(label=label, relative=right)
         merger_node.current_position = pos
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
-        merger_node.set_heads(head)
+        merger_node.set_heads(heads)
         return merger_node
 
     # ### Triangles ##############################################

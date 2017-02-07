@@ -78,6 +78,7 @@ class ProjectionManager:
 
         _guess_head(root)
 
+    @time_me
     def remove_projection(self, head):
         projection = self.projections.get(head, None)
         if projection:
@@ -100,6 +101,12 @@ class ProjectionManager:
         for head, chain in list(chains.items()):
             if head not in chain:
                 print('head %s not in chain: %s' % (str(head), str(chain)))
+                for node in chain:
+                    if head in node.heads:
+                        node.poke('heads')
+                        node.heads.remove(head)
+                del chains[head]
+                continue
             chain.remove(head)
             ordered_chains = [[head]]
             progress = True
@@ -128,6 +135,7 @@ class ProjectionManager:
 
         new_heads = set(chains.keys())
         for head in old_heads - new_heads:
+            print('remove projection starting with ', head)
             self.remove_projection(head)
         for edge in self.forest.edges.values():
             edge.in_projections = []

@@ -297,7 +297,7 @@ class Tree(Movable):
     #         node.move_to(nx - tx, ny - ty)
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        if self.numeration: #or True:
+        if self.numeration or True:
             br = self.boundingRect()
             painter.drawRect(br)
             #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))

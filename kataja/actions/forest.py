@@ -105,6 +105,7 @@ class NextStep(KatajaAction):
         ctrl.forest.derivation_steps.next_derivation_step()
         i = ctrl.forest.derivation_steps.derivation_step_index
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
+        ctrl.forest.forest_edited()
         return f'Next derivation step: {i + 1}/{max_i}'
 
 
@@ -121,6 +122,7 @@ class PreviousStep(KatajaAction):
         ctrl.forest.derivation_steps.previous_derivation_step()
         i = ctrl.forest.derivation_steps.derivation_step_index
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
+        ctrl.forest.forest_edited()
         return f'Previous derivation step: {i + 1}/{max_i}'
 
 
@@ -142,3 +144,4 @@ class DeriveFromLexicon(KatajaAction):
             semantics = panel.semantics_text.text()
             ctrl.syntax.derive_from_editable_lexicon(sentence, lexicon, semantics)
             ctrl.graph_view.setFocus()
+            ctrl.forest.forest_edited()

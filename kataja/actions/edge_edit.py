@@ -70,6 +70,7 @@ class DisconnectEdge(KatajaAction):
         # Then do the cutting
         ctrl.free_drawing.disconnect_edge(edge)
         ctrl.ui.update_selections()
+        ctrl.forest.forest_edited()
 
 
 class DisconnectEdgeStart(KatajaAction):
@@ -93,6 +94,7 @@ class DisconnectEdgeStart(KatajaAction):
         else:
             ctrl.free_drawing.partial_disconnect(edge, start=True, end=False)
         ctrl.ui.update_selections()
+        ctrl.forest.forest_edited()
 
 
 class DisconnectEdgeEnd(KatajaAction):
@@ -116,6 +118,7 @@ class DisconnectEdgeEnd(KatajaAction):
         else:
             ctrl.free_drawing.partial_disconnect(edge, start=False, end=True)
         ctrl.ui.update_selections()
+        ctrl.forest.forest_edited()
 
 
 class NewArrow(KatajaAction):
@@ -132,6 +135,7 @@ class NewArrow(KatajaAction):
         text = embed.input_line_edit.text()
         ctrl.free_drawing.create_arrow(p2, p1, text)
         ctrl.ui.close_active_embed()
+        ctrl.forest.forest_edited()
 
 
 class StartArrowFromNode(KatajaAction):
@@ -167,6 +171,7 @@ class DeleteArrow(KatajaAction):
         # Then do the cutting
         ctrl.free_drawing.disconnect_edge(edge)
         ctrl.ui.update_selections()
+        ctrl.forest.forest_edited()
 
 
 class NewDivider(KatajaAction):
@@ -182,6 +187,7 @@ class NewDivider(KatajaAction):
         p1, p2 = embed.get_marker_points()
         ctrl.ui.close_active_embed()
         # fixme: finish this!
+        ctrl.forest.forest_edited()
 
 
 # Edge settings
