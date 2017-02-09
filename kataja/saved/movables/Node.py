@@ -182,7 +182,6 @@ class Node(Movable):
         """
         self.in_scene = True
         self.update_label()
-        self.update_bounding_rect()
         self.update_visibility()
         self.announce_creation()
         if prefs.glow_effect:
@@ -196,10 +195,14 @@ class Node(Movable):
         :return: None
         """
         if transition_type == g.CREATED:
-            print('*** re-creating node')
+            print('*** re-creating node in after_model_update')
+            self.update_label()
+            self.update_visibility()
             ctrl.forest.store(self)
             ctrl.forest.add_to_scene(self)
+            return
         elif transition_type == g.DELETED:
+            print('*** deleting node in after_model_update')
             ctrl.free_drawing.delete_node(self, touch_edges=False, fade=False)
             return
 

@@ -651,7 +651,8 @@ class PaletteManager:
         bbase = QtGui.QBrush(base)
         pr, pg, pb, pa = self.paper().getRgb()
         br, bg, bb, ba = base.getRgb()
-        base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
+        #base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
+        base_melded = QtGui.QColor(self.paper2())
         base_melded.setAlphaF(0.9)
         bb_melded = QtGui.QBrush(base_melded)
         bb_lt = QtGui.QBrush(base_melded.lighter())
@@ -665,7 +666,7 @@ class PaletteManager:
             'mid': bbase,
             'text': bbase,
             'bright_text': bb_lt,
-            'base': paper2,
+            'base': self.paper(),
             'window': bb_melded
         }
         pal = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'],

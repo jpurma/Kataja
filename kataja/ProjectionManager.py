@@ -128,8 +128,10 @@ class ProjectionManager:
             # We want to keep using existing projection objects as much as possible so they won't
             #  change colors on each update
             if projection:
+                print('update projection', ordered_chains)
                 projection.update_chains(ordered_chains)
             else:
+                print('create projection', ordered_chains)
                 projection = Projection(head, ordered_chains, next(self.projection_rotator))
                 self.projections[head] = projection
 

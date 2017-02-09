@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.UIItem import UIWidget
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
@@ -119,81 +119,39 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             else:
                 return
         self.update_size()
-        view = self.parent()
-        w = self.size().width()
-        h = self.size().height()
-        if h <= 100:
-            h = self.assumed_height
-        if w <= 100:
-            w = self.assumed_width
-        top_left = view.mapToScene(0, 0)
-        bottom_right = view.mapToScene(QtCore.QPoint(w, h))
-        size_in_scene = bottom_right - top_left
-        w = size_in_scene.x()
-        h = size_in_scene.y()
-        vr = view.mapToScene(view.geometry()).boundingRect()
-        view_top = vr.top()
-        view_bottom = vr.bottom()
-        view_left = vr.left()
-        view_right = vr.right()
+        view = ctrl.graph_view
+        my_rect = self.geometry()
+        w = my_rect.width()
+        h = my_rect.height()
+        print(w, h)
+        view_rect = view.geometry()
         if self.host:
-            br = self.host.sceneBoundingRect()
-            node_top = br.top()
-            node_bottom = br.bottom()
-            node_left = br.left()
-            node_right = br.right()
+            scene_br = self.host.sceneBoundingRect()
+            scene_br.adjust(-prefs.edge_width, -prefs.edge_height, prefs.edge_width,
+                            prefs.edge_height)
+        elif focus_point:
+            scene_br = QtCore.QRectF(-prefs.edge_width, -prefs.edge_height, prefs.edge_width * 2,
+                                     prefs.edge_height * 2)
+            scene_br.moveCenter(QtCore.QPoint(focus_point))
+        node_rect = view.mapFromScene(scene_br).boundingRect()
+
+        if node_rect.right() + w < view_rect.right():
+            if node_rect.right() + w + 50 < view_rect.right():
+                x = node_rect.right() + 50
+            else:
+                x = view_rect.right() - w
         else:
-            node_top = focus_point.y()
-            node_bottom = focus_point.y()
-            node_left = focus_point.x()
-            node_right = focus_point.x()
-
-        if node_top - view_top > view_bottom - node_bottom:
-            # UP
-            new_y = node_top - h
+            if node_rect.left() - w - 50 > 4:
+                x = node_rect.left() - w - 50
+            else:
+                x = 4
+        if node_rect.center().y() - h / 2 > 25 and \
+            node_rect.center().y() + h / 2 < view_rect.height():
+            y = node_rect.center().y() - h / 2
         else:
-            # DOWN
-            new_y = node_bottom
+            y = h / 2 - node_rect.height() / 2
 
-        # Possible positions
-        #   xxx
-        #      n
-        #
-        #   xxx
-        #     n
-        #
-        #   xxx
-        #    n
-        #
-        #   xxx
-        #   n
-        #
-        #    xxx
-        #   n
-
-        new_lefts = [node_left - w, node_right - w, (node_right + node_left - w) / 2, node_left,
-                     node_right]
-
-        new_x = 0
-        min_space = 1000000
-
-        for new_left in new_lefts:
-            if new_left < view_left or new_left + w > view_right:
-                continue
-            space = (new_left - view_left) ** 2 + (view_right - (new_left + w)) ** 2
-            if space < min_space:
-                min_space = space
-                new_x = new_left
-
-        new_pos = QtCore.QPoint(new_x, new_y)
-        # Magnet placement:
-        # 1---2---3
-        # |+-----+|
-        # 4|     |5
-        # |+-----+|
-        # 6---7---8
-        #
-        self.move(view.mapFromScene(new_pos))
+        self.move(x, y)
         self.updateGeometry()
 
     def magnet(self):

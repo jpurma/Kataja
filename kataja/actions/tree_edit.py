@@ -157,6 +157,27 @@ class RemoveNode(KatajaAction):
         ctrl.free_drawing.delete_node(node, touch_edges=True)
         ctrl.forest.forest_edited()
 
+class ToggleTriangle(KatajaAction):
+    k_action_uid = 'toggle_triangle'
+    k_command = 'Turn node and its children into triangle and back'
+
+    def method(self):
+        """ Turn triggering node into triangle node
+        :return: None
+        """
+        ctrl.release_editor_focus()
+        node = self.get_host()
+        if not node:
+            return
+        if self.sender().isChecked():
+            log.info('folding in %s' % node.as_bracket_string())
+            ctrl.free_drawing.add_triangle_to(node)
+        else:
+            log.info('unfolding from %s' % node.as_bracket_string())
+            ctrl.free_drawing.remove_triangle_from(node)
+        node.update_label()
+        ctrl.deselect_objects()
+
 
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
@@ -224,21 +245,28 @@ class ToggleRawEditing(KatajaAction):
         embed.toggle_raw_edit(embed.raw_button.isChecked())
 
 
-class SetHeadConstituent(KatajaAction):
-    k_action_uid = 'constituent_set_head'
-    k_command = 'Set head which constituent is head'
+class SetProjectionAtEmbedUI(KatajaAction):
+    k_action_uid = 'set_projection_at_embed_ui'
+    k_command = 'Set which constituent is head'
 
     def method(self):
         """
         """
-        checked = self.sender().checkedButton()
-        head = checked.my_value
+        button_group = self.sender()
+        heads = []
+        for button in button_group.buttons():
+            if button.isChecked():
+                child = ctrl.forest.nodes.get(button.my_value, None)
+                if child:
+                    heads += child.heads
         host = self.get_host()
-        host.set_heads(head)
+
+        host.set_heads(heads)
         embed = self.get_ui_container()
         if embed:
             embed.update_fields()
         ctrl.forest.forest_edited()
+        return f'Set head for "{host}" to "{[str(x) for x in heads]}".'
 
     def enabler(self):
         return ctrl.free_drawing_mode

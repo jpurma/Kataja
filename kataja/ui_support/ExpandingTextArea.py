@@ -1,9 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
-from kataja.utils import open_symbol_data
+from kataja.utils import open_symbol_data, caller
 from kataja.parser.INodes import ITextNode, as_html, as_text
 import kataja.globals as g
+import html
 
 
 def as_latex(value):
@@ -23,7 +24,7 @@ def as_latex(value):
 
 class ExpandingTextArea(QtWidgets.QWidget):
 
-    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None):
+    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None, label=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.raw_text = ''
         self.parsed_latex = ''
@@ -34,9 +35,13 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.input_parsing_modes = QtWidgets.QButtonGroup()
         self.tex_radio = QtWidgets.QRadioButton("TeX", self)
         self.html_radio = QtWidgets.QRadioButton("HTML", self)
-        self.input_parsing_modes.buttonClicked.connect(self.change_text_field_mode)
         self.input_parsing_modes.addButton(self.tex_radio, 1)
         self.input_parsing_modes.addButton(self.html_radio, 2)
+        self.input_parsing_modes.buttonClicked.connect(self.change_text_field_mode)
+        if label:
+            lab = QtWidgets.QLabel(label, self)
+            self.top_row_layout.addWidget(lab)
+            self.top_row_layout.addStretch(0)
         self.top_row_layout.addWidget(self.tex_radio)
         self.top_row_layout.addWidget(self.html_radio)
         self.top_row_layout.addStretch(0)
@@ -46,6 +51,13 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
                            QtWidgets.QSizePolicy.MinimumExpanding)
+        if not font:
+            font = qt_prefs.get_font(g.CONSOLE_FONT)
+        self.text_area.setStyleSheet(
+            'font-family: "%s"; font-size: %spx; background-color: %s' % (font.family(),
+                                                                          font.pointSize(),
+                                                                          ctrl.cm.paper().name()))
+
         self.text_area.setEnabled(True)
         self.cut_point = 24
         self.input_parsing_modes.button(self.get_host().text_parse_mode).setChecked(True)
@@ -53,7 +65,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.text_area)
         self.setLayout(layout)
-        self.text_area.setFont(qt_prefs.get_font(g.CONSOLE_FONT))
         self.text_area.setMinimumHeight(40)
         self.text_area.setMinimumWidth(200)
         if tip:
@@ -78,10 +89,14 @@ class ExpandingTextArea(QtWidgets.QWidget):
     def text(self):
         return self.text_area.toPlainText()
 
+    @caller
     def setText(self, text):
         self.raw_text = text
+        print('raw text:', text, type(text))
         self.parsed_latex = as_latex(text)
-        self.parsed_html = as_html(text)
+        print('parsed_latex:', self.parsed_latex)
+        self.parsed_html = html.unescape(as_html(text))
+        print('parsed_html:', self.parsed_html)
         if self.parsing_mode == 1:
             self.text_area.setPlainText(self.parsed_latex)
         elif self.parsing_mode == 2:
@@ -141,7 +156,8 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.parsing_mode = self.input_parsing_modes.id(button_clicked)  # 1 = TeX,  2 = HTML,
         # 3 = Plain
         self.get_host().text_parse_mode = self.parsing_mode
-        self.parsed_html = as_html(value)
+        self.parsed_html = html.unescape(as_html(value))
+        print(self.parsed_html)
         self.parsed_latex = as_latex(value)
         if self.parsing_mode == 1:
             self.text_area.setPlainText(self.parsed_latex)

@@ -68,6 +68,7 @@ class ConstituentNode(Node):
                                          'Visible in <i>syntactic mode</i> or if <i>Displayed '
                                          'label</i> is empty.',
                                  width=160,
+                                 getter='get_syntactic_label',
                                  focus=True, syntactic=True, order=10, on_edit='update_preview'),
                 'triangle': dict(name='Triangle', input_type='checkbox', order=35,
                                  on_edit='update_preview', tooltip='Draw a triangle on top of a '
@@ -81,16 +82,25 @@ class ConstituentNode(Node):
                 'preview': dict(name='Preview', tooltip='Preview how label will be displayed. '
                                                         'Display label overrides computational '
                                                         'label.', input_type='preview'),
-                'gloss': dict(name='Gloss', prefill='gloss',
-                              tooltip='translation (optional)', width=200, condition='is_leaf',
-                              order=40),
+                # 'gloss': dict(name='Gloss', prefill='gloss',
+                #               tooltip='translation (optional)', width=200, condition='is_leaf',
+                #               order=40),
                 'heads': dict(name='Projection from',
-                              tooltip='Node receives label and maybe features from this or these '
-                                      'children',
+                              tooltip='Node can be projection from either or both of its '
+                                      'children if those children are heads or projections from '
+                                      'their children.',
                               condition='can_be_projection_of_another_node',
-                              option_function='build_projection_options_for_ui',
-                              input_type='radiobutton',
-                              select_action='constituent_set_head', order=30)}
+                              input_type='projection_buttons',
+                              select_action='set_projection_at_embed_ui', order=30),
+                'autolabel': dict(name='Generated label',
+                                  tooltip="These are either XBar or Bare phrase structure labels "
+                                          "that are updated automatically based on projections. "
+                                          "These can be used instead of manually entering Node "
+                                          "labels. ('l' to switch label modes)",
+                                  getter='get_autolabel',
+                                  readonly=True,
+                                  order=31)
+    }
     default_style = {'plain': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10},
                      'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
 
@@ -296,27 +306,24 @@ class ConstituentNode(Node):
         :param edited: the field that triggered the update.
         :return:
         """
-        embed = self.sender().parent()
-        surefail = 0
-        while not hasattr(embed, 'fields') and surefail < 5:
-            embed = embed.parent()
-            surefail += 1
+        embed = ctrl.ui.active_embed
+        if not embed:
+            return
 
-        index = embed.fields.get('index', None)
-        label = embed.fields.get('label', None)
-        triangle = embed.fields.get('triangle', None)
-        preview = embed.fields.get('preview', None)
-        index_text = as_html(index.text())
-        print('preview inode_text: ', label.inode_text())
-        print('same as html: ', as_html(label.inode_text()))
-        label_text = as_html(label.inode_text())
+        index_text = as_html(embed.index.text())
+        print('preview inode_text: ', embed.label.inode_text())
+        print('same as html: ', as_html(embed.label.inode_text()))
+        label_text = as_html(embed.label.inode_text())
         parsed = label_text
         if index_text:
             parsed += '<sub>' + index_text + '</sub>'
-        preview.setText(parsed)
+        #embed.preview.setText(parsed)
+
+    def get_syntactic_label(self):
+        if self.syntactic_object:
+            return self.syntactic_object.label
 
     # Other properties
-
 
     @property
     def gloss_node(self):
@@ -485,7 +492,7 @@ class ConstituentNode(Node):
             if self.syntactic_object:
                 l = self.syntactic_object.get_secondary_label()
         elif label_text_mode == g.XBAR_LABELS:
-            l = self.autolabel
+            l = self.get_autolabel()
 
 
         l = as_html(l, omit_triangle=True, include_index=self.index)
@@ -580,6 +587,9 @@ class ConstituentNode(Node):
         else:
             return atts
 
+    def get_autolabel(self):
+        return self.autolabel
+
     def is_unnecessary_merger(self):
         """ This merge can be removed, if it has only one child
         :return:
@@ -615,62 +625,6 @@ class ConstituentNode(Node):
                 return True
         else:
             return False
-
-    def build_projection_options_for_ui(self):
-        """ Build tuples for showing projection options
-        :return: (text, value, checked, disabled, tooltip) -tuples
-        """
-        r = []
-        children = self.get_children(similar=True, visible=False)
-        l = len(children)
-        if l == 1:
-            # down arrow
-            prefix = [chr(0x2193)]
-        elif l == 2:
-            # left down arrow, right down arrow
-            prefix = [chr(0x2199), chr(0x2198)]
-        elif l == 3:
-            # left down arrow, down arrow, right down arrow
-            prefix = [chr(0x2199), chr(0x2193), chr(0x2198)]
-        else:
-            # don't use arrows if more than 3
-            prefix = [''] * l
-        for n, child in enumerate(children):
-            heads_of_child = child.heads or [child]
-            enabled = True
-            d = {'text': '%s%s' % (prefix[n], ', '.join([x.short_str() for x in heads_of_child])),
-                 'value': n,
-                 'is_checked': heads_of_child == self.heads,
-                 'enabled': enabled,
-                 'tooltip': 'inherit label from ' + str(heads_of_child)}
-            r.append(d)
-        return r
-
-    def guess_projection(self):
-        """ Analyze labels and children and try to guess if this is a
-        projection from somewhere. Set head accordingly.
-        :return:
-        """
-
-        def find_original(node, head_node):
-            """ Go down in trees until the final matching label is found.
-            :param node: where to start searching
-            :param head:
-            :return:
-            """
-            for child in node.get_children(similar=True, visible=False):
-                label = str(child.label or child.get_syn_label())
-                if strip_xbars(label) == head_node:
-                    found_below = find_original(child, head_node)
-                    if found_below:
-                        return found_below
-                    else:
-                        return child
-            return None
-
-        label = str(self.label or self.get_syn_label())
-        head_node = find_original(self, strip_xbars(str(label)))
-        self.set_heads(head_node)
 
     def set_heads(self, head):
         """ Set projecting head to be Node, list of Nodes or empty. Notice that this doesn't

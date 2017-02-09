@@ -344,6 +344,67 @@ class ToggleLabelTextModes(KatajaAction):
     def getter(self):
         return ctrl.settings.get('label_text_mode')
 
+
+class SetSynlabelsVisible(KatajaAction):
+    k_action_uid = 'set_synlabels_visible'
+    k_command = 'Nodes show syntactic labels'
+    k_undoable = True
+    k_tooltip = 'Set nodes to use syntactic node labels'
+
+    def method(self):
+        """ """
+        ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=DOCUMENT)
+        ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=FOREST)
+        ctrl.forest.update_label_shape()
+        mode_text = prefs.get_ui_text_for_choice(g.SYN_LABELS, 'label_text_mode')
+        return f'Set label text mode to: {mode_text}'
+
+    def getter(self):
+        m = ctrl.settings.get('label_text_mode')
+        return m == g.SYN_LABELS or m == g.SYN_LABELS_FOR_LEAVES
+
+
+class SetNodeLabelsVisible(KatajaAction):
+    k_action_uid = 'set_node_labels_visible'
+    k_command = 'Nodes show node labels'
+    k_undoable = True
+    k_tooltip = 'Set nodes to use user-provided node labels'
+
+    def method(self):
+        """ """
+        ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=DOCUMENT)
+        ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=FOREST)
+        ctrl.forest.update_label_shape()
+        mode_text = prefs.get_ui_text_for_choice(g.NODE_LABELS, 'label_text_mode')
+        return f'Set label text mode to: {mode_text}'
+
+    def getter(self):
+        m = ctrl.settings.get('label_text_mode')
+        return m == g.NODE_LABELS_FOR_LEAVES or m == g.NODE_LABELS
+
+    def enabler(self):
+        return not ctrl.settings.get('syntactic_mode')
+
+
+class SetAutolabelsVisible(KatajaAction):
+    k_action_uid = 'set_autolabels_visible'
+    k_command = 'Nodes show generated labels'
+    k_undoable = True
+    k_tooltip = 'Set nodes to use labels generated from projected leaves'
+
+    def method(self):
+        """ """
+        ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=DOCUMENT)
+        ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=FOREST)
+        ctrl.forest.update_label_shape()
+        mode_text = prefs.get_ui_text_for_choice(g.XBAR_LABELS, 'label_text_mode')
+        return f'Set label text mode to: {mode_text}'
+
+    def getter(self):
+        m = ctrl.settings.get('label_text_mode')
+        return m == g.XBAR_LABELS
+
+
 class ToggleHighlighterProjection(KatajaAction):
     k_action_uid = 'toggle_highlighter_projection'
     k_command = 'Show projections with highlighter'

@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import open_symbol_data
 
 
@@ -20,14 +20,19 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
             self.setStatusTip(tip)
-        if font:
-            self.setFont(font)
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
         self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
         self.changed = False
         self.textChanged.connect(self.flag_as_changed)
+        if not font:
+            font = qt_prefs.get_font(g.CONSOLE_FONT)
+        self.setStyleSheet(
+            'font-family: "%s"; font-size: %spx; background-color: %s' % (font.family(),
+                                                                          font.pointSize(),
+                                                                          ctrl.cm.paper().name()))
+
         if on_edit:
             self.textChanged.connect(on_edit)
         #self.setFixedSize(200, 100)

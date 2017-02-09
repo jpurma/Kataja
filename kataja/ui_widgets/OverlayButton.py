@@ -48,7 +48,6 @@ class PanelButton(QtWidgets.QPushButton):
         self.color_key = color_key
         self.base_image = None
         self.normal_icon = None
-        self.hover_icon = None
         if isinstance(size, QtCore.QSize):
             width = size.width()
             height = size.height()
@@ -79,8 +78,8 @@ class PanelButton(QtWidgets.QPushButton):
             self.setText(text)
         if tooltip:
             if ctrl.main.use_tooltips:
-                self.setToolTip(text)
-            self.setStatusTip(text)
+                self.setToolTip(tooltip)
+            self.setStatusTip(tooltip)
         else:
             self.setStatusTip(text)
         self.w2 = self.iconSize().width() / 2
@@ -94,6 +93,76 @@ class PanelButton(QtWidgets.QPushButton):
             return ctrl.cm.get(self.color_key).lighter()
         else:
             return ctrl.cm.get(self.color_key)
+
+    def compose_icon(self):
+        """ Redraw the image to be used as a basis for icon, this is necessary
+        to update the overlay color.
+        :return:
+        """
+        c = ctrl.cm.get(self.color_key)
+        if self.pixmap:
+            image = QtGui.QImage(self.base_image)
+            painter = QtGui.QPainter(image)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+            painter.fillRect(image.rect(), c)
+            painter.end()
+
+        elif self.draw_method:
+
+            image = QtGui.QImage(self.base_image)
+
+            painter = QtGui.QPainter(image)
+            #painter.setDevicePixelRatio(2.0)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setPen(c)
+            self.draw_method(painter, image.rect(), c)
+            painter.end()
+        else:
+            return
+        self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        self.setIcon(self.normal_icon)
+
+    def update_colors(self):
+        #self.update_style_sheet()
+        self.compose_icon()
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.PaletteChange:
+            self.update_colors()
+        return QtWidgets.QPushButton.event(self, e)
+
+
+class OverlayButton(UIWidget, PanelButton):
+    """ A floating button on top of main canvas. These are individual UI
+    elements each.
+
+    :param pixmap:
+    :param host:
+    :param ui_key:
+    :param text:
+    :param parent:
+    :param size:
+    :param color_key:
+    """
+
+    def __init__(self, host, ui_key=None, pixmap=None, text=None, parent=None,
+                 size=16, color_key='accent8', draw_method=None, tooltip=None, **kwargs):
+        UIWidget.__init__(self, ui_key=ui_key, host=host)
+        PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
+                             color_key=color_key, draw_method=draw_method, tooltip=tooltip)
+        self.hover_icon = None
+
+
+    def mousePressEvent(self, event):
+        if self.hover_icon:
+            self.setIcon(self.hover_icon)
+        PanelButton.mousePressEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        if self.normal_icon:
+            self.setIcon(self.normal_icon)
+        PanelButton.mouseReleaseEvent(self, event)
 
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary
@@ -137,54 +206,6 @@ class PanelButton(QtWidgets.QPushButton):
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
         self.hover_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image2))
         self.setIcon(self.normal_icon)
-
-    def update_style_sheet(self):
-        paper = ctrl.cm.paper()
-        c = ctrl.cm.get(self.color_key)
-        ss = """ :hover {border-color: %s;}
-:pressed {border-color: %s; background-color: %s;}
-:checked {border-color: %s;}
-""" % (c.name(), c.lighter().name(), paper.name(), c.name()) # paper2.name()
-        self.setStyleSheet(ss) # background-color: %s;
-
-    def update_colors(self):
-        self.update_style_sheet()
-        self.compose_icon()
-
-    def event(self, e):
-        if e.type() == QtCore.QEvent.PaletteChange:
-            self.update_colors()
-        return QtWidgets.QPushButton.event(self, e)
-
-
-class OverlayButton(UIWidget, PanelButton):
-    """ A floating button on top of main canvas. These are individual UI
-    elements each.
-
-    :param pixmap:
-    :param host:
-    :param ui_key:
-    :param text:
-    :param parent:
-    :param size:
-    :param color_key:
-    """
-
-    def __init__(self, host, ui_key=None, pixmap=None, text=None, parent=None,
-                 size=16, color_key='accent8', draw_method=None, tooltip=None, **kwargs):
-        UIWidget.__init__(self, ui_key=ui_key, host=host)
-        PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
-                             color_key=color_key, draw_method=draw_method, tooltip=tooltip)
-
-    def mousePressEvent(self, event):
-        if self.hover_icon:
-            self.setIcon(self.hover_icon)
-        PanelButton.mousePressEvent(self, event)
-
-    def mouseReleaseEvent(self, event):
-        if self.normal_icon:
-            self.setIcon(self.normal_icon)
-        PanelButton.mouseReleaseEvent(self, event)
 
     def avoid_overlaps(self, pos, step_x, step_y):
         if not self.host:

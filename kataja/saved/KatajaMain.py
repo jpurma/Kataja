@@ -90,6 +90,13 @@ PanelButton:hover {border: 1px solid %(ui)s; border-radius: 3}
 PanelButton:pressed {border: 2px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}
 PanelButton:checked {border: 2px solid %(ui)s; border-radius: 3}
+EyeButton {border: 1px solid %(ui_darker)s;}
+EyeButton:hover {border: 1px solid %(ui)s; border-radius: 3}
+EyeButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
+                     border-radius: 3}
+EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
+
+ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 """
 
 
@@ -184,7 +191,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                                          'paper': ctrl.cm.paper().name(),
                                          'ui': ui.name(), 'ui_lighter': ui.lighter().name(),
                                          'ui_font': f.family(), 'ui_font_size': f.pointSize(),
-                                         'ui_font_larger': int(f.pointSize() * 1.2)})
+                                         'ui_font_larger': int(f.pointSize() * 1.2),
+                                         'ui_darker': ui.darker().name()})
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.

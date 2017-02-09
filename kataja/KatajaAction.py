@@ -271,7 +271,7 @@ class KatajaAction(QtWidgets.QAction):
         self.disable_undo_and_message = False
         ctrl.resume_undo()
 
-    def connect_element(self, element, tooltip_suffix=''):
+    def connect_element(self, element, tooltip_suffix='', connect_slot=None):
         """
 
         :param element:
@@ -312,7 +312,9 @@ class KatajaAction(QtWidgets.QAction):
         if isinstance(element, QtWidgets.QWidget):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
 
-        if isinstance(element, PanelButton):
+        if connect_slot:
+            connect_slot.connect(self.action_triggered)
+        elif isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, EmbeddedMultibutton):

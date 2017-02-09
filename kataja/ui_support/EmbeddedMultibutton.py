@@ -15,7 +15,7 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
         QtWidgets.QFrame.__init__(self, parent)
         self.setAutoFillBackground(False)
         self.bgroup = QtWidgets.QButtonGroup(self)
-        self.bgroup.setExclusive(True)
+        self.bgroup.setExclusive(False)
         self.layout = QtWidgets.QHBoxLayout()
         self.update_selections(options)
         self.setLayout(self.layout)
@@ -51,6 +51,7 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
             v = od['value']
             if v not in old_values:
                 button = QtWidgets.QPushButton(od['text'])
+                button.setStyleSheet(':checked {border-width: 2px;}')
                 button.setCheckable(True)
                 button.my_value = v
                 button.setChecked(od['is_checked'])

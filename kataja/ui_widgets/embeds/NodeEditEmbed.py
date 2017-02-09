@@ -6,6 +6,7 @@ from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
+from kataja.ui_support.ProjectionButtons import ProjectionButtons
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
@@ -100,12 +101,15 @@ class NodeEditEmbed(UIEmbed):
                     field.setFixedWidth(template_width)
                 self.resize_target = field
             elif itype == 'multibutton':
-                # currently not used, radio button is better
                 width = d.get('width', 200)
                 op_func = d.get('option_function')
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
                                                                        op_func, None)
                 field = EmbeddedMultibutton(self, options=op_func())
+                field.setMaximumWidth(width)
+            elif itype == 'projection_buttons':
+                width = d.get('width', 200)
+                field = ProjectionButtons(self)
                 field.setMaximumWidth(width)
             elif itype == 'checkbox':
                 field = QtWidgets.QCheckBox(self)
@@ -129,7 +133,9 @@ class NodeEditEmbed(UIEmbed):
             if field:
                 action = d.get('select_action')
                 if action:
-                    self.ui_manager.connect_element_to_action(field, action)
+                    connect_slot = getattr(field, 'connect_slot', None)
+                    self.ui_manager.connect_element_to_action(field, action,
+                                                              connect_slot=connect_slot)
                 if syntactic:
                     field.setPalette(ui_s)
                 else:

@@ -63,6 +63,7 @@ from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
+from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -366,9 +367,7 @@ class UIManager:
                 return groups[0]
             return None
 
-        # why this was here?
-        #if self.active_embed:
-        #    self.active_embed = None
+        active_embed = self.active_embed
 
         # clear all ui_support pieces
         for item in list(self._items.values()):
@@ -380,6 +379,9 @@ class UIManager:
             for node in ctrl.forest.nodes.values():
                 if node.node_type == g.CONSTITUENT_NODE and node.halo:
                     node.toggle_halo(False)
+
+        if active_embed:
+            print('there was an active embed:', active_embed)
 
         # create ui_support pieces for selected elements. don't create touchareas and buttons
         # if multiple selection, it gets confusing fast
@@ -394,7 +396,7 @@ class UIManager:
                 self.update_buttons_for_selected_node(item)
                 if item.node_type == g.CONSTITUENT_NODE:
                     item.toggle_halo(True)
-                if ctrl.settings.get('show_c_command'):
+                if ctrl.settings.get('show_c_command') and not self.active_embed:
                     if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
                         c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(
                             item)
@@ -402,6 +404,9 @@ class UIManager:
                             node = ctrl.forest.get_node(synobj)
                             if node and node.is_visible():
                                 node.toggle_halo(True)
+                if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
+                    self.start_editing_node(item)
+
 
         if ctrl.selected:
             # note UI panels that they should use scope 'selection' for their activities
@@ -827,7 +832,7 @@ class UIManager:
 
     # Action connections ###########################
 
-    def connect_element_to_action(self, element, action, tooltip_suffix=''):
+    def connect_element_to_action(self, element, action, tooltip_suffix='', connect_slot=None):
         """
 
         :param element:
@@ -840,7 +845,7 @@ class UIManager:
                 print('missing action:', action)
                 log.error(f'trying to connect non-existing action: {action}')
             else:
-                kataja_action.connect_element(element, tooltip_suffix)
+                kataja_action.connect_element(element, tooltip_suffix, connect_slot=connect_slot)
         elif isinstance(action, KatajaAction):
             action.connect_element(element, tooltip_suffix)
 
@@ -967,9 +972,16 @@ class UIManager:
         :param node:
         """
         self.close_active_embed()
-        self.active_embed = NodeEditEmbed(self.main.graph_view, node)
+        if node.node_type == g.CONSTITUENT_NODE:
+            self.active_embed = ConstituentNodeEditEmbed(self.main.graph_view, node)
+        else:
+            self.active_embed = NodeEditEmbed(self.main.graph_view, node)
         self.add_ui(self.active_embed, show=False)
         self.active_embed.wake_up()
+        if ctrl.forest and ctrl.forest.nodes:
+            for node in ctrl.forest.nodes.values():
+                if node.node_type == g.CONSTITUENT_NODE and node.halo:
+                    node.toggle_halo(False)
 
     # ### Touch areas
     # #####################################################################
