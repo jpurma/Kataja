@@ -119,6 +119,8 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             else:
                 return
         self.update_size()
+        ew = prefs.edge_width
+        eh = prefs.edge_height
         view = ctrl.graph_view
         my_rect = self.geometry()
         w = my_rect.width()
@@ -127,13 +129,12 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         view_rect = view.geometry()
         if self.host:
             scene_br = self.host.sceneBoundingRect()
-            scene_br.adjust(-prefs.edge_width, -prefs.edge_height, prefs.edge_width,
-                            prefs.edge_height)
+            scene_br.adjust(-ew, -eh, ew, eh)
         elif focus_point:
-            scene_br = QtCore.QRectF(-prefs.edge_width, -prefs.edge_height, prefs.edge_width * 2,
-                                     prefs.edge_height * 2)
-            scene_br.moveCenter(QtCore.QPoint(focus_point))
+            scene_br = QtCore.QRectF(-ew, -eh, ew * 2, eh * 2)
+            scene_br.moveCenter(focus_point.toPoint())
         node_rect = view.mapFromScene(scene_br).boundingRect()
+        ncy = node_rect.center().y()
 
         if node_rect.right() + w < view_rect.right():
             if node_rect.right() + w + 50 < view_rect.right():
@@ -145,9 +146,9 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
                 x = node_rect.left() - w - 50
             else:
                 x = 4
-        if node_rect.center().y() - h / 2 > 25 and \
-            node_rect.center().y() + h / 2 < view_rect.height():
-            y = node_rect.center().y() - h / 2
+        if ncy - h / 2 > 25 and \
+            ncy + h / 2 < view_rect.height():
+            y = ncy - h / 2
         else:
             y = h / 2 - node_rect.height() / 2
 

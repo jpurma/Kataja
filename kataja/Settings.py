@@ -188,12 +188,12 @@ class Settings:
         return getattr(SHAPE_PRESETS[shape_name], key)
 
     #@time_me
-    def cached_edge(self, key, edge):
+    def cached_edge(self, key, edge, missing=None):
         if key in edge.settings:
             return edge.settings[key]
         if not self._shape_cache:
             self.update_shape_cache()
-        return self._shape_cache[edge.edge_type][key]
+        return self._shape_cache[edge.edge_type].get(key, missing)
 
     def cached_edge_type(self, key, edge_type):
         if not self._shape_cache:

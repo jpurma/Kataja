@@ -1342,8 +1342,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     # Shape helpers #############################
 
-    def cached(self, key):
-        return ctrl.settings.cached_edge(key, self)
+    def cached(self, key, missing=None):
+        return ctrl.settings.cached_edge(key, self, missing)
 
     def set_arrowhead_at_start(self, value):
         ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge=self)
@@ -1462,3 +1462,4 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     start = SavedField("start")
     end = SavedField("end")
     forest = SavedField("forest")
+    label_data = SavedField("label_data")
