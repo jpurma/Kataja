@@ -257,19 +257,23 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         elif self.start and not self.start.is_visible():
             lv = False
         else:
+            start = self.start
+            end = self.end
             if self.edge_type == g.CONSTITUENT_EDGE:
-                if self.end and not self.end.is_visible():
+                if end and not end.is_visible():
                     lv = False
-                elif self.start and ctrl.forest.visualization and not \
-                        ctrl.forest.visualization.show_edges_for(self.start):
+                elif start and ctrl.forest.visualization and not \
+                        ctrl.forest.visualization.show_edges_for(start):
                     lv = False
-                elif not (self.start or self.end):
+                elif not (start and end):
                     ctrl.free_drawing.delete_edge(self)
                     return False
-            elif self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
-                if self.end and self.end.locked_to_node is self.start:
+                elif end.locked_to_node:
                     lv = False
-                elif not (self.start or self.end):
+            elif self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
+                if end and end.locked_to_node is start:
+                    lv = False
+                elif not (start and end):
                     ctrl.free_drawing.delete_edge(self)
                     return False
 
@@ -574,14 +578,19 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
+        # overlap detection is costly, so do checks for cases that make it unnecessary
         if self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
             self._nodes_overlap = False
-        elif self.start and self.end and \
-                ctrl.settings.get('hide_edges_if_nodes_overlap') and \
-                self.start.is_visible() and self.end.is_visible() and \
-                not (self.start.triangle or self.end.triangle):
-            self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
-        elif self._nodes_overlap:
+        elif not ctrl.settings.get('hide_edges_if_nodes_overlap'):
+            self._nodes_overlap = False
+        elif self.start and self.end:
+            if self.end.locked_to_node:
+                self._nodes_overlap = False
+            elif self.start.is_visible() and self.end.is_visible():
+                self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
+            else:
+                self._nodes_overlap = False
+        else:
             self._nodes_overlap = False
         self.update_visibility()
 

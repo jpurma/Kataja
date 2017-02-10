@@ -846,70 +846,71 @@ class FreeDrawing:
 
     # ### Triangles ##############################################
 
-    def add_triangle_to(self, node):
+    def add_or_update_triangle_for(self, root):
         """
 
         :param node:
         """
-        node.triangle = True
-        fold_scope = self.f.list_nodes_once(node)
+        if root not in root.triangle_stack:
+            root.poke('triangle_stack')
+            root.triangle_stack.append(root)
+        fold_scope = self.f.list_nodes_once(root)[1:]
+        folded = []
         not_my_children = set()
-        for folded in fold_scope:
-            parents = folded.get_parents()
-            if folded is node:
-                continue
-            # allow recursive triangles -- don't overwrite existing fold
-            elif folded.folding_towards:
-                continue
+        if not fold_scope:
+            return  # triangle is just visual addition to label
+
+        # triangle_stack for node holds the ground truth of triangles. Folding and graphicsitem
+        # parent relation are surface stuff.
+
+        for node in fold_scope:
+            if root not in node.triangle_stack:
+                node.poke('triangle_stack')
+                node.triangle_stack.append(root)
             # multidominated nodes can be folded if all parents are in scope
             # of fold
-            elif len(parents) > 1:
+            parents = node.get_parents()
+            if len(parents) > 1:
                 can_fold = True
                 for parent in parents:
                     if (parent not in fold_scope) or (parent in not_my_children):
-                        not_my_children.add(folded)
+                        not_my_children.add(node)
                         can_fold = False
                         break
                 if can_fold:
-                    folded.fold_towards(node)
+                    folded.append(node)
             # remember that the branch that couldn't be folded won't allow
             # any of its children to be
             # folded either.
             elif parents and parents[0] in not_my_children:
-                not_my_children.add(folded)
+                not_my_children.add(node)
             else:
-                folded.fold_towards(node)
+                folded.append(node)
+        root.fold_into_me(folded)
 
-    def remove_triangle_from(self, node):
+    def remove_triangle_from(self, root):
         """
-
         :param node:
         """
-        node.triangle = False
-        fold_scope = (f for f in self.f.list_nodes_once(node) if f.folding_towards is node)
-        for folded in fold_scope:
-            folded.folding_towards = None
-            folded.folded_away = False
-            folded.copy_position(node)
-            folded.fade_in()
-            folded.update_visibility()
-            folded.update_bounding_rect()
-            folded.after_move_function = None
-        # this needs second round of update visibility, as child nodes may
-        # yet not be visible, so edges to them
-        # won't be visible either.
-        for folded in fold_scope:
-            folded.update_visibility()
-        node.update_label()
-        node.update_visibility()  # edges from triangle to nodes below
-
-    def can_fold(self, node):
-        """
-
-        :param node:
-        :return:
-        """
-        return not node.triangle
+        fold_scope = [f for f in self.f.list_nodes_once(root)]
+        for node in fold_scope:
+            if (not node.triangle_stack) or node.triangle_stack[-1] is not root:
+                print('node in triangles fold scope doesnt have triangle root in triangle_stack:',
+                      node)
+            if node.triangle_stack and node.triangle_stack[-1] is root:
+                node.poke('triangle_stack')
+                node.triangle_stack.pop()
+            if node.parentItem() == root:
+                # lets see what happens to node positions -- this may lead to jumps we want to
+                # eliminate here.
+                node.release_from_locked_position()
+            node.update_visibility()  # with triangle_stack reduced, hidden nodes may become
+            # visible again.
+            # movement back to visualisation positions is handled by visualisation redraw
+        root.update_label()
+        # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now
+        # in wrong positions and have to be redrawn. Update all contained triangles:
+        [self.add_or_update_triangle_for(n) for n in fold_scope if n.is_triangle_host()]
 
     # ######## Groups (Amoebas) ################################
 

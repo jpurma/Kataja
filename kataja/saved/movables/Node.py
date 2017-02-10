@@ -132,7 +132,6 @@ class Node(Movable):
         self.z_value = 10
         # Visibility flags
         self._node_type_visible = True
-        self._node_in_triangle = False
         self.halo = False
         self.halo_item = None
 
@@ -140,9 +139,7 @@ class Node(Movable):
 
         self.edges_up = []
         self.edges_down = []
-        self.triangle = None
-        self.folded_away = False
-        self.folding_towards = None
+        self.triangle_stack = []  # you can always unfold only the outermost triangle, so stack
         self.color_id = None
 
         self._editing_template = {}
@@ -206,14 +203,6 @@ class Node(Movable):
             ctrl.free_drawing.delete_node(self, touch_edges=False, fade=False)
             return
 
-        if 'folding_towards' in updated_fields:
-            # do the animation and its after triggers.
-            if self.folding_towards:
-                self.fold_towards(self.folding_towards)
-            else:
-                self.folded_away = False
-                self.update_position()
-                #self.fade_in()
         self.update_position()
         self.update_label()
         self.update_visibility()
@@ -334,11 +323,11 @@ class Node(Movable):
         """
         return self.label_object.editable
 
-    def has_triangle(self):
-        return self.triangle
+    def is_triangle_host(self):
+        return bool(self.triangle_stack and self.triangle_stack[-1] is self)
 
     def can_have_triangle(self):
-        return not self.triangle
+        return not self.triangle_stack
 
     def if_changed_font(self, value):
         if self.label_object:
@@ -403,29 +392,6 @@ class Node(Movable):
         Movable.reset(self)
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
-
-    def move(self, md):
-        """ Add on Moveable.move the case when node is folding towards
-        triangle. It has priority.
-
-        Things that affect if and how Node moves:
-        1. item folding towards position in part of animation to disappear etc.
-        2. item is being dragged
-        3. item is locked by user
-        4. item is tightly attached to another node which is moving (then the move is handled by
-        the other node, it is _not_ parent node, though.)
-        5. visualisation algorithm setting it specifically
-        (6) or (0) -- places where subclasses can add new movements.
-
-        :param md: dict to collect total amount of movement.
-        :return: (bool, bool) -- is the node moving, does it allow
-        normalization of movement
-        """
-
-        if self.folding_towards and not self._move_counter:
-            return True, False
-        else:
-            return super().move(md)
 
     # def fade_out(self, s=300):
     #     for edge in itertools.chain(self.edges_down, self.edges_up):
@@ -744,6 +710,11 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
+    def gather_triangled_children(self):
+        hidden = []
+        leaves = []
+
+
     def gather_children(self):
         fpos = ctrl.settings.get('feature_positioning')
         shape = ctrl.settings.get('label_shape')
@@ -1016,14 +987,6 @@ class Node(Movable):
         elif self.label_object.is_card():
             brush = ctrl.cm.paper2()
             rect = True
-            # make a deck of cards based on how many cards are folded into triangle
-            if self.triangle and self.triangle is not self:
-                leaves = [x for x in ctrl.forest.list_nodes_once(self) if
-                          x.is_leaf(only_similar=True, only_visible=False)]
-                painter.setBrush(brush)
-                for yd in range((len(leaves) - 1) * 2, 0, -2):
-                    painter.drawRoundedRect(self.inner_rect.translated(yd, yd), xr, yr)
-
         if self.drag_data:
             rect = True
             brush = self.drag_data.background
@@ -1150,32 +1113,61 @@ class Node(Movable):
         else:
             return self.inner_rect
 
+    # #### Locking node to another node (e.g. features to constituent and in triangles)
+
+    def release_from_locked_position(self):
+        self.locked_to_node = None
+        if self.parentItem() and isinstance(self.parentItem(), Node):
+            scene_pos = self.scenePos()
+            #if self.triangle_stack and self.triangle_stack[-1] is not self:
+            #    new_parent = self.triangle_stack[-1]
+            #else:
+            new_parent = self.parentItem().parentItem()
+            #if isinstance(new_parent, Node):
+            #    self.locked_to_node = new_parent
+            self.setParentItem(new_parent)
+            lp = new_parent.mapFromScene(scene_pos)
+            self.current_position = lp.x(), lp.y()
+            self.stop_moving()
+        self.update_bounding_rect()
+
+    def lock_to_node(self, parent):
+        self.locked_to_node = parent
+        if self.parentItem() is not parent:
+            scene_pos = self.scenePos()
+            self.setParentItem(parent)
+            lp = parent.mapFromScene(scene_pos)
+            self.current_position = lp.x(), lp.y()
+            self.stop_moving()
+        self.update_bounding_rect()
+
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
     # action is done in Forest
     # as triangles may involve complicated forest-level calculations.
 
-    def fold_towards(self, node):
-        """ lower level launch for actual fold movement
-        :param node:
-        :return:
-        """
-        self.folding_towards = node
-        x, y = node.current_position
-        self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
-        if ctrl.is_selected(self):
-            ctrl.remove_from_selection(self)
-        ctrl.forest.animation_started(str(self.uid) + '_fold')
+    def hidden_in_triangle(self):
+        if self.triangle_stack:
+            if self.triangle_stack[-1] is not self:
+                if not self.is_leaf(only_similar=True, only_visible=False):
+                    return True
+        return False
 
-    def finish_folding(self):
-        """ Hide, and remember why this is hidden """
-        self.folded_away = True
-        self.update_visibility()
-        self.update_bounding_rect()
-        # update edge visibility from triangle to its immediate children
-        if self.folding_towards in self.get_parents(similar=False, visible=False):
-            self.folding_towards.update_visibility()
-        ctrl.forest.animation_finished(str(self.uid) + '_fold')
+    def fold_into_me(self, nodes):
+        to_do = []
+        x = 0
+        for node in nodes:
+            node.lock_to_node(self)
+            br = node.boundingRect()
+            to_do.append((node, x, br.left()))
+            if not node.hidden_in_triangle():
+                x += br.width()
+        xt = x / 2
+        self.update_label()
+        y = self.boundingRect().bottom()
+        for node, my_x, my_l in to_do:
+            node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
+            node.update_visibility()
 
     def on_press(self, value):
         """ Testing if we can add some push-depth effect.
@@ -1736,9 +1728,8 @@ class Node(Movable):
             self._node_type_visible = self.is_syntactic
         else:
             self._node_type_visible = True
-        self._node_in_triangle = self.folded_away or self.folding_towards
 
-        self._visible_by_logic = self._node_type_visible and not self._node_in_triangle
+        self._visible_by_logic = self._node_type_visible and not self.hidden_in_triangle()
         changed = super().update_visibility(fade_in=fade_in, fade_out=fade_out)
         if changed:
             # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
@@ -1845,7 +1836,5 @@ class Node(Movable):
     edges_up = SavedField("edges_up")
     edges_down = SavedField("edges_down")
     user_size = SavedField("user_size")
-    triangle = SavedField("triangle")
-    folded_away = SavedField("folded_away")
-    folding_towards = SavedField("folding_towards")
+    triangle_stack = SavedField("triangle_stack")
 

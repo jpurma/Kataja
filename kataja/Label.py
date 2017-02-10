@@ -125,7 +125,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.upper_part_y = 0
         self.lower_part_y = 0
         self.bottom_y = 0
-        self.triangle_is_present = False
+        self.draw_triangle = False
         self.triangle_height = 20
         self.triangle_y = 0
         self.width = 0
@@ -248,10 +248,15 @@ class Label(QtWidgets.QGraphicsItem):
         self.resize_label()
 
     def is_card(self):
-        return self.label_shape == CARD and \
-               (inner_cards or
-                self._host.triangle or
-                self._host.is_leaf(only_similar=True, only_visible=True))
+        if self.label_shape != CARD:
+            return False
+        if inner_cards:
+            return True
+        elif self._host.is_triangle_host():
+            return True
+        elif self._host.is_leaf(only_similar=True, only_visible=True):
+            return True
+        return False
 
     def left_bracket_width(self):
         return self.width
@@ -427,11 +432,11 @@ class Label(QtWidgets.QGraphicsItem):
             self.lower_part.setTextWidth(width)
 
         # ------------------- Height -------------------
-        self.triangle_is_present = self._host.triangle \
-                                   and self.label_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
+        self.draw_triangle = bool(self._host.is_triangle_host() and self.label_shape not in [
+            g.SCOPEBOX, g.CARD, g.BRACKETED])
         if self.is_card():
             total_height = self.card_size[1]
-        elif self.triangle_is_present:
+        elif self.draw_triangle:
             if self.editable_html:
                 eh = self.editable_doc.size().height()
             else:
@@ -449,7 +454,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.width = width
         self.height = total_height
         # middle line is 0
-        if self.triangle_is_present:
+        if self.draw_triangle:
             # if triangled is not leaf, editing should target the upper part and leave
             # the combination of leaves alone
             self.upper_part_y = 0
@@ -458,7 +463,7 @@ class Label(QtWidgets.QGraphicsItem):
             else:
                 self.triangle_y = 0
             self.lower_part_y = self.triangle_y + self.triangle_height
-        elif self.label_shape == g.CARD and self._host.triangle:
+        elif self.label_shape == g.CARD:
             # no lower part, no triangle
             self.upper_part_y = 0
             self.triangle_y = 0
@@ -545,7 +550,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.editable_part.setDefaultTextColor(self._host.contextual_color)
         if self.lower_part:
             self.lower_part.setDefaultTextColor(self._host.contextual_color)
-        if self.triangle_is_present:
+        if self.draw_triangle:
             br = self.boundingRect()
             #print(br, self.x(), self.y(), br.x(), br.y())
             left = 0

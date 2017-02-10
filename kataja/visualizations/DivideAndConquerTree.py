@@ -120,9 +120,11 @@ class DivideAndConquerTree(BalancedTree):
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
         def _build_grid(node, parent=None, done: set=None):
-            if self.forest.should_we_draw(node, parent) and node not in done:
-                nleft, ntop, nw, nh = _get_grid_size(node)
+            if node not in done and self.forest.should_we_draw(node, parent):
                 done.add(node)
+                if node.locked_to_node:
+                    return Grid()
+                nleft, ntop, nw, nh = _get_grid_size(node)
                 grids = []
                 children = node.get_children(similar=True, visible=True)
                 last_drawn_child = None

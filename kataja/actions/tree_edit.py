@@ -171,13 +171,11 @@ class ToggleTriangle(KatajaAction):
             return
         if self.sender().isChecked():
             log.info('folding in %s' % node.as_bracket_string())
-            ctrl.free_drawing.add_triangle_to(node)
+            ctrl.free_drawing.add_or_update_triangle_for(node)
         else:
             log.info('unfolding from %s' % node.as_bracket_string())
             ctrl.free_drawing.remove_triangle_from(node)
-        node.update_label()
         ctrl.deselect_objects()
-
 
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
@@ -192,8 +190,7 @@ class AddTriangle(KatajaAction):
         if not node:
             return
         log.info('folding in %s' % node.as_bracket_string())
-        ctrl.free_drawing.add_triangle_to(node)
-        node.update_label()
+        ctrl.free_drawing.add_or_update_triangle_for(node)
         ctrl.deselect_objects()
 
 

@@ -95,10 +95,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 if node:
                     node.physics_x = False
                     node.physics_y = False
-                    if node.folding_towards:
-                        if node.folding_towards not in nodelist:
-                            nodelist.append(node.folding_towards)
-                    elif not node.is_visible():
+                    if node.locked_to_node:
                         pass
                     else:
                         nodelist.append(node)

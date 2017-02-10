@@ -112,7 +112,7 @@ class ConstituentNode(Node):
                                    'action': 'leaf_add_sibling_right'},
         g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
                          'action': 'add_triangle'},
-        g.REMOVE_TRIANGLE: {'condition': 'has_triangle',
+        g.REMOVE_TRIANGLE: {'condition': 'is_triangle_host',
                             'action': 'remove_triangle'}
     }
 
@@ -189,7 +189,7 @@ class ConstituentNode(Node):
                         inode.parts[i] = part[1:]
                     return True
                 elif isinstance(part, ICommandNode) and part.command == 'qroof':
-                    self.triangle = True
+                    self.triangle_stack = [self]
                     continue
                 else:
                     return remove_dot_label(part, row_n)
@@ -266,26 +266,6 @@ class ConstituentNode(Node):
             if base.strip().startswith('t<sub>'):
                 self.is_trace = True
 
-    # Editing with NodeEditEmbed and given editable-template
-    def update_preview(self):
-        """ Update preview label in NodeEditEmbed with composite from label, synobj's label and
-        index.
-        :param edited: the field that triggered the update.
-        :return:
-        """
-        embed = ctrl.ui.active_embed
-        if not embed:
-            return
-
-        index_text = as_html(embed.index.text())
-        print('preview inode_text: ', embed.label.inode_text())
-        print('same as html: ', as_html(embed.label.inode_text()))
-        label_text = as_html(embed.label.inode_text())
-        parsed = label_text
-        if index_text:
-            parsed += '<sub>' + index_text + '</sub>'
-        #embed.preview.setText(parsed)
-
     def get_syntactic_label(self):
         if self.syntactic_object:
             return self.syntactic_object.label
@@ -300,64 +280,6 @@ class ConstituentNode(Node):
         gs = self.get_children(visible=True, of_type=g.GLOSS_EDGE)
         if gs:
             return gs[0]
-
-    def recursive_lower_html(self, lower_html, included, syntactic_mode, label_text_mode,
-                             first=False):
-        """ Build lower part (part under triangle) of html label.
-        :return:
-        """
-        children = self.get_children(visible=False, similar=True)
-        if children:
-            for node in children:
-                if node not in included:
-                    included.add(node)
-                    node.recursive_lower_html(lower_html, included, syntactic_mode, label_text_mode)
-            return ''
-        else:
-            l = ''
-            part = ''
-            if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-                if self.label:
-                    l = self.label
-                elif self.syntactic_object:
-                    l = self.syntactic_object.label
-            elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
-                if self.syntactic_object:
-                    l = self.syntactic_object.label
-            elif label_text_mode == g.SECONDARY_LABELS:
-                if self.syntactic_object:
-                    l = self.syntactic_object.get_secondary_label()
-            if l:
-                if first: # Triangle consists on only one node. Its lower label can have many lines
-                    # without problems.
-                    qroof_content = extract_triangle(l)
-                    if qroof_content:
-                        part = as_html(qroof_content)
-                    else: # Try to guess what parts to use in constituent that hasn't specified
-                        # triangle in latex/html: if there are multiple lines, skip the first,
-                        # use the rest
-                        lines = as_html(l).split('<br/>')
-                        if len(lines) == 1:
-                            part = lines[0]
-                        else:
-                            part = '<br/>'.join(lines[1:])
-                else: # Triangle gathers labels from many nodes. Now multiline labels would look
-                    # confusing if gathered under node.
-                    qroof_content = extract_triangle(l)
-                    if qroof_content:
-                        lines = as_html(qroof_content).split('<br/>')
-                        if lines:
-                            part = lines[0]
-                    else:  # Try to guess what parts to use in
-                        l = as_html(l)
-                        lines = l.split('<br/>')
-                        if len(lines) == 1:
-                            part = lines[0]
-                        elif len(lines) > 1:
-                            part = lines[1]
-            if part:
-                lower_html.append(part)
-            return part
 
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
@@ -454,9 +376,7 @@ class ConstituentNode(Node):
             return self.syntactic_object.compose_html_for_viewing(self)
 
         html = []
-        lower_html_parts = []
 
-        syntactic_mode = ctrl.settings.get('syntactic_mode')
         label_text_mode = ctrl.settings.get('label_text_mode')
         l = ''
         if label_text_mode == g.NODE_LABELS:
@@ -481,26 +401,10 @@ class ConstituentNode(Node):
         elif label_text_mode == g.XBAR_LABELS:
             l = self.get_autolabel()
 
+        l_html = as_html(l, omit_triangle=True, include_index=self.index)
 
-        l = as_html(l, omit_triangle=True, include_index=self.index)
-        #if self.index and not syntactic_mode:
-        #    html.append('<sub>%s</sub>' % self.index)
-        if self.triangle:
-            # collect portions of labels from this node and nodes below it to lower_html_parts
-            lower_part = self.recursive_lower_html(lower_html_parts, set(), syntactic_mode,
-                                                   label_text_mode, first=True)
-            # for this node, remove from upper_html the part that was used for lower_html
-            if lower_part in l:
-                new_lines = []
-                found = False
-                for line in reversed(l.split('<br/>')):
-                    if (not found) and line == lower_part:
-                        found = True
-                    else:
-                        new_lines.append(line)
-                l = '<br/>'.join(reversed(new_lines))
-        if l:
-            html.append(l)
+        if l_html:
+            html.append(l_html)
 
         if self.gloss and self.should_show_gloss_in_label():
             if html:
@@ -508,7 +412,24 @@ class ConstituentNode(Node):
             html.append(as_html(self.gloss))
         if html and html[-1] == '<br/>':
             html.pop()
-        return ''.join(html), ' '.join(lower_html_parts)
+
+        # Lower part
+        lower_html = ''
+        if self.triangle_stack and self.triangle_stack[-1] is self and not self.get_children(
+                visible=False, similar=True):
+            qroof_content = extract_triangle(l)
+            if qroof_content:
+                lower_html = as_html(qroof_content)
+            else:  # Try to guess what parts to use in constituent that hasn't specified
+                # triangle in latex/html: if there are multiple lines, skip the first,
+                # use the rest
+                lines = as_html(l).split('<br/>')
+                if len(lines) == 1:
+                    lower_html = lines[0]
+                else:
+                    lower_html = '<br/>'.join(lines[1:])
+
+        return ''.join(html), lower_html
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -525,7 +446,7 @@ class ConstituentNode(Node):
         label_text_mode = ctrl.settings.get('label_text_mode')
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
-                if self.triangle:
+                if self.triangle_stack:
                     lower_part = extract_triangle(self.label)
                     return 'node label', as_html(self.label, omit_triangle=True) + \
                            '<br/>' + as_html(lower_part or '')

@@ -31,7 +31,7 @@ from kataja.parser.INodes import as_text, extract_triangle
 
 
 def figure_out_syntactic_label(cn):
-    if cn.triangle:
+    if cn.triangle_stack:
         # as_text -function puts triangle symbol before triangle content, [1:] removes it.
         return as_text(extract_triangle(cn.label), omit_index=True)[1:]
     l = as_text(cn.label, omit_index=True)

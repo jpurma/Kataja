@@ -240,33 +240,26 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.label.setText(node.label)
         self.synlabel.setText(node.get_syntactic_label())
         self.autolabel.setText(node.autolabel)
-        self.triangle.setChecked(bool(node.triangle))
-        #self.projections.update_selections()
-        #self.preview.setText('')
+        self.triangle.setEnabled(self.triangle_enabled())
+        self.triangle.setChecked(bool(node.triangle_stack and node.triangle_stack[-1] is node))
         self.index.setText(node.index or '')
+
+    def triangle_enabled(self):
+        node = self.host
+        if not node:
+            return False
+        elif not node.triangle_stack:
+            return True
+        elif node.triangle_stack[-1] == node:
+            return True
+        return False
 
 
     def submit_values(self):
-        """ Submit field values back to object based on template
+        """ Possibly called if assuming we are in NodeEditEmbed. All of the changes in
+        ConstituentNodeEditEmbed should take effect immediately, so separate submit is not needed.
         :return:
         """
-        # ed = self.host.get_editing_template()
-        # for field_name, field in self.fields.items():
-        #     d = ed.get(field_name, {})
-        #     itype = d.get('input_type', 'text')
-        #     if itype == 'text' or itype == 'textarea':
-        #         value = field.text()
-        #     elif itype == 'expandingtext':
-        #         value = field.inode_text()
-        #     elif itype in ['multibutton', 'radiobutton', 'checkbox', 'preview', 'spinbox']:
-        #         # buttons take action immediately when clicked and preview cannot be edited
-        #         continue
-        #     else:
-        #         raise NotImplementedError
-        #     if 'setter' in d:
-        #         getattr(self.host, d['setter'])(value)
-        #     else:
-        #         setattr(self.host, field_name, value)
         self.host.update_label()
 
     def focus_to_main(self):

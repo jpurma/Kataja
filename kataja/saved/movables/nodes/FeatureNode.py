@@ -163,17 +163,6 @@ class FeatureNode(Node):
         self.value = value
         self.family = family
 
-    def release_from_locked_position(self):
-        self.locked_to_node = None
-        if self.parentItem() and isinstance(self.parentItem(), Node):
-            spos = self.scenePos()
-            self.setParentItem(self.parentItem().parentItem())
-            my_pos = self.mapFromScene(spos)
-            ppos = self.mapToParent(my_pos)
-            self.current_position = ppos.x(), ppos.y()
-            self.setPos(ppos)
-            self.update_bounding_rect()
-
     def update_relations(self, parents, shape=None, position=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
@@ -190,18 +179,12 @@ class FeatureNode(Node):
         if position or shape == g.CARD:
             for parent in self.get_parents(similar=False, visible=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
-                        if parent.is_visible():
-                            self.locked_to_node = parent
-                            if self.parentItem() is not parent:
-                                self.setParentItem(parent)
-                                px, py = parent.current_position
-                                sx, sy = self.current_position
-                                self.current_position = sx - px, sy - py
-                            self.update_bounding_rect()
-                            parents.append(parent)
-                            break
-                        else:
-                            self.release_from_locked_position()
+                    if parent.is_visible():
+                        self.lock_to_node(parent)
+                        parents.append(parent)
+                        break
+                    else:
+                        self.release_from_locked_position()
                 elif parent.node_type == g.FEATURE_NODE:
                     if self.locked_to_node == parent:
                         self.release_from_locked_position()

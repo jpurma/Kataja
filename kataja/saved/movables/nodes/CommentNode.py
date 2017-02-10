@@ -201,11 +201,6 @@ class CommentNode(Node):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        if self.triangle:
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(1)
-            painter.setPen(p)
-            self.paint_triangle(painter)
         if self.drag_data:
             p = QtGui.QPen(self.contextual_color)
             #b = QtGui.QBrush(ctrl.cm.paper())

@@ -341,6 +341,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return: None
         """
         self._high_priority_move = False
+        self.target_position = self.current_position
         if self.after_move_function:
             self.after_move_function()
             self.after_move_function = None

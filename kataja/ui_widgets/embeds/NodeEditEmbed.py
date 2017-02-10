@@ -227,7 +227,6 @@ class NodeEditEmbed(UIEmbed):
                             value = int(d.get('prefill', 0))
                 field.setValue(value)
 
-
     def submit_values(self):
         """ Submit field values back to object based on template
         :return:
