@@ -51,6 +51,30 @@ def as_html(item, omit_triangle=False, include_index='') -> str:
     return h
 
 
+def as_editable_html(item) -> str:
+    """ Return contents of a complex text field (INode, probably) as html, but \n instead of
+    <br/> and no escaping. This is friendlier to edit and br:s can be added when interpreting the
+    result.
+    :param item:
+    :return:
+    """
+    if not item:
+        return ''
+    elif isinstance(item, ITextNode):
+        return item.as_editable_html()
+    else:
+        return str(item)
+
+
+def as_editable_latex(item) -> str:
+    if not item:
+        return ''
+    elif isinstance(item, ITextNode):
+        return item.as_editable_latex()
+    else:
+        return str(item)
+
+
 def as_text(item, omit_triangle=False, omit_index=False, omit_outmost=False, single_line=False):
     if isinstance(item, ITextNode):
         if omit_outmost:
@@ -66,10 +90,12 @@ def as_text(item, omit_triangle=False, omit_index=False, omit_outmost=False, sin
         return s
 
 
-def extract_triangle(item):
+def extract_triangle(item, remove_from_original=False):
     if isinstance(item, ITextNode):
         for part in list(item.parts):
             if isinstance(part, ICommandNode) and part.command == 'qroof':
+                if remove_from_original:
+                    item.parts.remove(part)
                 return part
             found = extract_triangle(part)
             if found:
@@ -273,6 +299,13 @@ class ITextNode:
             else:
                 s.append(str(html.escape(part)))
 
+    def _as_editable_html(self, s):
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                part._as_editable_html(s)
+            else:
+                s.append(str(part))
+
     def as_html(self, omit_triangle=False) -> str:
         """ INodes to html
         :param omit_triangle: don't include content inside \qroof{ }.
@@ -282,17 +315,43 @@ class ITextNode:
         self._as_html(s, omit_triangle=omit_triangle)
         return ''.join(s).replace('\n', '<br/>\n').replace('\r', '<br/>\r')
 
-    def _as_latex(self, s):
+    def as_editable_html(self) -> str:
+        """ Return contents of a complex text field as html, but \n instead of
+        <br/> and no escaping. This is friendlier to edit and br:s can be added when interpreting
+        the result.
+        :param item:
+        :return:
+        """
+        s = []
+        self._as_editable_html(s)
+        return ''.join(s)
+
+    def _as_latex(self, s, inside_math=False, in_math=False):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                part._as_latex(s)
+                part._as_latex(s, inside_math=inside_math)
+            else:
+                s.append(str(part))
+        return inside_math
+
+    def _as_editable_latex(self, s):
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                part._as_editable_latex(s)
             else:
                 s.append(str(part))
 
     def as_latex(self):
         s = []
-        self._as_latex(s)
-        return ''.join(s).replace('\n', '\\').replace('\r', '\\')
+        in_math = self._as_latex(s)
+        if in_math:
+            s.append('$')
+        return ''.join(s).replace('\n', '\\\\\n').replace('\r', '\\\\\r')
+
+    def as_editable_latex(self):
+        s = []
+        self._as_editable_latex(s)
+        return ''.join(s)
 
     def _as_plain(self, s, omit_triangle=False, omit_index=False):
         for part in self.parts:
@@ -354,19 +413,66 @@ class ICommandNode(ITextNode):
         else:
             ITextNode._as_html(self, s, omit_triangle=omit_triangle)
 
-    def _as_latex(self, s):
-        if self.command in command_to_latex:
-            command = command_to_latex[self.command]
+    def _as_editable_html(self, s):
+        if self.command in command_to_html:
+            tag = command_to_html[self.command]
+            if tag and self.parts:
+                s.append('<%s>' % tag)
+                ITextNode._as_editable_html(self, s)
+                s.append('</%s>' % tag)
+            elif tag:
+                s.append('<%s/>' % tag)
+            else:
+                ITextNode._as_editable_html(self, s)
+        elif self.command in latex_to_unicode:
+            s.append(latex_to_unicode[self.command][0])
+        else:
+            ITextNode._as_editable_html(self, s)
+
+    def _as_latex(self, s, after_math=False, inside_math=False):
+        command = self.command
+        if command: # in command_to_latex:
+            in_math = False
+            if self.requires_math_mode():
+                if not (after_math or inside_math):
+                    s.append('$')
+                    in_math = True
+            elif after_math:
+                s.append('$')
+            if command in command_to_latex:
+                command = command_to_latex[command]
             if command and self.parts:
                 s.append('\%s{' % command)
-                ITextNode._as_latex(self, s)
+                ITextNode._as_latex(self, s, inside_math=inside_math or in_math)
                 s.append('}')
             elif command:
                 s.append('\%s ' % command)
             else:
                 ITextNode._as_latex(self, s)
+            return in_math
         else:
-            ITextNode._as_html(self, s)
+            if after_math and not inside_math:
+                s.append('$')
+            ITextNode._as_latex(self, s)
+            return inside_math
+
+
+    def _as_editable_latex(self, s):
+        command = self.command
+        if command: # in command_to_latex:
+            if command in command_to_latex:
+                command = command_to_latex[command]
+            if command and self.parts:
+                s.append('\%s{' % command)
+                ITextNode._as_editable_latex(self, s)
+                s.append('}')
+            elif command:
+                s.append('\%s ' % command)
+            else:
+                ITextNode._as_editable_latex(self, s)
+        else:
+            ITextNode._as_editable_latex(self, s)
+
 
     def _as_plain(self, s, omit_triangle=False, omit_index=False):
         if not self.parts:
@@ -419,6 +525,10 @@ class ICommandNode(ITextNode):
     def __repr__(self):
         return 'ICommandNode(command=%r, parts=%r)' % (self.command,
                                                        self.parts)
+
+    def requires_math_mode(self):
+        return self.command in latex_to_unicode
+
 
     def splitlines(self):
         """ This is shallow splitline, it doesn't go inside other INodes to look for linebreaks

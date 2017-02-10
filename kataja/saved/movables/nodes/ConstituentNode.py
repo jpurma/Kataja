@@ -57,50 +57,8 @@ class ConstituentNode(Node):
     is_constituent = True
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
+    editable = {}  # Uses custom ConstituentNodeEmbed instead of template-based NodeEditEmbed
 
-    editable = {'label': dict(name='Node label', prefill='label',
-                              tooltip='Freeform label or text for node, has no '
-                                      'effect for syntactic computation',
-                              input_type='expandingtext', order=15,
-                              on_edit='update_preview'),
-                'synlabel': dict(name='Syntactic label', prefill='label',
-                                 tooltip='Label used in syntactic computations, plain string. '
-                                         'Visible in <i>syntactic mode</i> or if <i>Displayed '
-                                         'label</i> is empty.',
-                                 width=160,
-                                 getter='get_syntactic_label',
-                                 focus=True, syntactic=True, order=10, on_edit='update_preview'),
-                'triangle': dict(name='Triangle', input_type='checkbox', order=35,
-                                 on_edit='update_preview', tooltip='Draw a triangle on top of a '
-                                                                   'node to mark an unanalysed '
-                                                                   'part of a sentence. The '
-                                                                   'bottom line of label is drawn'
-                                                                   'below the triangle.'),
-                'index': dict(name='Index', align='line-end', width=20, prefill='i',
-                              tooltip='Optional index for linking multiple instances', order=11,
-                              on_edit='update_preview'),
-                'preview': dict(name='Preview', tooltip='Preview how label will be displayed. '
-                                                        'Display label overrides computational '
-                                                        'label.', input_type='preview'),
-                # 'gloss': dict(name='Gloss', prefill='gloss',
-                #               tooltip='translation (optional)', width=200, condition='is_leaf',
-                #               order=40),
-                'heads': dict(name='Projection from',
-                              tooltip='Node can be projection from either or both of its '
-                                      'children if those children are heads or projections from '
-                                      'their children.',
-                              condition='can_be_projection_of_another_node',
-                              input_type='projection_buttons',
-                              select_action='set_projection_at_embed_ui', order=30),
-                'autolabel': dict(name='Generated label',
-                                  tooltip="These are either XBar or Bare phrase structure labels "
-                                          "that are updated automatically based on projections. "
-                                          "These can be used instead of manually entering Node "
-                                          "labels. ('l' to switch label modes)",
-                                  getter='get_autolabel',
-                                  readonly=True,
-                                  order=31)
-    }
     default_style = {'plain': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10},
                      'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
 
@@ -294,6 +252,15 @@ class ConstituentNode(Node):
             self.label = rows[0]
         else:
             self.label = ''
+        # now as rows are in one INode / string, we can extract the triangle part and put it to
+        # end. It is different to qtree's way of handling triangles, but much simpler for us in
+        # long run.
+        triangle_part = extract_triangle(self.label, remove_from_original=True)
+        if triangle_part:
+            assert isinstance(self.label, ITextNode)
+
+            self.label.parts.append('\n')
+            self.label.parts.append(triangle_part)
         if self.index:
             base = as_html(self.label)
             if base.strip().startswith('t<sub>'):
@@ -334,7 +301,8 @@ class ConstituentNode(Node):
         if gs:
             return gs[0]
 
-    def recursive_lower_html(self, lower_html, included, syntactic_mode, label_text_mode):
+    def recursive_lower_html(self, lower_html, included, syntactic_mode, label_text_mode,
+                             first=False):
         """ Build lower part (part under triangle) of html label.
         :return:
         """
@@ -360,16 +328,35 @@ class ConstituentNode(Node):
                 if self.syntactic_object:
                     l = self.syntactic_object.get_secondary_label()
             if l:
-                qroof_content = extract_triangle(l)
-                if qroof_content:
-                    part = as_html(qroof_content)
-                else:
-                    l = as_html(l)
-                    lines = l.split('<br/>')
-                    if lines:
-                        part = lines[-1]
-                if part:
-                    lower_html.append(part)
+                if first: # Triangle consists on only one node. Its lower label can have many lines
+                    # without problems.
+                    qroof_content = extract_triangle(l)
+                    if qroof_content:
+                        part = as_html(qroof_content)
+                    else: # Try to guess what parts to use in constituent that hasn't specified
+                        # triangle in latex/html: if there are multiple lines, skip the first,
+                        # use the rest
+                        lines = as_html(l).split('<br/>')
+                        if len(lines) == 1:
+                            part = lines[0]
+                        else:
+                            part = '<br/>'.join(lines[1:])
+                else: # Triangle gathers labels from many nodes. Now multiline labels would look
+                    # confusing if gathered under node.
+                    qroof_content = extract_triangle(l)
+                    if qroof_content:
+                        lines = as_html(qroof_content).split('<br/>')
+                        if lines:
+                            part = lines[0]
+                    else:  # Try to guess what parts to use in
+                        l = as_html(l)
+                        lines = l.split('<br/>')
+                        if len(lines) == 1:
+                            part = lines[0]
+                        elif len(lines) > 1:
+                            part = lines[1]
+            if part:
+                lower_html.append(part)
             return part
 
     def update_label_shape(self):
@@ -501,7 +488,7 @@ class ConstituentNode(Node):
         if self.triangle:
             # collect portions of labels from this node and nodes below it to lower_html_parts
             lower_part = self.recursive_lower_html(lower_html_parts, set(), syntactic_mode,
-                                                   label_text_mode)
+                                                   label_text_mode, first=True)
             # for this node, remove from upper_html the part that was used for lower_html
             if lower_part in l:
                 new_lines = []

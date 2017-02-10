@@ -2,24 +2,10 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import open_symbol_data, caller
-from kataja.parser.INodes import ITextNode, as_html, as_text
+from kataja.parser.INodes import ITextNode, as_html, as_text, as_editable_latex, as_editable_html
 import kataja.globals as g
 import html
 
-
-def as_latex(value):
-    if isinstance(value, list):
-        latex_rows = []
-        for row in value:
-            if isinstance(row, ITextNode):
-                latex_rows.append(row.as_latex())
-            else:
-                latex_rows.append(row)
-        return '\n'.join(latex_rows)
-    elif isinstance(value, ITextNode):
-        return value.as_latex()
-    else:
-        return value
 
 
 class ExpandingTextArea(QtWidgets.QWidget):
@@ -93,9 +79,9 @@ class ExpandingTextArea(QtWidgets.QWidget):
     def setText(self, text):
         self.raw_text = text
         print('raw text:', text, type(text))
-        self.parsed_latex = as_latex(text)
+        self.parsed_latex = as_editable_latex(text)
         print('parsed_latex:', self.parsed_latex)
-        self.parsed_html = html.unescape(as_html(text))
+        self.parsed_html = as_editable_html(text)
         print('parsed_html:', self.parsed_html)
         if self.parsing_mode == 1:
             self.text_area.setPlainText(self.parsed_latex)
@@ -156,9 +142,9 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.parsing_mode = self.input_parsing_modes.id(button_clicked)  # 1 = TeX,  2 = HTML,
         # 3 = Plain
         self.get_host().text_parse_mode = self.parsing_mode
-        self.parsed_html = html.unescape(as_html(value))
+        self.parsed_html = as_editable_html(value)
         print(self.parsed_html)
-        self.parsed_latex = as_latex(value)
+        self.parsed_latex = as_editable_latex(value)
         if self.parsing_mode == 1:
             self.text_area.setPlainText(self.parsed_latex)
         elif self.parsing_mode == 2:
@@ -190,6 +176,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
             self.setFont(kw['font'])
         if 'text' in kw:
             self.setText(kw['text'])
+
 
 class PreviewLabel(QtWidgets.QLabel):
 
