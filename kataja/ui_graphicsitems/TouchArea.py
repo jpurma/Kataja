@@ -1080,6 +1080,15 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
 
     __qt_type_id__ = next_available_type_id()
 
+    def update_end_points(self):
+        x, y = self.host.centered_scene_position
+        lbr = self.host.label_object.boundingRect()
+        y += self.host.label_object.triangle_y + lbr.top() + end_spot_size + 2
+        self.end_point = x, y
+        self.start_point = self.end_point
+        self.setPos(x, y)
+        self.setZValue(self.host.zValue() + 10)
+
     def paint(self, painter, option, widget):
         """
 
@@ -1092,9 +1101,12 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        draw_triangle(painter, 0, 0)
+        #draw_triangle(painter, 0, 0)
+        draw_x(painter, 0, 0, end_spot_size / 2)
         if self._hovering:
-            painter.setPen(c)
+            p = QtGui.QPen(c)
+            p.setWidth(2)
+            painter.setPen(p)
             draw_x(painter, 0, 0, end_spot_size)
 
 

@@ -127,6 +127,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.bottom_y = 0
         self.draw_triangle = False
         self.triangle_height = 20
+        self.triangle_width = 20
         self.triangle_y = 0
         self.width = 0
         self.height = 0
@@ -404,6 +405,10 @@ class Label(QtWidgets.QGraphicsItem):
 
     def resize_label(self):
         self.prepareGeometryChange()
+        triangle_host = self._host.is_triangle_host()
+        self.draw_triangle = bool(triangle_host and self.label_shape not in [
+            g.SCOPEBOX, g.CARD, g.BRACKETED])
+
         # ------------------- Width -------------------
         user_width, user_height = self.get_max_size_from_host()
         if self.is_card():
@@ -413,10 +418,11 @@ class Label(QtWidgets.QGraphicsItem):
                 self.editable_part.setTextWidth(-1)
                 self.lower_part.setTextWidth(-1)
                 ideal_width = max((self.editable_doc.idealWidth(), self.lower_doc.idealWidth()))
+            elif triangle_host:
+                ideal_width = self.triangle_width
             else:
                 self.editable_part.setTextWidth(-1)
                 ideal_width = self.editable_doc.idealWidth()
-
             if user_width and user_width < ideal_width:
                 width = user_width
             elif self.template_width:
@@ -432,8 +438,6 @@ class Label(QtWidgets.QGraphicsItem):
             self.lower_part.setTextWidth(width)
 
         # ------------------- Height -------------------
-        self.draw_triangle = bool(self._host.is_triangle_host() and self.label_shape not in [
-            g.SCOPEBOX, g.CARD, g.BRACKETED])
         if self.is_card():
             total_height = self.card_size[1]
         elif self.draw_triangle:

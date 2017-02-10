@@ -80,12 +80,15 @@ class LeftFirstTree(BaseVisualization):
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
-        if not self.forest.should_we_draw(node, parent):
+        if node.locked_to_node:
+            return
+        elif not self.forest.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
         fy = y
 
-        children = node.get_children(similar=True, visible=True)
+        children = [x for x in node.get_children(similar=True, visible=True)
+                    if not x.locked_to_node]
         if not children:
             return
         x_shift = (len(children) // 2) * -2
@@ -97,7 +100,8 @@ class LeftFirstTree(BaseVisualization):
         ony = ny
         for child in children:
             blocked = True
-            grandchildren = child.get_children(similar=True, visible=True)
+            grandchildren = [x for x in child.get_children(similar=True, visible=True)
+                             if not x.locked_to_node]
             count = 0
             while blocked and count < 10:
                 # is the right node position available?

@@ -141,7 +141,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
              'or if <i>Displayed label</i> is empty.'
         title = 'Syntactic label'
         self.synlabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='label',
-                                         on_edit=node.update_preview)
+                                         on_edit=self.synlabel_edited)
         make_label(title, self, vlayout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         vlayout.addWidget(self.synlabel)
@@ -153,7 +153,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "Freeform label or text for node, has no effect for syntactic computation"
         title = 'User label'
         self.label = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill='label',
-                                       on_edit=node.update_preview, label=title)
+                                       on_edit=self.label_edited, label=title)
         self.label.setPalette(ui_p)
         self.resize_target = self.label
         hlayout = QtWidgets.QHBoxLayout()
@@ -172,9 +172,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "These are either XBar or Bare phrase structure labels that are updated " \
              "automatically based on projections."
         title = 'Generated label'
-        self.autolabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='autolabel',
-                                          on_edit=node.update_preview)
-        #self.autolabel.setPalette(ui_p)
+        self.autolabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='autolabel')
         self.autolabel.setReadOnly(True)
         make_label(title, self, vlayout, tt, self.autolabel)
         vlayout.addWidget(self.autolabel)
@@ -192,13 +190,12 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
         self.index = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='i',
-                                      on_edit=node.update_preview)
+                                      on_edit=self.index_edited)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
         make_label(title, self, hlayout, tt, self.index)
         hlayout.addWidget(self.index)
         layout.addLayout(hlayout)
-
 
         tt = 'Node can be projection from either or both of its children if those children are ' \
              'heads or projections from their children.'
@@ -254,6 +251,14 @@ class ConstituentNodeEditEmbed(UIEmbed):
             return True
         return False
 
+    def synlabel_edited(self, *args, **kwargs):
+        print(args, kwargs)
+
+    def label_edited(self, *args, **kwargs):
+        print(args, kwargs)
+
+    def index_edited(self, *args, **kwargs):
+        print(args, kwargs)
 
     def submit_values(self):
         """ Possibly called if assuming we are in NodeEditEmbed. All of the changes in

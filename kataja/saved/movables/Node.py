@@ -710,11 +710,6 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
-    def gather_triangled_children(self):
-        hidden = []
-        leaves = []
-
-
     def gather_children(self):
         fpos = ctrl.settings.get('feature_positioning')
         shape = ctrl.settings.get('label_shape')
@@ -1119,12 +1114,7 @@ class Node(Movable):
         self.locked_to_node = None
         if self.parentItem() and isinstance(self.parentItem(), Node):
             scene_pos = self.scenePos()
-            #if self.triangle_stack and self.triangle_stack[-1] is not self:
-            #    new_parent = self.triangle_stack[-1]
-            #else:
             new_parent = self.parentItem().parentItem()
-            #if isinstance(new_parent, Node):
-            #    self.locked_to_node = new_parent
             self.setParentItem(new_parent)
             lp = new_parent.mapFromScene(scene_pos)
             self.current_position = lp.x(), lp.y()
@@ -1146,12 +1136,13 @@ class Node(Movable):
     # action is done in Forest
     # as triangles may involve complicated forest-level calculations.
 
+    def is_cosmetic_triangle(self):
+        """ Triangle that doesn't have any other nodes folded into it """
+        return self in self.triangle_stack and self.is_leaf(only_similar=True, only_visible=False)
+
     def hidden_in_triangle(self):
-        if self.triangle_stack:
-            if self.triangle_stack[-1] is not self:
-                if not self.is_leaf(only_similar=True, only_visible=False):
-                    return True
-        return False
+        return self.triangle_stack and self.triangle_stack[-1] is not self and \
+            not self.is_leaf(only_similar=True, only_visible=False)
 
     def fold_into_me(self, nodes):
         to_do = []
@@ -1163,10 +1154,12 @@ class Node(Movable):
             if not node.hidden_in_triangle():
                 x += br.width()
         xt = x / 2
+        self.label_object.triangle_width = x
         self.update_label()
         y = self.boundingRect().bottom()
         for node, my_x, my_l in to_do:
             node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
+            node.update_label()
             node.update_visibility()
 
     def on_press(self, value):

@@ -92,14 +92,10 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         top.physics_y = False
         for node in tree.sorted_nodes[1:]:
             if node.is_leaf() and node.node_type == CONSTITUENT_NODE:
-                if node:
+                if node and not node.locked_to_node:
                     node.physics_x = False
                     node.physics_y = False
-                    if node.locked_to_node:
-                        pass
-                    else:
-                        nodelist.append(node)
-
+                    nodelist.append(node)
             else:
                 node.physics_x = True
                 node.physics_y = True

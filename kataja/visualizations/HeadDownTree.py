@@ -151,12 +151,12 @@ class HeadDownTree(BaseVisualization):
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
         def _build_grid(node, parent=None):
-            if self.forest.should_we_draw(node, parent):
+            if node.locked_to_node:
+                return Grid()
+            elif self.forest.should_we_draw(node, parent):
                 grids = []
                 children = node.get_children(visible=True, similar=True)
                 for child in children:
-                    if child.locked_to_node:
-                        continue
                     grid = _build_grid(child, parent=node)
                     if grid:
                         grids.append(grid)

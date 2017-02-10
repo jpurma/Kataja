@@ -856,7 +856,7 @@ class FreeDrawing:
             root.triangle_stack.append(root)
         fold_scope = self.f.list_nodes_once(root)[1:]
         folded = []
-        not_my_children = set()
+        bad_mothers = set()
         if not fold_scope:
             return  # triangle is just visual addition to label
 
@@ -873,19 +873,26 @@ class FreeDrawing:
             if len(parents) > 1:
                 can_fold = True
                 for parent in parents:
-                    if (parent not in fold_scope) or (parent in not_my_children):
-                        not_my_children.add(node)
+                    if parent not in fold_scope:
+                        bad_mothers.add(node)
                         can_fold = False
                         break
                 if can_fold:
                     folded.append(node)
-            # remember that the branch that couldn't be folded won't allow
-            # any of its children to be
-            # folded either.
-            elif parents and parents[0] in not_my_children:
-                not_my_children.add(node)
             else:
                 folded.append(node)
+        # remember that the branch that couldn't be folded won't allow
+        # any of its children to be
+        # folded either.
+
+        def _remove_children(bad_mother:Node):
+            for child in bad_mother.get_children(similar=False, visible=False):
+                if child in folded:
+                    folded.remove(child)
+                    _remove_children(child)
+        for bm in bad_mothers:
+            _remove_children(bm)
+
         root.fold_into_me(folded)
 
     def remove_triangle_from(self, root):

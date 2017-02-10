@@ -401,7 +401,9 @@ class ConstituentNode(Node):
         elif label_text_mode == g.XBAR_LABELS:
             l = self.get_autolabel()
 
-        l_html = as_html(l, omit_triangle=True, include_index=self.index)
+        separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
+
+        l_html = as_html(l, omit_triangle=separate_triangle, include_index=self.index)
 
         if l_html:
             html.append(l_html)
@@ -415,8 +417,7 @@ class ConstituentNode(Node):
 
         # Lower part
         lower_html = ''
-        if self.triangle_stack and self.triangle_stack[-1] is self and not self.get_children(
-                visible=False, similar=True):
+        if separate_triangle:
             qroof_content = extract_triangle(l)
             if qroof_content:
                 lower_html = as_html(qroof_content)
