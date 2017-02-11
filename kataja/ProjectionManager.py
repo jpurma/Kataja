@@ -66,13 +66,9 @@ class ProjectionManager:
                             head_part_of_child = _guess_head(child)
                     else:
                         head_part_of_child = _guess_head(child)
-                    #print('head_part_of_child: %r , head_part: %r' % (head_part_of_child,
-                    # head_part))
                     if head_part_of_child:
                         if head_part_of_child == head_part:
-                            #print('match')
                             heads += child.heads
-                            #print(heads)
             node.set_heads(heads)
             return head_part
 
@@ -88,59 +84,53 @@ class ProjectionManager:
     @time_me
     def update_projections(self):
 
-        chains = defaultdict(list)
         old_heads = set(self.projections.keys())
+        new_heads = set()
 
         for node in self.forest.nodes.values():
             if node.node_type == CONSTITUENT_NODE:
-                for head in node.heads:
-                    chains[head].append(node)
+                if node in node.heads:
+                    new_heads.add(node)
                 node.in_projections = []
                 node.autolabel = ''
 
-        for head, chain in list(chains.items()):
-            if head not in chain:
-                print('head %s not in chain: %s' % (str(head), str(chain)))
-                for node in chain:
-                    if head in node.heads:
-                        node.poke('heads')
-                        node.heads.remove(head)
-                del chains[head]
-                continue
-            chain.remove(head)
-            ordered_chains = [[head]]
-            progress = True
-            while chain and progress:
-                progress = False
-                for oc in list(ordered_chains):
-                    last = oc[-1]
-                    found = False
-                    for i, node in enumerate(list(chain)):
-                        if last in node.get_children(visible=False, similar=True):
-                            chain.pop(i)
-                            progress = True
-                            if found:
-                                oc = list(oc)
-                                ordered_chains.append(oc)
-                            found = True
-                            oc.append(node)
+        for edge in self.forest.edges.values():
+            edge.in_projections = []
+
+        for head in new_heads:
+            ordered_chains = []
+            # there are many possible 'routes' that a chain can take
+            # for each we know the starting point and we start building upwards.
+            # if there is a branch, a new chain makes a copy of existing and starts another
+            # branch. Result may be many chains repeating parts. Chains shouldn't make circles.
+
+            def _add_into_chain(_chain, _node, head):
+                found_one = False
+                for parent in _node.get_parents(similar=True, visible=False):
+                    if head in parent.heads:
+                        if found_one:  # make a copy and start another branch
+                            l = list(_chain)
+                            l.append(parent)
+                            _add_into_chain(l, parent, head)
+                        else:
+                            _chain.append(parent)
+                            _add_into_chain(_chain, parent, head)
+                            found_one = True
+                if not found_one:
+                    ordered_chains.append(_chain)
+
+            _add_into_chain([head], head, head)
             projection = self.projections.get(head, None)
             # We want to keep using existing projection objects as much as possible so they won't
             #  change colors on each update
             if projection:
-                print('update projection', ordered_chains)
                 projection.update_chains(ordered_chains)
             else:
-                print('create projection', ordered_chains)
                 projection = Projection(head, ordered_chains, next(self.projection_rotator))
                 self.projections[head] = projection
 
-        new_heads = set(chains.keys())
         for head in old_heads - new_heads:
-            print('remove projection starting with ', head)
             self.remove_projection(head)
-        for edge in self.forest.edges.values():
-            edge.in_projections = []
         self.update_projection_display()
 
     def update_projection_display(self):

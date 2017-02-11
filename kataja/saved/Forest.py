@@ -629,7 +629,8 @@ class Forest(SavedObject):
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.label_shape = shape
                 node.update_label()
-
+            if node.is_triangle_host():
+                ctrl.free_drawing.add_or_update_triangle_for(node)
         parents = []
         for node in self.nodes.values():
             node.update_relations(parents)
@@ -738,9 +739,11 @@ class Forest(SavedObject):
         :param parent:
         :return:
         """
-        if not self.traces_to_draw:
+        if not parent:
             return True
-        if hasattr(node, 'index') and len(node.get_parents(similar=True, visible=True)) > 1:
+        elif not self.traces_to_draw:
+            return True
+        elif hasattr(node, 'index') and len(node.get_parents(similar=True, visible=True)) > 1:
             key = node.uid
             if key in self.traces_to_draw:
                 if parent.uid != self.traces_to_draw[key]:

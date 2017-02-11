@@ -535,11 +535,13 @@ class FreeDrawing:
         :return:
         """
         if edge.start:
-            edge.start.poke('edges_down')
-            edge.start.edges_down.remove(edge)
+            if edge in edge.start.edges_down:
+                edge.start.poke('edges_down')
+                edge.start.edges_down.remove(edge)
         if edge.end:
-            edge.end.poke('edges_up')
-            edge.end.edges_up.remove(edge)
+            if edge in edge.end.edges_up:
+                edge.end.poke('edges_up')
+                edge.end.edges_up.remove(edge)
         self.delete_edge(edge)
 
     def disconnect_node(self, parent=None, child=None, edge_type='', edge=None):

@@ -591,3 +591,4 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
     trees = SavedField("trees")
+    locked_to_node = SavedField("locked_to_node")

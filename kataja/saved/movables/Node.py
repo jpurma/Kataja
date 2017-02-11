@@ -203,6 +203,18 @@ class Node(Movable):
             ctrl.free_drawing.delete_node(self, touch_edges=False, fade=False)
             return
 
+        if 'triangle_stack' in updated_fields:
+            print('updating triangle_stack')
+            if self.is_triangle_host():
+                print('rebuilding triangle headed by ', self)
+                ctrl.free_drawing.add_or_update_triangle_for(self)
+        if 'locked_to_node' in updated_fields:
+            print('updating locked_to_node')
+            if isinstance(self.parentItem(), Node):
+                if not self.locked_to_node:
+                    self.release_from_locked_position()
+            elif self.locked_to_node:  # parent is Tree
+                self.lock_to_node(self.locked_to_node)
         self.update_position()
         self.update_label()
         self.update_visibility()
@@ -1114,7 +1126,9 @@ class Node(Movable):
         self.locked_to_node = None
         if self.parentItem() and isinstance(self.parentItem(), Node):
             scene_pos = self.scenePos()
+            # following doesn't work reliably on undo:
             new_parent = self.parentItem().parentItem()
+            print('in release_from_locked_position, parentItem().parentItem(): ', new_parent)
             self.setParentItem(new_parent)
             lp = new_parent.mapFromScene(scene_pos)
             self.current_position = lp.x(), lp.y()

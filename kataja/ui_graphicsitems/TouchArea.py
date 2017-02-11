@@ -1087,7 +1087,7 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(x, y)
-        self.setZValue(self.host.zValue() + 10)
+        self.setZValue(210)
 
     def paint(self, painter, option, widget):
         """

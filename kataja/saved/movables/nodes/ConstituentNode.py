@@ -722,14 +722,14 @@ class ConstituentNode(Node):
         """
         pass
 
-
-    def paint(self, painter, option, widget=None):
-        """ Painting is sensitive to mouse/selection issues, but usually with
-        :param painter:
-        :param option:
-        :param widget:
-        nodes it is the label of the node that needs complex painting """
-        super().paint(painter, option, widget=widget)
+    #
+    # def paint(self, painter, option, widget=None):
+    #     """ Painting is sensitive to mouse/selection issues, but usually with
+    #     :param painter:
+    #     :param option:
+    #     :param widget:
+    #     nodes it is the label of the node that needs complex painting """
+    #     super().paint(painter, option, widget=widget)
 
     # ############## #
     #                #

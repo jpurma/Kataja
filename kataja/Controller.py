@@ -153,15 +153,15 @@ class Controller:
         return self.main.forest
 
     @property
-    def free_drawing(self):
+    def free_drawing(self) -> 'kataja.FreeDrawing':
         return self.main.forest.free_drawing
 
     @property
-    def graph_scene(self):
+    def graph_scene(self) -> 'kataja.GraphScene':
         return self.main.graph_scene
 
     @property
-    def graph_view(self):
+    def graph_view(self) -> 'kataja.GraphView':
         return self.main.graph_view
 
     def is_zooming(self):

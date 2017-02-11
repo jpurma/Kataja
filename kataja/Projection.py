@@ -3,6 +3,7 @@ import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
 from kataja.singletons import ctrl
 from kataja.parser.INodes import as_text
+from kataja.utils import time_me
 
 
 class Projection:
@@ -40,11 +41,12 @@ class Projection:
     def add_visual(self):
         self.visual = ProjectionVisual(self)
 
+    @time_me
     def get_edges(self):
         """ Return edges between nodes in this chain as a list
         :return:
         """
-        res = []
+        res = set()
         for chain in self.chains:
             if len(chain) < 2:
                 return []
@@ -52,19 +54,22 @@ class Projection:
             for parent in chain[1:]:
                 edge = child.get_edge_to(parent, edge_type=g.CONSTITUENT_EDGE)
                 if edge:
-                    res.append(edge)
+                    res.add(edge)
                 child = parent
+        print(res)
         return res
 
     def set_visuals(self, strong_lines, colorized, highlighter):
         self.colorized = colorized
         self.strong_lines = strong_lines
         for edge in self.get_edges():
-            edge.in_projections.append(self)
+            if self not in edge.in_projections:
+                edge.in_projections.append(self)
         for chain in self.chains:
             if len(chain) > 1:
                 for node in chain:
-                    node.in_projections.append(self)
+                    if self not in node.in_projections:
+                        node.in_projections.append(self)
         self.highlighter = highlighter
         if highlighter:
             if not self.visual:
@@ -85,7 +90,6 @@ class Projection:
         xbar = ctrl.settings.get('use_xbar_aliases') or True
         base_label = Projection.get_base_label(self.head)
         if xbar:
-            print('attempting to update autolabels in xbar style')
             for chain in self.chains:
                 if len(chain) > 1 and len(chain[1].get_children(visible=False, similar=True)) == 1:
                     chain[0].autolabel = Projection.get_base_label(self.head)
@@ -101,7 +105,6 @@ class Projection:
                         node.autolabel = base_label + '´'
                     node.update_label()
         else:
-            print('attempting to update autolabels in bare style')
             for chain in self.chains:
                 for i, node in enumerate(chain):
                     node.autolabel = base_label
