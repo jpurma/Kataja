@@ -205,7 +205,9 @@ class Forest(SavedObject):
         """
         self.tree_manager.update_trees()
         self.projection_manager.update_projections()
-        self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
+        if ctrl.free_drawing_mode:
+            self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
+
 
     @staticmethod
     def list_nodes(first):

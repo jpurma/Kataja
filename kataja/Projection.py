@@ -1,3 +1,4 @@
+import string
 
 import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
@@ -32,11 +33,19 @@ class Projection:
         self.chains = chains or []
         self.visual = None
         self._changes = False
+        self.base_label = ''
         self.update_autolabels()
 
     def update_chains(self, chains):
         self.chains = chains
         self.update_autolabels()
+
+    def update_color(self):
+        if self.base_label:
+            code = sum([ord(c) for c in self.base_label])
+        else:
+            code = 0
+        self.color_id, self.color_tr_id = rotating_colors[code % 8]
 
     def add_visual(self):
         self.visual = ProjectionVisual(self)
@@ -56,7 +65,6 @@ class Projection:
                 if edge:
                     res.add(edge)
                 child = parent
-        print(res)
         return res
 
     def set_visuals(self, strong_lines, colorized, highlighter):
@@ -88,24 +96,25 @@ class Projection:
         :return:
         """
         xbar = ctrl.settings.get('use_xbar_aliases') or True
-        base_label = Projection.get_base_label(self.head)
+        self.base_label = Projection.get_base_label(self.head)
         if xbar:
             for chain in self.chains:
                 if len(chain) > 1 and len(chain[1].get_children(visible=False, similar=True)) == 1:
                     chain[0].autolabel = Projection.get_base_label(self.head)
-                    base_label = Projection.get_base_label(chain[1])
+                    self.base_label = Projection.get_base_label(chain[1])
                     chain = chain[1:]
                 last = len(chain) - 1
                 for i, node in enumerate(chain):
                     if i == last:
-                        node.autolabel = base_label + 'P'
+                        node.autolabel = self.base_label + 'P'
                     elif i == 0:
-                        node.autolabel = base_label
+                        node.autolabel = self.base_label
                     else:
-                        node.autolabel = base_label + '´'
+                        node.autolabel = self.base_label + '´'
                     node.update_label()
         else:
             for chain in self.chains:
                 for i, node in enumerate(chain):
-                    node.autolabel = base_label
+                    node.autolabel = self.base_label
                     node.update_label()
+        self.update_color()

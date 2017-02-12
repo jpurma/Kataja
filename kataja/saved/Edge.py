@@ -842,16 +842,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.start:
             s1 = f'"{self.start}"'
         elif self.fixed_start_point:
-            s1 = '(%s, %s)' % (int(self.start_point[0]), int(self.start_point[1]))
+            s1 = f'({int(self.start_point[0])}, {int(self.start_point[1])})'
         else:
             s1 = 'undefined'
         if self.end:
             s2 = f'"{self.end}"'
         elif self.fixed_end_point:
-            s2 = '(%s, %s)' % (int(self.end_point[0]), int(self.end_point[1]))
+            s2 = f'({int(self.end_point[0])}, {int(self.end_point[1])})'
         else:
             s2 = 'undefined'
-        return '%s from %s to %s' % (label, s1, s2)
+        return f'{label} from {s1} to {s2}'
 
     def __repr__(self):
         return self.description()

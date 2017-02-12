@@ -121,7 +121,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         #elif edge.uid in edge_keys_to_validate:
         #    edge_keys_to_validate.remove(edge.uid)
 
-
     def recursive_create_edges(synobj):
         node = forest.get_node(synobj)
         assert(node)
@@ -158,6 +157,30 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             result_set = rec_add_item(part, result_set)
         return result_set
 
+    def recursive_update_heads(node, visited):
+        my_label = node.syntactic_object.label
+        my_label_parts = [x.strip('() ') for x in my_label.split(',')]
+        if node in visited:
+            return [('_'.join([x.strip('() ') for x in n.label.split(',')]), n) for n in node.heads]
+        visited.add(node)
+        heads = []
+        res = []
+        children = node.get_children(similar=True, visible=False)
+        if children:
+            for child in children:
+                labels = recursive_update_heads(child, visited)
+                for label, head in labels:
+                    if label in my_label:
+                        heads.append(head)
+                        res.append((label, head))
+            node.heads = heads
+            return res
+        else:
+            my_label_parts = ['_'.join(my_label_parts)]
+            node.heads = [node]
+            return [('_'.join(my_label_parts), node)]
+
+
     #if numeration:
     #    num_tree = forest.get_numeration()
 
@@ -193,6 +216,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if isinstance(syn_bare, ctrl.syntax.Constituent):
                 node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 node.set_syntactic_object(syn_bare)
+                node.label = syn_bare.label
             elif isinstance(syn_bare, ctrl.syntax.Feature):
                 node = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=(x, y))
                 node.set_syntactic_object(syn_bare)
@@ -204,6 +228,8 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         found_edges = set()
         recursive_create_edges(tree_root)
         edge_keys_to_validate -= found_edges
+
+        recursive_update_heads(forest.get_node(tree_root), set())
 
         if most_popular_tree:
             most_popular_tree.top = forest.get_node(tree_root)
