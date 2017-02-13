@@ -49,7 +49,7 @@ class INodeToKatajaConstituent:
             right = result.pop()
             while result:
                 left = result.pop()
-                right = ctrl.free_drawing.create_merger_node(left, right, new=left, head=left)
+                right = ctrl.free_drawing.create_merger_node(left, right, new=left, heads=left)
             result = right
         elif result:
             result = result[0]

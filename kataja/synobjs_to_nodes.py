@@ -63,15 +63,11 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
-    def recursive_add_for_creation(me, parent_node, parent_synobj, done_nodes=None):
+    def recursive_add_for_creation(me, parent_node, parent_synobj, done_nodes, multidominated):
         """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
         To help this create a list of missing nodes with known positions.
         """
-        if done_nodes is None:
-            done_nodes = set()
-            done_nodes.add(me)
-        else:
-            done_nodes.add(me)
+        done_nodes.add(me)
         if isinstance(me, list):
             for list_item in me:
                 recursive_add_for_creation(list_item, parent_node, parent_synobj,
@@ -98,17 +94,19 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                 nodes_to_create.append((me, (0, 0)))
             if hasattr(me, 'get_parts'):
                 for part in me.get_parts():
-                    if part not in done_nodes:
-                        recursive_add_for_creation(part, node, me, done_nodes)
+                    if part in done_nodes:
+                        multidominated.append(part)
+                    else:
+                        recursive_add_for_creation(part, node, me, done_nodes, multidominated)
             if hasattr(me, 'features'):
                 if isinstance(me.features, dict):
                     for feat in me.features.values():
                         if feat not in done_nodes:
-                            recursive_add_for_creation(feat, node, me, done_nodes)
+                            recursive_add_for_creation(feat, node, me, done_nodes, multidominated)
                 elif isinstance(me.features, (list, set, tuple)):
                     for feat in me.features:
                         if feat not in done_nodes:
-                            recursive_add_for_creation(feat, node, me, done_nodes)
+                            recursive_add_for_creation(feat, node, me, done_nodes, multidominated)
 
     # I guess that ordering of connections will be broken because of making
     # and deleting connections in unruly fashion
@@ -158,6 +156,9 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         return result_set
 
     def recursive_update_heads(node, visited):
+        if not node.syntactic_object:
+            print(f'node "{node}" doesnt have syntactic object')
+            return []
         my_label = node.syntactic_object.label
         my_label_parts = [x.strip('() ') for x in my_label.split(',')]
         if node in visited:
@@ -197,8 +198,9 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         tree_counter = []
         found_nodes = set()
         most_popular_tree = None
+        multidominated = []
 
-        recursive_add_for_creation(tree_root, None, None)
+        recursive_add_for_creation(tree_root, None, None, set(), multidominated)
         node_keys_to_validate -= found_nodes
 
         # noinspection PyArgumentList
@@ -225,11 +227,17 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if most_popular_tree:
                 most_popular_tree.add_node(node)
 
+        for synobj in multidominated:
+            node = forest.get_node(synobj)
+            if node and not node.index:
+                node.index = forest.chain_manager.next_free_index()
+
         found_edges = set()
         recursive_create_edges(tree_root)
         edge_keys_to_validate -= found_edges
 
         recursive_update_heads(forest.get_node(tree_root), set())
+
 
         if most_popular_tree:
             most_popular_tree.top = forest.get_node(tree_root)

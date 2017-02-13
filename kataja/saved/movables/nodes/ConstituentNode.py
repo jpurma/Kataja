@@ -285,7 +285,7 @@ class ConstituentNode(Node):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
 
     def should_show_gloss_in_label(self) -> bool:
-        return ctrl.settings.get('show_glosses') == 1
+        return ctrl.settings.get('lock_glosses_to_label') == 1
 
     def update_status_tip(self) -> None:
         """ Hovering status tip """

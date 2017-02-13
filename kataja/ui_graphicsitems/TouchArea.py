@@ -57,7 +57,8 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self._path = None
         self.start_point = None
         self.end_point = None
-        self.setZValue(160)
+        self.z_value = 160
+        self.setZValue(self.z_value)
         self.status_tip = ""
         # Drawing flags defaults
         self._fill_path = False
@@ -299,7 +300,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         elif (not value) and self._hovering:
             self._hovering = False
             ctrl.remove_status(self.status_tip)
-            self.setZValue(10)
+            self.setZValue(self.z_value)
 
         self.update()
 
@@ -1087,7 +1088,6 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(x, y)
-        self.setZValue(210)
 
     def paint(self, painter, option, widget):
         """

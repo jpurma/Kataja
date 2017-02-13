@@ -202,6 +202,12 @@ class Preferences(object):
                                     'help': 'Should the tree show freely editable labels (node '
                                             'labels) or labels used in syntactic computation. ',
                                     'order': 2}
+        self.lock_glosses_to_label = 0
+        self._lock_glosses_to_label_ui = {'tab': 'Drawing',
+                                          'label': 'Lock glosses to labels',
+                                          'help': "Glosses are drawn as part of node's label "
+                                                  "complex or as independent entities",
+                                          'order': 21}
 
         self.feature_positioning = 2
         self.projection_strong_lines = True

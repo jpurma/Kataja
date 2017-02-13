@@ -58,6 +58,7 @@ class ChainManager:
     @time_me
     def traces_to_multidomination(self):
         """Switch traces to multidominant originals, as they are in syntax """
+
         heads, traces = self._get_heads_and_traces()
         for index, traces in traces.items():
             if index in heads:
