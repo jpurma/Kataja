@@ -198,11 +198,13 @@ class Forest(SavedObject):
         self.comments = []
         self.gloss_text = ''
 
+    @time_me
     def forest_edited(self):
         """ Called after forest editing/free drawing actions that have changed the node graph.
         Analyse the node graph and update/rebuild syntactic objects according to graph.
         :return:
         """
+        self.chain_manager.update()
         self.tree_manager.update_trees()
         self.projection_manager.update_projections()
         if ctrl.free_drawing_mode:

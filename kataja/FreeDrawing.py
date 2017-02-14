@@ -260,10 +260,6 @@ class FreeDrawing:
         :param touch_edges: don't try to set edge ends.
         just delete.
         :param fade: fade or disappear instantly
-        Note: This and other complicated revisions assume that the target trees is 'normalized' by
-        replacing multidomination with traces. Each node can have only one parent.
-        This makes calculation easier, just remember to call multidomination_to_traces and
-        traces_to_multidomination after deletions.
         """
         # block circular deletion calls
         if node in self._marked_for_deletion:
@@ -731,19 +727,6 @@ class FreeDrawing:
         :param pos:
         :return:
         """
-        if hasattr(new, 'index'): # fixme - this is bad idea
-            # if new_node and old_node belong to same trees, this is a Move /
-            # Internal merge situation and we
-            # need to give the new_node an index so it can be reconstructed
-            # as a trace structure
-            if new.trees == top.trees:
-                if not new.index:
-                    new.index = self.f.chain_manager.next_free_index()
-                # replace either the moving node or leftover node with trace
-                # if we are using traces
-                if self.f.chain_manager.traces_are_visible():
-                    t = self.create_trace_for(new)
-                    self.replace_node(new, t, can_delete=False)
         if merge_to_left:
             left = new
             right = top
@@ -767,25 +750,6 @@ class FreeDrawing:
         :param merge_to_left:
         :param insertion_pos:
         """
-        if hasattr(inserted, 'index'):
-            # if inserted and child belong to same trees, this is a Move /
-            # Internal merge situation and we
-            # need to give the new_node an index so it can be reconstructed
-            # as a trace structure
-            shared_trees = list(set(inserted.trees) & set(child.trees))
-            if shared_trees:
-                moving_was_higher = shared_trees[0].is_higher_in_tree(inserted, child)
-                if not inserted.index:
-                    inserted.index = self.f.chain_manager.next_free_index()
-                # replace either the moving node or leftover node with trace
-                # if we are using traces
-                if self.f.chain_manager.traces_are_visible():
-                    if moving_was_higher:
-                        inserted = self.create_trace_for(inserted)
-                    else:
-                        t = self.create_trace_for(inserted)
-                        self.replace_node(inserted, t, can_delete=False)
-
         edge = parent.get_edge_to(child)
         # store the projection and alignment info before disconnecting the edges
         heads = []

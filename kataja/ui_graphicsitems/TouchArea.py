@@ -529,10 +529,11 @@ class BranchingTouchArea(TouchArea):
         assert(self.host.start and self.host.end)
         adjustment = self.host.end.adjustment
         # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
-                                        self.host.end,
-                                        self._align_left,
-                                        self.start_point)
+        ctrl.free_drawing.insert_node_between(dropped_node,
+                                              self.host.start,
+                                              self.host.end,
+                                              self._align_left,
+                                              self.start_point)
 
         for node in ctrl.dragged_set:
             node.adjustment = adjustment

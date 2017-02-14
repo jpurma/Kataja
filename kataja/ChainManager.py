@@ -18,6 +18,28 @@ class ChainManager:
     def __init__(self, forest):
         self.forest = forest
 
+    @time_me
+    def update(self):
+        """ Checks and fixes current forest to follow multidominance or trace-based display for 
+        nodes. The mode has already been set in ctrl.settings.
+        :return: 
+        """
+        # First make sure that multidominated nodes have indices
+        for node in self.forest.nodes.values():
+            if node.node_type == CONSTITUENT_NODE and \
+                    not node.index and \
+                    len(node.get_parents(similar=True, visible=False)) > 1:
+                node.index = self.next_free_index()
+        # Then implement the rules
+        md = ctrl.settings.get('uses_multidomination')
+        traces_grouped = ctrl.settings.get('traces_are_grouped_together')
+        if md:
+            self.traces_to_multidomination()
+        else:
+            self.multidomination_to_traces()
+            if traces_grouped:
+                self.group_traces_to_chain_head()
+
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains
         :return:
@@ -52,8 +74,6 @@ class ChainManager:
                     trace.move_to(dx, dy, can_adjust=False)
                     dx += 10
                     dy += trace.height
-        ctrl.settings.set('traces_are_grouped_together', True, level=FOREST)
-        ctrl.settings.set('uses_multidomination', False, level=FOREST)
 
     @time_me
     def traces_to_multidomination(self):
@@ -65,8 +85,6 @@ class ChainManager:
                 original = heads[index]
                 for trace in traces:
                     self.forest.free_drawing.replace_node(trace, original)
-        ctrl.settings.set('uses_multidomination', True, level=FOREST)
-        self.forest.forest_edited()
 
     @time_me
     def multidomination_to_traces(self):
@@ -93,14 +111,13 @@ class ChainManager:
                 # we leave open case [A A], it will get random order, but who cares
                 parents[node.index].sort()
         # replace all but highest instance with traces
+        print(originals)
         for index, original in originals.items():
-            if len(parents) > 1:
-                for foo, parent in parents[index][1:]:
+            my_parents = parents[index]
+            if len(my_parents) > 1:
+                for foo, parent in my_parents[1:]:
                     trace = self.forest.free_drawing.create_trace_for(original)
                     self.forest.free_drawing.replace_node(original, trace, only_for_parent=parent)
-        ctrl.settings.set('traces_are_grouped_together', False, level=FOREST)
-        ctrl.settings.set('uses_multidomination', False, level=FOREST)
-        self.forest.forest_edited()
 
     def next_free_index(self):
         """ Return the next available letter suitable for indexes (i, j, k, l...)

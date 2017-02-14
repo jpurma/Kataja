@@ -232,15 +232,18 @@ class SwitchTraceMode(KatajaAction):
         multidomination = ctrl.settings.get('uses_multidomination')
 
         if grouped_traces and not multidomination:
-            ctrl.forest.chain_manager.traces_to_multidomination()
+            ctrl.settings.set('uses_multidomination', True, level=FOREST)
             log.info('use multidominance')
         elif (not grouped_traces) and not multidomination:
+            ctrl.settings.set('traces_are_grouped_together', True, level=FOREST)
+            ctrl.settings.set('uses_multidomination', False, level=FOREST)
             log.info('use traces, group them to one spot')
-            ctrl.forest.chain_manager.group_traces_to_chain_head()
             ctrl.action_redraw = False
         elif multidomination:
+            ctrl.settings.set('traces_are_grouped_together', False, level=FOREST)
+            ctrl.settings.set('uses_multidomination', False, level=FOREST)
             log.info('use traces, show constituents in their base merge positions')
-            ctrl.forest.chain_manager.multidomination_to_traces()
+        ctrl.forest.forest_edited()
 
 
 class ZoomToFit(KatajaAction):

@@ -140,10 +140,6 @@ class SyntaxConnection(SavedObject):
         roots = forest.parser.string_into_forest(text)
         forest.free_drawing.definitions_to_nodes(self.lexicon)
         self.nodes_to_synobjs(forest, roots)
-        if ctrl.settings.get('uses_multidomination'):
-            ctrl.settings.set('uses_multidomination', False, level=FOREST)
-            forest.chain_manager.traces_to_multidomination()
-            # traces to multidomination will toggle uses_multidomination to True
 
     def get_constituent_from_lexicon(self, identifier):
         """ Fetch constituent from lexicon
