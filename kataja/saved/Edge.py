@@ -669,6 +669,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 self._curve_dir_start = BOTTOM_SIDE
             elif connection_style == CONNECT_TO_MAGNETS:
                 e_n, e_count = self.edge_index()
+                if not self.start.has_ordered_children():
+                    e_n = e_count - e_n - 1
                 self._computed_start_point = self.start.bottom_magnet(e_n, e_count)
                 self._curve_dir_start = BOTTOM_SIDE
             elif connection_style == CONNECT_TO_BORDER:
@@ -861,10 +863,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         connected to nodes. Some are better to destroy at that point.
         :return:
         """
-        if self.edge_type is g.ARROW or self.edge_type is g.DIVIDER:
-            return False
-        else:
-            return True
+        return self.allow_orphan_ends()
 
     def allow_orphan_ends(self):
         """

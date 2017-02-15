@@ -397,6 +397,8 @@ class ICommandNode(ITextNode):
 
     def _as_html(self, s, omit_triangle=False):
         if omit_triangle and self.command == 'qroof':
+            if s and s[-1] == '\n':
+                s.pop()
             return
         if self.command in command_to_html:
             tag = command_to_html[self.command]

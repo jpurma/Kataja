@@ -141,7 +141,9 @@ class ConstituentNodeEditEmbed(UIEmbed):
              'or if <i>Displayed label</i> is empty.'
         title = 'Syntactic label'
         self.synlabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='label',
-                                         on_edit=self.synlabel_edited)
+                                         on_edit=self.synlabel_edited,
+                                         on_finish=self.synlabel_finished,
+                                         on_return=self.synlabel_finished)
         make_label(title, self, vlayout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         vlayout.addWidget(self.synlabel)
@@ -153,7 +155,8 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "Freeform label or text for node, has no effect for syntactic computation"
         title = 'User label'
         self.label = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill='label',
-                                       on_edit=self.label_edited, label=title)
+                                       on_edit=self.label_edited, label=title,
+                                       on_focus_out=self.label_finished)
         self.label.setPalette(ui_p)
         self.resize_target = self.label
         hlayout = QtWidgets.QHBoxLayout()
@@ -190,7 +193,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
         self.index = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='i',
-                                      on_edit=self.index_edited)
+                                      on_finish=self.index_finished)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
         make_label(title, self, hlayout, tt, self.index)
@@ -233,10 +236,12 @@ class ConstituentNodeEditEmbed(UIEmbed):
 
     def update_fields(self):
         """ Update field values on embed form based on template """
+        print('update fields called for ConstituentNodeEditEmbed')
         node = self.host
         self.label.setText(node.label)
+        print('label: ', repr(node.label))
         self.synlabel.setText(node.get_syntactic_label())
-        self.autolabel.setText(node.autolabel)
+        self.autolabel.setText(as_html(node.autolabel))
         self.triangle.setEnabled(self.triangle_enabled())
         self.triangle.setChecked(bool(node.triangle_stack and node.triangle_stack[-1] is node))
         self.index.setText(node.index or '')
@@ -252,13 +257,27 @@ class ConstituentNodeEditEmbed(UIEmbed):
         return False
 
     def synlabel_edited(self, *args, **kwargs):
-        print(args, kwargs)
+        #print('synlabel edited')
+        #print(args, kwargs)
+        pass
+
+    def synlabel_finished(self):
+        text = self.synlabel.text()
+        self.host.parse_edited_label('syntactic label', text)
+        ctrl.forest.forest_edited()
 
     def label_edited(self, *args, **kwargs):
-        print(args, kwargs)
+        pass
 
-    def index_edited(self, *args, **kwargs):
-        print(args, kwargs)
+    def label_finished(self):
+        text = self.label.inode_text()
+        self.host.parse_edited_label('node label', text)
+        ctrl.forest.forest_edited()
+
+    def index_finished(self):
+        text = self.index.text()
+        self.host.parse_edited_label('index', text)
+        ctrl.forest.forest_edited()
 
     def submit_values(self):
         """ Possibly called if assuming we are in NodeEditEmbed. All of the changes in
@@ -271,4 +290,13 @@ class ConstituentNodeEditEmbed(UIEmbed):
         """ Find the main element to focus in this embed.
         :return:
         """
-        self.synlabel.setFocus()
+        m = ctrl.settings.get('label_text_mode')
+        if m == g.SYN_LABELS or m == g.SYN_LABELS_FOR_LEAVES:
+            self.synlabel.setFocus()
+        elif m == g.NODE_LABELS_FOR_LEAVES or m == g.NODE_LABELS:
+            self.label.setFocus()
+        elif m == g.XBAR_LABELS:
+            self.autolabel.setFocus()
+
+
+

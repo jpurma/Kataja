@@ -145,7 +145,7 @@ class Label(QtWidgets.QGraphicsItem):
         self._last_blockpos = ()
         self._previous_values = None
         self.editable = {}
-        self.prepare_template()
+        self.prepare_template()  # !<----
         self.editable_doc = LabelDocument()
         self.lower_doc = None
         self._fresh_focus = False
@@ -329,7 +329,8 @@ class Label(QtWidgets.QGraphicsItem):
                 self.editable_doc.setTextWidth(self.card_size[0])
             else:
                 self.editable_doc.setTextWidth(-1)
-            self.edited_field, self.editable_html = self._host.compose_html_for_editing()
+            self.edited_field, self.editable_html = \
+                self._host.compose_html_for_editing()
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
@@ -368,6 +369,7 @@ class Label(QtWidgets.QGraphicsItem):
         if self._quick_editing:
             ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
 
+    @time_me
     def parse_document_to_field(self):
         """ Parse edited QDocument into rows of INodes and into receptable
         field in host object
@@ -375,16 +377,9 @@ class Label(QtWidgets.QGraphicsItem):
         :return:
         """
         parsed_parts = ctrl.qdocument_parser.process(self.editable_doc)
-        my_editable = self.editable.get(self.edited_field, {})
-        setter = my_editable.get('setter', '')
-        if setter:
-            setter_method = getattr(self._host, setter, None)
-            if setter_method and callable(setter_method):
-                setter_method(parsed_parts)
-            else:
-                print('missing setter!')
-        else:
-            setattr(self._host, self.edited_field, parsed_parts)
+        # Parser should return INode or str, if there is nothing that needs INode in it.
+        print('parsed_parts:', repr(parsed_parts))
+        self._host.parse_edited_label(self.edited_field, parsed_parts)
 
     def editable_doc_changed(self):
         if self._recursion_block or not (ctrl.forest.in_display and ctrl.forest.is_parsed):
@@ -513,16 +508,19 @@ class Label(QtWidgets.QGraphicsItem):
     def dropEvent(self, event):
         mim = event.mimeData()
         if mim.hasFormat("application/x-qabstractitemmodeldatalist"):
+            print('label dropEvent application/x-qabstractitemmodeldatalist')
             event.accept()
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
                 self.editable_part.textCursor().insertText(data['char'])
                 event.acceptProposedAction()
         elif mim.hasFormat("text/plain"):
+            print('label dropEvent text/plain')
             event.accept()
             event.acceptProposedAction()
             self.editable_part.dropEvent(event)
         else:
+            print('label dropEvent something')
             self.editable_part.dropEvent(event)
 
     def boundingRect(self):
@@ -537,6 +535,7 @@ class Label(QtWidgets.QGraphicsItem):
         :param event:
         """
         data = event.mimeData()
+        print('label dragEnterEvent ', data)
         if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
                 "text/plain"):
             event.acceptProposedAction()

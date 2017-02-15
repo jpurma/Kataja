@@ -451,17 +451,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     if ctrl.free_drawing_mode:
                         node = ctrl.free_drawing.create_node(pos=event.scenePos(),
                                                              node_type=g.CONSTITUENT_NODE,
-                                                             text=data['char'])
+                                                             label=data['char'])
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
-                        ctrl.main.action_finished('Created constituent "%s"' % node)
+                        message = 'Created constituent "%s"' % node
                     else:
                         node = ctrl.free_drawing.create_comment_node(text=data['char'])
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
-                        ctrl.main.action_finished('Added "%s" as comment since we are in '
-                                                  'derivation mode and cannot change trees'
-                                                  % data['char'])
+                        message = 'Added "%s" as comment since we are in derivation mode and ' \
+                                  'cannot change trees' % data['char']
 
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
@@ -479,26 +478,29 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         if node_type != g.CONSTITUENT_NODE:
                             node.lock()
-                        ctrl.main.action_finished('added %s' % args[0])
+                        message = 'added %s' % args[0]
                     else:
                         print('received unknown command:', command, args)
                 else:
                     text = data.text().strip()
                     if ctrl.free_drawing_mode:
                         node = ctrl.forest.simple_parse(text)
-                        ctrl.main.action_finished('Added tree based on "%s".' % text)
+                        message = 'Added tree based on "%s".' % text
                     else:
                         node = ctrl.free_drawing.create_comment_node(text=text)
-                        ctrl.main.action_finished('Added text as comment node since we are in '
-                                                  'derivation mode and cannot change trees.')
+                        message = 'Added text as comment node since we are in derivation mode ' \
+                                  'and cannot change trees.'
             elif data.hasUrls():
                 for url in data.urls():
                     path = url.toString()
                     if path.endswith(('png', 'jpg', 'pdf')):
                         node = ctrl.free_drawing.create_comment_node(pixmap_path=url.toLocalFile())
-                        ctrl.main.action_finished('Added image')
+                        message = 'Added image'
 
         ctrl.ui.remove_touch_areas()
+        if message:
+            ctrl.forest.forest_edited()
+            ctrl.main.action_finished(message)
 
     def dragMoveEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel

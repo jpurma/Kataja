@@ -125,7 +125,6 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         my_rect = self.geometry()
         w = my_rect.width()
         h = my_rect.height()
-        print(w, h)
         view_rect = view.geometry()
         if self.host:
             scene_br = self.host.sceneBoundingRect()

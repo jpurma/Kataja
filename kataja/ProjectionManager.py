@@ -74,7 +74,6 @@ class ProjectionManager:
 
         _guess_head(root)
 
-    @time_me
     def remove_projection(self, head):
         projection = self.projections.get(head, None)
         if projection:

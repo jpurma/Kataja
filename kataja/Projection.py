@@ -50,7 +50,6 @@ class Projection:
     def add_visual(self):
         self.visual = ProjectionVisual(self)
 
-    @time_me
     def get_edges(self):
         """ Return edges between nodes in this chain as a list
         :return:
@@ -108,7 +107,8 @@ class Projection:
                     if i == last:
                         node.autolabel = self.base_label + 'P'
                     elif i == 0:
-                        node.autolabel = self.base_label
+                        node.autolabel = node.label # self.base_label
+
                     else:
                         node.autolabel = self.base_label + '´'
                     node.update_label()

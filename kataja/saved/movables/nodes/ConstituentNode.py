@@ -281,6 +281,11 @@ class ConstituentNode(Node):
         if gs:
             return gs[0]
 
+    def has_ordered_children(self):
+        if self.syntactic_object:
+            return getattr(self.syntactic_object, 'is_ordered', False)
+        return True
+
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
 
@@ -402,9 +407,7 @@ class ConstituentNode(Node):
             l = self.get_autolabel()
 
         separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
-
         l_html = as_html(l, omit_triangle=separate_triangle, include_index=self.index)
-
         if l_html:
             html.append(l_html)
 
@@ -437,12 +440,12 @@ class ConstituentNode(Node):
         into just one field value that is allowed to be edited, in constituentnode this is
         either label or synobj's label. This can be overridden in syntactic object by having
         'compose_html_for_editing' -method there. The method returns a tuple,
-          (field_name, html).
+          (field_name, setter, html).
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
+        if self.syntactic_object and hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
         label_text_mode = ctrl.settings.get('label_text_mode')
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
@@ -456,12 +459,28 @@ class ConstituentNode(Node):
             elif self.syntactic_object:
                 return 'syntactic label', as_html(self.syntactic_object.label)
             else:
-                return '', ''
+                return '', '', ''
         elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
             if self.syntactic_object:
                 return 'syntactic label', as_html(self.syntactic_object.label)
             else:
                 return '', ''
+
+    def parse_edited_label(self, label_name, value):
+        success = False
+        if self.syntactic_object and hasattr(self.syntactic_object, 'parse_edited_label'):
+            success = self.syntactic_object.parse_edited_label(label_name, value)
+        if not success:
+            if label_name == 'node label':
+                self.poke('label')
+                self.label = value
+                return True
+            elif label_name == 'syntactic label':
+                self.syntactic_object.label = value
+                return True
+            elif label_name == 'index':
+                self.index = value
+        return False
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

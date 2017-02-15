@@ -150,6 +150,10 @@ class BaseConstituent(SavedObject, IConstituent):
         else:
             raise IndexError
 
+    @property
+    def is_ordered(self):
+        return False
+
     def get_feature(self, key):
         """ Gets the first local feature (within this constituent, not of its children) with key
         'key'

@@ -288,7 +288,7 @@ class Node(Movable):
         into just one field value that is allowed to be edited, in constituentnode this is
         either label or synobj's label. This can be overridden in syntactic object by having
         'compose_html_for_editing' -method there. The method returns a tuple,
-          (field_name, html).
+          (field_name, setter, html).
         :return:
         """
 
@@ -297,6 +297,20 @@ class Node(Movable):
             return self.syntactic_object.compose_html_for_editing(self)
 
         return 'node label', as_html(self.label)
+
+    def parse_edited_label(self, label_name, value):
+        success = False
+        if self.syntactic_object and hasattr(self.syntactic_object, 'parse_edited_label'):
+            success = self.syntactic_object.parse_edited_label(label_name, value)
+        if not success:
+            if label_name == 'node label':
+                self.label = value
+                return True
+            elif label_name == 'syntactic label':
+                self.syntactic_object.label = value
+                return True
+        return False
+
 
     def synobj_to_node(self):
         """ Update node's values from its synobj. Subclasses implement this.
@@ -1636,7 +1650,7 @@ class Node(Movable):
                     replay_click = True
                 self.update()
         super().mouseReleaseEvent(event)
-        if replay_click:
+        if replay_click and False:
             ctrl.graph_view.replay_mouse_press()
             self.label_object.editable_part.mouseReleaseEvent(event)
             ctrl.release(self)
@@ -1659,9 +1673,14 @@ class Node(Movable):
         """ Dragging a foreign object (could be from ui_support) over a node, entering.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
-            event.acceptProposedAction()
+        print('node dragEnterEvent', event)
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
+                event.mimeData().hasFormat("text/plain"):
+            print('accept')
+            self.label_object.dragEnterEvent(event)
+            #event.acceptProposedAction()
             self.hovering = True
+            #QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
         else:
             QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
 
@@ -1669,11 +1688,18 @@ class Node(Movable):
         """ Dragging a foreign object (could be from ui_support) over a node, leaving.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
+                event.mimeData().hasFormat("text/plain"):
             event.acceptProposedAction()
             self.hovering = False
         else:
             QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
+
+    def dropEvent(self, event: 'QGraphicsSceneDragDropEvent'):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
+                event.mimeData().hasFormat("text/plain"):
+            self.label_object.dropEvent(event)
+
 
     def start_moving(self):
         """ Experimental: add glow effect for moving things
@@ -1689,6 +1715,9 @@ class Node(Movable):
 
     def short_str(self):
         return as_html(self.label) or "no label"
+
+    def has_ordered_children(self):
+        return True
 
     def stop_moving(self):
         """ Experimental: remove glow effect from moving things

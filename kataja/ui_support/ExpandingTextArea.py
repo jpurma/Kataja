@@ -7,10 +7,21 @@ import kataja.globals as g
 import html
 
 
+class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
+
+    def __init__(self, parent, on_focus_out=None):
+        super().__init__(parent)
+        self.on_focus_out = on_focus_out
+
+    def focusOutEvent(self, event):
+        if self.on_focus_out:
+            self.on_focus_out()
+        super().focusOutEvent(event)
 
 class ExpandingTextArea(QtWidgets.QWidget):
 
-    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None, label=None):
+    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None, label=None,
+                 on_focus_out=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.raw_text = ''
         self.parsed_latex = ''
@@ -32,7 +43,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.top_row_layout.addWidget(self.html_radio)
         self.top_row_layout.addStretch(0)
         layout.addLayout(self.top_row_layout)
-        self.text_area = QtWidgets.QPlainTextEdit(parent)
+        self.text_area = MyPlainTextEdit(parent, on_focus_out)
         self.text_area.setAutoFillBackground(True)
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
