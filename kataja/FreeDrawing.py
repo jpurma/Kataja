@@ -36,6 +36,7 @@ from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
 from kataja.utils import time_me
+from kataja.parser.INodes import join_lines, ICommandNode, ITextNode, remove_triangle
 
 
 class FreeDrawing:
@@ -817,14 +818,35 @@ class FreeDrawing:
 
         :param node:
         """
+        def wrap_in_qroof(ilines):
+            if len(ilines) > 1:
+                parts = []
+                for iline in ilines:
+                    parts.append(iline)
+                    parts.append('\n')
+                parts.pop()
+            elif isinstance(ilines[0], ICommandNode):
+                parts = ilines
+            elif isinstance(ilines[0], ITextNode):
+                parts = ilines[0].parts
+            else:
+                parts = ilines
+            return ICommandNode(command="qroof", parts=parts)
+
         if root not in root.triangle_stack:
             root.poke('triangle_stack')
             root.triangle_stack.append(root)
         fold_scope = self.f.list_nodes_once(root)[1:]
         folded = []
         bad_mothers = set()
-        if not fold_scope:
-            return  # triangle is just visual addition to label
+        if not fold_scope: # triangle is just visual addition to label
+            # some parts in the visual label have to be marked with qroof-tag
+            lines = root.label.splitlines()
+            if len(lines) < 2:
+                root.label = wrap_in_qroof(lines)
+            else:
+                root.label = join_lines([lines[0], wrap_in_qroof(lines[1:])])
+            return
 
         # triangle_stack for node holds the ground truth of triangles. Folding and graphicsitem
         # parent relation are surface stuff.
@@ -880,6 +902,7 @@ class FreeDrawing:
             node.update_visibility()  # with triangle_stack reduced, hidden nodes may become
             # visible again.
             # movement back to visualisation positions is handled by visualisation redraw
+        remove_triangle(root.label)
         root.update_label()
         # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now
         # in wrong positions and have to be redrawn. Update all contained triangles:

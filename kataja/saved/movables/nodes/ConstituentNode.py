@@ -25,11 +25,11 @@ from PyQt5 import QtWidgets
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle
+from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
+    as_html
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.parser.INodes import as_html
 from kataja.utils import time_me
 
 __author__ = 'purma'
@@ -208,50 +208,8 @@ class ConstituentNode(Node):
             if stop:
                 break
         # △
-        # ########### Flatten rows of label into one string/ITextNode/ICommandNode
-        # It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and
-        # ICommandNode + ... all need different ways to join them
 
-        if len(rows) > 1:
-            last_row = None
-            while rows:
-                row = rows.pop()
-                if last_row is not None:
-                    if isinstance(row, ICommandNode):
-                        # commandnode + commandnode, commandnode + str
-                        if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
-                            last_row = ITextNode(parts=[row, '\n', last_row])
-                        # commandnode + textnode
-                        else:
-                            last_row.parts = [row, '\n'] + last_row.parts
-                    elif isinstance(row, ITextNode):
-                        # textnode + commandnode, textnode + str
-                        if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
-                            row.parts.append('\n')
-                            row.parts.append(last_row)
-                            last_row = row
-                        # textnode + textnode
-                        else:
-                            row.parts.append('\n')
-                            row.parts += last_row.parts
-                            last_row = row
-                    # str + commandnode
-                    elif isinstance(last_row, ICommandNode):
-                        row = ITextNode(parts=[row, '\n', last_row])
-                        last_row = row
-                    # str + textnode
-                    elif isinstance(last_row, ITextNode):
-                        last_row.parts = [row, '\n'] + last_row.parts
-                    # str + str
-                    else:
-                        last_row = row + '\n' + last_row
-                else:
-                    last_row = row
-            self.label = last_row
-        elif len(rows) == 1:
-            self.label = rows[0]
-        else:
-            self.label = ''
+        self.label = join_lines(rows)
         # now as rows are in one INode / string, we can extract the triangle part and put it to
         # end. It is different to qtree's way of handling triangles, but much simpler for us in
         # long run.
@@ -409,7 +367,6 @@ class ConstituentNode(Node):
                 l = self.syntactic_object.get_secondary_label()
         elif label_text_mode == g.XBAR_LABELS:
             l = self.get_autolabel()
-
         separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
         l_html = as_html(l, omit_triangle=separate_triangle, include_index=self.index)
         if l_html:
@@ -428,15 +385,6 @@ class ConstituentNode(Node):
             qroof_content = extract_triangle(l)
             if qroof_content:
                 lower_html = as_html(qroof_content)
-            else:  # Try to guess what parts to use in constituent that hasn't specified
-                # triangle in latex/html: if there are multiple lines, skip the first,
-                # use the rest
-                lines = as_html(l).split('<br/>')
-                if len(lines) == 1:
-                    lower_html = lines[0]
-                else:
-                    lower_html = '<br/>'.join(lines[1:])
-
         return ''.join(html), lower_html
 
     def compose_html_for_editing(self):

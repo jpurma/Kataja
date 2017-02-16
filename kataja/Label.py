@@ -414,7 +414,8 @@ class Label(QtWidgets.QGraphicsItem):
                 self.lower_part.setTextWidth(-1)
                 ideal_width = max((self.editable_doc.idealWidth(), self.lower_doc.idealWidth()))
             elif triangle_host:
-                ideal_width = self.triangle_width
+                self.editable_part.setTextWidth(-1)
+                ideal_width = max((self.editable_doc.idealWidth(),  self.triangle_width))
             else:
                 self.editable_part.setTextWidth(-1)
                 ideal_width = self.editable_doc.idealWidth()

@@ -173,6 +173,7 @@ class AddTriangle(KatajaAction):
         log.info('folding in %s' % node.as_bracket_string())
         ctrl.free_drawing.add_or_update_triangle_for(node)
         ctrl.deselect_objects()
+        node.update_label()
 
 
 class RemoveTriangle(KatajaAction):
@@ -190,7 +191,7 @@ class RemoveTriangle(KatajaAction):
         log.info('unfolding from %s' % node.as_bracket_string())
         ctrl.free_drawing.remove_triangle_from(node)
         ctrl.deselect_objects()
-
+        node.update_label()
 
 class FinishEditingNode(KatajaAction):
     k_action_uid = 'finish_editing_node'

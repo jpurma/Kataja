@@ -102,6 +102,73 @@ def extract_triangle(item, remove_from_original=False):
                 return found
 
 
+def remove_triangle(item):
+    """ Turn triangled part of INode back to regular ITextNode """
+    if isinstance(item, ITextNode):
+        for i, part in enumerate(list(item.parts)):
+            if isinstance(part, ICommandNode) and part.command == 'qroof':
+                if isinstance(item, ICommandNode):
+                    item.parts[i] = ITextNode(parts=part.parts)
+                elif len(item.parts) == i + 1:
+                    item.parts = item.parts[0:i] + part.parts
+                else:
+                    item.parts = item.parts[0:i] + part.parts + item.parts[i + 1:]
+                break
+            else:
+                remove_triangle(part)
+
+
+
+
+def join_lines(lines):
+    """ Flatten rows of label into one string/ITextNode/ICommandNode
+    It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and
+    ICommandNode + ... all need different ways to join them. This is reverse to INode's splitlines.
+    :param lines: list of INodes and/or strings
+    :return: INode or str 
+    """
+    if not lines:
+        return ''
+    elif len(lines) == 1:
+        return lines[0]
+    else:
+        last_row = None
+        while lines:
+            row = lines.pop()
+            if last_row is not None:
+                if isinstance(row, ICommandNode):
+                    # commandnode + commandnode, commandnode + str
+                    if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
+                        last_row = ITextNode(parts=[row, '\n', last_row])
+                    # commandnode + textnode
+                    else:
+                        last_row.parts = [row, '\n'] + last_row.parts
+                elif isinstance(row, ITextNode):
+                    # textnode + commandnode, textnode + str
+                    if isinstance(last_row, ICommandNode) or isinstance(last_row, str):
+                        row.parts.append('\n')
+                        row.parts.append(last_row)
+                        last_row = row
+                    # textnode + textnode
+                    else:
+                        row.parts.append('\n')
+                        row.parts += last_row.parts
+                        last_row = row
+                # str + commandnode
+                elif isinstance(last_row, ICommandNode):
+                    row = ITextNode(parts=[row, '\n', last_row])
+                    last_row = row
+                # str + textnode
+                elif isinstance(last_row, ITextNode):
+                    last_row.parts = [row, '\n'] + last_row.parts
+                # str + str
+                else:
+                    last_row = row + '\n' + last_row
+            else:
+                last_row = row
+        return last_row
+
+
 class ITextNode:
     """ Node to represent text that may contain other kinds of nodes. e.g.
     "here is a text \emph{with latexnode} inside."
@@ -118,13 +185,13 @@ class ITextNode:
             self.parts = []
 
     def __eq__(self, other):
-        return str(self) == str(other)
+        return repr(self) == repr(other)
 
     def __ne__(self, other):
-        return str(self) != str(other)
+        return repr(self) != repr(other)
 
     def __hash__(self):
-        return hash(str(self))
+        return hash(repr(self))
 
     def __getitem__(self, item):
         return self.parts[item]
@@ -369,7 +436,7 @@ class ITextNode:
         return ''.join((str(x) for x in self.parts))
 
     def __repr__(self):
-        return 'ITextNode(parts=%r)' % self.parts
+        return f'ITextNode(parts={self.parts})'
 
 
 class ICommandNode(ITextNode):
@@ -458,7 +525,6 @@ class ICommandNode(ITextNode):
             ITextNode._as_latex(self, s)
             return inside_math
 
-
     def _as_editable_latex(self, s):
         command = self.command
         if command: # in command_to_latex:
@@ -474,7 +540,6 @@ class ICommandNode(ITextNode):
                 ITextNode._as_editable_latex(self, s)
         else:
             ITextNode._as_editable_latex(self, s)
-
 
     def _as_plain(self, s, omit_triangle=False, omit_index=False):
         if not self.parts:
@@ -525,12 +590,10 @@ class ICommandNode(ITextNode):
         return not (self.command or self.parts)
 
     def __repr__(self):
-        return 'ICommandNode(command=%r, parts=%r)' % (self.command,
-                                                       self.parts)
+        return f'ICommandNode(command={repr(self.command)}, parts={self.parts})'
 
     def requires_math_mode(self):
         return self.command in latex_to_unicode
-
 
     def splitlines(self):
         """ This is shallow splitline, it doesn't go inside other INodes to look for linebreaks
@@ -624,7 +687,6 @@ class IParserNode(ITextNode):
         return False
 
     def __repr__(self):
-        return 'IParserNode(parts=%r, label_rows=%r, index=%r)' % (self.parts, self.label_rows,
-                                                                     self.index)
-
+        return f'IParserNode(parts={self.parts}, label_rows={self.label_rows}, ' \
+               f'index={repr(self.index)})'
 
