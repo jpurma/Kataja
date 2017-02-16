@@ -133,6 +133,12 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             scene_br = QtCore.QRectF(-ew, -eh, ew * 2, eh * 2)
             scene_br.moveCenter(focus_point.toPoint())
         node_rect = view.mapFromScene(scene_br).boundingRect()
+
+        # do nothing if we already have a good enough position. For user it is better if the
+        # panel stays in place than if it jumps around.
+        if view_rect.contains(my_rect, proper=True) and not node_rect.intersects(my_rect):
+            return
+
         ncy = node_rect.center().y()
 
         if node_rect.right() + w < view_rect.right():

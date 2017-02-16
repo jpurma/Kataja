@@ -380,9 +380,6 @@ class UIManager:
                 if node.node_type == g.CONSTITUENT_NODE and node.halo:
                     node.toggle_halo(False)
 
-        if active_embed:
-            print('there was an active embed:', active_embed)
-
         # create ui_support pieces for selected elements. don't create touchareas and buttons
         # if multiple selection, it gets confusing fast
         if len(ctrl.selected) == 1:
@@ -405,7 +402,7 @@ class UIManager:
                             if node and node.is_visible():
                                 node.toggle_halo(True)
                 if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
-                    self.start_editing_node(item)
+                    self.start_editing_node(item, active_embed)
 
 
         if ctrl.selected:
@@ -967,15 +964,20 @@ class UIManager:
 
     # ### Node editing #########################################################
 
-    def start_editing_node(self, node):
+    def start_editing_node(self, node, previous_embed=None):
         """
         :param node:
+        :param previous_embed: UIEmbed -- if one is given, we'll try to use the old position to 
+        miminimise panels jumping around.
         """
         self.close_active_embed()
         if node.node_type == g.CONSTITUENT_NODE:
             self.active_embed = ConstituentNodeEditEmbed(self.main.graph_view, node)
         else:
             self.active_embed = NodeEditEmbed(self.main.graph_view, node)
+        if previous_embed:
+            self.active_embed.move(previous_embed.pos())
+            self.active_embed.update_position()
         self.add_ui(self.active_embed, show=False)
         self.active_embed.wake_up()
         if ctrl.forest and ctrl.forest.nodes:

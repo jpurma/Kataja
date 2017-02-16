@@ -157,25 +157,6 @@ class RemoveNode(KatajaAction):
         ctrl.free_drawing.delete_node(node, touch_edges=True)
         ctrl.forest.forest_edited()
 
-class ToggleTriangle(KatajaAction):
-    k_action_uid = 'toggle_triangle'
-    k_command = 'Turn node and its children into triangle and back'
-
-    def method(self):
-        """ Turn triggering node into triangle node
-        :return: None
-        """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        if not node:
-            return
-        if self.sender().isChecked():
-            log.info('folding in %s' % node.as_bracket_string())
-            ctrl.free_drawing.add_or_update_triangle_for(node)
-        else:
-            log.info('unfolding from %s' % node.as_bracket_string())
-            ctrl.free_drawing.remove_triangle_from(node)
-        ctrl.deselect_objects()
 
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
@@ -247,8 +228,6 @@ class SetProjectionAtEmbedUI(KatajaAction):
     k_command = 'Set which constituent is head'
 
     def method(self):
-        """
-        """
         button_group = self.sender()
         heads = []
         for button in button_group.buttons():
@@ -259,10 +238,10 @@ class SetProjectionAtEmbedUI(KatajaAction):
         host = self.get_host()
 
         host.set_heads(heads)
+        ctrl.forest.forest_edited()
         embed = self.get_ui_container()
         if embed:
             embed.update_fields()
-        ctrl.forest.forest_edited()
         return f'Set head for "{host}" to "{[str(x) for x in heads]}".'
 
     def enabler(self):

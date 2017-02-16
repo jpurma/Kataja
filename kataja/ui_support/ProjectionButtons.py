@@ -74,4 +74,5 @@ class ProjectionButtons(QtWidgets.QWidget):
             self.bgroup.addButton(button)
             self.my_layout.addWidget(button)
             self.empty = False
+            button.setMinimumHeight(40)
 

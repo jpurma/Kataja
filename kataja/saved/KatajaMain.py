@@ -96,8 +96,8 @@ EyeButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s
                      border-radius: 3}
 EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
 
-ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 """
+#ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 
 
 class KatajaMain(SavedObject, QtWidgets.QMainWindow):

@@ -1142,7 +1142,7 @@ class Node(Movable):
             scene_pos = self.scenePos()
             # following doesn't work reliably on undo:
             new_parent = self.parentItem().parentItem()
-            print('in release_from_locked_position, parentItem().parentItem(): ', new_parent)
+            #print('in release_from_locked_position, parentItem().parentItem(): ', new_parent)
             self.setParentItem(new_parent)
             lp = new_parent.mapFromScene(scene_pos)
             self.current_position = lp.x(), lp.y()
@@ -1673,14 +1673,10 @@ class Node(Movable):
         """ Dragging a foreign object (could be from ui_support) over a node, entering.
         :param event:
         """
-        print('node dragEnterEvent', event)
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
                 event.mimeData().hasFormat("text/plain"):
-            print('accept')
             self.label_object.dragEnterEvent(event)
-            #event.acceptProposedAction()
             self.hovering = True
-            #QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
         else:
             QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
 

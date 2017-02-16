@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.parser.INodes import ITextNode, as_html
+from kataja.parser.INodes import ITextNode, as_html, as_editable_html
 from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
@@ -179,41 +179,36 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.autolabel.setReadOnly(True)
         make_label(title, self, vlayout, tt, self.autolabel)
         vlayout.addWidget(self.autolabel)
-        layout.addLayout(hlayout)
 
-        tt = 'Draw a triangle on top of a node to mark an unanalysed part of a sentence. The ' \
-             'bottom line of label is drawn below the triangle.'
-        title = 'Triangled'
-        self.triangle = QtWidgets.QCheckBox(self)
-        self.triangle.setPalette(ui_p)
-        hlayout = QtWidgets.QHBoxLayout()
-        make_label(title, self, hlayout, tt, self.triangle)
-        hlayout.addWidget(self.triangle)
-        self.ui_manager.connect_element_to_action(self.triangle, 'toggle_triangle')
+        vlayout = QtWidgets.QVBoxLayout()
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
         self.index = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='i',
                                       on_finish=self.index_finished)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
-        make_label(title, self, hlayout, tt, self.index)
-        hlayout.addWidget(self.index)
+        make_label(title, self, vlayout, tt, self.index)
+        vlayout.addWidget(self.index)
+        hlayout.addLayout(vlayout)
         layout.addLayout(hlayout)
 
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.addSpacing(28)
         tt = 'Node can be projection from either or both of its children if those children are ' \
              'heads or projections from their children.'
         title = 'Projects from'
         self.projections = ProjectionButtons(self)
         self.projections.setMaximumWidth(200)
-        hlayout = QtWidgets.QHBoxLayout()
+
+        vlayout = QtWidgets.QVBoxLayout()
         if not self.projections.empty:
-            make_label(title, self, hlayout, tt)
-        hlayout.addWidget(self.projections)
+            make_label(title, self, vlayout, tt)
+        vlayout.addWidget(self.projections)
+        hlayout.addLayout(vlayout)
         layout.addLayout(hlayout)
         self.ui_manager.connect_element_to_action(self.projections,
                                                   'set_projection_at_embed_ui',
                                                   connect_slot=self.projections.connect_slot)
-
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
             layout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
@@ -241,9 +236,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.label.setText(node.label)
         print('label: ', repr(node.label))
         self.synlabel.setText(node.get_syntactic_label())
-        self.autolabel.setText(as_html(node.autolabel))
-        self.triangle.setEnabled(self.triangle_enabled())
-        self.triangle.setChecked(bool(node.triangle_stack and node.triangle_stack[-1] is node))
+        self.autolabel.setText(as_editable_html(node.autolabel))
         self.index.setText(node.index or '')
 
     def triangle_enabled(self):
@@ -265,6 +258,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         text = self.synlabel.text()
         self.host.parse_edited_label('syntactic label', text)
         ctrl.forest.forest_edited()
+        self.update_fields()
 
     def label_edited(self, *args, **kwargs):
         pass
@@ -273,11 +267,13 @@ class ConstituentNodeEditEmbed(UIEmbed):
         text = self.label.inode_text()
         self.host.parse_edited_label('node label', text)
         ctrl.forest.forest_edited()
+        self.update_fields()
 
     def index_finished(self):
         text = self.index.text()
         self.host.parse_edited_label('index', text)
         ctrl.forest.forest_edited()
+        self.update_fields()
 
     def submit_values(self):
         """ Possibly called if assuming we are in NodeEditEmbed. All of the changes in

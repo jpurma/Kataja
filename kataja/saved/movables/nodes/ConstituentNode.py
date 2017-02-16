@@ -327,6 +327,10 @@ class ConstituentNode(Node):
 
     def short_str(self):
         label = as_text(self.label)
+        if label:
+            lines = label.splitlines()
+            if len(lines) > 3:
+                label = f'{lines[0]} ...\n{lines[-1]}'
         syn_label = as_text(self.get_syn_label())
         if label and syn_label:
             return f'{label} ({syn_label})'

@@ -154,7 +154,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
         # 3 = Plain
         self.get_host().text_parse_mode = self.parsing_mode
         self.parsed_html = as_editable_html(value)
-        print(self.parsed_html)
         self.parsed_latex = as_editable_latex(value)
         if self.parsing_mode == 1:
             self.text_area.setPlainText(self.parsed_latex)
