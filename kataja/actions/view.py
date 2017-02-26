@@ -62,7 +62,7 @@ class SwitchViewMode(KatajaAction):
 
 class SwitchSyntaxViewMode(KatajaAction):
     k_action_uid = 'switch_syntax_view_mode'
-    k_command = 'Switch view modes offered by syntax'
+    k_command = 'Switch between view modes offered by syntax'
     k_tooltip = 'Syntax engines may offer different views to their structures'
     k_shortcut = 'v'
     k_undoable = False
@@ -74,8 +74,9 @@ class SwitchSyntaxViewMode(KatajaAction):
         syntactic only
         :return:
         """
-        ctrl.forest.syntax.next_display_mode()
+        mode_name = ctrl.forest.syntax.next_display_mode()
         ctrl.forest.derivation_steps.restore_derivation_step()
+        return mode_name
 
     def getter(self):
         if ctrl.forest.syntax.display_modes:

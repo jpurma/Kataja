@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from kataja.globals import FOREST, CONSTITUENT_NODE
 from kataja.singletons import ctrl
-from utils import time_me
+from kataja.utils import time_me
 
 
 class ChainManager:

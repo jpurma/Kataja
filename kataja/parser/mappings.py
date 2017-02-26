@@ -16,6 +16,7 @@ commands = {
     ('link', 'a', 'href'),
     ('quote', 'q', 'quote'),
     ('sample', 'samp', 'verb'),
+    ('qroof', 'roof', 'qroof'),
     ('math', '', '$')
 }
 

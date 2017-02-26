@@ -1168,6 +1168,11 @@ class Node(Movable):
         """ Triangle that doesn't have any other nodes folded into it """
         return self in self.triangle_stack and self.is_leaf(only_similar=True, only_visible=False)
 
+    def should_draw_triangle(self):
+        """ When in syntactic mode or using automatic labels, don't draw cosmetic triangles        
+        :return: 
+        """
+
     def hidden_in_triangle(self):
         return self.triangle_stack and self.triangle_stack[-1] is not self and \
             not self.is_leaf(only_similar=True, only_visible=False)

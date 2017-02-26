@@ -29,7 +29,6 @@ from kataja.saved.movables.Node import Node
 # enabler : if enabler is defined, the action is active (also reflected into its UI elements) only
 #           when enabler returns True
 #
-from ui_support import FontSelector
 
 
 class SetColorMode(KatajaAction):

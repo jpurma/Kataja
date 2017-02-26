@@ -5,6 +5,8 @@ from mgtdbpE.Parser import load_grammar, Parser
 from mgtdbpE.OutputTrees import StateTree, BareTree, TracelessXBarTree
 
 
+DERIVATION_TREE, STATE_TREE, BARE_TREE, XBAR_TREE = 0, 1, 2, 3
+
 class KSyntaxConnection(SyntaxConnection):
     role = "SyntaxConnection"
     supports_editable_lexicon = True
@@ -77,26 +79,27 @@ class KSyntaxConnection(SyntaxConnection):
         self.syntax_display_mode += 1
         if self.syntax_display_mode == len(self.display_modes):
             self.syntax_display_mode = 0
+        return self.display_modes[self.syntax_display_mode]
 
     def transform_trees_for_display(self, synobjs):
-        if self.syntax_display_mode == 0:
+        if self.syntax_display_mode == DERIVATION_TREE:
             # Just derivation trees
             return synobjs
-        elif self.syntax_display_mode == 1:
+        elif self.syntax_display_mode == STATE_TREE:
             # StateTree(dt)
             res = []
             for synobj in synobjs:
                 const = StateTree(synobj).to_constituent()
                 res.append(const)
             return res
-        elif self.syntax_display_mode == 2:
+        elif self.syntax_display_mode == BARE_TREE:
             # BareTree(dt)
             res = []
             for synobj in synobjs:
                 const = BareTree(synobj).to_constituent()
                 res.append(const)
             return res
-        elif self.syntax_display_mode == 3:
+        elif self.syntax_display_mode == XBAR_TREE:
             # XBarTree(dt)
             res = []
             for synobj in synobjs:

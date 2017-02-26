@@ -285,7 +285,6 @@ class Label(QtWidgets.QGraphicsItem):
         """
         return not (self.editable_html or self.lower_html)
 
-
     def cursor(self):
         return self.editable_part.textCursor()
 
@@ -364,7 +363,6 @@ class Label(QtWidgets.QGraphicsItem):
             #else:
             #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
 
-
     def cursor_position_changed(self, cursor):
         if self._quick_editing:
             ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
@@ -401,8 +399,13 @@ class Label(QtWidgets.QGraphicsItem):
     def resize_label(self):
         self.prepareGeometryChange()
         triangle_host = self._host.is_triangle_host()
-        self.draw_triangle = bool(triangle_host and self.label_shape not in [
-            g.SCOPEBOX, g.CARD, g.BRACKETED])
+        if triangle_host:
+            label_text = ctrl.settings.get('label_text_mode')
+            self.draw_triangle = (label_text == g.NODE_LABELS or
+                                  label_text == g.NODE_LABELS_FOR_LEAVES) and \
+                self.label_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
+        else:
+            self.draw_triangle = False
 
         # ------------------- Width -------------------
         user_width, user_height = self.get_max_size_from_host()
