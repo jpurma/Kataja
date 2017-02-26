@@ -53,9 +53,11 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
 
     if forest.syntax.display_modes:
         synobjs = forest.syntax.transform_trees_for_display(synobjs)
-    print(synobjs)
+
     node_keys_to_validate = set(forest.nodes.keys())
     edge_keys_to_validate = set(forest.edges.keys())
+
+    animate = True
 
     # Don't delete gloss node if we have message to show
     gloss_strat = ctrl.settings.get('gloss_strategy')
@@ -64,10 +66,21 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
+    def iter_values(listlike, ignored):
+        if isinstance(listlike, dict):
+            for my_item in listlike.values():
+                if my_item not in ignored:
+                    yield my_item
+        elif isinstance(listlike, (list, set, tuple)):
+            for my_item in listlike:
+                if my_item not in ignored:
+                    yield my_item
+
     def recursive_add_for_creation(me, parent_node, parent_synobj, done_nodes):
         """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
         To help this create a list of missing nodes with known positions.
         """
+        assert (me not in done_nodes)
         done_nodes.add(me)
         if isinstance(me, list):
             for list_item in me:
@@ -79,27 +92,19 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                 found_nodes.add(node.uid)
                 if hasattr(me, 'label'):
                     node.label = me.label
-                if node.node_type == g.FEATURE_NODE and False:
-                    node.locked_to_node = parent_node  # not me.unvalued
-                if parent_synobj and not parent_node:
+                if parent_synobj and (not parent_node) and parent_synobj not in done_nodes:
                     nodes_to_create.append((parent_synobj, node.current_position))
             elif parent_node:
                 nodes_to_create.append((me, parent_node.current_position))
             else:
                 nodes_to_create.append((me, (0, 0)))
-            if hasattr(me, 'get_parts'):
-                for part in me.get_parts():
-                    if part not in done_nodes:
-                        recursive_add_for_creation(part, node, me, done_nodes)
+            if hasattr(me, 'parts'):
+                for part in iter_values(me.parts, done_nodes):
+                    assert(part not in done_nodes)
+                    recursive_add_for_creation(part, node, me, done_nodes)
             if hasattr(me, 'features'):
-                if isinstance(me.features, dict):
-                    for feat in me.features.values():
-                        if feat not in done_nodes:
-                            recursive_add_for_creation(feat, node, me, done_nodes)
-                elif isinstance(me.features, (list, set, tuple)):
-                    for feat in me.features:
-                        if feat not in done_nodes:
-                            recursive_add_for_creation(feat, node, me, done_nodes)
+                for feat in iter_values(me.features, done_nodes):
+                    recursive_add_for_creation(feat, node, me, done_nodes)
 
     # I guess that ordering of connections will be broken because of making
     # and deleting connections in unruly fashion
@@ -186,10 +191,8 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         synobjs_done = set()
         nodes_to_create = []
         found_nodes = set()
-        print(len(node_keys_to_validate))
         recursive_add_for_creation(tree_root, None, None, set())
         node_keys_to_validate -= found_nodes
-        print(len(found_nodes), len(node_keys_to_validate))
 
         for syn_bare, pos in nodes_to_create:
             x, y = pos
@@ -223,19 +226,12 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     for key in node_keys_to_validate:
         node = forest.nodes.get(key, None)
         if node:
-            print('deleting node ', node)
-            # noinspection PyTypeChecker
-            free_drawing.delete_node(node, touch_edges=False)
-        else:
-            print('not found node ', key)
+            free_drawing.delete_node(node, touch_edges=False, fade=animate)
+            assert(not forest.nodes.get(key, None))
     for key in edge_keys_to_validate:
         edge = forest.edges.get(key, None)  # most of these should be deleted already by prev.
         if edge:
-            # noinspection PyTypeChecker
-            print('deleting edge ', edge)
-            free_drawing.delete_edge(edge)
-        else:
-            print('not found edge ', key)
+            free_drawing.delete_edge(edge, fade=animate)
 
     f_mode = ctrl.settings.get('feature_positioning')
     shape = ctrl.settings.get('label_shape')
@@ -334,7 +330,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         forest.gloss_text = msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
-    ctrl.graph_scene.fit_to_window(force=True)
+    #ctrl.graph_scene.fit_to_window(force=True)
 
 
 def verify_edge_order_for_constituent_nodes(node):

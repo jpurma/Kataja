@@ -465,6 +465,6 @@ class SavedObject(object):
         if root:
             for item in restored.values():
                 if hasattr(item, 'after_init'):
-                    print('restoring item, calling after_init')
+                    #print('restoring item, calling after_init for ', type(item), item)
                     item.after_init()
         return obj

@@ -296,6 +296,11 @@ class FreeDrawing:
         if node.uid in self.nodes:
             self.poke('nodes')
             del self.nodes[node.uid]
+        if node.syntactic_object:
+            if node.syntactic_object.uid in self.f.nodes_from_synobs:
+                del self.f.nodes_from_synobs[node.syntactic_object.uid]
+
+        assert(node.uid not in self.f.nodes)
         # -- check if it is last of its type --
         found = False
         my_type = node.node_type
@@ -306,8 +311,17 @@ class FreeDrawing:
         if not found:
             if my_type in self.node_types:
                 self.node_types.remove(my_type)
+
+        # if fading out, item scene position has to remain same during the fade. If disappear
+        # instantly, it doesnt matter
         if node.parentItem():
-            node.setParentItem(None)
+            if fade:
+                scpos = node.scenePos()
+                node.setParentItem(None)
+                node.set_original_position(scpos)
+            else:
+                node.setParentItem(None)
+
         if hasattr(node, 'on_delete'):
             node.on_delete()
         # -- scene --
