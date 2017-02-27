@@ -107,7 +107,7 @@ class TopBarButtons(QtWidgets.QFrame):
         """
         self.resize(self.sizeHint())
         self.move(4, 2)
-        self.show()
+        #self.show()
 
     def left_edge_of_right_buttons(self):
         return self.camera.x()

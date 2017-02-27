@@ -558,8 +558,6 @@ class Label(QtWidgets.QGraphicsItem):
         if self.lower_part:
             self.lower_part.setDefaultTextColor(self._host.contextual_color)
         if self.draw_triangle:
-            br = self.boundingRect()
-            #print(br, self.x(), self.y(), br.x(), br.y())
             left = 0
             center = self.width / 2
             right = self.width

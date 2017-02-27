@@ -69,6 +69,12 @@ class UIItem:
         self._fade_in_anim = None
         self._opacity_effect.setEnabled(False)
 
+    def show(self):
+        if self.isVisible():
+            print('unnecessary show for UIItem')
+        else:
+            super().show()
+
     def fade_in(self, s=150):
         """ Simple fade effect. The object exists already when fade starts.
         There are two ways to do fade, one for QGraphicsItems and one for QWidgets

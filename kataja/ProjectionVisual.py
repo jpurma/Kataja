@@ -16,7 +16,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         super().__init__()
         self.d = data
         self.color = ctrl.cm.get(self.d.color_tr_id)
-        self.show()
+        #self.show()
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events

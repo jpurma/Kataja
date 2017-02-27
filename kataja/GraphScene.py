@@ -32,7 +32,7 @@ from PyQt5.QtCore import Qt
 
 import kataja.globals as g
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, sub_xy, div_xy, open_symbol_data
+from kataja.utils import to_tuple, sub_xy, div_xy, open_symbol_data, time_me
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 
@@ -598,10 +598,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        f.edge_visibility_check()
         for e in f.edges.values():
             e.make_path()
-            e.update()
+            #e.update()
 
         if ctrl.pressed:
             return
@@ -621,10 +620,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             avg = div_xy(md['sum'], ln)
             for node in md['nodes']:
                 node.current_position = sub_xy(node.current_position, avg)
+
         if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()
         if items_have_moved:
-            self.main.ui_manager.get_activity_marker().show()
+            #self.main.ui_manager.get_activity_marker().show()
             # for area in f.touch_areas:
             # area.update_position()
             for group in f.groups.values():

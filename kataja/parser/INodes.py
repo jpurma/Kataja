@@ -31,7 +31,6 @@ def as_html(item, omit_triangle=False, include_index='') -> str:
             # Make sure that index is at the end of the first line or somewhere in first line
             # Remove other occurences.
             lines = h.splitlines(keepends=True)
-            print(lines)
             if len(lines) == 1:
                 if index_html in h:
                     return h

@@ -93,11 +93,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.adjusted_control_points = []  # combines those two above
         self.label_data = {}
         self._nodes_overlap = False
+        self._changed = False
 
         self.in_projections = []
 
-        self._computed_start_point = None
-        self._computed_end_point = None
+        self._computed_start_point = (0, 0)
+        self._computed_end_point = (0, 0)
 
         self._local_drag_handle_position = None
 
@@ -201,6 +202,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     @color_id.setter
     def color_id(self, value):
+        self._changed = True
         ctrl.settings.set_edge_setting('color_id', value, edge=self)
 
     @property
@@ -209,6 +211,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     @shape_name.setter
     def shape_name(self, value):
+        self._changed = True
         ctrl.settings.set_edge_setting('shape_name', value, edge=self)
 
     @property
@@ -226,7 +229,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: tuple (x, y, z)
         """
         if self.start:
-            return self._computed_start_point or self.fixed_start_point
+            return self._computed_start_point
         else:
             return self.fixed_start_point
 
@@ -237,9 +240,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: tuple (x, y, z)
         """
         if self.end:
-            return self._computed_end_point or self.fixed_end_point
+            return self._computed_end_point
         else:
             return self.fixed_end_point
+
+    def show(self):
+        if not self.isVisible():
+            super().show()
+        else:
+            print('unnecessary show in edge')
+
 
     def update_visibility(self, fade_in=True, fade_out=True) -> bool:
         """ Hide or show according to various factors, which allow edge
@@ -527,6 +537,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
+        if self._path and not self._changed:
+            return
+        self._changed = False
         sx, sy = self.start_point
         ex, ey = self.end_point
         if sx == ex:
@@ -633,6 +646,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :return:
         """
+        osx, osy = self._computed_start_point
+        oex, oey = self._computed_end_point
 
         if self.start and self.end:
             sx, sy = self.start.current_scene_position
@@ -805,6 +820,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                             else:
                                 self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
                                 self._curve_dir_end = BOTTOM_SIDE
+        nsx, nsy = self._computed_start_point
+        nex, ney = self._computed_end_point
+        if osx != nsx or osy != nsy or oex != nex or oey != ney:
+            self._changed = True
+
+
 
     def connect_end_points(self, start, end):
         """
@@ -901,7 +922,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         if not self._path:
             self.make_path()
-        return self._cached_cp_rect or QtCore.QRectF()
+        return self._cached_cp_rect
 
     # ### Mouse - Qt events ##################################################
 
@@ -948,7 +969,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self._hovering = True
             self.prepareGeometryChange()
             self.update()
-            self.update_status_tip()
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
             self._hovering = False
@@ -964,6 +984,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param event:
         """
         self.hovering = True
+        print('hover enter edge')
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -993,7 +1014,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ctrl.select(self)
 
     # ## Qt paint method override
-    # @time_me
     def paint(self, painter, option, widget=None):
         """
 
@@ -1002,6 +1022,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param widget:
         :return:
         """
+        t = time.time()
         c = self.contextual_color
         if self._use_simple_path:
             p = QtGui.QPen()
@@ -1441,6 +1462,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             rad = orad
         self.curve_adjustment[index] = dist, rad
         self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
+        self._changed = True
         self.make_path()
         self.update()
 

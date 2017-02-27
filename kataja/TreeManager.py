@@ -20,19 +20,18 @@ class TreeManager:
                 count_top_nodes_for_each_node(top, child, btrees)
 
         tree_candidates = []
-        valid_tops = set()
         used_trees = set()
         tops_for_node = defaultdict(list)
 
         for node in self.f.nodes.values():
             if not node.get_parents(similar=True, visible=True):
-                valid_tops.add(node)
-        for node in valid_tops:
-            if len(node.trees) > 1:
-                raise IndexError
-            best_trees = list(node.trees)
-            count_top_nodes_for_each_node(node, node, best_trees)
-            tree_candidates.append((node, best_trees))
+                if len(node.trees) > 1:
+                    for tree in list(node.trees):
+                        if tree.top is not node:
+                            node.trees.remove(tree)
+                best_trees = list(node.trees)
+                count_top_nodes_for_each_node(node, node, best_trees)
+                tree_candidates.append((node, best_trees))
 
         for top, best_trees in tree_candidates:
             available_trees = [t for t in best_trees if t not in used_trees]
@@ -61,7 +60,7 @@ class TreeManager:
         tree = Tree(top=node)
         self.f.add_to_scene(tree)
         self.f.trees.insert(0, tree)
-        tree.show()
+        #tree.show()
         tree.update_items()
         return tree
 

@@ -295,7 +295,7 @@ class Forest(SavedObject):
         tree = Tree(numeration=True)
         self.add_to_scene(tree)
         self.trees.append(tree)
-        tree.show()
+        #tree.show()
         return tree
 
     def set_visualization(self, name):
@@ -673,7 +673,7 @@ class Forest(SavedObject):
             self.gloss.physics_x = False
             self.gloss.physics_y = False
             self.gloss.put_to_top_of_trees()
-            self.gloss.show()
+            #self.gloss.show()
         elif self.gloss:
             self.remove_from_scene(self.gloss)
             self.gloss = None

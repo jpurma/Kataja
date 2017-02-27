@@ -388,7 +388,6 @@ class Node(Movable):
         self.update()
         if self.zValue() < 150:
             self.setZValue(150)
-        self.update_status_tip()
         ctrl.set_status(self.status_tip)
 
     def _stop_hover(self):
@@ -827,10 +826,7 @@ class Node(Movable):
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
     def update_relations(self, parents, shape=None, position=None):
-        if self.locked_to_node:
-            edge = self.get_edge_to(self.locked_to_node)
-            if edge:
-                edge.hide()
+        pass
 
     def reset_style(self):
         ctrl.settings.reset_node_style(node=self)
@@ -916,7 +912,6 @@ class Node(Movable):
         """
         :return:
         """
-        t = time.time()
         if not self.label_object:
             self.label_object = Label(parent=self)
         self.label_object.update_font()
@@ -977,7 +972,7 @@ class Node(Movable):
 
     # ## Qt overrides
     # ######################################################################
-
+    #@time_me
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
@@ -1137,27 +1132,28 @@ class Node(Movable):
     # #### Locking node to another node (e.g. features to constituent and in triangles)
 
     def release_from_locked_position(self):
-        self.locked_to_node = None
-        if self.parentItem() and isinstance(self.parentItem(), Node):
+        was_locked = self.locked_to_node
+        if was_locked:
+            self.locked_to_node = None
             scene_pos = self.scenePos()
             # following doesn't work reliably on undo:
             new_parent = self.parentItem().parentItem()
-            #print('in release_from_locked_position, parentItem().parentItem(): ', new_parent)
             self.setParentItem(new_parent)
             lp = new_parent.mapFromScene(scene_pos)
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
-        self.update_bounding_rect()
+            self.update_bounding_rect()
 
     def lock_to_node(self, parent):
-        self.locked_to_node = parent
-        if self.parentItem() is not parent:
+        previously = self.locked_to_node
+        if previously is not parent:
+            self.locked_to_node = parent
             scene_pos = self.scenePos()
             self.setParentItem(parent)
             lp = parent.mapFromScene(scene_pos)
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
-        self.update_bounding_rect()
+            self.update_bounding_rect()
 
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
@@ -1804,14 +1800,14 @@ class Node(Movable):
             effect = QtWidgets.QGraphicsBlurEffect()
             effect.setBlurRadius(8)
             self.halo_item.setGraphicsEffect(effect)
-            self.halo_item.show()
+            #self.halo_item.show()
         if (not value) and self.halo_item:
             if prefs.glow_effect:
                 self.halo = True
                 self.update_halo()
             else:
                 self.halo = False
-                self.halo_item.hide()
+                #self.halo_item.hide()
                 self.halo_item.setParentItem(None)
                 scene = self.halo_item.scene()
                 if scene:

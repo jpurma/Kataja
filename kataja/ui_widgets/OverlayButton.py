@@ -127,10 +127,10 @@ class PanelButton(QtWidgets.QPushButton):
         #self.update_style_sheet()
         self.compose_icon()
 
-    def event(self, e):
-        if e.type() == QtCore.QEvent.PaletteChange:
-            self.update_colors()
-        return QtWidgets.QPushButton.event(self, e)
+    #def event(self, e):
+    #    if e.type() == QtCore.QEvent.PaletteChange:
+    #        self.update_colors()
+    #    return QtWidgets.QPushButton.event(self, e)
 
 
 class OverlayButton(UIWidget, PanelButton):
@@ -152,7 +152,6 @@ class OverlayButton(UIWidget, PanelButton):
         PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
                              color_key=color_key, draw_method=draw_method, tooltip=tooltip)
         self.hover_icon = None
-
 
     def mousePressEvent(self, event):
         if self.hover_icon:
@@ -278,9 +277,6 @@ class VisButton(OverlayButton):
 
     def update_colors(self):
         pass
-
-    def event(self, e):
-        return QtWidgets.QPushButton.event(self, e)
 
 
 class QuickEditButton(OverlayButton):

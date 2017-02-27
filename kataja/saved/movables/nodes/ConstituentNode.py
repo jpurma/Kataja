@@ -274,7 +274,8 @@ class ConstituentNode(Node):
         # elif self.is_top_node():
         #    name = "Set %s" % self.set_string() # "Root constituent"
         else:
-            name = f"Set {self.set_string()}"
+            #name = f"Set {self.set_string()}"
+            name = "Set "
         if self.use_adjustment:
             adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
         else:
@@ -296,6 +297,9 @@ class ConstituentNode(Node):
             return label or syn_label or "no label"
 
     def set_string(self):
+        """ This can be surprisingly expensive to calculate
+        :return: 
+        """
         if self.syntactic_object and hasattr(self.syntactic_object, 'set_string'):
             return self.syntactic_object.set_string()
         else:

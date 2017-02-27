@@ -535,6 +535,12 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Existence ############################################################
 
+    def show(self):
+        if not self.isVisible():
+            super().show()
+        else:
+            print('unnecessary show in movable')
+
     def update_visibility(self, fade_in=True, fade_out=True) -> bool:
         """ Subclasses should set _visible_by_logic based on their many factors. In this level
         the actual hide/show/fade -operations are made.

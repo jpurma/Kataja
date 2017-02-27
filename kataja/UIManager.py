@@ -189,23 +189,6 @@ class UIManager:
         item = self.get_ui(ui_key)
         item.setEnabled(True)
 
-    def hide_item(self, ui_key):
-        """ Hide ui_item. Doesn't remove it, so use carefully -- only for objects that are
-        restored to visible at some point
-        :param ui_key:
-        :return:
-        """
-        item = self.get_ui(ui_key)
-        item.hide()
-
-    def show_item(self, ui_key):
-        """ Restore ui_item to visible. Assuming one exists.
-        :param ui_key:
-        :return:
-        """
-        item = self.get_ui(ui_key)
-        item.show()
-
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
         :param action_group_name:
@@ -267,8 +250,8 @@ class UIManager:
                 self._items_by_host[key] = [item]
         if item.scene_item:
             self.scene.addItem(item)
-        if show:
-            item.show()
+        #if show:
+        #    item.show()
 
     def remove_ui(self, item, fade=True):
         """ Remove ui_item from active and displayed ui_items. The item may still exist in scene

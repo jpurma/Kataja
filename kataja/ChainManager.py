@@ -111,7 +111,6 @@ class ChainManager:
                 # we leave open case [A A], it will get random order, but who cares
                 parents[node.index].sort()
         # replace all but highest instance with traces
-        print(originals)
         for index, original in originals.items():
             my_parents = parents[index]
             if len(my_parents) > 1:

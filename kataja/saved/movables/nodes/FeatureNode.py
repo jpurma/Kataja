@@ -170,8 +170,6 @@ class FeatureNode(Node):
         :return:
         """
 
-        if parents is None:
-            parents = []
         if shape is None:
             shape = ctrl.settings.get('label_shape')
         if position is None:
@@ -190,7 +188,6 @@ class FeatureNode(Node):
                         self.release_from_locked_position()
         else:
             self.release_from_locked_position()
-        super().update_relations(parents, shape, position)
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with

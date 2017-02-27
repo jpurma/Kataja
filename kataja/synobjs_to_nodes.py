@@ -66,45 +66,56 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
-    def iter_values(listlike, ignored):
+    def iter_values(listlike):
         if isinstance(listlike, dict):
             for my_item in listlike.values():
-                if my_item not in ignored:
+                if my_item not in done_nodes:
                     yield my_item
         elif isinstance(listlike, (list, set, tuple)):
             for my_item in listlike:
-                if my_item not in ignored:
+                if my_item not in done_nodes:
                     yield my_item
 
-    def recursive_add_for_creation(me, parent_node, parent_synobj, done_nodes):
+    def recursive_add_const_node(me, parent_synobj):
         """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
         To help this create a list of missing nodes with known positions.
         """
-        assert (me not in done_nodes)
         done_nodes.add(me)
-        if isinstance(me, list):
-            for list_item in me:
-                recursive_add_for_creation(list_item, parent_node, parent_synobj,
-                                           done_nodes)
+        node = forest.get_node(me)
+        if node:
+            found_nodes.add(node.uid)
+            if hasattr(me, 'label'):
+                node.label = me.label
         else:
-            node = forest.get_node(me)
-            if node:
-                found_nodes.add(node.uid)
-                if hasattr(me, 'label'):
-                    node.label = me.label
-                if parent_synobj and (not parent_node) and parent_synobj not in done_nodes:
-                    nodes_to_create.append((parent_synobj, node.current_position))
-            elif parent_node:
-                nodes_to_create.append((me, parent_node.current_position))
-            else:
-                nodes_to_create.append((me, (0, 0)))
-            if hasattr(me, 'parts'):
-                for part in iter_values(me.parts, done_nodes):
-                    assert(part not in done_nodes)
-                    recursive_add_for_creation(part, node, me, done_nodes)
-            if hasattr(me, 'features'):
-                for feat in iter_values(me.features, done_nodes):
-                    recursive_add_for_creation(feat, node, me, done_nodes)
+            cns_to_create.append((me, parent_synobj))
+        if hasattr(me, 'parts'):
+            for part in iter_values(me.parts):
+                recursive_add_const_node(part, me)
+        if hasattr(me, 'features'):
+            for feat in iter_values(me.features):
+                recursive_add_feature_node(feat, me)
+
+    def recursive_add_feature_node(me, parent_synobj):
+        """ First we have to create new nodes close to existing nodes to avoid 
+        rubberbanding.
+        To help this create a list of missing nodes with known positions.
+        """
+        done_nodes.add(me)
+        node = forest.get_node(me)
+        if node:
+            found_nodes.add(node.uid)
+            if hasattr(me, 'label'):
+                node.label = me.label
+        else:
+            fns_to_create.append((me, parent_synobj))
+        # we usually don't have feature structure, but lets assume that possibility
+        if hasattr(me, 'parts'):
+            for part in iter_values(me.parts):
+                assert (part not in done_nodes)
+                recursive_add_feature_node(part, me)
+        if hasattr(me, 'features'):
+            for feat in iter_values(me.features):
+                recursive_add_feature_node(feat, me)
 
     # I guess that ordering of connections will be broken because of making
     # and deleting connections in unruly fashion
@@ -185,31 +196,38 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     sc_center = scene_rect.center().x()
     sc_middle = scene_rect.center().y()
 
+
     for tree_root in synobjs:
         if not tree_root:
             continue
         synobjs_done = set()
-        nodes_to_create = []
+        cns_to_create = []
+        fns_to_create = []
+        done_nodes = set()
         found_nodes = set()
-        recursive_add_for_creation(tree_root, None, None, set())
+        recursive_add_const_node(tree_root, None)
         node_keys_to_validate -= found_nodes
 
-        for syn_bare, pos in nodes_to_create:
-            x, y = pos
-            if x == 0 and y == 0:
+        for syn_bare, syn_parent in cns_to_create:
+            host = forest.get_node(syn_parent)
+            if host:
+                pos = host.scenePos()
+            else:
                 x = sc_center + random.randint(-100, 100)
                 y = sc_middle + random.randint(-100, 100)
-                if isinstance(syn_bare, ctrl.syntax.Feature):
-                    y += 100
-            if isinstance(syn_bare, ctrl.syntax.Constituent):
-                node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=(x, y))
-                node.set_syntactic_object(syn_bare)
-                node.label = syn_bare.label
-            elif isinstance(syn_bare, ctrl.syntax.Feature):
-                node = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=(x, y))
-                node.set_syntactic_object(syn_bare)
+                pos = (x, y)
+            node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
+            node.set_syntactic_object(syn_bare)
+            node.label = syn_bare.label
+
+        for syn_feat, syn_host in fns_to_create:
+            host = forest.get_node(syn_host)
+            if host:
+                pos = host.scenePos()
             else:
-                continue
+                pos = (0, 0)
+            fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
+            fnode.set_syntactic_object(syn_feat)
 
         found_edges = set()
         recursive_create_edges(tree_root)
