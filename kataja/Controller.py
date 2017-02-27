@@ -61,6 +61,7 @@ class Controller:
         # : :type self.main: KatajaMain
 
         self.main = None
+        self.settings = None
         self.watchers = {}
         self.structure = None
         self.selected = []
@@ -115,6 +116,7 @@ class Controller:
         :param main: KatajaMain
         """
         self.main = main
+        self.settings = main.settings_manager
 
     @property
     def syntax(self):
@@ -132,10 +134,6 @@ class Controller:
         :return: UIManager
         """
         return self.main.ui_manager #getattr(self.main, 'ui_manager', None)
-
-    @property
-    def settings(self):
-        return self.main.settings_manager
 
     @property
     def cm(self):

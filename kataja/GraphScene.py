@@ -598,8 +598,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        for e in f.edges.values():
-            e.make_path()
             #e.update()
 
         if ctrl.pressed:
@@ -620,6 +618,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
             avg = div_xy(md['sum'], ln)
             for node in md['nodes']:
                 node.current_position = sub_xy(node.current_position, avg)
+
+        if items_have_moved:
+            for e in f.edges.values():
+                e.make_path()
 
         if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()

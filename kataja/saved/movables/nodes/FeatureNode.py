@@ -230,12 +230,15 @@ class FeatureNode(Node):
         else:
             return qt_prefs.no_brush
 
-    def special_connection_point(self, edge, sx, sy, ex, ey, start=False):
+    def special_connection_point(self, sx, sy, ex, ey, start=False):
         f_align = ctrl.settings.get('feature_positioning')
         br = self.boundingRect()
-        left, top, right, bottom = (x * .8 for x in br.getCoords())
+        left, top, right, bottom = (int(x * .8) for x in br.getCoords())
         if f_align == 0: # direct
-            return self.current_scene_position, BOTTOM_SIDE
+            if start:
+                return (sx, sy), BOTTOM_SIDE
+            else:
+                return (ex, ey), BOTTOM_SIDE
         elif f_align == 1: # vertical
             if start:
                 if sx < ex:
@@ -264,7 +267,10 @@ class FeatureNode(Node):
             else:
                 return (ex + left, ey), LEFT_SIDE
 
-        return self.current_scene_position, 0
+        if start:
+            return (sx, sy), 0
+        else:
+            return (ex, ey), 0
 
     def __str__(self):
         if self.syntactic_object:

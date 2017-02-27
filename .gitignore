@@ -241,3 +241,5 @@ kataja_print*.png
 postsetup.py
 
 plugins/myplugin
+profile
+profiler_results.log

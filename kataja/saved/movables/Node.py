@@ -1215,19 +1215,19 @@ class Node(Movable):
     # ## Magnets
     # ######################################################################
 
-    def top_center_magnet(self):
-        return self.magnet(2)
+    def top_center_magnet(self, scene_pos=None):
+        return self.magnet(2, scene_pos=scene_pos)
 
-    def bottom_left_magnet(self):
-        return self.magnet(8)
+    def bottom_left_magnet(self, scene_pos=None):
+        return self.magnet(8, scene_pos=scene_pos)
 
-    def bottom_center_magnet(self):
-        return self.magnet(9)
+    def bottom_center_magnet(self, scene_pos=None):
+        return self.magnet(9, scene_pos=scene_pos)
 
-    def bottom_right_magnet(self):
-        return self.magnet(10)
+    def bottom_right_magnet(self, scene_pos=None):
+        return self.magnet(10, scene_pos=scene_pos)
 
-    def bottom_magnet(self, i, size):
+    def bottom_magnet(self, i, size, scene_pos=None):
         """ Bottom magnets that divide the bottom area to (size) points, so that each edge has a
         separate starting point. For binary branching, use the default three points.
         :param i: index in list of sibling
@@ -1235,33 +1235,35 @@ class Node(Movable):
         :return:
         """
         magnets = ctrl.settings.get('use_magnets')
+        if scene_pos:
+            x1, y1 = scene_pos
+        else:
+            x1, y1 = scene_pos = self.current_scene_position
         if not magnets:
-            return self.current_scene_position
+            return scene_pos
         elif not self.has_visible_label():
-            return self.current_scene_position
+            return scene_pos
         elif not self._magnets:
             self.update_bounding_rect()
         if size == 2: # and False:
             if i == 0:
-                return self.magnet(8)
+                return self.magnet(8, scene_pos)
             elif i == 1:
-                return self.magnet(10)
+                return self.magnet(10, scene_pos)
         elif size == 3: # and False:
             if i == 0:
-                return self.magnet(8)
+                return self.magnet(8, scene_pos)
             elif i == 1:
-                return self.magnet(9)
+                return self.magnet(9, scene_pos)
             elif i == 2:
-                return self.magnet(10)
-        x1, y1 = self.current_scene_position
+                return self.magnet(10, scene_pos)
         x2, y2 = self._magnets[7]
         x2 += (self.width / (size + 1)) * (i + 1)
         if magnets == 2:
-            x2, y2 = self._angle_to_parent(x2, y2)
-        return x1 + x2, y1 + y2
+            x2, y2 = self._angle_to_parent(x1, y1, x2, y2)
+        return int(x1 + x2), int(y1 + y2)
 
-    def _angle_to_parent(self, x2, y2):
-        x1, y1 = self.current_scene_position
+    def _angle_to_parent(self, x1, y1, x2, y2):
         parents = self.get_parents(similar=True, visible=True)
         # We don't want to rotate multidominated or top nodes
         if len(parents) == 1:
@@ -1280,9 +1282,9 @@ class Node(Movable):
             # else:
             x2 = x * cos_r + y * sin_r
             y2 = -x * sin_r + y * cos_r
-        return x2, y2
+        return int(x2), int(y2)
 
-    def magnet(self, n):
+    def magnet(self, n, scene_pos=None):
         """
         :param n: index of magnets. There are five magnets in top and bottom
         and three for sides:
@@ -1294,20 +1296,22 @@ class Node(Movable):
         :return:
         """
         magnets = ctrl.settings.get('use_magnets')
+        if scene_pos:
+            x1, y1 = scene_pos
+        else:
+            x1, y1 = scene_pos = self.current_scene_position
         if not magnets:
-            return self.current_scene_position
+            return scene_pos
         elif not self.has_visible_label():
-            return self.current_scene_position
+            return scene_pos
         elif not self._magnets:
             self.update_bounding_rect()
         if self.magnet_mapper:
             n = self.magnet_mapper(n)
-
-        x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[n]
         if magnets == 2:
-            x2, y2 = self._angle_to_parent(x2, y2)
-        return x1 + x2, y1 + y2
+            x2, y2 = self._angle_to_parent(x1, y1, x2, y2)
+        return int(x1 + x2), int(y1 + y2)
 
     # ### Menus #########################################
 

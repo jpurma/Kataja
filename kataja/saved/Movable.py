@@ -159,7 +159,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     @current_position.setter
     def current_position(self, value):
         self._current_position = value
-        self.setPos(value[0], value[1])
+        self.setPos(*value)
 
     @property
     def current_scene_position(self):
@@ -167,7 +167,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         xy = self.scenePos()
-        return xy.x(), xy.y()
+        return int(xy.x()), int(xy.y())
 
     # ## Movement ##############################################################
 
