@@ -4,8 +4,10 @@ import io
 
 try:
     from mgtdbpE.Constituent import Constituent
+    from kataja.singletons import log
 except ImportError:
     from Constituent import Constituent
+    log = None
 
 #try:
 #    from nltk.tree import Tree
@@ -154,7 +156,10 @@ class StateTree:
             self.movers += self.part0.movers
             self.movers += self.part1.movers
         else:
-            raise RuntimeError('merge_check error')
+            if log:
+                log.critical('merge_check error')
+            else:
+                raise RuntimeError('merge_check error')
 
     def move_check(self):
         mover_match, *remaining = self.part0.features
@@ -166,7 +171,10 @@ class StateTree:
         for mover_f_list in self.part0.movers:
             if mover_f_list[0].name == mover_match.name:
                 if found:
-                    raise RuntimeError('SMC violation in move_check')
+                    if log:
+                        log.critical('SMC violation in move_check')
+                    else:
+                        raise RuntimeError('SMC violation in move_check')
                 mover = mover_f_list[1:]
                 found = True
             else:
@@ -253,7 +261,11 @@ class BareTree:
                     self.moving.append((remainders1, self.part1))
                     #self.part1 = BareTree(None)  # trace
             else:
-                raise RuntimeError('merge_check error')
+                # These errors make sense in completed parses.
+                if log:
+                    log.critical('merge_check error')
+                else:
+                    raise RuntimeError('merge_check error')
         if not (self.part0.part0 or self.part0.part1):  # is it leaf?
             self.label = '<'
         else:
@@ -272,7 +284,10 @@ class BareTree:
             for mover_f_list in self.part1.movers:
                 if mover_f_list[0].name == mover_match.name:
                     if found:
-                        raise RuntimeError('SMC violation in move_check')
+                        if log:
+                            log.critical('SMC violation in move_check')
+                        else:
+                            raise RuntimeError('SMC violation in move_check')
                     mover = mover_f_list[1:]
                     found = True
                 else:
@@ -300,7 +315,10 @@ class BareTree:
         elif self.part0 and self.part1:  # merge
             return [self.label, self.part0.as_list_tree(), self.part1.as_list_tree()]
         else:
-            raise RuntimeError('BareTree.as_list_tree')
+            if log:
+                log.critical('BareTree.as_list_tree')
+            else:
+                raise RuntimeError('BareTree.as_list_tree')
 
     def to_constituent(self, done=None):
         """ Overwrite original constituent (self.const) with its bare tree version (self). """
@@ -508,9 +526,10 @@ class TracelessXBarTree:
                     #pass
                     self.part1.category += 'P'
             else:
-                # raise RuntimeError('merge_check error')
-                # we are ok with having broken/not ready derivations
-                pass
+                if log:
+                    log.critical('merge_check error')
+                else:
+                    raise RuntimeError('merge_check error')
         self.category = self.part0.category
         self.head = self.part0
         self.label = self.category + "'"
@@ -530,7 +549,10 @@ class TracelessXBarTree:
             for mover_f_list in self.part1.movers:
                 if mover_f_list[0].name == mover_match.name:
                     if found:
-                        raise RuntimeError('SMC violation in move_check')
+                        if log:
+                            log.critical('SMC violation in move_check')
+                        else:
+                            raise RuntimeError('SMC violation in move_check')
                     mover = mover_f_list[1:]
                     found = True
                 else:
@@ -560,7 +582,10 @@ class TracelessXBarTree:
         elif self.part0 and self.part1:  # merge
             return [self.label, self.part0.as_list_tree(), self.part1.as_list_tree()]
         else:
-            raise RuntimeError('XBarTree.as_list_tree')
+            if log:
+                log.critical('XBarTree.as_list_tree')
+            else:
+                raise RuntimeError('XBarTree.as_list_tree')
 
     def to_constituent(self, done=None):
         """  Overwrite original constituent (self.const) with its xbar version (self). """

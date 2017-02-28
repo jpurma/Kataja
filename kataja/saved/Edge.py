@@ -986,7 +986,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param event:
         """
         self.hovering = True
-        print('hover enter edge')
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):

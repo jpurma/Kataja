@@ -123,7 +123,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             for feat in iter_values(me.features):
                 recursive_add_feature_node(feat, me)
         if hasattr(me, 'checks'):
-            if me.checks:
+            if me.checks and me.checks.uid not in done_nodes:
                 recursive_add_feature_node(me.checks, me)
 
     cns_to_create = []
@@ -136,9 +136,16 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     node_keys_to_validate -= found_nodes
     for syn_bare, syn_parent in cns_to_create:
         host = forest.get_node(syn_parent)
+        pos = None
         if host:
             pos = host.scenePos()
-        else:
+        elif syn_bare.parts:
+            for csyn in syn_bare.parts:
+                child = forest.get_node(csyn)
+                if child:
+                    pos = child.scenePos()
+                    break
+        if not pos:
             x = sc_center + random.randint(-100, 100)
             y = sc_middle + random.randint(-100, 100)
             pos = (x, y)
@@ -168,6 +175,15 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             for my_item in listlike:
                 yield my_item
 
+    # I guess that ordering of connections will be broken because of making
+    # and deleting connections in unruly fashion
+    def connect_if_necessary(parent, child, edge_type):
+        edge = parent.get_edge_to(child, edge_type)
+        if not edge:
+            free_drawing.connect_node(parent, child, edge_type=edge_type)
+        else:
+            found_edges.add(edge.uid)
+
     def recursive_create_edges(synobj):
         """ All of the nodes exist already, now put the edges in place. Goes to the bottom and 
         then builds up. 
@@ -176,9 +192,9 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         """
         node = forest.get_node(synobj)
         assert(node)
-        if synobj in done_nodes:
+        if synobj.uid in done_nodes:
             return node
-        done_nodes.add(synobj)
+        done_nodes.add(synobj.uid)
         if node.node_type == g.CONSTITUENT_NODE:
             for part in iter_me(synobj.parts):
                 child = recursive_create_edges(part)
@@ -201,15 +217,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                     if checking_node:
                         connect_if_necessary(checking_node, node, g.CHECKING_EDGE)
         return node
-
-    # I guess that ordering of connections will be broken because of making
-    # and deleting connections in unruly fashion
-    def connect_if_necessary(parent, child, edge_type):
-        edge = parent.get_edge_to(child, edge_type)
-        if not edge:
-            free_drawing.connect_node(parent, child, edge_type=edge_type)
-        else:
-            found_edges.add(edge.uid)
 
     def recursive_update_heads(node):
         if not node.syntactic_object:
@@ -380,6 +387,12 @@ def verify_edge_order_for_constituent_nodes(node):
     depends on how syntax supports ordering.
     :return:
     """
+    def strict_index(flist, feat):
+        for i, fitem in enumerate(flist):
+            if feat is fitem:
+                return i
+
+
     if isinstance(node.syntactic_object.parts, list):
         #  we assume that if parts use lists, then they are implicitly ordered.
         correct_order = node.syntactic_object.parts
@@ -406,12 +419,15 @@ def verify_edge_order_for_constituent_nodes(node):
             new_order = []
             passed = []
             for edge in node.edges_down:
-                if edge.edge_type == g.FEATURE_EDGE and edge.end and \
-                        edge.end.syntactic_object in node.syntactic_object.features:
-                    new_order.append((node.syntactic_object.features.index(
-                        edge.end.syntactic_object), edge))
+                if edge.edge_type == g.FEATURE_EDGE and edge.end:
+                    si = strict_index(node.syntactic_object.features, edge.end.syntactic_object)
+                    if si is not None:
+                        new_order.append((si, edge))
+                    else:
+                        passed.append(edge)
                 else:
                     passed.append(edge)
+            print(new_order)
             new_order = [edge for i, edge in sorted(new_order)]
             node.edges_down = passed + new_order
 
