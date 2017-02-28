@@ -66,129 +66,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
-    def iter_values(listlike):
-        if isinstance(listlike, dict):
-            for my_item in listlike.values():
-                if my_item not in done_nodes:
-                    yield my_item
-        elif isinstance(listlike, (list, set, tuple)):
-            for my_item in listlike:
-                if my_item not in done_nodes:
-                    yield my_item
-
-    def recursive_add_const_node(me, parent_synobj):
-        """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
-        To help this create a list of missing nodes with known positions.
-        """
-        done_nodes.add(me)
-        node = forest.get_node(me)
-        if node:
-            found_nodes.add(node.uid)
-            if hasattr(me, 'label'):
-                node.label = me.label
-        else:
-            cns_to_create.append((me, parent_synobj))
-        if hasattr(me, 'parts'):
-            for part in iter_values(me.parts):
-                recursive_add_const_node(part, me)
-        if hasattr(me, 'features'):
-            for feat in iter_values(me.features):
-                recursive_add_feature_node(feat, me)
-
-    def recursive_add_feature_node(me, parent_synobj):
-        """ First we have to create new nodes close to existing nodes to avoid 
-        rubberbanding.
-        To help this create a list of missing nodes with known positions.
-        """
-        done_nodes.add(me)
-        node = forest.get_node(me)
-        if node:
-            found_nodes.add(node.uid)
-            if hasattr(me, 'label'):
-                node.label = me.label
-        else:
-            fns_to_create.append((me, parent_synobj))
-        # we usually don't have feature structure, but lets assume that possibility
-        if hasattr(me, 'parts'):
-            for part in iter_values(me.parts):
-                assert (part not in done_nodes)
-                recursive_add_feature_node(part, me)
-        if hasattr(me, 'features'):
-            for feat in iter_values(me.features):
-                recursive_add_feature_node(feat, me)
-
-    # I guess that ordering of connections will be broken because of making
-    # and deleting connections in unruly fashion
-    def connect_if_necessary(parent, child, edge_type):
-        edge = parent.get_edge_to(child, edge_type)
-        if not edge:
-            free_drawing.connect_node(parent, child, edge_type=edge_type)
-        else:
-            found_edges.add(edge.uid)
-
-    def recursive_create_edges(synobj):
-        node = forest.get_node(synobj)
-        assert(node)
-        if synobj in synobjs_done:
-            return node
-        synobjs_done.add(synobj)
-        if node.node_type == g.CONSTITUENT_NODE:
-            # part_count = len(synobj.get_parts())
-            for part in synobj.get_parts():
-                child = recursive_create_edges(part)
-                if child:
-                    connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
-            for feature in synobj.get_features():
-                nfeature = recursive_create_edges(feature)
-                if nfeature:
-                    connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
-            verify_edge_order_for_constituent_nodes(node)
-        elif node.node_type == g.FEATURE_NODE:
-            if hasattr(synobj, 'get_parts'):
-                for part in synobj.get_parts():
-                    child = recursive_create_edges(part)
-                    if child and child.node_type == g.FEATURE_NODE:
-                        connect_if_necessary(node, child, g.CHECKING_EDGE)
-            if hasattr(synobj, 'checks'):
-                if synobj.checks:
-                    checking_node = forest.get_node(synobj.checks)
-                    if checking_node:
-                        connect_if_necessary(checking_node, node, g.CHECKING_EDGE)
-        return node
-
-    def rec_add_item(item, result_set):
-        result_set.append(forest.get_node(item))
-        for part in item.get_parts():
-            result_set = rec_add_item(part, result_set)
-        return result_set
-
-    def recursive_update_heads(node, visited):
-        if not node.syntactic_object:
-            print(f'node "{node}" doesnt have syntactic object')
-            return []
-        my_label = node.syntactic_object.label
-        my_label_parts = [x.strip('() ') for x in my_label.split(',')]
-        if node in visited:
-            return [('_'.join([x.strip('() ') for x in n.label.split(',')]), n) for n in node.heads]
-        visited.add(node)
-        heads = []
-        res = []
-        children = node.get_children(similar=True, visible=False)
-        if children:
-            for child in children:
-                labels = recursive_update_heads(child, visited)
-                for label, head in labels:
-                    if label in my_label:
-                        heads.append(head)
-                        res.append((label, head))
-            node.heads = heads
-            return res
-        else:
-            my_label_parts = ['_'.join(my_label_parts)]
-            node.heads = [node]
-            return [('_'.join(my_label_parts), node)]
-
-
     #if numeration:
     #    num_tree = forest.get_numeration()
 
@@ -196,11 +73,62 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     sc_center = scene_rect.center().x()
     sc_middle = scene_rect.center().y()
 
+    # ################ Nodes ###################################
+
+    def iter_values(listlike):
+        if isinstance(listlike, dict):
+            for my_item in listlike.values():
+                if my_item.uid not in done_nodes:
+                    yield my_item
+        elif isinstance(listlike, (list, set, tuple)):
+            for my_item in listlike:
+                if my_item.uid not in done_nodes:
+                    yield my_item
+
+    def recursive_add_const_node(me, parent_synobj):
+        """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
+        To help this create a list of missing nodes with known positions.
+        """
+        done_nodes.add(me.uid)
+        node = forest.get_node(me)
+        if node:
+            found_nodes.add(node.uid)
+            node.label = me.label
+        else:
+            cns_to_create.append((me, parent_synobj))
+        for part in iter_values(me.parts):
+            recursive_add_const_node(part, me)
+        for feat in iter_values(me.features):
+            recursive_add_feature_node(feat, me)
+
+    def recursive_add_feature_node(me, parent_synobj):
+        """ First we have to create new nodes close to existing nodes to avoid 
+        rubberbanding.
+        To help this create a list of missing nodes with known positions.
+        """
+        done_nodes.add(me.uid)
+        node = forest.get_node(me)
+        if node:
+            found_nodes.add(node.uid)
+            node.name = getattr(me, 'name', '')
+            node.value = getattr(me, 'value', '')
+            node.family = getattr(me, 'family', '')
+        else:
+            fns_to_create.append((me, parent_synobj))
+        # we usually don't have feature structure, but lets assume that possibility
+        if hasattr(me, 'parts'):
+            for part in iter_values(me.parts):
+                recursive_add_feature_node(part, me)
+        if hasattr(me, 'features'):
+            for feat in iter_values(me.features):
+                recursive_add_feature_node(feat, me)
+        if hasattr(me, 'checks'):
+            if me.checks:
+                recursive_add_feature_node(me.checks, me)
 
     for tree_root in synobjs:
         if not tree_root:
             continue
-        synobjs_done = set()
         cns_to_create = []
         fns_to_create = []
         done_nodes = set()
@@ -228,7 +156,93 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
                 pos = (0, 0)
             fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
             fnode.set_syntactic_object(syn_feat)
+            fnode.name = getattr(syn_feat, 'name', '')
+            fnode.value = getattr(syn_feat, 'value', '')
+            fnode.family = getattr(syn_feat, 'family', '')
 
+    # ################ Edges & Heads ###################################
+
+    def iter_me(listlike):
+        if isinstance(listlike, dict):
+            for my_item in listlike.values():
+                yield my_item
+        elif isinstance(listlike, (list, set, tuple)):
+            for my_item in listlike:
+                yield my_item
+
+    def recursive_create_edges(synobj):
+        """ All of the nodes exist already, now put the edges in place. Goes to the bottom and 
+        then builds up. 
+        :param synobj: 
+        :return: 
+        """
+        node = forest.get_node(synobj)
+        assert(node)
+        if synobj in done_nodes:
+            return node
+        done_nodes.add(synobj)
+        if node.node_type == g.CONSTITUENT_NODE:
+            for part in iter_me(synobj.parts):
+                child = recursive_create_edges(part)
+                if child:
+                    connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
+            for feature in iter_me(synobj.features):
+                nfeature = recursive_create_edges(feature)
+                if nfeature:
+                    connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
+            verify_edge_order_for_constituent_nodes(node)
+        elif node.node_type == g.FEATURE_NODE:
+            if hasattr(synobj, 'parts'):
+                for part in iter_me(synobj.parts):
+                    child = recursive_create_edges(part)
+                    if child and child.node_type == g.FEATURE_NODE:
+                        connect_if_necessary(node, child, g.CHECKING_EDGE)
+            if hasattr(synobj, 'checks'):
+                if synobj.checks:
+                    checking_node = forest.get_node(synobj.checks)
+                    if checking_node:
+                        connect_if_necessary(checking_node, node, g.CHECKING_EDGE)
+        return node
+
+    # I guess that ordering of connections will be broken because of making
+    # and deleting connections in unruly fashion
+    def connect_if_necessary(parent, child, edge_type):
+        edge = parent.get_edge_to(child, edge_type)
+        if not edge:
+            free_drawing.connect_node(parent, child, edge_type=edge_type)
+        else:
+            found_edges.add(edge.uid)
+
+    def recursive_update_heads(node, visited):
+        if not node.syntactic_object:
+            print(f'node "{node}" doesnt have syntactic object')
+            return []
+        my_label = node.syntactic_object.label
+        my_label_parts = [x.strip('() ') for x in my_label.split(',')]
+        if node in visited:
+            return [('_'.join([x.strip('() ') for x in n.label.split(',')]), n) for n in node.heads]
+        visited.add(node)
+        heads = []
+        res = []
+        children = node.get_children(similar=True, visible=False)
+        if children:
+            for child in children:
+                labels = recursive_update_heads(child, visited)
+                for label, head in labels:
+                    if label in my_label:
+                        heads.append(head)
+                        res.append((label, head))
+            node.heads = heads
+            return res
+        else:
+            my_label_parts = ['_'.join(my_label_parts)]
+            node.heads = [node]
+            return [('_'.join(my_label_parts), node)]
+
+    # There may be edges that go between trees and these cannot be drawn before nodes of all trees
+    # exist.
+    for tree_root in synobjs:
+        done_nodes = set()
         found_edges = set()
         recursive_create_edges(tree_root)
         edge_keys_to_validate -= found_edges
@@ -239,17 +253,20 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     #    node, trees = recursive_create(item, set())
     #    if node and not trees:
     #        node.add_to_tree(num_tree)
-    # Delete invalid nodes and edges
+
+    # ################ Deletion ###################################
 
     for key in node_keys_to_validate:
         node = forest.nodes.get(key, None)
         if node:
+            print('deleting node ', node.uid, type(node), node.syntactic_object.uid, type(node.syntactic_object))
             free_drawing.delete_node(node, touch_edges=False, fade=animate)
-            assert(not forest.nodes.get(key, None))
     for key in edge_keys_to_validate:
         edge = forest.edges.get(key, None)  # most of these should be deleted already by prev.
         if edge:
             free_drawing.delete_edge(edge, fade=animate)
+
+    # ############# Labels & shape ###############################
 
     f_mode = ctrl.settings.get('feature_positioning')
     shape = ctrl.settings.get('label_shape')
@@ -259,6 +276,14 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         node.update_label()
     for parent in parents:
         parent.gather_children()
+
+    # ############# Groups #######################################
+
+    def rec_add_item(item, result_set):
+        result_set.append(forest.get_node(item))
+        for part in item.get_parts():
+            result_set = rec_add_item(part, result_set)
+        return result_set
 
     # Update or create groups of transferred items
     old_groups = [gr for gr in forest.groups.values() if gr.get_label_text().startswith(

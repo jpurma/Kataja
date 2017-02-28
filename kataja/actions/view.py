@@ -252,6 +252,7 @@ class ZoomToFit(KatajaAction):
     k_command = 'Zoom to fit'
     k_shortcut = 'z'
     k_undoable = False
+    k_checkable = True
 
     def method(self):
         """ Fit graph to current window. Usually happens automatically, but also

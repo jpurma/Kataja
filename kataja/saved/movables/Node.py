@@ -159,10 +159,11 @@ class Node(Movable):
     def set_syntactic_object(self, synobj):
         old = self.syntactic_object
         self.syntactic_object = synobj
-        if ctrl.forest and synobj:
-            ctrl.forest.nodes_from_synobs[synobj.uid] = self
-        if ctrl.forest and old and not synobj:
-            del ctrl.forest.nodes_from_synobs[old.uid]
+        if ctrl.forest:
+            if synobj:
+                ctrl.forest.nodes_from_synobs[synobj.uid] = self
+            elif old and not synobj:
+                del ctrl.forest.nodes_from_synobs[old.uid]
 
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
