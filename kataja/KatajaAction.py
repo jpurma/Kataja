@@ -302,6 +302,8 @@ class KatajaAction(QtWidgets.QAction):
             element.setEnabled(self.isEnabled())
         if hasattr(element, 'k_buddy') and element.k_buddy:
             element.k_buddy.setEnabled(self.isEnabled())
+        if self.isCheckable() and hasattr(element, 'setCheckable'):
+            element.setCheckable(True)
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:

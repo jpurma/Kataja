@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
 
-from kataja.globals import FOREST, DOCUMENT
+from kataja.globals import FOREST, DOCUMENT, PREFS
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
@@ -249,7 +249,7 @@ class SwitchTraceMode(KatajaAction):
 
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'
-    k_command = 'Zoom to fit'
+    k_command = 'Automatic zoom to fit'
     k_shortcut = 'z'
     k_undoable = False
     k_checkable = True
@@ -258,7 +258,13 @@ class ZoomToFit(KatajaAction):
         """ Fit graph to current window. Usually happens automatically, but also
         available as user action
         """
+        old_value = ctrl.settings.get('auto_zoom', level=PREFS)
+        ctrl.settings.set('auto_zoom', not old_value, level=PREFS)
         ctrl.graph_scene.fit_to_window(force=True)
+        self.set_displayed_value(not old_value)
+
+    def getter(self):
+        return ctrl.settings.get('auto_zoom', level=PREFS)
 
 
 class TogglePanMode(KatajaAction):
