@@ -386,7 +386,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.is_fading_in = True
         self.show()
         if self.is_fading_out:
-            print('interrupting fade out')
+            print('interrupting fade out ', self.uid)
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
@@ -538,8 +538,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     def show(self):
         if not self.isVisible():
             super().show()
-        else:
-            print('unnecessary show in movable')
 
     def update_visibility(self, fade_in=True, fade_out=True) -> bool:
         """ Subclasses should set _visible_by_logic based on their many factors. In this level

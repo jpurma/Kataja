@@ -559,9 +559,9 @@ class Forest(SavedObject):
         sc = ctrl.graph_scene
         sc.stop_animations()
         #self.tree_manager.update_trees()
-        for tree in self.trees:
-            if tree.top:
-                tree.top.update_visibility()  # fixme
+        #for tree in self.trees:
+        #    if tree.top:
+        #        tree.top.update_visibility()  # fixme, delete trees with no visible tops
         #self.projection_manager.update_projections()
         self.update_forest_gloss()
         if self.visualization:

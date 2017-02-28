@@ -126,39 +126,37 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
             if me.checks:
                 recursive_add_feature_node(me.checks, me)
 
+    cns_to_create = []
+    fns_to_create = []
+    done_nodes = set()
+    found_nodes = set()
     for tree_root in synobjs:
-        if not tree_root:
-            continue
-        cns_to_create = []
-        fns_to_create = []
-        done_nodes = set()
-        found_nodes = set()
-        recursive_add_const_node(tree_root, None)
-        node_keys_to_validate -= found_nodes
+        if tree_root:
+            recursive_add_const_node(tree_root, None)
+    node_keys_to_validate -= found_nodes
+    for syn_bare, syn_parent in cns_to_create:
+        host = forest.get_node(syn_parent)
+        if host:
+            pos = host.scenePos()
+        else:
+            x = sc_center + random.randint(-100, 100)
+            y = sc_middle + random.randint(-100, 100)
+            pos = (x, y)
+        node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
+        node.set_syntactic_object(syn_bare)
+        node.label = syn_bare.label
 
-        for syn_bare, syn_parent in cns_to_create:
-            host = forest.get_node(syn_parent)
-            if host:
-                pos = host.scenePos()
-            else:
-                x = sc_center + random.randint(-100, 100)
-                y = sc_middle + random.randint(-100, 100)
-                pos = (x, y)
-            node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
-            node.set_syntactic_object(syn_bare)
-            node.label = syn_bare.label
-
-        for syn_feat, syn_host in fns_to_create:
-            host = forest.get_node(syn_host)
-            if host:
-                pos = host.scenePos()
-            else:
-                pos = (0, 0)
-            fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
-            fnode.set_syntactic_object(syn_feat)
-            fnode.name = getattr(syn_feat, 'name', '')
-            fnode.value = getattr(syn_feat, 'value', '')
-            fnode.family = getattr(syn_feat, 'family', '')
+    for syn_feat, syn_host in fns_to_create:
+        host = forest.get_node(syn_host)
+        if host:
+            pos = host.scenePos()
+        else:
+            pos = (0, 0)
+        fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
+        fnode.set_syntactic_object(syn_feat)
+        fnode.name = getattr(syn_feat, 'name', '')
+        fnode.value = getattr(syn_feat, 'value', '')
+        fnode.family = getattr(syn_feat, 'family', '')
 
     # ################ Edges & Heads ###################################
 
@@ -213,21 +211,21 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         else:
             found_edges.add(edge.uid)
 
-    def recursive_update_heads(node, visited):
+    def recursive_update_heads(node):
         if not node.syntactic_object:
             print(f'node "{node}" doesnt have syntactic object')
             return []
         my_label = node.syntactic_object.label
         my_label_parts = [x.strip('() ') for x in my_label.split(',')]
-        if node in visited:
+        if node in done_nodes:
             return [('_'.join([x.strip('() ') for x in n.label.split(',')]), n) for n in node.heads]
-        visited.add(node)
+        done_nodes.add(node)
         heads = []
         res = []
         children = node.get_children(similar=True, visible=False)
         if children:
             for child in children:
-                labels = recursive_update_heads(child, visited)
+                labels = recursive_update_heads(child)
                 for label, head in labels:
                     if label in my_label:
                         heads.append(head)
@@ -241,13 +239,15 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
 
     # There may be edges that go between trees and these cannot be drawn before nodes of all trees
     # exist.
+    done_nodes = set()
+    found_edges = set()
     for tree_root in synobjs:
-        done_nodes = set()
-        found_edges = set()
         recursive_create_edges(tree_root)
-        edge_keys_to_validate -= found_edges
+    edge_keys_to_validate -= found_edges
 
-        recursive_update_heads(forest.get_node(tree_root), set())
+    done_nodes = set()
+    for tree_root in synobjs:
+        recursive_update_heads(forest.get_node(tree_root))
 
     # for item in numeration:
     #    node, trees = recursive_create(item, set())
@@ -259,7 +259,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
     for key in node_keys_to_validate:
         node = forest.nodes.get(key, None)
         if node:
-            print('deleting node ', node.uid, type(node), node.syntactic_object.uid, type(node.syntactic_object))
             free_drawing.delete_node(node, touch_edges=False, fade=animate)
     for key in edge_keys_to_validate:
         edge = forest.edges.get(key, None)  # most of these should be deleted already by prev.
