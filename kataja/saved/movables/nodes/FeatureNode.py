@@ -23,6 +23,7 @@
 # ############################################################################
 
 import random
+from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
@@ -31,8 +32,21 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.saved.Edge import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
+from kataja.utils import to_tuple
 
-color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
+color_map = {'tense': 'accent0',
+             'order': 'accent1',
+             'person': 'accent2',
+             'number': 'accent4',
+             'case': 'accent6',
+             'unknown': 'accent3',
+             'N': 'accent1',
+             'D': 'accent2',
+             'V': 'accent3',
+             'T': 'accent4',
+             'C': 'accent7',
+             'wh': 'accent6'
+}
 
 
 class FeatureNode(Node):
@@ -74,6 +88,7 @@ class FeatureNode(Node):
         self.repulsion = 0.25
         self._gravity = 2.5
         self.z_value = 60
+        self.fshape = 3
         self.setZValue(self.z_value)
 
         # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
@@ -96,10 +111,9 @@ class FeatureNode(Node):
         :param host:
         """
         x, y = host.current_position
-        k = self.syntactic_object.key
-        if k in color_map:
-            x += color_map[k]
-            y += color_map[k]
+        if self.name in color_map:
+            x += color_map[self.name]
+            y += color_map[self.name]
         else:
             x += random.uniform(-4, 4)
             y += random.uniform(-4, 4)
@@ -189,46 +203,158 @@ class FeatureNode(Node):
         else:
             self.release_from_locked_position()
 
+    def unassigned(self):
+        if self.syntactic_object:
+            return self.syntactic_object.is_unassigned()
+        else:
+            return (not self.value) or self.value == 'u' or self.value == '='
+
+    def can_assign(self):
+        if self.syntactic_object:
+            return self.syntactic_object.can_assign()
+        else:
+            return self.value and self.value != 'u' and self.value != '='
+
+
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
-            painter.setPen(ctrl.cm.get('background1'))
-            painter.setBrush(self.contextual_background())
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
-        Node.paint(self, painter, option, widget)
+        #if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
+        #    painter.setPen(ctrl.cm.get('background1'))
+        #    painter.setBrush(self.contextual_background())
+        #    #painter.drawRoundedRect(self.inner_rect, 5, 5)
+
+        if self.fshape:
+            #painter.setPen(ctrl.cm.get('background1'))
+            #b = self.contextual_background()
+            #painter.setBrush(b)
+            painter.setPen(QtCore.Qt.NoPen)
+            if self.fshape == 1:  # solid rect
+                painter.drawRect(self.inner_rect)
+            elif self.fshape > 1:  # square, triangular or round knob
+                base_shape = self.inner_rect.adjusted(4, 0, 2, 0)
+                knob_at_left = self.can_assign()
+                hole_at_right = self.unassigned()
+                if not hole_at_right:
+                    base_shape.adjust(0, 0, -4, 0)
+
+                path = QtGui.QPainterPath(base_shape.topLeft())
+                path.lineTo(base_shape.topRight())
+                mid = base_shape.height() / 2
+                x, y = to_tuple(base_shape.topRight())
+                if hole_at_right:
+                    if self.fshape == 1:  # triangle
+                        path.lineTo(x, y + mid - 4)
+                        path.lineTo(x - 4, y + mid)
+                        path.lineTo(x, y + mid + 4)
+                        path.lineTo(x, y + mid + mid)
+                    elif self.fshape == 2:  # square
+                        path.lineTo(x, y + mid - 4)
+                        path.lineTo(x - 4, y + mid - 4)
+                        path.lineTo(x - 4, y + mid + 4)
+                        path.lineTo(x, y + mid + 4)
+                        path.lineTo(x, y + mid + mid)
+                    elif self.fshape == 3:  # roundish
+                        path.lineTo(x, y + mid - 2)
+                        path.cubicTo(x - 3, y + mid - 2, x - 3, y + mid - 6, x - 6, y + mid)
+                        path.cubicTo(x - 3, y + mid + 6, x - 3, y + mid + 2, x, y + mid + 2)
+                        path.lineTo(x, y + mid + mid)
+                else:
+                    path.quadTo(x + 8, y + mid, x, y + mid + mid)
+                path.lineTo(base_shape.bottomLeft())
+                x, y = to_tuple(base_shape.topLeft())
+                if knob_at_left:
+                    if self.fshape == 1:  # triangle
+                        path.lineTo(x, y + mid + 4)
+                        path.lineTo(x - 4, y + mid)
+                        path.lineTo(x, y + mid - 4)
+                        path.lineTo(x, y)
+                    elif self.fshape == 2:  # square
+                        path.lineTo(x, y + mid + 4)
+                        path.lineTo(x - 4, y + mid + 4)
+                        path.lineTo(x - 4, y + mid - 4)
+                        path.lineTo(x, y + mid - 4)
+                        path.lineTo(x, y)
+                    elif self.fshape == 3:  # roundish
+                        path.lineTo(x, y + mid + 2)
+                        path.cubicTo(x - 3, y + mid + 2, x - 3, y + mid + 6, x - 6, y + mid)
+                        path.cubicTo(x - 3, y + mid - 6, x - 3, y + mid - 2, x, y + mid - 2)
+                        path.lineTo(x, y)
+                else:
+                    path.quadTo(x - 8, y + mid, x, y)
+                painter.fillPath(path, self.contextual_background())
+                painter.setPen(self.contextual_color)
+        else:
+            Node.paint(self, painter, option, widget)
+
+
+    def get_color_id(self):
+        """
+        :return:
+        """
+        return ctrl.settings.get_node_setting('color_id', node=self)
 
     @property
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
-        if ctrl.pressed == self:
+        if self.fshape:
             return ctrl.cm.get('background1')
-        elif self._hovering:
-            return ctrl.cm.get('background1')
-        elif ctrl.is_selected(self):
-            return ctrl.cm.get('background1')
-            # return ctrl.cm.selected(ctrl.cm.selection())
         else:
-            if getattr(self.syntactic_object, 'unvalued', False):  # fixme: Temporary hack
-                return ctrl.cm.get('accent1')
+            if 'color_id' in self.settings:
+                c = ctrl.cm.get(self.settings['color_id'])
+            elif self.name in color_map:
+                c = ctrl.cm.get(color_map[self.name])
+            elif self.unassigned():
+                c = ctrl.cm.get('accent1')
             else:
-                return self.color
+                print('feature name "%s" missing default color' % self.name)
+                c = self.color
+            if ctrl.pressed == self:
+                return ctrl.cm.active(c)
+            elif self.drag_data:
+                return ctrl.cm.hovering(c)
+            elif self._hovering:
+                return ctrl.cm.hovering(c)
+            elif ctrl.is_selected(self):
+                return ctrl.cm.selection()
+                #return ctrl.cm.selection()
 
     def contextual_background(self):
         """ Background color that is sensitive to node's state """
-        if ctrl.pressed == self:
-            return ctrl.cm.active(ctrl.cm.selection())
-        elif self.drag_data:
-            return ctrl.cm.hovering(ctrl.cm.selection())
-        elif self._hovering:
-            return ctrl.cm.hovering(ctrl.cm.selection())
-        elif ctrl.is_selected(self):
-            return ctrl.cm.selection()
+        if self.fshape:
+            if 'color_id' in self.settings:
+                c = ctrl.cm.get(self.settings['color_id'])
+            elif self.name in color_map:
+                c = ctrl.cm.get(color_map[self.name])
+            elif self.unassigned():
+                c = ctrl.cm.get('accent1')
+            else:
+                print('feature name "%s" missing default color' % self.name)
+                c = self.color
+            if ctrl.pressed == self:
+                return ctrl.cm.active(c)
+            elif self.drag_data:
+                return ctrl.cm.hovering(c)
+            elif self._hovering:
+                return ctrl.cm.hovering(c)
+            elif ctrl.is_selected(self):
+                return ctrl.cm.selection()
+            else:
+                return c
         else:
-            return qt_prefs.no_brush
+            if ctrl.pressed == self:
+                return ctrl.cm.active(ctrl.cm.selection())
+            elif self.drag_data:
+                return ctrl.cm.hovering(ctrl.cm.selection())
+            elif self._hovering:
+                return ctrl.cm.hovering(ctrl.cm.selection())
+            elif ctrl.is_selected(self):
+                return ctrl.cm.selection()
+            else:
+                return qt_prefs.no_brush
 
     def special_connection_point(self, sx, sy, ex, ey, start=False):
         f_align = ctrl.settings.get('feature_positioning')

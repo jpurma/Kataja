@@ -63,6 +63,12 @@ class BaseFeature(SavedObject):
     def assigned(self):
         return not self.unvalued()
 
+    def can_assign(self):
+        return not self.unvalued()
+
+    def is_unassigned(self):
+        return self.unvalued()
+
     def unvalued(self):
         return self.value == 'u' or self.value == '='
 

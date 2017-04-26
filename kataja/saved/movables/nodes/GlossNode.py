@@ -30,9 +30,6 @@ from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.singletons import ctrl, prefs
 
-color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
-
-
 class GlossNode(Node):
     """
     Node to display translation of a constituent
