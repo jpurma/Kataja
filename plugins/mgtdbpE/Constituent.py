@@ -158,9 +158,9 @@ class Constituent(BaseConstituent):
 
     @staticmethod
     def build_from_dnodes(dnode, dnodes, terminals, dtrees, all_features=False):
-        key = dnode.path
+        key = dnode.path_as_string()
         c = dtrees.get(key, Constituent(index_str=key))
-        if terminals and terminals[0].path == key:
+        if terminals and terminals[0].path_as_string() == key:
             leaf = terminals.pop(0)
             c.label = ' '.join(leaf.label)
             c.features = list(reversed(leaf.features))
@@ -169,13 +169,13 @@ class Constituent(BaseConstituent):
                 print('dnode has features: ', dnode.features)
                 print('leaf has features: ', leaf.features)
             c.parts = []
-        elif dnodes and dnodes[0].path.startswith(key):
+        elif dnodes and dnodes[0].path_as_string().startswith(key):
             parts = []
             child_dnode = dnodes.pop(0)
             child = Constituent.build_from_dnodes(child_dnode, dnodes, terminals, dtrees,
                                                   all_features=all_features)
             parts.append(child)
-            if dnodes and dnodes[0].path.startswith(key):
+            if dnodes and dnodes[0].path_as_string().startswith(key):
                 child_dnode = dnodes.pop(0)
                 child = Constituent.build_from_dnodes(child_dnode, dnodes, terminals, dtrees,
                                                       all_features=all_features)
@@ -242,4 +242,5 @@ class Constituent(BaseConstituent):
     def __hash__(self):
         return hash(self.index_str)
 
-    secondary_label = SavedField("secondary_label")
+    if in_kataja:
+        secondary_label = SavedField("secondary_label")

@@ -72,11 +72,11 @@ def print_results(dnodes, lexicon=None):
         output.close()
         # x -- xbar tree
         print('attempting to create xbar tree...')
-        res['x'] = list_tree_to_nltk_tree(XBarTree(dt).as_list_tree())
+        res['x'] = list_tree_to_nltk_tree(TracelessXBarTree(dt).as_list_tree())
         print('success at creating xbar tree.')
         # px -- pretty-printed xbar tree
         output = io.StringIO()
-        pptree(output, XBarTree(dt).as_list_tree())
+        pptree(output, TracelessXBarTree(dt).as_list_tree())
         res['px'] = output.getvalue()
         output.close()
         # pg -- print grammar as items
@@ -147,19 +147,21 @@ class StateTree:
             self.move_check()
 
     def merge_check(self):
-        headf0, *remainders0 = self.part0.features
-        headf1, *remainders1 = self.part1.features
-        if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
-            self.features = remainders0
-            if remainders1:
-                self.movers = [remainders1]
-            self.movers += self.part0.movers
-            self.movers += self.part1.movers
+        if self.part0.features and self.part1.features:
+            headf0, *remainders0 = self.part0.features
+            headf1, *remainders1 = self.part1.features
+            if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
+                headf1.check(headf0)
+                self.features = remainders0
+                if remainders1:
+                    self.movers = [remainders1]
+                self.movers += self.part0.movers
+                self.movers += self.part1.movers
+                return
+        if log:
+            log.critical('merge_check error')
         else:
-            if log:
-                log.critical('merge_check error')
-            else:
-                raise RuntimeError('merge_check error')
+            raise RuntimeError('merge_check error')
 
     def move_check(self):
         mover_match, *remaining = self.part0.features
@@ -169,12 +171,14 @@ class StateTree:
         self.movers = []
         assert self.part0.movers
         for mover_f_list in self.part0.movers:
-            if mover_f_list[0].name == mover_match.name:
+            first_mover = mover_f_list[0]
+            if first_mover.name == mover_match.name:
                 if found:
                     if log:
                         log.critical('SMC violation in move_check')
                     else:
                         raise RuntimeError('SMC violation in move_check')
+                first_mover.check(mover_match)
                 mover = mover_f_list[1:]
                 found = True
             else:
@@ -254,6 +258,7 @@ class BareTree:
             headf0, *remainders0 = self.part0.features
             headf1, *remainders1 = self.part1.features
             if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
+                headf1.check(headf0)
                 self.features = remainders0
                 self.movers = self.part0.movers + self.part1.movers
                 if remainders1:
@@ -282,12 +287,14 @@ class BareTree:
             mover = []
             self.movers = []
             for mover_f_list in self.part1.movers:
-                if mover_f_list[0].name == mover_match.name:
+                first_mover = mover_f_list[0]
+                if first_mover.name == mover_match.name:
                     if found:
                         if log:
                             log.critical('SMC violation in move_check')
                         else:
                             raise RuntimeError('SMC violation in move_check')
+                    first_mover.check(mover_match)
                     mover = mover_f_list[1:]
                     found = True
                 else:
@@ -517,6 +524,7 @@ class TracelessXBarTree:
             headf0, *remainders0 = self.part0.features
             headf1, *remainders1 = self.part1.features
             if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
+                headf1.check(headf0)
                 self.features = remainders0  # copy remaining head1 features
                 self.movers = self.part0.movers + self.part1.movers
                 if remainders1:
@@ -547,12 +555,14 @@ class TracelessXBarTree:
             mover = []
             self.movers = []
             for mover_f_list in self.part1.movers:
-                if mover_f_list[0].name == mover_match.name:
+                first_mover = mover_f_list[0]
+                if first_mover.name == mover_match.name:
                     if found:
                         if log:
                             log.critical('SMC violation in move_check')
                         else:
                             raise RuntimeError('SMC violation in move_check')
+                    first_mover.check(mover_match)
                     mover = mover_f_list[1:]
                     found = True
                 else:

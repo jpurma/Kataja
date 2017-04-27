@@ -42,6 +42,13 @@ else:
     from Feature import Feature
 
 
+def bin_string_path(path: list):
+    """ Convert list of booleans [True, False, False...] to string of 1's and 0's: '100' for 
+    more concise display
+    """
+    return ''.join([str(int(x)) for x in path])
+
+
 class LexItem(namedtuple('LexItem', ('words', 'features'))):
 
     def __str__(self):
@@ -72,7 +79,7 @@ class Prediction:
     def __init__(self, head, movers=None, head_path=None, mover_paths=None, tree=None):
         self.head = head
         self.movers = movers or {}
-        self.head_path = head_path or ''
+        self.head_path = head_path or []
         self.mover_paths = mover_paths or {}
         self.tree = tree
         self._min_index = None
@@ -85,7 +92,8 @@ class Prediction:
         self._min_index = min([self.head_path] + [x for x in self.mover_paths.values()])
 
     def copy(self):
-        return Prediction(self.head, self.movers.copy(), self.head_path, self.mover_paths.copy(),
+        return Prediction(self.head, self.movers.copy(), self.head_path.copy(),
+                          self.mover_paths.copy(),
                           self.tree.copy())
 
     def __repr__(self):
@@ -98,6 +106,15 @@ class Prediction:
     def __lt__(self, other):
         return self._min_index < other._min_index
 
+    def head_path_as_string(self):
+        return bin_string_path(self.head_path)
+
+    def mover_paths_as_string(self):
+        d = {}
+        for key, item in self.mover_paths.items():
+            d[key] = bin_string_path(item)
+        return str(d)
+
     def compact(self):
         h = str(self.head) + '; '
         if self.movers:
@@ -105,15 +122,16 @@ class Prediction:
         else:
             m = ''
         if self.head_path:
-            hx = 'hx(%s); ' % self.head_path
+            hx = 'hx(%s); ' % self.head_path_as_string()
         else:
             hx = ''
         if self.mover_paths:
-            mx = 'mx(%s); ' % str(self.mover_paths)
+            print(self.mover_paths)
+            mx = 'mx(%s); ' % self.mover_paths_as_string()
         else:
             mx = ''
         self.update_ordering()
-        return ''.join((self._min_index, h, m, hx, mx, self.tree.compact()))
+        return ''.join((bin_string_path(self._min_index), h, m, hx, mx, self.tree.compact()))
 
 
 class Derivation:
@@ -146,14 +164,14 @@ class DerivationNode:
         tree can be composed from it. """
 
     def __init__(self, path, label=None, features=None, moving_features=None, terminal=False):
-        self.path = path or ''
+        self.path = path or []
         self.label = label or []
         self.features = features or []
         self.moving_features = moving_features or {}
         self.terminal = terminal
 
     def copy(self):
-        return DerivationNode(self.path, self.label.copy(), self.features.copy(),
+        return DerivationNode(self.path.copy(), self.label.copy(), self.features.copy(),
                               self.moving_features.copy(), self.terminal)
 
     def __repr__(self):
@@ -162,12 +180,15 @@ class DerivationNode:
 
     def __str__(self):
         if self.label or self.features:
-            return '%s, (%s, %s)' % (self.path, self.label, self.features)
+            return '%s, (%s, %s)' % (self.path_as_string(), self.label, self.features)
         else:
-            return self.path
+            return self.path_as_string()
 
     def __lt__(self, other):
         return self.path < other.path
+
+    def path_as_string(self):
+        return bin_string_path(self.path)
 
     def compact(self):
         if self.label:
@@ -182,7 +203,7 @@ class DerivationNode:
             m = 'mf(%s);' % str(self.moving_features)
         else:
             m = ''
-        return 'dn('+ ''.join((self.path, '; ', l, f, m)) + ')'
+        return 'dn('+ ''.join((self.path_as_string(), '; ', l, f, m)) + ')'
 
 
 class Parser:
@@ -332,18 +353,18 @@ class Parser:
         category = node.feature.name
         pr0 = prediction.copy()  # no movers to lexical head
         pr0.head = node  # one part of the puzzle is given, the other part is deduced from this
-        pr0.head_path += '0'  # left
+        pr0.head_path.append(False)  # left
         pr0.movers = {}  # this is external merge, doesn't bring any movers
         pr0.mover_paths = {}
         pr0.tree.features.append(Feature(category, '=')) # =D, =N,...
-        pr0.tree.path += '0'  # left
+        pr0.tree.path.append(False)  # left
         pr0.tree.moving_features = {}
 
         pr1 = prediction.copy()  # movers to complement only
         pr1.head = self.lex[category]  # head can be any LI in this category
-        pr1.head_path += '1'  # right
+        pr1.head_path.append(True)  # right
         pr1.tree.features = [Feature(category, '')] # D, N,...
-        pr1.tree.path += '1'  # right
+        pr1.tree.path.append(True)  # right
         print('merge1, pr0:', pr0.compact())
         print('merge1, pr1:', pr1.compact())
         self.new_parses.append((pr0, pr1))
@@ -361,17 +382,18 @@ class Parser:
         category = node.feature.name
         pr0 = prediction.copy()  # pr0 receives movers from prediction.
         pr0.head = node
-        pr0.head_path += '1'  # right?
+        pr0.head_path.append(True)  # right?
         pr0.tree.features.append(Feature(category, '='))  # =D, =N,...
-        pr0.tree.path += '0'  # left?
+        pr0.tree.path.append(False)  # left?
 
         pr1 = prediction.copy()
         pr1.head = self.lex[category]
         pr1.movers = {}  # pr1 is non-mover and a specifier
-        pr1.head_path += '0'  # left, as in specifier? Why head_path and tree path are different?
+        pr1.head_path.append(False)  # left, as in specifier? Why head_path and tree path are
+        # different?
         pr1.mover_paths = {}
         pr1.tree.features = [Feature(category, '')]  # D, N,...
-        pr1.tree.path += '1'
+        pr1.tree.path.append(True)
         pr1.tree.moving_features = {}
         print('merge2, pr0:', pr0.compact())
         print('merge2, pr1:', pr1.compact())
@@ -396,19 +418,19 @@ class Parser:
                 pr0.movers = {}
                 pr0.mover_paths = {}
                 pr0.tree.features.append(Feature(cat, '=')) # =D, =N
-                pr0.tree.path += '0'
+                pr0.tree.path.append(False)
                 pr0.tree.moving_features = {}
 
                 # pr1 doesn't have certain movers that higher prediction has
                 pr1 = prediction.copy()  # movers passed to complement
                 pr1.head = matching_tree
                 del pr1.movers[mover_cat]  # we used the licensee, so now empty
-                pr1.head_path = pr1.mover_paths[mover_cat]
+                pr1.head_path = pr1.mover_paths[mover_cat][:]
                 del pr1.mover_paths[mover_cat]
                 pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()  # movers to
                 # complement
                 pr1.tree.features.append(Feature(cat, ''))
-                pr1.tree.path += '1'
+                pr1.tree.path.append(True)
                 del pr1.tree.moving_features[mover_cat]
                 print('merge3, pr0:', pr0.compact())
                 print('merge3, pr1:', pr1.compact())
@@ -433,17 +455,17 @@ class Parser:
                 del pr0.movers[mover_cat]  # we used the "next" licensee, so now empty
                 del pr0.mover_paths[mover_cat]
                 pr0.tree.features.append(Feature(cat, '='))
-                pr0.tree.path += '0'
+                pr0.tree.path.append(False)
                 del pr0.tree.moving_features[mover_cat]
 
                 pr1 = prediction.copy()  # movers passed to complement
                 pr1.head = matching_tree
                 pr1.movers = {}
-                pr1.head_path = pr1.mover_paths[mover_cat]
+                pr1.head_path = pr1.mover_paths[mover_cat][:]
                 pr1.mover_paths = {}
                 pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()
                 pr1.tree.features.append(Feature(cat, ''))
-                pr1.tree.path += '1'
+                pr1.tree.path.append(True)
                 pr1.tree.moving_features = {}
                 print('merge4, pr0:', pr0.compact())
                 print('merge4, pr1:', pr1.compact())
@@ -460,17 +482,18 @@ class Parser:
             pr0 = prediction.copy()
             pr0.head = node  # node is remainder of head branch
             pr0.movers[cat] = self.lex[cat]
-            pr0.head_path += '1'
-            pr0.mover_paths[cat] = prediction.head_path
-            pr0.mover_paths[cat] += '0'
+            pr0.head_path.append(True)
+            pr0.mover_paths[cat] = prediction.head_path[:]
+            pr0.mover_paths[cat].append(False)
             pr0.tree.features.append(Feature(cat, '+'))  # trunk has '+'
-            pr0.tree.path += '0'
+            pr0.tree.path.append(False)
             pr0.tree.moving_features[cat] = [Feature(cat, '-')]  # mover has '-'
             print('move1, pr0:', pr0.compact())
             self.new_parses.append((pr0, None))
 
     def move2(self, node, prediction):
-        """ Move and keep on moving? Examples don't seem to use this. """
+        """ Move and keep on moving? Examples don't seem to use this, so I can't verify if this 
+        is working properly. """
         cat = node.feature.name
         for mover_cat, mover in prediction.movers.items():  # <-- look into movers
             matching_tree = mover.subtree_with_feature(
@@ -495,7 +518,7 @@ class Parser:
                         Feature(cat, '-'))  # extend prev features of mover with (neg cat)
                     del pr0.tree.moving_features[mover_cat]
                     pr0.tree.features.append(Feature(cat, '+'))
-                    pr0.tree.path += '0'
+                    pr0.tree.path.append(False)
                     print('move2, pr0:', pr0.compact())
                     self.new_parses.append((pr0, None))
 

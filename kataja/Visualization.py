@@ -214,11 +214,18 @@ class BaseVisualization:
         old_x, old_y = node.current_position
         alpha = 0.2
         # attract
-        down = node.edges_down
+        down = node.edges_down[:]
+        if node.node_type == g.FEATURE_NODE:
+            other = node.is_checking()
+            if other and other.locked_to_node == node:
+                down += other.edges_down
         for edge in down:
             other = edge.end
+            #if other.locked_to_node:
+            #    continue
             if other.locked_to_node is node:
                 continue
+
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
@@ -230,9 +237,16 @@ class BaseVisualization:
             else:
                 node_x += 1
 
-        up = node.edges_up
+        up = node.edges_up[:]
+        if node.node_type == g.FEATURE_NODE:
+            other = node.is_checking()
+            if other and other.locked_to_node == node:
+                up += other.edges_up
+
         for edge in up:
             other = edge.start
+            #if other.locked_to_node:
+            #    continue
             if node.locked_to_node is other:
                 continue
             other_x, other_y = other.current_position
@@ -259,6 +273,8 @@ class BaseVisualization:
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:
+                continue
+            elif node.node_type == g.FEATURE_NODE and node.in_checking_relation_with(other):
                 continue
             other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y

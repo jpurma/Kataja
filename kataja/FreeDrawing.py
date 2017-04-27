@@ -522,6 +522,9 @@ class FreeDrawing:
             parent.edges_down.append(new_edge)
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
+        if edge_type == g.CHECKING_EDGE:
+            child.lock_to_node(parent)
+            child.move_to(20, 0)
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):

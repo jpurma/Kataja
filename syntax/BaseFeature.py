@@ -32,10 +32,14 @@ class BaseFeature(SavedObject):
     BaseFeatures have name, which is used to identify and discriminate between features.
     BaseFeatures can have simple comparable items as values, generally assumed to be booleans or
     strings.
-    Distinguishing between assigned and unassigned features is such a common property in
-    minimalist grammars that it is supported by BaseFeature. 'assigned' is by default True,
-    'unassigned' features have False.
-    Family property can be used e.g. to mark phi-features or LF features.
+
+    Feature checking and interactions between features are strictly not necessary to be 
+    represented in features themselves, but often it helps when inspecting or modifying a structure.
+    When creating a syntax model, one can link features by assigning another feature to 'checks' 
+    or 'checked_by' -fields.
+
+    Family -field can be used e.g. to additional classification of features, e.g. 
+    phi-features, LF features etc.
     """
 
     syntactic_object = True
@@ -44,48 +48,44 @@ class BaseFeature(SavedObject):
     editable = {}
     addable = {}
 
-    def __init__(self, name='Feature', value=None, family=''):
+    def __init__(self, name='Feature', value=None, family='', checks=None, checked_by=None):
         super().__init__()
         self.name = name
         self.value = value
         self.family = family
-        self.checks = None  # this has no syntactic effect but storing which feature this
-        # feature has checked helps presentation
+        # this is not strictly necessary, but being able to inform feature who checked what helps
+        # presentation
+        self.checks = checks
+        self.checked_by = checked_by
 
     def has_value(self, prop):
         return self.value == prop
 
-    @property
-    def unassigned(self):
-        return self.unvalued()
-
-    @property
-    def assigned(self):
+    def can_satisfy(self):
         return not self.unvalued()
 
-    def can_assign(self):
-        return not self.unvalued()
-
-    def is_unassigned(self):
+    def is_needy(self):
         return self.unvalued()
 
     def unvalued(self):
-        return self.value == 'u' or self.value == '='
+        return self.value == 'u' or self.value == '=' or self.value == '-'
 
     def satisfies(self, feature):
-        return feature.unvalued() and feature.name == self.name and not self.unvalued()
+        return isinstance(feature, BaseFeature) and feature.is_needy() and feature.name == \
+                self.name and self.can_satisfy()
+
+    def check(self, other):
+        self.checks = other
+        other.checked_by = self
 
     def __eq__(self, other):
-        if other:
+        if other and isinstance(other, BaseFeature):
             return self.value == other.value and self.name == other.name and self.family == \
                                                                              other.family
         return False
 
     def copy(self):
         return self.__class__(name=self.name, value=self.value, family=self.family)
-
-    def checked(self):
-        return self.value.startswith('✓')
 
     def __str__(self):
         s = []
@@ -123,6 +123,7 @@ class BaseFeature(SavedObject):
     value = SavedField("value")
     family = SavedField("family")
     checks = SavedField("checks")
+    checked_by = SavedField("checked_by")
 
     @staticmethod
     def from_string(s):

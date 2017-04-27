@@ -1,10 +1,13 @@
 
 class Feature:
-    """ Minimal syntactic feature implementation """
+    """ Minimal syntactic feature implementation. When mgtdbp is used from Kataja, 
+    syntax.BaseFeature is used instead of this."""
 
     def __init__(self, name, value):
         self.name = name
         self.value = value
+        self.checked_by = None
+        self.checks = None
 
     def __repr__(self):
         s = [str(self.name)]
@@ -19,6 +22,10 @@ class Feature:
 
     def copy(self):
         return self.__class__(self.name, self.value)
+
+    def check(self, other):
+        self.checks = other
+        other.checked_by = self
 
     @staticmethod
     def from_string(s):

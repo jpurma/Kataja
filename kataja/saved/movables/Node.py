@@ -752,7 +752,7 @@ class Node(Movable):
             for fnode in children:
                 if fnode.locked_to_node is self:
                     fnode.move_to(center_x, y)
-                    y += fnode.height
+                    y += fnode.height + 2
         elif fpos == 2:  # horizontal
             center_x = self.boundingRect().center().x()
             bottom_y = self.boundingRect().bottom()
@@ -762,9 +762,9 @@ class Node(Movable):
             for fnode in children:
                 if fnode.locked_to_node is self:
                     w = fnode.width / 2
-                    total_width += w - 2
+                    total_width += w
                     nods.append((fnode, total_width))
-                    total_width += w - 2
+                    total_width += w + 2
                     if fnode.height > max_height:
                         max_height = fnode.height
             if nods:
@@ -784,7 +784,7 @@ class Node(Movable):
             right_nods = []
             for fnode in children:
                 if fnode.locked_to_node is self:
-                    if fnode.value in ['-', '=', '✓-', '✓='] or (fnode.syntactic_object and fnode.syntactic_object.value in ['-', '=', '✓-', '✓=']):
+                    if fnode.is_needy():
                         right_nods.append(fnode)
                     else:
                         left_nods.append(fnode)
@@ -1505,7 +1505,9 @@ class Node(Movable):
         else:
             dx, dy = d.distance_from_pointer
             super().dragged_to((nx + dx, ny + dy))
-            for edge in itertools.chain(self.edges_up, self.edges_down):
+            others = []
+
+            for edge in itertools.chain(self.edges_up, self.edges_down, others):
                 edge.make_path()
                 edge.update()
 

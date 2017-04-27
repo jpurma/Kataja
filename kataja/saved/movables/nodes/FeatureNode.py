@@ -23,6 +23,8 @@
 # ############################################################################
 
 import random
+
+import itertools
 from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
@@ -62,8 +64,8 @@ class FeatureNode(Node):
     wraps = 'feature'
 
     editable = {'name': dict(name='Name', prefill='name',
-                              tooltip='Name of the feature, used as identifier',
-                              syntactic=True),
+                             tooltip='Name of the feature, used as identifier',
+                             syntactic=True),
                 'value': dict(name='Value',
                               prefill='value',
                               tooltip='Value given to this feature',
@@ -118,7 +120,6 @@ class FeatureNode(Node):
             x += random.uniform(-4, 4)
             y += random.uniform(-4, 4)
         self.set_original_position((x, y))
-
 
     def compose_html_for_viewing(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
@@ -177,6 +178,27 @@ class FeatureNode(Node):
         self.value = value
         self.family = family
 
+    def in_checking_relation_with(self, other):
+        """ 
+        :param other: Node
+        :return: 
+        """
+        if not other:
+            return False
+        if other.node_type != g.FEATURE_NODE:
+            return False
+        return self.is_checking() == other or self.is_checked_by() == other
+
+    def is_checking(self):
+        for edge in self.edges_down:
+            if edge.edge_type == g.CHECKING_EDGE:
+                return edge.end
+
+    def is_checked_by(self):
+        for edge in self.edges_up:
+            if edge.edge_type == g.CHECKING_EDGE:
+                return edge.start
+
     def update_relations(self, parents, shape=None, position=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
@@ -188,7 +210,10 @@ class FeatureNode(Node):
             shape = ctrl.settings.get('label_shape')
         if position is None:
             position = ctrl.settings.get('feature_positioning')
-        if position or shape == g.CARD:
+        checked_by = self.is_checked_by()
+        if checked_by:
+            self.lock_to_node(checked_by)
+        elif position or shape == g.CARD:
             for parent in self.get_parents(similar=False, visible=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
                     if parent.is_visible():
@@ -197,35 +222,79 @@ class FeatureNode(Node):
                         break
                     else:
                         self.release_from_locked_position()
-                elif parent.node_type == g.FEATURE_NODE:
-                    if self.locked_to_node == parent:
-                        self.release_from_locked_position()
+                #elif parent.node_type == g.FEATURE_NODE:
+                #    if self.locked_to_node == parent:
+                #        self.release_from_locked_position()
         else:
             self.release_from_locked_position()
 
-    def unassigned(self):
+    def is_needy(self):
         if self.syntactic_object:
-            return self.syntactic_object.is_unassigned()
+            return self.syntactic_object.is_needy()
         else:
-            return (not self.value) or self.value == 'u' or self.value == '='
+            # These are defaults
+            return (not self.value) or self.value == 'u' or self.value == '=' or self.value == '-'
 
-    def can_assign(self):
+    def can_satisfy(self):
         if self.syntactic_object:
-            return self.syntactic_object.can_assign()
+            return self.syntactic_object.can_satisfy()
         else:
-            return self.value and self.value != 'u' and self.value != '='
+            return self.value and self.value != 'u' and self.value != '=' and self.value != '-'
+
+    def update_bounding_rect(self):
+        """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 
+        need to be accounted in their bounding rect
+        :return:
+        """
+        lbw = FeatureNode.width
+        lbh = FeatureNode.height
+        lbx = 0
+        lby = 0
+        x_offset = 0
+        y_offset = 0
+        if self._label_visible and self.label_object:
+            l = self.label_object
+            lbr = l.boundingRect()
+            lbw = max((lbr.width(), lbw))
+            lbh = max((lbr.height(), lbh))
+            lbx = l.x()
+            lby = l.y()
+            x_offset = l.x_offset
+            y_offset = l.y_offset
+        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+        if 1 < self.fshape < 4:
+            lbw += 4
+        elif self.fshape == 4:
+            lbw += 6
+        if x_offset or y_offset:
+            x = x_offset
+            y = y_offset
+        else:
+            x = lbw / -2
+            y = lbh / -2
+        self.inner_rect = QtCore.QRectF(x, y, lbw, lbh)
+        w4 = (lbw - 2) / 4.0
+        w2 = (lbw - 2) / 2.0
+        h2 = (lbh - 2) / 2.0
+        y_max = y + lbh - 4
+        x_max = x + lbw
+        self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
+                         (x, y + h2), (x_max, y + h2),
+                         (x, y_max), (x + w4, y_max), (x + w2, y_max),
+                         (x + w2 + w4, y_max), (x_max, y_max)]
+        self.width = lbw
+        self.height = lbh
+        if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
+            ctrl.ui.selection_group.update_shape()
+        return self.inner_rect
 
 
     def paint(self, painter, option, widget=None):
-        """ Painting is sensitive to mouse/selection issues, but usually with
+        """ FeatureNodes can have shapes that suggest which features can value each other.
         :param painter:
         :param option:
         :param widget:
-        nodes it is the label of the node that needs complex painting """
-        #if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
-        #    painter.setPen(ctrl.cm.get('background1'))
-        #    painter.setBrush(self.contextual_background())
-        #    #painter.drawRoundedRect(self.inner_rect, 5, 5)
+        """
 
         if self.fshape:
             #painter.setPen(ctrl.cm.get('background1'))
@@ -235,9 +304,9 @@ class FeatureNode(Node):
             if self.fshape == 1:  # solid rect
                 painter.drawRect(self.inner_rect)
             elif self.fshape > 1:  # square, triangular or round knob
-                base_shape = self.inner_rect.adjusted(4, 0, 2, 0)
-                knob_at_left = self.can_assign()
-                hole_at_right = self.unassigned()
+                base_shape = self.inner_rect.adjusted(4, 0, 0, 0)
+                knob_at_left = self.can_satisfy()
+                hole_at_right = self.is_needy()
                 if not hole_at_right:
                     base_shape.adjust(0, 0, -4, 0)
 
@@ -246,18 +315,18 @@ class FeatureNode(Node):
                 mid = base_shape.height() / 2
                 x, y = to_tuple(base_shape.topRight())
                 if hole_at_right:
-                    if self.fshape == 1:  # triangle
+                    if self.fshape == 2:  # triangle
                         path.lineTo(x, y + mid - 4)
                         path.lineTo(x - 4, y + mid)
                         path.lineTo(x, y + mid + 4)
                         path.lineTo(x, y + mid + mid)
-                    elif self.fshape == 2:  # square
+                    elif self.fshape == 3:  # square
                         path.lineTo(x, y + mid - 4)
                         path.lineTo(x - 4, y + mid - 4)
                         path.lineTo(x - 4, y + mid + 4)
                         path.lineTo(x, y + mid + 4)
                         path.lineTo(x, y + mid + mid)
-                    elif self.fshape == 3:  # roundish
+                    elif self.fshape == 4:  # roundish
                         path.lineTo(x, y + mid - 2)
                         path.cubicTo(x - 3, y + mid - 2, x - 3, y + mid - 6, x - 6, y + mid)
                         path.cubicTo(x - 3, y + mid + 6, x - 3, y + mid + 2, x, y + mid + 2)
@@ -267,18 +336,18 @@ class FeatureNode(Node):
                 path.lineTo(base_shape.bottomLeft())
                 x, y = to_tuple(base_shape.topLeft())
                 if knob_at_left:
-                    if self.fshape == 1:  # triangle
+                    if self.fshape == 2:  # triangle
                         path.lineTo(x, y + mid + 4)
                         path.lineTo(x - 4, y + mid)
                         path.lineTo(x, y + mid - 4)
                         path.lineTo(x, y)
-                    elif self.fshape == 2:  # square
+                    elif self.fshape == 3:  # square
                         path.lineTo(x, y + mid + 4)
                         path.lineTo(x - 4, y + mid + 4)
                         path.lineTo(x - 4, y + mid - 4)
                         path.lineTo(x, y + mid - 4)
                         path.lineTo(x, y)
-                    elif self.fshape == 3:  # roundish
+                    elif self.fshape == 4:  # roundish
                         path.lineTo(x, y + mid + 2)
                         path.cubicTo(x - 3, y + mid + 2, x - 3, y + mid + 6, x - 6, y + mid)
                         path.cubicTo(x - 3, y + mid - 6, x - 3, y + mid - 2, x, y + mid - 2)
@@ -307,16 +376,14 @@ class FeatureNode(Node):
                 c = ctrl.cm.get(self.settings['color_id'])
             elif self.name in color_map:
                 c = ctrl.cm.get(color_map[self.name])
-            elif self.unassigned():
+            elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
                 print('feature name "%s" missing default color' % self.name)
                 c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
-            elif self.drag_data:
-                return ctrl.cm.hovering(c)
-            elif self._hovering:
+            elif self.drag_data or self._hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
                 return ctrl.cm.selection()
@@ -329,16 +396,14 @@ class FeatureNode(Node):
                 c = ctrl.cm.get(self.settings['color_id'])
             elif self.name in color_map:
                 c = ctrl.cm.get(color_map[self.name])
-            elif self.unassigned():
+            elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
                 print('feature name "%s" missing default color' % self.name)
                 c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
-            elif self.drag_data:
-                return ctrl.cm.hovering(c)
-            elif self._hovering:
+            elif self.drag_data or self._hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
                 return ctrl.cm.selection()
@@ -347,9 +412,7 @@ class FeatureNode(Node):
         else:
             if ctrl.pressed == self:
                 return ctrl.cm.active(ctrl.cm.selection())
-            elif self.drag_data:
-                return ctrl.cm.hovering(ctrl.cm.selection())
-            elif self._hovering:
+            elif self.drag_data or self._hovering:
                 return ctrl.cm.hovering(ctrl.cm.selection())
             elif ctrl.is_selected(self):
                 return ctrl.cm.selection()
@@ -414,6 +477,30 @@ class FeatureNode(Node):
         else:
             s.append(str(self.name))
         return ":".join(s)
+
+    def dragged_to(self, scene_pos):
+        """ Dragged focus is in scene_pos. Move there or to position relative to that
+        :param scene_pos: current pos of drag pointer (tuple x,y)
+        :return:
+        """
+        d = self.drag_data
+        nx, ny = scene_pos
+        if d.tree_top:
+            dx, dy = d.tree_top.drag_data.distance_from_pointer
+            d.tree_top.dragged_to((nx + dx, ny + dy))
+            for edge in ctrl.forest.edges.values():
+                edge.make_path()
+                edge.update()
+        else:
+            dx, dy = d.distance_from_pointer
+            super().dragged_to((nx + dx, ny + dy))
+            others = []
+            attached = self.is_checking()
+            if attached:
+                others = attached.edges_up + attached.edges_down
+            for edge in itertools.chain(self.edges_up, self.edges_down, others):
+                edge.make_path()
+                edge.update()
 
     # ############## #
     #                #
