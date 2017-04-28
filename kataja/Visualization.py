@@ -215,6 +215,7 @@ class BaseVisualization:
         alpha = 0.2
         # attract
         down = node.edges_down[:]
+        my_size = node.future_children_bounding_rect().size()
         if node.node_type == g.FEATURE_NODE:
             other = node.is_checking()
             if other and other.locked_to_node == node:
@@ -225,11 +226,12 @@ class BaseVisualization:
             #    continue
             if other.locked_to_node is node:
                 continue
-
+            other_size = other.future_children_bounding_rect().size()
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            radius = (other.width + node.width + other.height + node.height) / 4
+            radius = (other_size.width() + my_size.width() + other_size.height() +
+                      my_size.height()) / 4
             if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
@@ -250,9 +252,11 @@ class BaseVisualization:
             if node.locked_to_node is other:
                 continue
             other_x, other_y = other.current_position
+            other_size = other.future_children_bounding_rect().size()
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            radius = (other.width + node.width + other.height + node.height) / 4
+            radius = (other_size.width() + my_size.width() + other_size.height() +
+                      my_size.height()) / 4
             if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
@@ -277,6 +281,7 @@ class BaseVisualization:
             elif node.node_type == g.FEATURE_NODE and node.in_checking_relation_with(other):
                 continue
             other_x, other_y = other.current_position  # @UnusedVariable
+            other_size = other.future_children_bounding_rect().size()
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             #if dist > 50:
@@ -284,7 +289,9 @@ class BaseVisualization:
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = (other.width + node.width + other.height + node.height) / 4
+            safe_zone = (other_size.width() + my_size.width() + other_size.height() +
+                         my_size.height()) / 4
+
             if dist == safe_zone:
                 continue
             if dist < safe_zone:

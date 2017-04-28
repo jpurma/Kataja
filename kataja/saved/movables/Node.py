@@ -127,6 +127,7 @@ class Node(Movable):
         self.height = 0
         self.is_trace = False
         self.inner_rect = None
+        self._cached_child_rect = None
         self.anim = None
         self.magnet_mapper = None
         self.z_value = 10
@@ -886,7 +887,6 @@ class Node(Movable):
         palette.setColor(QtGui.QPalette.Text, self.color)
         return palette
 
-    @property
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state
         :return: QColor
@@ -987,7 +987,7 @@ class Node(Movable):
         else:
             xr = 5
             yr = 5
-        pen = QtGui.QPen(self.contextual_color)
+        pen = QtGui.QPen(self.contextual_color())
         pen.setWidth(1)
         rect = False
         brush = Qt.NoBrush
@@ -1084,8 +1084,19 @@ class Node(Movable):
                          (x, y + h2), (x_max, y + h2),
                          (x, y_max), (x + w4, y_max), (x + w2, y_max),
                          (x + w2 + w4, y_max), (x_max, y_max)]
+
+        expanding_rect = self.inner_rect
+        for child in self.childItems():
+            if isinstance(child, Node):
+                c_br = QtCore.QRectF(child.boundingRect())
+                x, y = child.target_position
+                c_br.moveCenter(QtCore.QPoint(x, y))
+                expanding_rect = expanding_rect.united(c_br)
+        self._cached_child_rect = expanding_rect
+
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
+
         return self.inner_rect
 
     def overlap_rect(self):
@@ -1108,16 +1119,13 @@ class Node(Movable):
         height is the called node's boundingRect.
         :return:
         """
-        my_br = self.boundingRect()
-        for child in self.childItems():
-            if isinstance(child, Node):
-                c_br = QtCore.QRectF(child.boundingRect())
-                x, y = child.target_position
-                c_br.moveCenter(QtCore.QPoint(x, y))
-                my_br = my_br.united(c_br)
+        if not self._cached_child_rect:
+            self.update_bounding_rect()
         if limit_height:
-            my_br.setHeight(self.boundingRect().height())
-        return my_br
+            br = QtCore.QRectF(self._cached_child_rect)
+            br.setHeight(self.boundingRect().height())
+            return br
+        return self._cached_child_rect
 
     def boundingRect(self):
         """ BoundingRects are used often and cost of this method affects
@@ -1826,7 +1834,7 @@ class Node(Movable):
         op = 1 - ctrl.cm.background_lightness
         op *= op * op
         op = 0.40 + op / 3
-        c = ctrl.cm.transparent(self.contextual_color, opacity=op * 100)
+        c = ctrl.cm.transparent(self.contextual_color(), opacity=op * 100)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 

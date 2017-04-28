@@ -201,11 +201,9 @@ class CommentNode(Node):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
+        p = QtGui.QPen(self.contextual_color())
+        p.setWidth(1)
         if self.drag_data:
-            p = QtGui.QPen(self.contextual_color)
-            #b = QtGui.QBrush(ctrl.cm.paper())
-            #p.setColor(ctrl.cm.hover())
-            p.setWidth(1)
             painter.setPen(p)
             #painter.setBrush(self.drag_data.background)
             painter.drawRect(self.inner_rect)
@@ -213,20 +211,13 @@ class CommentNode(Node):
 
 
         elif self._hovering:
-            p = QtGui.QPen(self.contextual_color)
-            #p.setColor(ctrl.cm.hover())
-            p.setWidth(1)
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
         elif ctrl.pressed is self or ctrl.is_selected(self):
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(1)
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
         elif self.has_empty_label() and self.node_alone():
-            p = QtGui.QPen(self.contextual_color)
             p.setStyle(QtCore.Qt.DotLine)
-            p.setWidth(1)
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
 

@@ -556,7 +556,6 @@ class ConstituentNode(Node):
                 elif synlabel == f"({parts[1].label}, {parts[0].label})":
                     self.heads = [ctrl.forest.get_node(parts[1]), ctrl.forest.get_node(parts[0])]
 
-    @property
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state
         :return: QColor

@@ -37,7 +37,7 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': MAGNETS, 'end_connects_to': MAGNETS, 'z_value': 10
         }, FEATURE_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent2tr', 'pull': .40, 'visible': True,
+            'shape_name': 'cubic', 'color_id': 'accent2tr', 'pull': .20, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 10
         }, GLOSS_EDGE: {

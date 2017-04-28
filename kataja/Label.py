@@ -554,9 +554,10 @@ class Label(QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         """
-        self.editable_part.setDefaultTextColor(self._host.contextual_color)
+        c = self._host.contextual_color()
+        self.editable_part.setDefaultTextColor(c)
         if self.lower_part:
-            self.lower_part.setDefaultTextColor(self._host.contextual_color)
+            self.lower_part.setDefaultTextColor(c)
         if self.draw_triangle:
             left = 0
             center = self.width / 2
@@ -564,7 +565,6 @@ class Label(QtWidgets.QGraphicsItem):
             top = self.triangle_y
             bottom = top + self.triangle_height
             simple = False
-            c = self._host.contextual_color
             painter.setPen(c)
             if simple:
                 triangle = QtGui.QPainterPath()

@@ -284,6 +284,15 @@ class FeatureNode(Node):
                          (x + w2 + w4, y_max), (x_max, y_max)]
         self.width = lbw
         self.height = lbh
+
+        expanding_rect = self.inner_rect
+        for child in self.childItems():
+            if isinstance(child, Node):
+                c_br = QtCore.QRectF(child.boundingRect())
+                x, y = child.target_position
+                c_br.moveCenter(QtCore.QPoint(x, y))
+                expanding_rect = expanding_rect.united(c_br)
+        self._cached_child_rect = expanding_rect
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
         return self.inner_rect
@@ -355,7 +364,7 @@ class FeatureNode(Node):
                 else:
                     path.quadTo(x - 8, y + mid, x, y)
                 painter.fillPath(path, self.contextual_background())
-                painter.setPen(self.contextual_color)
+                painter.setPen(self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
 
@@ -366,7 +375,6 @@ class FeatureNode(Node):
         """
         return ctrl.settings.get_node_setting('color_id', node=self)
 
-    @property
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if self.fshape:
