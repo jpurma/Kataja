@@ -379,6 +379,7 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         forest.gloss_text = msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
+    forest.tree_manager.update_trees()
     #ctrl.graph_scene.fit_to_window(force=True)
 
 

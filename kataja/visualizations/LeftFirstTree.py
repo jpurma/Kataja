@@ -167,7 +167,7 @@ class LeftFirstTree(BaseVisualization):
         # Actual drawing: set nodes to their places in scene
         extra_widths = [0] * merged_grid.width
         extra_heights = []
-
+        #merged_grid.ascii_dump()
         # if node is extra wide, then move all columns to right from that point on
         # same for extra tall nodes. move everything down after that row
         for y_i, row in enumerate(merged_grid):

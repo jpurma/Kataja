@@ -88,7 +88,7 @@ class FeatureNode(Node):
         self.value = value
         self.family = family
         self.repulsion = 0.25
-        self._gravity = 2.5
+        self._gravity = 3.0
         self.z_value = 60
         self.fshape = 3
         self.setZValue(self.z_value)
@@ -177,6 +177,12 @@ class FeatureNode(Node):
         self.name = name
         self.value = value
         self.family = family
+
+    def hidden_in_triangle(self):
+        """ If features are folded into triangle, they are always hidden. 
+        :return: 
+        """
+        return bool(self.triangle_stack)
 
     def in_checking_relation_with(self, other):
         """ 

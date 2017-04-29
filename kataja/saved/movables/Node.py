@@ -1146,9 +1146,14 @@ class Node(Movable):
             self.locked_to_node = None
             scene_pos = self.scenePos()
             # following doesn't work reliably on undo:
+
             new_parent = self.parentItem().parentItem()
-            self.setParentItem(new_parent)
-            lp = new_parent.mapFromScene(scene_pos)
+            if new_parent:
+                self.setParentItem(new_parent)
+                lp = new_parent.mapFromScene(scene_pos)
+            else:
+                print('node %s doesnt belong to any tree.' % self)
+                lp = scene_pos
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
             self.update_bounding_rect()
@@ -1179,6 +1184,10 @@ class Node(Movable):
         """
 
     def hidden_in_triangle(self):
+        """ Check if this node should be included in triangle's visible row of nodes or if it 
+        should be hidden. 
+        :return: 
+        """
         return self.triangle_stack and self.triangle_stack[-1] is not self and \
             not self.is_leaf(only_similar=True, only_visible=False)
 

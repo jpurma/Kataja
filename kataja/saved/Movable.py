@@ -319,6 +319,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         dx, dy = sub_xy(self.target_position, self.current_position)
         d = math.sqrt(dx * dx + dy * dy)
         self._distance = dx, dy
+        # We want longer movements to take longer time, but not linearly so. It helps viewer to
+        # differentiate many movements instead of everything happening at once.
         # this scales nicely:
         # d = 0 -> p = 0
         # d = 50 -> p = 0.5849

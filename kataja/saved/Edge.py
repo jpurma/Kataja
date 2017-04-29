@@ -250,7 +250,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             print('unnecessary show in edge')
 
-
     def update_visibility(self, fade_in=True, fade_out=True) -> bool:
         """ Hide or show according to various factors, which allow edge
         to exist but not be drawn.
@@ -281,9 +280,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 elif end.locked_to_node:
                     lv = False
             elif self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
-                if end and end.locked_to_node is start:
-                    lv = False
-                elif not (start and end):
+                if start and end:
+                    if not (end.is_visible() and start.is_visible()):
+                        lv = False
+                    elif end.locked_to_node is start:
+                        lv = False
+                else:
                     ctrl.free_drawing.delete_edge(self)
                     return False
 
