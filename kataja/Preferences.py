@@ -169,6 +169,15 @@ class Preferences(object):
                                 'help': 'Branches can link to "magnets" in node outlines, '
                                         'and magnet placement may be affected by parent node',
                                 'order': 40}
+        self.feature_check_display = 1
+        self._feature_check_display_ui = {'tab': 'Drawing', 'choices':
+                                [(0, "Don't show checking"),
+                                 (1, 'Features plug into each other'),
+                                 (2, 'Features are connected by line')],
+                                'help': "Features can 'check out' matching features. This can be "
+                                        "explicitly shown or left as implicit.",
+                                'order': 32}
+
 
         self.edge_width = 22  # 20
         self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 20}
@@ -210,6 +219,14 @@ class Preferences(object):
                                           'order': 21}
 
         self.feature_positioning = 2
+        self._feature_positioning_ui = {'tab': 'Drawing',
+                                        'choices': [(0, 'Hanging free'),
+                                            (1, 'Vertical column'),
+                                            (2, 'Horizontal row'),
+                                            (3, 'Two columns')],
+                                        'label': 'Feature arrangement',
+                                        'help': 'How features are arranged below nodes.',
+                                        'order': 28}
         self.projection_strong_lines = True
         self.projection_colorized = True
         self.projection_highlighter = False

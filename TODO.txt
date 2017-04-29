@@ -177,6 +177,6 @@ ADD:
 - Create actions and UI for linking and delinking features.
 - Refactor edges to allow 'latch' elements for merges. Make Merge a temporary UI element?  
 - In card display, have feature pieces connect by elastic string instead of plugging in.
-- Action (Shift-f) to toggle between [elastic string / plug / no display] for showing feature linkage
++ Action (Shift-f) to toggle between [elastic string / plug / no display] for showing feature linkage
 - Have all visualisations respect node's childItems' space requirements 
 

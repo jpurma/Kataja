@@ -86,6 +86,32 @@ class SwitchSyntaxViewMode(KatajaAction):
         return bool(ctrl.forest.syntax.display_modes)
 
 
+class SwitchFeatureCheckingMode(KatajaAction):
+    k_action_uid = 'switch_feature_checking_mode'
+    k_command = 'Switch how feature checking is represented'
+    k_tooltip = "Features are plugged together, connected with strings or checking is not " \
+                "displayed"
+    k_checkable = False
+    k_shortcut = 'Shift+f'
+
+    def method(self):
+        """ Toggle between no 
+        :return:
+        """
+        current = ctrl.settings.get('feature_check_display')
+        if current == 2:
+            current = 0
+        else:
+            current += 1
+        ctrl.settings.set('feature_check_display', current, level=DOCUMENT)
+        ctrl.forest.update_label_shapes()
+        mode_text = prefs.get_ui_text_for_choice(current, 'feature_check_display')
+        return 'Feature checking mode: ' + mode_text
+
+    def getter(self):
+        return ctrl.settings.get('feature_check_display')
+
+
 class ActivateNoFrameNodeShape(KatajaAction):
     k_action_uid = 'set_no_frame_node_shape'
     k_command = 'Borderless nodes'
@@ -96,7 +122,7 @@ class ActivateNoFrameNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('label_shape', g.NORMAL, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
 
     def getter(self):
         return ctrl.settings.get('label_shape') == g.NORMAL
@@ -116,7 +142,7 @@ class ActivateScopeboxNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('label_shape', g.SCOPEBOX, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
 
     def getter(self):
         return ctrl.settings.get('label_shape') == g.SCOPEBOX
@@ -136,7 +162,7 @@ class ActivateBracketedNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('label_shape', g.BRACKETED, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
 
     def getter(self):
         return ctrl.settings.get('label_shape') == g.BRACKETED
@@ -156,7 +182,7 @@ class ActivateBoxShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('label_shape', g.BOX, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
 
     def getter(self):
         return ctrl.settings.get('label_shape') == g.BOX
@@ -176,7 +202,7 @@ class ActivateCardNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('label_shape', g.CARD, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
 
     def getter(self):
         return ctrl.settings.get('label_shape') == g.CARD
@@ -214,7 +240,7 @@ class ToggleLabelShape(KatajaAction):
         elif bs == g.CARD:
             m = 'Node shape: Cards'
         ctrl.settings.set('label_shape', bs, level=DOCUMENT)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
         return m
 
 
@@ -348,7 +374,7 @@ class ToggleLabelTextModes(KatajaAction):
                 ok = True
         ctrl.settings.set('label_text_mode', now, level=DOCUMENT)
         ctrl.settings.set('label_text_mode', now, level=FOREST)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
         mode_text = prefs.get_ui_text_for_choice(now, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -366,7 +392,7 @@ class SetSynlabelsVisible(KatajaAction):
         """ """
         ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=DOCUMENT)
         ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=FOREST)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.SYN_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -385,7 +411,7 @@ class SetNodeLabelsVisible(KatajaAction):
         """ """
         ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=DOCUMENT)
         ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=FOREST)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.NODE_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -407,7 +433,7 @@ class SetAutolabelsVisible(KatajaAction):
         """ """
         ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=DOCUMENT)
         ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=FOREST)
-        ctrl.forest.update_label_shape()
+        ctrl.forest.update_label_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.XBAR_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -496,13 +522,9 @@ class ToggleFeatureDisplayMode(KatajaAction):
         if f_mode == 4:
             f_mode = 0
         ctrl.settings.set('feature_positioning', f_mode, level=DOCUMENT)
-        parents = []
-        shape = ctrl.settings.get('label_shape')
-        for node in ctrl.forest.nodes.values():
-            node.update_relations(parents, shape=shape, position=f_mode)
-            node.update_label()
-        for parent in parents:
-            parent.gather_children()
+        ctrl.forest.update_label_shapes()
+        mode_text = prefs.get_ui_text_for_choice(f_mode, 'feature_positioning')
+        return 'Features arranged as: ' + mode_text
 
     def getter(self):
         if ctrl.settings.get('label_shape') == g.CARD:

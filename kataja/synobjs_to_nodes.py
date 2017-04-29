@@ -272,16 +272,9 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         if edge:
             free_drawing.delete_edge(edge, fade=animate)
 
-    # ############# Labels & shape ###############################
+    # ############# Labels & node shapes ###############################
 
-    f_mode = ctrl.settings.get('feature_positioning')
-    shape = ctrl.settings.get('label_shape')
-    parents = []
-    for node in forest.nodes.values():
-        node.update_relations(parents, shape=shape, position=f_mode)
-        node.update_label()
-    for parent in parents:
-        parent.gather_children()
+    forest.update_label_shapes()
 
     # ############# Groups #######################################
 

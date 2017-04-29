@@ -205,10 +205,13 @@ class FeatureNode(Node):
             if edge.edge_type == g.CHECKING_EDGE:
                 return edge.start
 
-    def update_relations(self, parents, shape=None, position=None):
+    def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
         :param parents: list where we collect parent objects that need to position their children
+        :param shape:
+        :param position:
+        :param checking_mode:
         :return:
         """
 
@@ -216,23 +219,40 @@ class FeatureNode(Node):
             shape = ctrl.settings.get('label_shape')
         if position is None:
             position = ctrl.settings.get('feature_positioning')
+        if checking_mode is None:
+            checking_mode = ctrl.settings.get('feature_check_display')
         checked_by = self.is_checked_by()
-        if checked_by:
-            self.lock_to_node(checked_by)
-        elif position or shape == g.CARD:
-            for parent in self.get_parents(similar=False, visible=False):
-                if parent.node_type == g.CONSTITUENT_NODE:
-                    if parent.is_visible():
-                        self.lock_to_node(parent)
-                        parents.append(parent)
-                        break
-                    else:
-                        self.release_from_locked_position()
-                #elif parent.node_type == g.FEATURE_NODE:
-                #    if self.locked_to_node == parent:
-                #        self.release_from_locked_position()
-        else:
-            self.release_from_locked_position()
+        # First see if feature should be attached to another feature
+        locked_to_another_feature = False
+        if checked_by and self.is_visible():
+            print('checking_mode: ', checking_mode, ', locked_to_node: ', self.locked_to_node,
+                  ', checked_by: ', checked_by)
+            if checking_mode == 1:
+                locked_to_another_feature = True
+                if self.locked_to_node != checked_by:
+                    self.lock_to_node(checked_by)
+                    self.move_to(20, 0)
+                    for parent in self.get_parents(similar=False, visible=True):
+                        if parent.node_type == g.CONSTITUENT_NODE:
+                            parents.append(parent)
+            elif checking_mode == 2 and self.locked_to_node == checked_by:
+                self.release_from_locked_position()
+        # Then see if it should be fixed to its parent constituent node
+        if not locked_to_another_feature:
+            if position or shape == g.CARD:
+                for parent in self.get_parents(similar=False, visible=False):
+                    if parent.node_type == g.CONSTITUENT_NODE:
+                        if parent.is_visible():
+                            self.lock_to_node(parent)
+                            parents.append(parent)
+                            break
+                        else:
+                            self.release_from_locked_position()
+                    #elif parent.node_type == g.FEATURE_NODE:
+                    #    if self.locked_to_node == parent:
+                    #        self.release_from_locked_position()
+            else:
+                self.release_from_locked_position()
 
     def is_needy(self):
         if self.syntactic_object:
@@ -294,7 +314,7 @@ class FeatureNode(Node):
         expanding_rect = self.inner_rect
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = QtCore.QRectF(child.boundingRect())
+                c_br = QtCore.QRectF(child.future_children_bounding_rect())
                 x, y = child.target_position
                 c_br.moveCenter(QtCore.QPoint(x, y))
                 expanding_rect = expanding_rect.united(c_br)

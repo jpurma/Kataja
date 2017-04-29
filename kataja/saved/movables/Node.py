@@ -758,7 +758,7 @@ class Node(Movable):
         return other not in self.get_parents(similar=False, visible=False)
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
-    def update_relations(self, parents, shape=None, position=None):
+    def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         pass
 
     def reset_style(self):
@@ -1019,7 +1019,7 @@ class Node(Movable):
         expanding_rect = self.inner_rect
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = QtCore.QRectF(child.boundingRect())
+                c_br = QtCore.QRectF(child.future_children_bounding_rect())
                 x, y = child.target_position
                 c_br.moveCenter(QtCore.QPoint(x, y))
                 expanding_rect = expanding_rect.united(c_br)

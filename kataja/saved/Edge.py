@@ -481,7 +481,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return ctrl.cm.broken(self.color)
         elif self.in_projections:
             return ctrl.cm.get(self.in_projections[0].color_id)
-        elif self.edge_type == g.FEATURE_EDGE and self.end and self.end.fshape:
+        elif (self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE) and self.end \
+                and self.end.fshape:
             return self.end.contextual_background()
         else:
             return self.color
