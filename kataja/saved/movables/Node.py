@@ -738,81 +738,12 @@ class Node(Movable):
         return not (self.edges_down or self.edges_up)
 
     def gather_children(self):
-        fpos = ctrl.settings.get('feature_positioning')
-        shape = ctrl.settings.get('label_shape')
-        children = self.get_children(visible=True, similar=False)
-        if not children:
-            return
-        if shape == g.CARD:
-            fpos = 3  # only two column arrangement looks good on cards
-
-        if fpos == 1:  # vertical
-            center_x = self.boundingRect().center().x()
-            bottom_y = self.boundingRect().bottom()
-            y = bottom_y
-            for fnode in children:
-                if fnode.locked_to_node is self:
-                    fnode.move_to(center_x, y)
-                    y += fnode.height + 2
-        elif fpos == 2:  # horizontal
-            center_x = self.boundingRect().center().x()
-            bottom_y = self.boundingRect().bottom()
-            nods = []
-            total_width = 0
-            max_height = 0
-            for fnode in children:
-                if fnode.locked_to_node is self:
-                    w = fnode.width / 2
-                    total_width += w
-                    nods.append((fnode, total_width))
-                    total_width += w + 2
-                    if fnode.height > max_height:
-                        max_height = fnode.height
-            if nods:
-                left_margin = (total_width / -2) #+ center_x
-                #left_margin += nods[0][0].width / 2
-                y = bottom_y + (max_height / 2)
-                for fnode, x in nods:
-                    fnode.move_to(left_margin + x, y)
-        elif fpos == 3:  # card layout, two columns
-            in_card = ctrl.settings.get('label_shape') == g.CARD
-            cw, ch = self.label_object.card_size
-            center_x = self.boundingRect().center().x()
-            top_y = 22
-            left_margin = center_x - (cw / 2)
-            right_margin = center_x + (cw / 2)
-            left_nods = []
-            right_nods = []
-            for fnode in children:
-                if fnode.locked_to_node is self:
-                    if fnode.is_needy():
-                        right_nods.append(fnode)
-                    else:
-                        left_nods.append(fnode)
-            y = top_y
-            if in_card:
-                hspace = ch - top_y
-                if left_nods:
-                    node_hspace = hspace / len(left_nods)
-                    half_h = node_hspace / 2
-                    for fnode in left_nods:
-                        fnode.move_to(left_margin + fnode.width / 2, y + half_h)
-                        y += node_hspace
-                if right_nods:
-                    y = top_y
-                    node_hspace = hspace / len(right_nods)
-                    half_h = node_hspace / 2
-                    for fnode in right_nods:
-                        fnode.move_to(right_margin - fnode.width / 2, y + half_h)
-                        y += node_hspace
-            else:
-                for fnode in left_nods:
-                    fnode.move_to(left_margin + fnode.width / 2, y)
-                    y += fnode.height - 4
-                y = top_y
-                for fnode in right_nods:
-                    fnode.move_to(right_margin - fnode.width / 2, y)
-                    y += fnode.height - 4
+        """ If there are other Nodes that are childItems for this node, arrange them to their 
+        proper positions. Behavior depends a lot on node type, so default implementation does 
+        nothing.
+        :return: 
+        """
+        pass
 
     def get_locked_in_nodes(self):
         return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
@@ -1110,7 +1041,7 @@ class Node(Movable):
         if self.label_object:
             self.label_object.resize_label()
 
-    def future_children_bounding_rect(self, limit_height=False):
+    def future_children_bounding_rect(self, limit_height=False) -> QtCore.QRectF:
         """ This combines boundingRect with children's boundingRects based on children's
         target_positions instead of current ones.
         You'll want to use this to estimate the actual size of node + childItems when reserving

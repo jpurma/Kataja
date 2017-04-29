@@ -170,11 +170,13 @@ ADD:
 + No delete node available? Much needed!
 --- May day sprint 2017 ---
 - Implement complex edges that can be used to trace feature's percolation up in constituent hierarchy. Like string or wire.
-- Fix feature display modes (f) to reserve enough space for linked features
++ Fix feature display modes (f) to reserve enough space for linked features
 - In fixed feature display modes, show feature edges if feature positions are adjusted.
 - When adjusting nodes, show numerical overlay of adjustment. 
 - Add reset adjustment button to overlay for adjusted nodes.
 - Create actions and UI for linking and delinking features.
 - Refactor edges to allow 'latch' elements for merges. Make Merge a temporary UI element?  
-
+- In card display, have feature pieces connect by elastic string instead of plugging in.
+- Action (Shift-f) to toggle between [elastic string / plug / no display] for showing feature linkage
+- Have all visualisations respect node's childItems' space requirements 
 

@@ -595,6 +595,93 @@ class ConstituentNode(Node):
             elif syn_gloss and gloss_node:
                 gloss_node.update_label()
 
+    def gather_children(self):
+        """ If there are other Nodes that are childItems for this node, arrange them to their 
+        proper positions. 
+        
+        For ConstituentNodes this means collecting the locked-in FeatureNodes and positioning 
+        them in three possible ways. 
+        :return: 
+        """
+
+        fpos = ctrl.settings.get('feature_positioning')
+        shape = ctrl.settings.get('label_shape')
+        children = self.get_children(visible=True, similar=False)
+        if not children:
+            return
+        if shape == g.CARD:
+            fpos = 3  # only two column arrangement looks good on cards
+
+        if fpos == 1:  # vertical
+            center_x = self.boundingRect().center().x()
+            bottom_y = self.boundingRect().bottom()
+            y = bottom_y
+            for fnode in children:
+                if fnode.locked_to_node is self:
+                    fbr = fnode.future_children_bounding_rect()
+                    fnode.move_to(center_x, y - fbr.y())
+                    y += fbr.height() + 2
+        elif fpos == 2:  # horizontal
+            bottom_y = self.boundingRect().bottom()
+            nods = []
+            total_width = 0
+            max_height = 0
+            for fnode in children:
+                if fnode.locked_to_node is self:
+                    fbr = fnode.future_children_bounding_rect()
+                    nods.append((fnode, total_width - fbr.x()))
+                    total_width += fbr.width() + 4
+                    if fnode.height > max_height:
+                        max_height = fbr.height()
+            if nods:
+                left_margin = (total_width / -2)
+                y = bottom_y + (max_height / 2)
+                for fnode, x in nods:
+                    fnode.move_to(left_margin + x, y)
+        elif fpos == 3:  # card layout, two columns
+            in_card = ctrl.settings.get('label_shape') == g.CARD
+            cw, ch = self.label_object.card_size
+            center_x = self.boundingRect().center().x()
+            top_y = 22
+            left_margin = center_x - (cw / 2)
+            right_margin = center_x + (cw / 2)
+            left_nods = []
+            right_nods = []
+            for fnode in children:
+                if fnode.locked_to_node is self:
+                    if fnode.is_needy():
+                        right_nods.append(fnode)
+                    else:
+                        left_nods.append(fnode)
+            y = top_y
+            if in_card:
+                hspace = ch - top_y
+                if left_nods:
+                    node_hspace = hspace / len(left_nods)
+                    half_h = node_hspace / 2
+                    for fnode in left_nods:
+                        fbr = fnode.future_children_bounding_rect()
+                        fnode.move_to(left_margin - fbr.x(), y + half_h)
+                        y += node_hspace
+                if right_nods:
+                    y = top_y
+                    node_hspace = hspace / len(right_nods)
+                    half_h = node_hspace / 2
+                    for fnode in right_nods:
+                        fbr = fnode.future_children_bounding_rect()
+                        fnode.move_to(right_margin - fbr.width() - fbr.x(), y + half_h)
+                        y += node_hspace
+            else:
+                for fnode in left_nods:
+                    fbr = fnode.future_children_bounding_rect()
+                    fnode.move_to(left_margin + fbr.width() / 2, y)
+                    y += fbr.height() + 2
+                y = top_y
+                for fnode in right_nods:
+                    fbr = fnode.future_children_bounding_rect()
+                    fnode.move_to(right_margin - fbr.width() / 2, y)
+                    y += fbr.height() + 2
+
     # ### Labels #############################################
     # things to do with traces:
     # if renamed and index is removed/changed, update chains
