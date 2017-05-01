@@ -1330,13 +1330,30 @@ class Node(Movable):
 
     # Drag flow:
 
-    # 1. start_dragging -- drag is initiated from this node. If the node was already selected,
-    # then other nodes that were selected at the same time are also understood to be dragged.
-    # If the node has unambiguous children, these are also dragged. If node is top node of a trees,
-    # then the trees is the object of dragging, and not node.
+    # 1. drag -- compute drag's current situation, where is mouse cursor, should we start
+    # dragging or just announce new position for 'dragged_to'.
     #
-    # 2. start_dragging_tracking --
+    #   2. start_dragging -- drag is initiated from this node. If the node was already selected,
+    #   then other nodes that were selected at the same time are also understood to be dragged.
+    #   If the node has unambiguous children, these are also dragged. If node is top node of a tree,
+    #   then the tree is the object of dragging, and not node.
     #
+    #   2b. prepare_children_for_dragging -- compute what should be included in drag for this
+    #   type of node.
+    #
+    #   3. start_dragging_tracking -- this is called for each node that is included into drag.
+    #   Prepares drag data and sets up animations.
+    #
+    #   4. dragged_to -- this is called for each node in drag set. Node moves to position
+    #   relative to drag given scene position (given position is the position of drag pointer
+    #   and main dragged element.
+    #
+    # 5. drop_to -- with dragged node, activate whatever happens in this position if something is
+    # dropped there. Call finish_dragging.
+    #
+    #   6. finish_dragging -- if called with dragged node, calls finish_dragging also for other
+    #   nodes in drag set. Clears temporary data and restores node to normal. Should always be
+    #   called, even when dragging is cancelled or interrupted.
 
     def start_dragging(self, scene_pos):
         """ Figure out which nodes belong to the dragged set of nodes.
@@ -1389,7 +1406,14 @@ class Node(Movable):
         for tree in dragged_trees:
             moving = moving.union(tree.sorted_nodes)
         ctrl.ui.prepare_touch_areas_for_dragging(moving=moving, multidrag=multidrag)
+        ctrl.ui.create_drag_info(self)
         self.start_moving()
+
+    def prepare_children_for_dragging(self, scene_pos):
+        """ Implement this if structure is supposed to drag with the node
+        :return:
+        """
+        pass
 
     def start_dragging_tracking(self, host=False, scene_pos=None):
         """ Add this node into the entourage of dragged node. These nodes will
@@ -1413,12 +1437,6 @@ class Node(Movable):
         self.anim.setEndValue(1.1)
         self.anim.start()
 
-    def prepare_children_for_dragging(self, scene_pos):
-        """ Implement this if structure is supposed to drag with the node
-        :return:
-        """
-        pass
-
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features,
         children etc. Drag is called to only one principal drag host element. 'dragged_to' is
@@ -1434,6 +1452,7 @@ class Node(Movable):
         # change dragged positions to be based on adjustment instead of distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(scene_pos)
+        ctrl.ui.show_drag_adjustment(self)
         for group in ctrl.dragged_groups:
             group.update_shape()
 
@@ -1453,9 +1472,14 @@ class Node(Movable):
         else:
             dx, dy = d.distance_from_pointer
             super().dragged_to((nx + dx, ny + dy))
-            others = []
-
-            for edge in itertools.chain(self.edges_up, self.edges_down, others):
+            # now there should be value for adjustment, unless node is using physics
+            # edges should be made visible if they were hidden by locked_to_node
+            for item in self.childItems():
+                if isinstance(item, Node):
+                    for edge in itertools.chain(item.edges_up, item.edges_down):
+                        edge.make_path()
+                        edge.update()
+            for edge in itertools.chain(self.edges_up, self.edges_down):
                 edge.make_path()
                 edge.update()
 
@@ -1493,14 +1517,12 @@ class Node(Movable):
             self.lock()
             for node in ctrl.dragged_set:
                 node.lock()
-
             if self.use_physics():
                 message = 'moved node to {:.2f}, {:.2f}'.format(self.current_position[0],
                                                                 self.current_position[1])
             else:
                 message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0],
                                                                    self.adjustment[1])
-
         self.update_position()
         self.finish_dragging()
         return message
@@ -1524,6 +1546,7 @@ class Node(Movable):
             if self.drag_data.parent:
                 self.drag_data.parent.setZValue(self.drag_data.parent_old_zvalue)
         self.drag_data = None
+        ctrl.ui.remove_drag_info()
         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)
         self.anim.setStartValue(self.scale())

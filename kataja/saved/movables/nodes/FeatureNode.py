@@ -47,7 +47,14 @@ color_map = {'tense': 'accent0',
              'V': 'accent3',
              'T': 'accent4',
              'C': 'accent7',
-             'wh': 'accent6'
+             'wh': 'accent6',
+             'n': 'accent1',
+             'd': 'accent2',
+             'v': 'accent3',
+             't': 'accent4',
+             'p': 'accent5',
+             'q': 'accent6',
+             'c': 'accent7',
 }
 
 
@@ -208,6 +215,13 @@ class FeatureNode(Node):
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
+        'locked_to_node' is the essential attribute in here. For features it should have two 
+        kinds of values or None: 
+        1: locked to parent constituent node -- this is used to arrange features neatly below node.
+        2: locked to another feature -- this is used to show feature checking
+        the third option shouldn't happen:
+        3: locked to triangle host like constituent nodes are locked to triangle host 
+        
         :param parents: list where we collect parent objects that need to position their children
         :param shape:
         :param position:
@@ -225,17 +239,20 @@ class FeatureNode(Node):
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
         if checked_by and self.is_visible():
-            print('checking_mode: ', checking_mode, ', locked_to_node: ', self.locked_to_node,
-                  ', checked_by: ', checked_by)
             if checking_mode == 1:
                 locked_to_another_feature = True
                 if self.locked_to_node != checked_by:
+                    x = checked_by.future_children_bounding_rect().right() - \
+                        self.future_children_bounding_rect().x() - 8
                     self.lock_to_node(checked_by)
-                    self.move_to(20, 0)
+                    self.move_to(x, 0)
                     for parent in self.get_parents(similar=False, visible=True):
                         if parent.node_type == g.CONSTITUENT_NODE:
                             parents.append(parent)
             elif checking_mode == 2 and self.locked_to_node == checked_by:
+                for parent in self.get_parents(similar=False, visible=True):
+                    if parent.node_type == g.CONSTITUENT_NODE:
+                        parents.append(parent)
                 self.release_from_locked_position()
         # Then see if it should be fixed to its parent constituent node
         if not locked_to_another_feature:
@@ -413,7 +430,7 @@ class FeatureNode(Node):
             elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
-                print('feature name "%s" missing default color' % self.name)
+                #print('feature name "%s" missing default color' % self.name)
                 c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
@@ -433,7 +450,7 @@ class FeatureNode(Node):
             elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
-                print('feature name "%s" missing default color' % self.name)
+                #print('feature name "%s" missing default color' % self.name)
                 c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
@@ -511,30 +528,6 @@ class FeatureNode(Node):
         else:
             s.append(str(self.name))
         return ":".join(s)
-
-    def dragged_to(self, scene_pos):
-        """ Dragged focus is in scene_pos. Move there or to position relative to that
-        :param scene_pos: current pos of drag pointer (tuple x,y)
-        :return:
-        """
-        d = self.drag_data
-        nx, ny = scene_pos
-        if d.tree_top:
-            dx, dy = d.tree_top.drag_data.distance_from_pointer
-            d.tree_top.dragged_to((nx + dx, ny + dy))
-            for edge in ctrl.forest.edges.values():
-                edge.make_path()
-                edge.update()
-        else:
-            dx, dy = d.distance_from_pointer
-            super().dragged_to((nx + dx, ny + dy))
-            others = []
-            attached = self.is_checking()
-            if attached:
-                others = attached.edges_up + attached.edges_down
-            for edge in itertools.chain(self.edges_up, self.edges_down, others):
-                edge.make_path()
-                edge.update()
 
     # ############## #
     #                #

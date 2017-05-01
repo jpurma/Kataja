@@ -481,7 +481,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             new_pos = p.x(), p.y()
         else:
             new_pos = scene_pos[0], scene_pos[1]
-
         if self.use_physics():
             self.locked = True
             self.current_position = new_pos

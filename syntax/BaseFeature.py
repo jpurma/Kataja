@@ -68,7 +68,7 @@ class BaseFeature(SavedObject):
         return self.unvalued()
 
     def unvalued(self):
-        return self.value == 'u' or self.value == '=' or self.value == '-'
+        return self.value == 'u' or self.value == '=' or self.value == '-' or self.value == '✓='
 
     def satisfies(self, feature):
         return isinstance(feature, BaseFeature) and feature.is_needy() and feature.name == \

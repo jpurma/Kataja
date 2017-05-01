@@ -64,6 +64,7 @@ from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
+from kataja.ui_widgets.DragInfo import DragInfo
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -147,6 +148,7 @@ class UIManager:
         self.selection_group = None
         self.preferences_dialog = None
         self.qe_label = None
+        self.drag_info = None
         self.activity_marker = None
         self.ui_activity_marker = None
         # These actions are dynamically created and may be needed to be updated
@@ -1290,6 +1292,24 @@ class UIManager:
         if not self.ui_activity_marker:
             self.ui_activity_marker = ActivityMarker(role=0)
         return self.ui_activity_marker
+
+    # ### Drag info ###################################################
+
+    def create_drag_info(self, node):
+        if not self.drag_info:
+            self.drag_info = DragInfo(host=node, parent=self.main.graph_view)
+            self.add_ui(self.drag_info)
+        else:
+            self.drag_info.host = node
+
+    def show_drag_adjustment(self, node):
+        self.drag_info.update_value()
+        self.drag_info.update_position()
+
+    def remove_drag_info(self):
+        if self.drag_info:
+            self.remove_ui(self.drag_info)
+            self.drag_info = None
 
     # ### Timer for moving UI items ########################################################
     # This is currently unused, there are no spontaneously moving UI elements that require this
