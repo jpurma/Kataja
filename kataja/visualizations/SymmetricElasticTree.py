@@ -69,15 +69,17 @@ class SymmetricElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y = node.centered_position  # @UnusedVariable
+        fbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, fbr)
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:
                 continue
-            other_x, other_y = other.centered_position  # @UnusedVariable
+            fbr_other = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
-            safe_zone = (other.width + node.width) / 2
+            safe_zone = (fbr.width() + fbr_other.width()) / 2
             dist = math.hypot(dist_x, dist_y)
             if dist == 0 or dist == safe_zone:
                 continue
@@ -95,12 +97,13 @@ class SymmetricElasticTree(BaseVisualization):
             other = edge.end
             if other.locked_to_node is node:
                 continue
-            other_x, other_y = other.centered_position
+            fbr_other = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
                 continue
-            safe_zone = (other.width + node.width) / 2
+            safe_zone = (fbr.width() + fbr_other.width()) / 2
             pulling_force = (dist - safe_zone) * edge.pull * 0.4
             x_component = dist_x / dist
             y_component = dist_y / dist
@@ -111,12 +114,13 @@ class SymmetricElasticTree(BaseVisualization):
             other = edge.start
             if node.locked_to_node is other:
                 continue
-            other_x, other_y = other.centered_position
+            fbr_other = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, fbr_other)
             dist_x, dist_y = (node_x - other_x, node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
                 continue
-            safe_zone = (other.width + node.width) / 2
+            safe_zone = (fbr.width() + fbr_other.width()) / 2
             pulling_force = (dist - safe_zone) * edge.pull * 0.4
             x_component = dist_x / dist
             y_component = dist_y / dist

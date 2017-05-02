@@ -69,10 +69,108 @@ class EquidistantElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y = node.centered_position
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, cbr)
         vn = list(self.forest.visible_nodes())
         for other in vn:
-            other_x, other_y = other.centered_position
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            if other is node or other.locked_to_node:
+                continue
+            dist_x = int(node_x - other_x)
+            dist_y = int(node_y - other_y)
+            safe_zone = (cbr.width() + other_cbr.width()) / 2
+            dist = max((1, math.hypot(dist_x, dist_y)))
+            if dist < safe_zone:
+                push = (safe_zone - dist) * 0.005
+                xvel += dist_x * push
+                yvel += dist_y * push
+            elif dist < 200:
+                l = 70.0 / (dist * dist)
+                xvel += dist_x * l
+                yvel += dist_y * l
+
+        # Now subtract all forces pulling items together.
+        for edge in node.get_edges_up_with_children():
+            if node.locked_to_node is edge.start:
+                continue
+            other = edge.start
+            if other.locked_to_node or other is node:
+                continue
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            dist_x = int(node_x - other_x)
+            dist_y = int(node_y - other_y)
+            dist = math.hypot(dist_x, dist_y)
+            safe_zone = (cbr.width() + other_cbr.width()) / 2
+            target_zone = safe_zone + 30
+            if dist > target_zone:
+                pull = (dist - target_zone) * edge.pull * -0.005
+                xvel += dist_x * pull
+                yvel += dist_y * pull
+            elif dist < safe_zone:
+                push = (safe_zone - dist) * edge.pull * 0.05
+                xvel += dist_x * push
+                yvel += dist_y * push
+        for edge in node.get_edges_down_with_children():
+            if edge.end.locked_to_node is node:
+                continue
+            other = edge.end
+            if other.locked_to_node or other is node:
+                continue
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            dist_x = node_x - other_x
+            dist_y = node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            safe_zone = (cbr.width() + other_cbr.width()) / 2
+            target_zone = safe_zone + 30
+            if dist > target_zone:
+                pull = (dist - target_zone) * edge.pull * -0.005
+                xvel += dist_x * pull
+                yvel += dist_y * pull
+            elif dist < safe_zone:
+                push = (safe_zone - dist) * edge.pull * 0.05
+                xvel += dist_x * push
+                yvel += dist_y * push
+
+        # pull to center (0, 0)
+        xvel += node_x * -0.002
+        yvel += node_y * -0.002
+
+        if not node.physics_x:
+            xvel = 0
+        elif abs(xvel > 10):
+            if xvel > 10:
+                xvel = 10
+            elif xvel < -10:
+                xvel = -10
+        if not node.physics_y:
+           yvel = 0
+        elif abs(yvel) > 10:
+            if yvel > 10:
+                yvel = 10
+            elif yvel < -10:
+                yvel = -10
+        return xvel, yvel, 0
+
+
+    def calculate_movement_old(self, node):
+        # @time_me
+        # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
+        xvel = 0.0
+        yvel = 0.0
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, cbr)
+        vn = list(self.forest.visible_nodes())
+        for other in vn:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:

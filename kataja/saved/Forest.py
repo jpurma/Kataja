@@ -23,6 +23,8 @@
 # ############################################################################
 import string
 import time
+from typing import Generator
+
 from PyQt5 import QtWidgets
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 
@@ -269,7 +271,7 @@ class Forest(SavedObject):
         _iterate(first)
         return result
 
-    def visible_nodes(self):
+    def visible_nodes(self) -> Generator[Node, Node, None]:
         """ Any node that is visible. Ignore the type.
         :return:
         """

@@ -158,6 +158,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     @current_position.setter
     def current_position(self, value):
+        value = round(value[0]), round(value[1])
         self._current_position = value
         self.setPos(*value)
 
@@ -257,9 +258,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
         if self._move_counter:
-            position = self.current_position
-            # stop even despite the _move_counter, if we are close enough
-            if about_there(position, self.target_position):
+            # stop even despite the _move_counter, if we are already there
+            if self.current_position == self.target_position:
                 self.stop_moving()
                 return False, False
             self._move_counter -= 1
@@ -273,7 +273,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
                 movement = multiply_xy(self._distance, f)
                 self.current_position = add_xy(self._start_position, movement)
             else:
-                movement = div_xy(sub_xy(self.target_position, position), self._move_counter)
+                movement = div_xy(sub_xy(self.target_position, self.current_position), self._move_counter)
                 self.current_position = add_xy(self.current_position, movement)
             # if move counter reaches zero, stop and do clean-up.
             if not self._move_counter:
@@ -287,7 +287,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
             self.current_position = add_xy(self.current_position, movement)
-            return abs(movement[0]) + abs(movement[1]) > 0.6, True
+            return abs(movement[0]) + abs(movement[1]) > 1, True
         return False, False
 
     def distance_to(self, movable):
@@ -478,9 +478,9 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         if self.parentItem():
             p = self.parentItem().mapFromScene(scene_pos[0], scene_pos[1])
-            new_pos = p.x(), p.y()
+            new_pos = int(p.x()), int(p.y())
         else:
-            new_pos = scene_pos[0], scene_pos[1]
+            new_pos = int(scene_pos[0]), int(scene_pos[1])
         if self.use_physics():
             self.locked = True
             self.current_position = new_pos

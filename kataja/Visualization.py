@@ -203,7 +203,7 @@ class BaseVisualization:
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         pass
 
-    def calculate_movement(self, node):
+    def calculate_movement(self, node: 'Node'):
         # Sum up all forces pushing this item away.
         """
 
@@ -214,13 +214,9 @@ class BaseVisualization:
         old_x, old_y = node.current_position
         alpha = 0.2
         # attract
-        down = node.edges_down[:]
         my_size = node.future_children_bounding_rect().size()
-        if node.node_type == g.FEATURE_NODE:
-            other = node.is_checking()
-            if other and other.locked_to_node == node:
-                down += other.edges_down
-        for edge in down:
+        lonely = True
+        for edge in node.get_edges_down_with_children():
             other = edge.end
             #if other.locked_to_node:
             #    continue
@@ -238,14 +234,9 @@ class BaseVisualization:
                 node_y -= dist_y * pulling_force
             else:
                 node_x += 1
+            lonely = False
 
-        up = node.edges_up[:]
-        if node.node_type == g.FEATURE_NODE:
-            other = node.is_checking()
-            if other and other.locked_to_node == node:
-                up += other.edges_up
-
-        for edge in up:
+        for edge in node.get_edges_up_with_children():
             other = edge.start
             #if other.locked_to_node:
             #    continue
@@ -263,8 +254,9 @@ class BaseVisualization:
                 node_y -= dist_y * pulling_force
             else:
                 node_x -= 1
+            lonely = False
 
-        if not (up or down):
+        if lonely:
             # pull to center (0, 0)
             node_x += node_x * -0.009
             node_y += node_y * -0.009
@@ -333,7 +325,7 @@ class BaseVisualization:
                 yvel = -50
         else:
             yvel = 0
-        return xvel, yvel, 0
+        return round(xvel), round(yvel), 0
 
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """
@@ -388,6 +380,20 @@ class BaseVisualization:
         :return:
         """
         return True
+
+    def centered_node_position(self, node, cbr):
+        """ Return coordinates for center of current node. Nodes, especially with children 
+        included, are often offset in such way that we shouldn't use bounding_rect's 0,
+        0 for their center point.
+        
+        :param cbr: bounding_rect of node, includes children. QRect or QRectF
+        :return: 
+        """
+        px, py = node.current_position
+        cp = cbr.center()
+        px += cp.x()
+        py += cp.y()
+        return px, py
 
 
 

@@ -180,4 +180,4 @@ ADD:
 + Action (Shift-f) to toggle between [elastic string / plug / no display] for showing feature linkage
 - Have all visualisations respect node's childItems' space requirements 
 ? should adjustments and positions force to int instead of float? Less fine, but also less finicky. Try and report back.
- 
+- Feature editing with (i) doesn't have enough width.  

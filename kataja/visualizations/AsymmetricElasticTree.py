@@ -120,11 +120,11 @@ class AsymmetricElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         node_x, node_y = node.centered_scene_position  # @UnusedVariable
-        node_br = node.boundingRect()
+        node_br = node.future_children_bounding_rect()
         nw2, nh2 = node_br.width() / 2.0, node_br.height() / 2.0
 
         for other in self.forest.visible_nodes():
-            other_br = other.boundingRect()
+            other_br = other.future_children_bounding_rect()
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:

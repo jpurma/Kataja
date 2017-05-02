@@ -112,7 +112,7 @@ class BalancedTree(BaseVisualization):
                     combined_rect = leaf_rect
 
                 y -= combined_rect.height()
-                my_rect = QtCore.QRectF(node.boundingRect())
+                my_rect = QtCore.QRectF(node.future_children_bounding_rect())
                 cp = QtCore.QPoint(combined_rect.center().x(), y - (my_rect.height() / 2))
                 my_rect.moveCenter(cp)
                 node.move_to(my_rect.center().x(), my_rect.center().y(), align=g.CENTER_ALIGN,

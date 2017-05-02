@@ -332,14 +332,15 @@ class FeatureNode(Node):
         for child in self.childItems():
             if isinstance(child, Node):
                 c_br = QtCore.QRectF(child.future_children_bounding_rect())
+                ox = c_br.left()
+                oy = c_br.top()
                 x, y = child.target_position
-                c_br.moveCenter(QtCore.QPoint(x, y))
+                c_br.moveTo(x + ox, y + oy)
                 expanding_rect = expanding_rect.united(c_br)
         self._cached_child_rect = expanding_rect
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
         return self.inner_rect
-
 
     def paint(self, painter, option, widget=None):
         """ FeatureNodes can have shapes that suggest which features can value each other.

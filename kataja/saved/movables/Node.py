@@ -255,15 +255,6 @@ class Node(Movable):
         cy = sy + oy + self.height / 2
         return cx, cy
 
-    @property
-    def centered_position(self):
-        px, py = self.current_position
-        ox = self.offset_x
-        oy = self.offset_y
-        cx = px + ox + self.width / 2
-        cy = py + oy + self.height / 2
-        return cx, cy
-
     def compose_html_for_viewing(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
@@ -959,6 +950,8 @@ class Node(Movable):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
         #painter.drawRect(-2, -2, 4, 4)
+        painter.setBrush(ctrl.cm.get('accent4tr'))
+        painter.drawRect(self.future_children_bounding_rect())
 
     def has_visible_label(self):
         """
@@ -1020,8 +1013,10 @@ class Node(Movable):
         for child in self.childItems():
             if isinstance(child, Node):
                 c_br = QtCore.QRectF(child.future_children_bounding_rect())
+                ox = c_br.left()
+                oy = c_br.top()
                 x, y = child.target_position
-                c_br.moveCenter(QtCore.QPoint(x, y))
+                c_br.moveTo(x + ox, y + oy)
                 expanding_rect = expanding_rect.united(c_br)
         self._cached_child_rect = expanding_rect
 
@@ -1099,6 +1094,27 @@ class Node(Movable):
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
             self.update_bounding_rect()
+
+    def get_edges_down_with_children(self):
+        """ Sometimes you need to count in also edges of locked in nodes (they are childItems). 
+        :return: 
+        """
+        edges = self.edges_down[:]
+        for item in self.childItems():
+            if isinstance(item, Node):
+                edges += item.get_edges_down_with_children()
+        return edges
+
+    def get_edges_up_with_children(self):
+        """ Sometimes you need to count in also edges of locked in nodes (they are childItems). 
+        :return: 
+        """
+        edges = self.edges_up[:]
+        for item in self.childItems():
+            if isinstance(item, Node):
+                edges += item.get_edges_up_with_children()
+        return edges
+
 
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
@@ -1447,6 +1463,7 @@ class Node(Movable):
         for edge in self.edges_up:
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
+        print(scene_pos)
         if not ctrl.dragged_focus:
             self.start_dragging(scene_pos)
         # change dragged positions to be based on adjustment instead of distance to main dragged.
@@ -1471,7 +1488,7 @@ class Node(Movable):
                 edge.update()
         else:
             dx, dy = d.distance_from_pointer
-            super().dragged_to((nx + dx, ny + dy))
+            super().dragged_to((int(nx + dx), int(ny + dy)))
             # now there should be value for adjustment, unless node is using physics
             # edges should be made visible if they were hidden by locked_to_node
             for item in self.childItems():
@@ -1675,9 +1692,8 @@ class Node(Movable):
                 event.mimeData().hasFormat("text/plain"):
             self.label_object.dropEvent(event)
 
-
     def start_moving(self):
-        """ Experimental: add glow effect for moving things
+        """ Hint edges that they shouldn't compute everything while these nodes are moving.
         :return:
         """
         Movable.start_moving(self)

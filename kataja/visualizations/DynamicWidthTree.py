@@ -59,8 +59,10 @@ class DynamicWidthTree(DivideAndConquerTree):
         :return:
         """
 
-        node_x, node_y = node.centered_position
-        old_x, old_y = node.centered_position
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, cbr)
+        old_x = node_x
+        old_y = node_y
         alpha = 0.2
 
         close_ones = set()
@@ -71,11 +73,13 @@ class DynamicWidthTree(DivideAndConquerTree):
             if other.locked_to_node is node:
                 continue
             if other.is_visible():
+                other_cbr = other.future_children_bounding_rect()
                 close_ones.add(other)
-                other_x, other_y = other.centered_position
+                other_x, other_y = self.centered_node_position(other, other_cbr)
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
-                radius = (other.width + node.width) / 2
+
+                radius = (other_cbr.width() + cbr.width()) / 2
                 if dist == 0 or dist - radius <= 0:
                     node_x += 1
                 else:
@@ -89,10 +93,11 @@ class DynamicWidthTree(DivideAndConquerTree):
                 continue
             if other.is_visible():
                 close_ones.add(other)
-                other_x, other_y = other.centered_position
+                other_cbr = other.future_children_bounding_rect()
+                other_x, other_y = self.centered_node_position(other, other_cbr)
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
-                radius = ((other.width + node.width) / 2) * 1.4
+                radius = ((other_cbr.width() + cbr.width()) / 2) * 1.4
                 if dist == 0 or dist - radius <= 0:
                     node_x -= 1
                 else:
@@ -108,13 +113,14 @@ class DynamicWidthTree(DivideAndConquerTree):
         for other in other_nodes:
             if other.locked_to_node is node or node.locked_to_node is other:
                 continue
-            other_x, other_y = other.centered_position  # @UnusedVariable
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = ((other.width + node.width) / 2) * 1.4
+            safe_zone = ((other_cbr.width() + cbr.width()) / 2) * 1.4
             if dist == safe_zone:
                 continue
             if dist < safe_zone:
@@ -125,13 +131,14 @@ class DynamicWidthTree(DivideAndConquerTree):
                     node_x -= 1
         # repulse weakly
         for other in close_ones:
-            other_x, other_y = other.centered_position  # @UnusedVariable
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = ((other.width + node.width) / 2) * 1.4
+            safe_zone = ((other_cbr.width() + cbr.width()) / 2) * 1.4
             if dist == safe_zone:
                 continue
             if dist < safe_zone:
