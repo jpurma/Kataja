@@ -51,8 +51,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             node.physics_x = True
             node.physics_y = True
 
-    def calculate_movement(self, node):
-        # Sum up all forces pushing this item away.
+    def calculate_movement(self, node, other_nodes):
         """
 
         :param node:
@@ -104,12 +103,12 @@ class DynamicWidthTree(DivideAndConquerTree):
                     pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                     node_x -= dist_x * pulling_force
 
-        all_nodes = set(self.forest.visible_nodes())
-        other_nodes = all_nodes - close_ones
+        other_nodes = set(other_nodes) - close_ones
         other_nodes.remove(node)
         # repulse strongly
         alpha_strong = (alpha * 5) or 0.5
         alpha = alpha or 0.1
+        # Sum up all forces pushing this item away.
         for other in other_nodes:
             if other.locked_to_node is node or node.locked_to_node is other:
                 continue

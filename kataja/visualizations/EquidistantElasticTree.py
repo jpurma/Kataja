@@ -25,6 +25,8 @@
 
 import math
 
+import itertools
+
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
 
@@ -59,189 +61,80 @@ class EquidistantElasticTree(BaseVisualization):
         """
         super().reset_node(node)
 
-    def calculate_movement(self, node):
-        # @time_me
-        # Sum up all forces pushing this item away.
+    def calculate_movement(self, node, other_nodes):
         """
 
         :param node:
+        :param other_nodes:
         :return:
         """
+        assert(not node.locked_to_node)
+        assert(node.is_visible() and node.isVisible())
+
         xvel = 0.0
         yvel = 0.0
         cbr = node.future_children_bounding_rect()
         node_x, node_y = self.centered_node_position(node, cbr)
-        vn = list(self.forest.visible_nodes())
-        for other in vn:
+
+        # Sum up all forces pushing this item away.
+        for other in other_nodes:
+            if other.static:
+                continue
+            if other.locked_to_node or other is node:
+                continue
             other_cbr = other.future_children_bounding_rect()
             other_x, other_y = self.centered_node_position(other, other_cbr)
-            if other is node or other.locked_to_node:
-                continue
             dist_x = int(node_x - other_x)
             dist_y = int(node_y - other_y)
-            safe_zone = (cbr.width() + other_cbr.width()) / 2
+            safe_zone = max(cbr.width() + other_cbr.width(), cbr.height() + other_cbr.height()) / 2
+            safe_zone += 10
             dist = max((1, math.hypot(dist_x, dist_y)))
             if dist < safe_zone:
-                push = (safe_zone - dist) * 0.005
+                push = (safe_zone - dist) * 0.005  # push > 0
                 xvel += dist_x * push
                 yvel += dist_y * push
             elif dist < 200:
-                l = 70.0 / (dist * dist)
+                l = 70.0 / (dist * dist)  # l > 0
                 xvel += dist_x * l
                 yvel += dist_y * l
-
         # Now subtract all forces pulling items together.
-        for edge in node.get_edges_up_with_children():
-            if node.locked_to_node is edge.start:
+        total_edges = 0
+        edges = []
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            if other is node or other.locked_to_node is node:
                 continue
-            other = edge.start
-            if other.locked_to_node or other is node:
+            total_edges += 1
+            edges.append((e.end_point, e.start_point, e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            if other is node or other.locked_to_node is node:
                 continue
-            other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            total_edges += 1
+            edges.append((e.start_point, e.end_point, e.pull))
+
+        for my_point, other_point, edge_pull in edges:
+            node_x, node_y = my_point
+            other_x, other_y = other_point
             dist_x = int(node_x - other_x)
             dist_y = int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
-            safe_zone = (cbr.width() + other_cbr.width()) / 2
+            safe_zone = 20
             target_zone = safe_zone + 30
             if dist > target_zone:
-                pull = (dist - target_zone) * edge.pull * -0.005
+                pull = (dist - target_zone) * edge_pull * -0.005  # pull < 0
+                pull /= total_edges
                 xvel += dist_x * pull
                 yvel += dist_y * pull
             elif dist < safe_zone:
-                push = (safe_zone - dist) * edge.pull * 0.05
-                xvel += dist_x * push
-                yvel += dist_y * push
-        for edge in node.get_edges_down_with_children():
-            if edge.end.locked_to_node is node:
-                continue
-            other = edge.end
-            if other.locked_to_node or other is node:
-                continue
-            other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
-            dist_x = node_x - other_x
-            dist_y = node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            safe_zone = (cbr.width() + other_cbr.width()) / 2
-            target_zone = safe_zone + 30
-            if dist > target_zone:
-                pull = (dist - target_zone) * edge.pull * -0.005
-                xvel += dist_x * pull
-                yvel += dist_y * pull
-            elif dist < safe_zone:
-                push = (safe_zone - dist) * edge.pull * 0.05
+                push = (safe_zone - dist) * edge_pull * 0.05  # push > 0
                 xvel += dist_x * push
                 yvel += dist_y * push
 
-        # pull to center (0, 0)
-        xvel += node_x * -0.002
-        yvel += node_y * -0.002
-
-        if not node.physics_x:
-            xvel = 0
-        elif abs(xvel > 10):
-            if xvel > 10:
-                xvel = 10
-            elif xvel < -10:
-                xvel = -10
-        if not node.physics_y:
-           yvel = 0
-        elif abs(yvel) > 10:
-            if yvel > 10:
-                yvel = 10
-            elif yvel < -10:
-                yvel = -10
-        return xvel, yvel, 0
+        # pull roots to center (0, 0)
+        if not node.edges_up:
+            xvel += node_x * -0.02
+            yvel += node_y * -0.02
+        return round(xvel), round(yvel)
 
 
-    def calculate_movement_old(self, node):
-        # @time_me
-        # Sum up all forces pushing this item away.
-        """
-
-        :param node:
-        :return:
-        """
-        xvel = 0.0
-        yvel = 0.0
-        cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, cbr)
-        vn = list(self.forest.visible_nodes())
-        for other in vn:
-            other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
-            if other is node:
-                continue
-            elif other.locked_to_node is node or node.locked_to_node is other:
-                continue
-            dist_x = int(node_x - other_x)
-            dist_y = int(node_y - other_y)
-            dist = math.hypot(dist_x, dist_y)
-            if dist and dist < 100:
-                l = (70.0 / (dist * dist)) * .5
-                xvel += dist_x * l
-                yvel += dist_y * l
-
-        # Now subtract all forces pulling items together.
-        for edge in node.edges_up:
-            if node.locked_to_node is edge.start:
-                continue
-            start_x, start_y = edge.start_point
-            end_x, end_y = edge.end_point
-            dist_x = start_x - end_x
-            dist_y = start_y - end_y
-            dist = math.hypot(dist_x, dist_y)
-            if dist > 30:
-                fx = (dist_x / dist) * (dist - 30)
-                fy = (dist_y / dist) * (dist - 30)
-                xvel += fx * edge.pull
-                yvel += fy * edge.pull
-            elif dist < 20:
-                push = edge.pull / -2
-                xvel += dist_x * push
-                yvel += dist_y * push
-            else:
-                pass
-        for edge in node.edges_down:
-            if edge.end.locked_to_node is node:
-                continue
-            start_x, start_y = edge.start_point
-            end_x, end_y = edge.end_point
-            dist_x = end_x - start_x
-            dist_y = end_y - start_y
-            dist = math.hypot(dist_x, dist_y)
-            if dist > 30:
-                # ang=math.atan2(by,bx)
-                # fx=math.cos(ang)*(dist-30)
-                # fy=math.sin(ang)*(dist-30)
-                fx = (dist_x / dist) * (dist - 30)
-                fy = (dist_y / dist) * (dist - 30)
-                xvel += fx * edge.pull
-                yvel += fy * edge.pull
-            elif dist < 20:
-                push = edge.pull / -2
-                xvel += dist_x * push
-                yvel += dist_y * push
-            else:
-                pass
-
-        # pull to center (0, 0)
-        xvel += node_x * -0.002
-        yvel += node_y * -0.002
-
-        if not node.physics_x:
-            xvel = 0
-        elif abs(xvel > 10):
-            if xvel > 10:
-                xvel = 10
-            elif xvel < -10:
-                xvel = -10
-        if not node.physics_y:
-           yvel = 0
-        elif abs(yvel) > 10:
-            if yvel > 10:
-                yvel = 10
-            elif yvel < -10:
-                yvel = -10
-        return xvel, yvel, 0

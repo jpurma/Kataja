@@ -950,8 +950,14 @@ class Node(Movable):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
         #painter.drawRect(-2, -2, 4, 4)
-        painter.setBrush(ctrl.cm.get('accent4tr'))
-        painter.drawRect(self.future_children_bounding_rect())
+        if False and not self.static:
+            painter.setBrush(ctrl.cm.get('accent4tr'))
+            b = QtCore.QRectF(self.future_children_bounding_rect())
+            if b.width() < b.height():
+                b.setWidth(b.height())
+            elif b.height() < b.width():
+                b.setHeight(b.width())
+            painter.drawEllipse(b)
 
     def has_visible_label(self):
         """

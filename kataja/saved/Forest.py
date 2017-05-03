@@ -675,6 +675,7 @@ class Forest(SavedObject):
         if self.gloss_text and not ctrl.settings.get('syntactic_mode'):
             if not self.gloss:
                 self.gloss = self.free_drawing.create_node(node_type=g.GLOSS_NODE)
+                self.gloss.static = True
                 self.gloss.label = self.gloss_text
             elif self.gloss.text != self.gloss_text:
                 self.gloss.label = self.gloss_text

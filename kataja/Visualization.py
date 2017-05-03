@@ -203,11 +203,11 @@ class BaseVisualization:
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         pass
 
-    def calculate_movement(self, node: 'Node'):
-        # Sum up all forces pushing this item away.
+    def calculate_movement(self, node: 'Node', other_nodes: list):
         """
 
         :param node:
+        :param other_nodes:
         :return:
         """
         node_x, node_y = node.current_position
@@ -264,9 +264,8 @@ class BaseVisualization:
         elif self.use_gravity:
             node_y += node._gravity
 
-
-        # repulse
-        for other in self.forest.visible_nodes():
+        # Sum up all forces pushing this item away.
+        for other in other_nodes():
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:
@@ -325,7 +324,7 @@ class BaseVisualization:
                 yvel = -50
         else:
             yvel = 0
-        return round(xvel), round(yvel), 0
+        return round(xvel), round(yvel)
 
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """

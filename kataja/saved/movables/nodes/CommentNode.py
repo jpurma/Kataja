@@ -221,18 +221,21 @@ class CommentNode(Node):
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
 
-    def move(self, md):
+    def move(self, other_nodes: list) -> (int, int):
         """ Override usual movement if comment is connected to some node. If so, try to keep the
         given position relative to that node.
-        :return:
+        :return: diff_x, diff_y, normalize, ban_normalization  -- announce how much we moved and if 
+        the movement is such that it should be included in normalization calculations. 
+        Any node can prevent normalization altogether, as it is harmful in cases where there is 
+        a good reason for many free moving feature nodes to flock into one direction.  
         """
         if self.preferred_host:
             x, y = self.preferred_host.current_scene_position
             dx, dy = self.pos_relative_to_host
             self.current_position = self.scene_position_to_tree_position((x + dx, y + dy))
-            return False, False
+            return 0, 0, False, False
         else:
-            return super().move(md)
+            return super().move(other_nodes)
 
     def drop_to(self, x, y, recipient=None):
         """

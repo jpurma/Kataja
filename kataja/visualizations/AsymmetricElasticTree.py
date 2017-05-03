@@ -108,13 +108,14 @@ class AsymmetricElasticTree(BaseVisualization):
         BaseVisualization.__init__(self)
         self.forest = None
 
-    def calculate_movement(self, node):
+    def calculate_movement(self, node, other_nodes):
         """ Basic dynamic force net, but instead of computing distances from center of gravity of
          each object (which assumes round nodes, compute distances starting from the boundary
          rect. The forces pulling tree together use the magnets that mark edge connection points
          as basis of their distance calculation.
 
         :param node:
+        :param other_nodes:
         :return:
         """
         xvel = 0.0
@@ -123,7 +124,7 @@ class AsymmetricElasticTree(BaseVisualization):
         node_br = node.future_children_bounding_rect()
         nw2, nh2 = node_br.width() / 2.0, node_br.height() / 2.0
 
-        for other in self.forest.visible_nodes():
+        for other in other_nodes:
             other_br = other.future_children_bounding_rect()
             if other is node:
                 continue
@@ -186,7 +187,7 @@ class AsymmetricElasticTree(BaseVisualization):
             xvel = 0
         if not node.physics_y:
             yvel = 0
-        return xvel, yvel, 0
+        return xvel, yvel
 
     def calculate_tree_movement(self):
         """ Make trees to maintain some distance from each other

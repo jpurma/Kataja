@@ -50,11 +50,12 @@ class GlossNode(Node):
 
     default_edge = g.GLOSS_EDGE
 
-    def __init__(self, label=''):
+    def __init__(self, label='', static=False):
         Node.__init__(self)
         if not label:
             label = 'gloss'
         self.label = label
+        self.static = static
         self._gravity = 1.5
 
     @property
@@ -82,12 +83,18 @@ class GlossNode(Node):
     def __str__(self):
         return 'gloss "%s"' % self.label
 
-    def move(self, md):
-        if self.locked or self._dragged:
-            return super().move(md)
-        elif ctrl.forest.gloss is self and ctrl.forest.trees:
-            return self.put_to_top_of_trees(), False
-        return super().move(md)
+    def move(self, other_nodes: list) -> (int, int):
+        """ Special behavior for glosses that describe the whole forest
+        :return: diff_x, diff_y, normalize, ban_normalization  -- announce how much we moved and if 
+        the movement is such that it should be included in normalization calculations. 
+        Any node can prevent normalization altogether, as it is harmful in cases where there is 
+        a good reason for many free moving feature nodes to flock into one direction.  
+        """
+        if (not (self.locked or self._dragged)) and ctrl.forest.gloss is self and ctrl.forest.trees:
+            self.put_to_top_of_trees()
+            return 0, 0, False, False
+        else:
+            return super().move(other_nodes)
 
     def on_delete(self):
         if self is ctrl.forest.gloss:
@@ -105,8 +112,13 @@ class GlossNode(Node):
         x = 0
         y = 100
         found = False
+        my_tree = None
         for tree in ctrl.forest.trees:
-            if not (tree.top is self or tree.numeration):
+            if tree.top is self:
+                my_tree = tree
+            elif tree.numeration:
+                continue
+            else:
                 found = True
                 br = tree.boundingRect()
                 ty = br.y() + tree.y() - prefs.edge_height
@@ -118,13 +130,17 @@ class GlossNode(Node):
         if not found:
             x = 0
             y = 0
-        if self.use_adjustment:
-            ax, ay = self.adjustment
+        # We should move the tree containing gloss node, not gloss node itself.
+        if not my_tree:
+            my_tree = self
+        my_tree.static = True
+        if my_tree.use_adjustment:
+            ax, ay = my_tree.adjustment
             x += ax
             y += ay
-        ox, oy = self.current_position
+        ox, oy = my_tree.current_position
         if ox != x or oy != y:
-            self.current_position = x, y
+            my_tree.current_position = x, y
             return True
         else:
             return False

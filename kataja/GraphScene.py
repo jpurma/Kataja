@@ -576,6 +576,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
+    @time_me
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes
         and tells them to update their position
@@ -588,8 +589,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         items_have_moved = False
         frame_has_moved = False
         background_fade = False
-        can_normalize = True
-        md = {'sum': (0, 0), 'nodes': []}
         ctrl.items_moving = True
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
@@ -598,27 +597,40 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-            #e.update()
 
         if ctrl.pressed:
             return
-        for node in chain(f.nodes.values(), f.trees):
-            if not node.isVisible():
+        for tree in f.trees:
+            if not tree.isVisible():
                 continue
-            # Computed movement
-            moved, normalizable = node.move(md)
-            if moved:
-                items_have_moved = True
-            if not normalizable:
-                can_normalize = False
+            to_normalize = []
+            x_sum = 0
+            y_sum = 0
+            allow_normalization = True
 
-        # normalize movement so that the trees won't glide away
-        ln = len(md['nodes'])
-        if ln and can_normalize:
-            avg = div_xy(md['sum'], ln)
-            for node in md['nodes']:
-                node.current_position = sub_xy(node.current_position, avg)
+            for node in tree.sorted_nodes:
+                if not node.isVisible():
+                    continue
+                # Computed movement
+                diff_x, diff_y, normalize, ban_normalization = node.move(tree.sorted_nodes)
+                if abs(diff_x) + abs(diff_y) > 1:
+                    items_have_moved = True
+                if normalize:  # We cannot rely on movement alone to tell if node should be
+                    # normalized. It is possible for node to remain still while other end of
+                    # graph is wiggling, and to not normalize such node causes more wiggling.
+                    to_normalize.append(node)
+                    x_sum += diff_x
+                    y_sum += diff_y
+                if ban_normalization:
+                    allow_normalization = False
 
+            # normalize movement so that the trees won't glide away
+            if allow_normalization:
+                avg_x = x_sum / len(to_normalize)
+                avg_y = y_sum / len(to_normalize)
+                for node in to_normalize:
+                    node.current_position = node.current_position[0] - avg_x, \
+                                            node.current_position[1] - avg_y
         if items_have_moved:
             for e in f.edges.values():
                 e.make_path()
@@ -637,3 +649,4 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.items_moving = False
             self.keep_updating_visible_area = False
         f.edge_visibility_check()  # only does something if flagged
+

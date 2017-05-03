@@ -60,18 +60,19 @@ class SymmetricElasticTree(BaseVisualization):
         node.physics_x = True
         node.physics_y = True
 
-    def calculate_movement(self, node):
-        # Sum up all forces pushing this item away.
+    def calculate_movement(self, node, other_nodes):
         """
 
         :param node:
+        :param other_nodes:
         :return:
         """
         xvel = 0.0
         yvel = 0.0
         fbr = node.future_children_bounding_rect()
         node_x, node_y = self.centered_node_position(node, fbr)
-        for other in self.forest.visible_nodes():
+        # Sum up all forces pushing this item away.
+        for other in other_nodes:
             if other is node:
                 continue
             elif other.locked_to_node is node or node.locked_to_node is other:
@@ -135,4 +136,4 @@ class SymmetricElasticTree(BaseVisualization):
             xvel = 0
         if not node.physics_y:
             yvel = 0
-        return xvel, yvel, 0
+        return xvel, yvel

@@ -111,6 +111,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.physics_x = False
         self.physics_y = False
         self.repulsion = 0.2
+        self.static = False  # static elements are ignored also when calculating dynamic positions
         # Other
         self._visible_by_logic = True
         self._fade_anim = None
@@ -144,7 +145,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.update_position()
 
     def use_physics(self):
-        return (self.physics_x or self.physics_y) and not self.locked_to_node
+        return (self.physics_x or self.physics_y) and not (self.locked_to_node or self.static)
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -229,7 +230,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         return 0
 
-    def move(self, md: dict) -> (bool, bool):
+    def move(self, other_nodes: list) -> (int, int, bool):
         """ Do one frame of movement: either move towards target position or
         take a step according to algorithm
         1. item folding towards position in part of animation to disappear etc.
@@ -239,29 +240,37 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         the other node, it is _not_ parent node, though.)
         5. visualisation algorithm setting it specifically
         (6) or (0) -- places where subclasses can add new movements.
-
-        :param md: movement data dict, collects sum of all movement to help normalize it
-        :return:
+        :param: x_sum
+        :param: y_sum
+        :param: normalizable_nodes
+        :return: diff_x, diff_y, normalize, ban_normalization  -- announce how much we moved and if 
+        the movement is such that it should be included in normalization calculations. 
+        Any node can prevent normalization altogether, as it is harmful in cases where there is 
+        a good reason for many free moving feature nodes to flock into one direction.  
         """
-        # _high_priority_move can be used together with _move_counter
-
         self.unmoved = False
+        diff_x = 0
+        diff_y = 0
+        can_normalize = not self.locked_to_node
+        ban_normalization = False
+        # _high_priority_move can be used together with _move_counter
         if not self._high_priority_move:
             # Dragging overrides (almost) everything, don't try to move this anywhere
             if self._dragged:
-                return True, False
+                return 0, 0, False, True
             # Locked nodes are immune to physics
             elif self.locked:
-                return False, False
-            #elif self.locked_to_node:
-            #    return False, False
+                return 0, 0, False, False
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
+        sx, sy = self.current_position
         if self._move_counter:
+            if not self.locked_to_node:
+                ban_normalization = True
             # stop even despite the _move_counter, if we are already there
             if self.current_position == self.target_position:
                 self.stop_moving()
-                return False, False
+                return diff_x, diff_y, can_normalize, ban_normalization
             self._move_counter -= 1
             # move a precalculated step
             if self._use_easing:
@@ -270,25 +279,41 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
                     f = qt_prefs.curve.valueForProgress(time_f)
                 else:
                     f = 0
-                movement = multiply_xy(self._distance, f)
-                self.current_position = add_xy(self._start_position, movement)
+                # 'o' as in original
+                odx, ody = self._distance
+                osx, osy = self._start_position
+                dx = odx * f
+                dy = ody * f
+                diff_x = osx + dx - sx
+                diff_y = osy + dy - sy
+                self.current_position = osx + dx, osy + dy
             else:
-                movement = div_xy(sub_xy(self.target_position, self.current_position), self._move_counter)
-                self.current_position = add_xy(self.current_position, movement)
+                ox, oy = self.target_position
+                diff_x = (ox - sx) / self._move_counter
+                diff_y = (oy - sy) / self._move_counter
+                self.current_position = sx + diff_x, sy + diff_y
             # if move counter reaches zero, stop and do clean-up.
             if not self._move_counter:
                 self.stop_moving()
             if self.locked_to_node:
                 self.locked_to_node.update_bounding_rect()
-            return True, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():
-            movement = ctrl.forest.visualization.calculate_movement(self)
-            md['sum'] = add_xy(movement, md['sum'])
-            md['nodes'].append(self)
-            self.current_position = add_xy(self.current_position, movement)
-            return abs(movement[0]) + abs(movement[1]) > 1, True
-        return False, False
+            diff_x, diff_y = ctrl.forest.visualization.calculate_movement(self, other_nodes)
+            if not self.physics_x:
+                diff_x = 0
+            elif diff_x > 6:
+                diff_x = 6
+            elif diff_x < -6:
+                diff_x = -6
+            if not self.physics_y:
+                diff_y = 0
+            elif diff_y > 6:
+                diff_y = 6
+            elif diff_y < -6:
+                diff_y = -6
+            self.current_position = sx + diff_x, sy + diff_y
+        return diff_x, diff_y, can_normalize, ban_normalization
 
     def distance_to(self, movable):
         """ Return current x,y distance to another movable
@@ -595,5 +620,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     locked = SavedField("locked")
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
+    static = SavedField("static")
     trees = SavedField("trees")
     locked_to_node = SavedField("locked_to_node")
