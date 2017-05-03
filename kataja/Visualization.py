@@ -22,6 +22,7 @@
 #
 # ############################################################################
 import math
+import random
 
 from kataja.utils import caller, time_me
 import kataja.globals as g
@@ -200,8 +201,15 @@ class BaseVisualization:
 
     @caller
     def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        pass
+        """ if there are different modes for one visualization, rotating between different modes 
+        is triggered here. 
+        
+        Default is to randomly jiggle all dynamically placed nodes.
+        """
+        for node in self.forest.nodes.values():
+            if node.use_physics():
+                x, y = node.current_position
+                node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
     def calculate_movement(self, node: 'Node', other_nodes: list):
         """
@@ -210,121 +218,79 @@ class BaseVisualization:
         :param other_nodes:
         :return:
         """
-        node_x, node_y = node.current_position
-        old_x, old_y = node.current_position
-        alpha = 0.2
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, cbr)
+        x_vel = 0
+        y_vel = 0
+        alpha = 0.4
         # attract
-        my_size = node.future_children_bounding_rect().size()
-        lonely = True
-        for edge in node.get_edges_down_with_children():
-            other = edge.end
-            #if other.locked_to_node:
-            #    continue
-            if other.locked_to_node is node:
-                continue
-            other_size = other.future_children_bounding_rect().size()
-            other_x, other_y = other.current_position
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            radius = (other_size.width() + my_size.width() + other_size.height() +
-                      my_size.height()) / 4
-            if dist != 0 and dist - radius > 0:
-                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
-                node_x -= dist_x * pulling_force
-                node_y -= dist_y * pulling_force
-            else:
-                node_x += 1
-            lonely = False
-
-        for edge in node.get_edges_up_with_children():
-            other = edge.start
-            #if other.locked_to_node:
-            #    continue
-            if node.locked_to_node is other:
-                continue
-            other_x, other_y = other.current_position
-            other_size = other.future_children_bounding_rect().size()
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            radius = (other_size.width() + my_size.width() + other_size.height() +
-                      my_size.height()) / 4
-            if dist != 0 and dist - radius > 0:
-                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
-                node_x -= dist_x * pulling_force
-                node_y -= dist_y * pulling_force
-            else:
-                node_x -= 1
-            lonely = False
-
-        if lonely:
-            # pull to center (0, 0)
-            node_x += node_x * -0.009
-            node_y += node_y * -0.009
-            # elif (not down) and self.use_gravity:
-        elif self.use_gravity:
-            node_y += node._gravity
+        cbr_w = cbr.width()
+        cbr_h = cbr.height()
 
         # Sum up all forces pushing this item away.
-        for other in other_nodes():
-            if other is node:
-                continue
-            elif other.locked_to_node is node or node.locked_to_node is other:
-                continue
-            elif node.node_type == g.FEATURE_NODE and node.in_checking_relation_with(other):
-                continue
-            other_x, other_y = other.current_position  # @UnusedVariable
-            other_size = other.future_children_bounding_rect().size()
+        for other in other_nodes:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            #if dist > 50:
-            #    continue
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = (other_size.width() + my_size.width() + other_size.height() +
-                         my_size.height()) / 4
+            safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() +
+                            cbr_h) / 2
 
             if dist == safe_zone:
-                continue
-            if dist < safe_zone:
+                pushing_force = 0.1
+            elif dist < safe_zone:
                 required_dist = abs(dist - safe_zone)
                 pushing_force = required_dist / (dist * dist * alpha)
+            else:
+                continue
+            x_vel += pushing_force * dist_x
+            y_vel += pushing_force * dist_y
 
-                node_x += pushing_force * dist_x
-                node_y += pushing_force * dist_y
-                if dist_x == 0:
-                    node_x -= 1
+        total_edges = 0
+        edges = []
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
 
-            # safe_zone = (other.width + node.width) / 2
-            # if dist == safe_zone:
-            #     continue
-            # if dist < safe_zone:
-            #     required_dist = abs(dist - safe_zone)
-            #     pushing_force = required_dist / (dist * dist * alpha)
-            #     #pushing_force = min(random.random() * 60, pushing_force)
-            #
-            #     node_x += pushing_force * dist_x
-            #     node_y += pushing_force * dist_y
-            #     if dist_x == 0:
-            #         node_x -= 1
+        for other, edge_pull in edges:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = max(other_cbr.width() + cbr_w, other_cbr.height() +
+                      cbr_h)
+            if dist != 0 and dist - radius > 0:
+                pulling_force = ((dist - radius) * edge_pull * alpha) / dist
+                x_vel -= dist_x * pulling_force
+                y_vel -= dist_y * pulling_force
+            else:
+                x_vel += 1
 
-        if node.physics_x:
-            xvel = node_x - old_x
-            if xvel > 50:
-                xvel = 50
-            elif xvel < -50:
-                xvel = -50
-        else:
-            xvel = 0
-        if node.physics_y:
-            yvel = node_y - old_y
-            if yvel > 50:
-                yvel = 50
-            elif yvel < -50:
-                yvel = -50
-        else:
-            yvel = 0
-        return round(xvel), round(yvel)
+        if not total_edges:
+            # pull to center (0, 0)
+            x_vel += node_x * -0.009
+            y_vel += node_y * -0.009
+            # elif (not down) and self.use_gravity:
+        elif self.use_gravity:
+            y_vel += node._gravity * 2
+
+        return round(x_vel), round(y_vel)
 
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """

@@ -151,5 +151,5 @@ class DynamicWidthTree(DivideAndConquerTree):
             xvel = node_x - old_x
         else:
             xvel = 0
-        return xvel, 0, 0
+        return xvel, 0
 

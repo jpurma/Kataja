@@ -75,18 +75,19 @@ class SymmetricElasticTree(BaseVisualization):
         for other in other_nodes:
             if other is node:
                 continue
-            elif other.locked_to_node is node or node.locked_to_node is other:
-                continue
             fbr_other = other.future_children_bounding_rect()
             other_x, other_y = self.centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             safe_zone = (fbr.width() + fbr_other.width()) / 2
             dist = math.hypot(dist_x, dist_y)
-            if dist == 0 or dist == safe_zone:
+            if dist == 0:
                 continue
             required_dist = dist - safe_zone
-            pushing_force = 500 / (required_dist * required_dist)
-            pushing_force = min(0.6, pushing_force)
+            if required_dist < 1:
+                pushing_force = 0.7
+            else:
+                pushing_force = 1 / (0.0001 * required_dist * required_dist)
+                pushing_force = min(0.7, pushing_force)
 
             x_component = dist_x / dist
             y_component = dist_y / dist
@@ -94,10 +95,26 @@ class SymmetricElasticTree(BaseVisualization):
             yvel += pushing_force * y_component
 
         # Now subtract all forces pulling items together.
-        for edge in node.edges_down:
-            other = edge.end
-            if other.locked_to_node is node:
+        total_edges = 0
+        edges = []
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
                 continue
+            total_edges += 1
+            edges.append((other, e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+
+        for other, edge_pull in edges:
             fbr_other = other.future_children_bounding_rect()
             other_x, other_y = self.centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
@@ -105,35 +122,16 @@ class SymmetricElasticTree(BaseVisualization):
             if dist == 0:
                 continue
             safe_zone = (fbr.width() + fbr_other.width()) / 2
-            pulling_force = (dist - safe_zone) * edge.pull * 0.4
-            x_component = dist_x / dist
-            y_component = dist_y / dist
-            xvel -= x_component * pulling_force
-            yvel -= y_component * pulling_force
-
-        for edge in node.edges_up:
-            other = edge.start
-            if node.locked_to_node is other:
-                continue
-            fbr_other = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, fbr_other)
-            dist_x, dist_y = (node_x - other_x, node_y - other_y)
-            dist = math.hypot(dist_x, dist_y)
-            if dist == 0:
-                continue
-            safe_zone = (fbr.width() + fbr_other.width()) / 2
-            pulling_force = (dist - safe_zone) * edge.pull * 0.4
+            pulling_force = (dist - safe_zone) * edge_pull * 0.4 / total_edges
+            #pulling_force = dist * edge_pull * 0.4 #/ total_edges
             x_component = dist_x / dist
             y_component = dist_y / dist
             xvel -= x_component * pulling_force
             yvel -= y_component * pulling_force
 
         # pull to center (0, 0)
-        xvel += node_x * -0.003
-        yvel += node_y * -0.003
+        #if not node.edges_up:
+        #    xvel += node_x * -0.006
+        #    yvel += node_y * -0.006
 
-        if not node.physics_x:
-            xvel = 0
-        if not node.physics_y:
-            yvel = 0
-        return xvel, yvel
+        return round(xvel), round(yvel)

@@ -59,6 +59,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
         self._timer_id = 0
+        self._timer_min_count = 0
         self._fade_steps = 0
         self._fade_steps_list = []
         self.manual_zoom = False
@@ -204,6 +205,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
+            self._timer_min_count = 0
 
     start_animations = item_moved
 
@@ -597,6 +599,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
+        items_moving = 0
+        self._timer_min_count += 1
 
         if ctrl.pressed:
             return
@@ -607,14 +611,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             x_sum = 0
             y_sum = 0
             allow_normalization = True
+            other_nodes = [x for x in tree.sorted_nodes if not x.locked_to_node]
 
             for node in tree.sorted_nodes:
                 if not node.isVisible():
                     continue
                 # Computed movement
-                diff_x, diff_y, normalize, ban_normalization = node.move(tree.sorted_nodes)
-                if abs(diff_x) + abs(diff_y) > 1:
-                    items_have_moved = True
+                diff_x, diff_y, normalize, ban_normalization = node.move(other_nodes)
                 if normalize:  # We cannot rely on movement alone to tell if node should be
                     # normalized. It is possible for node to remain still while other end of
                     # graph is wiggling, and to not normalize such node causes more wiggling.
@@ -623,15 +626,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     y_sum += diff_y
                 if ban_normalization:
                     allow_normalization = False
+                if abs(diff_x) + abs(diff_y) > 1:
+                    items_moving += 1
 
             # normalize movement so that the trees won't glide away
-            if allow_normalization:
+            if allow_normalization and to_normalize:
                 avg_x = x_sum / len(to_normalize)
                 avg_y = y_sum / len(to_normalize)
                 for node in to_normalize:
                     node.current_position = node.current_position[0] - avg_x, \
                                             node.current_position[1] - avg_y
-        if items_have_moved:
+        if items_moving or self._timer_min_count < 20:
+            items_have_moved = True
             for e in f.edges.values():
                 e.make_path()
 

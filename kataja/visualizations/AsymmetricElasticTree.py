@@ -109,10 +109,13 @@ class AsymmetricElasticTree(BaseVisualization):
         self.forest = None
 
     def calculate_movement(self, node, other_nodes):
-        """ Basic dynamic force net, but instead of computing distances from center of gravity of
-         each object (which assumes round nodes, compute distances starting from the boundary
-         rect. The forces pulling tree together use the magnets that mark edge connection points
-         as basis of their distance calculation.
+        """ The idea here is that each node has their preferred position below their parent node. 
+        The strings that pull are computed to pull towards that position instead of pulling nodes 
+        over each other.
+
+             N
+                      C
+           X <-- try to move child node C here instead of towards N
 
         :param node:
         :param other_nodes:
@@ -120,74 +123,152 @@ class AsymmetricElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y = node.centered_scene_position  # @UnusedVariable
-        node_br = node.future_children_bounding_rect()
-        nw2, nh2 = node_br.width() / 2.0, node_br.height() / 2.0
+        node_cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, node_cbr)
+        nw2, nh2 = node_cbr.width() / 2.0, node_cbr.height() / 2.0
 
         for other in other_nodes:
-            other_br = other.future_children_bounding_rect()
+            other_cbr = other.future_children_bounding_rect()
             if other is node:
                 continue
-            elif other.locked_to_node is node or node.locked_to_node is other:
-                continue
 
-            other_x, other_y = other.centered_scene_position  # @UnusedVariable
+            other_x, other_y = self.centered_node_position(other, other_cbr)
 
             d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
-                                                 other_br.width() / 2,
-                                                 other_br.height() / 2)
+                                                 other_cbr.width() / 2,
+                                                 other_cbr.height() / 2)
             if d == 0:
                 continue
-            l = -3.0 / (d * d)
+            l = -9.0 / (d * d)
             xvel += dx * l
             yvel += dy * l
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            elif edge.end.locked_to_node is node:
+            elif edge.end.locked_to_node: #is node:
                 continue
             edge_n, edge_count = edge.edge_index()
-            target_d_x = direction_multiplier(edge_n, edge_count) * prefs.edge_width
-            target_d_y = -15
+            other_cbr = edge.end.future_children_bounding_rect()
+            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
+            target_d_x *= direction_multiplier(edge_n, edge_count)
+            target_d_y = (node_cbr.height() + other_cbr.height()) / -2
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = start_x - end_x
             d_y = start_y - end_y
-            #print(start_x, end_x, d_x)
             rd_x = d_x - target_d_x
             rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.3
-            yvel -= rd_y * edge.pull * 0.3
+            xvel -= rd_x * edge.pull * 0.2
+            yvel -= rd_y * edge.pull * 0.2
 
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            elif node.locked_to_node is edge.end:
+            elif node.locked_to_node: # is edge.end:
                 continue
             edge_n, edge_count = edge.edge_index()
-            target_d_x = direction_multiplier(edge_n, edge_count) * prefs.edge_width
-            target_d_y = 15
+            other_cbr = edge.start.future_children_bounding_rect()
+            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
+            target_d_x *= direction_multiplier(edge_n, edge_count)
+            target_d_y = (node_cbr.height() + other_cbr.height()) / 2
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = end_x - start_x
             d_y = end_y - start_y
-            #print(start_x, end_x, d_x)
             rd_x = d_x - target_d_x
             rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.6 / ((i + 1) * (i + 1))  # first branch has strongest pull
-            yvel -= rd_y * edge.pull * 0.6 / ((i + 1) * (i + 1))
+            xvel -= rd_x * edge.pull * 0.2
+            yvel -= rd_y * edge.pull * 0.2
 
-        # pull to center (0, 0)
-        # let's remove this from node, and put it to trees instead
-        #xvel += node_x * -0.008
-        #yvel += node_y * -0.008
+        # pull roots to center (0, 0)
+        if not node.edges_up:
+            xvel += node_x * -0.02
+            yvel += node_y * -0.02
 
-        if not node.physics_x:
-            xvel = 0
-        if not node.physics_y:
-            yvel = 0
-        return xvel, yvel
+        return round(xvel), round(yvel)
+
+
+    def calculate_movement_old(self, node, other_nodes):
+        """ The idea here is that each node has their preferred position below their parent node. 
+        The strings that pull are computed to pull towards that position instead of pulling nodes 
+        over each other.
+
+             N
+                      C
+           X <-- try to move child node C here instead of towards N
+
+        :param node:
+        :param other_nodes:
+        :return:
+        """
+        xvel = 0.0
+        yvel = 0.0
+        node_cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, node_cbr)
+        nw2, nh2 = node_cbr.width() / 2.0, node_cbr.height() / 2.0
+
+        for other in other_nodes:
+            other_cbr = other.future_children_bounding_rect()
+            if other is node:
+                continue
+
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+
+            d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
+                                                 other_cbr.width() / 2,
+                                                 other_cbr.height() / 2)
+            if d == 0:
+                continue
+            l = -9.0 / (d * d)
+            xvel += dx * l
+            yvel += dy * l
+        # Now subtract all forces pulling items together.
+        for edge in node.edges_down:
+            if not edge.is_visible():
+                continue
+            elif edge.end.locked_to_node: #is node:
+                continue
+            edge_n, edge_count = edge.edge_index()
+            other_cbr = edge.end.future_children_bounding_rect()
+            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
+            target_d_x *= direction_multiplier(edge_n, edge_count)
+            target_d_y = (node_cbr.height() + other_cbr.height()) / -2
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            end_x, end_y = edge.end_point  # @UnusedVariable
+            d_x = start_x - end_x
+            d_y = start_y - end_y
+            rd_x = d_x - target_d_x
+            rd_y = d_y - target_d_y
+            xvel -= rd_x * edge.pull * 0.2
+            yvel -= rd_y * edge.pull * 0.2
+
+        for i, edge in enumerate(node.edges_up):
+            if not edge.is_visible():
+                continue
+            elif node.locked_to_node: # is edge.end:
+                continue
+            edge_n, edge_count = edge.edge_index()
+            other_cbr = edge.start.future_children_bounding_rect()
+            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
+            target_d_x *= direction_multiplier(edge_n, edge_count)
+            target_d_y = (node_cbr.height() + other_cbr.height()) / 2
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            end_x, end_y = edge.end_point  # @UnusedVariable
+            d_x = end_x - start_x
+            d_y = end_y - start_y
+            rd_x = d_x - target_d_x
+            rd_y = d_y - target_d_y
+            xvel -= rd_x * edge.pull * 0.2
+            yvel -= rd_y * edge.pull * 0.2
+
+        # pull roots to center (0, 0)
+        if not node.edges_up:
+            xvel += node_x * -0.02
+            yvel += node_y * -0.02
+
+        return round(xvel), round(yvel)
+
 
     def calculate_tree_movement(self):
         """ Make trees to maintain some distance from each other

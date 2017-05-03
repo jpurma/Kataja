@@ -159,9 +159,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     @current_position.setter
     def current_position(self, value):
-        value = round(value[0]), round(value[1])
         self._current_position = value
-        self.setPos(*value)
+        self.setPos(round(value[0]), round(value[1]))
 
     @property
     def current_scene_position(self):

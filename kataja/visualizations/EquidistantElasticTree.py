@@ -61,9 +61,10 @@ class EquidistantElasticTree(BaseVisualization):
         """
         super().reset_node(node)
 
-    def calculate_movement(self, node, other_nodes):
-        """
 
+    def calculate_movement(self, node, other_nodes):
+        """ Try to keep the edge between start_point and end_point at a certain length. This has 
+        the effect that positioning of edge magnets ends up adjusting the form of the graph. 
         :param node:
         :param other_nodes:
         :return:
@@ -80,7 +81,7 @@ class EquidistantElasticTree(BaseVisualization):
         for other in other_nodes:
             if other.static:
                 continue
-            if other.locked_to_node or other is node:
+            if other is node:
                 continue
             other_cbr = other.future_children_bounding_rect()
             other_x, other_y = self.centered_node_position(other, other_cbr)
@@ -102,17 +103,20 @@ class EquidistantElasticTree(BaseVisualization):
         edges = []
         for e in node.get_edges_up_with_children():
             other = e.start
-            if other is node or other.locked_to_node is node:
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
                 continue
             total_edges += 1
             edges.append((e.end_point, e.start_point, e.pull))
         for e in node.get_edges_down_with_children():
             other = e.end
-            if other is node or other.locked_to_node is node:
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
                 continue
             total_edges += 1
             edges.append((e.start_point, e.end_point, e.pull))
-
         for my_point, other_point, edge_pull in edges:
             node_x, node_y = my_point
             other_x, other_y = other_point
@@ -136,5 +140,7 @@ class EquidistantElasticTree(BaseVisualization):
             xvel += node_x * -0.02
             yvel += node_y * -0.02
         return round(xvel), round(yvel)
+
+
 
 
