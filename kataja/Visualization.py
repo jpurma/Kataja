@@ -238,6 +238,7 @@ class BaseVisualization:
                 continue
             safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() +
                             cbr_h) / 2
+            safe_zone += 10
 
             if dist == safe_zone:
                 pushing_force = 0.1

@@ -578,7 +578,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
-    @time_me
+    #@time_me
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes
         and tells them to update their position

@@ -123,7 +123,6 @@ class SymmetricElasticTree(BaseVisualization):
                 continue
             safe_zone = (fbr.width() + fbr_other.width()) / 2
             pulling_force = (dist - safe_zone) * edge_pull * 0.4 / total_edges
-            #pulling_force = dist * edge_pull * 0.4 #/ total_edges
             x_component = dist_x / dist
             y_component = dist_y / dist
             xvel -= x_component * pulling_force

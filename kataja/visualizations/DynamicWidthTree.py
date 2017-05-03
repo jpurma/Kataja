@@ -51,7 +51,83 @@ class DynamicWidthTree(DivideAndConquerTree):
             node.physics_x = True
             node.physics_y = True
 
-    def calculate_movement(self, node, other_nodes):
+    def calculate_movement(self, node: 'Node', other_nodes: list):
+        """
+
+        :param node:
+        :param other_nodes:
+        :return:
+        """
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, cbr)
+        x_vel = 0
+        alpha = 0.4
+        # attract
+        cbr_w = cbr.width()
+        cbr_h = cbr.height()
+
+        # Sum up all forces pushing this item away.
+        for other in other_nodes:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0:
+                node_x += 5
+                continue
+            safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() +
+                            cbr_h) / 2
+            safe_zone += 10
+            if dist == safe_zone:
+                pushing_force = 0.1
+            elif dist < safe_zone:
+                required_dist = abs(dist - safe_zone)
+                pushing_force = required_dist / (dist * dist * alpha)
+            else:
+                continue
+            x_vel += pushing_force * dist_x
+
+        total_edges = 0
+        edges = []
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+
+        for other, edge_pull in edges:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = self.centered_node_position(other, other_cbr)
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = max(other_cbr.width() + cbr_w, other_cbr.height() +
+                      cbr_h)
+            if dist != 0 and dist - radius > 0:
+                pulling_force = ((dist - radius) * edge_pull * alpha) / dist
+                x_vel -= dist_x * pulling_force
+            else:
+                x_vel += 1
+
+        if not total_edges:
+            # pull to center (0, 0)
+            x_vel += node_x * -0.009
+
+        return round(x_vel), 0
+
+
+
+    def calculate_movement_old(self, node, other_nodes):
         """
 
         :param node:

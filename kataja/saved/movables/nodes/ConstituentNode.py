@@ -240,8 +240,8 @@ class ConstituentNode(Node):
             return gs[0]
 
     def has_ordered_children(self):
-        if self.syntactic_object:
-            return getattr(self.syntactic_object, 'is_ordered', False)
+        #if self.syntactic_object:
+        #    return getattr(self.syntactic_object, 'is_ordered', False)
         return True
 
     def update_label_shape(self):

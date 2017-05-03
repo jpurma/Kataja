@@ -149,18 +149,14 @@ class AsymmetricElasticTree(BaseVisualization):
             elif edge.end.locked_to_node: #is node:
                 continue
             edge_n, edge_count = edge.edge_index()
-            other_cbr = edge.end.future_children_bounding_rect()
-            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
-            target_d_x *= direction_multiplier(edge_n, edge_count)
-            target_d_y = (node_cbr.height() + other_cbr.height()) / -2
             start_x, start_y = edge.start_point  # @UnusedVariable
+            start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
+            start_y += prefs.edge_height
             end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = start_x - end_x
             d_y = start_y - end_y
-            rd_x = d_x - target_d_x
-            rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.2
-            yvel -= rd_y * edge.pull * 0.2
+            xvel -= d_x * edge.pull * 0.4
+            yvel -= d_y * edge.pull * 0.4
 
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
@@ -168,18 +164,14 @@ class AsymmetricElasticTree(BaseVisualization):
             elif node.locked_to_node: # is edge.end:
                 continue
             edge_n, edge_count = edge.edge_index()
-            other_cbr = edge.start.future_children_bounding_rect()
-            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
-            target_d_x *= direction_multiplier(edge_n, edge_count)
-            target_d_y = (node_cbr.height() + other_cbr.height()) / 2
             start_x, start_y = edge.start_point  # @UnusedVariable
+            start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
+            start_y += prefs.edge_height
             end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = end_x - start_x
             d_y = end_y - start_y
-            rd_x = d_x - target_d_x
-            rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.2
-            yvel -= rd_y * edge.pull * 0.2
+            xvel -= d_x * edge.pull * 0.4
+            yvel -= d_y * edge.pull * 0.4
 
         # pull roots to center (0, 0)
         if not node.edges_up:
@@ -188,86 +180,6 @@ class AsymmetricElasticTree(BaseVisualization):
 
         return round(xvel), round(yvel)
 
-
-    def calculate_movement_old(self, node, other_nodes):
-        """ The idea here is that each node has their preferred position below their parent node. 
-        The strings that pull are computed to pull towards that position instead of pulling nodes 
-        over each other.
-
-             N
-                      C
-           X <-- try to move child node C here instead of towards N
-
-        :param node:
-        :param other_nodes:
-        :return:
-        """
-        xvel = 0.0
-        yvel = 0.0
-        node_cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, node_cbr)
-        nw2, nh2 = node_cbr.width() / 2.0, node_cbr.height() / 2.0
-
-        for other in other_nodes:
-            other_cbr = other.future_children_bounding_rect()
-            if other is node:
-                continue
-
-            other_x, other_y = self.centered_node_position(other, other_cbr)
-
-            d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
-                                                 other_cbr.width() / 2,
-                                                 other_cbr.height() / 2)
-            if d == 0:
-                continue
-            l = -9.0 / (d * d)
-            xvel += dx * l
-            yvel += dy * l
-        # Now subtract all forces pulling items together.
-        for edge in node.edges_down:
-            if not edge.is_visible():
-                continue
-            elif edge.end.locked_to_node: #is node:
-                continue
-            edge_n, edge_count = edge.edge_index()
-            other_cbr = edge.end.future_children_bounding_rect()
-            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
-            target_d_x *= direction_multiplier(edge_n, edge_count)
-            target_d_y = (node_cbr.height() + other_cbr.height()) / -2
-            start_x, start_y = edge.start_point  # @UnusedVariable
-            end_x, end_y = edge.end_point  # @UnusedVariable
-            d_x = start_x - end_x
-            d_y = start_y - end_y
-            rd_x = d_x - target_d_x
-            rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.2
-            yvel -= rd_y * edge.pull * 0.2
-
-        for i, edge in enumerate(node.edges_up):
-            if not edge.is_visible():
-                continue
-            elif node.locked_to_node: # is edge.end:
-                continue
-            edge_n, edge_count = edge.edge_index()
-            other_cbr = edge.start.future_children_bounding_rect()
-            target_d_x = max(prefs.edge_width, node_cbr.width() + other_cbr.width())
-            target_d_x *= direction_multiplier(edge_n, edge_count)
-            target_d_y = (node_cbr.height() + other_cbr.height()) / 2
-            start_x, start_y = edge.start_point  # @UnusedVariable
-            end_x, end_y = edge.end_point  # @UnusedVariable
-            d_x = end_x - start_x
-            d_y = end_y - start_y
-            rd_x = d_x - target_d_x
-            rd_y = d_y - target_d_y
-            xvel -= rd_x * edge.pull * 0.2
-            yvel -= rd_y * edge.pull * 0.2
-
-        # pull roots to center (0, 0)
-        if not node.edges_up:
-            xvel += node_x * -0.02
-            yvel += node_y * -0.02
-
-        return round(xvel), round(yvel)
 
 
     def calculate_tree_movement(self):
