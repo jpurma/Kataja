@@ -239,7 +239,16 @@ class FeatureNode(Node):
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
         if checked_by and self.is_visible():
-            if checking_mode == 1:
+            if checking_mode == 0:
+                for parent in self.get_parents(similar=False, visible=True):
+                    if parent.node_type == g.CONSTITUENT_NODE:
+                        parents.append(parent)
+                if self.locked_to_node == checked_by:
+                    self.release_from_locked_position()
+                edge = self.get_edge_to(checked_by, g.CHECKING_EDGE)
+                edge.hide()
+
+            elif checking_mode == 1:
                 locked_to_another_feature = True
                 if self.locked_to_node != checked_by:
                     x = checked_by.future_children_bounding_rect().right() - \

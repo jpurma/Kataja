@@ -268,6 +268,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             start = self.start
             end = self.end
+            delete = False
             if self.edge_type == g.CONSTITUENT_EDGE:
                 if end and not end.is_visible():
                     lv = False
@@ -279,15 +280,28 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     return False
                 elif end.locked_to_node:
                     lv = False
-            elif self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
+            elif self.edge_type == g.FEATURE_EDGE:
                 if start and end:
                     if not (end.is_visible() and start.is_visible()):
                         lv = False
                     elif end.locked_to_node is start:
                         lv = False
                 else:
-                    ctrl.free_drawing.delete_edge(self)
-                    return False
+                    delete = True
+            elif self.edge_type == g.CHECKING_EDGE:
+                if start and end:
+                    if not (end.is_visible() and start.is_visible()):
+                        lv = False
+                    elif end.locked_to_node is start:
+                        lv = False
+                    elif ctrl.settings.get('feature_check_display') == 0:
+                        lv = False
+                else:
+                    delete = True
+
+            if delete:
+                ctrl.free_drawing.delete_edge(self)
+                return False
 
         self._visible_by_logic = lv
         # Change visibility if necessary, with fade or instantly.
