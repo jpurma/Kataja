@@ -109,7 +109,8 @@ class KatajaFactory:
         for key, nodeclass in self.nodes.items():
             self.node_info[key] = {'name': nodeclass.display_name[0],
                                    'name_pl': nodeclass.display_name[1],
-                                   'display': nodeclass.display}
+                                   'display': nodeclass.display,
+                                   'ui_sheet': nodeclass.ui_sheet}
             if nodeclass.display:
                 self.node_types_order.append(key)
         self.node_types_order.sort()

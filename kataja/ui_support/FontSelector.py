@@ -7,6 +7,25 @@ from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.saved.movables.Node import Node
 
 
+stylesheet = """
+QComboBox {
+    background: transparent;
+    border: 1px solid transparent;
+}
+QComboBox::drop-down {
+    border: 1px solid transparent;
+}
+
+QComboBox::down-arrow {
+    image: url(resources/icons/text_format24.png);
+    color: %s;    
+    width: 16px;
+    height: 16px;
+}
+
+
+"""
+
 class FontDialogForSelector(QtWidgets.QFontDialog):
     """
 
@@ -29,12 +48,21 @@ class FontSelector(TableModelSelectionBox):
     :param parent:
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, flat=False):
         super().__init__(parent)
-        self.setIconSize(QSize(64, 16))
+        if flat:
+            self.setMaximumWidth(24)
+            self.setMinimumWidth(24)
+        else:
+            self.setMinimumWidth(92)
+        #self.setIconSize(QSize(92, 16))
         self.font_dialog = None
         # self.shape_selector.setView(view)
         self.selected_font = 'main_font'
+        self.old_index = 0
+        self.old_text = ''
+        #self.setAutoFillBackground(False)
+        self.setStyleSheet(stylesheet % 'red')
         font = qt_prefs.fonts[self.selected_font]
         self.setFont(font)
         items = []
@@ -114,6 +142,9 @@ class FontSelector(TableModelSelectionBox):
         else:
             self.font_dialog = FontDialogForSelector(self, font)
         self.font_dialog.show()
+
+    def set_color(self, color_key):
+        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
 
     def select_by_data(self, data):
         """ Override TableModelSelectionBox to include setFont and avoiding selecting font_dialog

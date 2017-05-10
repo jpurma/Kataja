@@ -25,7 +25,8 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_support.panel_utils import mini_icon_button, label
+import kataja.globals as g
+from kataja.ui_support.panel_utils import mini_icon_button, label, selector, mini_button
 from kataja.UIItem import UIWidget
 
 
@@ -34,7 +35,7 @@ from kataja.UIItem import UIWidget
 class PanelTitle(QtWidgets.QWidget):
     """ Widget for displaying panel title and control buttons in a concise form """
 
-    def __init__(self, name, panel):
+    def __init__(self, name, panel, scope_action=''):
         """
 
         :param name:
@@ -72,6 +73,22 @@ class PanelTitle(QtWidgets.QWidget):
                                             action='toggle_fold_panel')
         layout.addSpacing(8)
         self.title = label(self, layout, name)
+        layout.addStretch(8)
+        if scope_action:
+            items = [(g.SELECTION, 'in this selection'), (g.FOREST, 'in this forest'),
+                     (g.DOCUMENT, 'in this document'), (g.PREFS, 'in preferences')]
+
+            self.scope_selector = selector(ui, self, layout, data=items, action='style_scope',
+                                           label='')
+            self.scope_selector.setMaximumWidth(92)
+            self.reset_button = mini_button(ctrl.ui, self, layout,
+                                            text='reset',
+                                            action='reset_settings',
+                                            align=QtCore.Qt.AlignRight)
+            self.reset_button.setMinimumHeight(14)
+            self.reset_button.setMaximumHeight(14)
+
+
         self.setLayout(layout)
 
     def update_fold(self, folded):
@@ -95,7 +112,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     permanent_ui = True
     unique = True
 
-    def __init__(self, name, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, default_position='bottom', parent=None, folded=False,
+                 scope_action=''):
         """
 
         :param name:
@@ -127,7 +145,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
         self.setContentsMargins(0, 0, 0, 0)
-        title_widget = PanelTitle(name, self)
+        title_widget = PanelTitle(name, self, scope_action=scope_action)
         self.setTitleBarWidget(title_widget)
         self.report_top_level(self.isFloating())
 

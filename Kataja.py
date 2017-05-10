@@ -18,6 +18,7 @@ import datetime
 import os
 import sys
 import argparse
+import queue
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -114,4 +115,5 @@ def prepare_app():
     return app
 
 if __name__ == '__main__':
+
     launch_kataja()

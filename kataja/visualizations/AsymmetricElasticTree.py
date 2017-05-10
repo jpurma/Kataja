@@ -28,7 +28,15 @@ import math
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs
-from kataja.Shapes import direction_multiplier
+
+
+def direction_multiplier(edge_n, edge_count) -> float:
+    """ Returns curve multiplier between [-1.0, 1.0] depending if left edge,
+    right edge or something between. """
+    if edge_count == 1:
+        return 0
+    p = 2.0 / (edge_count - 1)
+    return (edge_n * p) - 1
 
 
 def border_distance(n1x, n1y, n1w2, n1h2, n2x, n2y, n2w2, n2h2):

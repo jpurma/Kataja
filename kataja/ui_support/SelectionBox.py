@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 
 class SelectionBox(QtWidgets.QComboBox):
@@ -30,7 +30,7 @@ class SelectionBox(QtWidgets.QComboBox):
         self.clear()
         for value in values:
             if isinstance(value, tuple):
-                text, data = value
+                data, text = value
                 self.addItem(text, data)
             else:
                 self.uses_data = False

@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Use these to debug
-disable_loading_preferences = False
+disable_loading_preferences = True
 disable_saving_preferences = False
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -161,6 +161,15 @@ class Preferences(object):
                                         'Visualizations may override this.',
                                 'order': 30}
 
+        self.projection_style = 0
+        self._projection_style_ui = {'tab': 'Drawing',
+                                'choices': [(0, 'Nothing special'),
+                                            (1, 'Colors'),
+                                            (2, 'Marker pen')],
+                                'label': 'Projection style',
+                                'help': 'How projecting constituents are displayed',
+                                'order': 31}
+
         self.use_magnets = 3
         self._use_magnets_ui = {'tab': 'Drawing', 'choices':
                                 [(0, 'Aim at center of node'),
@@ -227,13 +236,17 @@ class Preferences(object):
                                         'label': 'Feature arrangement',
                                         'help': 'How features are arranged below nodes.',
                                         'order': 28}
-        self.projection_strong_lines = True
-        self.projection_colorized = True
-        self.projection_highlighter = False
         self.show_c_command = True
         self.hide_edges_if_nodes_overlap = True
 
-        self.traces_are_grouped_together = False
+        self.trace_strategy = 0
+        self._trace_strategy_ui = {'tab': 'Drawing',
+                                   'choices': [(0, 'Use multidomination'),
+                                               (1, 'Make traces'),
+                                               (2, 'Show traces clustered near original')],
+                                   'label': 'Trace strategy',
+                                   'help': 'How to display moved constituents',
+                                   'order': 29}
         self.last_key_colors = {}
 
         self.use_xbar_aliases = True
@@ -273,9 +286,6 @@ class Preferences(object):
         self.who_projects = 'left_external'
         self._who_projects_ui = {'tab': 'Syntax'}
 
-        self.uses_multidomination = True
-        self._uses_multidomination_ui = {'tab': 'Syntax'}
-
         self.binary_branching = False
         self._binary_branching_ui = {'tab': 'Syntax'}
 
@@ -300,10 +310,10 @@ class Preferences(object):
         self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
         self._fps_in_msec = 1000 / self.FPS
 
-        self.move_frames = 22
+        self.move_frames = 10
         self._move_frames_ui = {'tab': 'Performance', 'range': (0, 30),
                                 'on_change': 'prepare_easing_curve', 'label': 'Animation frames'}
-        self.curve = 'InQuint'
+        self.curve = 'InOutQuad'
         self._curve_ui = {'tab': 'Performance', 'choices': curves,
                                  'on_change': 'prepare_easing_curve',
                           'help': 'Easing curve used to compute the intermediate steps in '
@@ -344,11 +354,11 @@ class Preferences(object):
         for key, nodeclass in node_classes.items():
             self.nodes[key] = deepcopy(nodeclass.default_style['fancy'])
 
-    def restore_default_preferences(self, qt_prefs, running_environment, classes):
+    def restore_default_preferences(self, qt_prefs, running_environment, classes, log):
         source_prefs = Preferences(running_environment)
         self.copy_preferences_from(source_prefs)
         self.import_node_classes(classes)
-        qt_prefs.update(self, running_environment)
+        qt_prefs.update(self, running_environment, log)
 
     def update(self, update_dict):
         """
@@ -368,6 +378,10 @@ class Preferences(object):
 
     def get_display_data(self, pref_name):
         return getattr(self, f'_{pref_name}_ui', {})
+
+    def get_display_choices(self, pref_name):
+        display_data = self.get_display_data(pref_name)
+        return display_data.get('choices', [])
 
     def get_ui_text_for_choice(self, choice, pref_name):
         display_data = self.get_display_data(pref_name)
@@ -525,6 +539,16 @@ class QtPreferences:
         self.shape_icon_box = None
         self.shape_icon_scope = None
         self.shape_icon_brackets = None
+        self.features_locked_icon = None
+        self.features_connected_icon = None
+        self.features_apart_icon = None
+        self.feature_column_icon = None
+        self.feature_2_columns_icon = None
+        self.feature_row_icon = None
+        self.feature_hanging_icon = None
+        self.play_pixmap = None
+        self.pause_pixmap = None
+
 
     def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
@@ -614,14 +638,24 @@ class QtPreferences:
         self.shape_icon_box = icon('shape_button_box.png')
         self.shape_icon_scope = icon('shape_button_scope.png')
         self.shape_icon_brackets = icon('shape_button_brackets.png')
+        self.features_locked_icon = icon('features_locked.png')
+        self.features_connected_icon = icon('features_connected.png')
+        self.features_apart_icon = icon('features_apart.png')
+        self.feature_column_icon = icon('feature_column.png')
+        self.feature_2_columns_icon = icon('feature_2_columns.png')
+        self.feature_row_icon = icon('feature_row.png')
+        self.feature_hanging_icon = icon('feature_hanging.png')
+        self.play_pixmap = pixmap('play72.png')
+        self.pause_pixmap = pixmap('pause72.png')
 
-    def update(self, preferences, running_environment):
+
+    def update(self, preferences, running_environment, log):
         """
 
         :param preferences:
         :param running_environment:
         """
-        self.prepare_fonts(preferences.fonts, running_environment)
+        self.prepare_fonts(preferences.fonts, running_environment, log)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
 

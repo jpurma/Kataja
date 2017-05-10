@@ -185,8 +185,8 @@ class PaletteManager:
                 self.custom_themes[key] = sd[key]
 
     def list_available_themes(self):
-        l = [(data['name'], key) for key, data in self.default_themes.items()]
-        ll = [(data['name'], key) for key, data in self.custom_themes.items()]
+        l = [(key, data['name']) for key, data in self.default_themes.items()]
+        ll = [(key, data['name']) for key, data in self.custom_themes.items()]
         return l + ll
 
     def create_theme_from_current_color(self):

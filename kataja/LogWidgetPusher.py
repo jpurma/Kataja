@@ -3,6 +3,11 @@ import logging
 from PyQt5 import QtGui
 
 
+
+
+
+
+
 class LogWidgetPusher(logging.Handler):
 
     def __init__(self, level=logging.DEBUG, root='kataja'):

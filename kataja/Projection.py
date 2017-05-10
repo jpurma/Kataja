@@ -26,9 +26,7 @@ class Projection:
     def __init__(self, head, chains, rotator):
         super().__init__()
         self.color_id, self.color_tr_id = rotating_colors[rotator]
-        self.colorized = False
-        self.strong_lines = False
-        self.highlighter = False
+        self.style = g.NO_PROJECTIONS
         self.head = head # head in a projection is head node, not syntactic object
         self.chains = chains or []
         self.visual = None
@@ -66,19 +64,19 @@ class Projection:
                 child = parent
         return res
 
-    def set_visuals(self, strong_lines, colorized, highlighter):
-        self.colorized = colorized
-        self.strong_lines = strong_lines
+    def set_visuals(self, style):
+
+        self.style = style
         for edge in self.get_edges():
             if self not in edge.in_projections:
                 edge.in_projections.append(self)
+            edge.update()
         for chain in self.chains:
             if len(chain) > 1:
                 for node in chain:
                     if self not in node.in_projections:
                         node.in_projections.append(self)
-        self.highlighter = highlighter
-        if highlighter:
+        if style == g.HIGHLIGHT_PROJECTIONS:
             if not self.visual:
                 self.add_visual()
                 ctrl.forest.add_to_scene(self.visual)

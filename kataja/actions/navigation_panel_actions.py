@@ -1,6 +1,7 @@
 # coding=utf-8
+from PyQt5 import QtGui
 
-from kataja.singletons import ctrl, prefs, running_environment
+from kataja.singletons import ctrl, prefs, running_environment, log
 from kataja.KatajaAction import KatajaAction
 
 
@@ -30,35 +31,20 @@ from kataja.KatajaAction import KatajaAction
 #
 
 
-class SwitchEditMode(KatajaAction):
-    k_action_uid = 'switch_edit_mode'
-    k_command = 'Toggle edit mode'
-    k_shortcut = 'Ctrl+Shift+Space'
+class NewStructure(KatajaAction):
+    k_action_uid = 'new_forest'
+    k_command = 'New forest'
+    k_tooltip = 'Create a new forest after the current one'
+    k_shortcut = QtGui.QKeySequence(QtGui.QKeySequence.New)
     k_undoable = False
 
-    k_tooltip = 'Switch between free editing and derivation-based visualisation'
-
-    def method(self, free_edit=None):
-        """ Switch between visualisation mode and free edit mode
-        :type free_edit: None to toggle between modes, True for free_drawing_mode,
-        False for visualization
-        :param state: triggering button or menu item state
-        :return:
+    def method(self):
+        """ Create new Forest, insert it after the current one and select it.
+        :return: None
         """
-        if free_edit is None:
-            ctrl.free_drawing_mode = not ctrl.free_drawing_mode
-        else:
-            ctrl.free_drawing_mode = free_edit
-        ctrl.ui.update_edit_mode()
-        if ctrl.free_drawing_mode:
-            return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
-                   'history for the structure.'
-        else:
-            return 'Derivation mode: you can edit the visualisation and browse the derivation ' \
-                   'history, but the underlying structure cannot be changed.'
-
-    def getter(self):
-        return not ctrl.free_drawing_mode
+        i, forest = ctrl.main.forest_keeper.new_forest()
+        ctrl.main.change_forest()
+        log.info('(Cmd-n) New forest, n.%s' % (i + 1))
 
 
 class NextForest(KatajaAction):
@@ -109,7 +95,6 @@ class NextStep(KatajaAction):
         return f'Next derivation step: {i + 1}/{max_i}'
 
 
-
 class PreviousStep(KatajaAction):
     k_action_uid = 'prev_derivation_step'
     k_command = 'Previous derivation step'
@@ -124,24 +109,3 @@ class PreviousStep(KatajaAction):
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
         ctrl.forest.forest_edited()
         return f'Previous derivation step: {i + 1}/{max_i}'
-
-
-class DeriveFromLexicon(KatajaAction):
-    k_action_uid = 'derive_from_lexicon'
-    k_command = 'Derive again from lexicon'
-    k_undoable = False
-    k_tooltip = 'Derive current sentence again with this lexicon'
-    k_shortcut = 'Ctrl+r'
-
-    def enabler(self):
-        return ctrl.syntax.supports_editable_lexicon
-
-    def method(self):
-        panel = ctrl.ui.get_panel('LexiconPanel')
-        if panel:
-            lexicon = panel.lextext.toPlainText()
-            sentence = panel.sentence_text.text()
-            semantics = panel.semantics_text.text()
-            ctrl.syntax.derive_from_editable_lexicon(sentence, lexicon, semantics)
-            ctrl.graph_view.setFocus()
-            ctrl.forest.forest_edited()

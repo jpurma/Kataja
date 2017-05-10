@@ -77,7 +77,7 @@ class ProjectionManager:
     def remove_projection(self, head):
         projection = self.projections.get(head, None)
         if projection:
-            projection.set_visuals(False, False, False)
+            projection.set_visuals(0)
             del self.projections[head]
 
     @time_me
@@ -139,8 +139,6 @@ class ProjectionManager:
         This is done by removing all projection displays before drawing them.
         :return:
         """
-        strong_lines = ctrl.settings.get('projection_strong_lines')
-        colorized = ctrl.settings.get('projection_colorized')
-        highlighter = ctrl.settings.get('projection_highlighter')
+        projection_style = ctrl.settings.get('projection_style')
         for projection in self.projections.values():
-            projection.set_visuals(strong_lines, colorized, highlighter)
+            projection.set_visuals(projection_style)

@@ -204,8 +204,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if not self._timer_id:
+            self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
+            self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
             self._timer_min_count = 0
+            ctrl.set_play(True)
+
 
     start_animations = item_moved
 
@@ -216,6 +220,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         self.killTimer(self._timer_id)
         self._timer_id = 0
+        self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
+        self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
+        ctrl.set_play(False)
 
     def export_3d(self, path, forest):
         """ deprecated
@@ -592,6 +599,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         frame_has_moved = False
         background_fade = False
         ctrl.items_moving = True
+        #self.setRenderHint(QtGui.QPainter.Antialiasing)
+        #self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+
+
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1

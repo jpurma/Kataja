@@ -63,6 +63,7 @@ class ConstituentNode(Node):
                      'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
 
     default_edge = g.CONSTITUENT_EDGE
+    ui_sheet = ('kataja.ui_widgets.panels.ConstituentSheet', 'ConstituentSheet')
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the
@@ -563,7 +564,7 @@ class ConstituentNode(Node):
 
         if ctrl.is_selected(self):
             base = ctrl.cm.selection()
-        elif self.in_projections:
+        elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             base = ctrl.cm.get(self.in_projections[0].color_id)
         else:
             base = self.color
@@ -610,9 +611,9 @@ class ConstituentNode(Node):
         if not children:
             return
         if shape == g.CARD:
-            fpos = 3  # only two column arrangement looks good on cards
+            fpos = g.TWO_COLUMNS  # only two column arrangement looks good on cards
 
-        if fpos == 1:  # vertical
+        if fpos == g.VERTICAL_COLUMN:
             center_x = self.boundingRect().center().x()
             bottom_y = self.boundingRect().bottom()
             y = bottom_y
@@ -621,7 +622,7 @@ class ConstituentNode(Node):
                     fbr = fnode.future_children_bounding_rect()
                     fnode.move_to(center_x, y - fbr.y())
                     y += fbr.height() + 2
-        elif fpos == 2:  # horizontal
+        elif fpos == g.HORIZONTAL_ROW:  # horizontal
             bottom_y = self.boundingRect().bottom()
             nods = []
             total_width = 0
@@ -638,7 +639,7 @@ class ConstituentNode(Node):
                 y = bottom_y + (max_height / 2)
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
-        elif fpos == 3:  # card layout, two columns
+        elif fpos == g.TWO_COLUMNS:  # card layout, two columns
             in_card = ctrl.settings.get('label_shape') == g.CARD
             cw, ch = self.label_object.card_size
             center_x = self.boundingRect().center().x()

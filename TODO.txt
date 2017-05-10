@@ -171,7 +171,7 @@ ADD:
 --- May day sprint 2017 ---
 - Implement complex edges that can be used to trace feature's percolation up in constituent hierarchy. Like string or wire.
 + Fix feature display modes (f) to reserve enough space for linked features
-- In fixed feature display modes, show feature edges if feature positions are adjusted.
++ In fixed feature display modes, show feature edges if feature positions are adjusted.
 + When adjusting nodes, show numerical overlay of adjustment. 
 - Add reset adjustment button to overlay for adjusted nodes.
 - Create actions and UI for linking and delinking features.

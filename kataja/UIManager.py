@@ -21,50 +21,51 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import os
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
 
-import kataja.globals as g
 import kataja.actions
+import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.OverlayButton
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
+from kataja.singletons import ctrl, prefs, qt_prefs, log
 from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_support.TopBarButtons import TopBarButtons
-from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
+from kataja.ui_widgets.DragInfo import DragInfo
 from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
+from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
+from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
-from kataja.ui_widgets.panels.HelpPanel import HelpPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
+from kataja.ui_widgets.panels.NodesPanel import NodesPanel
+from kataja.ui_widgets.panels.HelpPanel import HelpPanel
+from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
-from kataja.ui_widgets.panels.NodesPanel import NodesPanel
+from kataja.ui_widgets.panels.ScopePanel import ScopePanel
 from kataja.ui_widgets.panels.StylePanel import StylePanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
-from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
-from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
-from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
-from kataja.ui_widgets.DragInfo import DragInfo
+from kataja.ui_widgets.panels.MergePanel import MergePanel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -73,15 +74,17 @@ POINTING = 3
 
 PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
-          {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
-          {'class': StylePanel, 'name': 'Styles', 'position': 'right'},
+          {'class': StylePanel, 'name': 'Styles', 'position': 'right', 'closed': True},
+          {'class': ScopePanel, 'name': 'Style scope', 'position': 'right', 'closed': True},
+          #{'class': MergePanel, 'name': 'Merge', 'position': 'right'},
+          {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
           {'class': ColorWheelPanel, 'name': 'Color picker', 'position': 'float',
            'closed': True},
           {'class': LineOptionsPanel, 'name': 'More edge options', 'position': 'float',
            'closed': True},
-          {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right'},
+          {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right', 'folded': True},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
@@ -100,7 +103,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('drawing_menu', ('&Drawing', ['$visualizations',
                                                              '---',
                                                              'toggle_label_shape',
-                                                             'trace_mode',
+                                                             'select_trace_strategy',
                                                              'toggle_feature_display_mode',
                                                              'switch_syntax_view_mode',
                                                              'switch_view_mode'])),
@@ -139,10 +142,10 @@ class UIManager:
         self.moving_things = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
-        self.active_scope = g.CONSTITUENT_NODE
+        self.active_scope = g.FOREST
+        self._prev_active_scope = g.FOREST
         self.scope_is_selection = False
         self.default_node_type = g.CONSTITUENT_NODE
-        self.active_node_type = g.CONSTITUENT_NODE
         self.active_edge_type = g.CONSTITUENT_EDGE
         self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
@@ -202,13 +205,11 @@ class UIManager:
 
     def set_scope(self, scope):
         if scope == g.SELECTION:
+            if self.active_scope != g.SELECTION:
+                self._prev_active_scope = self.active_scope
             self.scope_is_selection = True
         else:
             self.scope_is_selection = False
-            if scope in classes.nodes:
-                self.active_node_type = scope
-                node_class = classes.nodes[scope]
-                self.active_edge_type = node_class.default_edge
         self.active_shape_name = ctrl.settings.cached_edge_type('shape_name', self.active_edge_type)
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
@@ -434,16 +435,14 @@ class UIManager:
                 # Selection was empty, but there is existing selection group visible
                 self.remove_selection_group()
         else:
-            if self.scope_is_selection:
-                self.scope_is_selection = False
-                ctrl.call_watchers(self, 'scope_changed')
+            self.set_scope(self._prev_active_scope)
             if self.selection_group:
                 self.remove_selection_group()
 
-    def has_nodes_in_scope(self):
+    def has_nodes_in_scope(self, of_type):
         if self.scope_is_selection:
             for item in ctrl.selected:
-                if isinstance(item, Node):
+                if isinstance(item, Node) and item.node_type == of_type:
                     return True
             return False
         return True  # all scope options allow defining node color
@@ -812,14 +811,22 @@ class UIManager:
                 panel.set_folded(False)
                 toggle_action.setChecked(True)
 
+    # Panel scopes
+
+    def get_scope(self, scope_id):
+        action = self.get_action(scope_id)
+        return action and action.getter()
+
+    def get_active_scope(self):
+        return self.active_scope
+
     # Action connections ###########################
 
-    def connect_element_to_action(self, element, action, tooltip_suffix='', connect_slot=None):
+    def connect_element_to_action(self, element, action, connect_slot=None):
         """
 
         :param element:
         :param action:
-        :param tooltip_suffix:
         """
         if isinstance(action, str):
             kataja_action = self.get_action(action)
@@ -827,9 +834,9 @@ class UIManager:
                 print('missing action:', action)
                 log.error(f'trying to connect non-existing action: {action}')
             else:
-                kataja_action.connect_element(element, tooltip_suffix, connect_slot=connect_slot)
+                kataja_action.connect_element(element, connect_slot=connect_slot)
         elif isinstance(action, KatajaAction):
-            action.connect_element(element, tooltip_suffix)
+            action.connect_element(element)
 
     def manage_shortcut(self, key_seq, element, action):
         """ Some shortcut become ambiguous as they are used for several

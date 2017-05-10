@@ -150,8 +150,8 @@ class DeleteGroup(KatajaAction):
 class SaveGroupChanges(KatajaAction):
     k_action_uid = 'save_group_changes'
     k_command = 'Save this group'
-    k_shortcut = 'Return'
-    k_shortcut_context = 'parent_and_children'
+    #k_shortcut = 'Return'
+    #k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ """

@@ -123,14 +123,11 @@ class PanelButton(QtWidgets.QPushButton):
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
         self.setIcon(self.normal_icon)
 
-    def update_colors(self):
+    def update_colors(self, color_key=None):
+        if color_key:
+            self.color_key = color_key
         #self.update_style_sheet()
         self.compose_icon()
-
-    #def event(self, e):
-    #    if e.type() == QtCore.QEvent.PaletteChange:
-    #        self.update_colors()
-    #    return QtWidgets.QPushButton.event(self, e)
 
 
 class OverlayButton(UIWidget, PanelButton):

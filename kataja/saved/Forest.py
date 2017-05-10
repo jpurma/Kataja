@@ -585,6 +585,7 @@ class Forest(SavedObject):
                     first = False
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
+        self.chain_manager.after_draw_update()
         sc.start_animations()
         ctrl.graph_view.repaint()
 
@@ -806,8 +807,7 @@ class Forest(SavedObject):
     # View mode
     @time_me
     def change_view_mode(self, syntactic_mode):
-        t = time.time()
-        ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.FOREST)
+        ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.DOCUMENT)
         label_text_mode = ctrl.settings.get('label_text_mode')
         if syntactic_mode:
             self.old_label_mode = label_text_mode

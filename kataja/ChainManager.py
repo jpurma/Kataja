@@ -2,7 +2,8 @@
 import string
 from collections import defaultdict
 
-from kataja.globals import FOREST, CONSTITUENT_NODE
+from kataja.globals import FOREST, CONSTITUENT_NODE, USE_MULTIDOMINATION, USE_TRACES, \
+    TRACES_GROUPED_TOGETHER
 from kataja.singletons import ctrl
 from kataja.utils import time_me
 
@@ -31,20 +32,27 @@ class ChainManager:
                     len(node.get_parents(similar=True, visible=False)) > 1:
                 node.index = self.next_free_index()
         # Then implement the rules
-        md = ctrl.settings.get('uses_multidomination')
-        traces_grouped = ctrl.settings.get('traces_are_grouped_together')
-        if md:
+        strat = ctrl.settings.get('trace_strategy', level=FOREST)
+        if strat == USE_MULTIDOMINATION:
             self.traces_to_multidomination()
-        else:
+        elif strat == USE_TRACES:
             self.multidomination_to_traces()
-            if traces_grouped:
-                self.group_traces_to_chain_head()
+        elif strat == TRACES_GROUPED_TOGETHER:
+            self.multidomination_to_traces()
+
+    def after_draw_update(self):
+        """ Grouping traces to one point has to happen after the visualisation algorithm has tried
+         to put nodes into their places.
+        :return:
+        """
+        if ctrl.settings.get('trace_strategy', level=FOREST) == TRACES_GROUPED_TOGETHER:
+            self.group_traces_to_chain_head()
 
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains
         :return:
         """
-        return not ctrl.settings.get('uses_multidomination')
+        return ctrl.settings.get('trace_strategy', level=FOREST) != USE_MULTIDOMINATION
 
     def _get_heads_and_traces(self):
         heads = {}
@@ -63,6 +71,7 @@ class ChainManager:
     def group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
         heads, traces = self._get_heads_and_traces()
+        print(heads, traces)
         for index, traces in traces.items():
             if index in heads:
                 original = heads[index]

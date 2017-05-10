@@ -5,6 +5,28 @@ from kataja.singletons import ctrl
 from kataja.PaletteManager import color_keys
 
 
+stylesheet = """
+QComboBox {
+    background: transparent;
+    border: 1px solid transparent;
+    width: 16px;
+}
+
+
+QComboBox::down-arrow {
+    background-color: %s;    
+    width: 12px;
+    height: 12px;
+}
+
+"""
+"""
+QComboBox::drop-down {
+    border: 1px solid transparent;
+}
+
+"""
+
 class ColorSwatchIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
 
@@ -78,11 +100,16 @@ class ColorSelector(TableModelSelectionBox):
     :param role: 'node' or 'edge' or 'group'
     """
 
-    def __init__(self, parent, role='node'):
+    def __init__(self, parent, role='node', flat=True):
         super().__init__(parent)
         self.setIconSize(QSize(16, 16))
-        self.setMinimumWidth(40)
-        self.setMaximumWidth(40)
+        if flat:
+            self.setMinimumWidth(24)
+            self.setMaximumWidth(24)
+            self.setStyleSheet(stylesheet % 'red')
+        else:
+            self.setMinimumWidth(40)
+            self.setMaximumWidth(40)
         self.role = role
         self.color_items = []
         model = self.model()
@@ -138,6 +165,8 @@ class ColorSelector(TableModelSelectionBox):
                 ctrl.ui.toggle_panel(ctrl.ui.get_action('toggle_panel_ColorWheelPanel'),
                                      'ColorWheelPanel')
         self.update_color_dialog()
+        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
+        print('received color selection:', color_key)
         return color_key
 
     def update_color_dialog(self):
@@ -146,6 +175,12 @@ class ColorSelector(TableModelSelectionBox):
             wheel.set_color_role(self.selected_color, update_selector=True)
             wheel.show()
             wheel.raise_()
+
+    def set_color(self, color_key):
+        print('color selector received color: ', color_key)
+        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
+        self.select_by_data(color_key)
+
 
     def showEvent(self, event):
         ctrl.add_watcher(self, 'palette_changed')

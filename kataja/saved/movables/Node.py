@@ -90,6 +90,7 @@ class Node(Movable):
     display = False
     can_be_in_groups = True
     editable = {}
+    ui_sheet = None
 
     default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
                      'card_width': 0, 'card_height': 0}
@@ -1469,7 +1470,6 @@ class Node(Movable):
         for edge in self.edges_up:
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
-        print(scene_pos)
         if not ctrl.dragged_focus:
             self.start_dragging(scene_pos)
         # change dragged positions to be based on adjustment instead of distance to main dragged.

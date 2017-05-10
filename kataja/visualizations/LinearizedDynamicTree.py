@@ -63,7 +63,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 node.physics_y = False
             elif node.is_top_node():
                 node.physics_x = True
-                node.physics_y = False
+                node.physics_y = True
         else:
             node.physics_x = True
             node.physics_y = True
@@ -89,7 +89,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         # linearized = ctrl.FL.Linearize(root.syntactic_object)
         nodelist = []
         top.physics_x = True
-        top.physics_y = False
+        top.physics_y = True
         for node in tree.sorted_nodes[1:]:
             if node.is_leaf() and node.node_type == CONSTITUENT_NODE:
                 if node and not node.locked_to_node:

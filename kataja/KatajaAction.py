@@ -29,7 +29,6 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, log, running_environment
 from kataja.ui_widgets.OverlayButton import PanelButton
-from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.SelectionBox import SelectionBox
 from kataja.ui_graphicsitems.TouchArea import TouchArea
@@ -127,6 +126,7 @@ class KatajaAction(QtWidgets.QAction):
     k_command = ''
     k_command_alt = ''
     k_tooltip = ''
+    k_tooltip_alt = ''
     k_undoable = True
     k_shortcut_context = ''
     k_shortcut = ''
@@ -134,26 +134,27 @@ class KatajaAction(QtWidgets.QAction):
     k_exclusive = False
     k_checkable = False
     k_viewgroup = False
+    k_start_animations = False
 
-    def __init__(self, action_uid='', command='', command_alt='', args=None, shortcut='', tooltip=''):
+    def __init__(self):
         super().__init__(ctrl.main)
-        self.key = action_uid or self.k_action_uid
+        self.key = self.k_action_uid
         self.elements = set()
-        self.command = command or self.k_command
-        self.command_alt = command_alt or self.k_command_alt
+        self.command = self.k_command
+        self.command_alt = self.k_command_alt
         self.state_arg = None  # used to hold button states, or whatever activated triggers send
-        self.args = args or []  # if there are several instances, e.g. vis_1-9, they define args
-        # that are always attached to method call.
+        self.args = []
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
         self.host_menu = None
         self.undoable = self.k_undoable
-        self.tip = tooltip or self.k_tooltip or self.command
+        self.tip0 = self.k_tooltip or self.command
+        self.tip1 = self.k_tooltip_alt or self.command_alt or self.tip0
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
-        shortcut = shortcut or self.k_shortcut
+        shortcut = self.k_shortcut
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
         if shortcut:
@@ -171,16 +172,14 @@ class KatajaAction(QtWidgets.QAction):
                 sc = QtCore.Qt.ApplicationShortcut
             self.setShortcutContext(sc)
             self.installEventFilter(ctrl.ui.shortcut_solver)
+            self.tip0, self.tip1 = self.tips_with_shortcuts()
         if self.k_viewgroup:
             ag = ctrl.ui.get_action_group(self.k_viewgroup)
             self.setActionGroup(ag)
             ag.setExclusive(self.k_exclusive)
         self.setCheckable(self.k_checkable)
-        if self.tip:
-            #if ctrl.main.use_tooltips:
-            tws = self.tip_with_shortcut()
-            self.setToolTip(tws)
-            self.setStatusTip(tws)
+        self.setToolTip(self.tip0)
+        self.setStatusTip(self.tip0)
 
     def method(self, *args):
         pass
@@ -207,6 +206,7 @@ class KatajaAction(QtWidgets.QAction):
         if not self.undoable:
             ctrl.disable_undo()
 
+        autoplay = self.k_start_animations or not ctrl.free_drawing_mode
         # Call method
         try:
             message = self.method(*self.args)
@@ -221,7 +221,7 @@ class KatajaAction(QtWidgets.QAction):
         if not self.undoable:
             ctrl.resume_undo()
         if self.disable_undo_and_message:
-            ctrl.main.action_finished(undoable=False)
+            ctrl.main.action_finished(undoable=False, play=autoplay)
         else:
             sc = self.shortcut()
             if sc:
@@ -231,7 +231,7 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 reply = message or self.command
             ctrl.main.action_finished(m=reply, undoable=self.undoable and not ctrl.undo_disabled,
-                                      error=error)
+                                      error=error, play=autoplay)
 
     def update_action(self):
         """ If action is tied to some meter (e.g. number field that is used to show value and
@@ -244,15 +244,15 @@ class KatajaAction(QtWidgets.QAction):
         if val is not None:
             self.set_displayed_value(val)
 
-    def tip_with_shortcut(self):
+    def tips_with_shortcuts(self):
         sc = self.shortcut()
         if sc:
             if isinstance(sc, QtGui.QKeySequence):
                 sc = sc.toString()
                 sc = sc.replace('Ctrl', running_environment.cmd_or_ctrl)
-            return f'{self.tip} ({sc})'
+            return f'{self.tip0} ({sc})', f'{self.tip1} ({sc})'
         else:
-            return self.tip
+            return self.tip0, self.tip1
 
     def update_ui_value(self):
         """ This can be called for manually updating the field values for element, e.g. when
@@ -271,32 +271,17 @@ class KatajaAction(QtWidgets.QAction):
         self.disable_undo_and_message = False
         ctrl.resume_undo()
 
-    def connect_element(self, element, tooltip_suffix='', connect_slot=None):
+    def connect_element(self, element, connect_slot=None):
         """
 
         :param element:
-        :param tooltip_suffix:
         """
         self.elements.add(element)
 
         tooltip = self.toolTip()
         if tooltip:
-            if tooltip_suffix:
-                tt = tooltip % tooltip_suffix
-            else:
-                tt = tooltip
-            if isinstance(element, QtWidgets.QGraphicsObject):
-                # These don't have setStatusTip
-                element.status_tip = tt
-                if ctrl.main.use_tooltips:
-                    element.setToolTip(tt)
-            elif isinstance(element, EmbeddedMultibutton):
-                pass
-            else:
-                element.setStatusTip(tt)
-                if ctrl.main.use_tooltips:
-                    element.setToolTip(tt)
-                element.setToolTipDuration(2000)
+            self.set_tooltip_for_element(tooltip, element)
+
         # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
             element.setEnabled(self.isEnabled())
@@ -319,8 +304,6 @@ class KatajaAction(QtWidgets.QAction):
         elif isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, EmbeddedMultibutton):
-            element.bgroup.buttonToggled.connect(self.action_triggered)
         elif isinstance(element, EmbeddedRadiobutton):
             element.bgroup.buttonToggled.connect(self.action_triggered)
         elif isinstance(element, QtWidgets.QCheckBox):
@@ -343,6 +326,17 @@ class KatajaAction(QtWidgets.QAction):
     def disconnect_element(self, element):
         if element in self.elements:
             self.elements.remove(element)
+
+    @staticmethod
+    def set_tooltip_for_element(tooltip, element):
+        if isinstance(element, QtWidgets.QGraphicsObject):
+            # These don't have setStatusTip
+            element.status_tip = tooltip
+        else:
+            element.setStatusTip(tooltip)
+            element.setToolTipDuration(2000)
+        if ctrl.main.use_tooltips:
+            element.setToolTip(tooltip)
 
     def set_enabled(self, value):
         """ Sets the action enabled/disabled and also the connected ui_items.
@@ -371,8 +365,12 @@ class KatajaAction(QtWidgets.QAction):
         if self.isCheckable():
             for element in self.elements:
                 element.blockSignals(True)
-                if hasattr(element, 'setChecked'):
+                if value != element.isChecked():
                     element.setChecked(value)
+                    if value:
+                        self.set_tooltip_for_element(self.tip1, element)
+                    else:
+                        self.set_tooltip_for_element(self.tip0, element)
                 element.blockSignals(False)
         else:
             for element in self.elements:
@@ -422,3 +420,55 @@ class KatajaAction(QtWidgets.QAction):
         if container:
             return container.host
 
+
+class DynamicKatajaAction(KatajaAction):
+    """ Dynamic actions can have many instances, and each instance can have separate values for
+    various fields. __init__ is different to other KatajaActions, where class variables dictate
+    its field values.
+     """
+    k_dynamic = True
+
+    def __init__(self, action_uid='', command='', command_alt='', args=None, shortcut='', tooltip='', tooltip_alt=''):
+        QtWidgets.QAction.__init__(self, ctrl.main)
+        self.key = action_uid
+        self.elements = set()
+        self.command = command
+        self.command_alt = command_alt
+        self.state_arg = None  # used to hold button states, or whatever activated triggers send
+        self.args = args or []  # if there are several instances, e.g. vis_1-9, they define args
+        # that are always attached to method call.
+        if self.command:
+            self.setText(self.command)
+        self.setData(self.key)
+        self.host_menu = None
+        self.undoable = self.k_undoable
+        self.tip0 = tooltip or command
+        self.tip1 = tooltip_alt or command_alt or self.tip0
+        self.disable_undo_and_message = False
+        # when triggered from menu, forward the call to more complex trigger handler
+        self.triggered.connect(self.action_triggered)
+        # if action has shortcut_context, it shouldn't have global shortcut
+        # in these cases shortcut is tied to ui_element.
+        if shortcut:
+            self.setShortcut(QtGui.QKeySequence(shortcut))
+            # those actions that have shortcut context are tied to (possibly nonexisting) UI
+            # widgets and they can resolve ambiguous shortcuts only when the UI widgets are
+            # connected. So disable these actions until the connection has been made.
+            if self.k_shortcut_context == 'parent_and_children':
+                sc = QtCore.Qt.WidgetWithChildrenShortcut
+                self.setEnabled(False)
+            elif self.k_shortcut_context == 'widget':
+                sc = QtCore.Qt.WidgetShortcut
+                self.setEnabled(False)
+            else:
+                sc = QtCore.Qt.ApplicationShortcut
+            self.setShortcutContext(sc)
+            self.installEventFilter(ctrl.ui.shortcut_solver)
+            self.tip0, self.tip1 = self.tips_with_shortcuts()
+        if self.k_viewgroup:
+            ag = ctrl.ui.get_action_group(self.k_viewgroup)
+            self.setActionGroup(ag)
+            ag.setExclusive(self.k_exclusive)
+        self.setCheckable(self.k_checkable)
+        self.setToolTip(self.tip0)
+        self.setStatusTip(self.tip0)

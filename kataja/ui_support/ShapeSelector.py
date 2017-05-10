@@ -35,7 +35,7 @@ class LineStyleIcon(QIcon):
 class ShapeSelector(TableModelSelectionBox):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setIconSize(QSize(48, 16))
+        self.setIconSize(QSize(64, 16))
         items = []
         self.icons = []
 

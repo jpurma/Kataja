@@ -26,11 +26,11 @@ class DragInfo(UIWidget, QtWidgets.QLabel):
 
     def update_value(self):
         if self.host.use_physics():
-            x = '{:+}'.format(self.host.current_position[0])
-            y = '{:+}'.format(self.host.current_position[1])
+            x = '{:+}'.format(int(self.host.current_position[0]))
+            y = '{:+}'.format(int(self.host.current_position[1]))
         else:
-            x = '{:+}'.format(self.host.adjustment[0])
-            y = '{:+}'.format(self.host.adjustment[1])
+            x = '{:+}'.format(int(self.host.adjustment[0]))
+            y = '{:+}'.format(int(self.host.adjustment[1]))
         self.setText('{:>4}, {:>4}'.format(x, y))
 
     def update_position(self):

@@ -4,7 +4,9 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.OverlayButton import TopRowButton, VisButton
 from kataja.ui_widgets.ModeLabel import ModeLabel
+from kataja.ui_widgets.ModalIconButton import ModalIconButton
 from kataja.visualizations.available import VISUALIZATIONS, action_key
+
 
 class TopBarButtons(QtWidgets.QFrame):
 
@@ -14,6 +16,14 @@ class TopBarButtons(QtWidgets.QFrame):
         self.show()
 
         # Left side
+        self.play_button = ModalIconButton('play_button', parent=self,
+                                           pixmap0=qt_prefs.play_pixmap,
+                                           pixmap1=qt_prefs.pause_pixmap,
+                                           size=(36, 36))
+
+        ui.add_button(self.play_button, action='play_or_pause')
+        layout.addWidget(self.play_button)
+
         self.edit_mode_button = ModeLabel(['Free drawing', 'Visualisation'],
                                           ui_key='edit_mode_label',
                                           parent=self)
@@ -50,18 +60,16 @@ class TopBarButtons(QtWidgets.QFrame):
 
         # Right side
 
-        self.camera = TopRowButton('print_button', parent=self, tooltip='Print to file',
-                              pixmap=qt_prefs.camera_icon, size=(24, 24))
+        self.camera = TopRowButton('print_button', parent=self, pixmap=qt_prefs.camera_icon,
+                                   size=(24, 24))
         ui.add_button(self.camera, action='print_pdf')
         layout.addWidget(self.camera)
 
-        undo = TopRowButton('undo_button', parent=self, tooltip='Undo last action',
-                            pixmap=qt_prefs.undo_icon)
+        undo = TopRowButton('undo_button', parent=self, pixmap=qt_prefs.undo_icon)
         ui.add_button(undo, action='undo')
         layout.addWidget(undo)
 
-        redo = TopRowButton('redo_button', parent=self, tooltip='Redo action',
-                            pixmap=qt_prefs.redo_icon)
+        redo = TopRowButton('redo_button', parent=self, pixmap=qt_prefs.redo_icon)
         ui.add_button(redo, action='redo')
         layout.addWidget(redo)
 
@@ -71,23 +79,20 @@ class TopBarButtons(QtWidgets.QFrame):
         pan_mode.setCheckable(True)
         layout.addWidget(pan_mode)
 
-        select_mode = TopRowButton('select_mode', parent=self, tooltip='Move mode',
-                                   pixmap=qt_prefs.cursor_icon,
+        select_mode = TopRowButton('select_mode', parent=self, pixmap=qt_prefs.cursor_icon,
                                    size=(24, 24))  # draw_method=drawn_icons.select_mode
         select_mode.setCheckable(True)
         ui.add_button(select_mode, action='toggle_select_mode')
         layout.addWidget(select_mode)
 
-        fit_to_screen = TopRowButton('fit_to_screen', parent=self,
-                                     tooltip='Fit to view', size=(24, 24),
+        fit_to_screen = TopRowButton('fit_to_screen', parent=self, size=(24, 24),
                                      pixmap=qt_prefs.center_focus_icon)
         # draw_method=drawn_icons.fit_to_screen)
         ui.add_button(fit_to_screen, action='zoom_to_fit')
         layout.addWidget(fit_to_screen)
 
-        full_screen = TopRowButton('full_screen', parent=self,
-                                     tooltip='Toggle full screen mode', size=(24, 24),
-                                     pixmap=qt_prefs.full_icon)
+        full_screen = TopRowButton('full_screen', parent=self, size=(24, 24),
+                                    pixmap=qt_prefs.full_icon)
         # draw_method=drawn_icons.fit_to_screen)
         ui.add_button(full_screen, action='fullscreen_mode')
         layout.addWidget(full_screen)
@@ -95,7 +100,7 @@ class TopBarButtons(QtWidgets.QFrame):
 
         layout.setContentsMargins(2, 0, 2, 0)
         self.setLayout(layout)
-        self.setMinimumHeight(28)
+        self.setMinimumHeight(36)
         self.update_position()
 
     def sizeHint(self):

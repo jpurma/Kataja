@@ -173,8 +173,7 @@ def text_button(ui_manager, layout, text='', action='', x=-1, y=-1, checkable=Fa
 
 
 def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1, y=-1,
-                checkable=False, size=20, color_key='accent8', tooltip_suffix='',
-                align=None):
+                checkable=False, size=20, color_key='accent8', align=None):
     """
 
     :param ui_manager:
@@ -187,7 +186,6 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
     :param checkable
     :param size
     :param color_key
-    :param tooltip_suffix
     :param align
     :return:
     """
@@ -195,7 +193,7 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
     button = PanelButton(pixmap=icon, tooltip=text, parent=parent, size=size, color_key=color_key)
     button.setCheckable(checkable)
     if action:
-        ui_manager.connect_element_to_action(button, action, tooltip_suffix=tooltip_suffix)
+        ui_manager.connect_element_to_action(button, action)
     if x != -1:
         layout.addWidget(button, y, x)
     elif align is not None:
@@ -206,7 +204,7 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
 
 
 def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1, y=-1,
-                     checkable=False, max_width=16):
+                     checkable=False, max_width=16, align=None):
     """
 
     :param ui_manager:
@@ -226,13 +224,15 @@ def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', 
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
         layout.addWidget(button, y, x)
+    elif align:
+        layout.addWidget(button, 1, align)
     else:
         layout.addWidget(button)
     return button
 
 
 def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, checkable=False,
-                width=40):
+                width=40, align=None):
     """
 
     :param ui_manager:
@@ -242,6 +242,7 @@ def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, chec
     :param x:
     :param y:
     :param checkable:
+    :param align:
     :return:
     """
     button = QtWidgets.QPushButton(text, parent=parent)
@@ -255,6 +256,8 @@ def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, chec
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
         layout.addWidget(button, y, x)
+    elif align is not None:
+        layout.addWidget(button, 1, align)
     else:
         layout.addWidget(button)
     return button
@@ -327,7 +330,7 @@ def selector(ui_manager, parent, layout, data=None, action='', label=''):
     return selector
 
 
-def font_selector(ui_manager, parent, layout, action='', label=''):
+def font_selector(ui_manager, parent, layout, action='', label='', flat=False, align=None):
     """
 
     :param ui_manager:
@@ -336,16 +339,19 @@ def font_selector(ui_manager, parent, layout, action='', label=''):
     :param action:
     :return:
     """
-    selector = FontSelector(parent)
+    selector = FontSelector(parent, flat=flat)
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
         layout.addWidget(labelw)
-    layout.addWidget(selector)
+    if align:
+        layout.addWidget(selector, 1, align)
+    else:
+        layout.addWidget(selector)
     return selector
 
 
-def color_selector(ui_manager, parent, layout, action='', label='', role='node'):
+def color_selector(ui_manager, parent, layout, action='', label='', role='node', align=None):
     """
 
     :param ui_manager:
@@ -361,7 +367,10 @@ def color_selector(ui_manager, parent, layout, action='', label='', role='node')
     if label:
         labelw = QtWidgets.QLabel(label, parent)
         layout.addWidget(labelw)
-    layout.addWidget(selector)
+    if align:
+        layout.addWidget(selector, 1, align)
+    else:
+        layout.addWidget(selector)
     return selector
 
 

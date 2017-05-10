@@ -11,7 +11,7 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 
-from kataja.KatajaAction import KatajaAction
+from kataja.KatajaAction import KatajaAction, DynamicKatajaAction
 
 from kataja.singletons import ctrl, prefs, log
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
@@ -52,22 +52,6 @@ file_extensions = {'pickle': '.kataja', 'pickle.zipped': '.zkataja',
 # windows, if they still use three-letter extensions
 
 
-class NewStructure(KatajaAction):
-    k_action_uid = 'new_forest'
-    k_command = 'New forest'
-    k_tooltip = 'Create a new forest after the current one'
-    k_shortcut = QKeySequence(QKeySequence.New)
-    k_undoable = False
-
-    def method(self):
-        """ Create new Forest, insert it after the current one and select it.
-        :return: None
-        """
-        i, forest = ctrl.main.forest_keeper.new_forest()
-        ctrl.main.change_forest()
-        log.info('(Cmd-n) New forest, n.%s' % (i + 1))
-
-
 class NewProject(KatajaAction):
     k_action_uid = 'new_project'
     k_command = 'New project'
@@ -82,7 +66,7 @@ class NewProject(KatajaAction):
         log.info("Starting a new project '%s'" % project.name)
 
 
-class SwitchProject(KatajaAction):
+class SwitchProject(DynamicKatajaAction):
     k_action_uid = 'switch_project'
     k_dynamic = True
     k_checkable = True

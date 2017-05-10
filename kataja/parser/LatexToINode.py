@@ -237,6 +237,7 @@ class LatexFieldToINode(LatexToINode):
         ITextNodes and ICommandNodes.
             :param text: string to parse.
         """
+        super().__init__()
         self.math_mode = False
         self.node = None
         self.feed = []

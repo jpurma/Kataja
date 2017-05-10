@@ -155,7 +155,7 @@ class LineOptionsPanel(Panel):
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
-        items = [('Edges in current selection', g.SELECTION)]
+        items = [(g.SELECTION, 'Edges in current selection')]
         edge_types = []
         for node_type in classes.node_types_order:
             default_edge = classes.nodes[node_type].default_edge
@@ -165,7 +165,7 @@ class LineOptionsPanel(Panel):
                     edge_name_plural = edge_names[default_edge][1]
                 else:
                     edge_name_plural = default_edge
-                items.append((edge_name_plural, node_type))
+                items.append((node_type, edge_name_plural))
         self.scope_selector.add_items(items)
 
     def update_selection(self):

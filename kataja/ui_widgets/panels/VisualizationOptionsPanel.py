@@ -33,24 +33,8 @@ class VisualizationOptionsPanel(Panel):
         hlayout = box_row(layout)
         layout.addLayout(hlayout)
         ui = self.ui_manager
-        self.show_node_labels = checkbox(ui, inner, hlayout, 'Show node labels',
-                                         'toggle_show_node_label')
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
-
-        label(self, grid, 'Show projections', 0, 0)
-        self.highlighter_button = checkbox(ui, inner, grid,
-                                              'with highlighter',
-                                              'toggle_highlighter_projection',
-                                              1, 0)
-        self.strong_lines_button = checkbox(ui, inner, grid,
-                                               'with stronger lines',
-                                               'toggle_strong_lines_projection',
-                                               1, 1)
-        self.colorize_button = checkbox(ui, inner, grid,
-                                           'with colorized lines',
-                                           'toggle_colorized_projection',
-                                           1, 2)
 
         layout.addLayout(grid)
         inner.setLayout(layout)
@@ -73,10 +57,6 @@ class VisualizationOptionsPanel(Panel):
         :return: None
         """
         s = ctrl.settings
-        set_value(self.show_node_labels, s.get('show_node_labels'))
-        set_value(self.highlighter_button, s.get('projection_highlighter'))
-        set_value(self.strong_lines_button, s.get('projection_strong_lines'))
-        set_value(self.colorize_button, s.get('projection_colorized'))
         self.updateGeometry()
         self.update()
 

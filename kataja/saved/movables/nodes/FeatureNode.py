@@ -88,6 +88,8 @@ class FeatureNode(Node):
                      'plain': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9}}
 
     default_edge = g.FEATURE_EDGE
+    ui_sheet = ('kataja.ui_widgets.panels.FeatureSheet', 'FeatureSheet')
+
 
     def __init__(self, label='', value='', family=''):
         Node.__init__(self)
@@ -97,7 +99,7 @@ class FeatureNode(Node):
         self.repulsion = 0.25
         self._gravity = 3.0
         self.z_value = 60
-        self.fshape = 3
+        self.fshape = 2
         self.setZValue(self.z_value)
 
         # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
@@ -239,7 +241,7 @@ class FeatureNode(Node):
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
         if checked_by and self.is_visible():
-            if checking_mode == 0:
+            if checking_mode == g.NO_CHECKING_EDGE:
                 for parent in self.get_parents(similar=False, visible=True):
                     if parent.node_type == g.CONSTITUENT_NODE:
                         parents.append(parent)
@@ -248,7 +250,7 @@ class FeatureNode(Node):
                 edge = self.get_edge_to(checked_by, g.CHECKING_EDGE)
                 edge.hide()
 
-            elif checking_mode == 1:
+            elif checking_mode == g.PUT_CHECKED_TOGETHER:
                 locked_to_another_feature = True
                 if self.locked_to_node != checked_by:
                     x = checked_by.future_children_bounding_rect().right() - \
@@ -258,7 +260,7 @@ class FeatureNode(Node):
                     for parent in self.get_parents(similar=False, visible=True):
                         if parent.node_type == g.CONSTITUENT_NODE:
                             parents.append(parent)
-            elif checking_mode == 2 and self.locked_to_node == checked_by:
+            elif checking_mode == g.SHOW_CHECKING_EDGE and self.locked_to_node == checked_by:
                 for parent in self.get_parents(similar=False, visible=True):
                     if parent.node_type == g.CONSTITUENT_NODE:
                         parents.append(parent)
@@ -421,7 +423,6 @@ class FeatureNode(Node):
         else:
             Node.paint(self, painter, option, widget)
 
-
     def get_color_id(self):
         """
         :return:
@@ -447,7 +448,7 @@ class FeatureNode(Node):
             elif self.drag_data or self._hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
-                return ctrl.cm.selection()
+                return ctrl.cm.active(c)
                 #return ctrl.cm.selection()
 
     def contextual_background(self):
@@ -467,7 +468,7 @@ class FeatureNode(Node):
             elif self.drag_data or self._hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
-                return ctrl.cm.selection()
+                return ctrl.cm.active(c)
             else:
                 return c
         else:
@@ -480,47 +481,57 @@ class FeatureNode(Node):
             else:
                 return qt_prefs.no_brush
 
-    def special_connection_point(self, sx, sy, ex, ey, start=False):
-        f_align = ctrl.settings.get('feature_positioning')
-        br = self.boundingRect()
-        left, top, right, bottom = (int(x * .8) for x in br.getCoords())
-        if f_align == 0: # direct
-            if start:
-                return (sx, sy), BOTTOM_SIDE
-            else:
-                return (ex, ey), BOTTOM_SIDE
-        elif f_align == 1: # vertical
-            if start:
-                if sx < ex:
+    def special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
+        if edge_type == g.FEATURE_EDGE: # not used atm.
+            f_align = ctrl.settings.get('feature_positioning')
+            br = self.boundingRect()
+            left, top, right, bottom = (int(x * .8) for x in br.getCoords())
+            if f_align == 0: # direct
+
+                if start:
+                    return (sx, sy), BOTTOM_SIDE
+                else:
+                    return (ex, ey), BOTTOM_SIDE
+            elif f_align == 1: # vertical
+                if start:
+                    if sx < ex:
+                        return (sx + right, sy), RIGHT_SIDE
+                    else:
+                        return (sx + left, sy), LEFT_SIDE
+                else:
+                    if sx < ex:
+                        return (ex + left, ey), LEFT_SIDE
+                    else:
+                        return (ex + right, ey), RIGHT_SIDE
+            elif f_align == 2:  # horizontal
+                if start:
+                    if sy < ey:
+                        return (sx, sy + bottom), BOTTOM_SIDE
+                    else:
+                        return (sx, sy + top), TOP_SIDE
+                else:
+                    if sy <= ey:
+                        return (ex, ey + top), TOP_SIDE
+                    else:
+                        return (ex, ey + bottom), BOTTOM_SIDE
+            elif f_align == 3:  # card
+                if start:
                     return (sx + right, sy), RIGHT_SIDE
                 else:
-                    return (sx + left, sy), LEFT_SIDE
-            else:
-                if sx < ex:
                     return (ex + left, ey), LEFT_SIDE
-                else:
-                    return (ex + right, ey), RIGHT_SIDE
-        elif f_align == 2:  # horizontal
+
             if start:
-                if sy < ey:
-                    return (sx, sy + bottom), BOTTOM_SIDE
-                else:
-                    return (sx, sy + top), TOP_SIDE
+                return (sx, sy), 0
             else:
-                if sy <= ey:
-                    return (ex, ey + top), TOP_SIDE
-                else:
-                    return (ex, ey + bottom), BOTTOM_SIDE
-        elif f_align == 3:  # card
+                return (ex, ey), 0
+        elif edge_type == g.CHECKING_EDGE:
+            br = self.boundingRect()
+            left, top, right, bottom = (int(x * .8) for x in br.getCoords())
             if start:
                 return (sx + right, sy), RIGHT_SIDE
             else:
                 return (ex + left, ey), LEFT_SIDE
 
-        if start:
-            return (sx, sy), 0
-        else:
-            return (ex, ey), 0
 
     def __str__(self):
         if self.syntactic_object:

@@ -70,6 +70,7 @@ class Controller:
         self.pointing_mode = False
         self.pointing_method = None
         self.pointing_data = {}
+        self.play = False
         self.pressed = None  # set() # prepare for multitouch
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.text_editor_focus = None
@@ -164,6 +165,11 @@ class Controller:
 
     def is_zooming(self):
         return self.main.graph_view.zoom_timer.isActive()
+
+    def set_play(self, value):
+        action = self.ui.get_action('play_or_pause')
+        action.setChecked(value)
+        self.play = value
 
     def set_status(self, msg):
         """ Show message in status bar. Send empty message to clear status

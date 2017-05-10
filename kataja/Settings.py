@@ -57,26 +57,17 @@ class Settings:
         self.update_shape_cache()
 
     #@time_me
-    def get(self, key, level=HIGHEST, obj=None):
+    def get(self, key, level=HIGHEST, obj=None, only=False):
+        if level == SELECTION:
+            level = HIGHEST
         #print('get setting, key:%s, level:%s, obj:%s' % (key, level, obj))
-        if obj:
-            print('settings.get with object:', obj)
-            raise hell
-            if level == HIGHEST:
-                if key in obj.settings:
-                    return obj.settings[key]
-        if level == HIGHEST:
-            if key in self.s_forest:
-                return self.s_forest[key]
-            elif key in self.s_document:
-                return self.s_document[key]
-            return getattr(self.prefs, key)
-        elif level == FOREST:
-            return self.s_forest.get(key, None)
-        elif level == DOCUMENT:
-            return self.s_document.get(key, None)
-        elif level == PREFS:
-            return getattr(self.prefs, key)
+        if obj and level <= HIGHEST and key in obj.settings:
+            return obj.settings[key]
+        if level <= FOREST and key in self.s_forest:
+            return self.s_forest[key]
+        if level <= DOCUMENT and key in self.s_document:
+            return self.s_document[key]
+        return getattr(self.prefs, key)
 
     def set(self, key, value, level=OBJECT, obj=None):
         """ When writing a setting, you have to tell in which level to write on:
@@ -86,6 +77,8 @@ class Settings:
         :param value:
         :param level:
         :param obj:
+        :param override: if true, delete value from layers above this. e.g. if you set value in
+         DOCUMENT level, remove same value from FOREST and objects.
         :return:
         """
         #print('set settings: key:%s, value:%s, level:%s, obj:%s' %
@@ -205,22 +198,20 @@ class Settings:
             self.update_shape_cache()
         return self._shape_cache[self.ui.active_edge_type][key]
 
-    def active_nodes(self, key):
+    def active_nodes(self, key, of_type, level):
         """ Return node setting either from selected items or from ui.active_node_type.
         :param key:
+        :param of_type:
+        :param level:
         :return:
         """
         if self.ui.scope_is_selection:
-            typical_node = None
             for node in ctrl.selected:
-                if isinstance(node, Node):
+                if isinstance(node, Node) and node.node_type == of_type:
                     if key in node.settings:
                         return node.settings[key]
-                    if not typical_node:
-                        typical_node = node
-            if typical_node:
-                return self.get_node_setting(key, node_type=typical_node.node_type)
-        return self.get_node_setting(key, node_type=self.ui.active_node_type)
+            level = HIGHEST
+        return self.get_node_setting(key, node_type=of_type, level=level)
 
     def active_edges(self, key):
         """ Return edge setting either from selected items or from ui.active_edge_type
@@ -245,31 +236,16 @@ class Settings:
 
     def _get_dict_setting(self, key, subtype=None, obj=None, level=HIGHEST, dictname=None):
         if obj:
-            if level == HIGHEST:
+            if level <= HIGHEST:
                 if key in obj.settings:
                     return obj.settings[key]
             elif level == OBJECT:
                 return obj.settings.get(key, None)
-        if level == HIGHEST:
-            if dictname in self.s_forest and subtype in self.s_forest[dictname] \
-                    and key in self.s_forest[dictname][subtype]:
+        if level <= FOREST and dictname in self.s_forest and subtype in self.s_forest[dictname] and key in self.s_forest[dictname][subtype]:
                 return self.s_forest[dictname][subtype][key]
-            if dictname in self.s_document and subtype in self.s_document[dictname] \
-                    and key in self.s_document[dictname][subtype]:
+        elif level <= DOCUMENT and dictname in self.s_document and subtype in self.s_document[dictname] and key in self.s_document[dictname][subtype]:
                 return self.s_document[dictname][subtype][key]
-            d = getattr(self.prefs, dictname, None)
-            if d:
-                dd = d.get(subtype, None)
-                if dd:
-                    return dd.get(key, None)
-            return None
-        elif level == FOREST:
-            if dictname in self.s_forest and subtype in self.s_forest[dictname]:
-                return self.s_forest[dictname][subtype].get(key, None)
-        elif level == DOCUMENT:
-            if dictname in self.s_document and subtype in self.s_document[dictname]:
-                return self.s_document[dictname][subtype].get(key, None)
-        elif level == PREFS:
+        elif level <= PREFS:
             d = getattr(self.prefs, dictname, None)
             if d:
                 dd = d.get(subtype, None)

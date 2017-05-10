@@ -39,50 +39,12 @@ from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 
 # tree_edit has various tree editing and node editing actions
 
-class AddNode(KatajaAction):
-    k_action_uid = 'add_node'
-    k_command = 'Add node'
-    k_tooltip = 'Add %s'
-
-    def method(self):
-        """ Generic add node, gets the node type as an argument.
-        :return: None
-        """
-        sender = self.sender()
-        ntype = sender.data
-        pos = QtCore.QPoint(random.random() * 60 - 25,
-                            random.random() * 60 - 25)
-        label = ctrl.free_drawing.next_free_label()
-        node = ctrl.free_drawing.create_node(label=label, pos=pos, node_type=ntype)
-        nclass = classes.nodes[ntype]
-        log.info('Added new %s.' % nclass.display_name[0])
-        ctrl.forest.forest_edited()
-
-
-class CloseEmbed(KatajaAction):
-    k_action_uid = 'close_embed'
-    k_command = 'Close panel'
-    k_shortcut = QKeySequence(QKeySequence.Close)
-    k_shortcut_context = 'parent_and_children'
-    k_undoable = False
-
-    def method(self):
-        """ If embedded menus (node creation / editing in place, etc.) are open,
-        close them.
-        This is expected behavior for pressing 'esc'.
-        :return: None
-        """
-        embed = self.get_ui_container()
-        if embed:
-            ctrl.ui.remove_ui(embed, fade=True)
-            ctrl.ui.close_active_embed()
-
 
 class CreateNewNodeFromText(KatajaAction):
     k_action_uid = 'create_new_node_from_text'
     k_command = 'New node from text'
-    k_shortcut = 'Return'
-    k_shortcut_context = 'parent_and_children'
+    #k_shortcut = 'Return'
+    #k_shortcut_context = 'parent_and_children'
 
     def method(self):
 
@@ -196,8 +158,8 @@ class RemoveTriangle(KatajaAction):
 class FinishEditingNode(KatajaAction):
     k_action_uid = 'finish_editing_node'
     k_command = 'Save changes to node'
-    k_shortcut = 'Return'
-    k_shortcut_context = 'parent_and_children'
+    #k_shortcut = 'Return'
+    #k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ Set the new values and close the constituent editing embed.

@@ -119,7 +119,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._make_fat_path = False
         self._curve_dir_start = BOTTOM_SIDE
         self._curve_dir_end = TOP_SIDE
-        self.setZValue(10)
+        self.setZValue(100)
         self.status_tip = ""
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
@@ -284,15 +284,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 if start and end:
                     if not (end.is_visible() and start.is_visible()):
                         lv = False
-                    elif end.locked_to_node is start:
+                    elif end.locked_to_node is start and \
+                            ((not end.adjustment) or end.adjustment == (0, 0)):
                         lv = False
                 else:
                     delete = True
             elif self.edge_type == g.CHECKING_EDGE:
                 if start and end:
                     if not (end.is_visible() and start.is_visible()):
-                        lv = False
-                    elif end.locked_to_node is start:
                         lv = False
                     elif ctrl.settings.get('feature_check_display') == 0:
                         lv = False
@@ -493,7 +492,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif self.is_broken():
             return ctrl.cm.broken(self.color)
-        elif self.in_projections:
+        elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             return ctrl.cm.get(self.in_projections[0].color_id)
         elif (self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE) and self.end \
                 and self.end.fshape:
@@ -563,15 +562,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if sx == ex:
             ex += 0.001  # fix disappearing vertical paths
 
-        en, ec = self.edge_index()
         thick = 1
-        if self.in_projections and (self.in_projections[0].strong_lines and not
-                                    self.in_projections[0].colorized):
-            thick = len(self.in_projections)
 
         c = dict(start_point=self.start_point, end_point=(ex, ey),
-                 curve_adjustment=self.curve_adjustment, thick=thick, edge_n=en,
-                 edge_count=ec, start=self.start, end=self.end, inner_only=self._use_simple_path,
+                 curve_adjustment=self.curve_adjustment, thick=thick,
+                 start=self.start, end=self.end, inner_only=self._use_simple_path,
                  curve_dir_start=self._curve_dir_start, curve_dir_end=self._curve_dir_end)
 
         method = SHAPE_PRESETS[self.shape_name].path
@@ -686,7 +681,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             connection_style = self.cached_for_type('start_connects_to')
             if connection_style == SPECIAL:
                 self._computed_start_point, self._curve_dir_start = \
-                    self.start.special_connection_point(sx, sy, ex, ey, start=True)
+                    self.start.special_connection_point(sx, sy, ex, ey, start=True,
+                                                        edge_type=self.edge_type)
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = sx, sy
                 if abs(sx - ex) < abs(sy - ey):
@@ -712,6 +708,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 # Find the point in bounding rect that is on the line from center of start node to
                 # center of end node / end_point. It is simple, but the point can be in any of four
                 # sides of the rect.
+
                 dx = ex - sx
                 dy = ey - sy
                 sbr = self.start.boundingRect()
@@ -769,7 +766,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             connection_style = self.cached_for_type('end_connects_to')
             if connection_style == SPECIAL:
                 self._computed_end_point, self._curve_dir_end = self.end.special_connection_point(
-                    sx, sy, ex, ey, start=False)
+                    sx, sy, ex, ey, start=False, edge_type=self.edge_type)
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = ex, ey
                 if abs(sx - ex) < abs(sy - ey):
@@ -919,6 +916,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param selected:
         """
         if selected:
+            print('edge: ', self.edge_type, self.zValue())
             if self.uses_labels():
                 if not self.label_item:
                     self.label_item = EdgeLabel('', self, placeholder=True)
@@ -993,7 +991,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
-            self.setZValue(10)
+            self.setZValue(self.cached('z_value'))
             self.update()
             ctrl.remove_status(self.status_tip)
 
@@ -1054,7 +1052,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
-                if self.in_projections and self.in_projections[0].colorized:
+                if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
                     p.setWidthF(thickness)
                     left = self.start_point[0] > self.end_point[0]
                     for i, proj in enumerate(self.in_projections):
@@ -1066,18 +1064,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                         else:
                             cpath = self._path.translated(-i, i)
                         painter.drawPath(cpath)
-
-                elif self.in_projections and self.in_projections[0].strong_lines:
-                    p.setWidthF(thickness * len(self.in_projections))
-                    painter.setPen(p)
-                    painter.drawPath(self._path)
                 else:
                     p.setWidthF(thickness)
                     painter.setPen(p)
                     painter.drawPath(self._path)
 
             if self.is_filled():
-                if self.in_projections and self.in_projections[0].colorized:
+                if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
                     left = self.start_point[0] > self.end_point[0]
                     for i, proj in enumerate(self.in_projections):
                         cp = ctrl.cm.get(proj.color_id)

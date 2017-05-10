@@ -6,6 +6,8 @@ import kataja.globals as g
 from kataja.ui_support.SelectionBox import SelectionBox
 import random
 
+from ui_support.TwoColorButton import TwoColorButton
+
 __author__ = 'purma'
 
 dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
@@ -25,13 +27,13 @@ def color_theme_fragment(panel, layout):
     ctrl.ui.connect_element_to_action(panel.randomise, 'randomise_palette')
     hlayout.addWidget(panel.randomise, 1, QtCore.Qt.AlignRight)
 
-    panel.remove_theme = QtWidgets.QPushButton('Remove')
+    panel.remove_theme = TwoColorButton('Remove')
     #panel.remove_theme.setFixedSize(40, 20)
     ctrl.ui.connect_element_to_action(panel.remove_theme, 'remove_theme')
     panel.remove_theme.hide()
     hlayout.addWidget(panel.remove_theme, 1, QtCore.Qt.AlignRight)
 
-    panel.store_favorite = QtWidgets.QPushButton('★')
+    panel.store_favorite = UnicodeIconButton('★')
     panel.store_favorite.setStyleSheet(
         'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
     panel.store_favorite.setFixedSize(26, 20)
@@ -41,18 +43,25 @@ def color_theme_fragment(panel, layout):
     layout.addLayout(hlayout)
 
 
-class RandomiseButton(QtWidgets.QPushButton):
+class UnicodeIconButton(QtWidgets.QPushButton):
+    """ PushButton that uses unicode characters as its icons. This requires that the main
+    stylesheet assigns a well-equipped and larger font face for this class.
+    """
+    def __init__(self, text):
+        QtWidgets.QPushButton.__init__(self, text=text)
+
+
+class RandomiseButton(UnicodeIconButton):
 
     def __init__(self):
         QtWidgets.QPushButton.__init__(self)
         self.reroll()
-        f = qt_prefs.get_font(g.MAIN_FONT)
-        self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
         self.setFixedSize(40, 20)
         self.setEnabled(False)
 
     def reroll(self):
         self.setText(random.choice(dice) + random.choice(dice))
+
 
 class ColorPanel(Panel):
     """

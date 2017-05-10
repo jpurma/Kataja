@@ -36,7 +36,7 @@ class NavigationPanel(Panel):
         self.treeset_counter = treeset_counter
 
         action = ctrl.ui.get_action('previous_forest')
-        prev_tree = TwoColorButton(qt_prefs.left_arrow, action.k_shortcut, self)
+        prev_tree = TwoColorButton(action.k_shortcut, qt_prefs.left_arrow, self)
         prev_tree.setMinimumWidth(72)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         self.prev_tree = prev_tree
@@ -44,7 +44,7 @@ class NavigationPanel(Panel):
         ui.connect_element_to_action(prev_tree, action.k_action_uid)
 
         action = ctrl.ui.get_action('next_forest')
-        next_tree = TwoColorButton(qt_prefs.right_arrow, action.k_shortcut, self)
+        next_tree = TwoColorButton(action.k_shortcut, qt_prefs.right_arrow, self)
         next_tree.setMinimumWidth(72)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         self.next_tree = next_tree
@@ -60,14 +60,14 @@ class NavigationPanel(Panel):
         self.derivation_counter = derivation_counter
 
         action = ctrl.ui.get_action('prev_derivation_step')
-        prev_der = TwoColorButton(qt_prefs.left_arrow, action.k_shortcut, self)
+        prev_der = TwoColorButton(action.k_shortcut, qt_prefs.left_arrow, self)
         prev_der.setMaximumHeight(20)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
         ui.connect_element_to_action(prev_der, action.k_action_uid)
 
         action = ctrl.ui.get_action('next_derivation_step')
-        next_der = TwoColorButton(qt_prefs.right_arrow, action.k_shortcut, self)
+        next_der = TwoColorButton(action.k_shortcut, qt_prefs.right_arrow, self)
         next_der.setMaximumHeight(20)
         layout.addWidget(next_der, 3, 1, 1, 1)
         self.next_der = next_der

@@ -32,7 +32,7 @@ class VisualizationPanel(Panel):
         hlayout = QtWidgets.QHBoxLayout()
 
         self.selector = SelectionBox(self)
-        self.selector.add_items([('%s (%s)' % (key, item.shortcut), key) for key, item in
+        self.selector.add_items([(key, '%s (%s)' % (key, item.shortcut)) for key, item in
                                  VISUALIZATIONS.items()])
 
         self.ui_manager.connect_element_to_action(self.selector, 'set_visualization')
@@ -47,34 +47,6 @@ class VisualizationPanel(Panel):
 
         layout.addLayout(hlayout)
 
-        hlayout = QtWidgets.QHBoxLayout()
-        w = 36
-        b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24)
-        b1.setFixedWidth(w)
-        b1.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b1, 'set_no_frame_node_shape')
-        hlayout.addWidget(b1)
-        b2 = PanelButton(pixmap=qt_prefs.shape_icon_scope, parent=self, size=24)
-        b2.setFixedWidth(w)
-        b2.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b2, 'set_scopebox_node_shape')
-        hlayout.addWidget(b2)
-        b3 = PanelButton(pixmap=qt_prefs.shape_icon_brackets, parent=self, size=24)
-        b3.setFixedWidth(w)
-        b3.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b3, 'set_bracketed_node_shape')
-        hlayout.addWidget(b3)
-        b4 = PanelButton(pixmap=qt_prefs.shape_icon_box, parent=self, size=24)
-        b4.setFixedWidth(w)
-        b4.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b4, 'set_box_node_shape')
-        hlayout.addWidget(b4)
-        b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24)
-        b5.setFixedWidth(w)
-        b5.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b5, 'set_card_node_shape')
-        hlayout.addWidget(b5)
-        layout.addLayout(hlayout)
         #layout.setContentsMargins(0, 0, 0, 0)
         inner.setLayout(layout)
         self.watchlist = ['visualization']

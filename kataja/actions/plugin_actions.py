@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from kataja.singletons import ctrl, prefs
-from kataja.KatajaAction import KatajaAction
+from kataja.KatajaAction import KatajaAction, DynamicKatajaAction
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
@@ -41,6 +41,7 @@ class SetPluginsPath(KatajaAction):
         prefs.plugins_path = path
         return "Plugin path set to %s" % path
 
+
 class ManagePlugins(KatajaAction):
     k_action_uid = 'manage_plugins'
     k_command = 'Manage plugins...'
@@ -59,7 +60,8 @@ class ManagePlugins(KatajaAction):
         ctrl.ui.preferences_dialog.listwidget.setCurrentRow(i)
         ctrl.ui.preferences_dialog.stackwidget.setCurrentIndex(i)
 
-class SwitchPlugin(KatajaAction):
+
+class SwitchPlugin(DynamicKatajaAction):
     k_action_uid = 'switch_plugin'
     k_dynamic = True
     k_checkable = True
@@ -96,9 +98,11 @@ class ReloadPlugin(KatajaAction):
     def enabler(self):
         return prefs.active_plugin_name
 
+
 class TogglePlugin(KatajaAction):
     k_action_uid = 'toggle_plugin'
-    k_command = 'Enable/disable plugin'
+    k_command = 'Enable plugin'
+    k_command_alt = 'Disable plugin'
     k_undoable = False
     k_tooltip = "Plugins can drastically change how Kataja operates and what it tries to do. " \
                 "Be sure you trust the code before enabling a plugin. "

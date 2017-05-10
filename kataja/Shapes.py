@@ -55,15 +55,6 @@ class Shape:
     def icon_path(painter, rect, color=None):
         pass
 
-def direction_multiplier(edge_n, edge_count) -> float:
-    """ Returns curve multiplier between [-1.0, 1.0] depending if left edge,
-    right edge or something between. """
-    if edge_count == 1:
-        return 0
-    #else:
-    #    return 1
-    p = 2.0 / (edge_count - 1)
-    return (edge_n * p) - 1
 
 
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
@@ -210,8 +201,8 @@ class ShapedCubicPath(Shape):
     leaf_y = 2
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
-             edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
+    def path(start_point=None, end_point=None, curve_adjustment=None,
+             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
              fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False, curve_dir_start=0,
              curve_dir_end=0, **kwargs):
         sx, sy = start_point
@@ -227,29 +218,24 @@ class ShapedCubicPath(Shape):
         else:
             dy = fixed_dy
             dx = fixed_dx
-        dm = direction_multiplier(edge_n, edge_count)
-        dx *= dm
         if curve_dir_start == BOTTOM_SIDE:
-            if sx > ex and dm > 0:
-                cp1 = (sx + dx * 2, sy + dy)
-            else:
-                cp1 = (sx, sy + dy)
-        elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy + dy)
+        elif curve_dir_start == TOP_SIDE:
+            cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
-            cp1 = (sx + dx, sy)
+            cp1 = (sx - dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
             cp1 = (sx + dx, sy)
         else:
             cp1 = (sx + dx, sy)
         if curve_dir_end == BOTTOM_SIDE:
-            cp2 = (ex, ey - dy)
+            cp2 = (ex, ey + dy)
         elif curve_dir_end == TOP_SIDE:
             cp2 = (ex, ey - dy)
         elif curve_dir_end == LEFT_SIDE:
             cp2 = (ex - dx, ey)
         elif curve_dir_end == RIGHT_SIDE:
-            cp2 = (ex - dx, ey)
+            cp2 = (ex + dx, ey)
         else:
             cp2 = (ex - dx, ey)
 
@@ -297,7 +283,7 @@ class CubicPath(Shape):
     fixed_dy = 15
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0, edge_count=1,
+    def path(start_point=None, end_point=None, curve_adjustment=None,
              relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15, curve_dir_start=0,
              curve_dir_end=0, **kwargs):
         sx, sy = start_point
@@ -310,17 +296,12 @@ class CubicPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dm = direction_multiplier(edge_n, edge_count)
-        dx *= dm
         if curve_dir_start == BOTTOM_SIDE:
-            if sx > ex and dm > 0:
-                cp1 = (sx + dx * 2, sy + dy)
-            else:
-                cp1 = (sx, sy + dy)
+            cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
-            cp1 = (sx + dx, sy)
+            cp1 = (sx - dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
             cp1 = (sx + dx, sy)
         else:
@@ -332,7 +313,7 @@ class CubicPath(Shape):
         elif curve_dir_end == LEFT_SIDE:
             cp2 = (ex - dx, ey)
         elif curve_dir_end == RIGHT_SIDE:
-            cp2 = (ex - dx, ey)
+            cp2 = (ex + dx, ey)
         else:
             cp2 = (ex - dx, ey)
         control_points = [cp1, cp2]
@@ -373,7 +354,7 @@ class ShapedQuadraticPath(Shape):
     leaf_y = 3
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0, edge_count=1,
+    def path(start_point=None, end_point=None, curve_adjustment=None,
              relative=False, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20, leaf_x=1, leaf_y=2,
              thick=1, inner_only=False, curve_dir_start=0, **kwargs):
         sx, sy = start_point
@@ -388,15 +369,8 @@ class ShapedQuadraticPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dm = direction_multiplier(edge_n, edge_count)
-        dx *= dm
         if curve_dir_start == BOTTOM_SIDE:
-            if sx > ex and dm > 0:
-                cp1 = (sx + dx, sy + dy)
-            elif dm < 0 and sx < ex: # big honking curve
-                cp1 = ((sx + ex) / 2, sy)
-            else:
-                cp1 = (sx, sy + dy)
+            cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
@@ -446,8 +420,8 @@ class QuadraticPath(Shape):
     fixed_dy = 0
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
-             edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20,
+    def path(start_point=None, end_point=None, curve_adjustment=None,
+             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20,
              curve_dir_start=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
@@ -457,13 +431,8 @@ class QuadraticPath(Shape):
         else:
             dx = fixed_dx
             dy = fixed_dy
-        dm = direction_multiplier(edge_n, edge_count)
-        dx *= dm
         if curve_dir_start == BOTTOM_SIDE:
-            if sx > ex and dm > 0:
-                cp1 = (sx + dx, sy + dy)
-            else:
-                cp1 = (sx, sy + dy)
+            cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:

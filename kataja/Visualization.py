@@ -289,7 +289,7 @@ class BaseVisualization:
             y_vel += node_y * -0.009
             # elif (not down) and self.use_gravity:
         elif self.use_gravity:
-            y_vel += node._gravity * 2
+            y_vel += node._gravity
 
         return round(x_vel), round(y_vel)
 

@@ -2,7 +2,7 @@
 from PyQt5.QtGui import QKeySequence
 
 from kataja.singletons import ctrl, log
-from kataja.KatajaAction import KatajaAction
+from kataja.KatajaAction import KatajaAction, DynamicKatajaAction
 
 
 # ==== Class variables for KatajaActions:
@@ -37,7 +37,7 @@ class ToggleAllPanels(KatajaAction):
     k_undoable = False
 
 
-class TogglePanel(KatajaAction):
+class TogglePanel(DynamicKatajaAction):
     k_dynamic = True
     k_checkable = True
     k_viewgroup = 'Panels'

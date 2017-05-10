@@ -35,6 +35,7 @@ import json
 import os.path
 import sys
 import traceback
+import queue
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -63,19 +64,24 @@ from kataja.visualizations.available import VISUALIZATIONS
 # except ImportError:
 # objgraph = None
 
-# KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
+
+# KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
+# .SelectionBox, .QComboBox,
 stylesheet = """
 .QWidget, .SelectionBox, .QComboBox, QLabel, QAbstractButton, QAbstractSpinBox, QDialog, QFrame,
 QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
+QComboBox QAbstractItemView {selection-color: %(ui)s;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
 sup sub {font-size: 8pt; vertical-align: sub}
 sub sup {font-size: 8pt; vertical-align: sup}
 sup sup {font-size: 8pt; vertical-align: sup}
-EmbeddedMultibutton:disabled {text-decoration: line-through; color: gray;}
 EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
+QComboBox, TwoColorButton {background-color: %(paper)s;}
+UnicodeIconButton {background-color: %(paper)s; font-family: "%(main_font)s"; 
+                   font-size: %(main_font_size)spx;}
 ModeLabel {border: 1px transparent none; color: %(ui)s; font-family: "%(ui_font)s";
            font-size: %(ui_font_larger)spx}
 ModeLabel:hover {border: 1px solid %(ui)s; border-radius: 3}
@@ -116,6 +122,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self)
         kataja_app.processEvents()
         SavedObject.__init__(self)
+
         self.use_tooltips = True
         self.available_plugins = {}
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -180,19 +187,22 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         #for gesture in gestures:
         #    self.grabGesture(gesture)
-        self.action_finished(undoable=False)
+        self.action_finished(undoable=False, play=True)
         self.forest.undo_manager.flush_pile()
 
     def update_style_sheet(self):
         c = ctrl.cm.drawing()
         ui = ctrl.cm.ui()
         f = qt_prefs.get_font(g.UI_FONT)
+        fm = qt_prefs.get_font(g.MAIN_FONT)
         self.setStyleSheet(stylesheet % {'draw': c.name(), 'lighter': c.lighter().name(),
                                          'paper': ctrl.cm.paper().name(),
                                          'ui': ui.name(), 'ui_lighter': ui.lighter().name(),
                                          'ui_font': f.family(), 'ui_font_size': f.pointSize(),
                                          'ui_font_larger': int(f.pointSize() * 1.2),
-                                         'ui_darker': ui.darker().name()})
+                                         'ui_darker': ui.darker().name(),
+                                         'main_font': fm.family(),
+                                         'main_font_size': fm.pointSize()})
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
@@ -323,7 +333,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :return:
         """
-        prefs.restore_default_preferences(qt_prefs, running_environment, classes)
+        prefs.restore_default_preferences(qt_prefs, running_environment, classes, log)
         ctrl.call_watchers(self, 'color_themes_changed')
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
@@ -431,7 +441,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
     # ## Menu management #######################################################
 
-    def action_finished(self, m='', undoable=True, error=None):
+    def action_finished(self, m='', undoable=True, error=None, play=False):
         """ Write action to undo stack, report back to user and redraw trees
         if necessary
         :param m: message for undo
@@ -447,7 +457,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             ctrl.forest.draw()
         if undoable and not error:
             ctrl.forest.undo_manager.take_snapshot(m)
-        ctrl.graph_scene.start_animations()
+        if play:
+            ctrl.graph_scene.start_animations()
         ctrl.ui.update_actions()
 
     def trigger_action(self, name, *args, **kwargs):
@@ -649,7 +660,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         return savedata
 
     def update_colors(self, randomise=False, animate=True):
-        t = time.time()
+        """ This is the master palette change.
+        Its effects should propagate to all objects in scene and ui, either through updated
+        style sheets, paletteChanged -events or 'palette_changed' -watchers.
+        :param randomise:
+        :param animate:
+        :return:
+        """
         cm = self.color_manager
         old_gradient_base = cm.paper()
         cm.update_colors(randomise=randomise)
@@ -678,7 +695,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
     def update_visualization(self):
         ctrl.forest.set_visualization(prefs.visualization)
-        self.main.redraw()
+        self.redraw()
 
     def resize_ui_font(self):
         qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)

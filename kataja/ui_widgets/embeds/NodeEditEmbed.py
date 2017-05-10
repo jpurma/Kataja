@@ -5,7 +5,6 @@ from kataja.parser.INodes import ITextNode, as_html
 from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
-from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.ProjectionButtons import ProjectionButtons
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
@@ -100,13 +99,6 @@ class NodeEditEmbed(UIEmbed):
                 if template_width:
                     field.setFixedWidth(template_width)
                 self.resize_target = field
-            elif itype == 'multibutton':
-                width = d.get('width', 200)
-                op_func = d.get('option_function')
-                op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
-                                                                       op_func, None)
-                field = EmbeddedMultibutton(self, options=op_func())
-                field.setMaximumWidth(width)
             elif itype == 'projection_buttons':
                 width = d.get('width', 200)
                 field = ProjectionButtons(self)
@@ -211,11 +203,6 @@ class NodeEditEmbed(UIEmbed):
                 field.setText(value)
             elif itype == 'checkbox':
                 field.setChecked(bool(value))
-            elif itype == 'multibutton':
-                op_func = d.get('option_function')
-                op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
-                                                                       op_func, None)
-                field.update_selections(op_func())
             elif itype == 'spinbox':
                 if not isinstance(value, int):
                     if not value:
@@ -239,7 +226,7 @@ class NodeEditEmbed(UIEmbed):
                 value = field.text()
             elif itype == 'expandingtext':
                 value = field.inode_text()
-            elif itype in ['multibutton', 'radiobutton', 'checkbox', 'preview', 'spinbox']:
+            elif itype in ['radiobutton', 'checkbox', 'preview', 'spinbox']:
                 # buttons take action immediately when clicked and preview cannot be edited
                 continue
             else:
