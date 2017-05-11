@@ -115,12 +115,9 @@ class ButtonShortcutFilter(QtCore.QObject):
 
 
 class KatajaAction(QtWidgets.QAction):
-    """ Actions are defined as classes that usually have only one instance. Action method()
+    """ Actions are defined as classes that have only one instance. Action method()
     performs the actual work, but class variables below can be used to finetune how action is
     presented for the user.
-
-    If action is dynamic (k_dynamic = True), there are many instances of the same and __init__
-    has to be  given with uid, command, tooltip and trigger_args added to each call of the method.
      """
     k_action_uid = ''
     k_command = ''
@@ -130,7 +127,6 @@ class KatajaAction(QtWidgets.QAction):
     k_undoable = True
     k_shortcut_context = ''
     k_shortcut = ''
-    k_dynamic = False
     k_exclusive = False
     k_checkable = False
     k_viewgroup = False
@@ -147,6 +143,7 @@ class KatajaAction(QtWidgets.QAction):
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
+        self.transit_menus = []
         self.host_menu = None
         self.undoable = self.k_undoable
         self.tip0 = self.k_tooltip or self.command
@@ -211,11 +208,14 @@ class KatajaAction(QtWidgets.QAction):
 
         sender = self.sender()
 
+        # Some rare triggers pass values, e.g. ButtonGroups pass the id of button.
+        # prepare_parameters should put these to args, kwargs, but we don't want to burden that
+        # method with parameters, so keep store them as instance variables.
+        if args:
+            self.args = args
+
         if sender and sender != ctrl.ui.command_prompt:
             args, kwargs = self.prepare_parameters()
-        if self.args:
-            print('btw, we had args already: ', self.args)
-            print('dont know what to do with them.')
 
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
 
@@ -224,7 +224,6 @@ class KatajaAction(QtWidgets.QAction):
         kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
         argstring = ', '.join(arg_parts + kwarg_parts)
         print(f'>>> {self.k_action_uid}({argstring})')
-        print('triggering method: ', self.method)
         try:
             message = self.method(*args, **kwargs)
             error = None
@@ -328,6 +327,8 @@ class KatajaAction(QtWidgets.QAction):
         elif isinstance(element, QtWidgets.QAbstractButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
+        elif isinstance(element, QtWidgets.QButtonGroup):
+            element.buttonClicked.connect(self.action_triggered)
         elif isinstance(element, QtWidgets.QComboBox):
             element.activated.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -350,8 +351,11 @@ class KatajaAction(QtWidgets.QAction):
             # These don't have setStatusTip
             element.status_tip = tooltip
         else:
-            element.setStatusTip(tooltip)
-            element.setToolTipDuration(2000)
+            try:
+                element.setStatusTip(tooltip)
+                element.setToolTipDuration(2000)
+            except AttributeError:
+                return
         if ctrl.main.use_tooltips:
             element.setToolTip(tooltip)
 
@@ -406,6 +410,13 @@ class KatajaAction(QtWidgets.QAction):
                     element.blockSignals(True)
                     element.setText(value)
                     element.blockSignals(False)
+            for menu in self.transit_menus:
+                menu.blockSignals(True)
+                if menu.key == value:
+                    menu.setChecked(True)
+                else:
+                    menu.setChecked(False)
+                menu.blockSignals(False)
 
     def get_ui_container(self):
         """ Traverse qt-objects until something governed by UIManager is
@@ -437,55 +448,22 @@ class KatajaAction(QtWidgets.QAction):
         if container:
             return container.host
 
+    def set_checked_for(self, menu_key, value):
+        """ There may be several menu items representing one (parametrised) action.
+        :return:
+        """
+        for menu in self.transit_menus:
+            if menu.key == menu_key:
+                menu.setChecked(value)
 
-class DynamicKatajaAction(KatajaAction):
-    """ Dynamic actions can have many instances, and each instance can have separate values for
-    various fields. __init__ is different to other KatajaActions, where class variables dictate
-    its field values.
-     """
-    k_dynamic = True
 
-    def __init__(self, action_uid='', command='', command_alt='', args=None, shortcut='', tooltip='', tooltip_alt=''):
-        QtWidgets.QAction.__init__(self, ctrl.main)
-        self.key = action_uid or self.k_action_uid
-        self.elements = set()
-        self.command = command
-        self.command_alt = command_alt
-        self.state_arg = None  # used to hold button states, or whatever activated triggers send
-        self.args = args or []  # if there are several instances, e.g. vis_1-9, they define args
-        # that are always attached to method call.
-        if self.command:
-            self.setText(self.command)
-        self.setData(self.key)
-        self.host_menu = None
-        self.undoable = self.k_undoable
-        self.tip0 = tooltip or command
-        self.tip1 = tooltip_alt or command_alt or self.tip0
-        self.disable_undo_and_message = False
-        # when triggered from menu, forward the call to more complex trigger handler
-        self.triggered.connect(self.action_triggered)
-        # if action has shortcut_context, it shouldn't have global shortcut
-        # in these cases shortcut is tied to ui_element.
-        if shortcut:
-            self.setShortcut(QtGui.QKeySequence(shortcut))
-            # those actions that have shortcut context are tied to (possibly nonexisting) UI
-            # widgets and they can resolve ambiguous shortcuts only when the UI widgets are
-            # connected. So disable these actions until the connection has been made.
-            if self.k_shortcut_context == 'parent_and_children':
-                sc = QtCore.Qt.WidgetWithChildrenShortcut
-                self.setEnabled(False)
-            elif self.k_shortcut_context == 'widget':
-                sc = QtCore.Qt.WidgetShortcut
-                self.setEnabled(False)
-            else:
-                sc = QtCore.Qt.ApplicationShortcut
-            self.setShortcutContext(sc)
-            self.installEventFilter(ctrl.ui.shortcut_solver)
-            self.tip0, self.tip1 = self.tips_with_shortcuts()
-        if self.k_viewgroup:
-            ag = ctrl.ui.get_action_group(self.k_viewgroup)
-            self.setActionGroup(ag)
-            ag.setExclusive(self.k_exclusive)
-        self.setCheckable(self.k_checkable)
-        self.setToolTip(self.tip0)
-        self.setStatusTip(self.tip0)
+class TransmitAction(QtWidgets.QAction):
+
+    def __init__(self, text='', target=None, key=''):
+        QtWidgets.QAction.__init__(self, text)
+        self.key = key
+        self.target = target
+        self.triggered.connect(target.trigger)
+        self.setCheckable(True)
+        target.transit_menus.append(self)
+

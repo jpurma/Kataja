@@ -33,7 +33,7 @@ import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.OverlayButton
-from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
+from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
@@ -67,7 +67,7 @@ from kataja.ui_widgets.panels.StylePanel import StylePanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
-from kataja.visualizations.available import VISUALIZATIONS, action_key
+from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.panels.MergePanel import MergePanel
 
 NOTHING = 0
@@ -103,7 +103,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('trees_menu', ('&Trees', ['next_forest', 'previous_forest',
                                                          'next_derivation_step',
                                                          'prev_derivation_step'])),
-                              ('drawing_menu', ('&Drawing', ['$visualizations',
+                              ('drawing_menu', ('&Drawing', ['$set_visualization',
                                                              '---',
                                                              'toggle_label_shape',
                                                              'select_trace_strategy',
@@ -112,11 +112,11 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                              'switch_view_mode'])),
                               ('view_menu', ('&View', ['zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
-                              ('windows_menu', ('&Windows', ['$panels', '---',
+                              ('windows_menu', ('&Windows', ['$toggle_panel', '---',
                                                              'toggle_all_panels', '---',
-                                                             '$projects'])),
+                                                             '$switch_project'])),
                               ('plugin_menu', ('&Plugin', ['manage_plugins', 'reload_plugin',
-                                                           '---', '$plugins'])),
+                                                           '---', '$switch_plugin'])),
                               ('help_menu', ('&Help', ['help']))])
 
 
@@ -132,7 +132,6 @@ class UIManager:
         self.scene = main.graph_scene
         self.actions = {}
         self._action_groups = {}
-        self._dynamic_base_actions = {}
         self._top_menus = {}
         self.top_bar_buttons = None
         self._edit_mode_button = None
@@ -159,11 +158,6 @@ class UIManager:
         self.drag_info = None
         self.activity_marker = None
         self.ui_activity_marker = None
-        # These actions are dynamically created and may be needed to be updated
-        self.panel_actions = []
-        self.project_actions = []
-        self.plugin_actions = []
-        self.visualisation_actions = []
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -171,10 +165,10 @@ class UIManager:
         which doesn't exist until the __init__  is completed.
         :return:
         """
-        # Create actions based on actions.py and menus based on
-        additional_actions = self.create_actions()
+        # Create actions based on actions.py
+        self.create_actions()
         # Create top menus, requires actions to exist
-        self.create_menus(additional_actions)
+        self.create_menus()
         # Create UI panels, requires actions to exist
         self.create_panels()
         self.create_float_buttons()
@@ -529,136 +523,78 @@ class UIManager:
         mod = importlib.import_module(mod_path)
         for class_name in vars(mod):
             if class_name.startswith(
-                    '_') or class_name == 'KatajaAction' or class_name == 'DynamicKatajaAction':
+                    '_') or class_name == 'KatajaAction':
                 continue
             a_class = getattr(mod, class_name)
             if not (inspect.isclass(a_class) and issubclass(a_class, KatajaAction)):
                 continue
             found.append(a_class)
             if not seek_only:
-                if a_class.k_dynamic:
-                    self._dynamic_base_actions[a_class.k_action_uid] = a_class
-                else:
-                    action = a_class()
-                    self.actions[action.key] = action
-                    self.main.addAction(action)
+                action = a_class()
+                self.actions[action.key] = action
+                self.main.addAction(action)
         return found
 
     def create_actions(self):
         """ KatajaActions define user commands and interactions. They are loaded from modules in
         kataja.actions or from plugin's plugin.actions.any_module. """
         self.actions = {}
-        self._dynamic_base_actions = {}
         self._action_groups = {}
         for module in os.listdir(os.path.dirname(kataja.actions.__file__)):
             if module == '__init__.py' or module[-3:] != '.py':
                continue
             mod_path = 'kataja.actions.' + module[:-3]
-
             self._load_actions(mod_path)
 
-        # dynamic actions are created based on other data e.g. available
-        # visualization plugins.
-        # they are added into actions as everyone else, but there is a
-        # special mapping to find
-        # them later.
-        # eg. additional_actions['visualizations'] = ['vis_1','vis_2',
-        # 'vis_3'...]
-
-        # $visualisations
-        self.prepare_visualisation_actions()
-        # $panels
-        self.prepare_panel_actions()
-        # $projects
-        self.prepare_project_actions()
-        # $plugins
-        self.prepare_plugin_actions()
-
         log.info('Prepared %s actions.' % len(self.actions))
-        return {'visualizations': self.visualisation_actions, 'panels': self.panel_actions,
-                'projects': self.project_actions, 'plugins': self.plugin_actions}
 
-    def prepare_panel_actions(self):
-        for action in self.panel_actions:
-            if action.key in self.actions:
-                del self.actions[action.key]
-            if action.host_menu:
-                action.host_menu.removeAction(action)
-        self.panel_actions = []
-        base_class = self._dynamic_base_actions['toggle_panel']
+    def prepare_panel_menus(self):
+        menu_items = []
+        base_action = self.actions['toggle_panel']
         for panel_data in PANELS:
             panel_key = panel_data['class'].__name__
-            key = 'toggle_panel_%s' % panel_key
-            action = base_class(action_uid=key,
-                                command=panel_data['name'],
-                                args=[panel_key],
-                                tooltip=f"Open/Close {panel_data['name']}")
-            self.actions[key] = action
-            self.panel_actions.append(action)
+            action = TransmitAction(text=panel_data['name'], target=base_action, key=panel_key)
+            menu_items.append(action)
+        return menu_items
 
-    def prepare_visualisation_actions(self):
-        for action in self.visualisation_actions:
-            if action.key in self.actions:
-                del self.actions[action.key]
-            if action.host_menu:
-                action.host_menu.removeAction(action)
-        self.visualisation_actions = []
-        base_class = self._dynamic_base_actions['set_visualization']
+    def prepare_visualisation_menus(self):
+        menu_items = []
+        base_action = self.actions['set_visualization']
         for name, vis in VISUALIZATIONS.items():
-            key = action_key(name)
-            action = base_class(action_uid=key, command=name, args=[name], shortcut=vis.shortcut)
-            self.actions[key] = action
-            self.visualisation_actions.append(action)
+            action = TransmitAction(text=name, target=base_action, key=name)
+            menu_items.append(action)
+        return menu_items
 
-    def prepare_project_actions(self):
-        for action in self.project_actions:
-            if action.key in self.actions:
-                del self.actions[action.key]
-            if action.host_menu:
-                action.host_menu.removeAction(action)
-        self.project_actions = []
-        base_class = self._dynamic_base_actions['switch_project']
+    def prepare_project_menus(self):
+        menu_items = []
+        base_action = self.actions['switch_project']
         for i, project in enumerate(ctrl.main.forest_keepers):
-            key = 'project_%s' % project.name
-            action = base_class(action_uid=key,
-                                command=project.name,
-                                args=[i])
-            self.actions[key] = action
+            action = TransmitAction(text=project.name, target=base_action, key=i)
             action.setChecked(project is ctrl.main.forest_keeper)
-            self.project_actions.append(action)
+            menu_items.append(action)
+        return menu_items
 
-    def prepare_plugin_actions(self):
-        for action in self.plugin_actions:
-            if action.key in self.actions:
-                del self.actions[action.key]
-            if action.host_menu:
-                action.host_menu.removeAction(action)
-        self.plugin_actions = []
-        base_class = self._dynamic_base_actions['switch_plugin']
+    def prepare_plugin_menus(self):
+        menu_items = []
+        base_action = self.actions['switch_plugin']
         if prefs.active_plugin_name:
-
-            key = 'plugin_%s' % prefs.active_plugin_name
-            action = base_class(action_uid=key,
-                                command=prefs.active_plugin_name,
-                                args=[prefs.active_plugin_name])
-            self.actions[key] = action
+            key = prefs.active_plugin_name
+            action = TransmitAction(text=key, target=base_action, key=key)
             action.setChecked(True)
-            self.project_actions.append(action)
+            menu_items.append(action)
+        return menu_items
 
     def update_projects_menu(self):
         win_menu = self._top_menus['windows_menu']
-        self.prepare_project_actions()
-        for action in self.project_actions:
+        for action in self.prepare_project_menus():
             win_menu.addAction(action)
             action.host_menu = win_menu
 
     def update_plugin_menu(self):
         plugin_menu = self._top_menus['plugin_menu']
-        self.prepare_plugin_actions()
-        for action in self.plugin_actions:
+        for action in self.prepare_plugin_menus():
             plugin_menu.addAction(action)
             action.host_menu = plugin_menu
-
 
     def get_action(self, key) -> KatajaAction:
         """ Returns action method for key, None if no such action
@@ -671,7 +607,7 @@ class UIManager:
                 return a
             print('missing action ', key)
 
-    def create_menus(self, additional_actions):
+    def create_menus(self):
         """ Put actions to menus. Menu structure is defined at the top of this file.
         :param additional_actions: dict where each key returns a list of action schemas. This way
         programmatically generated actions and those coming from e.g. plugins can be added to
@@ -692,7 +628,7 @@ class UIManager:
                     add_menu(new_menu, item[0], item[1])
                 elif item == '---':
                     new_menu.addSeparator()
-                elif isinstance(item, KatajaAction):
+                elif isinstance(item, QtWidgets.QAction):
                     new_menu.addAction(item)
                     item.host_menu = new_menu
                 else:
@@ -712,7 +648,16 @@ class UIManager:
             exp_items = []
             for item in items:
                 if isinstance(item, str) and item.startswith("$"):
-                    exp_items += additional_actions[item[1:]]
+                    key = item[1:]
+                    print(item[1:])
+                    if key == 'toggle_panel':
+                        exp_items += self.prepare_panel_menus()
+                    elif key == 'set_visualization':
+                        exp_items += self.prepare_visualisation_menus()
+                    elif key == 'switch_project':
+                        exp_items += self.prepare_project_menus()
+                    elif key == 'switch_plugin':
+                        exp_items += self.prepare_plugin_menus()
                 elif isinstance(item, tuple):
                     exp_items.append(expand_list(item[0], item[1]))
                 else:
@@ -773,8 +718,8 @@ class UIManager:
             else:
                 self.create_panel(panel_data)
                 checked = True
-            toggle_action = self.get_action('toggle_panel_%s' % panel_key)
-            toggle_action.setChecked(checked)
+            toggle_action = self.get_action('toggle_panel')
+            toggle_action.set_checked_for(panel_key, checked)
 
     def create_panel(self, data):
         """ Create single panel. Panels come in different classes, but we have

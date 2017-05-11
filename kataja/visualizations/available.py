@@ -68,6 +68,3 @@ for vclass in visualizations_list:
     VISUALIZATIONS[vclass.name] = vis
     shortcut += 1
 
-
-def action_key(vkey):
-    return 'vis_' + vkey

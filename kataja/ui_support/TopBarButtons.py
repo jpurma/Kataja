@@ -5,7 +5,7 @@ from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.OverlayButton import TopRowButton, VisButton
 from kataja.ui_widgets.ModeLabel import ModeLabel
 from kataja.ui_widgets.ModalIconButton import ModalIconButton
-from kataja.visualizations.available import VISUALIZATIONS, action_key
+from kataja.visualizations.available import VISUALIZATIONS
 
 
 class TopBarButtons(QtWidgets.QFrame):
@@ -47,15 +47,16 @@ class TopBarButtons(QtWidgets.QFrame):
         view_label = QtWidgets.QLabel("Visualisation:")
         layout.addWidget(view_label)
 
-        #self.vis_mode_buttons = []
+        self.vis_buttons = QtWidgets.QButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut
             if shortcut:
                 vis_button = VisButton(f'vis_button_{shortcut}', parent=self, text=shortcut,
-                                       size=(16, 24))
-                ui.add_button(vis_button, action=action_key(vkey))
-                vis_button.setCheckable(True)
+                                       size=(16, 24), subtype=vkey, shortcut=shortcut,
+                                       tooltip=vis.name)
+                self.vis_buttons.addButton(vis_button)
                 layout.addWidget(vis_button)
+        ui.connect_element_to_action(self.vis_buttons, 'set_visualization')
         layout.addStretch(0)
 
         # Right side
@@ -116,3 +117,4 @@ class TopBarButtons(QtWidgets.QFrame):
 
     def left_edge_of_right_buttons(self):
         return self.camera.x()
+

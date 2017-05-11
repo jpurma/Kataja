@@ -252,11 +252,15 @@ class TopRowButton(OverlayButton):
 
 
 class VisButton(OverlayButton):
+    """ These are untypical buttons because these don't directly connect to actions and so they
+    cannot get shortcuts, tooltips etc. from them. They are however connected to QButtonGroup,
+    which takes care of signals.
+    """
 
     permanent_ui = True
 
     def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=None):
+                 size=24, tooltip=None, subtype=None, shortcut=None):
         super().__init__(None, ui_key=ui_key,
                          parent=parent,
                          pixmap=pixmap,
@@ -265,12 +269,15 @@ class VisButton(OverlayButton):
                          tooltip=tooltip,
                          size=size,
                          color_key='accent8')
+        self.setCheckable(True)
+        self.setShortcut(shortcut)
         if isinstance(size, tuple):
             self.setMinimumSize(size[0], size[1])
             self.setMaximumSize(size[0], size[1])
         else:
             self.setMinimumSize(size, size)
             self.setMaximumSize(size, size)
+        self.sub_type = subtype
 
     def update_colors(self):
         pass

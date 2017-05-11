@@ -56,7 +56,6 @@ class DraggableNodeFrame(QtWidgets.QFrame):
     def update_colors(self):
         color_key = ctrl.settings.get_node_setting('color_id', node_type=self.key,
                                                    level=ctrl.ui.active_scope)
-        print('update colors in node frame,', color_key)
         if color_key:
             self.setPalette(ctrl.cm.palette_from_key(color_key))
             self.font_selector.set_color(color_key)

@@ -40,8 +40,8 @@ class MyReceiver(QtCore.QObject):
 
 class CommandPrompt(QtWidgets.QLineEdit):
 
-    def __init__(self, parent):
-        QtWidgets.QLineEdit.__init__(self, '>>> ', parent=parent)
+    def __init__(self, parent, prompt: QtWidgets.QLabel):
+        QtWidgets.QLineEdit.__init__(self, '', parent=parent)
         self.returnPressed.connect(self.return_pressed)
         #self.cursorPositionChanged.connect(self.cursor_moved)
         self.setMinimumWidth(250)
@@ -49,6 +49,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
         self.backlog = []
         self.backlog_position = 0
         self.ii = None
+        self.prompt = prompt
         self.update_actions()
 
     def update_actions(self):
@@ -58,7 +59,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
 
     def return_pressed(self):
         text = self.text()
-        print(text)
+        print('>>> ' + text)
         line = text.lstrip('>. ')
         incomplete = False
         self.backlog.append(line)
@@ -78,10 +79,10 @@ class CommandPrompt(QtWidgets.QLineEdit):
                 self.incomplete_command = [line]
             else:
                 self.incomplete_command.append(source)
-            self.setText('... ')
+            self.prompt.setText(' ...')
         else:
             self.incomplete_command = []
-            self.setText('>>> ')
+            self.prompt.setText(' >>>')
 
     def cursor_moved(self, old, new):
         if new < 3:
@@ -102,13 +103,13 @@ class CommandPrompt(QtWidgets.QLineEdit):
             if self.backlog_position < 0:
                 self.backlog_position = 0
             if self.backlog:
-                text = '>>> ' + self.backlog[self.backlog_position]
+                text = self.backlog[self.backlog_position]
                 self.setText(text)
                 self.setCursorPosition(len(text))
         elif event.key() == QtCore.Qt.Key_Down:
-            if self.backlog_position < len(self.backlog) - 2:
+            if self.backlog_position < len(self.backlog) - 1:
                 self.backlog_position += 1
-                text = '>>> ' + self.backlog[self.backlog_position]
+                text = self.backlog[self.backlog_position]
                 self.setText(text)
                 self.setCursorPosition(len(text))
         else:
@@ -129,7 +130,10 @@ class LogPanel(Panel):
         tlayout = titlewidget.layout()
         label = QtWidgets.QLabel('Python command:', parent=titlewidget)
         tlayout.addWidget(label)
-        self.line_edit = CommandPrompt(titlewidget)
+        self.prompt_label = QtWidgets.QLabel(' >>>', parent=titlewidget)
+        tlayout.addWidget(self.prompt_label)
+        self.line_edit = CommandPrompt(titlewidget, self.prompt_label)
+        self.prompt_label.setBuddy(self.line_edit)
         ctrl.ui.command_prompt = self.line_edit
         tlayout.addWidget(self.line_edit)
         label = QtWidgets.QLabel('show stdout:', parent=titlewidget)
@@ -149,6 +153,7 @@ class LogPanel(Panel):
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
         self.inner.setStyleSheet(ss)
         self.line_edit.setStyleSheet(ss)
+        self.prompt_label.setStyleSheet(ss)
         self.inner.setAutoFillBackground(True)
         self.inner.sizeHint = self.sizeHint
         self.inner.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -188,7 +193,7 @@ class LogPanel(Panel):
 
 
     def closeEvent(self, event):
-        self.watcher_thread.stop()
+        self.watcher_thread.quit()
 
     def append_text(self, text):
         if text.strip():

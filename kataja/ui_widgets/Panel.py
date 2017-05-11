@@ -61,7 +61,7 @@ class PanelTitle(QtWidgets.QWidget):
         mini_icon_button(ui, self, layout,
                          icon=qt_prefs.close_icon,
                          text='Close panel',
-                         action='toggle_panel_' + self.panel.ui_type)
+                         action='toggle_panel')
 
         self.pin_button = mini_icon_button(ui, self, layout,
                                            icon=qt_prefs.pin_drop_icon,

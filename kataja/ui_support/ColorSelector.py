@@ -166,7 +166,6 @@ class ColorSelector(TableModelSelectionBox):
                                      'ColorWheelPanel')
         self.update_color_dialog()
         self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
-        print('received color selection:', color_key)
         return color_key
 
     def update_color_dialog(self):
@@ -177,7 +176,6 @@ class ColorSelector(TableModelSelectionBox):
             wheel.raise_()
 
     def set_color(self, color_key):
-        print('color selector received color: ', color_key)
         self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
         self.select_by_data(color_key)
 
