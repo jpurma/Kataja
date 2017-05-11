@@ -181,7 +181,10 @@ class KatajaAction(QtWidgets.QAction):
         self.setToolTip(self.tip0)
         self.setStatusTip(self.tip0)
 
-    def method(self, *args):
+    def prepare_parameters(self):
+        return [], {}
+
+    def method(self, *args, **kwargs):
         pass
 
     def enabler(self):
@@ -190,7 +193,7 @@ class KatajaAction(QtWidgets.QAction):
     def getter(self):
         return None
 
-    def action_triggered(self, state_arg=None):
+    def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :param state_arg: argument provided by some triggers, e.g. toggle buttons. We don't forward
          this, instead it is saved in self.state_arg, method can use it from there if needed.
@@ -199,17 +202,32 @@ class KatajaAction(QtWidgets.QAction):
 
         if not self.isEnabled():
             return
-        self.state_arg = state_arg
+        #self.state_arg = state_arg
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
 
+        sender = self.sender()
+
+        if sender and sender != ctrl.ui.command_prompt:
+            args, kwargs = self.prepare_parameters()
+        if self.args:
+            print('btw, we had args already: ', self.args)
+            print('dont know what to do with them.')
+
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
+
+        # Print the command into console
+        arg_parts = [repr(a) for a in args]
+        kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
+        argstring = ', '.join(arg_parts + kwarg_parts)
+        print(f'>>> {self.k_action_uid}({argstring})')
+
         # Call method
         try:
-            message = self.method(*self.args)
+            message = self.method(*args, **kwargs)
             error = None
         except:
             message = ''

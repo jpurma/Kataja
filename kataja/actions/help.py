@@ -1,5 +1,7 @@
 # coding=utf-8
-from kataja.singletons import log
+import inspect
+
+from kataja.singletons import log, ctrl
 from kataja.KatajaAction import KatajaAction
 
 
@@ -32,20 +34,33 @@ from kataja.KatajaAction import KatajaAction
 class Help(KatajaAction):
     k_action_uid = 'help'
     k_command = 'Help'
-    k_shortcut = 'h'
     k_undoable = False
 
-    def method(self):
+    def method(self, command=None):
         """ Dump keyboard shortcuts to console. At some point, make this to use
         dialog window instead.
         :return: None
         """
-        m = """(h):------- KatajaMain commands ----------
-        (left arrow/,):previous structure   (right arrow/.):next structure
-        (1-9, 0): switch between visualizations
-        (f):fullscreen/windowed mode
-        (p):print trees to file
-        (b):show/hide labels in middle of edges
-        (q):quit"""
-        log.critical(m)
+        if command:
+            # command is probably KatajaAction's action_triggered -method.
+            # then we want its 'method' -method's docstring.
+            found = False
+            for cls in inspect.getmro(command.__self__.__class__):
+                if cls.__dict__.get('method', None):
+                    #print('----------------------------')
+                    print('<b>' + cls.k_action_uid + str(inspect.signature(cls.method))+'</b>')
+                    print(f'<i>""" {cls.method.__doc__.replace("    ", " ")} """</i>')
+                    found = True
+                    break
+            if not found:
+                print(command.__doc__)
+        else:
+            d = ctrl.ui.actions
+            keys = sorted(list(d.keys()))
+            print('---------- Available actions ----------')
+            for key in keys:
+                my_class = d[key].__class__
+                print(f'<b>{key:.<30}</b> {getattr(my_class, "k_command", "")}')
+            print('---------------------------------------')
+            print('<b>help($command)</b> for more information.')
 

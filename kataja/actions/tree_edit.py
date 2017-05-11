@@ -46,36 +46,44 @@ class CreateNewNodeFromText(KatajaAction):
     #k_shortcut = 'Return'
     #k_shortcut_context = 'parent_and_children'
 
-    def method(self):
+    def prepare_parameters(self):
+        embed = self.get_ui_container()
+        ci = embed.node_type_selector.currentIndex()
+        node_type = embed.node_type_selector.itemData(ci)
+        guess_mode = embed.guess_mode
+        starting_point, focus_point = embed.get_marker_points()
+        starting_point = int(starting_point.x()), int(starting_point.y())
+        focus_point = int(focus_point.x()), int(focus_point.y())
+        text = embed.input_line_edit.text()
+        return [focus_point, text], {'starting_point': starting_point, 'node_type': node_type,
+                                     'guess_mode': guess_mode}
+
+    def method(self, focus_point, text, starting_point=None, node_type=None,
+               guess_mode=True):
 
         """ Create new element according to elements in this embed. Can create
         constituentnodes,
         features, arrows, etc.
         :return: None
         """
-        embed = self.get_ui_container()
-        ci = embed.node_type_selector.currentIndex()
-        node_type = embed.node_type_selector.itemData(ci)
-        guess_mode = embed.guess_mode
-        p1, p2 = embed.get_marker_points()
-        text = embed.input_line_edit.text()
-        ctrl.focus_point = p2
+        ctrl.focus_point = focus_point
         node = None
-        if guess_mode:
-            node_type = guess_node_type(text)
+        if (not node_type) or node_type == g.GUESS_FROM_INPUT:
+            if guess_mode:
+                node_type = guess_node_type(text)
+            else:
+                node_type = g.CONSTITUENT_NODE
         if node_type == g.ARROW:
-            p1, p2 = embed.get_marker_points()
-            text = embed.input_line_edit.text()
-            ctrl.free_drawing.create_arrow(p2, p1, text)
+            ctrl.free_drawing.create_arrow(focus_point, starting_point, text)
         elif node_type == g.DIVIDER:
-            p1, p2 = embed.get_marker_points()
+            pass
             # fixme: finish this!
         elif node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
             #if node:
             #    ctrl.forest.tree_manager.create_tree_for(node)
         else:
-            node = ctrl.free_drawing.create_node(pos=p2, node_type=node_type, label=text)
+            node = ctrl.free_drawing.create_node(pos=focus_point, node_type=node_type, label=text)
             #if node and node_type == g.CONSTITUENT_NODE:
             #    ctrl.forest.tree_manager.create_tree_for(node)
         if node:

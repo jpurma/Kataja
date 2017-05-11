@@ -38,6 +38,82 @@ class MyReceiver(QtCore.QObject):
             self.mysignal.emit(text)
 
 
+class CommandPrompt(QtWidgets.QLineEdit):
+
+    def __init__(self, parent):
+        QtWidgets.QLineEdit.__init__(self, '>>> ', parent=parent)
+        self.returnPressed.connect(self.return_pressed)
+        #self.cursorPositionChanged.connect(self.cursor_moved)
+        self.setMinimumWidth(250)
+        self.incomplete_command = []
+        self.backlog = []
+        self.backlog_position = 0
+        self.ii = None
+        self.update_actions()
+
+    def update_actions(self):
+        commands = ctrl.ui.get_actions_as_python_commands()
+        commands.update({'ctrl': ctrl, 'g': g})
+        self.ii = code.InteractiveInterpreter(locals=commands)
+
+    def return_pressed(self):
+        text = self.text()
+        print(text)
+        line = text.lstrip('>. ')
+        incomplete = False
+        self.backlog.append(line)
+        self.backlog_position = len(self.backlog) - 1
+        if self.incomplete_command:
+            self.incomplete_command.append(line)
+            source = '\n'.join(self.incomplete_command)
+        else:
+            source = line
+        try:
+            incomplete = self.ii.runsource(source)
+        except:
+            log.error(sys.exc_info())
+            print(sys.exc_info())
+        if incomplete:
+            if not self.incomplete_command:
+                self.incomplete_command = [line]
+            else:
+                self.incomplete_command.append(source)
+            self.setText('... ')
+        else:
+            self.incomplete_command = []
+            self.setText('>>> ')
+
+    def cursor_moved(self, old, new):
+        if new < 3:
+            self.setCursorPosition(3)
+
+    def focusInEvent(self, event):
+        ctrl.ui_focus = self
+        return super().focusInEvent(event)
+
+    def focusOutEvent(self, event):
+        if ctrl.ui_focus is self:
+            ctrl.ui_focus = None
+        return super().focusOutEvent(event)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        if event.key() == QtCore.Qt.Key_Up:
+            self.backlog_position -= 1
+            if self.backlog_position < 0:
+                self.backlog_position = 0
+            if self.backlog:
+                text = '>>> ' + self.backlog[self.backlog_position]
+                self.setText(text)
+                self.setCursorPosition(len(text))
+        elif event.key() == QtCore.Qt.Key_Down:
+            if self.backlog_position < len(self.backlog) - 2:
+                self.backlog_position += 1
+                text = '>>> ' + self.backlog[self.backlog_position]
+                self.setText(text)
+                self.setCursorPosition(len(text))
+        else:
+            return super().keyPressEvent(event)
+
 class LogPanel(Panel):
     """ Dump window """
 
@@ -53,9 +129,8 @@ class LogPanel(Panel):
         tlayout = titlewidget.layout()
         label = QtWidgets.QLabel('Python command:', parent=titlewidget)
         tlayout.addWidget(label)
-        self.line_edit = QtWidgets.QLineEdit('>>> ', parent=titlewidget)
-        self.line_edit.returnPressed.connect(self.return_pressed)
-        self.line_edit.setMinimumWidth(250)
+        self.line_edit = CommandPrompt(titlewidget)
+        ctrl.ui.command_prompt = self.line_edit
         tlayout.addWidget(self.line_edit)
         label = QtWidgets.QLabel('show stdout:', parent=titlewidget)
         self.stdout = QtWidgets.QCheckBox(parent=titlewidget)
@@ -81,7 +156,6 @@ class LogPanel(Panel):
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
         self.watchlist = ['ui_font_changed']
-        self.incomplete_command = []
 
         # Direct stdout here
         self.write_queue = queue.Queue()
@@ -99,7 +173,6 @@ class LogPanel(Panel):
         self.preferred_size = self.inner.preferred_size
         self.setWidget(self.inner)
         self.finish_init()
-        self.ii = code.InteractiveInterpreter(locals={'ctrl': ctrl, 'g': g})
         log.log_handler.set_widget(self.inner)
 
     def sizeHint(self):
@@ -112,31 +185,6 @@ class LogPanel(Panel):
         super().report_top_level(floating)
         if floating:
             self.resize(QtCore.QSize(480, 480))
-
-    def return_pressed(self):
-        text = self.line_edit.text()
-        print(text)
-        line = text.lstrip('>. ')
-        incomplete = False
-        if self.incomplete_command:
-            self.incomplete_command.append(line)
-            source = '\n'.join(self.incomplete_command)
-        else:
-            source = line
-        try:
-            incomplete = self.ii.runsource(source)
-        except:
-            log.error(sys.exc_info())
-            print(sys.exc_info())
-        if incomplete:
-            if not self.incomplete_command:
-                self.incomplete_command = [line]
-            else:
-                self.incomplete_command.append(source)
-            self.line_edit.setText('... ')
-        else:
-            self.incomplete_command = []
-            self.line_edit.setText('>>> ')
 
 
     def closeEvent(self, event):

@@ -133,6 +133,7 @@ class UIManager:
         self.top_bar_buttons = None
         self._edit_mode_button = None
         self.quick_edit_buttons = None
+        self.command_prompt = None
         self._items = {}
         self._items_by_host = {}
         self._timer_id = 0
@@ -338,6 +339,13 @@ class UIManager:
         :return:
         """
         self.actions[key].update_action()
+
+    def get_actions_as_python_commands(self):
+        d = {}
+        for key, item in self.actions.items():
+            d[key] = item.action_triggered
+        return d
+
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
