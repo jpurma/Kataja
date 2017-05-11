@@ -104,6 +104,7 @@ class SwitchViewMode(KatajaAction):
     k_tooltip_alt = 'Nodes can show additional data because of a linguistic convention or ' \
                     'for other reason to help readability.'
     k_shortcut = 'Shift+b'
+    k_checkable = True
     k_undoable = False
 
     def method(self, syntactic_mode=None):
@@ -127,6 +128,7 @@ class SwitchSyntaxViewMode(KatajaAction):
     k_tooltip = 'Syntax engines may offer different views to their structures'
     k_shortcut = 'v'
     k_undoable = False
+    k_checkable = True
 
     def method(self):
         """ Switch between showing only syntactic objects and showing richer representation
@@ -175,6 +177,7 @@ class TogglePanMode(KatajaAction):
     k_command = 'Move mode'
     k_shortcut = 'm'
     k_undoable = False
+    k_checkable = True
 
     def method(self):
         """ """
@@ -189,6 +192,7 @@ class ToggleSelectMode(KatajaAction):
     k_command = 'Select mode'
     k_shortcut = 'p'
     k_undoable = False
+    k_checkable = True
 
     def method(self):
         """ """
@@ -203,6 +207,7 @@ class ChangeVisualisation(DynamicKatajaAction):
     k_command = 'Change visualisation'
     k_exclusive = True
     k_viewgroup = 'visualizations'
+    k_checkable = True
 
     def method(self, visualization_key=None):
         sender = self.sender()

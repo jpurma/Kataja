@@ -1,4 +1,6 @@
 # coding=utf-8
+import random
+
 import kataja.globals as g
 from kataja.globals import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
@@ -32,15 +34,23 @@ from kataja.saved.movables.Node import Node
 #
 
 
-class SetColorMode(KatajaAction):
-    k_action_uid = 'set_color_theme'
+class SetActiveColorMode(KatajaAction):
+    k_action_uid = 'set_active_color_theme'
     k_command = 'Change palette'
     k_tooltip = 'Change palette used for UI and drawings'
 
-    def method(self):
+    def prepare_parameters(self):
         sender = self.sender()
-        mode = sender.currentData()
-        ctrl.main.change_color_theme(mode)
+        theme = sender.currentData()
+        return [theme], {}
+
+    def method(self, theme: str):
+        """ Set the current color theme by using color theme keys.
+        :param theme: str, theme name
+        :return:
+        """
+        print('set_active_color_theme called with ', theme)
+        ctrl.main.change_color_theme(theme)
 
     def getter(self):
         return ctrl.settings.get('color_theme')
@@ -52,28 +62,60 @@ class RandomisePalette(KatajaAction):
     k_tooltip = 'Roll new random colors'
 
     def method(self):
-        ctrl.main.update_colors(randomise=True)
-        sender = self.sender()
-        if sender and hasattr(sender, 'reroll'):
-            sender.reroll()
+        """ Roll new colors for the current color theme, if the theme allows it.
+        :return:
+        """
+        if ctrl.cm.can_randomise():
+            ctrl.main.update_colors(randomise=True)
+
+    def getter(self):
+        """ Return unicode dice faces that represent current hsv.
+        :return:
+        """
+        if ctrl.cm:
+            hsv = ctrl.cm.hsv
+        else:
+            hsv = [0.5, 0.5, 0.5]
+        dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
+        random.seed(str(hsv))
+        return random.choice(dice) + random.choice(dice)
 
     def enabler(self):
         return ctrl.cm.can_randomise()
 
 
-class RemoveTheme(KatajaAction):
-    k_action_uid = 'remove_theme'
+class RemoveColorTheme(KatajaAction):
+    k_action_uid = 'remove_color_theme'
     k_command = 'Remove a custom color theme'
     k_tooltip = 'Remove a custom color theme'
 
-    def method(self):
-        active = ctrl.cm.theme_key
-        ctrl.main.change_color_theme(ctrl.cm.default)
-        ctrl.cm.remove_custom_theme(active)
-        return f"Removed custom theme '{active}'."
+    def prepare_parameters(self):
+        return [ctrl.cm.theme_key], {}
+
+    def method(self, theme_key):
+        """ Remove custom color theme from theme selection. Current active theme can be found from
+        ctrl.cm.theme_key. Active theme can be safely removed.
+        :param theme_key: str
+        :return: msg:str
+        """
+        if theme_key == ctrl.cm.theme_key:
+            ctrl.main.change_color_theme(ctrl.cm.default)
+        ctrl.cm.remove_custom_theme(theme_key)
+        return f"Removed custom theme '{theme_key}'."
 
     def enabler(self):
         return ctrl.cm.is_custom()
+
+
+class GetColorThemes(KatajaAction):
+    k_action_uid = 'get_color_themes'
+    k_command = 'Get available color theme keys'
+
+    def method(self):
+        """ Return two lists of keys, first for default themes and second for custom themes
+        :return: list, list
+        """
+        return ctrl.cm.default_themes, ctrl.cm.custom_themes
 
 
 class RememberPalette(KatajaAction):
@@ -82,6 +124,9 @@ class RememberPalette(KatajaAction):
     k_tooltip = 'Create a custom palette from these colors'
 
     def method(self):
+        """ Store the current colors as a new custom theme.
+        :return: msg:str
+        """
         key, name = ctrl.cm.create_theme_from_current_color()
         ctrl.main.change_color_theme(key)
         return "Added color theme '%s' (%s) as custom color theme." % (name, key)

@@ -10,7 +10,6 @@ from ui_support.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 
-dice = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
 
 
 def color_theme_fragment(panel, layout):
@@ -20,16 +19,17 @@ def color_theme_fragment(panel, layout):
     panel.selector.setMaximumWidth(120)
     panel.selector_items = ctrl.cm.list_available_themes()
     panel.selector.add_items(panel.selector_items)
-    panel.ui_manager.connect_element_to_action(panel.selector, 'set_color_theme')
+    panel.ui_manager.connect_element_to_action(panel.selector, 'set_active_color_theme')
     hlayout.addWidget(panel.selector)
 
-    panel.randomise = RandomiseButton()
+    panel.randomise = UnicodeIconButton('')
+    panel.randomise.setFixedSize(40, 20)
     ctrl.ui.connect_element_to_action(panel.randomise, 'randomise_palette')
     hlayout.addWidget(panel.randomise, 1, QtCore.Qt.AlignRight)
 
     panel.remove_theme = TwoColorButton('Remove')
     #panel.remove_theme.setFixedSize(40, 20)
-    ctrl.ui.connect_element_to_action(panel.remove_theme, 'remove_theme')
+    ctrl.ui.connect_element_to_action(panel.remove_theme, 'remove_color_theme')
     panel.remove_theme.hide()
     hlayout.addWidget(panel.remove_theme, 1, QtCore.Qt.AlignRight)
 
@@ -49,18 +49,6 @@ class UnicodeIconButton(QtWidgets.QPushButton):
     """
     def __init__(self, text):
         QtWidgets.QPushButton.__init__(self, text=text)
-
-
-class RandomiseButton(UnicodeIconButton):
-
-    def __init__(self):
-        QtWidgets.QPushButton.__init__(self)
-        self.reroll()
-        self.setFixedSize(40, 20)
-        self.setEnabled(False)
-
-    def reroll(self):
-        self.setText(random.choice(dice) + random.choice(dice))
 
 
 class ColorPanel(Panel):

@@ -38,7 +38,7 @@ class ToggleAllPanels(KatajaAction):
 
 
 class TogglePanel(DynamicKatajaAction):
-    k_dynamic = True
+    k_action_uid = 'toggle_panel'
     k_checkable = True
     k_viewgroup = 'Panels'
     k_undoable = False

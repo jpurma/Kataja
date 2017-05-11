@@ -60,7 +60,13 @@ class Help(KatajaAction):
             print('---------- Available actions ----------')
             for key in keys:
                 my_class = d[key].__class__
-                print(f'<b>{key:.<30}</b> {getattr(my_class, "k_command", "")}')
+                command = getattr(my_class, "k_command", "")
+                sig = str(inspect.signature(my_class.method))
+                if sig.startswith('(self, '):
+                    sig = '(' + sig[7:]
+                elif sig == '(self)':
+                    sig = '()'
+                print(f'<b>{key + sig:.<60}</b> : {command}')
             print('---------------------------------------')
-            print('<b>help($command)</b> for more information.')
+            print('<b>help(method_name)</b> for more information.')
 

@@ -224,8 +224,7 @@ class KatajaAction(QtWidgets.QAction):
         kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
         argstring = ', '.join(arg_parts + kwarg_parts)
         print(f'>>> {self.k_action_uid}({argstring})')
-
-        # Call method
+        print('triggering method: ', self.method)
         try:
             message = self.method(*args, **kwargs)
             error = None
@@ -405,7 +404,7 @@ class KatajaAction(QtWidgets.QAction):
                     element.blockSignals(False)
                 elif isinstance(element, QtWidgets.QAbstractButton):
                     element.blockSignals(True)
-                    element.setChecked(value)
+                    element.setText(value)
                     element.blockSignals(False)
 
     def get_ui_container(self):
@@ -448,7 +447,7 @@ class DynamicKatajaAction(KatajaAction):
 
     def __init__(self, action_uid='', command='', command_alt='', args=None, shortcut='', tooltip='', tooltip_alt=''):
         QtWidgets.QAction.__init__(self, ctrl.main)
-        self.key = action_uid
+        self.key = action_uid or self.k_action_uid
         self.elements = set()
         self.command = command
         self.command_alt = command_alt

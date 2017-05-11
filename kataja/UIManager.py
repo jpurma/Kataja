@@ -21,7 +21,10 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import importlib
+import inspect
 import logging
+import os
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
@@ -129,6 +132,7 @@ class UIManager:
         self.scene = main.graph_scene
         self.actions = {}
         self._action_groups = {}
+        self._dynamic_base_actions = {}
         self._top_menus = {}
         self.top_bar_buttons = None
         self._edit_mode_button = None
@@ -513,22 +517,45 @@ class UIManager:
     # ### Actions and Menus
     # ####################################################
 
+    def _load_actions(self, mod_path:str, seek_only=False):
+        """ Seek and import actions from a module. Lower level operation, called from
+        create_actions and when initialising plugins.
+        :param mod_path: working module path
+        :param seek_only: instead of instantiating and putting actions to dict, we can return a
+            list of found action classes. This is useful when removing actions added by a plugin.
+        :return: list of found action classes
+        """
+        found = []
+        mod = importlib.import_module(mod_path)
+        for class_name in vars(mod):
+            if class_name.startswith(
+                    '_') or class_name == 'KatajaAction' or class_name == 'DynamicKatajaAction':
+                continue
+            a_class = getattr(mod, class_name)
+            if not (inspect.isclass(a_class) and issubclass(a_class, KatajaAction)):
+                continue
+            found.append(a_class)
+            if not seek_only:
+                if a_class.k_dynamic:
+                    self._dynamic_base_actions[a_class.k_action_uid] = a_class
+                else:
+                    action = a_class()
+                    self.actions[action.key] = action
+                    self.main.addAction(action)
+        return found
+
     def create_actions(self):
-        """ Build menus and other actions that can be triggered by user based
-        on actions/ """
-        main = self.main
-        a_class_type = type(KatajaAction)
+        """ KatajaActions define user commands and interactions. They are loaded from modules in
+        kataja.actions or from plugin's plugin.actions.any_module. """
         self.actions = {}
+        self._dynamic_base_actions = {}
         self._action_groups = {}
-        for class_name in vars(kataja.actions):
-            a_class = getattr(kataja.actions, class_name)
-            if type(a_class) != a_class_type or not issubclass(a_class, KatajaAction):
-                continue
-            if a_class.k_dynamic:
-                continue
-            action = a_class()
-            self.actions[action.key] = action
-            main.addAction(action)
+        for module in os.listdir(os.path.dirname(kataja.actions.__file__)):
+            if module == '__init__.py' or module[-3:] != '.py':
+               continue
+            mod_path = 'kataja.actions.' + module[:-3]
+
+            self._load_actions(mod_path)
 
         # dynamic actions are created based on other data e.g. available
         # visualization plugins.
@@ -558,15 +585,14 @@ class UIManager:
             if action.host_menu:
                 action.host_menu.removeAction(action)
         self.panel_actions = []
+        base_class = self._dynamic_base_actions['toggle_panel']
         for panel_data in PANELS:
-            # noinspection PyTypeChecker
             panel_key = panel_data['class'].__name__
             key = 'toggle_panel_%s' % panel_key
-            # noinspection PyTypeChecker
-            action = kataja.actions.TogglePanel(action_uid=key,
-                                                command=panel_data['name'],
-                                                args=[panel_key],
-                                                tooltip=f"Open/Close {panel_data['name']}")
+            action = base_class(action_uid=key,
+                                command=panel_data['name'],
+                                args=[panel_key],
+                                tooltip=f"Open/Close {panel_data['name']}")
             self.actions[key] = action
             self.panel_actions.append(action)
 
@@ -577,10 +603,10 @@ class UIManager:
             if action.host_menu:
                 action.host_menu.removeAction(action)
         self.visualisation_actions = []
+        base_class = self._dynamic_base_actions['set_visualization']
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
-            action = kataja.actions.ChangeVisualisation(action_uid=key, command=name, args=[name],
-                                                        shortcut=vis.shortcut)
+            action = base_class(action_uid=key, command=name, args=[name], shortcut=vis.shortcut)
             self.actions[key] = action
             self.visualisation_actions.append(action)
 
@@ -591,11 +617,12 @@ class UIManager:
             if action.host_menu:
                 action.host_menu.removeAction(action)
         self.project_actions = []
+        base_class = self._dynamic_base_actions['switch_project']
         for i, project in enumerate(ctrl.main.forest_keepers):
             key = 'project_%s' % project.name
-            action = kataja.actions.SwitchProject(action_uid=key,
-                                                  command=project.name,
-                                                  args=[i])
+            action = base_class(action_uid=key,
+                                command=project.name,
+                                args=[i])
             self.actions[key] = action
             action.setChecked(project is ctrl.main.forest_keeper)
             self.project_actions.append(action)
@@ -607,12 +634,13 @@ class UIManager:
             if action.host_menu:
                 action.host_menu.removeAction(action)
         self.plugin_actions = []
+        base_class = self._dynamic_base_actions['switch_plugin']
         if prefs.active_plugin_name:
 
             key = 'plugin_%s' % prefs.active_plugin_name
-            action = kataja.actions.SwitchPlugin(action_uid=key,
-                                                 command=prefs.active_plugin_name,
-                                                 args=[prefs.active_plugin_name])
+            action = base_class(action_uid=key,
+                                command=prefs.active_plugin_name,
+                                args=[prefs.active_plugin_name])
             self.actions[key] = action
             action.setChecked(True)
             self.project_actions.append(action)
