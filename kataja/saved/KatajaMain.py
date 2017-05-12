@@ -82,13 +82,13 @@ EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
 QComboBox, TwoColorButton {background-color: %(paper)s;}
 UnicodeIconButton {background-color: %(paper)s; font-family: "%(main_font)s"; 
                    font-size: %(main_font_size)spx;}
-ModeLabel {border: 1px transparent none; color: %(ui)s; font-family: "%(ui_font)s";
+ModalTextButton {border: 1px transparent none; color: %(ui)s; font-family: "%(ui_font)s";
            font-size: %(ui_font_larger)spx}
-ModeLabel:hover {border: 1px solid %(ui)s; border-radius: 3}
-ModeLabel:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s; border-radius: 3}
-ModeLabel:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; border-radius: 3;
+ModalTextButton:hover {border: 1px solid %(ui)s; border-radius: 3}
+ModalTextButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s; border-radius: 3}
+ModalTextButton:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; border-radius: 3;
                           color: %(paper)s}
-ModeLabel:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
+ModalTextButton:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
                          color: %(ui_lighter)s}
 VisButton {font-size: %(ui_font_larger)spx; color: %(ui)s;}
 PanelButton {border: 1px transparent none;}
@@ -101,7 +101,11 @@ EyeButton:hover {border: 1px solid %(ui)s; border-radius: 3}
 EyeButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}
 EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
-
+ColorSelector:hover {border: 1px solid %(ui)s; border-radius: 3}
+ModalIconButton, ModalIconButton:checked {border: 1px solid transparent; 
+                                          background-color: transparent;}
+ModalIconButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;}
+ModalIconButton:hover {border: 1px solid %(ui)s; background-color: %(paper)s; border-radius: 3}
 """
 #ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 

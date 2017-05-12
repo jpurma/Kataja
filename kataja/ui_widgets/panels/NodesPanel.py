@@ -32,6 +32,7 @@ class NodesPanel(Panel):
         outer.setContentsMargins(0, 0, 0, 0)
         olayout.setContentsMargins(0, 0, 0, 0)
         outer.setLayout(olayout)
+        outer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         self.watchlist = ['selection_changed', 'forest_changed', 'palette_changed']
         self.setMaximumWidth(220)
         self.sheets = []
@@ -63,8 +64,31 @@ class NodesPanel(Panel):
                 sheet = sheet_class(parent=container)
                 clayout.addWidget(sheet)
                 self.sheets.append(sheet)
+                frame.sheet = sheet
+            frame.set_folded(frame.folded)  # updates sheet visibility
         self.setWidget(outer)
         self.finish_init()
+
+    def get_font_dialog(self, node_type):
+        """ If there are font dialogs open, they are attached to font_selectors in node frames.
+        Return the one that matches node_type, or None if it is closed.
+        :param node_type:
+        :return:
+        """
+        for frame in self.frames:
+            if frame.key == node_type and frame.font_selector.font_dialog:
+                return frame.font_selector.font_dialog
+
+    def get_frame_for(self, node_type):
+        for frame in self.frames:
+            if frame.key == node_type:
+                return frame
+
+    def get_sheet_for(self, node_type):
+        for sheet in self.sheets:
+            if sheet.key == node_type:
+                return sheet
+
 
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use

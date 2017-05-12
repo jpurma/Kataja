@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
-from PyQt5.QtCore import QSize, pyqtProperty
+from PyQt5.QtCore import QSize
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl
@@ -12,13 +12,17 @@ QComboBox {
     background: transparent;
     border: 1px solid transparent;
 }
+QComboBox:hover {
+    background: transparent;
+    border: 1px solid %(current)s;
+}
+
 QComboBox::drop-down {
     border: 1px solid transparent;
 }
 
 QComboBox::down-arrow {
     image: url(resources/icons/text_format24.png);
-    color: %s;    
     width: 16px;
     height: 16px;
 }
@@ -51,8 +55,8 @@ class FontSelector(TableModelSelectionBox):
     def __init__(self, parent, flat=False):
         super().__init__(parent)
         if flat:
-            self.setMaximumWidth(24)
-            self.setMinimumWidth(24)
+            self.setMaximumWidth(20)
+            self.setMinimumWidth(20)
         else:
             self.setMinimumWidth(92)
         #self.setIconSize(QSize(92, 16))
@@ -62,7 +66,7 @@ class FontSelector(TableModelSelectionBox):
         self.old_index = 0
         self.old_text = ''
         #self.setAutoFillBackground(False)
-        self.setStyleSheet(stylesheet % 'red')
+        self.setStyleSheet(stylesheet % {'current': 'transparent'})
         font = qt_prefs.fonts[self.selected_font]
         self.setFont(font)
         items = []
@@ -144,7 +148,7 @@ class FontSelector(TableModelSelectionBox):
         self.font_dialog.show()
 
     def set_color(self, color_key):
-        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
+        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name()})
 
     def select_by_data(self, data):
         """ Override TableModelSelectionBox to include setFont and avoiding selecting font_dialog

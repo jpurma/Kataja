@@ -171,6 +171,7 @@ class SetFeaturesAsRow(KatajaAction):
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
 
+
 class SetFeaturesAsColumn(KatajaAction):
     k_action_uid = 'set_features_as_column'
     k_command = "Features form a vertical column below the constituent"

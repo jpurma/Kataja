@@ -24,9 +24,9 @@ class NewElementEmbed(UIEmbed):
         self.new_arrow_button = icon_text_button(ui, hlayout, self, '', '',
                                                  " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
                                                  draw_method=arrow)
-        self.divider_button = icon_text_button(ui, hlayout, self, '', '',
-                                               " &Divider", 'new_divider',
-                                               size=QtCore.QSize(48, 20), draw_method=divider)
+        #self.divider_button = icon_text_button(ui, hlayout, self, '', '',
+        #                                       " &Divider", 'new_divider',
+        #                                       size=QtCore.QSize(48, 20), draw_method=divider)
         self.new_arrow_button.setFlat(False)
         self.divider_button.setFlat(False)
         self.new_arrow_button.hide()

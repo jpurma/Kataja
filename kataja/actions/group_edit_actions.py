@@ -33,8 +33,19 @@ class ToggleGroupOptions(KatajaAction):
     k_action_uid = 'toggle_group_options'
     k_command = 'Inspect, edit and keep this group'
 
-    def method(self):
-        group = self.get_host()
+    def prepare_parameters(self):
+        group_uid = self.get_host().uid
+        return [group_uid], {}
+
+    def method(self, group_uid: str):
+        """ Open group editing embed.
+        :type group_uid: object
+        """
+        try:
+            group = ctrl.forest.groups[group_uid]
+        except KeyError:
+            log.error(f'No such group: {group_uid}.')
+            return
         ctrl.ui.toggle_group_label_editing(group)
 
 
@@ -42,18 +53,30 @@ class ChangeGroupColor(KatajaAction):
     k_action_uid = 'change_group_color'
     k_command = 'Change color for group'
 
-    def method(self):
+    def prepare_parameters(self):
+        sender = self.sender()
+        group_uid = self.get_host().uid
+        color_key = sender.currentData()
+        return [group_uid, color_key], {}
+
+    def method(self, group_uid):
         """ """
+        try:
+            group = ctrl.forest.groups[group_uid]
+        except KeyError:
+            log.error(f'No such group: {group_uid}.')
+            return
+
         sender = self.sender()
         if sender:
             group = self.get_host()
             color_key = sender.currentData()
-            sender.model().selected_color = color_key
+            sender.model().selected_color = color_key  # hmmm
             if color_key:
                 group.update_colors(color_key)
-                embed = sender.parent()
-                if embed and hasattr(embed, 'update_colors'):
-                    embed.update_colors()
+                # use watcher + signal instead
+                #if embed and hasattr(embed, 'update_colors'):
+                #    embed.update_colors()
                 log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
     def enabler(self):

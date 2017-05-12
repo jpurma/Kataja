@@ -1,40 +1,47 @@
 # coding=utf-8
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
-from kataja.ui_widgets.OverlayButton import PanelButton
 
 
-class ModeLabel(UIWidget, PanelButton):
+class ModalTextButton(UIWidget, QtWidgets.QPushButton):
 
-    permanent_ui = True
-
-    def __init__(self, text_options, ui_key, parent=None, icon=None):
+    def __init__(self, text0, text1, ui_key, parent=None, pixmap=None):
         UIWidget.__init__(self, ui_key=ui_key)
-        self.negated_icon = None
-        PanelButton.__init__(self, icon, text_options[0], size=24, parent=parent)
+        QtWidgets.QPushButton.__init__(self, text0, parent)
         self.setCheckable(True)
-        self.text_options = text_options
+        self.pixmap = pixmap
+        self.text0 = text0
+        self.text1 = text1
+        self.icon0 = None
+        self.icon1 = None
+        self.tooltip0 = ''
+        self.tooltip1 = ''
+        self.setCheckable(True)
+        self.setFlat(True)
         font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
         font.setPointSize(font.pointSize() * 1.2)
         fm = QtGui.QFontMetrics(font)
-        mw = max([fm.width(text) for text in text_options])
-        self.setFlat(True)
-        self.setMinimumWidth(mw + 12)
+        mw = max(fm.width(text0), fm.width(text1))
+        self.setMinimumWidth(mw + 24)
         self.setMinimumHeight(24)
+        self.toggled.connect(self.toggle_state)
+        self.compose_icon()
+        self.toggle_state(False)
         ctrl.add_watcher(self, 'ui_font_changed')
 
-    def checkStateSet(self):
-        val = self.isChecked()
-        if val:
-            self.setText(self.text_options[1])
-            if self.negated_icon:
-                self.setIcon(self.negated_icon)
+    def toggle_state(self, value):
+        if value:
+            if self.icon1:
+                self.setIcon(self.icon1)
+            self.setText(self.text1)
+            self.setToolTip(self.tooltip1)
         else:
-            self.setText(self.text_options[0])
-            if self.normal_icon:
-                self.setIcon(self.normal_icon)
+            if self.icon0:
+                self.setIcon(self.icon0)
+            self.setText(self.text0)
+            self.setToolTip(self.tooltip0)
         self.updateGeometry()
         self.update_position()
 
@@ -46,26 +53,23 @@ class ModeLabel(UIWidget, PanelButton):
         to update the overlay color.
         :return:
         """
-        super().compose_icon()
-        c = ctrl.cm.paper()
         if self.pixmap:
-            image = QtGui.QImage(self.base_image)
+            c = ctrl.cm.ui()
+            image = QtGui.QImage(self.pixmap)
             painter = QtGui.QPainter(image)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
             painter.fillRect(image.rect(), c)
             painter.end()
-        elif self.draw_method:
-            image = QtGui.QImage(self.base_image)
+            self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+            c = ctrl.cm.paper()
+            image = QtGui.QImage(self.pixmap)
             painter = QtGui.QPainter(image)
-            #painter.setDevicePixelRatio(2.0)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setPen(c)
-            self.draw_method(painter, image.rect(), c)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+            painter.fillRect(image.rect(), c)
             painter.end()
-        else:
-            return
-        self.negated_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+            self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

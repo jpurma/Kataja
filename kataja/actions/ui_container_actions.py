@@ -67,16 +67,17 @@ class ToggleFoldPanel(KatajaAction):
     k_tooltip_alt = 'Reveal this panel'
 
     def prepare_parameters(self):
-        panel = self.get_ui_container()
-        key = panel.ui_type
-        return [key], {}
+        sender = self.sender()
+        panel_id = sender.data
+        folded = sender.isChecked()
+        return [panel_id, folded], {}
 
-    def method(self, panel_id: str):
+    def method(self, panel_id: str, folded: bool):
         """ Fold panel into label line or reveal the whole panel.
         """
         panel = ctrl.ui.get_panel(panel_id)
         if panel:
-            panel.set_folded(not panel.folded)
+            panel.set_folded(folded)
 
 
 class PinPanel(KatajaAction):

@@ -36,7 +36,7 @@ class EyeButton(PanelButton):
     def __init__(self, key, tt):
         self.checked_icon = None
         self.hover_icon = None
-        PanelButton.__init__(self, qt_prefs.eye_icon, size=24, tooltip=tt)
+        PanelButton.__init__(self, qt_prefs.eye_pixmap, size=24, tooltip=tt)
         self._hover = False
         self.setCheckable(True)
 

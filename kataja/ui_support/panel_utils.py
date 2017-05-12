@@ -6,6 +6,8 @@ from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_widgets.OverlayButton import OverlayButton, PanelButton
 from kataja.ui_support.FontSelector import FontSelector
 from kataja.ui_support.SelectionBox import SelectionBox
+from kataja.ui_widgets.ModalIconButton import ModalIconButton
+from kataja.ui_widgets.ModalTextButton import ModalTextButton
 
 __author__ = 'purma'
 
@@ -174,26 +176,49 @@ def text_button(ui_manager, layout, text='', action='', x=-1, y=-1, checkable=Fa
 
 def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1, y=-1,
                 checkable=False, size=20, color_key='accent8', align=None):
-    """
-
-    :param ui_manager:
-    :param layout:
-    :param parent:
-    :param text:
-    :param action:
-    :param x
-    :param y
-    :param checkable
-    :param size
-    :param color_key
-    :param align
-    :return:
-    """
 
     button = PanelButton(pixmap=icon, tooltip=text, parent=parent, size=size, color_key=color_key)
     button.setCheckable(checkable)
     if action:
         ui_manager.connect_element_to_action(button, action)
+    if x != -1:
+        layout.addWidget(button, y, x)
+    elif align is not None:
+        layout.addWidget(button, 1, align)
+    else:
+        layout.addWidget(button)
+    return button
+
+
+def modal_icon_button(ui_manager, ui_key, parent, layout, pixmap0=None, pixmap1=None, action='',
+                      x=-1, y=-1, size=20, align=None):
+
+    button = ModalIconButton(ui_key=ui_key, pixmap0=pixmap0, pixmap1=pixmap1,
+                             parent=parent, size=size)
+    if action:
+        ui_manager.connect_element_to_action(button, action)
+        act = ui_manager.get_action(action)
+        button.tooltip0 = act.k_tooltip
+        button.tooltip1 = act.k_tooltip_alt
+    if x != -1:
+        layout.addWidget(button, y, x)
+    elif align is not None:
+        layout.addWidget(button, 1, align)
+    else:
+        layout.addWidget(button)
+    return button
+
+
+def modal_text_button(ui_manager, ui_key, parent, layout, text0='', text1='', pixmap=None,
+                      action='', x=-1, y=-1, align=None):
+
+    button = ModalTextButton(text0=text0, text1=text1, ui_key=ui_key, parent=parent,
+                             pixmap=pixmap)
+    if action:
+        ui_manager.connect_element_to_action(button, action)
+        act = ui_manager.get_action(action)
+        button.tooltip0 = act.k_tooltip
+        button.tooltip1 = act.k_tooltip_alt
     if x != -1:
         layout.addWidget(button, y, x)
     elif align is not None:

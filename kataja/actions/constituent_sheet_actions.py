@@ -178,24 +178,31 @@ class SwitchTraceMode(KatajaAction):
     k_command = 'Show traces'
     k_shortcut = 't'
 
-    def method(self):
+    def prepare_parameters(self):
+        sender = self.sender()
+        if isinstance(sender, QtWidgets.QComboBox):
+            trace_mode = sender.currentData()
+        else:
+            trace_mode = None
+        return [], {'trace_mode': trace_mode}
+
+    def method(self, trace_mode=None):
         """ Switch between multidomination, showing traces and a view where
-        traces are grouped to their original position
+        traces are grouped to their original position.
+        :param trace_mode: int or None -- either switch to given trace mode, or rotate to next one
+        if None is given.
         :return: None
         """
 
         level = ctrl.ui.active_scope
-        sender = self.sender()
-        if isinstance(sender, QtWidgets.QComboBox):
-            value = sender.currentData()
-        else:
-            value = ctrl.settings.get('trace_strategy', level=level)
-            value += 1
-            if value == 3:
-                value = 0
-        ctrl.settings.set('trace_strategy', value, level=level)
+        if trace_mode is None:
+            trace_mode = ctrl.settings.get('trace_strategy', level=level)
+            trace_mode += 1
+            if trace_mode == 3:
+                trace_mode = 0
+        ctrl.settings.set('trace_strategy', trace_mode, level=level)
         ctrl.forest.forest_edited()
-        mode_text = prefs.get_ui_text_for_choice(value, 'trace_strategy')
+        mode_text = prefs.get_ui_text_for_choice(trace_mode, 'trace_strategy')
         return f'Set trace strategy to: {mode_text}'
 
     def getter(self):
@@ -212,35 +219,40 @@ class ToggleLabelTextModes(KatajaAction):
     k_shortcut = 'l'
     k_tooltip = 'Switch what to show as label text'
 
-    def method(self):
-        """ """
+    def prepare_parameters(self):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
-            value = sender.currentData()
+            label_mode = sender.currentData()
         else:
-            value = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
+            label_mode = None
+        return [], {'label_mode': label_mode}
+
+    def method(self, label_mode=None):
+        """ """
+        if label_mode is None:
+            label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
             syn_mode = ctrl.settings.get('syntactic_mode')
             support_secondary = ctrl.forest.syntax.supports_secondary_labels
             # some labels are not allowed in syn mode.
             ok = False
             while not ok:
-                value += 1
-                if value == g.SECONDARY_LABELS and not support_secondary:
+                label_mode += 1
+                if label_mode == g.SECONDARY_LABELS and not support_secondary:
                     ok = False
-                elif value == g.NODE_LABELS_FOR_LEAVES and syn_mode:
+                elif label_mode == g.NODE_LABELS_FOR_LEAVES and syn_mode:
                     ok = False
-                elif value == g.NODE_LABELS and syn_mode:
+                elif label_mode == g.NODE_LABELS and syn_mode:
                     ok = False
-                elif value == g.XBAR_LABELS and syn_mode:
+                elif label_mode == g.XBAR_LABELS and syn_mode:
                     ok = False
-                elif value > g.SECONDARY_LABELS:
+                elif label_mode > g.SECONDARY_LABELS:
                     ok = False
-                    value = -1
+                    label_mode = -1
                 else:
                     ok = True
-        ctrl.settings.set('label_text_mode', value, level=ctrl.ui.active_scope)
+        ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        mode_text = prefs.get_ui_text_for_choice(value, 'label_text_mode')
+        mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'
 
     def getter(self):
@@ -253,19 +265,24 @@ class SelectProjectionStyle(KatajaAction):
     k_tooltip = 'Switch between different ways to show projecting constituents'
     k_shortcut = 'Shift+P'
 
-    def method(self):
-        """ """
+    def prepare_parameters(self):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
-            value = sender.currentData()
+            projection_style = sender.currentData()
         else:
-            value = ctrl.settings.get('projection_style', level=ctrl.ui.active_scope)
-            value += 1
-            if value == 3:
-                value = 0
-        ctrl.settings.set('projection_style', value, level=ctrl.ui.active_scope)
+            projection_style = None
+        return [], {'projection_style': projection_style}
+
+    def method(self, projection_style=None):
+        """ """
+        if projection_style is None:
+            projection_style = ctrl.settings.get('projection_style', level=ctrl.ui.active_scope)
+            projection_style += 1
+            if projection_style == 3:
+                projection_style = 0
+        ctrl.settings.set('projection_style', projection_style, level=ctrl.ui.active_scope)
         ctrl.forest.projection_manager.update_projection_display()
-        mode_text = prefs.get_ui_text_for_choice(value, 'projection_style')
+        mode_text = prefs.get_ui_text_for_choice(projection_style, 'projection_style')
         return 'Projection style: ' + mode_text
 
     def getter(self):

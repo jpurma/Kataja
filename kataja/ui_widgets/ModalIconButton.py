@@ -19,6 +19,8 @@ class ModalIconButton(UIWidget, QtWidgets.QPushButton):
         self.icon1 = None
         self.setCheckable(True)
         self.setFlat(True)
+        self.tooltip0 = ''
+        self.tooltip1 = ''
         if isinstance(size, tuple):
             self.setMinimumWidth(size[0])
             self.setMinimumHeight(size[1])
@@ -30,14 +32,16 @@ class ModalIconButton(UIWidget, QtWidgets.QPushButton):
         self.setContentsMargins(0, 0, 0, 0)
         self.update_colors()
         self.compose_icon()
+        self.toggled.connect(self.toggle_state)
         self.setIcon(self.icon0)
 
-    def checkStateSet(self):
-        val = self.isChecked()
-        if val:
+    def toggle_state(self, value):
+        if value:
             self.setIcon(self.icon1)
+            self.setToolTip(self.tooltip1)
         else:
             self.setIcon(self.icon0)
+            self.setToolTip(self.tooltip0)
         self.updateGeometry()
         self.update_position()
 

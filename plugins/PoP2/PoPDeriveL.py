@@ -459,14 +459,14 @@ class Generate:
                 for f in merged_feats:
                     if (f.name == "Case" or f.name == "Scp") and f.unvalued:
                         continue
-                    ufs.append(f, Feature(f.name, ifeature=True, value=f.value))
+                    ufs.append((f, Feature(f.name, ifeature=True, value=f.value)))
             if ufs:
                 if self.stack.is_main():
                     for current in reversed(self.stack):
                         if current.is_unlabeled():
                             continue
                         current_feats = current.get_head_features()
-                        for # kesken
+                        # for # kesken
                         CurrentFeats = self.GetHeadFeatures(Current)
                         p = re.findall(uFpattern,str(CurrentFeats))
                         if p != []:#There are uFs

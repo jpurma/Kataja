@@ -14,18 +14,19 @@ QComboBox {
 
 
 QComboBox::down-arrow {
-    background-color: %s;    
+    border: 0px solid transparent;    
+    background-color: %(current)s;    
     width: 12px;
     height: 12px;
 }
 
-"""
-"""
-QComboBox::drop-down {
-    border: 1px solid transparent;
+QComboBox:hover {
+    background: transparent;
+    border: 1px solid %(lighter)s;
 }
 
 """
+
 
 class ColorSwatchIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
@@ -106,7 +107,7 @@ class ColorSelector(TableModelSelectionBox):
         if flat:
             self.setMinimumWidth(24)
             self.setMaximumWidth(24)
-            self.setStyleSheet(stylesheet % 'red')
+            self.setStyleSheet(stylesheet % {'current': 'transparent', 'lighter': 'transparent'})
         else:
             self.setMinimumWidth(40)
             self.setMaximumWidth(40)
@@ -165,7 +166,8 @@ class ColorSelector(TableModelSelectionBox):
                 ctrl.ui.toggle_panel(ctrl.ui.get_action('toggle_panel_ColorWheelPanel'),
                                      'ColorWheelPanel')
         self.update_color_dialog()
-        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
+        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name(),
+                           'lighter': ctrl.cm.get(color_key).lighter().name()})
         return color_key
 
     def update_color_dialog(self):
@@ -176,9 +178,9 @@ class ColorSelector(TableModelSelectionBox):
             wheel.raise_()
 
     def set_color(self, color_key):
-        self.setStyleSheet(stylesheet % ctrl.cm.get(color_key).name())
+        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name(),
+                           'lighter': ctrl.cm.get(color_key).lighter().name()})
         self.select_by_data(color_key)
-
 
     def showEvent(self, event):
         ctrl.add_watcher(self, 'palette_changed')

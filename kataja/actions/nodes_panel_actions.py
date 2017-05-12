@@ -105,10 +105,7 @@ class AbstractSelectFont(KatajaAction):
     k_action_uid = ''
     node_type = 0
 
-    def method(self):
-        """ Change font key for current node or node type.
-        :return: None
-        """
+    def prepare_parameters(self):
         selector = self.sender()
         font_id = selector.currentData() or selector.selected_font
         if font_id.startswith('font_picker::'):
@@ -118,21 +115,33 @@ class AbstractSelectFont(KatajaAction):
                 selector.start_font_dialog()
         else:
             selector.selected_font = font_id
+        return [font_id], {}
 
+    def method(self, font_id: str):
+        """ Change font key for current node or node type.
+        :param font_id: str
+        :return: None
+        """
+        node_type = self.__class__.node_type
         if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == self.__class__.node_type:
+                if isinstance(node, Node) and node.node_type == node_type:
                     ctrl.settings.set_node_setting('font_id', font_id, node=node)
                     node.update_label()
         else:
             ctrl.settings.set_node_setting('font_id', font_id,
-                                           node_type=self.__class__.node_type,
+                                           node_type=node_type,
                                            level=ctrl.ui.active_scope)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
         font = qt_prefs.get_font(font_id)
-        if selector.font_dialog:
-            selector.font_dialog.setCurrentFont(font)
+        font_dialog = ctrl.ui.get_font_dialog(node_type)
+        if font_dialog:
+            font_dialog.setCurrentFont(font)
+        panel = ctrl.ui.get_panel('NodesPanel')
+        if panel:
+            frame = panel.get_frame_for(node_type)
+            frame.update_font(font_id)
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
@@ -185,14 +194,24 @@ class AbstractChangeNodeColor(KatajaAction):
     k_action_uid = ''
     node_type = 0
 
-    def method(self):
-        """ Change color for selection or in currently active edge type.
-        :return: None
-        """
+    def prepare_parameters(self):
         selector = self.sender()
         color_key = selector.receive_color_selection()
-        if not color_key:
-            return
+        return [color_key], {}
+
+    def method(self, color_key):
+        """ Change color for this type of node and its edges. Instead of setting colors
+        directly, in Kataja you set items to use certain color roles, these roles are called by
+        'color_key'. Roles can be content, background or accent colors. The actual color
+        corresponding to role can change when the palette changes, but in general they should
+        remain appropriate.
+
+        Inspect ctrl.cm (kataja/PaletteManager.py) for further information.
+
+        :param color_key: str, where color keys are 'content1-3', 'background1-2', 'accent1-8',
+         'accent1-8tr' and 'custom1-n'
+        :return: None
+        """
 
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
@@ -208,7 +227,11 @@ class AbstractChangeNodeColor(KatajaAction):
                                            level=ctrl.ui.active_scope)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
-        selector.parentWidget().update_colors()
+        panel = ctrl.ui.get_panel('NodesPanel')
+        if panel:
+            frame = panel.get_frame_for(self.__class__.node_type)
+            if frame:
+                frame.update_colors()
         if color_key:
             log.info('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
@@ -247,3 +270,28 @@ class ChangeCommentColor(AbstractChangeNodeColor):
     k_command = 'Change comment color'
     k_tooltip = 'Change drawing color for comments'
     node_type = g.COMMENT_NODE
+
+
+class FoldNodeSheet(KatajaAction):
+    k_action_uid = 'fold_node_sheet'
+    k_command = 'Fold node sheet'
+    k_command_alt = 'Unfold node sheet'
+    k_tooltip = 'Hide option sheet'
+    k_tooltip_alt = 'Show option sheet'
+    k_checkable = True
+
+    def prepare_parameters(self):
+        sender = self.sender()
+        fold = sender.isChecked()
+        node_type = sender.data
+        return [node_type, fold], {}
+
+    def method(self, node_type: str, fold: bool):
+        """ Fold or unfold UI sheet for this type of node.
+        :param node_type: str, node type identifier
+        :param fold: bool, fold if True, unfold if False.
+        """
+        panel = ctrl.ui.get_panel('NodesPanel')
+        frame = panel.get_frame_for(node_type)
+        frame.set_folded(fold)
+        panel.updateGeometry()

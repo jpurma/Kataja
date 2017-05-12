@@ -495,8 +495,8 @@ class QtPreferences:
         self.cut_icon = None
         self.delete_icon = None
         self.close_icon = None
-        self.fold_icon = None
-        self.more_icon = None
+        self.fold_pixmap = None
+        self.more_pixmap = None
         self.pin_drop_icon = None
         self.left_arrow = None
         self.right_arrow = None
@@ -520,7 +520,7 @@ class QtPreferences:
         self.h_refresh_small_icon = None
         self.camera_icon = None
         self.card_icon = None
-        self.eye_icon = None
+        self.eye_pixmap = None
         self.undo_icon = None
         self.redo_icon = None
         self.kataja_icon = None
@@ -594,8 +594,8 @@ class QtPreferences:
         self.cut_icon = icon('cut_icon48.png')
         self.delete_icon = icon('backspace48.png')
         self.close_icon = icon('close24.png')
-        self.fold_icon = icon('less24.png')
-        self.more_icon = icon('more24.png')
+        self.fold_pixmap = pixmap('less24.png')
+        self.more_pixmap = pixmap('more24.png')
         self.pin_drop_icon = icon('pin_drop24.png')
         self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
@@ -618,7 +618,7 @@ class QtPreferences:
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.card_icon = icon('card48.png')
-        self.eye_icon = icon('eye48.png')
+        self.eye_pixmap = pixmap('eye48.png')
         self.info_icon = icon('info48.png')
         self.undo_icon = icon('undo48.png')
         self.redo_icon = icon('redo48.png')

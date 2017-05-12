@@ -26,7 +26,8 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
-from kataja.ui_support.panel_utils import mini_icon_button, label, selector, mini_button
+from kataja.ui_support.panel_utils import mini_icon_button, label, selector, mini_button, \
+    modal_icon_button
 from kataja.UIItem import UIWidget
 
 
@@ -67,10 +68,18 @@ class PanelTitle(QtWidgets.QWidget):
                                            icon=qt_prefs.pin_drop_icon,
                                            text='Dock this panel',
                                            action='pin_panel')
-        self.fold_button = mini_icon_button(ui, self, layout,
-                                            icon=qt_prefs.fold_icon,
-                                            text='Minimize this panel',
-                                            action='toggle_fold_panel')
+        #self.fold_button = mini_icon_button(ui, self, layout,
+        #                                    icon=qt_prefs.fold_pixmap,
+        #                                    text='Minimize this panel',
+        #                                    action='toggle_fold_panel')
+        self.fold_button = modal_icon_button(ui, 'fold_%s_panel' % panel.name,
+                                             self, layout,
+                                             pixmap0=qt_prefs.fold_pixmap,
+                                             pixmap1=qt_prefs.more_pixmap,
+                                             action='toggle_fold_panel',
+                                             size=12)
+        self.fold_button.data = panel.ui_key
+
         layout.addSpacing(8)
         self.title = label(self, layout, name)
         layout.addStretch(8)
@@ -93,11 +102,9 @@ class PanelTitle(QtWidgets.QWidget):
 
     def update_fold(self, folded):
         if folded:
-            self.fold_button.setIcon(QtGui.QIcon(qt_prefs.more_icon))
-            self.fold_button.setStatusTip("Expand this panel")
+            self.fold_button.setChecked(True)
         else:
-            self.fold_button.setIcon(QtGui.QIcon(qt_prefs.fold_icon))
-            self.fold_button.setStatusTip("Minimize this panel")
+            self.fold_button.setChecked(False)
 
     def sizeHint(self):
         return self.preferred_size

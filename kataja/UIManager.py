@@ -62,8 +62,6 @@ from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
-from kataja.ui_widgets.panels.ScopePanel import ScopePanel
-from kataja.ui_widgets.panels.StylePanel import StylePanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
@@ -78,8 +76,6 @@ POINTING = 3
 PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
-          {'class': StylePanel, 'name': 'Styles', 'position': 'right', 'closed': True},
-          {'class': ScopePanel, 'name': 'Style scope', 'position': 'right', 'closed': True},
           #{'class': MergePanel, 'name': 'Merge', 'position': 'right'},
           {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
@@ -528,6 +524,9 @@ class UIManager:
             a_class = getattr(mod, class_name)
             if not (inspect.isclass(a_class) and issubclass(a_class, KatajaAction)):
                 continue
+            if not a_class.k_action_uid:  # Ignore abstract classes, they are there only to
+                # reduce amount of copied code across e.g. different node types.
+                continue
             found.append(a_class)
             if not seek_only:
                 action = a_class()
@@ -791,6 +790,11 @@ class UIManager:
                 panel.setVisible(True)
                 panel.set_folded(False)
                 toggle_action.setChecked(True)
+
+    def get_font_dialog(self, node_type):
+        np = self.get_panel(NodesPanel.__name__)
+        np.get_font_dialog(node_type)
+
 
     # Panel scopes
 
@@ -1124,17 +1128,6 @@ class UIManager:
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
         self.update_edit_mode()
-        self.update_drag_mode(True) # selection mode
-
-    def update_drag_mode(self, selection_mode):
-        pan_around = self.get_ui('pan_mode')
-        select_mode = self.get_ui('select_mode')
-        if selection_mode:
-            pan_around.setChecked(False)
-            select_mode.setChecked(True)
-        else:
-            pan_around.setChecked(True)
-            select_mode.setChecked(False)
 
     def add_button(self, button, action):
         if button.ui_key not in self._items:

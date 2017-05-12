@@ -31,7 +31,7 @@ class FeatureSheet(QtWidgets.QWidget):
         self.setMaximumWidth(220)
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
         layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(4, 0, 4, 4)
+        layout.setContentsMargins(4, 0, 4, 8)
         self.setLayout(layout)
 
         hlayout = QtWidgets.QHBoxLayout()

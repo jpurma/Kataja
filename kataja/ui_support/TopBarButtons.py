@@ -3,9 +3,10 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.OverlayButton import TopRowButton, VisButton
-from kataja.ui_widgets.ModeLabel import ModeLabel
+from kataja.ui_widgets.ModalTextButton import ModalTextButton
 from kataja.ui_widgets.ModalIconButton import ModalIconButton
 from kataja.visualizations.available import VISUALIZATIONS
+from ui_support.panel_utils import modal_text_button
 
 
 class TopBarButtons(QtWidgets.QFrame):
@@ -24,24 +25,16 @@ class TopBarButtons(QtWidgets.QFrame):
         ui.add_button(self.play_button, action='play_or_pause')
         layout.addWidget(self.play_button)
 
-        self.edit_mode_button = ModeLabel(['Free drawing', 'Visualisation'],
-                                          ui_key='edit_mode_label',
-                                          parent=self)
-        layout.addWidget(self.edit_mode_button)
-        ui.add_ui(self.edit_mode_button)
-        ui.connect_element_to_action(self.edit_mode_button, 'switch_edit_mode')
-
+        self.edit_mode_button = modal_text_button(ui, 'edit_mode_label', self, layout,
+                                                  text0='Free drawing', text1='Visualisation',
+                                                  action='switch_edit_mode')
         layout.addStretch(0)
 
         # Center side
-
-        self.view_mode_button = ModeLabel(['All objects', 'Syntactic only'],
-                                          ui_key='view_mode_label',
-                                          parent=self, icon=qt_prefs.eye_icon)
-        layout.addWidget(self.view_mode_button)
-        ui.add_ui(self.view_mode_button)
-        ui.connect_element_to_action(self.view_mode_button, 'switch_view_mode')
-
+        self.view_mode_button = modal_text_button(ui, 'view_mode_label', self, layout,
+                                                  text0='All objects', text1='Syntactic only',
+                                                  pixmap=qt_prefs.eye_pixmap,
+                                                  action='switch_view_mode')
         layout.addStretch(0)
 
         view_label = QtWidgets.QLabel("Visualisation:")
