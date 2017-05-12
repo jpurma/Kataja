@@ -54,7 +54,7 @@ class TogglePanel(KatajaAction):
         """ Show or hide panel depending if it is visible or not
         :param panel_id: enum of panel identifiers (str)
         """
-        ctrl.ui.toggle_panel(self, panel_id)
+        ctrl.ui.toggle_panel(panel_id)
 
 
 class ToggleFoldPanel(KatajaAction):

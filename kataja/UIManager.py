@@ -762,7 +762,7 @@ class UIManager:
         for panel in self._panels.values():
             panel.update_fields()
 
-    def toggle_panel(self, toggle_action, panel_id):
+    def toggle_panel(self, panel_id):
         """ Show or hide panel depending if it is visible or not
         :param toggle_action:
         :param panel_id: enum of panel identifiers (str)
@@ -773,11 +773,11 @@ class UIManager:
         if panel:
             if panel.isVisible():
                 panel.close()
-                toggle_action.setChecked(False)
+                return False
             else:
                 panel.setVisible(True)
                 panel.set_folded(False)
-                toggle_action.setChecked(True)
+                return True
         else:
             panel_data = None
             for panel_data in PANELS:
@@ -789,7 +789,7 @@ class UIManager:
                 panel = self.create_panel(panel_data)
                 panel.setVisible(True)
                 panel.set_folded(False)
-                toggle_action.setChecked(True)
+                return True
 
     def get_font_dialog(self, node_type):
         np = self.get_panel(NodesPanel.__name__)

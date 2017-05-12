@@ -85,11 +85,12 @@ UnicodeIconButton {background-color: %(paper)s; font-family: "%(main_font)s";
 ModalTextButton {border: 1px transparent none; color: %(ui)s; font-family: "%(ui_font)s";
            font-size: %(ui_font_larger)spx}
 ModalTextButton:hover {border: 1px solid %(ui)s; border-radius: 3}
-ModalTextButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s; border-radius: 3}
-ModalTextButton:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; border-radius: 3;
-                          color: %(paper)s}
-ModalTextButton:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
-                         color: %(ui_lighter)s}
+ModalTextButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
+                         border-radius: 3}
+ModalTextButton:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; 
+                                border-radius: 3; color: %(paper)s}
+ModalTextButton:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; 
+                               border-radius: 3; color: %(ui_lighter)s}
 VisButton {font-size: %(ui_font_larger)spx; color: %(ui)s;}
 PanelButton {border: 1px transparent none;}
 PanelButton:hover {border: 1px solid %(ui)s; border-radius: 3}

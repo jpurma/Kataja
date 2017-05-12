@@ -9,6 +9,7 @@ __author__ = 'purma'
 
 ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
 
+
 class DraggableNodeFrame(QtWidgets.QFrame):
     def __init__(self, key, name, parent=None, folded=False):
         QtWidgets.QFrame.__init__(self, parent)
@@ -25,7 +26,6 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
         self.key = key
         self.folded = folded
-        self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button = icon_button(ctrl.ui, self, hlayout,
                                       icon=qt_prefs.add_icon,
                                       text='Add ' + node_type_name,
@@ -66,7 +66,6 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         color_key = ctrl.settings.get_node_setting('color_id', node_type=self.key,
                                                    level=ctrl.ui.active_scope)
         if color_key:
-            self.setPalette(ctrl.cm.palette_from_key(color_key))
             self.font_selector.set_color(color_key)
             self.node_color_selector.set_color(color_key)
         self.add_button.update_colors(color_key=color_key)

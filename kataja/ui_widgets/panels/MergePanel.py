@@ -21,8 +21,6 @@ class DraggableMergeFrame(QtWidgets.QFrame):
         self.setMinimumHeight(24)
         color_key = ctrl.settings.get_node_setting('color_id', node_type=g.CONSTITUENT_NODE,
                                                    level=ctrl.ui.active_scope)
-
-        self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button = icon_button(ctrl.ui, self, hlayout,
                                       icon=qt_prefs.add_icon,
                                       text='Add merge',
@@ -36,8 +34,6 @@ class DraggableMergeFrame(QtWidgets.QFrame):
     def update_colors(self):
         color_key = ctrl.settings.get_node_setting('color_id', node_type=g.CONSTITUENT_NODE,
                                                    level=ctrl.ui.active_scope)
-        if color_key:
-            self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button.update_colors(color_key=color_key)
 
     def update_frame(self):

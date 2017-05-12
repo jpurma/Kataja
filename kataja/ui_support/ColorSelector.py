@@ -163,8 +163,7 @@ class ColorSelector(TableModelSelectionBox):
         if (not color) or prev_color == color_key:
             wheel = ctrl.ui.get_panel('ColorWheelPanel')
             if (not wheel) or not wheel.isVisible():
-                ctrl.ui.toggle_panel(ctrl.ui.get_action('toggle_panel_ColorWheelPanel'),
-                                     'ColorWheelPanel')
+                ctrl.ui.toggle_panel('ColorWheelPanel')
         self.update_color_dialog()
         self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name(),
                            'lighter': ctrl.cm.get(color_key).lighter().name()})
