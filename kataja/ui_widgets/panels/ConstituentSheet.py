@@ -75,9 +75,9 @@ class ConstituentSheet(QtWidgets.QWidget):
         self.edge_options = icon_button(ui, self, hlayout,
                                         icon=qt_prefs.settings_icon,
                                         text='More edge options',
-                                        action='toggle_panel_LineOptionsPanel',
-                                        checkable=True,
+                                        action='open_line_options',
                                         align=QtCore.Qt.AlignRight)
+        self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('label_text_mode')

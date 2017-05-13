@@ -9,7 +9,6 @@ class TreeManager:
     def __init__(self, forest):
         self.f = forest
 
-    @time_me
     def update_trees(self):
         def count_top_nodes_for_each_node(top, n, btrees):
             tops_for_node[n].append(top)
@@ -51,7 +50,6 @@ class TreeManager:
             if tree not in used_trees:
                 self.remove_tree(tree)
 
-    @time_me
     def create_tree_for(self, node):
         """ Create new trees around given node.
         :param node:

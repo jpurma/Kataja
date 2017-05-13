@@ -232,8 +232,6 @@ class AbstractChangeNodeColor(KatajaAction):
             frame = panel.get_frame_for(self.__class__.node_type)
             if frame:
                 frame.update_colors()
-        if color_key:
-            log.info('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
@@ -295,3 +293,22 @@ class FoldNodeSheet(KatajaAction):
         frame = panel.get_frame_for(node_type)
         frame.set_folded(fold)
         panel.updateGeometry()
+
+
+class OpenLineOptions(KatajaAction):
+    k_action_uid = 'open_line_options'
+    k_command = 'Open more options'
+    k_tooltip = 'Show more edge drawing options'
+
+    def prepare_parameters(self):
+        sender = self.sender()
+        node_type = sender.data
+        return [node_type], {}
+
+    def method(self, node_type: str):
+        """ Fold or unfold UI sheet for this type of node.
+        :param node_type: str, node type identifier
+        :param fold: bool, fold if True, unfold if False.
+        """
+        ctrl.ui.show_panel('LineOptionsPanel')
+

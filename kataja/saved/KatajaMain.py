@@ -636,7 +636,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             prefs.save_preferences()
         log.info('...done')
 
-    @time_me
     def create_save_data(self):
         """
         Make a large dictionary of all objects with all of the complex stuff

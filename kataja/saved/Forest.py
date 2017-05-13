@@ -200,7 +200,6 @@ class Forest(SavedObject):
         self.comments = []
         self.gloss_text = ''
 
-    @time_me
     def forest_edited(self):
         """ Called after forest editing/free drawing actions that have changed the node graph.
         Analyse the node graph and update/rebuild syntactic objects according to graph.
@@ -805,7 +804,6 @@ class Forest(SavedObject):
             self.free_drawing.replace_node(node, new_nodes[0])
 
     # View mode
-    @time_me
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.DOCUMENT)
         label_text_mode = ctrl.settings.get('label_text_mode')

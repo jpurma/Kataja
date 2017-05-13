@@ -111,6 +111,7 @@ class ChangeEdgeColor(KatajaAction):
 class EdgeArrowheadStart(KatajaAction):
     k_action_uid = 'edge_arrowhead_start'
     k_command = 'Draw arrowhead at line start'
+    k_checkable = True
 
     def method(self):
         """ Draw arrowheads at start for given edges or edge type
@@ -136,6 +137,7 @@ class EdgeArrowheadStart(KatajaAction):
 class EdgeArrowheadEnd(KatajaAction):
     k_action_uid = 'edge_arrowhead_end'
     k_command = 'Draw arrowhead at line end'
+    k_checkable = True
 
     def method(self):
         """ Draw arrowheads at end for given edges or edge type
@@ -300,6 +302,7 @@ class EdgeThickness(KatajaAction):
 class EdgeCurvatureRelative(KatajaAction):
     k_action_uid = 'edge_curvature_relative'
     k_command = 'Change line curvature to be relative to edge dimensions'
+    k_checkable = True
 
     def method(self):
         """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
@@ -325,6 +328,7 @@ class EdgeCurvatureRelative(KatajaAction):
 class EdgeCurvatureFixed(KatajaAction):
     k_action_uid = 'edge_curvature_fixed'
     k_command = 'Change line curvature to be a pair of fixed values'
+    k_checkable = True
 
     def method(self):
         """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
@@ -464,6 +468,7 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
 class EdgeShapeFill(KatajaAction):
     k_action_uid = 'edge_shape_fill'
     k_command = 'Set edges to be drawn as filled'
+    k_checkable = True
 
     def method(self):
         """ Change edge to draw as filled shape
@@ -489,6 +494,7 @@ class EdgeShapeFill(KatajaAction):
 class EdgeShapeLine(KatajaAction):
     k_action_uid = 'edge_shape_line'
     k_command = 'Set edges to be drawn with outlines'
+    k_checkable = True
 
     def method(self):
         """ Change edge to draw as line instead of filled shape

@@ -6,7 +6,7 @@ import kataja.globals as g
 from kataja.ui_support.SelectionBox import SelectionBox
 import random
 
-from ui_support.TwoColorButton import TwoColorButton
+from kataja.ui_support.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 

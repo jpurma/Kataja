@@ -118,7 +118,7 @@ class DerivationStepManager(SavedObject):
         assert(c < max_depth) # please raise the max depth if this is reached
         self.derivation_steps.append((d_step.uid, savedata, msg))
 
-    @time_me
+#    @time_me
     def restore_derivation_step(self):
         if self.derivation_steps:
             uid, frozen_data, msg = self.derivation_steps[self.derivation_step_index]

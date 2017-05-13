@@ -165,7 +165,6 @@ class Tree(Movable):
                         add_children(child)
         add_children(node)
 
-    @time_me
     def update_items(self):
         """ Check that all children of top item are included in this trees and create the sorted
         lists of items. Make sure there is a top item before calling this!

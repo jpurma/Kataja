@@ -336,7 +336,6 @@ class Settings:
 
     # ## Shape cache #########
 
-    @time_me
     def update_shape_cache(self):
         new = self.prefs.edges.copy()
         if 'edges' in self.s_document:

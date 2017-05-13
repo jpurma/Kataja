@@ -400,7 +400,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         self.clickable_areas = []
 
         for color_key in self.outer.all_colors:
-            color = ctrl.cm.get(color_key)
+            color = ctrl.cm.get(color_key, allow_none=True)
             if color:
                 draw_as_circle(color, color_key, selected=False)
             else:

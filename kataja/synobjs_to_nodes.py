@@ -33,7 +33,7 @@ from kataja.singletons import ctrl
 from kataja.utils import time_me
 
 
-@time_me
+#@time_me
 def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, gloss=None,
                      transferred=None, mover=None):
     """ This is a big important function to ensure that Nodes on display are only those that

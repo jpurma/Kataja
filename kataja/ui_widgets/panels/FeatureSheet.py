@@ -85,6 +85,7 @@ class FeatureSheet(QtWidgets.QWidget):
         self.edge_options = icon_button(ui, self, hlayout,
                                         icon=qt_prefs.settings_icon,
                                         text='More edge options',
-                                        action='toggle_panel_LineOptionsPanel',
-                                        checkable=True,
+                                        action='open_line_options',
                                         align=QtCore.Qt.AlignRight)
+        self.edge_options.data = g.FEATURE_NODE
+

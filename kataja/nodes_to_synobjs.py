@@ -41,7 +41,7 @@ def figure_out_syntactic_label(cn):
         return ''
 
 
-@time_me
+#@time_me
 def nodes_to_synobjs(forest, syntax, roots: list):
     """ Rebuild syntactic objects based on information in nodes. Understand that this means that
     syntactic objects cannot have data directly set to them -- it will be overwritten or ignored

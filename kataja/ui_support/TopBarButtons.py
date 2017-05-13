@@ -6,7 +6,7 @@ from kataja.ui_widgets.OverlayButton import TopRowButton, VisButton
 from kataja.ui_widgets.ModalTextButton import ModalTextButton
 from kataja.ui_widgets.ModalIconButton import ModalIconButton
 from kataja.visualizations.available import VISUALIZATIONS
-from ui_support.panel_utils import modal_text_button
+from kataja.ui_support.panel_utils import modal_text_button
 
 
 class TopBarButtons(QtWidgets.QFrame):

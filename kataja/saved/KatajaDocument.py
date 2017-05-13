@@ -123,7 +123,6 @@ class KatajaDocument(SavedObject):
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
 
-    @time_me
     def create_forests(self, filename=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
         This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.

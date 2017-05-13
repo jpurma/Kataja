@@ -80,7 +80,6 @@ class ProjectionManager:
             projection.set_visuals(0)
             del self.projections[head]
 
-    @time_me
     def update_projections(self):
 
         old_heads = set(self.projections.keys())

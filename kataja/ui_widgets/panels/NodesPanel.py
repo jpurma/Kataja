@@ -66,6 +66,14 @@ class NodesPanel(Panel):
                 self.sheets.append(sheet)
                 frame.sheet = sheet
             frame.set_folded(frame.folded)  # updates sheet visibility
+
+        self.reset_button = mini_button(ctrl.ui, outer, olayout,
+                                        text='reset',
+                                        action='reset_settings',
+                                        align=QtCore.Qt.AlignRight)
+        self.reset_button.setMinimumHeight(14)
+        self.reset_button.setMaximumHeight(14)
+
         self.setWidget(outer)
         self.finish_init()
 

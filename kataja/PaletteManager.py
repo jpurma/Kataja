@@ -327,7 +327,6 @@ class PaletteManager:
             return color
         log.critical(f"Missing color '{key}'.")
         color = c(0, 0, 255)
-        self.set_color(key, color, can_save=False)
         return color
 
     def set_color(self, key, color, compute_companions=False, contrast=65, can_save=True):

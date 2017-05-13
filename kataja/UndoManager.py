@@ -56,7 +56,7 @@ class UndoManager:
             obj.flush_history()
         ctrl.undo_pile = set()
 
-    @time_me
+#    @time_me
     def take_snapshot(self, msg=''):
         """ Store changes from ctrl.undo_pile and put them here into undo_stack.
         :param msg: str = msg to

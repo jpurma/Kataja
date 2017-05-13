@@ -46,8 +46,7 @@ class TogglePanel(KatajaAction):
         if isinstance(sender, TransmitAction):
             key = sender.key
         else:
-            panel = self.get_ui_container()
-            key = panel.ui_type
+            key = sender.data
         return [key], {}
 
     def method(self, panel_id: str):

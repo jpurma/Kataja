@@ -699,8 +699,8 @@ class UIManager:
                     panel = self.get_panel(panel_id)
                     break
         panel.show()
-        action = self.get_action('toggle_panel_%s' % panel_id)
-        action.setChecked(True)
+        toggle_action = self.get_action('toggle_panel')
+        toggle_action.set_checked_for(panel_id, True)
 
     def create_panels(self):
         """ Put actions to panels. Panel contents are defined at the top of
@@ -764,32 +764,14 @@ class UIManager:
 
     def toggle_panel(self, panel_id):
         """ Show or hide panel depending if it is visible or not
-        :param toggle_action:
-        :param panel_id: enum of panel identifiers (str)
+        :param panel_id: str, panel_id:s are their class names
         :return: None
         """
         panel = self.get_panel(panel_id)
-
-        if panel:
-            if panel.isVisible():
-                panel.close()
-                return False
-            else:
-                panel.setVisible(True)
-                panel.set_folded(False)
-                return True
+        if panel and panel.isVisible():
+            panel.close()
         else:
-            panel_data = None
-            for panel_data in PANELS:
-                # noinspection PyTypeChecker
-                if panel_data['class'].__name__ == panel_id:
-                    break
-            if panel_data:
-                # noinspection PyTypeChecker
-                panel = self.create_panel(panel_data)
-                panel.setVisible(True)
-                panel.set_folded(False)
-                return True
+            self.show_panel(panel_id)
 
     def get_font_dialog(self, node_type):
         np = self.get_panel(NodesPanel.__name__)

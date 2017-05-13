@@ -367,7 +367,6 @@ class Label(QtWidgets.QGraphicsItem):
         if self._quick_editing:
             ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
 
-    @time_me
     def parse_document_to_field(self):
         """ Parse edited QDocument into rows of INodes and into receptable
         field in host object

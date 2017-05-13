@@ -59,10 +59,11 @@ class PanelTitle(QtWidgets.QWidget):
         layout.minimumSize = self.sizeHint
         ui = self.panel.ui_manager
 
-        mini_icon_button(ui, self, layout,
-                         icon=qt_prefs.close_icon,
-                         text='Close panel',
-                         action='toggle_panel')
+        self.close_button = mini_icon_button(ui, self, layout,
+                                             icon=qt_prefs.close_icon,
+                                             text='Close panel',
+                                             action='toggle_panel')
+        self.close_button.data = panel.ui_key
 
         self.pin_button = mini_icon_button(ui, self, layout,
                                            icon=qt_prefs.pin_drop_icon,
@@ -90,12 +91,6 @@ class PanelTitle(QtWidgets.QWidget):
             self.scope_selector = selector(ui, self, layout, data=items, action='style_scope',
                                            label='')
             self.scope_selector.setMaximumWidth(92)
-            self.reset_button = mini_button(ctrl.ui, self, layout,
-                                            text='reset',
-                                            action='reset_settings',
-                                            align=QtCore.Qt.AlignRight)
-            self.reset_button.setMinimumHeight(14)
-            self.reset_button.setMaximumHeight(14)
 
 
         self.setLayout(layout)
