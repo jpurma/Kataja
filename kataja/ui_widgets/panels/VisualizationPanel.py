@@ -42,7 +42,8 @@ class VisualizationPanel(Panel):
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
         ctrl.ui.connect_element_to_action(self.toggle_options,
-                                          'toggle_panel_VisualizationOptionsPanel')
+                                          'toggle_panel')
+        self.toggle_options.data = 'VisualizationOptionsPanel'
         hlayout.addWidget(self.toggle_options, 1, QtCore.Qt.AlignRight)
 
         layout.addLayout(hlayout)

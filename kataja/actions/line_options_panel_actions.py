@@ -4,7 +4,7 @@ import math
 from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
 from kataja.saved.Edge import Edge
-from kataja.globals import FOREST
+import kataja.globals as g
 
 from kataja.singletons import ctrl, log
 
@@ -40,28 +40,43 @@ class ChangeEdgeShape(KatajaAction):
     k_tooltip = 'Change shapes of lines between objects'
     k_undoable = False
 
-    def method(self):
-        """ Change edge shape for selection or in currently active edge type.
-        :return: None
-        """
+    def prepare_parameters(self):
         sender = self.sender()
-        shape = sender.currentData()
+        shape_name = sender.currentData()
 
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [shape_name], {'edge_type': edge_type, 'level': level}
+
+    def method(self, shape_name, edge_type=None, level=None):
+        """ Change edge shape for selection or in currently active edge type.
+        :param shape_name: str, shape_name from available shapes.
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_name = shape
+                    edge.shape_name = shape_name
                     edge.update_shape()
         else:
-            ctrl.settings.set_edge_setting('shape_name', shape,
-                                           edge_type=ctrl.ui.active_edge_type, level=FOREST)
+            ctrl.settings.set_edge_setting('shape_name', shape_name,
+                                           edge_type=edge_type, level=level)
             for edge in ctrl.forest.edges.values():
                 edge.update_shape()
         line_options = ctrl.ui.get_panel('LineOptionsPanel')
-
         if line_options:
             line_options.update_panel()
-        log.info('(s) Changed relation shape to: %s' % shape)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -76,17 +91,31 @@ class ChangeEdgeColor(KatajaAction):
     k_tooltip = 'Change drawing color for edges'
     k_undoable = False
 
-    def method(self):
-        """ Change edge shape for selection or in currently active edge type.
+    def prepare_parameters(self):
+        sender = self.sender()
+        color_key = sender.receive_color_selection()
+        if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [color_key], {'edge_type': edge_type, 'level': level}
+
+    def method(self, color_key, edge_type=None, level=None):
+        """ Change edge color for selection or in currently active edge type.
+        :param color_key: str, color_key from available colors.
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        selector = self.sender()
-        color_key = selector.receive_color_selection()
-        if not color_key:
-            return
-
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
         # Update color for selected edges
-        if ctrl.ui.scope_is_selection:
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.color_id = color_key
@@ -94,12 +123,10 @@ class ChangeEdgeColor(KatajaAction):
         # ... or update color for all edges of this type
         else:
             ctrl.settings.set_edge_setting('color_id', color_key,
-                                           edge_type=ctrl.ui.active_edge_type, level=FOREST)
+                                           edge_type=edge_type, level=level)
             for edge in ctrl.forest.edges.values():
                 edge.update()
         ctrl.call_watchers(self, 'active_edge_color_changed')  # shape_selector needs this
-        if color_key:
-            log.info('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -113,19 +140,36 @@ class EdgeArrowheadStart(KatajaAction):
     k_command = 'Draw arrowhead at line start'
     k_checkable = True
 
-    def method(self):
-        """ Draw arrowheads at start for given edges or edge type
-        """
-        value = self.state_arg
+    def prepare_parameters(self):
+        ah_at_start = self.args[0]
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [ah_at_start], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Draw arrowheads at the start of the edge.
+        :param value: bool, draw arrowhead or not
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_arrowhead_at_start(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge_type=etype,
-                                           level=FOREST)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge_type=edge_type,
+                                           level=level)
+            ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -139,19 +183,37 @@ class EdgeArrowheadEnd(KatajaAction):
     k_command = 'Draw arrowhead at line end'
     k_checkable = True
 
-    def method(self):
-        """ Draw arrowheads at end for given edges or edge type
-        :param value: bool
-        """
-        value = self.state_arg
+    def prepare_parameters(self):
+        ah_at_end = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [ah_at_end], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Draw arrowheads at the end of the edge.
+        :param value: bool, draw arrowhead or not
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_arrowhead_at_end(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge_type=etype, level=FOREST)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge_type=edge_type,
+                                           level=level)
+            ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -165,20 +227,34 @@ class ResetControlPoints(KatajaAction):
     k_command = 'Reset control point'
     k_tooltip = 'Remove adjustments for these curves'
 
-    def method(self):
-        """ Reset all control points
+    def prepare_parameters(self):
+        if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [], {'edge_type': edge_type, 'level': level}
+
+    def method(self, edge_type=None, level=None):
+        """ Reset all adjustments for curves in selected edges or this type of edges.
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        if ctrl.ui.scope_is_selection:
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.reset_control_points()
         else:
-            etype = ctrl.ui.active_edge_type
-            if etype:
-                for edge in ctrl.forest.edges.values():
-                    if edge.edge_type == etype:
-                        edge.reset_control_points()
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.reset_control_points()
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -189,30 +265,42 @@ class ResetEdgeSettings(KatajaAction):
     k_command = 'Reset edge settings'
     k_tooltip = 'Reset settings for this type of edges back to defaults'
 
-    def method(self):
-        """ Reset all control points
+    def prepare_parameters(self):
+        if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [], {'edge_type': edge_type, 'level': level}
+
+    def method(self, edge_type=None, level=None):
+        """ Reset all additional settings in selected edges or for this type of edges.
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        if ctrl.ui.scope_is_selection:
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.reset_shape()
                     ctrl.settings.del_edge_setting('arrowhead_at_start', edge=edge)
                     ctrl.settings.del_edge_setting('arrowhead_at_end', edge=edge)
-
             ctrl.forest.redraw_edges()
-
         else:
-            etype = ctrl.ui.active_edge_type
-            if etype:
-                ctrl.settings.reset_shape_settings(level=FOREST, edge_type=etype)
-                ctrl.settings.del_edge_setting('arrowhead_at_start', edge_type=etype)
-                ctrl.settings.del_edge_setting('arrowhead_at_end', edge_type=etype)
+            ctrl.settings.reset_shape_settings(level=level, edge_type=edge_type)
+            ctrl.settings.del_edge_setting('arrowhead_at_start', edge_type=edge_type)
+            ctrl.settings.del_edge_setting('arrowhead_at_end', edge_type=edge_type)
 
-                for edge in ctrl.forest.edges.values():
-                    if edge.edge_type == etype:
-                        edge.reset_shape()
-                ctrl.forest.redraw_edges(edge_type=etype)
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.reset_shape()
+            ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -223,19 +311,35 @@ class LeafShapeX(KatajaAction):
     k_command = 'Edge shape width'
     k_tooltip = 'Adjust horizontal thickness of edges'
 
-    def method(self):
-        """ Change width of leaf-shaped edge.
+    def prepare_parameters(self):
+        value = self.args[0]
+
+        if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Adjust horizontal thickness for leaf-shaped edges.
+        :param value: int, horizontal thickness of leaf-shaped edge
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
         """
-        value = self.state_arg
-        if value is None:
-            return
-        elif ctrl.ui.scope_is_selection:
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_leaf_width(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('leaf_x', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('leaf_x', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -250,19 +354,35 @@ class LeafShapeY(KatajaAction):
     k_command = 'Edge shape height'
     k_tooltip = 'Adjust vertical thickness of edges'
 
-    def method(self):
-        """ Change height of leaf-shaped edge.
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Adjust vertical thickness for leaf-shaped edges.
+        :param value: int, vertical thickness of leaf-shaped edge
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_leaf_height(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('leaf_y', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('leaf_y', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -277,19 +397,35 @@ class EdgeThickness(KatajaAction):
     k_command = 'Edge thickness'
     k_tooltip = 'Adjust fixed thickness for edges'
 
-    def method(self):
-        """ If edge is outline (not a leaf shape)
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: float, edge_type=None, level=None):
+        """ Edge outline thickness.
+        :param value: float, thickness in pixels
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_thickness(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('thickness', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('thickness', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -304,17 +440,35 @@ class EdgeCurvatureRelative(KatajaAction):
     k_command = 'Change line curvature to be relative to edge dimensions'
     k_checkable = True
 
-    def method(self):
-        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        """
-        value = self.state_arg
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Is edge curvature a fixed amount (False) or relative to edge length (True)
+        :param value: bool, True = relative, False = fixed
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_edge_curvature_relative(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('relative', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('relative', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -330,17 +484,35 @@ class EdgeCurvatureFixed(KatajaAction):
     k_command = 'Change line curvature to be a pair of fixed values'
     k_checkable = True
 
-    def method(self):
-        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        """
-        value = self.state_arg
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Is edge curvature a fixed amount (True) or relative to edge length (False)
+        :param value: bool, True = fixed, False = relative
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_edge_curvature_relative(not value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('relative', not value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('relative', not value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -356,19 +528,35 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature value is relative to edge width'
 
-    def method(self):
-        """ Change curvature of arching lines. Curvature is relative to width
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Set curvature to be relative to edge width.
+        :param value: int, percentage of edge width
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.change_edge_relative_curvature_x(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('rel_dx', value * .01, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -384,20 +572,36 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature value is relative to edge height'
 
-    def method(self):
-        """ Change curvature of arching lines. Curvature is relative to width
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Set curvature to be relative to edge height.
+        :param value: int, percentage of edge height
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.change_edge_relative_curvature_y(value)
                 else:
-                    etype = ctrl.ui.active_edge_type
-                    ctrl.settings.set_edge_setting('rel_dy', value * .01, edge_type=etype,
-                                                    level=FOREST)
+                    ctrl.settings.set_edge_setting('rel_dy', value * .01, edge_type=edge_type,
+                                                   level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -413,19 +617,35 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def method(self):
-        """ Change curvature of arching lines. Curvature is absolute pixels (X)
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Set curvature to fixed amount, x-dimension.
+        :param value: int, amount in pixels
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.change_edge_fixed_curvature_x(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('fixed_dx', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('fixed_dx', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -441,20 +661,35 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def method(self):
-        """ Change curvature of arching lines. Curvature is absolute pixels (X)
-        :param value: float
-        """
-        value = self.state_arg
-        if value is None:
-            return
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: int, edge_type=None, level=None):
+        """ Set curvature to fixed amount, y-dimension.
+        :param value: int, amount in pixels
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.change_edge_fixed_curvature_y(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('fixed_dy', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('fixed_dy', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -470,17 +705,35 @@ class EdgeShapeFill(KatajaAction):
     k_command = 'Set edges to be drawn as filled'
     k_checkable = True
 
-    def method(self):
-        """ Change edge to draw as filled shape
-        """
-        value = self.state_arg
+    def prepare_parameters(self):
+        value = self.args[0]
+
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Set edges to be drawn as filled.
+        :param value: bool, draw as filled or not
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_fill(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('fill', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('fill', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
@@ -496,18 +749,35 @@ class EdgeShapeLine(KatajaAction):
     k_command = 'Set edges to be drawn with outlines'
     k_checkable = True
 
-    def method(self):
-        """ Change edge to draw as line instead of filled shape
-        """
+    def prepare_parameters(self):
+        value = self.args[0]
 
-        value = self.state_arg
         if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+            edge_type = None
+        else:
+            level = ctrl.ui.active_scope
+            edge_type = ctrl.ui.active_edge_type
+        return [value], {'edge_type': edge_type, 'level': level}
+
+    def method(self, value: bool, edge_type=None, level=None):
+        """ Set edges to be drawn with outlines.
+        :param value: bool, draw outlines or not
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        if not edge_type:
+            edge_type = ctrl.active_edge_type
+        if not level:
+            level = ctrl.ui_active_scope
+        if level == g.SELECTION:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     edge.set_outline(value)
         else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.settings.set_edge_setting('outline', value, edge_type=etype, level=FOREST)
+            ctrl.settings.set_edge_setting('outline', value, edge_type=edge_type, level=level)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \

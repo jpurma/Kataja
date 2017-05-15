@@ -26,7 +26,6 @@ import time
 from typing import Generator
 
 from PyQt5 import QtWidgets
-from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 
 import kataja.globals as g
 from kataja.ChainManager import ChainManager
@@ -509,12 +508,6 @@ class Forest(SavedObject):
         :return: generator
         """
         return (x for x in self.nodes.values() if isinstance(x, FeatureNode))
-
-    def get_attribute_nodes(self):
-        """ Return generator of attribute nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if isinstance(x, AttributeNode))
 
     # Drawing and updating --------------------------------------------
 

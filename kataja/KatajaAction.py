@@ -138,7 +138,6 @@ class KatajaAction(QtWidgets.QAction):
         self.elements = set()
         self.command = self.k_command
         self.command_alt = self.k_command_alt
-        self.state_arg = None  # used to hold button states, or whatever activated triggers send
         self.args = []
         if self.command:
             self.setText(self.command)
@@ -192,14 +191,11 @@ class KatajaAction(QtWidgets.QAction):
 
     def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
-        :param state_arg: argument provided by some triggers, e.g. toggle buttons. We don't forward
-         this, instead it is saved in self.state_arg, method can use it from there if needed.
         :return: None
         """
 
         if not self.isEnabled():
             return
-        #self.state_arg = state_arg
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
         # Disable undo if necessary
@@ -214,16 +210,15 @@ class KatajaAction(QtWidgets.QAction):
         if args:
             self.args = args
 
-        if sender and sender != ctrl.ui.command_prompt:
-            args, kwargs = self.prepare_parameters()
-
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
 
-        # Print the command into console
-        arg_parts = [repr(a) for a in args]
-        kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
-        argstring = ', '.join(arg_parts + kwarg_parts)
-        print(f'>>> {self.k_action_uid}({argstring})')
+        if sender and sender != ctrl.ui.command_prompt:
+            args, kwargs = self.prepare_parameters()
+            # Print the command into console
+            arg_parts = [repr(a) for a in args]
+            kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
+            argstring = ', '.join(arg_parts + kwarg_parts)
+            log.info(f'>>> {self.k_action_uid}({argstring})')
         try:
             message = self.method(*args, **kwargs)
             error = None
@@ -231,7 +226,7 @@ class KatajaAction(QtWidgets.QAction):
             message = ''
             error = "Action %r ('%s')<br/>" % (self, self.key)
             error += '<br/>'.join(traceback.format_exception(*sys.exc_info()))
-            print("Unexpected error:", sys.exc_info())
+            log.error("Unexpected error: %s" % str(sys.exc_info()))
             traceback.print_exc()
         # Restore undo state to what it was
         if not self.undoable:
@@ -245,7 +240,7 @@ class KatajaAction(QtWidgets.QAction):
                 sc = sc.replace('Ctrl', running_environment.cmd_or_ctrl)
                 reply = f'({sc}) {message or self.command}'
             else:
-                reply = message or self.command
+                reply = message
             ctrl.main.action_finished(m=reply, undoable=self.undoable and not ctrl.undo_disabled,
                                       error=error, play=autoplay)
 
@@ -408,7 +403,12 @@ class KatajaAction(QtWidgets.QAction):
                     element.blockSignals(False)
                 elif isinstance(element, QtWidgets.QAbstractButton):
                     element.blockSignals(True)
-                    element.setText(value)
+                    if not isinstance(value, str):
+                        e = 'Action "%s" is non-checkable, but tries to set boolean value for' \
+                            ' UI element "%s".' % (self.__class__.__name__, element)
+                        log.error(e)
+                    else:
+                        element.setText(str(value))
                     element.blockSignals(False)
             for menu in self.transit_menus:
                 menu.blockSignals(True)

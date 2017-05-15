@@ -15,7 +15,7 @@ class LineStyleIcon(QIcon):
         self.compose_icon()
 
     def compose_icon(self):
-        c = ctrl.cm.get(ctrl.settings.cached_active_edge('color_id'))
+        c = ctrl.cm.get('content1')  # fixme! color should be appropriate for edge_type
         size = self.size_hint
 
         hidp = ctrl.main.devicePixelRatio()

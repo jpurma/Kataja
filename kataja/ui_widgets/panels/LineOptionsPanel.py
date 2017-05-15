@@ -103,10 +103,12 @@ class LineOptionsPanel(Panel):
                                             label='X', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_x',
                                             suffix=' px')
+
         self.arc_fixed_dy_spinbox = spinbox(ui, self, hlayout,
                                             label='Y', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_y',
                                             suffix=' px')
+
         self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
         self.arc_reference_buttons.addButton(self.fixed_arc_button)
         self.arc_reference_buttons.addButton(self.relative_arc_button)

@@ -57,6 +57,7 @@ from kataja.ui_support.ErrorDialog import ErrorDialog
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
+from kataja.LogWidgetPusher import capture_stdout
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -147,6 +148,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest_keepers = []
         self.forest_keeper = None
         ctrl.late_init(self)
+        capture_stdout(log, self.log_stdout_as_debug)
+
         classes.late_init()
         prefs.import_node_classes(classes)
         self.syntax = SyntaxConnection()
@@ -420,6 +423,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return: None
         """
         self.forest.draw()
+
+    def log_stdout_as_debug(self, text):
+        if text.strip():
+            log.debug(text)
 
     def attach_widget_to_log_handler(self, browserwidget):
         """ This has to be done once: we have a logger set up before there is any output widget,

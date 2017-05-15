@@ -486,19 +486,24 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """ Drawing color that is sensitive to edge's state
         :return: QColor
         """
-        if ctrl.pressed == self:
-            return ctrl.cm.active(ctrl.cm.selection())
-        elif self._hovering:
-            return ctrl.cm.hovering(ctrl.cm.selection())
-        elif self.is_broken():
-            return ctrl.cm.broken(self.color)
-        elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-            return ctrl.cm.get(self.in_projections[0].color_id)
-        elif (self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE) and self.end \
-                and self.end.fshape:
-            return self.end.contextual_background()
+        if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
+            base = ctrl.cm.get(self.in_projections[0].color_id)
+        elif self.color_id:
+            print('getting color: ', self.color_id)
+            base = ctrl.cm.get(self.color_id)
+        elif self.end:
+            base = ctrl.cm.get(self.end.get_color_id())
         else:
-            return self.color
+            base = ctrl.cm.get('content1')
+
+        if ctrl.pressed == self:
+            return ctrl.cm.active(base)
+        elif self._hovering:
+            return ctrl.cm.hovering(base)
+        elif self.is_broken():
+            return ctrl.cm.broken(base)
+        else:
+            return base
 
     def uses_labels(self) -> bool:
         """ Some edge types, e.g. arrows inherently suggest adding labels to
@@ -1039,7 +1044,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param widget:
         :return:
         """
-        t = time.time()
         c = self.contextual_color()
         if self._use_simple_path:
             p = QtGui.QPen()
@@ -1052,6 +1056,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
+                # Show many projections
                 if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
                     p.setWidthF(thickness)
                     left = self.start_point[0] > self.end_point[0]

@@ -7,6 +7,7 @@ from kataja.ui_widgets.ModalTextButton import ModalTextButton
 from kataja.ui_widgets.ModalIconButton import ModalIconButton
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_support.panel_utils import modal_text_button
+import kataja.globals as g
 
 
 class TopBarButtons(QtWidgets.QFrame):
@@ -40,6 +41,7 @@ class TopBarButtons(QtWidgets.QFrame):
         view_label = QtWidgets.QLabel("Visualisation:")
         layout.addWidget(view_label)
 
+        default_vis = ctrl.settings.get('visualization', level=g.PREFS)
         self.vis_buttons = QtWidgets.QButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut
@@ -48,6 +50,7 @@ class TopBarButtons(QtWidgets.QFrame):
                                        size=(16, 24), subtype=vkey, shortcut=shortcut,
                                        tooltip=vis.name)
                 self.vis_buttons.addButton(vis_button)
+                vis_button.setChecked(vkey == default_vis)
                 layout.addWidget(vis_button)
         ui.connect_element_to_action(self.vis_buttons, 'set_visualization')
         layout.addStretch(0)
@@ -110,4 +113,3 @@ class TopBarButtons(QtWidgets.QFrame):
 
     def left_edge_of_right_buttons(self):
         return self.camera.x()
-

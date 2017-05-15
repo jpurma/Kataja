@@ -31,7 +31,6 @@ from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Presentation import Image
-from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
@@ -161,23 +160,6 @@ class FreeDrawing:
         if pixmap_path:
             cn.set_image_path(pixmap_path)
         return cn
-
-    def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
-        """
-
-        :param host:
-        :param attribute_id:
-        :param attribute_label:
-        :param show_label:
-        :return:
-        """
-        AN = AttributeNode(forest=self.f, host=host, attribute_id=attribute_id,
-                           label=attribute_label,
-                           show_label=show_label)
-        self.connect_node(host, child=AN)
-        self.f.add_to_scene(AN)
-        AN.update_visibility()
-        return AN
 
     def create_edge(self, start=None, end=None, edge_type='', fade=False):
         """

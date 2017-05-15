@@ -103,30 +103,29 @@ class TogglePlugin(KatajaAction):
     k_tooltip = "Plugins can drastically change how Kataja operates and what it tries to do. " \
                 "Be sure you trust the code before enabling a plugin. "
 
-    def method(self, key=None):
-        """ Enable or disable plugins, either by giving a plugin key or by assuming that there is a
-        sender widget that knows the key. """
-        value = self.state_arg
+    def prepare_parameters(self):
         sender = self.sender()
-        if not (sender or key):
-            return
-        elif not key:
-            key = sender.plugin_key
-        print('toggle plugin, key: %s, value %s' % (key, value))
+        return [sender.plugin_key, sender.isChecked()], {}
+
+    def method(self, plugin_key, value):
+        """ Enable or disable plugin identified by plugin_key
+        :param plugin_key: str
+        :param value: bool
+        """
         if value:
             if prefs.active_plugin_name:
                 ctrl.main.disable_current_plugin()
-            ctrl.main.enable_plugin(key)
+            ctrl.main.enable_plugin(plugin_key)
             ctrl.main.load_initial_treeset()
-            m = "Enabled plugin '%s'" % key
-        elif key == prefs.active_plugin_name:
+            m = "Enabled plugin '%s'" % plugin_key
+        elif plugin_key == prefs.active_plugin_name:
             ctrl.main.disable_current_plugin()
             ctrl.main.load_initial_treeset()
-            m = "Disabled plugin '%s'" % key
+            m = "Disabled plugin '%s'" % plugin_key
         else:
             m = ""
-        if sender:
-            parent = sender.parentWidget()
+        if self.sender():
+            parent = self.sender().parentWidget()
             while parent and not hasattr(parent, 'refresh_plugin_selection'):
                 parent = parent.parentWidget()
             if hasattr(parent, 'refresh_plugin_selection'):

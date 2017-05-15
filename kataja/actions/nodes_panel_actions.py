@@ -312,3 +312,19 @@ class OpenLineOptions(KatajaAction):
         """
         ctrl.ui.show_panel('LineOptionsPanel')
 
+
+class ResetSettings(KatajaAction):
+    k_action_uid = 'reset_settings'
+    k_command = 'Reset node settings'
+    k_tooltip = 'Reset settings in certain level and in all of the more specific levels'
+
+    def prepare_parameters(self):
+        level = ctrl.ui.active_scope
+        return [level], {}
+
+    def method(self, level: int):
+        """ Reset node settings in given level and in more specific levels.
+        :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
+        """
+        log.warning('not implemented: reset_settings')
+

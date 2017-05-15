@@ -458,20 +458,6 @@ class ConstituentNode(Node):
             else:
                 return '-'
 
-    def get_attribute_nodes(self, label_key=''):
-        """
-
-        :param label_k ey:
-        :return:
-        """
-        atts = [x.end for x in self.edges_down if x.edge_type == g.ATTRIBUTE_EDGE]
-        if label_key:
-            for a in atts:
-                if a.attribute_label == label_key:
-                    return a
-        else:
-            return atts
-
     def get_autolabel(self):
         return self.autolabel
 

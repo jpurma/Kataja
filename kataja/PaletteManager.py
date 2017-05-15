@@ -325,7 +325,7 @@ class PaletteManager:
         color = self.d.get(key, None)
         if color or allow_none:
             return color
-        log.critical(f"Missing color '{key}'.")
+        log.warning(f"Missing color '{key}'.")
         color = c(0, 0, 255)
         return color
 
@@ -611,10 +611,10 @@ class PaletteManager:
         elif isinstance(color, QColor):
             cc = color
         else:
-            log.critical('Unknown color: ', color)
+            log.warning('Unknown color: ', color)
             return 'unknown'
         if not cc:
-            log.critical('Unknown color: ', color)
+            log.warning('Unknown color: ', color)
             return 'unknown'
         r, g, b, a = cc.getRgb()
         d_min = 100000

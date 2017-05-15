@@ -7,35 +7,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import kataja.globals as g
 from kataja.singletons import log, ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
-
-
-class WriteStream:
-    """ This splits stdout to print to both original stdout (sys.__stdout__) and to
-    thread-protected queue, where Qt log window can safely pop it.
-    """
-
-    def __init__(self, queue):
-        self.queue = queue
-
-    def write(self, text):
-        self.queue.put(text)
-        sys.__stdout__.write(text)
-
-    def flush(self):
-        pass
-
-class MyReceiver(QtCore.QObject):
-    mysignal = QtCore.pyqtSignal(str)
-
-    def __init__(self, queue, *args, **kwargs):
-        QtCore.QObject.__init__(self, *args, **kwargs)
-        self.queue = queue
-
-    @QtCore.pyqtSlot()
-    def run(self):
-        while True:
-            text = self.queue.get()
-            self.mysignal.emit(text)
+from kataja.ui_support.panel_utils import text_button, selector, mini_button, mini_selector
 
 
 class CommandPrompt(QtWidgets.QLineEdit):
@@ -59,7 +31,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
 
     def return_pressed(self):
         text = self.text()
-        print('>>> ' + text)
+        log.info('>>> ' + text)
         line = text.lstrip('>. ')
         incomplete = False
         self.backlog.append(line)
@@ -73,7 +45,6 @@ class CommandPrompt(QtWidgets.QLineEdit):
             incomplete = self.ii.runsource(source)
         except:
             log.error(sys.exc_info())
-            print(sys.exc_info())
         if incomplete:
             if not self.incomplete_command:
                 self.incomplete_command = [line]
@@ -115,6 +86,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
         else:
             return super().keyPressEvent(event)
 
+
 class LogPanel(Panel):
     """ Dump window """
 
@@ -136,14 +108,15 @@ class LogPanel(Panel):
         self.prompt_label.setBuddy(self.line_edit)
         ctrl.ui.command_prompt = self.line_edit
         tlayout.addWidget(self.line_edit)
-        label = QtWidgets.QLabel('show stdout:', parent=titlewidget)
-        self.stdout = QtWidgets.QCheckBox(parent=titlewidget)
-        label.setBuddy(self.stdout)
-        ctrl.ui.connect_element_to_action(self.stdout, 'show_stdout_in_log')
-        tlayout.addStretch(1)
+        levels = [(50, 'CRITICAL'), (40, 'ERROR'), (30, 'WARNING'), (20, 'INFO'), (10, 'DEBUG')]
+        tlayout.addStretch(2)
+
+        label = QtWidgets.QLabel('log level:', parent=titlewidget)
         tlayout.addWidget(label)
-        tlayout.addWidget(self.stdout)
-        tlayout.addStretch(1)
+        log_levels = mini_selector(ctrl.ui, titlewidget, tlayout, data=levels,
+                                   action='set_log_level')
+        log_levels.setMinimumWidth(72)
+        clear_log = mini_button(ctrl.ui, titlewidget, tlayout, text='clear', action='clear_log')
 
         self.inner = QtWidgets.QTextBrowser()
         layout = QtWidgets.QVBoxLayout()
@@ -162,15 +135,6 @@ class LogPanel(Panel):
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
         self.watchlist = ['ui_font_changed']
 
-        # Direct stdout here
-        self.write_queue = queue.Queue()
-        sys.stdout = WriteStream(self.write_queue)
-        self.watcher_thread = QtCore.QThread()
-        self.my_receiver = MyReceiver(self.write_queue)
-        self.my_receiver.mysignal.connect(self.append_text)
-        self.my_receiver.moveToThread(self.watcher_thread)
-        self.watcher_thread.started.connect(self.my_receiver.run)
-        self.watcher_thread.start()
 
         layout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         self.inner.setLayout(layout)
@@ -191,7 +155,6 @@ class LogPanel(Panel):
         if floating:
             self.resize(QtCore.QSize(480, 480))
 
-
     def closeEvent(self, event):
         self.watcher_thread.quit()
 
@@ -203,6 +166,21 @@ class LogPanel(Panel):
     def append_error(self, errortext):
         self.inner.append(errortext.rstrip())
         self.inner.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+
+    def rebuild_log(self):
+        min_level = ctrl.settings.get('log_level', level=g.PREFS)
+        self.inner.clear()
+        for handler in log.handlers:
+            if hasattr(handler, 'everything'):
+                for record in handler.everything:
+                    if record.levelno >= min_level:
+                        handler.emit(record)
+
+    def clear_log(self):
+        self.inner.clear()
+        for handler in log.handlers:
+            if hasattr(handler, 'everything'):
+                handler.everything = []
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

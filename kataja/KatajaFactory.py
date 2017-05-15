@@ -39,7 +39,6 @@ class KatajaFactory:
     def late_init(self):
         """ Import and set available all of the default classes """
 
-        from kataja.saved.movables.nodes.AttributeNode import AttributeNode
         from kataja.saved.movables.nodes.CommentNode import CommentNode
         from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
         from kataja.saved.movables.nodes.FeatureNode import FeatureNode
@@ -54,14 +53,13 @@ class KatajaFactory:
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import BaseConstituent
 
-        self.default_models = {ConstituentNode, AttributeNode, FeatureNode,
+        self.default_models = {ConstituentNode, FeatureNode,
                                GlossNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, BaseConstituent, BaseFeature, Tree,
                                Group, KatajaDocument, SyntaxConnection}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
-                                     g.ATTRIBUTE_NODE: AttributeNode,
                                      g.COMMENT_NODE: CommentNode}
         # g.ABSTRACT_NODE: Node,
 

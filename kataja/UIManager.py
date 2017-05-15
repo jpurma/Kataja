@@ -648,7 +648,6 @@ class UIManager:
             for item in items:
                 if isinstance(item, str) and item.startswith("$"):
                     key = item[1:]
-                    print(item[1:])
                     if key == 'toggle_panel':
                         exp_items += self.prepare_panel_menus()
                     elif key == 'set_visualization':
@@ -816,8 +815,6 @@ class UIManager:
         :return:
         """
         if not hasattr(element, 'setShortcut'):
-            log.critical('trying to put shortcut for element that doesnt support it: %s %s ' % (
-                element, action))
             return
         action.installEventFilter(self.shortcut_solver)
         if isinstance(element, QtWidgets.QAbstractButton):

@@ -347,6 +347,8 @@ class Preferences(object):
                                 'help': 'Forests can draw additional text for e.g. gloss, '
                                         'linearisation or parser output',
                                 'order': 40}
+        self.log_level = 10
+
 
 
     def import_node_classes(self, classes):

@@ -15,33 +15,29 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': MAIN_FONT,
             'labeled': True, 'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 130
         }, DIVIDER: {
-            'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0, 'visible': True,
+            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': True, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER, 'z_value': 120
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': .40, 'visible': True,
+            'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': SPECIAL,
             'end_connects_to': SPECIAL, 'z_value': 110
-        }, ATTRIBUTE_EDGE: {
-            'shape_name': 'linear', 'color_id': 'content1', 'pull': .50, 'visible': True,
-            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
         }, COMMENT_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
+            'shape_name': 'linear', 'color_id': '', 'pull': 0, 'visible': True,
             'arrowhead_at_start': True, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
         }, CONSTITUENT_EDGE: {
-            'shape_name': 'shaped_cubic', 'color_id': 'content1', 'pull': .24, 'visible': True,
+            'shape_name': 'shaped_cubic', 'color_id': '', 'pull': .24, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': MAGNETS, 'end_connects_to': MAGNETS, 'z_value': 100
         }, FEATURE_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent2tr', 'pull': .20, 'visible': True,
+            'shape_name': 'cubic', 'color_id': '', 'pull': .20, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
         }, GLOSS_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent5', 'pull': .40, 'visible': True,
+            'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
         }
@@ -51,37 +47,33 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': MAIN_FONT,
             'labeled': True, 'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, DIVIDER: {
-            'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0, 'visible': True,
+            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': True, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': .40, 'visible': True,
+            'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER
-        }, ATTRIBUTE_EDGE: {
-            'shape_name': 'linear', 'color_id': 'content1', 'pull': .50, 'visible': True,
-            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, COMMENT_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
+            'shape_name': 'linear', 'color_id': '', 'pull': 0, 'visible': True,
             'arrowhead_at_start': True, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, CONSTITUENT_EDGE: {
-            'shape_name': 'linear', 'color_id': 'content1', 'pull': .24, 'visible': True,
+            'shape_name': 'linear', 'color_id': '', 'pull': .24, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BOTTOM_CENTER, 'end_connects_to': BOTTOM_CENTER
         }, FEATURE_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent2tr', 'pull': .40, 'visible': True,
+            'shape_name': 'linear', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, GLOSS_EDGE: {
-            'shape_name': 'linear', 'color_id': 'accent5', 'pull': .40, 'visible': True,
+            'shape_name': 'linear', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BOTTOM_CENTER, 'end_connects_to': BOTTOM_CENTER
         }, ABSTRACT_EDGE: {
-            'shape_name': 'linear', 'color_id': 'content1', 'pull': .40, 'visible': True,
+            'shape_name': 'linear', 'color_id': 'content3', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER
         }
@@ -92,7 +84,6 @@ names = {
     ARROW: ('Arrow', 'Arrows'),
     DIVIDER: ('Divider', 'Dividers'),
     CHECKING_EDGE: ('Checking edge', 'Checking edges'),
-    ATTRIBUTE_EDGE: ('Attribute edge', 'Attribute edges'),
     COMMENT_EDGE: ('Comment edge', 'Comment edges'),
     CONSTITUENT_EDGE: ('Constituent edge', 'Constituent edges'),
     FEATURE_EDGE: ('Feature edge', 'Feature edges'),
