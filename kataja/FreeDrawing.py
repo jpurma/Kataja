@@ -661,15 +661,14 @@ class FreeDrawing:
             for parent in list(bad_parents):
                 self.delete_node(parent)
 
-    def unary_add_child_for_constituentnode(self, old_node: ConstituentNode, add_left=True):
+    def unary_add_child_for_constituentnode(self, new_node: ConstituentNode,
+                                            old_node: ConstituentNode, add_left=True):
         """
-
+        :param new_node:
         :param old_node:
         :param add_left:
         :return:
         """
-        label = self.next_free_label()
-        new_node = self.create_node(label=label, relative=old_node)
         children = old_node.get_children(similar=True, visible=False)
 
         if len(children) != 1:
@@ -681,16 +680,16 @@ class FreeDrawing:
         else:
             self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
 
-    def add_sibling_for_constituentnode(self, old_node: ConstituentNode, add_left=True):
+    def add_sibling_for_constituentnode(self, new_node, old_node: ConstituentNode, add_left=True):
         """ Create a new merger node to top of this node and have this node and new node as its
         children.
+        :param new_node:
         :param old_node:
         :param add_left: adding node to left or right -- if binary nodes, this marks which one
         will be projecting.
         :return:
         """
 
-        new_node = self.create_node(label=self.next_free_label(), relative=old_node)
         new_node.heads = [new_node]
 
         if add_left:

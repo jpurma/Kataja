@@ -94,17 +94,23 @@ class RemoveMerger(KatajaAction):
     k_command = 'Remove merger'
     k_tooltip = "Remove intermediate node (If binary branching is assumed, these shouldn't exist.)"
 
-    def method(self):
+    def prepare_parameters(self):
+        node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
         """ In cases where there another part of binary merge is removed,
-        and a stub edge is left dangling,
-        there is an option to remove the unnecessary merge -- it is the
-        triggering host.
+        and a stub edge is left dangling, there is an option to remove the unnecessary
+        merge -- this is the triggering host.
+        :param node_uid: int or string, node's unique identifier
         :return: None
         """
         ctrl.release_editor_focus()
-        node = self.get_host()
-        if not node:
-            return
+        node = ctrl.forest.nodes[node_uid]
+        children = node.get_children(similar=True)
+        if len(children) != 1:
+            log.warn('Trying to remove an intermediate monobranch node, but node "%s" '
+                     'is not such node.' % node)
         ctrl.remove_from_selection(node)
         ctrl.free_drawing.delete_unnecessary_merger(node)
         ctrl.forest.forest_edited()
@@ -114,12 +120,17 @@ class RemoveNode(KatajaAction):
     k_action_uid = 'remove_node'
     k_command = 'Delete node'
 
-    def method(self):
-        """ Remove selected node
+    def prepare_parameters(self):
+        node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
+        """ Remove given node
+        :param node_uid: int or string, node's unique identifier
         :return:
         """
         ctrl.release_editor_focus()
-        node = self.get_host()
+        node = ctrl.forest.nodes[node_uid]
         ctrl.remove_from_selection(node)
         ctrl.free_drawing.delete_node(node, touch_edges=True)
         ctrl.forest.forest_edited()
@@ -129,15 +140,17 @@ class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
     k_command = 'Turn node and its children into triangle'
 
-    def method(self):
+    def prepare_parameters(self):
+        node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
         """ Turn triggering node into triangle node
+        :param node_uid: int or string, node's unique identifier
         :return: None
         """
         ctrl.release_editor_focus()
-        node = self.get_host()
-        if not node:
-            return
-        log.info('folding in %s' % node.as_bracket_string())
+        node = ctrl.forest.nodes[node_uid]
         ctrl.free_drawing.add_or_update_triangle_for(node)
         ctrl.deselect_objects()
         node.update_label()
@@ -147,18 +160,21 @@ class RemoveTriangle(KatajaAction):
     k_action_uid = 'remove_triangle'
     k_command = 'Remove triangle'
 
-    def method(self):
+    def prepare_parameters(self):
+        node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid: int):
         """ If triggered node is triangle node, restore it to normal
+        :param node_uid: int or string, node's unique identifier
         :return: None
         """
         ctrl.release_editor_focus()
-        node = self.get_host()
-        if not node:
-            return
-        log.info('unfolding from %s' % node.as_bracket_string())
+        node = ctrl.forest.nodes[node_uid]
         ctrl.free_drawing.remove_triangle_from(node)
         ctrl.deselect_objects()
         node.update_label()
+
 
 class FinishEditingNode(KatajaAction):
     k_action_uid = 'finish_editing_node'
@@ -170,32 +186,19 @@ class FinishEditingNode(KatajaAction):
         """ Set the new values and close the constituent editing embed.
         :return: None
         """
-        embed = self.get_ui_container()
+        embed = ctrl.ui.active_embed
         if embed and embed.host:
             embed.submit_values()
         ctrl.ui.close_active_embed()
         ctrl.forest.forest_edited()
 
 
-class ToggleRawEditing(KatajaAction):
-    k_action_uid = 'raw_editing_toggle'
-    k_command = 'Toggle edit mode'
+class SetProjectingNode(KatajaAction):
+    k_action_uid = 'set_projecting_node'
+    k_command = 'Set projecting node'
+    k_tooltip = 'Set which child constituent projects to this constituent'
 
-    def method(self):
-        """ This may be deprecated, but if there is raw latex/html editing
-        possibility, toggle between that and visual
-        editing
-        :return: None
-        """
-        embed = ctrl.ui.get_node_edit_embed()
-        embed.toggle_raw_edit(embed.raw_button.isChecked())
-
-
-class SetProjectionAtEmbedUI(KatajaAction):
-    k_action_uid = 'set_projection_at_embed_ui'
-    k_command = 'Set which constituent is head'
-
-    def method(self):
+    def prepare_parameters(self):
         button_group = self.sender()
         heads = []
         for button in button_group.buttons():
@@ -204,13 +207,22 @@ class SetProjectionAtEmbedUI(KatajaAction):
                 if child:
                     heads += child.heads
         host = self.get_host()
+        return [host.uid, [x.uid for x in heads]], {}
 
-        host.set_heads(heads)
+    def method(self, node_uid: int, projecting_uids: list):
+        """ Set which child constituent projects to this constituent
+        :param node_uid: int or string, node's unique identifier
+        :param projecting_uids: list of uids, projecting nodes' unique identifiers
+        """
+        if isinstance(projecting_uids, (str, int)):
+            projecting_uids = [projecting_uids]
+        node = ctrl.forest.nodes[node_uid]
+        heads = [ctrl.forest.nodes[uid] for uid in projecting_uids]
+        node.set_heads(heads)
         ctrl.forest.forest_edited()
-        embed = self.get_ui_container()
+        embed = ctrl.ui.active_embed
         if embed:
             embed.update_fields()
-        return f'Set head for "{host}" to "{[str(x) for x in heads]}".'
 
     def enabler(self):
         return ctrl.free_drawing_mode
@@ -218,113 +230,89 @@ class SetProjectionAtEmbedUI(KatajaAction):
 
 # Actions for TouchAreas #######################################
 
-class AddTopLeft(KatajaAction):
-    k_action_uid = 'add_top_left'
-    k_command = 'Add node to left'
 
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        top = self.get_host()
-        label = ctrl.free_drawing.next_free_label()
-        new_node = ctrl.free_drawing.create_node(label=label, relative=top)
-        ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
-        ctrl.forest.forest_edited()
+class AddNodeTo(KatajaAction):
+    k_action_uid = 'add_node_to'
+    k_command = 'Add node to'
 
-
-class AddTopRight(KatajaAction):
-    k_action_uid = 'add_top_right'
-    k_command = 'Add node to right'
-
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        top = self.get_host()
-        label = ctrl.free_drawing.next_free_label()
-        new_node = ctrl.free_drawing.create_node(label=label, relative=top)
-        ctrl.free_drawing.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
-        ctrl.forest.forest_edited()
-
-
-class InnerAddSiblingLeft(KatajaAction):
-    k_action_uid = 'inner_add_sibling_left'
-    k_command = 'Add sibling node to left'
-
-    def method(self):
-        """ """
+    def prepare_parameters(self):
+        sender = self.sender()
         node = self.get_host()
+        print('node: ', type(node), node, node.uid)
         if isinstance(node, Edge):
             node = node.end
-        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
+            print('no, really, node: ', type(node), node, node.uid)
+        return [node.uid, sender.action_arg], {}
+
+    def method(self, node_uid: int, position: str):
+        """ Create and add a new node into a relation with an existing node.
+        :param node_uid: int, uid for existing node
+        :param position: str, position must be one of the following:
+            'top_left',
+            'top_right',
+            'sibling_left',
+            'sibling_right',
+            'child_left',
+            'child_right'
+        """
+        node = ctrl.forest.nodes[node_uid]
+        label = ctrl.free_drawing.next_free_label()
+        new_node = ctrl.free_drawing.create_node(label=label, relative=node)
+        if position == 'top_left':
+            # fixme: check that this is top node
+            ctrl.free_drawing.merge_to_top(node, new_node, merge_to_left=True,
+                                           pos=new_node.current_position)
+        elif position == 'top_right':
+            ctrl.free_drawing.merge_to_top(node, new_node, merge_to_left=False,
+                                           pos=new_node.current_position)
+        elif position == 'sibling_left':
+            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, node, add_left=True)
+        elif position == 'sibling_right':
+            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, node, add_left=False)
+        elif position == 'child_left':
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, node,
+                                                                  add_left=True)
+        elif position == 'child_right':
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, node,
+                                                                  add_left=False)
         ctrl.forest.forest_edited()
 
+# class AddTopLeft(KatajaAction):
+#    k_action_uid = 'add_top_left'
+#    k_command = 'Add node to left'
 
-class InnerAddSiblingRight(KatajaAction):
-    k_action_uid = 'inner_add_sibling_right'
-    k_command = 'Add sibling node to right'
+# class AddTopRight(KatajaAction):
+#    k_action_uid = 'add_top_right'
+#    k_command = 'Add node to right'
 
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        if isinstance(node, Edge):
-            node = node.end
-        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
-        ctrl.forest.forest_edited()
+# class InnerAddSiblingLeft(KatajaAction):
+#     k_action_uid = 'inner_add_sibling_left'
+#     k_command = 'Add sibling node to left'
 
+# class InnerAddSiblingRight(KatajaAction):
+#     k_action_uid = 'inner_add_sibling_right'
+#     k_command = 'Add sibling node to right'
 
-class UnaryAddChildLeft(KatajaAction):
-    k_action_uid = 'unary_add_child_left'
-    k_command = 'Add child node to left'
+# class UnaryAddChildLeft(KatajaAction):
+#    k_action_uid = 'unary_add_child_left'
+#    k_command = 'Add child node to left'
 
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=True)
-        ctrl.forest.forest_edited()
+# class UnaryAddChildRight(KatajaAction):
+#     k_action_uid = 'unary_add_child_right'
+#     k_command = 'Add child node to right'
 
+# class LeafAddSiblingLeft(KatajaAction):
+#     k_action_uid = 'leaf_add_sibling_left'
+#     k_command = 'Add sibling node to left'
 
-class UnaryAddChildRight(KatajaAction):
-    k_action_uid = 'unary_add_child_right'
-    k_command = 'Add child node to right'
-
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        ctrl.free_drawing.unary_add_child_for_constituentnode(node, add_left=False)
-        ctrl.forest.forest_edited()
-
-
-class LeafAddSiblingLeft(KatajaAction):
-    k_action_uid = 'leaf_add_sibling_left'
-    k_command = 'Add sibling node to left'
-
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=True)
-        ctrl.forest.forest_edited()
-
-
-class LeafAddSiblingRight(KatajaAction):
-    k_action_uid = 'leaf_add_sibling_right'
-    k_command = 'Add sibling node to right'
-
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
-        node = self.get_host()
-        ctrl.free_drawing.add_sibling_for_constituentnode(node, add_left=False)
-        ctrl.forest.forest_edited()
+# class LeafAddSiblingRight(KatajaAction):
+#     k_action_uid = 'leaf_add_sibling_right'
+#     k_command = 'Add sibling node to right'
 
 
 class MergeToTop(KatajaAction):
     k_action_uid = 'merge_to_top'
     k_command = 'Merge this node to left of topmost node'
-
 
     def method(self):
         """ """
@@ -344,4 +332,7 @@ class ToggleNodeEditEmbed(KatajaAction):
     def method(self):
         node = self.get_host()
         ctrl.ui.start_editing_node(node)
+
+# Actions resulting from drop events: there may be not UI element connected to them,
+# they are triggered directly in drop events. See TouchAreas
 

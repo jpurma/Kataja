@@ -203,7 +203,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         hlayout.addLayout(vlayout)
         layout.addLayout(hlayout)
         self.ui_manager.connect_element_to_action(self.projections,
-                                                  'set_projection_at_embed_ui',
+                                                  'set_projecting_node',
                                                   connect_slot=self.projections.connect_slot)
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)

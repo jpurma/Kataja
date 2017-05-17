@@ -39,7 +39,7 @@ class Help(KatajaAction):
         :return: None
         """
         if command:
-            # command is probably KatajaAction's action_triggered -method.
+            # command is probably KatajaAction's run_command -method.
             # then we want its 'method' -method's docstring.
             found = False
             for cls in inspect.getmro(command.__self__.__class__):

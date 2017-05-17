@@ -46,7 +46,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     __qt_type_id__ = next_available_type_id()
     clicked = QtCore.pyqtSignal()
 
-    def __init__(self, host, action):
+    def __init__(self, host, action, action_arg=None):
         """
         :param ConstituentNode host:
         :param string action:
@@ -72,6 +72,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.setAcceptDrops(True)
         self.update_end_points()
         self.action = action
+        self.action_arg = action_arg
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         if action:
@@ -400,10 +401,7 @@ class AddBelowTouchArea(TouchArea):
 class ConnectFeatureTouchArea(AddBelowTouchArea):
 
     __qt_type_id__ = next_available_type_id()
-
-    def __init__(self, host, action):
-        super().__init__(host, action)
-        self.set_tip("Add feature for node")
+    k_tooltip = "Add feature for node"
 
     def drop(self, dropped_node):
         """
@@ -422,8 +420,8 @@ class ConnectCommentTouchArea(AddBelowTouchArea):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self.set_tip("Add comment for node")
 
     def drop(self, dropped_node):
@@ -443,8 +441,8 @@ class ConnectGlossTouchArea(AddBelowTouchArea):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self.set_tip("Add gloss for node")
 
     def drop(self, dropped_node):
@@ -543,9 +541,10 @@ class LeftAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
     nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add sibling node to left'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = True
         self.update_end_points()
 
@@ -605,9 +604,10 @@ class RightAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
     nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add sibling node to right'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = False
         self.update_end_points()
 
@@ -796,9 +796,10 @@ class JointedTouchArea(TouchArea):
 class LeftAddTop(JointedTouchArea):
 
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add node to left'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = True
         self.update_end_points()
 
@@ -830,9 +831,10 @@ class LeftAddTop(JointedTouchArea):
 class RightAddTop(JointedTouchArea):
 
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add node to right'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = False
         self.update_end_points()
 
@@ -866,8 +868,8 @@ class ChildTouchArea(TouchArea):
     add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self.update_end_points()
 
     def boundingRect(self):
@@ -930,9 +932,10 @@ class LeftAddChild(BranchingTouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
     add nodes to leaf nodes."""
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add child node to left'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = True
 
     def update_end_points(self, end_point=None):
@@ -994,9 +997,10 @@ class RightAddChild(ChildTouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
     add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
+    k_tooltip = 'Add child node to right'
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = False
 
     def update_end_points(self, end_point=None):
@@ -1148,8 +1152,8 @@ class MergeToTop(BranchingTouchArea):
     """ TouchArea that connects to nodes and has \-shape.  """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
+    def __init__(self, host, action, action_arg=None):
+        super().__init__(host, action, action_arg)
         self._align_left = True
 
     def update_end_points(self, end_point=None):

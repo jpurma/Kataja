@@ -18,8 +18,6 @@ class CommandPrompt(QtWidgets.QLineEdit):
         #self.cursorPositionChanged.connect(self.cursor_moved)
         self.setMinimumWidth(250)
         self.incomplete_command = []
-        self.backlog = []
-        self.backlog_position = 0
         self.ii = None
         self.prompt = prompt
         self.update_actions()
@@ -34,8 +32,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
         log.info('>>> ' + text)
         line = text.lstrip('>. ')
         incomplete = False
-        self.backlog.append(line)
-        self.backlog_position = len(self.backlog) - 1
+        log.log_handler.add_to_command_backlog(line)
         if self.incomplete_command:
             self.incomplete_command.append(line)
             source = '\n'.join(self.incomplete_command)
@@ -54,6 +51,7 @@ class CommandPrompt(QtWidgets.QLineEdit):
         else:
             self.incomplete_command = []
             self.prompt.setText(' >>>')
+        self.setText('')
 
     def cursor_moved(self, old, new):
         if new < 3:
@@ -70,19 +68,13 @@ class CommandPrompt(QtWidgets.QLineEdit):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent):
         if event.key() == QtCore.Qt.Key_Up:
-            self.backlog_position -= 1
-            if self.backlog_position < 0:
-                self.backlog_position = 0
-            if self.backlog:
-                text = self.backlog[self.backlog_position]
-                self.setText(text)
-                self.setCursorPosition(len(text))
+            text = log.log_handler.get_previous_command()
+            self.setText(text)
+            self.setCursorPosition(len(text))
         elif event.key() == QtCore.Qt.Key_Down:
-            if self.backlog_position < len(self.backlog) - 1:
-                self.backlog_position += 1
-                text = self.backlog[self.backlog_position]
-                self.setText(text)
-                self.setCursorPosition(len(text))
+            text = log.log_handler.get_next_command()
+            self.setText(text)
+            self.setCursorPosition(len(text))
         else:
             return super().keyPressEvent(event)
 
@@ -104,10 +96,10 @@ class LogPanel(Panel):
         tlayout.addWidget(label)
         self.prompt_label = QtWidgets.QLabel(' >>>', parent=titlewidget)
         tlayout.addWidget(self.prompt_label)
-        self.line_edit = CommandPrompt(titlewidget, self.prompt_label)
-        self.prompt_label.setBuddy(self.line_edit)
-        ctrl.ui.command_prompt = self.line_edit
-        tlayout.addWidget(self.line_edit)
+        self.command_prompt = CommandPrompt(titlewidget, self.prompt_label)
+        self.prompt_label.setBuddy(self.command_prompt)
+        ctrl.ui.command_prompt = self.command_prompt
+        tlayout.addWidget(self.command_prompt)
         levels = [(50, 'CRITICAL'), (40, 'ERROR'), (30, 'WARNING'), (20, 'INFO'), (10, 'DEBUG')]
         tlayout.addStretch(2)
 
@@ -125,7 +117,7 @@ class LogPanel(Panel):
         f = qt_prefs.get_font(g.CONSOLE_FONT)
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
         self.inner.setStyleSheet(ss)
-        self.line_edit.setStyleSheet(ss)
+        self.command_prompt.setStyleSheet(ss)
         self.prompt_label.setStyleSheet(ss)
         self.inner.setAutoFillBackground(True)
         self.inner.sizeHint = self.sizeHint
@@ -134,7 +126,6 @@ class LogPanel(Panel):
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
         self.watchlist = ['ui_font_changed']
-
 
         layout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         self.inner.setLayout(layout)

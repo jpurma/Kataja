@@ -49,6 +49,13 @@ def capture_stdout(logger, outputter):
 
 
 class LogWidgetPusher(logging.Handler):
+    """ This receives all logging messages and emits them to available widget (QTextBrowser).
+    Because this is in such central position, the handler also takes responsibility for
+    storing internally all log messages, even those that are filtered due priority.
+
+    In addition, LogWidgetPusher also keeps a special storage for kataja commands that have
+     been run, as a list of strings.
+    """
 
     def __init__(self, level=logging.DEBUG, root='kataja'):
         super().__init__(level=level)
@@ -64,6 +71,9 @@ class LogWidgetPusher(logging.Handler):
         self.widget = None  # handler is set before any widgets are available
         self.backlog = []
         self.everything = []
+        self.command_backlog = []
+        self.command_backlog_position = 0
+
         self.addFilter(store_everything)
         self.root = root
         # Direct stdout here
@@ -78,6 +88,24 @@ class LogWidgetPusher(logging.Handler):
             for record in self.backlog:
                 self.handle(record)
             self.backlog = []
+
+    def add_to_command_backlog(self, line):
+        self.command_backlog.append(line)
+        self.command_backlog_position = len(self.backlog) - 1
+
+    def get_previous_command(self):
+        self.command_backlog_position -= 1
+        if self.command_backlog_position < 0:
+            self.command_backlog_position = 0
+        if self.command_backlog:
+            return self.command_backlog[self.command_backlog_position]
+        return ''
+
+    def get_next_command(self):
+        if self.command_backlog_position < len(self.command_backlog) - 1:
+            self.command_backlog_position += 1
+            return self.command_backlog[self.command_backlog_position]
+        return ''
 
     def emit(self, record):
         """ This is handler's required emit implementation. Records it receives are already

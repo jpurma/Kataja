@@ -149,7 +149,7 @@ class KatajaAction(QtWidgets.QAction):
         self.tip1 = self.k_tooltip_alt or self.command_alt or self.tip0
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
-        self.triggered.connect(self.action_triggered)
+        self.triggered.connect(self.run_command)
         shortcut = self.k_shortcut
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
@@ -189,7 +189,11 @@ class KatajaAction(QtWidgets.QAction):
     def getter(self):
         return None
 
-    def action_triggered(self, *args, **kwargs):
+    def manual_run_command(self, *args, **kwargs):
+        kwargs['_manual'] = True
+        return self.run_command(*args, **kwargs)
+
+    def run_command(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :return: None
         """
@@ -202,8 +206,6 @@ class KatajaAction(QtWidgets.QAction):
         if not self.undoable:
             ctrl.disable_undo()
 
-        sender = self.sender()
-
         # Some rare triggers pass values, e.g. ButtonGroups pass the id of button.
         # prepare_parameters should put these to args, kwargs, but we don't want to burden that
         # method with parameters, so keep store them as instance variables.
@@ -212,13 +214,22 @@ class KatajaAction(QtWidgets.QAction):
 
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
 
-        if sender and sender != ctrl.ui.command_prompt:
+        # manually given commands have their parameters, and the command prompt has taken
+        # care for logging them. Commands run by UI triggers use a helper method
+        # 'prepare_parameters' to set args before running the command. The command being run
+        # is logged and made available in command prompt so that the user has better grasp of
+        # inner workings of Kataja.
+        if '_manual' not in kwargs:
             args, kwargs = self.prepare_parameters()
             # Print the command into console
             arg_parts = [repr(a) for a in args]
             kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
-            argstring = ', '.join(arg_parts + kwarg_parts)
-            log.info(f'>>> {self.k_action_uid}({argstring})')
+            command_string = self.k_action_uid + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
+            log.info('>>> ' + command_string)
+            log.log_handler.add_to_command_backlog(command_string)
+        else:
+            del kwargs['_manual']
+
         try:
             message = self.method(*args, **kwargs)
             error = None
@@ -278,7 +289,7 @@ class KatajaAction(QtWidgets.QAction):
     def trigger_but_suppress_undo(self, *args, **kwargs):
         ctrl.disable_undo()
         self.disable_undo_and_message = True
-        self.action_triggered(*args, **kwargs)
+        self.run_command(*args, **kwargs)
         self.disable_undo_and_message = False
         ctrl.resume_undo()
 
@@ -311,30 +322,30 @@ class KatajaAction(QtWidgets.QAction):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
 
         if connect_slot:
-            connect_slot.connect(self.action_triggered)
+            connect_slot.connect(self.run_command)
         elif isinstance(element, PanelButton):
-            element.clicked.connect(self.action_triggered)
+            element.clicked.connect(self.run_command)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, EmbeddedRadiobutton):
-            element.bgroup.buttonToggled.connect(self.action_triggered)
+            element.bgroup.buttonToggled.connect(self.run_command)
         elif isinstance(element, QtWidgets.QCheckBox):
-            element.stateChanged.connect(self.action_triggered)
+            element.stateChanged.connect(self.run_command)
         elif isinstance(element, QtWidgets.QAbstractButton):
-            element.clicked.connect(self.action_triggered)
+            element.clicked.connect(self.run_command)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, QtWidgets.QButtonGroup):
-            element.buttonClicked.connect(self.action_triggered)
+            element.buttonClicked.connect(self.run_command)
         elif isinstance(element, QtWidgets.QComboBox):
-            element.activated.connect(self.action_triggered)
+            element.activated.connect(self.run_command)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
             element.valueChanged.connect(self.trigger_but_suppress_undo)
-            element.editingFinished.connect(self.action_triggered)
+            element.editingFinished.connect(self.run_command)
         elif isinstance(element, QtWidgets.QAbstractSlider):
             element.sliderMoved.connect(self.trigger_but_suppress_undo)
-            element.sliderReleased.connect(self.action_triggered)
+            element.sliderReleased.connect(self.run_command)
         elif isinstance(element, TouchArea):
-            element.clicked.connect(self.action_triggered)
+            element.clicked.connect(self.run_command)
 
     def disconnect_element(self, element):
         if element in self.elements:

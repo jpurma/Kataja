@@ -337,7 +337,7 @@ class UIManager:
     def get_actions_as_python_commands(self):
         d = {}
         for key, item in self.actions.items():
-            d[key] = item.action_triggered
+            d[key] = item.manual_run_command
         return d
 
 
@@ -531,7 +531,7 @@ class UIManager:
             if not seek_only:
                 action = a_class()
                 self.actions[action.key] = action
-                self.main.addAction(action)
+                #self.main.addAction(action)
         return found
 
     def create_actions(self):
@@ -944,7 +944,7 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-    def get_or_create_touch_area(self, host, subtype, action=None):
+    def get_or_create_touch_area(self, host, subtype, action=None, **kwargs):
         """ Get touch area for specific purpose or create one if it doesn't exist.
         :param host: element that has UI items associated with it
         :param subtype: toucharea type id
@@ -953,7 +953,7 @@ class UIManager:
         """
         ta = self.get_ui_by_type(host=host, ui_type=subtype)
         if not ta:
-            ta = self.create_touch_area(host, subtype, action)
+            ta = self.create_touch_area(host, subtype, action, **kwargs)
         return ta
 
     def get_touch_area(self, host, subtype):
@@ -964,7 +964,7 @@ class UIManager:
         """
         return self.get_ui_by_type(host=host, ui_type=subtype)
 
-    def create_touch_area(self, host, subtype, action):
+    def create_touch_area(self, host, subtype, action, **kwargs):
         """ Create touch area, doesn't check if it exists already.
         :param host: element that has UI items associated with it
         :param subtype: toucharea type id
@@ -972,7 +972,7 @@ class UIManager:
         :return:
         """
         ta_class = getattr(kataja.ui_graphicsitems.TouchArea, subtype)
-        ta = ta_class(host, action)
+        ta = ta_class(host, action, **kwargs)
         self.add_ui(ta)
         return ta
 
@@ -1004,6 +1004,10 @@ class UIManager:
         for ta_type, values in d.items():
             if node.check_conditions(values):
                 action = self.get_action(values.get('action'))
+                if 'action_arg' in values:
+                    action_args = {'action_arg': values['action_arg']}
+                else:
+                    action_args = {}
                 place = values.get('place', '')
                 if place == 'edge_up':
                     hosts = node.get_edges_up(similar=True, visible=True)
@@ -1012,7 +1016,7 @@ class UIManager:
                 else:
                     hosts = [node]
                 for host in hosts:
-                    self.get_or_create_touch_area(host, ta_type, action)
+                    self.get_or_create_touch_area(host, ta_type, action, **action_args)
 
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):

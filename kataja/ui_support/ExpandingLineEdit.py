@@ -12,7 +12,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.original_text = ''
         layout = QtWidgets.QVBoxLayout()
         self.line_edit = QtWidgets.QLineEdit(parent)
-        #self.line_edit.setClearButtonEnabled(True)
+        #self.command_prompt.setClearButtonEnabled(True)
         self.text_area = QtWidgets.QPlainTextEdit(parent)
         self.text_area.setAutoFillBackground(True)
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)

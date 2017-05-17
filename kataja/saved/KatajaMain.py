@@ -263,7 +263,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 to_reload = sorted(available)
             for mod_name in to_reload:
                 importlib.reload(sys.modules[mod_name])
-                print('reloaded ', mod_name)
                 log.info('reloaded module %s' % mod_name)
 
         if hasattr(self.active_plugin_setup, 'plugin_parts'):
@@ -480,7 +479,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return:
         """
         action = self.ui_manager.actions[name]
-        action.action_triggered(*args, **kwargs)
+        action.run_command(*args, **kwargs)
 
     def trigger_but_suppress_undo(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)
