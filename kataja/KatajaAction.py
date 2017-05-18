@@ -190,7 +190,8 @@ class KatajaAction(QtWidgets.QAction):
         return None
 
     def manual_run_command(self, *args, **kwargs):
-        kwargs['_manual'] = True
+        kwargs['has_params'] = True
+        kwargs['did_feedback'] = True
         return self.run_command(*args, **kwargs)
 
     def run_command(self, *args, **kwargs):
@@ -214,21 +215,28 @@ class KatajaAction(QtWidgets.QAction):
 
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
 
+        give_feedback = 'did_feedback' not in kwargs
+
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
         # 'prepare_parameters' to set args before running the command. The command being run
         # is logged and made available in command prompt so that the user has better grasp of
         # inner workings of Kataja.
-        if '_manual' not in kwargs:
+
+        if 'has_params' not in kwargs:
             args, kwargs = self.prepare_parameters()
+        else:
+            del kwargs['has_params']
+            if not give_feedback:
+                del kwargs['did_feedback']
+
+        if give_feedback:
             # Print the command into console
             arg_parts = [repr(a) for a in args]
             kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
             command_string = self.k_action_uid + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
             log.info('>>> ' + command_string)
             log.log_handler.add_to_command_backlog(command_string)
-        else:
-            del kwargs['_manual']
 
         try:
             message = self.method(*args, **kwargs)
@@ -353,6 +361,19 @@ class KatajaAction(QtWidgets.QAction):
 
     @staticmethod
     def set_tooltip_for_element(tooltip, element):
+        """ Tries to set action's tooltip as a tooltip and a status tip for UI elements
+        corresponding to action. There are few cases when this is unwanted, and this method
+         tries to recognize them.
+        :param tooltip:
+        :param element:
+        :return:
+        """
+        # Element class may have tooltip that overrides the action tooltip -- e.g.
+        # group of buttons that are controlled by one action, but each button has its own
+        # explanation
+        if hasattr(element, 'k_tooltip'):
+            tooltip = element.k_tooltip
+
         if isinstance(element, QtWidgets.QGraphicsObject):
             # These don't have setStatusTip
             element.status_tip = tooltip

@@ -91,7 +91,7 @@ class LogWidgetPusher(logging.Handler):
 
     def add_to_command_backlog(self, line):
         self.command_backlog.append(line)
-        self.command_backlog_position = len(self.backlog) - 1
+        self.command_backlog_position = len(self.command_backlog) - 1
 
     def get_previous_command(self):
         self.command_backlog_position -= 1

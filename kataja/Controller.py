@@ -23,6 +23,7 @@
 # ############################################################################
 
 import sys
+from collections import abc
 
 from kataja.utils import caller
 
@@ -247,46 +248,57 @@ class Controller:
 
         :param update_ui:
         """
-        olds = list(self.selected)
-        self.selected = []
-        for obj in olds:
+        for obj in self.selected:
             obj.update_selection_status(False)
-        if not self.multiselection_delay:
-            self.call_watchers(self, 'selection_changed', value=self.selected)
+        self.selected = []
 
-    def select(self, obj):
+    def select(self, objs):
         """
 
-        :param obj:
+        :param objs:
         """
-        #print('selecting' , obj)
-        for o in self.selected:
-            o.update_selection_status(False)
-        self.selected = [obj]
-        if hasattr(obj, 'syntactic_object'):
-            # here is room for constituent specific print information
-            self.ui.add_message('selected %s (%.1f, %.1f)' % (str(obj), obj.scenePos().x(),
-                                                              obj.scenePos().y()))
-            #print(obj)
-        else:
-            self.ui.add_message('selected %s (%.1f, %.1f)' % (str(obj), obj.scenePos().x(),
-                                                              obj.scenePos().y()))
-        obj.update_selection_status(True)
-        if not self.multiselection_delay:
-            self.call_watchers(self, 'selection_changed', value=self.selected)
-
-    def add_to_selection(self, obj):
-        """
-
-        :param obj:
-        :param call_watchers: Immediately call watchers or if you want to call them manually (
-        after adding multiple items)
-        """
-        if obj not in self.selected:
-            self.selected.append(obj)
-            obj.update_selection_status(True)
-            if not self.multiselection_delay:
+        had_objs = bool(self.selected)
+        self.deselect_objects()
+        if not objs:
+            if had_objs:
                 self.call_watchers(self, 'selection_changed', value=self.selected)
+            return
+        if not isinstance(objs, abc.Sequence):
+            objs = [objs]
+        for obj in objs:
+            obj.update_selection_status(True)
+        self.selected = objs
+        self.call_watchers(self, 'selection_changed', value=self.selected)
+
+    def add_to_selection(self, objs):
+        """
+
+        :param objs:
+        """
+        if not objs:
+            return
+        if not isinstance(objs, abc.Sequence):
+            objs = [objs]
+        for obj in objs:
+            if obj not in self.selected:
+                self.selected.append(obj)
+                obj.update_selection_status(True)
+        self.call_watchers(self, 'selection_changed', value=self.selected)
+
+    def remove_from_selection(self, objs):
+        """
+
+        :param objs:
+        """
+        if not objs:
+            return
+        if not isinstance(objs, abc.Sequence):
+            objs = [objs]
+        for obj in objs:
+            if obj in self.selected:
+                self.selected.remove(obj)
+                obj.update_selection_status(False)
+        self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def press(self, obj):
         """ Mark object to be the last pressed object. If it has on_press -hook, do it.
@@ -304,18 +316,6 @@ class Controller:
         if self.pressed is obj:
             self.pressed = None
 
-    def remove_from_selection(self, obj):
-        """
-
-        :param obj:
-        :param call_watchers: Immediately call watchers or if you want to call them manually (
-        after removing multiple items)
-        """
-        if obj in self.selected:
-            self.selected.remove(obj)
-            obj.update_selection_status(False)
-            if not self.multiselection_delay:
-                self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def set_drag_hovering(self, item):
         """ Drag is hovering over one item that can receive drop.

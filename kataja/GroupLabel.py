@@ -225,10 +225,14 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         if self._host and ctrl.is_selected(self._host):
             ctrl.ui.start_group_label_editing(self._host)
         else:
-            self._host.select(event)
+            adding = event.modifiers() == Qt.ShiftModifier
+            self._host.select(adding=adding, select_area=False)
 
-    def select(self, event, multi=False):
-        self.click(event)
+    def select(self, adding=False, select_area=False):
+        if self._host and ctrl.is_selected(self._host):
+            ctrl.ui.start_edge_label_editing(self._host)
+        else:
+            return self._host.select(adding=adding, select_area=select_area)
 
     def get_label_line_positions(self):
         """ When editing group labels, there is a line connecting the group to

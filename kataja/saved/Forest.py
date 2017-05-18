@@ -478,6 +478,10 @@ class Forest(SavedObject):
         if self.gloss:
             yield self.gloss
 
+    def get_object_by_uid(self, uid):
+        return self.nodes.get(uid, None) or self.edges.get(uid, None) \
+               or self.groups.get(uid, None) or self.others.get(uid, None)
+
     def get_node(self, constituent):
         """
         Returns a node corresponding to a constituent

@@ -431,30 +431,32 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             return None  # this mouseRelease is now consumed
         super().mouseReleaseEvent(event)
 
-    def select(self, event=None, multi=False):
+    def select(self, adding=False, select_area=False):
         """ Scene has decided that this node has been clicked
-        :param event:
-        :param multi: assume multiple selection (append, don't replace)
+        :param adding: bool, we are adding to selection instead of starting a new selection
+        :param select_area: bool, we are dragging a selection box, method only informs that this
+        node can be included
+        :returns: int or str, uid of node if node is selectable
         """
         if not self.persistent:
             return
-        ctrl.multiselection_start()
-        if (event and event.modifiers() == QtCore.Qt.ShiftModifier) or multi:
-            # multiple selection
+        self.hovering = False
+        # if we are selecting an area, select actions are not called here, but once for all
+        # objects. In this case return only uid of this object.
+        if select_area:
+            return self.uid
+        items = [x.uid for x in self.selection]
+        items.append(self.uid)
+        if adding:
             if ctrl.is_selected(self):
-                ctrl.remove_from_selection(self)
+                action = ctrl.ui.get_action('remove_from_selection')
             else:
-                ctrl.add_to_selection(self)
-                for item in self.selection:
-                    ctrl.add_to_selection(item)
-        elif ctrl.is_selected(self):
-            ctrl.deselect_objects()
+                action = ctrl.ui.get_action('add_to_selection')
+            action.run_command(items, has_params=True)
         else:
-            ctrl.deselect_objects()
-            ctrl.add_to_selection(self)
-            for item in self.selection:
-                ctrl.add_to_selection(item)
-        ctrl.multiselection_end()
+            action = ctrl.ui.get_action('select')
+            action.run_command(items, has_params=True)
+        return self.uid
 
     def update_selection_status(self, value):
         """

@@ -99,7 +99,7 @@ class Node(Movable):
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
 
-    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
+    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'start_editing_node'},
                              g.REMOVE_NODE: {'action': 'remove_node',
                                              'condition': 'free_drawing_mode'}}
 
@@ -1326,30 +1326,38 @@ class Node(Movable):
             pass
         else:
             self.hovering = False
-            ctrl.select(self)
+            self.select(adding=False, select_area=False)
             self.open_embed()
 
-    def select(self, event=None, multi=False):
+    def select(self, adding=False, select_area=False):
         """ Scene has decided that this node has been clicked
-        :param event:
-        :param multi: assume multiple selection (append, don't replace)
+        :param adding: bool, we are adding to selection instead of starting a new selection
+        :param select_area: bool, we are dragging a selection box, method only informs that this
+        node can be included
+        :returns: int or str, uid of node if node is selectable
         """
         self.hovering = False
-        if (event and event.modifiers() == Qt.ShiftModifier) or multi:
-            # multiple selection
-            ctrl.area_selection = True
+        # if we are selecting an area, select actions are not called here, but once for all
+        # objects. In this case return only uid of this object.
+        if select_area:
+            return self.uid
+        if adding:
             if ctrl.is_selected(self):
-                ctrl.remove_from_selection(self)
+                action = ctrl.ui.get_action('remove_from_selection')
             else:
-                ctrl.add_to_selection(self)
+                action = ctrl.ui.get_action('add_to_selection')
+            action.run_command(self.uid, has_params=True)
         elif ctrl.is_selected(self):
             if len(ctrl.selected) > 1:
-                ctrl.select(self)
+                action = ctrl.ui.get_action('select')
+                action.run_command(self.uid, has_params=True)
             else:
                 if not ctrl.settings.get('single_click_editing'):
                     self.label_object.set_quick_editing(True)
         else:
-            ctrl.select(self)
+            action = ctrl.ui.get_action('select')
+            action.run_command(self.uid, has_params=True)
+        return self.uid
 
     # Drag flow:
 
@@ -1475,7 +1483,7 @@ class Node(Movable):
         # change dragged positions to be based on adjustment instead of distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(scene_pos)
-        ctrl.ui.show_drag_adjustment(self)
+        ctrl.ui.show_drag_adjustment()
         for group in ctrl.dragged_groups:
             group.update_shape()
 
@@ -1637,17 +1645,19 @@ class Node(Movable):
         :return:
         """
         replay_click = False
+        shift = event.modifiers() == QtCore.Qt.ShiftModifier
+
         if ctrl.pressed is self:
             ctrl.release(self)
             if ctrl.dragged_set:
                 x, y = to_tuple(event.scenePos())
                 message = self.drop_to(x, y, recipient=ctrl.drag_hovering_on, shift_down=
-                                       event.modifiers() == QtCore.Qt.ShiftModifier)
+                                       shift)
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
                 ctrl.main.action_finished(message)  # @UndefinedVariable
             else:  # This is a regular click on 'pressed' object
-                self.select(event)
+                self.select(adding=shift, select_area=False)
                 if self.label_object.is_quick_editing():
                     replay_click = True
                 self.update()

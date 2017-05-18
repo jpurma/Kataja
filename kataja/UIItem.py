@@ -71,7 +71,7 @@ class UIItem:
 
     def show(self):
         if self.isVisible():
-            print('unnecessary show for UIItem')
+            print('unnecessary show for UIItem: ', self)
         else:
             super().show()
 

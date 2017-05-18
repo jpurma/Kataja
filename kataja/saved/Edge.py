@@ -314,7 +314,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     else:
                         self.is_fading_out = False
                         self._fade_out_anim.stop()
-                        self.show()
+                        self.setOpacity(1.0)
                         return True
                 if not self.isVisible():
                     if fade_in:
@@ -921,7 +921,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param selected:
         """
         if selected:
-            print('edge: ', self.edge_type, self.zValue())
             if self.uses_labels():
                 if not self.label_item:
                     self.label_item = EdgeLabel('', self, placeholder=True)
@@ -968,7 +967,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
             else:  # This is regular click on 'pressed' object
-                self.select(event)
+                shift = event.modifiers() == QtCore.Qt.ShiftModifier
+                self.select(adding=shift, select_area=False)
                 self.update()
             return None  # this mouseRelease is now consumed
         super().mouseReleaseEvent(event)
@@ -1019,21 +1019,28 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     # ## Scene-managed call
 
-    def select(self, event=None, multi=False):
-        """ This is identical with node/movable selection, but edges don't inherit these.
-        Actual selection activation stuff is in update_selection_status.
-        :param event:
-        :param multi: force multiple selection (append, not replace)
+    def select(self, adding=False, select_area=False):
+        """ Scene has decided that this edge has been clicked
+        :param adding: bool, we are adding to selection instead of starting a new selection
+        :param select_area: bool, we are dragging a selection box, method only informs that
+         this edge can be included
+        :returns: int or str, uid of node if node is selectable
         """
         self.hovering = False
-        if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
+        # if we are selecting an area, select actions are not called here, but once for all
+        # objects. In this case return only uid of this object.
+        if select_area:
+            return self.uid
+        if adding:
             if ctrl.is_selected(self):
-                ctrl.remove_from_selection(self)
+                action = ctrl.ui.get_action('remove_from_selection')
             else:
-                ctrl.add_to_selection(self)
-            return
-        if not ctrl.is_selected(self):
-            ctrl.select(self)
+                action = ctrl.ui.get_action('add_to_selection')
+            action.run_command(self.uid, has_params=True)
+        else:
+            action = ctrl.ui.get_action('select')
+            action.run_command(self.uid, has_params=True)
+        return self.uid
 
     # ## Qt paint method override
     def paint(self, painter, option, widget=None):
@@ -1308,7 +1315,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.is_fading_in:
             return
         self.is_fading_in = True
-        self.show()
+        if not self.isVisible():
+            self.show()
         if self.is_fading_out:
             self.is_fading_out = False
             self._fade_out_anim.stop()

@@ -1266,7 +1266,7 @@ class UIManager:
         else:
             self.drag_info.host = node
 
-    def show_drag_adjustment(self, node):
+    def show_drag_adjustment(self):
         self.drag_info.update_value()
         self.drag_info.update_position()
 

@@ -25,7 +25,6 @@ class FadingSymbol(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.update_position()
         self._fade_anim = None
         self.setZValue(72)
-        self.show()
         self.setOpacity(1.0)
         # self.setBrush(colors.ui_support)
 

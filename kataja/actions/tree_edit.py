@@ -238,10 +238,8 @@ class AddNodeTo(KatajaAction):
     def prepare_parameters(self):
         sender = self.sender()
         node = self.get_host()
-        print('node: ', type(node), node, node.uid)
         if isinstance(node, Edge):
             node = node.end
-            print('no, really, node: ', type(node), node, node.uid)
         return [node.uid, sender.action_arg], {}
 
     def method(self, node_uid: int, position: str):
@@ -277,47 +275,20 @@ class AddNodeTo(KatajaAction):
                                                                   add_left=False)
         ctrl.forest.forest_edited()
 
-# class AddTopLeft(KatajaAction):
-#    k_action_uid = 'add_top_left'
-#    k_command = 'Add node to left'
-
-# class AddTopRight(KatajaAction):
-#    k_action_uid = 'add_top_right'
-#    k_command = 'Add node to right'
-
-# class InnerAddSiblingLeft(KatajaAction):
-#     k_action_uid = 'inner_add_sibling_left'
-#     k_command = 'Add sibling node to left'
-
-# class InnerAddSiblingRight(KatajaAction):
-#     k_action_uid = 'inner_add_sibling_right'
-#     k_command = 'Add sibling node to right'
-
-# class UnaryAddChildLeft(KatajaAction):
-#    k_action_uid = 'unary_add_child_left'
-#    k_command = 'Add child node to left'
-
-# class UnaryAddChildRight(KatajaAction):
-#     k_action_uid = 'unary_add_child_right'
-#     k_command = 'Add child node to right'
-
-# class LeafAddSiblingLeft(KatajaAction):
-#     k_action_uid = 'leaf_add_sibling_left'
-#     k_command = 'Add sibling node to left'
-
-# class LeafAddSiblingRight(KatajaAction):
-#     k_action_uid = 'leaf_add_sibling_right'
-#     k_command = 'Add sibling node to right'
-
-
 class MergeToTop(KatajaAction):
     k_action_uid = 'merge_to_top'
     k_command = 'Merge this node to left of topmost node'
 
-    def method(self):
-        """ """
-        ctrl.release_editor_focus()
+    def prepare_parameters(self):
         node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
+        """ Merge this node to left of topmost node of node's tree. It's internal merge!
+        :param node_uid: int or str, node_uid for node to merge.
+        """
+        ctrl.release_editor_focus()
+        node = ctrl.forest.nodes[node_uid]
         ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=True)
         ctrl.forest.forest_edited()
 
@@ -326,11 +297,18 @@ class MergeToTop(KatajaAction):
 
 
 class ToggleNodeEditEmbed(KatajaAction):
-    k_action_uid = 'toggle_node_edit_embed'
+    k_action_uid = 'start_editing_node'
     k_command = 'Inspect and edit node'
 
-    def method(self):
+    def prepare_parameters(self):
         node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
+        """ Open the editing panel for this node.
+        :param node_uid: int or str
+        """
+        node = ctrl.forest.nodes[node_uid]
         ctrl.ui.start_editing_node(node)
 
 # Actions resulting from drop events: there may be not UI element connected to them,
