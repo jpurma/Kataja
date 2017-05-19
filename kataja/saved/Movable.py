@@ -159,8 +159,9 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     @current_position.setter
     def current_position(self, value):
+        value = round(value[0]), round(value[1])
         self._current_position = value
-        self.setPos(round(value[0]), round(value[1]))
+        self.setPos(*value)
 
     @property
     def current_scene_position(self):
@@ -169,6 +170,17 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         xy = self.scenePos()
         return int(xy.x()), int(xy.y())
+
+    def from_scene_position(self, x, y):
+        """ Return position in local coordinates given a scene position
+        :return:
+        """
+        if self.parentItem():
+            p = self.parentItem().mapFromScene(x, y)
+            return int(p.x()), int(p.y())
+        else:
+            return int(x), int(y)
+
 
     # ## Movement ##############################################################
 
@@ -484,7 +496,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         return self._visible_by_logic
 
-
     # ## Selection ############################################################
 
     def is_selected(self):
@@ -495,28 +506,31 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Dragging ############################################################
 
+    def set_current_pos_from_scene_pos(self, scene_pos):
+        self.locked = True
+        self.current_position = self.from_scene_position(*scene_pos)
+
+    def set_adjustment_from_scene_pos(self, scene_pos):
+        new_pos = self.from_scene_position(*scene_pos)
+        self.use_adjustment = True
+        diff = sub_xy(new_pos, self.current_position)
+        self.adjustment = add_xy(self.adjustment, diff)
+        self.target_position = new_pos
+        self.current_position = new_pos
+
     def dragged_to(self, scene_pos):
         """ Dragged focus is in scene_pos. Move there.
         :param scene_pos: current drag focus
         :return:
         """
-        if self.parentItem():
-            p = self.parentItem().mapFromScene(scene_pos[0], scene_pos[1])
-            new_pos = int(p.x()), int(p.y())
-        else:
-            new_pos = int(scene_pos[0]), int(scene_pos[1])
         if self.use_physics():
-            self.locked = True
-            self.current_position = new_pos
+            self.set_current_pos_from_scene_pos(scene_pos)
         else:
-            self.use_adjustment = True
-            diff = sub_xy(new_pos, self.current_position)
-            self.adjustment = add_xy(self.adjustment, diff)
-            self.target_position = new_pos
-            self.current_position = new_pos
+            self.set_adjustment_from_scene_pos(scene_pos)
 
     def dragged_over_by(self, dragged):
-        """ When dragging other items on top of this item, should this item react, e.g. show somehow that item can be dropped on this.
+        """ When dragging other items on top of this item, should this item react, e.g. show
+        somehow that item can be dropped on this.
 
         :param dragged:
         """
@@ -528,7 +542,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         else:
             return False
 
-
     def drop_to(self, x, y, recipient=None):
         """
         This item is dropped to screen coordinates. Evaluate if there are
@@ -539,15 +552,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :param recipient: Movable?
         """
         print('movable drop to %s,%s , recipient=%s' % (x, y, recipient))
-        # closest_ma = None
-        # for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
-        # if ma.sceneBoundingRect().contains(x, y):
-        # closest_ma = ma
-        # break
-        # if closest_ma:
-        # closest_ma.drop(self)
-        # print('dropped to:', closest_ma)
-        # # ctrl.scene.fit_to_window()
 
     def accepts_drops(self, dragged):
         """ Reimplement this to evaluate if this Movable should accept drops from dragged. Default returns False.

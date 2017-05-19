@@ -314,3 +314,43 @@ class ToggleNodeEditEmbed(KatajaAction):
 # Actions resulting from drop events: there may be not UI element connected to them,
 # they are triggered directly in drop events. See TouchAreas
 
+
+class AdjustNode(KatajaAction):
+    k_action_uid = 'adjust_node'
+    k_command = 'Adjust node position'
+
+    def method(self, node_uid, x, y):
+        """ Node has been dragged to this position and the current algorithm has a static position
+        computed for it. Coords are relative adjustment to that computed position.
+        :param node_uid:
+        :param x:
+        :param y:
+        :return:
+        """
+        node = ctrl.forest.nodes[node_uid]
+        node.adjustment = x, y
+        if x or y:
+            node.lock()
+            node.update_position()
+        else:
+            node.release()
+
+
+class MoveNode(KatajaAction):
+    k_action_uid = 'move_node'
+    k_command = 'Move node position'
+
+    def method(self, node_uid, x, y):
+        """ Immediately move node to given scene position. If node was using force algorithm to
+        move, the node is also locked into place.
+        :param node_uid:
+        :param x:
+        :param y:
+        :return:
+        """
+        node = ctrl.forest.nodes[node_uid]
+        node.current_position = node.from_scene_position(x, y)
+        node.lock()
+        node.update_position()
+
+

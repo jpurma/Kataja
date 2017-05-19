@@ -26,8 +26,9 @@ class DragInfo(UIWidget, QtWidgets.QLabel):
 
     def update_value(self):
         if self.host.use_physics():
-            x = '{:+}'.format(int(self.host.current_position[0]))
-            y = '{:+}'.format(int(self.host.current_position[1]))
+            scx, scy = self.host.current_scene_position
+            x = '{:+}'.format(int(scx))
+            y = '{:+}'.format(int(scy))
         else:
             x = '{:+}'.format(int(self.host.adjustment[0]))
             y = '{:+}'.format(int(self.host.adjustment[1]))

@@ -66,6 +66,7 @@ class GraphView(QtWidgets.QGraphicsView):
         #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
+        self.latest_mpe = None
 
         self._suppressed_drag_mode = self.dragMode()
 
@@ -197,6 +198,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :return:
         """
         self.latest_mpe = event
+        self.setFocus(QtCore.Qt.MouseFocusReason)
         QtWidgets.QGraphicsView.mousePressEvent(self, event)
 
     def replay_mouse_press(self):

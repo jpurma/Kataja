@@ -209,7 +209,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             ctrl.release(self)
             if self.being_dragged:
                 x, y = to_tuple(event.scenePos())
-                self.drop_to(x, y, recipient=ctrl.drag_hovering_on)
+                self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on)
                 self.being_dragged = False
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances

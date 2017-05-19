@@ -245,14 +245,11 @@ class CommentNode(Node):
         :param y:
         :return: action finished -message (str)
         """
-        message = super().drop_to(x, y, recipient=recipient)
+        super().drop_to(x, y, recipient=recipient)
         if self.preferred_host:
             x, y = self.preferred_host.current_scene_position
             mx, my = self.current_scene_position
             self.pos_relative_to_host = mx - x, my - y
-            message = "Adjusted comment to be at %s, %s relative to '%s'" % (mx - x, my - y,
-                                                                             self.preferred_host)
-        return message
 
     def on_connect(self, other):
         print('on_connect called, hosts:', self.hosts)

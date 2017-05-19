@@ -1478,11 +1478,25 @@ class Node(Movable):
         for edge in self.edges_up:
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
+        nx, ny = scene_pos
         if not ctrl.dragged_focus:
             self.start_dragging(scene_pos)
-        # change dragged positions to be based on adjustment instead of distance to main dragged.
+
+        # Call dragged_to -method for all nodes that are dragged with the drag focus
+        # Their positions are relative to this focus, compute how much.
         for node in ctrl.dragged_set:
-            node.dragged_to(scene_pos)
+            d = node.drag_data
+
+            # Tree heads are a special case
+            if d.tree_top:
+                dx, dy = d.tree_top.drag_data.distance_from_pointer
+                d.tree_top.dragged_to((nx + dx, ny + dy))
+                for edge in ctrl.forest.edges.values():
+                    edge.make_path()
+                    edge.update()
+            else:
+                dx, dy = d.distance_from_pointer
+                node.dragged_to((int(nx + dx), int(ny + dy)))
         ctrl.ui.show_drag_adjustment()
         for group in ctrl.dragged_groups:
             group.update_shape()
@@ -1492,27 +1506,15 @@ class Node(Movable):
         :param scene_pos: current pos of drag pointer (tuple x,y)
         :return:
         """
-        d = self.drag_data
-        nx, ny = scene_pos
-        if d.tree_top:
-            dx, dy = d.tree_top.drag_data.distance_from_pointer
-            d.tree_top.dragged_to((nx + dx, ny + dy))
-            for edge in ctrl.forest.edges.values():
-                edge.make_path()
-                edge.update()
-        else:
-            dx, dy = d.distance_from_pointer
-            super().dragged_to((int(nx + dx), int(ny + dy)))
-            # now there should be value for adjustment, unless node is using physics
-            # edges should be made visible if they were hidden by locked_to_node
-            for item in self.childItems():
-                if isinstance(item, Node):
-                    for edge in itertools.chain(item.edges_up, item.edges_down):
-                        edge.make_path()
-                        edge.update()
-            for edge in itertools.chain(self.edges_up, self.edges_down):
-                edge.make_path()
-                edge.update()
+        super().dragged_to(scene_pos)
+        edge_list = [self.edges_up, self.edges_down]
+        for item in self.childItems():
+            if isinstance(item, Node):
+                edge_list.append(item.edges_up)
+                edge_list.append(item.edges_down)
+        for edge in itertools.chain.from_iterable(edge_list):
+            edge.make_path()
+            edge.update()
 
     def accepts_drops(self, dragged):
         """
@@ -1533,6 +1535,7 @@ class Node(Movable):
         :param recipient:
         :param x:
         :param y:
+        :param shift_down:
         :return: action finished -message (str)
         """
         self.stop_moving()
@@ -1543,20 +1546,17 @@ class Node(Movable):
                 ctrl.free_drawing.disconnect_node(edge=edge)
         if recipient and recipient.accepts_drops(self):
             self.release()
-            message = recipient.drop(self)
+            recipient.drop(self)
         else:
-            self.lock()
-            for node in ctrl.dragged_set:
-                node.lock()
             if self.use_physics():
-                message = 'moved node to {:.2f}, {:.2f}'.format(self.current_position[0],
-                                                                self.current_position[1])
+                drop_action = ctrl.ui.get_action('move_node')
+                drop_action.run_command(self.uid, x, y, has_params=True)
             else:
-                message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0],
-                                                                   self.adjustment[1])
+                adj_x, adj_y = self.adjustment
+                drop_action = ctrl.ui.get_action('adjust_node')
+                drop_action.run_command(self.uid, adj_x, adj_y, has_params=True)
         self.update_position()
         self.finish_dragging()
-        return message
 
     def finish_dragging(self):
         """ Flush dragging-related temporary variables. Called always when
@@ -1651,11 +1651,9 @@ class Node(Movable):
             ctrl.release(self)
             if ctrl.dragged_set:
                 x, y = to_tuple(event.scenePos())
-                message = self.drop_to(x, y, recipient=ctrl.drag_hovering_on, shift_down=
-                                       shift)
+                self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
-                ctrl.main.action_finished(message)  # @UndefinedVariable
             else:  # This is a regular click on 'pressed' object
                 self.select(adding=shift, select_area=False)
                 if self.label_object.is_quick_editing():

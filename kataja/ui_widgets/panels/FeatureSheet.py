@@ -56,11 +56,11 @@ class FeatureSheet(QtWidgets.QWidget):
         label = QtWidgets.QLabel('Arrangement')
         hlayout.addWidget(label)
         w = 32
-        b1 = PanelButton(pixmap=qt_prefs.feature_column_icon, parent=self, size=24)
+        b1 = PanelButton(pixmap=qt_prefs.feature_row_icon, parent=self, size=24)
         b1.setFixedWidth(w)
         ctrl.ui.connect_element_to_action(b1, 'set_features_as_row')
         hlayout.addWidget(b1)
-        b2 = PanelButton(pixmap=qt_prefs.feature_row_icon, parent=self, size=24)
+        b2 = PanelButton(pixmap=qt_prefs.feature_column_icon, parent=self, size=24)
         b2.setFixedWidth(w)
         ctrl.ui.connect_element_to_action(b2, 'set_features_as_column')
         hlayout.addWidget(b2)

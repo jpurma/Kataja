@@ -339,32 +339,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         ctrl.main.action_finished(message)
 
 
-class AddConstituentTouchArea(TouchArea):
-
-    __qt_type_id__ = next_available_type_id()
-
-    def click(self, event=None):
-        """
-        :param event:
-        """
-        self._dragging = False
-        if self._drag_hint:
-            return False
-        self.host.open_embed()
-        return True
-
-    def drop(self, dropped_node):
-        """
-        Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            self.make_node_from_string(dropped_node)
-        ctrl.forest.forest_edited()
-
-
 class AddBelowTouchArea(TouchArea):
 
     __qt_type_id__ = next_available_type_id()

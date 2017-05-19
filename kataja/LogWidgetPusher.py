@@ -7,6 +7,7 @@ from PyQt5 import QtGui, QtCore
 
 MAX_LOG_SIZE = 20000
 
+
 class WriteStream:
     """ This splits stdout to print to both original stdout (sys.__stdout__) and to
     thread-protected queue, where Qt log window can safely pop it.
