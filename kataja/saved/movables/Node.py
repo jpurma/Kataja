@@ -91,6 +91,7 @@ class Node(Movable):
     can_be_in_groups = True
     editable = {}
     ui_sheet = None
+    allowed_child_types = []
 
     default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
                      'card_width': 0, 'card_height': 0}
@@ -500,34 +501,30 @@ class Node(Movable):
         :param ay:
         :return:
         """
-        shift = (ax, ay)
-        if self.parentItem() is other.parentItem():
-            self.current_position = add_xy(other.current_position, shift)
+        parent = self.parentItem()
+        print('adjust:', ax, ay)
+        print('other scene pos:', other.current_scene_position)
+        if parent is other.parentItem():
+            self.current_position = other.current_position[0] + ax, other.current_position[1] + ay
             self.target_position = other.target_position
         else:
             csp = other.current_scene_position
-            ctp = other.tree_position_to_scene_position(other.target_position)
-            self.current_position = self.scene_position_to_tree_position(add_xy(csp, shift))
-            self.target_position = self.scene_position_to_tree_position(ctp)
+            #ctp = other.mapToScene(QtCore.QPointF(*other.target_position))
+            nsp = QtCore.QPointF(csp[0] + ax, csp[1] + ay)
+            if parent:
+                nsp = parent.mapFromScene(nsp)
+            else:
+                nsp = self.mapFromScene(nsp)
+            self.current_position = nsp.x(), nsp.y()
+            self.target_position = nsp.x(), nsp.y()
+        print('my scene pos:', self.current_scene_position)
+        print('my current pos:', self.current_position)
+        print('my target pos:', self.target_position)
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
         self.adjustment = other.adjustment
         self.physics_x = other.physics_x
         self.physics_y = other.physics_y
-
-    def tree_position_to_scene_position(self, position):
-        """ Return trees position converted to scene position. Works for xy -tuples.
-        :param position:
-        :return:
-        """
-        #if isinstance(position, (QtCore.QPoint, QtCore.QPointF)):
-        #    position = position.x(), position.y()
-        x, y = position
-        tree = self.parentItem()
-        if not tree:
-            return x, y
-        tx, ty = tree.current_position
-        return x + tx, y + ty
 
     def scene_position_to_tree_position(self, scene_pos):
         """ Return scene position converted to coordinate system used by this node trees. Works for
@@ -536,12 +533,11 @@ class Node(Movable):
         :param scene_pos:
         :return:
         """
-        x, y = scene_pos
-        tree = self.parentItem()
-        if not tree:
+        parent = self.parentItem()
+        if not parent:
             return x, y
-        tx, ty = tree.current_position
-        return x - tx, y - ty
+        nsp = parent.mapFromScene(*scene_pos)
+        return nsp.x(), nsp.y()
 
 
     # ### Children and parents
@@ -741,13 +737,30 @@ class Node(Movable):
         return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
                 self]
 
-    def can_connect_with(self, other):
-        """ Override this in subclasses, checks conditions when other nodes could connect to this
-        node. (This node is child). Generally connection should be refuted if it already exists
+    def can_have_as_child(self, other=None):
+        """ Check, usually when dragging objects, if parent -- child relationship is possible in
+        current state. This can be affected by the editing mode, properties of child and parent
+        and if they already have this relationship.
         :param other:
         :return:
         """
-        return other not in self.get_parents(similar=False, visible=False)
+
+        if other is None:
+            if ctrl.dragged_focus:
+                other = ctrl.dragged_focus
+                other_type = other.node_type
+            else:
+                other_type = ctrl.dragged_text
+        else:
+            other_type = other.node_type
+        if (not ctrl.free_drawing_mode) and \
+                (other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
+            return False
+        elif other_type in self.allowed_child_types:
+            if other:
+                return other not in self.get_parents(similar=False, visible=False)
+            return True
+        return False
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
@@ -1604,8 +1617,7 @@ class Node(Movable):
         :return:
         """
         if ctrl.dragged_focus:
-            return ctrl.dragged_focus.node_type == dtype and \
-                   ctrl.dragged_focus.can_connect_with(self)
+            return ctrl.dragged_focus.node_type == dtype
         elif ctrl.dragged_text:
             return ctrl.dragged_text == dtype
         return False

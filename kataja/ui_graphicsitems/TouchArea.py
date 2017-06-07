@@ -45,8 +45,9 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     them. """
     __qt_type_id__ = next_available_type_id()
     clicked = QtCore.pyqtSignal()
+    align_left = False
 
-    def __init__(self, host, action, action_arg=None):
+    def __init__(self, host, action, drop_support=False, action_args=None, action_kwargs=None,):
         """
         :param ConstituentNode host:
         :param string action:
@@ -62,9 +63,10 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.status_tip = ""
         # Drawing flags defaults
         self._fill_path = False
-        self._align_left = False
+        self._align_left = self.__class__.align_left
         self._below_node = False
         self.focusable = True
+        self.droppable = drop_support
         self._visible = True
         self._hovering = False
         self._drag_hint = False
@@ -72,11 +74,13 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.setAcceptDrops(True)
         self.update_end_points()
         self.action = action
-        self.action_arg = action_arg
+        self.action_args = action_args or []
+        self.action_kwargs = action_kwargs or {}
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         if action:
             action.connect_element(self)
+        self.update_end_points()
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -167,37 +171,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if sc:
             sc.removeItem(self)
 
-    def make_node_from_string(self, string):
-        """ Try to create a node from given string
-        :param string: str
-        :return:
-        """
-        command_identifier, *args = string.split(':')
-        if command_identifier == 'kataja' and args:
-            command, *args = args
-            if command == "new_node":
-                node_type = args[0]
-                try:
-                    node_type = int(node_type)
-                except TypeError:
-                    pass
-                if hasattr(self.host, 'current_position'):
-                    x, y = self.host.current_scene_position
-                elif hasattr(self.host, 'start_point'):
-                    x, y = self.host.start_point
-                else:
-                    return
-                if hasattr(self.host, 'height'):
-                    h = self.host.height
-                else:
-                    h = 0
-                pos = QtCore.QPointF(x, y + h)
-                return ctrl.free_drawing.create_node(pos=pos, node_type=node_type)
-            else:
-                print('received unknown command:', command, args)
-        else:
-            print('received just some string: ', string)
-
     def mousePressEvent(self, event):
         ctrl.press(self)
         super().mousePressEvent(event)
@@ -232,6 +205,8 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if self._drag_hint:
             return False
         ctrl.deselect_objects()
+        print('click: ', self.action_args, self.action_kwargs)
+        #self.action.run_command(self.host, *self.action_args, **self.action_kwargs)
         self.clicked.emit()
         return True
 
@@ -274,7 +249,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         :param dragged:
         :return:
         """
-        return self.calculate_if_can_merge(dragged, None, None)
+        return self.droppable and self.calculate_if_can_merge(dragged, None, None)
 
     @property
     def hovering(self):
@@ -338,6 +313,19 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         QtWidgets.QGraphicsObject.dropEvent(self, event)
         ctrl.main.action_finished(message)
 
+    def drop(self, node_or_string):
+        """
+        :param dropped_node:
+        """
+        if isinstance(node_or_string, str) and node_or_string.startswith('kataja:'):
+            foo, command, ntype = node_or_string.split(':')
+            ntype = int(ntype)
+            self.action_kwargs['new_type'] = ntype
+        else:
+            self.action_kwargs['node_uid'] = getattr(node_or_string, 'uid')
+
+        self.action.run_command(self.host, *self.action_args, **self.action_kwargs)
+
 
 class AddBelowTouchArea(TouchArea):
 
@@ -373,63 +361,15 @@ class AddBelowTouchArea(TouchArea):
 
 
 class ConnectFeatureTouchArea(AddBelowTouchArea):
-
     __qt_type_id__ = next_available_type_id()
-    k_tooltip = "Add feature for node"
-
-    def drop(self, dropped_node):
-        """
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        ctrl.free_drawing.add_feature_to_node(dropped_node, self.host)
-        ctrl.forest.forest_edited()
-        return 'added feature %s to %s' % (dropped_node, self.host)
 
 
 class ConnectCommentTouchArea(AddBelowTouchArea):
-
     __qt_type_id__ = next_available_type_id()
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self.set_tip("Add comment for node")
-
-    def drop(self, dropped_node):
-        """
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        ctrl.free_drawing.add_comment_to_node(dropped_node, self.host)
-        ctrl.forest.forest_edited()
-        return 'added comment %s to %s' % (dropped_node, self.host)
 
 
 class ConnectGlossTouchArea(AddBelowTouchArea):
-
     __qt_type_id__ = next_available_type_id()
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self.set_tip("Add gloss for node")
-
-    def drop(self, dropped_node):
-        """
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        ctrl.free_drawing.add_gloss_to_node(dropped_node, self.host)
-        ctrl.forest.forest_edited()
-        return 'added gloss %s to %s' % (dropped_node, self.host)
 
 
 class DeleteArrowTouchArea(TouchArea):
@@ -485,42 +425,13 @@ class BranchingTouchArea(TouchArea):
         r = QtCore.QRectF(x, y, w, h)
         return r
 
-    def drop(self, dropped_node):
-        """
-        Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        assert(self.host.start and self.host.end)
-        adjustment = self.host.end.adjustment
-        # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node,
-                                              self.host.start,
-                                              self.host.end,
-                                              self._align_left,
-                                              self.start_point)
-
-        for node in ctrl.dragged_set:
-            node.adjustment = adjustment
-        ctrl.forest.forest_edited()
-        return 'moved node %s to sibling of %s' % (dropped_node, self.host)
-
 
 class LeftAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
     nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add sibling node to left'
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = True
-        self.update_end_points()
+    align_left = True
 
     def drag(self, event):
         self._dragging = True
@@ -579,11 +490,6 @@ class RightAddSibling(BranchingTouchArea):
     nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add sibling node to right'
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = False
-        self.update_end_points()
 
     def drag(self, event):
         self._dragging = True
@@ -743,39 +649,12 @@ class JointedTouchArea(TouchArea):
                                               curve_adjustment=adjust)[0]
         self._path |= path2
 
-    def drop(self, dropped_node):
-        """
-        Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        # host is a node
-        assert isinstance(self.host, Node)
-        ctrl.free_drawing.merge_to_top(self.host,
-                                       dropped_node,
-                                       merge_to_left=self._align_left,
-                                       pos=self.start_point)
-        for node in ctrl.dragged_set:
-            node.adjustment = self.host.adjustment
-        ctrl.forest.forest_edited()
-        return 'moved node %s to sibling of %s' % (
-            dropped_node, self.host)
-
 
 class LeftAddTop(JointedTouchArea):
 
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add node to left'
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = True
-        self.update_end_points()
+    align_left = True
 
     def paint(self, painter, option, widget):
         """
@@ -807,11 +686,6 @@ class RightAddTop(JointedTouchArea):
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add node to right'
 
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = False
-        self.update_end_points()
-
     def paint(self, painter, option, widget):
         """
 
@@ -841,10 +715,6 @@ class ChildTouchArea(TouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
     add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self.update_end_points()
 
     def boundingRect(self):
         """
@@ -878,39 +748,13 @@ class ChildTouchArea(TouchArea):
         self._dragging = True
         self.update_end_points(end_point=to_tuple(event.scenePos()))
 
-    def drop(self, dropped_node):
-        """
-        Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
-        """
-        if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
-        if not dropped_node:
-            return
-        # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
-                                        self.host.end,
-                                        self._align_left,
-                                        self.start_point)
-        for node in ctrl.dragged_set:
-            node.adjustment = self.host.end.adjustment
-        message = 'moved node %s to sibling of %s' % (
-            dropped_node, self.host)
-        ctrl.forest.forest_edited()
-        return message
-
 
 class LeftAddChild(BranchingTouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
     add nodes to leaf nodes."""
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add child node to left'
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = True
+    align_left = True
 
     def update_end_points(self, end_point=None):
         """
@@ -972,10 +816,6 @@ class RightAddChild(ChildTouchArea):
     add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
     k_tooltip = 'Add child node to right'
-
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = False
 
     def update_end_points(self, end_point=None):
         """
@@ -1126,10 +966,6 @@ class MergeToTop(BranchingTouchArea):
     """ TouchArea that connects to nodes and has \-shape.  """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action, action_arg=None):
-        super().__init__(host, action, action_arg)
-        self._align_left = True
-
     def update_end_points(self, end_point=None):
         """
 
@@ -1206,14 +1042,6 @@ class MergeToTop(BranchingTouchArea):
         painter.setBrush(c)
         painter.drawPolygon(QtGui.QPolygonF([l2, destArrowP1, l2c, destArrowP2]))
 
-    def drop(self, dropped_node):
-        """
-        Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
-        """
-        pass
 
     def accepts_drops(self, dragged):
         return False

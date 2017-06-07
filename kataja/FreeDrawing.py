@@ -231,6 +231,7 @@ class FreeDrawing:
         ctrl.select(edge)
         return edge
 
+
     # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
     # here when something is removed from scene, it is made sure that it is

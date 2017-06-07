@@ -138,7 +138,6 @@ class KatajaAction(QtWidgets.QAction):
         self.elements = set()
         self.command = self.k_command
         self.command_alt = self.k_command_alt
-        self.args = []
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
@@ -177,7 +176,7 @@ class KatajaAction(QtWidgets.QAction):
         self.setToolTip(self.tip0)
         self.setStatusTip(self.tip0)
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         return [], {}
 
     def method(self, *args, **kwargs):
@@ -190,11 +189,9 @@ class KatajaAction(QtWidgets.QAction):
         return None
 
     def manual_run_command(self, *args, **kwargs):
-        kwargs['has_params'] = True
-        kwargs['did_feedback'] = True
-        return self.run_command(*args, **kwargs)
+        return self.run_command(*args, has_params=True, did_feedback=True, **kwargs)
 
-    def run_command(self, *args, **kwargs):
+    def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :return: None
         """
@@ -206,16 +203,8 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-
-        # Some rare triggers pass values, e.g. ButtonGroups pass the id of button.
-        # prepare_parameters should put these to args, kwargs, but we don't want to burden that
-        # method with parameters, so keep store them as instance variables.
-        if args:
-            self.args = args
-
+        print('run_command:', args, kwargs)
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
-
-        give_feedback = 'did_feedback' not in kwargs
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -223,14 +212,10 @@ class KatajaAction(QtWidgets.QAction):
         # is logged and made available in command prompt so that the user has better grasp of
         # inner workings of Kataja.
 
-        if 'has_params' not in kwargs:
-            args, kwargs = self.prepare_parameters()
-        else:
-            del kwargs['has_params']
-            if not give_feedback:
-                del kwargs['did_feedback']
+        if not has_params:
+            args, kwargs = self.prepare_parameters(args, kwargs)
 
-        if give_feedback:
+        if not did_feedback:
             # Print the command into console
             arg_parts = [repr(a) for a in args]
             kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]

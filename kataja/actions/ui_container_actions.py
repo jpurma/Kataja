@@ -41,13 +41,13 @@ class TogglePanel(KatajaAction):
     k_undoable = False
     k_exclusive = False
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         if isinstance(sender, TransmitAction):
             key = sender.key
         else:
             key = sender.data
-        return [key], {}
+        return [key], kwargs
 
     def method(self, panel_id: str):
         """ Show or hide panel depending if it is visible or not
@@ -65,11 +65,11 @@ class ToggleFoldPanel(KatajaAction):
     k_tooltip = 'Minimize this panel'
     k_tooltip_alt = 'Reveal this panel'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         panel_id = sender.data
         folded = sender.isChecked()
-        return [panel_id, folded], {}
+        return [panel_id, folded], kwargs
 
     def method(self, panel_id: str, folded: bool):
         """ Fold panel into label line or reveal the whole panel.
@@ -84,10 +84,10 @@ class PinPanel(KatajaAction):
     k_command = 'Pin to dock'
     k_undoable = False
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         panel = self.get_ui_container()
         key = panel.ui_type
-        return [key], {}
+        return [key], kwargs
 
     def method(self, panel_id: str):
         """ Put panel back to panel dock area.

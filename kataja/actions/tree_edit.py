@@ -43,7 +43,7 @@ class CreateNewNodeFromText(KatajaAction):
     #k_shortcut = 'Return'
     #k_shortcut_context = 'parent_and_children'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         ci = embed.node_type_selector.currentIndex()
         node_type = embed.node_type_selector.itemData(ci)
@@ -94,9 +94,9 @@ class RemoveMerger(KatajaAction):
     k_command = 'Remove merger'
     k_tooltip = "Remove intermediate node (If binary branching is assumed, these shouldn't exist.)"
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
     def method(self, node_uid):
         """ In cases where there another part of binary merge is removed,
@@ -120,9 +120,9 @@ class RemoveNode(KatajaAction):
     k_action_uid = 'remove_node'
     k_command = 'Delete node'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
     def method(self, node_uid):
         """ Remove given node
@@ -140,9 +140,9 @@ class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
     k_command = 'Turn node and its children into triangle'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
     def method(self, node_uid):
         """ Turn triggering node into triangle node
@@ -160,9 +160,9 @@ class RemoveTriangle(KatajaAction):
     k_action_uid = 'remove_triangle'
     k_command = 'Remove triangle'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
     def method(self, node_uid: int):
         """ If triggered node is triangle node, restore it to normal
@@ -198,7 +198,7 @@ class SetProjectingNode(KatajaAction):
     k_command = 'Set projecting node'
     k_tooltip = 'Set which child constituent projects to this constituent'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         button_group = self.sender()
         heads = []
         for button in button_group.buttons():
@@ -207,7 +207,7 @@ class SetProjectingNode(KatajaAction):
                 if child:
                     heads += child.heads
         host = self.get_host()
-        return [host.uid, [x.uid for x in heads]], {}
+        return [host.uid, [x.uid for x in heads]], kwargs
 
     def method(self, node_uid: int, projecting_uids: list):
         """ Set which child constituent projects to this constituent
@@ -231,21 +231,29 @@ class SetProjectingNode(KatajaAction):
 # Actions for TouchAreas #######################################
 
 
-class AddNodeTo(KatajaAction):
-    k_action_uid = 'add_node_to'
-    k_command = 'Add node to'
+class ConnectNode(KatajaAction):
+    k_action_uid = 'connect_node'
+    k_command = 'Connect node to'
 
-    def prepare_parameters(self):
-        sender = self.sender()
-        node = self.get_host()
-        if isinstance(node, Edge):
-            node = node.end
-        return [node.uid, sender.action_arg], {}
+    def prepare_parameters(self, args, kwargs):
+        print('connect_node, prepare_parameters:', args, kwargs)
+        if not args:
+            kwargs = self.sender().action_kwargs
+            target = self.get_host()
+        else:
+            target = args[0]
+        if isinstance(target, Edge):
+            target = target.end
+        print('return: ', [target.uid], kwargs)
+        return [target.uid], kwargs
 
-    def method(self, node_uid: int, position: str):
-        """ Create and add a new node into a relation with an existing node.
-        :param node_uid: int, uid for existing node
+    def method(self, target_uid: int, node_uid=0, position='child', new_label='', new_type=0):
+        """ Connect a new or an existing node into an an existing node. By default the new node is
+        set as a child of the target node, but other positions are possible too.
+        :param new_node_uid: int, uid for existing node or str that can be turned into new node.
+        :param target_uid: int, uid for existing node. The new node is attached to this node.
         :param position: str, position must be one of the following:
+            'child',
             'top_left',
             'top_right',
             'sibling_left',
@@ -253,43 +261,78 @@ class AddNodeTo(KatajaAction):
             'child_left',
             'child_right'
         """
-        node = ctrl.forest.nodes[node_uid]
-        label = ctrl.free_drawing.next_free_label()
-        new_node = ctrl.free_drawing.create_node(label=label, relative=node)
-        if position == 'top_left':
+
+        target = ctrl.forest.nodes[target_uid]
+        if node_uid:
+            new_node = ctrl.forest.nodes[node_uid]
+        else:
+            label = new_label or ctrl.free_drawing.next_free_label()
+            new_node = ctrl.free_drawing.create_node(label=label, relative=target,
+                                                     node_type=new_type)
+        if position == 'child':
+            ctrl.free_drawing.connect_node(parent=target, child=new_node)
+        elif position == 'top_left':
             # fixme: check that this is top node
-            ctrl.free_drawing.merge_to_top(node, new_node, merge_to_left=True,
+            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=True,
                                            pos=new_node.current_position)
         elif position == 'top_right':
-            ctrl.free_drawing.merge_to_top(node, new_node, merge_to_left=False,
+            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=False,
                                            pos=new_node.current_position)
         elif position == 'sibling_left':
-            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, node, add_left=True)
+            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=True)
         elif position == 'sibling_right':
-            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, node, add_left=False)
+            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=False)
         elif position == 'child_left':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, node,
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target,
                                                                   add_left=True)
         elif position == 'child_right':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, node,
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target,
                                                                   add_left=False)
         ctrl.forest.forest_edited()
+
+    def drop2(self, dropped_node):
+        """
+        Connect dropped node to host of this TouchArea.
+        Connection depends on which merge area this is:
+        top left, top right, left, right
+        :param dropped_node:
+        """
+        if isinstance(dropped_node, str):
+            dropped_node = self.make_node_from_string(dropped_node)
+        if not dropped_node:
+            return
+        # host is an edge
+        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
+                                        self.host.end,
+                                        self._align_left,
+                                        self.start_point)
+        for node in ctrl.dragged_set:
+            node.adjustment = self.host.end.adjustment
+        message = 'moved node %s to sibling of %s' % (
+            dropped_node, self.host)
+        ctrl.forest.forest_edited()
+        return message
+
 
 class MergeToTop(KatajaAction):
     k_action_uid = 'merge_to_top'
     k_command = 'Merge this node to left of topmost node'
+    # fixme! also support drag to right
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
+        # fixme!
+        # if isinstance(dropped_node, str):
+        #    dropped_node = self.make_node_from_string(dropped_node)
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
-    def method(self, node_uid):
+    def method(self, node_uid, left=True):
         """ Merge this node to left of topmost node of node's tree. It's internal merge!
         :param node_uid: int or str, node_uid for node to merge.
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
-        ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=True)
+        ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=left)
         ctrl.forest.forest_edited()
 
 
@@ -300,9 +343,9 @@ class ToggleNodeEditEmbed(KatajaAction):
     k_action_uid = 'start_editing_node'
     k_command = 'Inspect and edit node'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         node = self.get_host()
-        return [node.uid], {}
+        return [node.uid], kwargs
 
     def method(self, node_uid):
         """ Open the editing panel for this node.
@@ -354,3 +397,35 @@ class MoveNode(KatajaAction):
         node.update_position()
 
 
+class InsertNodeBetween(KatajaAction):
+    k_action_uid = 'insert_node_between'
+    k_command = 'Insert node between'
+
+    def prepare_parameters(self, args, kwargs):
+        node = self.get_host()
+        return [node.uid], {}
+
+    def method(self, node_uid):
+        """
+        Connect dropped node to host of this TouchArea.
+        Connection depends on which merge area this is:
+        top left, top right, left, right
+        :param dropped_node:
+        """
+        if isinstance(dropped_node, str):
+            dropped_node = self.make_node_from_string(dropped_node)
+        if not dropped_node:
+            return
+        assert(self.host.start and self.host.end)
+        adjustment = self.host.end.adjustment
+        # host is an edge
+        ctrl.free_drawing.insert_node_between(dropped_node,
+                                              self.host.start,
+                                              self.host.end,
+                                              self._align_left,
+                                              self.start_point)
+
+        for node in ctrl.dragged_set:
+            node.adjustment = adjustment
+        ctrl.forest.forest_edited()
+        return 'moved node %s to sibling of %s' % (dropped_node, self.host)

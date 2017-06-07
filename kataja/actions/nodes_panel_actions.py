@@ -105,7 +105,7 @@ class AbstractSelectFont(KatajaAction):
     k_action_uid = ''
     node_type = 0
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         selector = self.sender()
         font_id = selector.currentData() or selector.selected_font
         if font_id.startswith('font_picker::'):
@@ -115,7 +115,7 @@ class AbstractSelectFont(KatajaAction):
                 selector.start_font_dialog()
         else:
             selector.selected_font = font_id
-        return [font_id], {}
+        return [font_id], kwargs
 
     def method(self, font_id: str):
         """ Change font key for current node or node type.
@@ -194,10 +194,10 @@ class AbstractChangeNodeColor(KatajaAction):
     k_action_uid = ''
     node_type = 0
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         selector = self.sender()
         color_key = selector.receive_color_selection()
-        return [color_key], {}
+        return [color_key], kwargs
 
     def method(self, color_key):
         """ Change color for this type of node and its edges. Instead of setting colors
@@ -278,11 +278,11 @@ class FoldNodeSheet(KatajaAction):
     k_tooltip_alt = 'Show option sheet'
     k_checkable = True
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         fold = sender.isChecked()
         node_type = sender.data
-        return [node_type, fold], {}
+        return [node_type, fold], kwargs
 
     def method(self, node_type: str, fold: bool):
         """ Fold or unfold UI sheet for this type of node.
@@ -300,10 +300,10 @@ class OpenLineOptions(KatajaAction):
     k_command = 'Open more options'
     k_tooltip = 'Show more edge drawing options'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         node_type = sender.data
-        return [node_type], {}
+        return [node_type], kwargs
 
     def method(self, node_type: str):
         """ Fold or unfold UI sheet for this type of node.
@@ -318,9 +318,9 @@ class ResetSettings(KatajaAction):
     k_command = 'Reset node settings'
     k_tooltip = 'Reset settings in certain level and in all of the more specific levels'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         level = ctrl.ui.active_scope
-        return [level], {}
+        return [level], kwargs
 
     def method(self, level: int):
         """ Reset node settings in given level and in more specific levels.

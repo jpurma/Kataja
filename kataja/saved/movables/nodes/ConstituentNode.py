@@ -64,6 +64,7 @@ class ConstituentNode(Node):
 
     default_edge = g.CONSTITUENT_EDGE
     ui_sheet = ('kataja.ui_widgets.panels.ConstituentSheet', 'ConstituentSheet')
+    allowed_child_types = [g.CONSTITUENT_NODE, g.FEATURE_NODE, g.GLOSS_NODE, g.COMMENT_NODE]
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the
@@ -81,36 +82,86 @@ class ConstituentNode(Node):
     # edges going up. When left empty, touch area is associated with the node.
 
     touch_areas_when_dragging = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
-        g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent', 'free_drawing_mode']},
-        g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent',
-                                                                'free_drawing_mode']},
-        g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
-        g.TOUCH_CONNECT_FEATURE: {'condition': ['dragging_feature', 'free_drawing_mode']},
-        g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
+        'LeftAddTop': {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode'],
+                       'action': 'connect_node',
+                       'action_kwargs': {'position': 'top_left'}},
+        'RightAddTop': {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode'],
+                        'action': 'connect_node',
+                        'action_kwargs': {
+                            'position': 'top_right',
+                        }
+        },
+        'LeftAddSibling': {'place': 'edge_up',
+                           'condition': ['dragging_constituent', 'free_drawing_mode'],
+                           'action': 'connect_node',
+                           'action_kwargs': {
+                               'position': 'sibling_left',
+                           }
+        },
+        'RightAddSibling': {'place': 'edge_up',
+                            'condition': ['dragging_constituent', 'free_drawing_mode'],
+                            'action': 'connect_node',
+                            'action_kwargs': {
+                                'position': 'sibling_right',
+                            }
+        },
+        'AddBelowTouchArea': {'condition': 'can_have_as_child', 'action': 'connect_node',
+                              'action_kwargs': {'position': 'child'}}}
 
     touch_areas_when_selected = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
-                         'action': 'add_node_to', 'action_arg': 'top_left'},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
-                          'action': 'add_node_to', 'action_arg': 'top_right'},
+        'LeftAddTop': {'condition': ['is_top_node', 'free_drawing_mode'],
+                       'action': 'connect_node',
+                       'action_kwargs': {
+                            'position': 'top_left',
+                            'new_type': g.CONSTITUENT_NODE
+                        }},
+        'RightAddTop': {'condition': ['is_top_node', 'free_drawing_mode'],
+                        'action': 'connect_node',
+                        'action_kwargs': {
+                            'position': 'top_right',
+                            'new_type': g.CONSTITUENT_NODE
+                        }},
         g.MERGE_TO_TOP: {'condition': ['not:is_top_node', 'free_drawing_mode'],
-                         'action': 'merge_to_top'},
+                         'action': 'merge_to_top',
+                         'action_kwargs': {'left': True}},
         g.INNER_ADD_SIBLING_LEFT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
                                    'place': 'edge_up',
-                                   'action': 'add_node_to', 'action_arg': 'sibling_left'},
+                                   'action': 'connect_node',
+                                   'action_kwargs': {
+                                       'position': 'sibling_left',
+                                       'new_type': g.CONSTITUENT_NODE
+                                   }},
         g.INNER_ADD_SIBLING_RIGHT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
                                     'place': 'edge_up',
-                                    'action': 'add_node_to', 'action_arg': 'sibling_right'},
+                                    'action': 'connect_node',
+                                    'action_kwargs': {
+                                        'position': 'top_right',
+                                        'new_type': g.CONSTITUENT_NODE
+                                    }},
         g.UNARY_ADD_CHILD_LEFT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                 'action': 'add_node_to', 'action_arg': 'child_left'},
+                                 'action': 'connect_node',
+                                 'action_kwargs': {
+                                     'position': 'child_left',
+                                     'new_type': g.CONSTITUENT_NODE
+                                 }},
         g.UNARY_ADD_CHILD_RIGHT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                  'action': 'add_node_to', 'action_arg': 'child_right'},
+                                  'action': 'connect_node',
+                                  'action_kwargs': {
+                                      'position': 'child_right',
+                                      'new_type': g.CONSTITUENT_NODE
+                                  }},
         g.LEAF_ADD_SIBLING_LEFT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                  'action': 'add_node_to', 'action_arg': 'sibling_left'},
+                                  'action': 'connect_node',
+                                  'action_kwargs': {
+                                      'position': 'sibling_left',
+                                      'new_type': g.CONSTITUENT_NODE
+                                  }},
         g.LEAF_ADD_SIBLING_RIGHT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                   'action': 'add_node_to', 'action_arg': 'sibling_right'},
+                                   'action': 'connect_node',
+                                   'action_kwargs': {
+                                       'position': 'sibling_right',
+                                       'new_type': g.CONSTITUENT_NODE
+                                   }},
         g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
                          'action': 'add_triangle'},
         g.REMOVE_TRIANGLE: {'condition': 'is_triangle_host',
@@ -701,24 +752,6 @@ class ConstituentNode(Node):
         :return:
         """
         return self.is_dragging_this_type(g.CONSTITUENT_NODE)
-
-    def dragging_feature(self):
-        """ Check if the currently dragged item is feature and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.FEATURE_NODE)
-
-    def dragging_gloss(self):
-        """ Check if the currently dragged item is gloss and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.GLOSS_NODE)
-
-    def dragging_comment(self):
-        """ Check if the currently dragged item is comment and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.COMMENT_NODE)
 
     # ### Features #########################################
 

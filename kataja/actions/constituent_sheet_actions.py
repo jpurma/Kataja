@@ -178,7 +178,7 @@ class SwitchTraceMode(KatajaAction):
     k_command = 'Show traces'
     k_shortcut = 't'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
             trace_mode = sender.currentData()
@@ -219,7 +219,7 @@ class ToggleLabelTextModes(KatajaAction):
     k_shortcut = 'l'
     k_tooltip = 'Switch what to show as label text'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
             label_mode = sender.currentData()
@@ -265,7 +265,7 @@ class SelectProjectionStyle(KatajaAction):
     k_tooltip = 'Switch between different ways to show projecting constituents'
     k_shortcut = 'Shift+P'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
             projection_style = sender.currentData()

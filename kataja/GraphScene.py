@@ -458,6 +458,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         event.ignore()
         QtWidgets.QGraphicsScene.dropEvent(self, event)
+        message = ""
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()

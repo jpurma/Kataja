@@ -944,7 +944,8 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-    def get_or_create_touch_area(self, host, subtype, action=None, **kwargs):
+    def get_or_create_touch_area(self, host, subtype, action=None, drop_support=False,
+                                 action_args=None, action_kwargs=None):
         """ Get touch area for specific purpose or create one if it doesn't exist.
         :param host: element that has UI items associated with it
         :param subtype: toucharea type id
@@ -953,7 +954,8 @@ class UIManager:
         """
         ta = self.get_ui_by_type(host=host, ui_type=subtype)
         if not ta:
-            ta = self.create_touch_area(host, subtype, action, **kwargs)
+            ta = self.create_touch_area(host, subtype, action, drop_support=drop_support,
+                                        action_args=action_args, action_kwargs=action_kwargs)
         return ta
 
     def get_touch_area(self, host, subtype):
@@ -964,7 +966,8 @@ class UIManager:
         """
         return self.get_ui_by_type(host=host, ui_type=subtype)
 
-    def create_touch_area(self, host, subtype, action, **kwargs):
+    def create_touch_area(self, host, subtype, action, drop_support=False, action_args=None,
+                          action_kwargs=None):
         """ Create touch area, doesn't check if it exists already.
         :param host: element that has UI items associated with it
         :param subtype: toucharea type id
@@ -972,7 +975,9 @@ class UIManager:
         :return:
         """
         ta_class = getattr(kataja.ui_graphicsitems.TouchArea, subtype)
-        ta = ta_class(host, action, **kwargs)
+        ta = ta_class(host, action, drop_support=drop_support,
+                      action_args=action_args,
+                      action_kwargs=action_kwargs)
         self.add_ui(ta)
         return ta
 
@@ -1004,10 +1009,8 @@ class UIManager:
         for ta_type, values in d.items():
             if node.check_conditions(values):
                 action = self.get_action(values.get('action'))
-                if 'action_arg' in values:
-                    action_args = {'action_arg': values['action_arg']}
-                else:
-                    action_args = {}
+                action_args = values.get('action_args', [])
+                action_kwargs = values.get('action_kwargs', {})
                 place = values.get('place', '')
                 if place == 'edge_up':
                     hosts = node.get_edges_up(similar=True, visible=True)
@@ -1016,7 +1019,8 @@ class UIManager:
                 else:
                     hosts = [node]
                 for host in hosts:
-                    self.get_or_create_touch_area(host, ta_type, action, **action_args)
+                    self.create_touch_area(host, ta_type, action, drop_support=False,
+                                           action_args=action_args, action_kwargs=action_kwargs)
 
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
@@ -1052,11 +1056,18 @@ class UIManager:
                 if node.check_conditions(values):
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
+                    action_args = values.get('action_args', [])
+                    action_kwargs = values.get('action_kwargs', {})
                     if place == 'edge_up':
                         for edge in node.get_edges_up(similar=True, visible=True):
-                            self.get_or_create_touch_area(edge, ta_type, action)
+                            self.get_or_create_touch_area(edge, ta_type, action,
+                                                          drop_support=True,
+                                                          action_args=action_args,
+                                                          action_kwargs=action_kwargs)
                     elif not place:
-                        self.get_or_create_touch_area(node, ta_type, action)
+                        self.get_or_create_touch_area(node, ta_type, action, drop_support=True,
+                                                      action_args=action_args,
+                                                      action_kwargs=action_kwargs)
                     else:
                         raise NotImplementedError
 

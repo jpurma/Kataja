@@ -40,7 +40,7 @@ class ChangeEdgeShape(KatajaAction):
     k_tooltip = 'Change shapes of lines between objects'
     k_undoable = False
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         shape_name = sender.currentData()
 
@@ -91,7 +91,7 @@ class ChangeEdgeColor(KatajaAction):
     k_tooltip = 'Change drawing color for edges'
     k_undoable = False
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         color_key = sender.receive_color_selection()
         if ctrl.ui.scope_is_selection:
@@ -140,8 +140,8 @@ class EdgeArrowheadStart(KatajaAction):
     k_command = 'Draw arrowhead at line start'
     k_checkable = True
 
-    def prepare_parameters(self):
-        ah_at_start = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        ah_at_start = args[0]
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
             edge_type = None
@@ -183,8 +183,8 @@ class EdgeArrowheadEnd(KatajaAction):
     k_command = 'Draw arrowhead at line end'
     k_checkable = True
 
-    def prepare_parameters(self):
-        ah_at_end = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        ah_at_end = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -227,7 +227,7 @@ class ResetControlPoints(KatajaAction):
     k_command = 'Reset control point'
     k_tooltip = 'Remove adjustments for these curves'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
             edge_type = None
@@ -265,7 +265,7 @@ class ResetEdgeSettings(KatajaAction):
     k_command = 'Reset edge settings'
     k_tooltip = 'Reset settings for this type of edges back to defaults'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
             edge_type = None
@@ -311,8 +311,8 @@ class LeafShapeX(KatajaAction):
     k_command = 'Edge shape width'
     k_tooltip = 'Adjust horizontal thickness of edges'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -354,8 +354,8 @@ class LeafShapeY(KatajaAction):
     k_command = 'Edge shape height'
     k_tooltip = 'Adjust vertical thickness of edges'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -397,8 +397,8 @@ class EdgeThickness(KatajaAction):
     k_command = 'Edge thickness'
     k_tooltip = 'Adjust fixed thickness for edges'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -440,8 +440,8 @@ class EdgeCurvatureRelative(KatajaAction):
     k_command = 'Change line curvature to be relative to edge dimensions'
     k_checkable = True
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -484,8 +484,8 @@ class EdgeCurvatureFixed(KatajaAction):
     k_command = 'Change line curvature to be a pair of fixed values'
     k_checkable = True
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -528,8 +528,8 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature value is relative to edge width'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -572,8 +572,8 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature value is relative to edge height'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -617,8 +617,8 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -661,8 +661,8 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -705,8 +705,8 @@ class EdgeShapeFill(KatajaAction):
     k_command = 'Set edges to be drawn as filled'
     k_checkable = True
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
@@ -749,8 +749,8 @@ class EdgeShapeLine(KatajaAction):
     k_command = 'Set edges to be drawn with outlines'
     k_checkable = True
 
-    def prepare_parameters(self):
-        value = self.args[0]
+    def prepare_parameters(self, args, kwargs):
+        value = args[0]
 
         if ctrl.ui.scope_is_selection:
             level = g.SELECTION
