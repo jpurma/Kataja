@@ -105,7 +105,8 @@ class ConstituentNode(Node):
                                 'position': 'sibling_right',
                             }
         },
-        'AddBelowTouchArea': {'condition': 'can_have_as_child', 'action': 'connect_node',
+        'AddBelowTouchArea': {'condition': ['not:dragging_constituent', 'can_have_as_child'],
+                              'action': 'connect_node',
                               'action_kwargs': {'position': 'child'}}}
 
     touch_areas_when_selected = {
@@ -790,7 +791,7 @@ class ConstituentNode(Node):
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
-                    node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    node.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
 
     #################################
 

@@ -1007,7 +1007,7 @@ class UIManager:
             return
         d = node.__class__.touch_areas_when_selected
         for ta_type, values in d.items():
-            if node.check_conditions(values):
+            if node.check_conditions(values.get('condition', None)):
                 action = self.get_action(values.get('action'))
                 action_args = values.get('action_args', [])
                 action_kwargs = values.get('action_kwargs', {})
@@ -1053,7 +1053,7 @@ class UIManager:
                 continue
             d = node.__class__.touch_areas_when_dragging
             for ta_type, values in d.items():
-                if node.check_conditions(values):
+                if node.check_conditions(values.get('condition', None)):
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
                     action_args = values.get('action_args', [])

@@ -301,7 +301,7 @@ class Controller:
         self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def press(self, obj):
-        """ Mark object to be the last pressed object. If it has on_press -hook, do it.
+        """ Mark object to be the last pressed object.
         :param obj:
         :return:
         """

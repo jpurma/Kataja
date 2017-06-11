@@ -84,10 +84,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
-        use_current_positions = len(ctrl.forest.nodes) < 25
+        use_current_positions = len(ctrl.forest.nodes) < 10
         vr = self.visible_rect(current=use_current_positions) + margins
         if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
+                print(vr, self._cached_visible_rect)
                 if self.keep_updating_visible_area or \
                         prefs.auto_zoom or \
                         vr.width() > self._cached_visible_rect.width() or \
@@ -95,6 +96,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
         else:
+            print('starting visible rect: ', vr)
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 
@@ -126,9 +128,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             empty = False
             if current:
-                minx, miny, maxx, maxy = tree.current_scene_bounding_rect().getCoords()
+                minx, miny, maxx, maxy = (int(x) for x in tree.current_scene_bounding_rect().getCoords())
             else:
-                minx, miny, maxx, maxy = tree.sceneBoundingRect().getCoords()
+                minx, miny, maxx, maxy = (int(x) for x in tree.sceneBoundingRect().getCoords())
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:
@@ -204,8 +206,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if not self._timer_id:
-            self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
-            self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
+            #self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
+            #self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
             self._timer_min_count = 0
             ctrl.set_play(True)
@@ -220,8 +222,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         self.killTimer(self._timer_id)
         self._timer_id = 0
-        self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
-        self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
+        #self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
+        #self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
         ctrl.set_play(False)
 
     def export_3d(self, path, forest):

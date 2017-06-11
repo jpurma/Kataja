@@ -758,7 +758,7 @@ class Node(Movable):
             return False
         elif other_type in self.allowed_child_types:
             if other:
-                return other not in self.get_parents(similar=False, visible=False)
+                return other not in self.get_children(similar=False, visible=False)
             return True
         return False
 
@@ -1176,26 +1176,27 @@ class Node(Movable):
             node.update_label()
             node.update_visibility()
 
-    def on_press(self, value):
-        """ Testing if we can add some push-depth effect.
-        :param value: pressed or not
-        :return:
-        """
-        # push-animation is unwanted if we are already editing the text:
-        if self.label_object and self.label_object.is_quick_editing():
-            pass
-        elif value:
-            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-            self.anim.setDuration(20)
-            self.anim.setStartValue(self.scale())
-            self.anim.setEndValue(0.95)
-            self.anim.start()
-        else:
-            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-            self.anim.setDuration(20)
-            self.anim.setStartValue(self.scale())
-            self.anim.setEndValue(1.0)
-            self.anim.start()
+    # def on_press(self, value):
+    #     """ Testing if we can add some push-depth effect.
+    #     :param value: pressed or not
+    #     :return:
+    #     """
+    #     print('on_press')
+    #     # push-animation is unwanted if we are already editing the text:
+    #     if self.label_object and self.label_object.is_quick_editing():
+    #         pass
+    #     elif value:
+    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+    #         self.anim.setDuration(20)
+    #         self.anim.setStartValue(self.scale())
+    #         self.anim.setEndValue(0.90)
+    #         self.anim.start()
+    #     else:
+    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+    #         self.anim.setDuration(20)
+    #         self.anim.setStartValue(self.scale())
+    #         self.anim.setEndValue(1.0)
+    #         self.anim.start()
 
     # ## Magnets
     # ######################################################################
@@ -1374,6 +1375,9 @@ class Node(Movable):
 
     # Drag flow:
 
+    # 0.
+    #
+
     # 1. drag -- compute drag's current situation, where is mouse cursor, should we start
     # dragging or just announce new position for 'dragged_to'.
     #
@@ -1385,7 +1389,7 @@ class Node(Movable):
     #   2b. prepare_children_for_dragging -- compute what should be included in drag for this
     #   type of node.
     #
-    #   3. start_dragging_tracking -- this is called for each node that is included into drag.
+    #   3. prepare_dragging_participiant -- this is called for each node that is included into drag.
     #   Prepares drag data and sets up animations.
     #
     #   4. dragged_to -- this is called for each node in drag set. Node moves to position
@@ -1434,7 +1438,7 @@ class Node(Movable):
                 if in_any_tree(item, dragged_trees):
                     continue
                 elif getattr(item, 'draggable', True):
-                    item.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    item.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
                     item.prepare_children_for_dragging(scene_pos)
                     multidrag = True
         # no selection -- drag what is under the pointer
@@ -1444,7 +1448,7 @@ class Node(Movable):
                 dragged_trees.add(tree)
             else:
                 self.prepare_children_for_dragging(scene_pos)
-            self.start_dragging_tracking(host=True, scene_pos=scene_pos)
+            self.prepare_dragging_participiant(host=True, scene_pos=scene_pos)
 
         moving = ctrl.dragged_set
         for tree in dragged_trees:
@@ -1459,10 +1463,15 @@ class Node(Movable):
         """
         pass
 
-    def start_dragging_tracking(self, host=False, scene_pos=None):
+    def prepare_dragging_participiant(self, host=False, scene_pos=None):
         """ Add this node into the entourage of dragged node. These nodes will
         maintain their relative position to dragged node while dragging.
+        This can and should be called also for the host of the dragging operation. In this case
+        host=True.
         :return: None
+        :param host: is this the main dragged node or one of its children
+        :param scene_pos: mouse position when dragging started -- dragging participiant will keep
+        its distance from pointer fixed during dragging
         """
         ctrl.dragged_set.add(self)
         ctrl.add_my_group_to_dragged_groups(self)
@@ -1471,18 +1480,19 @@ class Node(Movable):
 
         tree = self.tree_where_top()
         if tree:
-            tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
+            tree.prepare_dragging_participiant(host=host, scene_pos=scene_pos)
         parent = self.parentItem()
         if parent:
             parent.setZValue(500)
-        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        self.anim.setDuration(100)
-        self.anim.setStartValue(self.scale())
-        self.anim.setEndValue(1.1)
-        self.anim.start()
+        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+        # self.anim.setEasingCurve(QtCore.QEasingCurve.Linear)
+        # self.anim.setDuration(600)
+        # self.anim.setStartValue(self.scale())
+        # self.anim.setEndValue(1.5)
+        # self.anim.start()
 
     def drag(self, event):
-        """ Drags also elements that are counted to be involved: features,
+        """ Drag also elements that are counted to be involved: features,
         children etc. Drag is called to only one principal drag host element. 'dragged_to' is
         called for each element.
         :param event:
@@ -1492,8 +1502,6 @@ class Node(Movable):
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
         nx, ny = scene_pos
-        if not ctrl.dragged_focus:
-            self.start_dragging(scene_pos)
 
         # Call dragged_to -method for all nodes that are dragged with the drag focus
         # Their positions are relative to this focus, compute how much.
@@ -1591,11 +1599,11 @@ class Node(Movable):
                 self.drag_data.parent.setZValue(self.drag_data.parent_old_zvalue)
         self.drag_data = None
         ctrl.ui.remove_drag_info()
-        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        self.anim.setDuration(100)
-        self.anim.setStartValue(self.scale())
-        self.anim.setEndValue(1.0)
-        self.anim.start()
+        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+        # self.anim.setDuration(100)
+        # self.anim.setStartValue(self.scale())
+        # self.anim.setEndValue(1.0)
+        # self.anim.start()
 
     def cancel_dragging(self):
         """ Fixme: not called by anyone
@@ -1628,7 +1636,7 @@ class Node(Movable):
          dragging started.
         :return:
         """
-        was_locked = self.locked or self.use_adjustment
+        #was_locked = self.locked or self.use_adjustment
         super().lock()
         # if not was_locked:
         if self.is_visible():
@@ -1640,13 +1648,18 @@ class Node(Movable):
         ctrl.press(self)
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        # this only happens when this node is being pressed
-        if ctrl.dragged_set or (event.buttonDownScenePos(
-                QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
-            self.drag(event)
-            ctrl.graph_scene.dragging_over(event.scenePos())
-        super().mouseMoveEvent(event)
+    def mouseMoveEvent(self, e):
+        # mouseMoveEvents only happen between mousePressEvents and mouseReleaseEvents
+        scene_pos_pf = e.scenePos()
+        if ctrl.dragged_focus is self:
+            self.drag(e)
+            ctrl.graph_scene.dragging_over(scene_pos_pf)
+        elif (e.buttonDownScenePos(QtCore.Qt.LeftButton) - scene_pos_pf).manhattanLength() > 6:
+            scene_pos = to_tuple(scene_pos_pf)
+            self.start_dragging(scene_pos)
+            self.drag(e)
+            ctrl.graph_scene.dragging_over(scene_pos_pf)
+        super().mouseMoveEvent(e)
 
     def mouseReleaseEvent(self, event):
         """ Either we are finishing dragging or clicking the node. If clicking a node with
@@ -1859,19 +1872,23 @@ class Node(Movable):
         """
         if not cond:
             return True
-        elif isinstance(cond, dict):
-            return self.check_conditions(cond.get('condition', None))
         elif isinstance(cond, list):
-            return all((self.check_conditions(c) for c in cond))
-        elif cond.startswith('not:'):
-            return not self.check_conditions(cond[4:])
-        else:
+            for c in cond:
+                if not self.check_conditions(c):
+                    return False
+            return True
+        elif isinstance(cond, str):
+            not_flag = False
+            if cond.startswith('not:'):
+                cond = cond[4:]
+                not_flag = True
             cmethod = getattr(self, cond)
-            if cmethod:
-                return cmethod()
-            elif self.syntactic_object:
+            if (not cmethod) and self.syntactic_object:
                 cmethod = getattr(self.syntactic_object, cond)
-                if cmethod:
+            if cmethod:
+                if not_flag:
+                    return not cmethod()
+                else:
                     return cmethod()
             raise NotImplementedError(cond)
 
