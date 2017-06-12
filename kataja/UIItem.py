@@ -99,7 +99,7 @@ class UIItem:
         self._fade_out_anim = QtCore.QPropertyAnimation(self._opacity_effect, qbytes_opacity)
         self._fade_out_anim.setStartValue(1.0)
         self._fade_out_anim.setEndValue(0.0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
         self._fade_out_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
