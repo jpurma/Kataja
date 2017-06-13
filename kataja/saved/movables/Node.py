@@ -1813,25 +1813,31 @@ class Node(Movable):
 
     # ###### Halo for showing some association with selected node (e.g. c-command) ######
 
-    def toggle_halo(self, value):
+    def toggle_halo(self, value, small=False):
         if value and not self.halo_item:
             self.halo = True
             r = QtCore.QRectF(self.inner_rect)
-            iw = r.width()
-            ih = r.height()
-            if iw > ih:
-                w_adj = (iw - ih) / 2
-                r.setWidth(ih)
-                r.moveLeft(r.x() + w_adj)
-            elif ih > iw:
-                h_adj = (ih - iw) / 2
-                r.setHeight(iw)
-                r.moveTop(r.y() + h_adj)
-            self.halo_item = QtWidgets.QGraphicsEllipseItem(r)
+            iw = ew = r.width()
+            ih = eh = r.height()
+            if iw < ih:
+                eh = iw
+            else:
+                ew = ih
+            if small:
+                ew = 10
+                eh = 10
+            ex = ((iw - ew) / 2) - (iw / 2)
+            ey = ((ih - eh) / 2) - (ih / 2)
+            er = QtCore.QRectF(ex, ey, ew, eh)
+
+            self.halo_item = QtWidgets.QGraphicsEllipseItem(er)
             self.halo_item.setParentItem(self)
-            self.update_halo()
+            self.update_halo(color=ctrl.cm.selection())
             effect = QtWidgets.QGraphicsBlurEffect()
-            effect.setBlurRadius(8)
+            if small:
+                effect.setBlurRadius(4)
+            else:
+                effect.setBlurRadius(8)
             self.halo_item.setGraphicsEffect(effect)
             #self.halo_item.show()
         if (not value) and self.halo_item:
@@ -1848,11 +1854,9 @@ class Node(Movable):
                 self.halo_item = None
         self.update()
 
-    def update_halo(self):
-        op = 1 - ctrl.cm.background_lightness
-        op *= op * op
-        op = 0.40 + op / 3
-        c = ctrl.cm.transparent(self.contextual_color(), opacity=op * 100)
+    def update_halo(self, color):
+        c = color.lighter(100 + (1 - ctrl.cm.background_lightness) * 100)
+        c = ctrl.cm.transparent(c, opacity=60)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 

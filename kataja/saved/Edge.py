@@ -489,7 +489,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             base = ctrl.cm.get(self.in_projections[0].color_id)
         elif self.color_id:
-            print('getting color: ', self.color_id)
             base = ctrl.cm.get(self.color_id)
         elif self.end:
             base = ctrl.cm.get(self.end.get_color_id())

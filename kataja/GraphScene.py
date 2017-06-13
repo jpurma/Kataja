@@ -88,7 +88,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         vr = self.visible_rect(current=use_current_positions) + margins
         if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
-                print(vr, self._cached_visible_rect)
                 if self.keep_updating_visible_area or \
                         prefs.auto_zoom or \
                         vr.width() > self._cached_visible_rect.width() or \
@@ -96,7 +95,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
         else:
-            print('starting visible rect: ', vr)
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 

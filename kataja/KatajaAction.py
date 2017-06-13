@@ -203,7 +203,6 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        print('run_command:', args, kwargs)
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken

@@ -383,12 +383,12 @@ class UIManager:
                     item.toggle_halo(True)
                 if ctrl.settings.get('show_c_command') and not self.active_embed:
                     if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
-                        c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(
+                        dominated_synobjs = ctrl.forest.syntax.get_dominated_nodes(
                             item)
-                        for synobj in c_commanded_synobjs:
+                        for synobj in dominated_synobjs:
                             node = ctrl.forest.get_node(synobj)
                             if node and node.is_visible():
-                                node.toggle_halo(True)
+                                node.toggle_halo(True, small=True)
                 if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
                     self.start_editing_node(item, active_embed)
 

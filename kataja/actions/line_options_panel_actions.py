@@ -73,7 +73,9 @@ class ChangeEdgeShape(KatajaAction):
             ctrl.settings.set_edge_setting('shape_name', shape_name,
                                            edge_type=edge_type, level=level)
             for edge in ctrl.forest.edges.values():
-                edge.update_shape()
+                if edge.edge_type == edge_type:
+                    edge._changed = True
+                    edge.update_shape()
         line_options = ctrl.ui.get_panel('LineOptionsPanel')
         if line_options:
             line_options.update_panel()
