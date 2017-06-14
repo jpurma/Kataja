@@ -251,6 +251,7 @@ class Controller:
         for obj in self.selected:
             obj.update_selection_status(False)
         self.selected = []
+        self.call_watchers(self, 'selection_changed', value=[])
 
     def select(self, objs):
         """
@@ -258,7 +259,10 @@ class Controller:
         :param objs:
         """
         had_objs = bool(self.selected)
-        self.deselect_objects()
+        if had_objs:
+            for obj in self.selected:
+                obj.update_selection_status(False)
+            self.selected = []
         if not objs:
             if had_objs:
                 self.call_watchers(self, 'selection_changed', value=self.selected)

@@ -236,7 +236,6 @@ class ConnectNode(KatajaAction):
     k_command = 'Connect node to'
 
     def prepare_parameters(self, args, kwargs):
-        print('connect_node, prepare_parameters:', args, kwargs)
         if not args:
             kwargs = self.sender().action_kwargs
             target = self.get_host()
@@ -244,7 +243,6 @@ class ConnectNode(KatajaAction):
             target = args[0]
         if isinstance(target, Edge):
             target = target.end
-        print('return: ', [target.uid], kwargs)
         return [target.uid], kwargs
 
     def method(self, target_uid: int, node_uid=0, position='child', new_label='', new_type=0):
@@ -273,11 +271,9 @@ class ConnectNode(KatajaAction):
             ctrl.free_drawing.connect_node(parent=target, child=new_node)
         elif position == 'top_left':
             # fixme: check that this is top node
-            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=True,
-                                           pos=new_node.current_position)
+            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=True)
         elif position == 'top_right':
-            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=False,
-                                           pos=new_node.current_position)
+            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=False)
         elif position == 'sibling_left':
             ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=True)
         elif position == 'sibling_right':

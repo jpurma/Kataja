@@ -150,6 +150,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.lower_doc = None
         self._fresh_focus = False
         self.editable_part.setDocument(self.editable_doc)
+        self.setZValue(20) # ZValue amongst the childItems of Node
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)

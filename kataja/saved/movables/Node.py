@@ -383,6 +383,7 @@ class Node(Movable):
         self.update()
         if self.zValue() < 150:
             self.setZValue(150)
+        self.update_status_tip()
         ctrl.set_status(self.status_tip)
 
     def _stop_hover(self):
@@ -479,6 +480,7 @@ class Node(Movable):
          new position according to new parent so that there is no visible jump.
         :return:
         """
+        old_pos = self.current_scene_position
         old_parent = self.parentItem()
         if isinstance(old_parent, Node):
             return  # This is locked to some other node and should keep it as parent
@@ -491,35 +493,30 @@ class Node(Movable):
         elif old_parent:
             self.current_position = self.current_scene_position
             self.setParentItem(None)
+        assert(self.current_scene_position == old_pos)
 
-    def copy_position(self, other, ax=0, ay=0):
+    def copy_position(self, other):
         """ Helper method for newly created items. Takes other item and copies movement related
-        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
-        adjust these a little to avoid complete overlap.
+        attributes from it (physics settings, locks, adjustment etc).
         :param other:
-        :param ax:
-        :param ay:
         :return:
         """
         parent = self.parentItem()
-        print('adjust:', ax, ay)
-        print('other scene pos:', other.current_scene_position)
         if parent is other.parentItem():
-            self.current_position = other.current_position[0] + ax, other.current_position[1] + ay
+            self.current_position = other.current_position[0], other.current_position[1]
             self.target_position = other.target_position
         else:
             csp = other.current_scene_position
-            #ctp = other.mapToScene(QtCore.QPointF(*other.target_position))
-            nsp = QtCore.QPointF(csp[0] + ax, csp[1] + ay)
+            nsp = QtCore.QPointF(csp[0], csp[1])
             if parent:
                 nsp = parent.mapFromScene(nsp)
             else:
                 nsp = self.mapFromScene(nsp)
             self.current_position = nsp.x(), nsp.y()
             self.target_position = nsp.x(), nsp.y()
-        print('my scene pos:', self.current_scene_position)
-        print('my current pos:', self.current_position)
-        print('my target pos:', self.target_position)
+        if self.current_scene_position != other.current_scene_position:
+            print('copy position led to different positions: ', self.current_scene_position,
+                  other.current_scene_position)
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
         self.adjustment = other.adjustment
@@ -1835,9 +1832,9 @@ class Node(Movable):
             self.update_halo(color=ctrl.cm.selection())
             effect = QtWidgets.QGraphicsBlurEffect()
             if small:
-                effect.setBlurRadius(4)
+                effect.setBlurRadius(2)
             else:
-                effect.setBlurRadius(8)
+                effect.setBlurRadius(2)
             self.halo_item.setGraphicsEffect(effect)
             #self.halo_item.show()
         if (not value) and self.halo_item:
@@ -1855,8 +1852,9 @@ class Node(Movable):
         self.update()
 
     def update_halo(self, color):
-        c = color.lighter(100 + (1 - ctrl.cm.background_lightness) * 100)
-        c = ctrl.cm.transparent(c, opacity=60)
+        c = color.lighter(100 + (1 - ctrl.cm.background_lightness) * 120)
+        c = ctrl.cm.transparent(c, opacity=50)
+        self.halo_item.setZValue(2)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 

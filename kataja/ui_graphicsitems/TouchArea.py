@@ -205,8 +205,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if self._drag_hint:
             return False
         ctrl.deselect_objects()
-        print('click: ', self.action_args, self.action_kwargs)
-        #self.action.run_command(self.host, *self.action_args, **self.action_kwargs)
         self.clicked.emit()
         return True
 
@@ -325,6 +323,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             self.action_kwargs['node_uid'] = getattr(node_or_string, 'uid')
 
         self.action.run_command(self.host, *self.action_args, **self.action_kwargs)
+        ctrl.deselect_objects()
 
 
 class AddBelowTouchArea(TouchArea):
