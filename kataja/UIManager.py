@@ -604,7 +604,10 @@ class UIManager:
             a = self.actions.get(key, None)
             if a:
                 return a
-            print('missing action ', key)
+            else:
+                log.critical(f'missing action: {key}')
+        else:
+            log.critical(f'get_action called with empty key')
 
     def create_menus(self):
         """ Put actions to menus. Menu structure is defined at the top of this file.
@@ -944,20 +947,6 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-    def get_or_create_touch_area(self, host, subtype, action=None, drop_support=False,
-                                 action_args=None, action_kwargs=None):
-        """ Get touch area for specific purpose or create one if it doesn't exist.
-        :param host: element that has UI items associated with it
-        :param subtype: toucharea type id
-        :param action: action to associate with toucharea if one is created
-        :return:
-        """
-        ta = self.get_ui_by_type(host=host, ui_type=subtype)
-        if not ta:
-            ta = self.create_touch_area(host, subtype, action, drop_support=drop_support,
-                                        action_args=action_args, action_kwargs=action_kwargs)
-        return ta
-
     def get_touch_area(self, host, subtype):
         """ Get existing touch area for a node or other scene element.
         :param host: element that has UI items associated with it
@@ -966,20 +955,6 @@ class UIManager:
         """
         return self.get_ui_by_type(host=host, ui_type=subtype)
 
-    def create_touch_area(self, host, subtype, action, drop_support=False, action_args=None,
-                          action_kwargs=None):
-        """ Create touch area, doesn't check if it exists already.
-        :param host: element that has UI items associated with it
-        :param subtype: toucharea type id
-        :param action: action to associate with toucharea
-        :return:
-        """
-        ta_class = getattr(kataja.ui_graphicsitems.TouchArea, subtype)
-        ta = ta_class(host, action, drop_support=drop_support,
-                      action_args=action_args,
-                      action_kwargs=action_kwargs)
-        self.add_ui(ta)
-        return ta
 
     def remove_touch_areas(self):
         """ Remove all touch areas from UI. Needs to be done when changing
@@ -1005,22 +980,13 @@ class UIManager:
         """
         if not node.is_visible():
             return
-        d = node.__class__.touch_areas_when_selected
-        for ta_type, values in d.items():
-            if node.check_conditions(values.get('condition', None)):
-                action = self.get_action(values.get('action'))
-                action_args = values.get('action_args', [])
-                action_kwargs = values.get('action_kwargs', {})
-                place = values.get('place', '')
-                if place == 'edge_up':
-                    hosts = node.get_edges_up(similar=True, visible=True)
-                elif place == 'parent_above':
-                    hosts = node.get_parents(similar=True, visible=True)
-                else:
-                    hosts = [node]
-                for host in hosts:
-                    self.create_touch_area(host, ta_type, action, drop_support=False,
-                                           action_args=action_args, action_kwargs=action_kwargs)
+        ta_classes = node.__class__.touch_areas_when_selected
+        for ta_class in ta_classes:
+            hosts = ta_class.hosts_for_node(node)
+            for host in hosts:
+                if ta_class.select_condition(host):
+                    ta = ta_class(host)
+                    self.add_ui(ta)
 
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
@@ -1028,11 +994,12 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
-            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
-                                          self.get_action('inner_add_sibling_left'))
-            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
-                                          self.get_action('inner_add_sibling_right'))
+        print('update_touch_areas_for_selected_edge')
+        #if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
+        #    self.get_or_create_touch_area(edge, 'LeftAddInnerSibling',
+        #                                  self.get_action('inner_add_sibling_left'))
+        #    self.get_or_create_touch_area(edge, 'RightAddInnerSibling',
+        #                                  self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """ Show connection points for dragged nodes.
@@ -1051,25 +1018,25 @@ class UIManager:
                 continue
             if node is ctrl.dragged_focus:
                 continue
-            d = node.__class__.touch_areas_when_dragging
-            for ta_type, values in d.items():
-                if node.check_conditions(values.get('condition', None)):
-                    action = self.get_action(values.get('action'))
-                    place = values.get('place', '')
-                    action_args = values.get('action_args', [])
-                    action_kwargs = values.get('action_kwargs', {})
-                    if place == 'edge_up':
-                        for edge in node.get_edges_up(similar=True, visible=True):
-                            self.get_or_create_touch_area(edge, ta_type, action,
-                                                          drop_support=True,
-                                                          action_args=action_args,
-                                                          action_kwargs=action_kwargs)
-                    elif not place:
-                        self.get_or_create_touch_area(node, ta_type, action, drop_support=True,
-                                                      action_args=action_args,
-                                                      action_kwargs=action_kwargs)
-                    else:
-                        raise NotImplementedError
+
+            ta_classes = node.__class__.touch_areas_when_dragging
+            for ta_class in ta_classes:
+                hosts = ta_class.hosts_for_node(node)
+                for host in hosts:
+                    if ta_class.drop_condition(host):
+                        ta = ta_class(host)
+                        self.add_ui(ta)
+
+    def is_dragging_this_type(self, dtype):
+        """ Check if the currently dragged item is in principle compatible with
+        self.
+        :return:
+        """
+        if ctrl.dragged_focus:
+            return ctrl.dragged_focus.node_type == dtype
+        elif ctrl.dragged_text:
+            return ctrl.dragged_text == dtype
+        return False
 
     # ### Flashing symbols
     # ################################################################

@@ -28,6 +28,7 @@ from kataja.SavedField import SavedField
 from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
     as_html
 from kataja.saved.movables.Node import Node
+import kataja.ui_graphicsitems.TouchArea as ta
 from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import time_me
@@ -70,104 +71,23 @@ class ConstituentNode(Node):
     # temporary shapes suggesting to drag or click here to create the
     # suggested shape.
 
-    # touch_areas_when_dragging and touch_areas_when_selected use the same
+    # touch_areas_when_dragging and touch_areas_when_selected are lists of strings, where strings
+    # are names of classes found in TouchArea. There are ways for plugins to inject new
+    # TouchAreas.
+    #
+    # TouchAreas have classmethods 'select_condition' and 'drop_condition' which are used to
+    # check if this is an appropriate toucharea to draw for given node or edge.
     # format.
 
-    # 'condition': there are some general conditions implemented in UIManager,
-    # but condition can refer to method defined for node instance. When used
-    # for when-dragging checks, the method will be called with two parameters
-    # 'dragged_type' and 'dragged_host'.
-    # 'place': there are some general places defined in UIManager. The most
-    # important is 'edge_up': in this case touch areas are associated with
-    # edges going up. When left empty, touch area is associated with the node.
-
-    touch_areas_when_dragging = {
-        'LeftAddTop': {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode'],
-                       'action': 'connect_node',
-                       'action_kwargs': {'position': 'top_left'}},
-        'RightAddTop': {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode'],
-                        'action': 'connect_node',
-                        'action_kwargs': {
-                            'position': 'top_right',
-                        }
-        },
-        'LeftAddSibling': {'place': 'edge_up',
-                           'condition': ['dragging_constituent', 'free_drawing_mode'],
-                           'action': 'connect_node',
-                           'action_kwargs': {
-                               'position': 'sibling_left',
-                           }
-        },
-        'RightAddSibling': {'place': 'edge_up',
-                            'condition': ['dragging_constituent', 'free_drawing_mode'],
-                            'action': 'connect_node',
-                            'action_kwargs': {
-                                'position': 'sibling_right',
-                            }
-        },
-        'AddBelowTouchArea': {'condition': ['not:dragging_constituent', 'can_have_as_child'],
-                              'action': 'connect_node',
-                              'action_kwargs': {'position': 'child'}}}
-
-    touch_areas_when_selected = {
-        'LeftAddTop': {'condition': ['is_top_node', 'free_drawing_mode'],
-                       'action': 'connect_node',
-                       'action_kwargs': {
-                            'position': 'top_left',
-                            'new_type': g.CONSTITUENT_NODE
-                        }},
-        'RightAddTop': {'condition': ['is_top_node', 'free_drawing_mode'],
-                        'action': 'connect_node',
-                        'action_kwargs': {
-                            'position': 'top_right',
-                            'new_type': g.CONSTITUENT_NODE
-                        }},
-        g.MERGE_TO_TOP: {'condition': ['not:is_top_node', 'free_drawing_mode'],
-                         'action': 'merge_to_top',
-                         'action_kwargs': {'left': True}},
-        g.INNER_ADD_SIBLING_LEFT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
-                                   'place': 'edge_up',
-                                   'action': 'connect_node',
-                                   'action_kwargs': {
-                                       'position': 'sibling_left',
-                                       'new_type': g.CONSTITUENT_NODE
-                                   }},
-        g.INNER_ADD_SIBLING_RIGHT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
-                                    'place': 'edge_up',
-                                    'action': 'connect_node',
-                                    'action_kwargs': {
-                                        'position': 'top_right',
-                                        'new_type': g.CONSTITUENT_NODE
-                                    }},
-        g.UNARY_ADD_CHILD_LEFT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                 'action': 'connect_node',
-                                 'action_kwargs': {
-                                     'position': 'child_left',
-                                     'new_type': g.CONSTITUENT_NODE
-                                 }},
-        g.UNARY_ADD_CHILD_RIGHT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                  'action': 'connect_node',
-                                  'action_kwargs': {
-                                      'position': 'child_right',
-                                      'new_type': g.CONSTITUENT_NODE
-                                  }},
-        g.LEAF_ADD_SIBLING_LEFT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                  'action': 'connect_node',
-                                  'action_kwargs': {
-                                      'position': 'sibling_left',
-                                      'new_type': g.CONSTITUENT_NODE
-                                  }},
-        g.LEAF_ADD_SIBLING_RIGHT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                   'action': 'connect_node',
-                                   'action_kwargs': {
-                                       'position': 'sibling_right',
-                                       'new_type': g.CONSTITUENT_NODE
-                                   }},
-        g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
-                         'action': 'add_triangle'},
-        g.REMOVE_TRIANGLE: {'condition': 'is_triangle_host',
-                            'action': 'remove_triangle'}
-    }
+    touch_areas_when_dragging = [
+        ta.LeftAddTop, ta.LeftAddSibling, ta.RightAddSibling, ta.AddBelowTouchArea
+    ]
+    touch_areas_when_selected= [
+        ta.LeftAddTop, ta.RightAddTop, ta.MergeToTop, ta.LeftAddInnerSibling,
+        ta.RightAddInnerSibling, ta.LeftAddUnaryChild, ta.RightAddUnaryChild,
+        ta.LeftAddLeafSibling, ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
+        ta.RemoveTriangleTouchArea
+    ]
 
     buttons_when_selected = {
         g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'],

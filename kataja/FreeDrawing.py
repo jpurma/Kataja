@@ -730,8 +730,7 @@ class FreeDrawing:
         else:
             left = top
             right = new
-        merger_node = self.create_merger_node(left=left, right=right, new=new, heads=top.heads)
-        merger_node.copy_position(top)
+        self.create_merger_node(left=left, right=right, new=new, heads=top.heads)
 
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a trees: a new merge is created

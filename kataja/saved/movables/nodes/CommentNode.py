@@ -30,6 +30,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
+import kataja.ui_graphicsitems.TouchArea as ta
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -58,13 +59,8 @@ class CommentNode(Node):
 
     default_edge = g.COMMENT_EDGE
 
-    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'},
-                                 g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
-                                 }
-
-    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow',
-                                                  'action': 'delete_arrow'},
-                                 g.ADD_ARROW: {'action': 'start_arrow_from_node'}}
+    touch_areas_when_dragging = [ta.DeleteArrowTouchArea]
+    touch_areas_when_selected = [ta.DeleteArrowTouchArea]
 
     def __init__(self, label='comment'):
         self.image_object = None

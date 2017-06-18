@@ -237,7 +237,7 @@ class ConnectNode(KatajaAction):
 
     def prepare_parameters(self, args, kwargs):
         if not args:
-            kwargs = self.sender().action_kwargs
+            kwargs = self.sender().click_kwargs
             target = self.get_host()
         else:
             target = args[0]

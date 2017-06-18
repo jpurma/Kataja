@@ -97,8 +97,8 @@ class Node(Movable):
                      'card_width': 0, 'card_height': 0}
 
     default_edge = g.ABSTRACT_EDGE
-    touch_areas_when_dragging = {}
-    touch_areas_when_selected = {}
+    touch_areas_when_dragging = []
+    touch_areas_when_selected = []
 
     buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'start_editing_node'},
                              g.REMOVE_NODE: {'action': 'remove_node',
@@ -1616,16 +1616,6 @@ class Node(Movable):
                 for node in ctrl.dragged_set:
                     node.cancel_dragging()
             self.drag_data = None
-
-    def is_dragging_this_type(self, dtype):
-        """ Check if the currently dragged item is in principle compatible with self.
-        :return:
-        """
-        if ctrl.dragged_focus:
-            return ctrl.dragged_focus.node_type == dtype
-        elif ctrl.dragged_text:
-            return ctrl.dragged_text == dtype
-        return False
 
     def lock(self):
         """ Display lock, unless already locked. Added functionality to

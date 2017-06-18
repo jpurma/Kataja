@@ -62,8 +62,8 @@ class NodeEditEmbed(UIEmbed):
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
             d = ed.get(field_name, {})
-            if d.get('hidden', False) or not self.host.check_conditions(d):
-                continue
+            #if d.get('hidden', False) or not self.host.check_conditions(d):
+            #    continue
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
