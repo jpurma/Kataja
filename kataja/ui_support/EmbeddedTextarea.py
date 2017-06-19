@@ -17,9 +17,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         QtWidgets.QPlainTextEdit.__init__(self, parent)
         if tip:
             if ctrl.main.use_tooltips:
-                self.setToolTip(tip)
-                self.setToolTipDuration(2000)
-            self.setStatusTip(tip)
+                self.k_tooltip = tip
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)

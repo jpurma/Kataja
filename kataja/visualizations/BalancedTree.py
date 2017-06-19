@@ -107,4 +107,3 @@ class BalancedTree(BaseVisualization):
 
         recursive_position(tree.top, 0, 0, 0)
 
-

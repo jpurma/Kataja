@@ -73,7 +73,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.end_point = None
         self.z_value = 160
         self.setZValue(self.z_value)
-        self.status_tip = ""
         # Drawing flags defaults
         self._fill_path = False
         self._align_left = self.__class__.align_left
@@ -108,9 +107,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         return self._visible
 
     def set_tip(self, tip):
-        self.status_tip = tip
-        if ctrl.main.use_tooltips:
-            self.setToolTip(self.status_tip)
+        self.k_tooltip = tip
 
     def contextual_color(self):
         if self._hovering:
@@ -242,12 +239,10 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     def hovering(self, value):
         if value and not self._hovering:
             self._hovering = True
-            ctrl.set_status(self.status_tip)
             self.setZValue(1000)
 
         elif (not value) and self._hovering:
             self._hovering = False
-            ctrl.remove_status(self.status_tip)
             self.setZValue(self.z_value)
 
         self.update()

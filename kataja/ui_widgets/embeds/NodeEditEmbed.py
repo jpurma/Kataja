@@ -18,9 +18,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     if palette:
         label.setPalette(palette)
     label.setBuddy(buddy)
-    label.setStatusTip(tooltip)
-    if ctrl.main.use_tooltips:
-        label.setToolTip(tooltip)
+    label.k_tooltip = tooltip
     if align:
         layout.addWidget(label, 1, align)
     else:

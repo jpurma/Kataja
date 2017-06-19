@@ -68,7 +68,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
             if ctrl.main.use_tooltips:
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
-            self.setStatusTip(tip)
         if prefill:
             self.text_area.setPlaceholderText(prefill)
         self.text_area.textChanged.connect(self.text_area_check_for_resize)
@@ -200,4 +199,3 @@ class PreviewLabel(QtWidgets.QLabel):
             if ctrl.main.use_tooltips:
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
-            self.setStatusTip(tip)

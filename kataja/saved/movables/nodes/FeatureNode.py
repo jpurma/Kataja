@@ -36,7 +36,7 @@ from kataja.uniqueness_generator import next_available_type_id
 from kataja.saved.Edge import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.utils import to_tuple
 
-color_map = {'tense': 'accent0',
+color_map = {'tense': 'accent7',
              'order': 'accent1',
              'person': 'accent2',
              'number': 'accent4',

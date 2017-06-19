@@ -118,7 +118,7 @@ class ColorSelector(TableModelSelectionBox):
             item = QtGui.QStandardItem(LineColorIcon(c, self), '')
             item.setData(c)
             item.setSizeHint(QSize(22, 20))
-            item.setToolTip(c)
+            item.k_tooltip = c
             self.color_items.append(item)
         view = QtWidgets.QTableView()
         self.table = [self.color_items[0:5] + self.color_items[21:24],

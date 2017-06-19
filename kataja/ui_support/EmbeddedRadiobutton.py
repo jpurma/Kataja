@@ -42,8 +42,6 @@ class EmbeddedRadiobutton(QtWidgets.QFrame):
                         if ctrl.main.use_tooltips:
                             button.setToolTip(od['tooltip'])
                             button.setToolTipDuration(2000)
-                        button.setStatusTip(od['tooltip'])
-
                         button.setEnabled(od['enabled'])
                         break
         # create new buttons
@@ -56,7 +54,6 @@ class EmbeddedRadiobutton(QtWidgets.QFrame):
                 if ctrl.main.use_tooltips:
                     button.setToolTip(od['tooltip'])
                     button.setToolTipDuration(2000)
-                button.setStatusTip(od['tooltip'])
                 button.setEnabled(od['enabled'])
                 self.layout.addWidget(button)
                 self.bgroup.addButton(button)

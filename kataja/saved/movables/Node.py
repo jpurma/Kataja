@@ -123,7 +123,6 @@ class Node(Movable):
         self.user_size = None
         self.text_parse_mode = 1
         self._magnets = []
-        self.status_tip = ""
         self.is_syntactically_valid = False
         self.width = 0
         self.height = 0
@@ -355,46 +354,6 @@ class Node(Movable):
             self.label_object.set_font(qt_prefs.get_font(value))
 
     # Non-model-based properties ########################################
-
-    @property
-    def hovering(self):
-        """ Public access to _hovering. Pretty useless.
-        :return:
-        """
-        return self._hovering
-
-    @hovering.setter
-    def hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
-        :return:
-        """
-        if value and not self._hovering:
-            self._start_hover()
-        elif self._hovering and not value:
-            self._stop_hover()
-
-    def _start_hover(self):
-        """ Start all hovering effects
-        :return:
-        """
-        self._hovering = True
-        self.prepareGeometryChange()
-        self.update()
-        if self.zValue() < 150:
-            self.setZValue(150)
-        self.update_status_tip()
-        ctrl.set_status(self.status_tip)
-
-    def _stop_hover(self):
-        """ Stop all hovering effects
-        :return:
-        """
-        self._hovering = False
-        self.prepareGeometryChange()
-        self.setZValue(self.z_value)
-        self.update()
-        ctrl.remove_status(self.status_tip)
 
     def get_triangle_text(self):
         """ Label with triangled elements concatenated into it
@@ -852,7 +811,7 @@ class Node(Movable):
         self.label_object.update_label()
         self.update_label_visibility()
         self.update_bounding_rect()
-        self.update_status_tip()
+        self.update_tooltip()
 
     def update_label_visibility(self):
         """ Check if the label of the node has any content -- should it be
@@ -866,11 +825,11 @@ class Node(Movable):
                               self.label_object.is_card()
         self.label_object.setVisible(self._label_visible)
 
-    def update_status_tip(self):
+    def update_tooltip(self):
         """ implement properly in subclasses, let tooltip tell about the node
         :return: None
         """
-        self.status_tip = str(self)
+        self.k_tooltip = str(self)
 
     def has_empty_label(self):
         """
@@ -1637,6 +1596,7 @@ class Node(Movable):
 
     def mouseMoveEvent(self, e):
         # mouseMoveEvents only happen between mousePressEvents and mouseReleaseEvents
+        print('mouseMoveEvent')
         scene_pos_pf = e.scenePos()
         if ctrl.dragged_focus is self:
             self.drag(e)
@@ -1676,20 +1636,6 @@ class Node(Movable):
             ctrl.graph_view.replay_mouse_press()
             self.label_object.editable_part.mouseReleaseEvent(event)
             ctrl.release(self)
-
-    def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method
-        :param event:
-        """
-        self.hovering = True
-        QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
-
-    def hoverLeaveEvent(self, event):
-        """ Object needs to be updated
-        :param event:
-        """
-        self.hovering = False
-        QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
         """ Dragging a foreign object (could be from ui_support) over a node, entering.

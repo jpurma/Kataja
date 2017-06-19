@@ -79,9 +79,6 @@ class PanelButton(QtWidgets.QPushButton):
         if tooltip:
             if ctrl.main.use_tooltips:
                 self.setToolTip(tooltip)
-            self.setStatusTip(tooltip)
-        else:
-            self.setStatusTip(text)
         self.w2 = self.iconSize().width() / 2
         self.h2 = self.iconSize().height() / 2
         self.setContentsMargins(0, 0, 0, 0)

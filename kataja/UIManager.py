@@ -116,6 +116,30 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('help_menu', ('&Help', ['help']))])
 
 
+class FloatingTip(QtWidgets.QLabel):
+
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self, None, QtCore.Qt.ToolTip)
+        self.setText('')
+        self.setFont(qt_prefs.get_font('ui_font'))
+        self.setMinimumHeight(40)
+        self.setMinimumWidth(120)
+        self.setContentsMargins(4, 4, 4, 4)
+        self.setWordWrap(True)
+        self.item = None
+
+    def set_item(self, item):
+        if item is not self.item:
+            self.item = item
+            self.setText(item.k_tooltip)
+
+    def enterEvent(self, event):
+        self.show()
+
+    def set_position(self, pos):
+        self.move(pos)
+
+
 class UIManager:
     """
     UIManager Keeps track of all UI-related widgets and tries to do the most
@@ -154,6 +178,7 @@ class UIManager:
         self.drag_info = None
         self.activity_marker = None
         self.ui_activity_marker = None
+        self.floating_tip = None
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -1279,6 +1304,21 @@ class UIManager:
     #         self.get_ui_activity_marker().hide()
     #         self.killTimer(self._timer_id)
     #         self._timer_id = 0
+
+
+    def hover_enter(self, item, event):
+        if not self.floating_tip:
+            self.floating_tip = FloatingTip()
+        self.floating_tip.set_item(item)
+        self.floating_tip.show()
+        self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
+
+    def hover_leave(self, item, event):
+        if self.floating_tip.item is item:
+            self.floating_tip.hide()
+
+    def move_help(self, event):
+        self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to

@@ -131,7 +131,7 @@ class ConstituentNode(Node):
         self.update_label_shape()
         self.update_label()
         self.update_visibility()
-        self.update_status_tip()
+        self.update_tooltip()
         self.announce_creation()
         if prefs.glow_effect:
             self.toggle_halo(True)
@@ -223,7 +223,7 @@ class ConstituentNode(Node):
     def should_show_gloss_in_label(self) -> bool:
         return ctrl.settings.get('lock_glosses_to_label') == 1
 
-    def update_status_tip(self) -> None:
+    def update_tooltip(self) -> None:
         """ Hovering status tip """
 
         if self.label:
@@ -253,9 +253,10 @@ class ConstituentNode(Node):
             adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
         else:
             adjustment = ''
+        x, y = self.current_scene_position
         heads = ', '.join([as_text(x.label) for x in self.heads])
-        self.status_tip = f"{name} ({label}{syn_label}{index} pos: ({self.current_scene_position[0]:.1f}, " \
-                          f"{self.current_scene_position[1]:.1f}){adjustment} head: {heads})"
+        self.k_tooltip = f"{name} ({label}{syn_label}{index} pos: ({x:.1f},{y:.1f}){adjustment} " \
+                         f"head: {heads})"
 
     def short_str(self):
         label = as_text(self.label)

@@ -163,8 +163,7 @@ class SymbolPanel(Panel):
             # debug_dict[key] = (char, description)
             command = '\\' + key
             item = QtWidgets.QListWidgetItem(char)
-            if ctrl.main.use_tooltips:
-                item.setToolTip(command)
+            item.k_tooltip = command
             item.setData(55, {'char': char, 'description': description, 'command': command})
             self.symlist.addItem(item)
             # pp = pprint.PrettyPrinter(indent=4)

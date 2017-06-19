@@ -647,7 +647,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if ban_normalization:
                     allow_normalization = False
                 if abs(diff_x) + abs(diff_y) > 1:
+                    node._is_moving = True
                     items_moving += 1
+                else:
+                    node._is_moving = False
 
             # normalize movement so that the trees won't glide away
             if allow_normalization and to_normalize:

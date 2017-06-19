@@ -174,7 +174,6 @@ class KatajaAction(QtWidgets.QAction):
             ag.setExclusive(self.k_exclusive)
         self.setCheckable(self.k_checkable)
         self.setToolTip(self.tip0)
-        self.setStatusTip(self.tip0)
 
     def prepare_parameters(self, args, kwargs):
         return [], {}
@@ -357,18 +356,6 @@ class KatajaAction(QtWidgets.QAction):
         # explanation
         if hasattr(element, 'k_tooltip'):
             tooltip = element.k_tooltip
-
-        if isinstance(element, QtWidgets.QGraphicsObject):
-            # These don't have setStatusTip
-            element.status_tip = tooltip
-        else:
-            try:
-                element.setStatusTip(tooltip)
-                element.setToolTipDuration(2000)
-            except AttributeError:
-                return
-        if ctrl.main.use_tooltips:
-            element.setToolTip(tooltip)
 
     def set_enabled(self, value):
         """ Sets the action enabled/disabled and also the connected ui_items.

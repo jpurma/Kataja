@@ -47,6 +47,16 @@ sup sup {font-size: 8pt; vertical-align: sup}
 
 inner_cards = False
 
+class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
+
+    def __init__(self, parent, host):
+        QtWidgets.QGraphicsTextItem.__init__(self, parent)
+        self._host = host
+
+    def hoverMoveEvent(self, event):
+        if self._host._is_moving:
+            ctrl.ui.move_help(event)
+
 
 class QuickEditTextItem(QtWidgets.QGraphicsTextItem):
 
@@ -117,7 +127,7 @@ class Label(QtWidgets.QGraphicsItem):
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsItem.__init__(self, parent)
-        self.editable_part = QtWidgets.QGraphicsTextItem(self)
+        self.editable_part = MyGraphicsTextItem(self, parent)
         self.lower_part = None # QtWidgets.QGraphicsTextItem(self)
         self._host = parent
         self.has_been_initialized = False
@@ -154,7 +164,7 @@ class Label(QtWidgets.QGraphicsItem):
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
-        self.setAcceptHoverEvents(False)
+        self.setAcceptHoverEvents(True)
         self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
         self.editable_part.setTextWidth(-1)
         self.set_font(self._host.get_font())
@@ -165,6 +175,12 @@ class Label(QtWidgets.QGraphicsItem):
         :return:
         """
         return self.__qt_type_id__
+
+    def hoverMoveEvent(self, event):
+        #print('L sending hoverMoveEvent')
+        ctrl.ui.move_help(event)
+        QtWidgets.QGraphicsItem.hoverMoveEvent(self, event)
+
 
     def __str__(self):
         return 'Label:' + self.editable_html + self.lower_html

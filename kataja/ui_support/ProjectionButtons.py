@@ -12,7 +12,6 @@ class ProjectionButton(QtWidgets.QPushButton):
         self.my_value = value
         if ctrl.main.use_tooltips:
             self.setToolTip(tooltip)
-        self.setStatusTip(tooltip)
 
     def enterEvent(self, event):
         node = ctrl.forest.nodes.get(self.my_value)

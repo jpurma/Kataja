@@ -33,7 +33,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             if ctrl.main.use_tooltips:
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
-            self.setStatusTip(tip)
         if big_font:
             self.line_edit.setFont(big_font)
         if smaller_font:
