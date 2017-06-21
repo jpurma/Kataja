@@ -1596,7 +1596,6 @@ class Node(Movable):
 
     def mouseMoveEvent(self, e):
         # mouseMoveEvents only happen between mousePressEvents and mouseReleaseEvents
-        print('mouseMoveEvent')
         scene_pos_pf = e.scenePos()
         if ctrl.dragged_focus is self:
             self.drag(e)

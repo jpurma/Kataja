@@ -508,7 +508,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         if not self._is_moving:
             self.hovering = True
-            ctrl.ui.hover_enter(self, event)
+            ctrl.ui.show_help(self, event)
             event.accept()
         #QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
 
@@ -523,7 +523,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         if self.hovering:
             self.hovering = False
-            ctrl.ui.hover_leave(self, event)
+            ctrl.ui.hide_help(self, event)
             QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     @property

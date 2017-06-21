@@ -33,12 +33,14 @@ class UIItem:
         self.host = host
         self.watchlist = []
         self.priority = 10
+        self.k_tooltip = ''
         self.is_fading_in = False
         self.is_fading_out = False
         self._fade_in_anim = None
         self._fade_out_anim = None
         self._opacity_effect = None
         self._disable_effect = False
+        self._hovering = False
 
     def watch_alerted(self, obj, signal, field_name, value):
         pass
@@ -141,8 +143,19 @@ class UIGraphicsItem(UIItem):
         UIItem.fade_out_finished(self)
         ctrl.ui.remove_from_scene(self)
 
+    def hoverEnterEvent(self, event):
+        self._hovering = True
+        ctrl.ui.show_help(self, event)
+
+    def hoverMoveEvent(self, event):
+        ctrl.ui.move_help(event)
+
+    def hoverLeaveEvent(self, event):
+        self._hovering = False
+        ctrl.ui.hide_help(self, event)
 
 class UIWidget(UIItem):
+    """ UIWidgets have to inherit QWidget at some point. """
     can_fade = True
     is_widget = True
     scene_item = False
@@ -155,3 +168,15 @@ class UIWidget(UIItem):
     def fade_out_finished(self):
         UIItem.fade_out_finished(self)
         self.close()
+
+    def enterEvent(self, event):
+        self._hovering = True
+        self.setMouseTracking(True)
+        ctrl.ui.show_help(self, event)
+
+    def mouseMoveEvent(self, event):
+        ctrl.ui.move_help(event)
+
+    def leaveEvent(self, event):
+        self._hovering = False
+        ctrl.ui.hide_help(self, event)

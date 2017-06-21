@@ -290,10 +290,9 @@ class KatajaAction(QtWidgets.QAction):
         :param element:
         """
         self.elements.add(element)
-
-        tooltip = self.toolTip()
-        if tooltip:
-            self.set_tooltip_for_element(tooltip, element)
+        print('connecting element %s to action %s' % (element, self))
+        print('setting tooltip as:', self.tip0)
+        element.k_tooltip = self.tip0
 
         # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
@@ -342,21 +341,6 @@ class KatajaAction(QtWidgets.QAction):
         if element in self.elements:
             self.elements.remove(element)
 
-    @staticmethod
-    def set_tooltip_for_element(tooltip, element):
-        """ Tries to set action's tooltip as a tooltip and a status tip for UI elements
-        corresponding to action. There are few cases when this is unwanted, and this method
-         tries to recognize them.
-        :param tooltip:
-        :param element:
-        :return:
-        """
-        # Element class may have tooltip that overrides the action tooltip -- e.g.
-        # group of buttons that are controlled by one action, but each button has its own
-        # explanation
-        if hasattr(element, 'k_tooltip'):
-            tooltip = element.k_tooltip
-
     def set_enabled(self, value):
         """ Sets the action enabled/disabled and also the connected ui_items.
         :param value:
@@ -387,9 +371,9 @@ class KatajaAction(QtWidgets.QAction):
                 if value != element.isChecked():
                     element.setChecked(value)
                     if value:
-                        self.set_tooltip_for_element(self.tip1, element)
+                        element.k_tooltip = self.tip1
                     else:
-                        self.set_tooltip_for_element(self.tip0, element)
+                        element.k_tooltip = self.tip0
                 element.blockSignals(False)
         else:
             for element in self.elements:

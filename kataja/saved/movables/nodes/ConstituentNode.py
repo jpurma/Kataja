@@ -225,38 +225,31 @@ class ConstituentNode(Node):
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
-
-        if self.label:
-            label = f'Label: "{as_text(self.label)}" '
-        else:
-            label = ''
-        syn_label = self.get_syn_label()
-        if syn_label:
-            syn_label = f' Constituent: "{as_text(syn_label)}" '
-        else:
-            syn_label = ''
-        if self.index:
-            index = f' Index: "{self.index}"'
-        else:
-            index = ''
-
+        lines = []
         if self.is_trace:
-            name = "Trace"
+            lines.append("Trace")
         elif self.is_leaf():
-            name = "Leaf "
-        # elif self.is_top_node():
-        #    name = "Set %s" % self.set_string() # "Root constituent"
+            lines.append("Leaf Constituent")
+            lines.append(f"Syntactic label: {self.get_syn_label()}")
         else:
-            #name = f"Set {self.set_string()}"
-            name = "Set "
-        if self.use_adjustment:
-            adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
-        else:
-            adjustment = ''
+            lines.append("<strong>Set Constituent</strong>")
+            lines.append(f"Syntactic label: {self.get_syn_label()}")
+        if self.index:
+            lines.append(f' Index: "{self.index}"')
+
+        heads = ', '.join([x.get_syn_label() for x in self.heads])
+        if len(self.heads) == 1:
+            lines.append(f'head: {heads}')
+        elif len(self.heads) > 1:
+            lines.append(f'heads: {heads}')
+
         x, y = self.current_scene_position
-        heads = ', '.join([as_text(x.label) for x in self.heads])
-        self.k_tooltip = f"{name} ({label}{syn_label}{index} pos: ({x:.1f},{y:.1f}){adjustment} " \
-                         f"head: {heads})"
+        lines.append(f'pos: ({x:.1f},{y:.1f})')
+
+        if self.use_adjustment:
+            lines.append(f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+
+        self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):
         label = as_text(self.label)

@@ -54,7 +54,7 @@ class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
         self._host = host
 
     def hoverMoveEvent(self, event):
-        if self._host._is_moving:
+        if not self._host._is_moving:
             ctrl.ui.move_help(event)
 
 

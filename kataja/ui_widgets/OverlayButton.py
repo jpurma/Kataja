@@ -42,7 +42,7 @@ class PanelButton(QtWidgets.QPushButton):
      """
 
     def __init__(self, pixmap=None, text=None, parent=None, size=16,
-                 color_key='accent8', draw_method=None, tooltip=None):
+                 color_key='accent8', draw_method=None, tooltip=''):
         QtWidgets.QPushButton.__init__(self, parent)
         self.draw_method = draw_method
         self.color_key = color_key
@@ -76,9 +76,7 @@ class PanelButton(QtWidgets.QPushButton):
 
         if text:
             self.setText(text)
-        if tooltip:
-            if ctrl.main.use_tooltips:
-                self.setToolTip(tooltip)
+        self.k_tooltip = tooltip or ''
         self.w2 = self.iconSize().width() / 2
         self.h2 = self.iconSize().height() / 2
         self.setContentsMargins(0, 0, 0, 0)
@@ -141,7 +139,7 @@ class OverlayButton(UIWidget, PanelButton):
     """
 
     def __init__(self, host, ui_key=None, pixmap=None, text=None, parent=None,
-                 size=16, color_key='accent8', draw_method=None, tooltip=None, **kwargs):
+                 size=16, color_key='accent8', draw_method=None, tooltip='', **kwargs):
         UIWidget.__init__(self, ui_key=ui_key, host=host)
         PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
                              color_key=color_key, draw_method=draw_method, tooltip=tooltip)
@@ -231,7 +229,7 @@ class TopRowButton(OverlayButton):
     permanent_ui = True
 
     def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=None):
+                 size=24, tooltip=''):
         super().__init__(None, ui_key=ui_key,
                          parent=parent,
                          pixmap=pixmap,
@@ -257,7 +255,7 @@ class VisButton(OverlayButton):
     permanent_ui = True
 
     def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=None, subtype=None, shortcut=None):
+                 size=24, tooltip='', subtype=None, shortcut=None):
         super().__init__(None, ui_key=ui_key,
                          parent=parent,
                          pixmap=pixmap,
@@ -285,7 +283,7 @@ class QuickEditButton(OverlayButton):
     permanent_ui = True
 
     def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=None):
+                 size=24, tooltip=''):
         super().__init__(None, ui_key=ui_key,
                          parent=parent,
                          pixmap=pixmap,
@@ -548,12 +546,11 @@ class OverlayLabel(UIWidget, QtWidgets.QLabel):
     selection_independent = True
 
     def __init__(self, host, parent=None, ui_key=None, text=None,
-                 size=16, color_key='accent8', tooltip=None, **kwargs):
+                 size=16, color_key='accent8', tooltip='', **kwargs):
         UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host)
         text = host.label_object.edited_field + "→"
         QtWidgets.QLabel.__init__(self, text, parent)
-        if tooltip:
-            self.setToolTip(tooltip)
+        self.k_tooltip = tooltip
 
     def update_position(self):
         """ """

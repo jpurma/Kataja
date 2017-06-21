@@ -122,9 +122,11 @@ class FloatingTip(QtWidgets.QLabel):
         QtWidgets.QWidget.__init__(self, None, QtCore.Qt.ToolTip)
         self.setText('')
         self.setFont(qt_prefs.get_font('ui_font'))
-        self.setMinimumHeight(40)
-        self.setMinimumWidth(120)
-        self.setContentsMargins(4, 4, 4, 4)
+        #self.setMinimumHeight(20)
+        #self.setMinimumWidth(40)
+        #self.setMaximumWidth(120)
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
+        self.setContentsMargins(2, 2, 2, 2)
         self.setWordWrap(True)
         self.item = None
 
@@ -137,7 +139,7 @@ class FloatingTip(QtWidgets.QLabel):
         self.show()
 
     def set_position(self, pos):
-        self.move(pos)
+        self.move(pos.x(), pos.y())
 
 
 class UIManager:
@@ -1306,19 +1308,23 @@ class UIManager:
     #         self._timer_id = 0
 
 
-    def hover_enter(self, item, event):
+    def show_help(self, item, event):
+        if not item.k_tooltip:
+            print('item %s is missing k_tooltip.' % item)
+            return
         if not self.floating_tip:
             self.floating_tip = FloatingTip()
         self.floating_tip.set_item(item)
         self.floating_tip.show()
         self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
-    def hover_leave(self, item, event):
-        if self.floating_tip.item is item:
+    def hide_help(self, item, event):
+        if self.floating_tip and self.floating_tip.item is item:
             self.floating_tip.hide()
 
     def move_help(self, event):
-        self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
+        if self.floating_tip:
+            self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to

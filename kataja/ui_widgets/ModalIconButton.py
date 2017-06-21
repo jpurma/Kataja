@@ -38,10 +38,10 @@ class ModalIconButton(UIWidget, QtWidgets.QPushButton):
     def toggle_state(self, value):
         if value:
             self.setIcon(self.icon1)
-            self.setToolTip(self.tooltip1)
+            self.k_tooltip = self.tooltip1
         else:
             self.setIcon(self.icon0)
-            self.setToolTip(self.tooltip0)
+            self.k_tooltip = self.tooltip0
         self.updateGeometry()
         self.update_position()
 

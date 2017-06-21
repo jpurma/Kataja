@@ -1011,7 +1011,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self._is_moving:
             return
         self.hovering = True
-        ctrl.ui.hover_enter(self, event)
+        ctrl.ui.show_help(self, event)
         event.accept()
         #QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
@@ -1028,7 +1028,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         if self.hovering:
             self.hovering = False
-            ctrl.ui.hover_leave(self, event)
+            ctrl.ui.hide_help(self, event)
             QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
 
