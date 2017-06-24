@@ -160,6 +160,23 @@ class UIWidget(UIItem):
     is_widget = True
     scene_item = False
 
+    def to_layout(self, layout, align=None, with_label=None):
+        """ Because widgets cannot be reliably put to layout in their __init__-methods,
+        to ease the layout process, we can use javascript-style (constructor).to_layout(...)
+        combination.
+        :param layout:
+        :param align:
+        :return: self, so that this can be used with constructors
+        """
+        if with_label:
+            labelw = QtWidgets.QLabel(with_label, self.parentWidget())
+            layout.addWidget(labelw)
+        if align:
+            layout.addWidget(self, alignment=align)
+        else:
+            layout.addWidget(self)
+        return self
+
     def prepare_opacity_effect(self):
         self._opacity_effect = QtWidgets.QGraphicsOpacityEffect(self)
         self._opacity_effect.setEnabled(False)

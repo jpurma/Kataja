@@ -2,8 +2,7 @@ from PyQt5 import QtWidgets
 from kataja.singletons import ctrl, qt_prefs
 from kataja.globals import CONSOLE_FONT
 from kataja.ui_widgets.Panel import Panel
-
-from kataja.ui_support.panel_utils import text_button
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 __author__ = 'purma'
 
@@ -34,9 +33,8 @@ class LexiconPanel(Panel):
         self.semantics_text = QtWidgets.QLineEdit()
         layout.addWidget(self.semantics_text)
         self.info = QtWidgets.QLabel('info text here')
-        self.derive_button = text_button(ctrl.ui, layout, text='Derive again',
-                                         action='derive_from_lexicon')
-        layout.addWidget(self.derive_button)
+        self.derive_button = PushButtonBase(parent=self, text='Derive again',
+                                            action='derive_from_lexicon').to_layout(layout)
         layout.addWidget(self.info)
         inner.setLayout(layout)
         self.setWidget(inner)

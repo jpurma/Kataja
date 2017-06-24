@@ -27,123 +27,12 @@ import kataja.globals as g
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_graphicsitems.TouchArea import TouchArea
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 
-class PanelButton(QtWidgets.QPushButton):
-    """ Buttons that change their color according to widget where they are.
-        Currently this is not doing anything special that can't be done by
-        setting
-        TwoColorIconEngine for normal button, but let's keep this in case we
-        need to deliver
-        palette updates to icon engines.
-        PanelButtons are to be contained in panels or other widgets,
-        they cannot be targeted
-        individually.
-     """
-
-    def __init__(self, pixmap=None, text=None, parent=None, size=16,
-                 color_key='accent8', draw_method=None, tooltip=''):
-        QtWidgets.QPushButton.__init__(self, parent)
-        self.draw_method = draw_method
-        self.color_key = color_key
-        self.base_image = None
-        self.normal_icon = None
-        if isinstance(size, QtCore.QSize):
-            width = size.width()
-            height = size.height()
-        elif isinstance(size, tuple):
-            width = size[0]
-            height = size[1]
-        else:
-            width = size
-            height = size
-        size = QtCore.QSize(width, height)
-        self.setIconSize(size)
-        if isinstance(pixmap, str):
-            pixmap = getattr(qt_prefs, pixmap)
-        if isinstance(pixmap, QtGui.QIcon):
-            self.pixmap = pixmap.pixmap(size)
-        else:
-            self.pixmap = pixmap
-        if self.pixmap:
-            self.base_image = self.pixmap.toImage()
-        elif self.draw_method:
-            isize = QtCore.QSize(size.width() * 2, size.height() * 2)
-            self.base_image = QtGui.QImage(
-                isize, QtGui.QImage.Format_ARGB32_Premultiplied)
-            self.base_image.fill(QtCore.Qt.transparent)
-        self.compose_icon()
-
-        if text:
-            self.setText(text)
-        self.k_tooltip = tooltip or ''
-        self.w2 = self.iconSize().width() / 2
-        self.h2 = self.iconSize().height() / 2
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setFlat(True)
-        self.update_colors()
-
-    def contextual_color(self):
-        if self.isDown():
-            return ctrl.cm.get(self.color_key).lighter()
-        else:
-            return ctrl.cm.get(self.color_key)
-
-    def compose_icon(self):
-        """ Redraw the image to be used as a basis for icon, this is necessary
-        to update the overlay color.
-        :return:
-        """
-        c = ctrl.cm.get(self.color_key)
-        if self.pixmap:
-            image = QtGui.QImage(self.base_image)
-            painter = QtGui.QPainter(image)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-            painter.fillRect(image.rect(), c)
-            painter.end()
-
-        elif self.draw_method:
-
-            image = QtGui.QImage(self.base_image)
-
-            painter = QtGui.QPainter(image)
-            #painter.setDevicePixelRatio(2.0)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setPen(c)
-            self.draw_method(painter, image.rect(), c)
-            painter.end()
-        else:
-            return
-        self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
-        self.setIcon(self.normal_icon)
-
-    def update_colors(self, color_key=None):
-        if color_key:
-            self.color_key = color_key
-        #self.update_style_sheet()
-        self.compose_icon()
-
-
-class OverlayButton(UIWidget, PanelButton):
+class OverlayButton(PanelButton):
     """ A floating button on top of main canvas. These are individual UI
-    elements each.
-
-    :param pixmap:
-    :param host:
-    :param ui_key:
-    :param text:
-    :param parent:
-    :param size:
-    :param color_key:
-    """
-
-    def __init__(self, host, ui_key=None, pixmap=None, text=None, parent=None,
-                 size=16, color_key='accent8', draw_method=None, tooltip='', **kwargs):
-        UIWidget.__init__(self, ui_key=ui_key, host=host)
-        PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
-                             color_key=color_key, draw_method=draw_method, tooltip=tooltip)
-        self.hover_icon = None
+    elements each. """
 
     def mousePressEvent(self, event):
         if self.hover_icon:
@@ -228,16 +117,8 @@ class TopRowButton(OverlayButton):
 
     permanent_ui = True
 
-    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=''):
-        super().__init__(None, ui_key=ui_key,
-                         parent=parent,
-                         pixmap=pixmap,
-                         text=text,
-                         draw_method=draw_method,
-                         tooltip=tooltip,
-                         size=size,
-                         color_key='accent8')
+    def __init__(self, size=24, **kwargs):
+        super().__init__(size=size, **kwargs)
         if isinstance(size, tuple):
             self.setMinimumSize(size[0]+2, size[1])
             self.setMaximumSize(size[0]+2, size[1])
@@ -254,16 +135,8 @@ class VisButton(OverlayButton):
 
     permanent_ui = True
 
-    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip='', subtype=None, shortcut=None):
-        super().__init__(None, ui_key=ui_key,
-                         parent=parent,
-                         pixmap=pixmap,
-                         text=text,
-                         draw_method=draw_method,
-                         tooltip=tooltip,
-                         size=size,
-                         color_key='accent8')
+    def __init__(self, size=24, shortcut='', subtype=None, **kwargs):
+        super().__init__(size=size, **kwargs)
         self.setCheckable(True)
         self.setShortcut(shortcut)
         if isinstance(size, tuple):
@@ -278,36 +151,11 @@ class VisButton(OverlayButton):
         pass
 
 
-class QuickEditButton(OverlayButton):
-
-    permanent_ui = True
-
-    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
-                 size=24, tooltip=''):
-        super().__init__(None, ui_key=ui_key,
-                         parent=parent,
-                         pixmap=pixmap,
-                         text=text,
-                         draw_method=draw_method,
-                         tooltip=tooltip,
-                         size=size,
-                         color_key='accent3')
-        if isinstance(size, tuple):
-            self.setMinimumSize(size[0]+2, size[1])
-            self.setMaximumSize(size[0]+2, size[1])
-        else:
-            self.setMinimumSize(size+2, size)
-            self.setMaximumSize(size+2, size)
-
-
 class CutFromStartButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host, pixmap=qt_prefs.cut_icon,
-                         tooltip='Disconnect edge from the start',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Disconnect edge from the start',
+                 pixmap=qt_prefs.cut_icon, **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 54
 
     def update_position(self):
@@ -324,12 +172,9 @@ class CutFromStartButton(OverlayButton):
 
 class CutFromEndButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host, pixmap=qt_prefs.cut_icon,
-                         tooltip='Disconnect edge from the end',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Disconnect edge from the end',
+                 pixmap=qt_prefs.cut_icon, **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 55
 
     def update_position(self):
@@ -349,12 +194,10 @@ class CutFromEndButton(OverlayButton):
 
 class CutEdgeButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host, pixmap=qt_prefs.cut_icon,
-                         tooltip='Disconnect edge',
-                         parent=parent,
-                         size=16,
-                         color_key='accent3')
+    def __init__(self, host, size=16, tooltip='Disconnect edge', color_key='accent3',
+                 pixmap=qt_prefs.cut_icon, **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap,
+                         color_key=color_key, **kwargs)
         self.priority = 50
 
     def update_position(self):
@@ -372,12 +215,9 @@ class CutEdgeButton(OverlayButton):
 
 class AddTriangleButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host, pixmap=qt_prefs.cut_icon,
-                         tooltip='Disconnect edge from the end',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Disconnect edge from the end',
+                 pixmap=qt_prefs.cut_icon, **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 30
 
     def update_position(self):
@@ -394,12 +234,9 @@ class AddTriangleButton(OverlayButton):
 
 class RemoveTriangleButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host, pixmap=qt_prefs.cut_icon,
-                         tooltip='Disconnect edge from the end',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Remove triangle',
+                 pixmap=qt_prefs.cut_icon, **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 30
 
 
@@ -417,14 +254,9 @@ class RemoveTriangleButton(OverlayButton):
 class RemoveMergerButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, parent=None):
-
-        super().__init__(host,
-                         pixmap='delete_icon',
-                         tooltip='Remove this non-merging node',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Remove this non-merging node', pixmap='delete_icon',
+                 **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 99
 
     def update_position(self):
@@ -448,13 +280,10 @@ class RemoveMergerButton(OverlayButton):
 class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, parent=None):
-        super().__init__(host,
-                         pixmap='delete_icon',
-                         tooltip='Remove node',
-                         parent=parent,
-                         size=16,
-                         color_key='accent3')
+    def __init__(self, host, size=16, tooltip='Remove node', pixmap='delete_icon',
+                 color_key='accent3', **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip,
+                         pixmap=pixmap, color_key=color_key, **kwargs)
         self.priority = 100
 
     def update_position(self):
@@ -478,13 +307,10 @@ class RemoveNodeButton(OverlayButton):
 
 class GroupOptionsButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host,
-                         pixmap=qt_prefs.info_icon,
-                         tooltip='Name this selection',
-                         parent=parent,
-                         size=16,
-                         color_key=host.color_key)
+    def __init__(self, host, size=16, tooltip='Name this selection', pixmap=qt_prefs.info_icon,
+                 **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip,
+                         pixmap=pixmap, color_key=host.color_key, **kwargs)
 
     def update_position(self):
         """ Tries to find an unoccupied position in the radius of the group """
@@ -511,13 +337,9 @@ class GroupOptionsButton(OverlayButton):
 
 class NodeEditorButton(OverlayButton):
 
-    def __init__(self, host, parent=None):
-        super().__init__(host,
-                         pixmap=qt_prefs.info_icon,
-                         tooltip='Edit this node',
-                         parent=parent,
-                         size=16,
-                         color_key='accent8')
+    def __init__(self, host, size=16, tooltip='Edit this node', pixmap=qt_prefs.info_icon,
+                 **kwargs):
+        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
         self.priority = 25
 
     def update_position(self):

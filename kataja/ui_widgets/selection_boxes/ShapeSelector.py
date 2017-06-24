@@ -1,13 +1,11 @@
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QStandardItem, QIcon
 
 from kataja.Shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 
-class LineStyleIcon(QIcon):
+class LineStyleIcon(QtGui.QIcon):
     def __init__(self, shape_key, size):
         super().__init__()
         self.shape_key = shape_key
@@ -33,16 +31,16 @@ class LineStyleIcon(QIcon):
 
 
 class ShapeSelector(TableModelSelectionBox):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setIconSize(QSize(64, 16))
+    def __init__(self, **kwargs):
+        TableModelSelectionBox.__init__(self, **kwargs)
+        self.setIconSize(QtCore.QSize(64, 16))
         items = []
         self.icons = []
 
         for lt in SHAPE_PRESETS.keys():
             icon = LineStyleIcon(lt, self.iconSize())
             self.icons.append(icon)
-            item = QStandardItem(icon, '')
+            item = QtGui.QStandardItem(icon, '')
             item.setData(lt)
             if ctrl.main.use_tooltips:
                 item.setToolTip(lt)

@@ -1,12 +1,11 @@
 from PyQt5 import QtWidgets, QtCore
 
+import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
-import kataja.globals as g
-from kataja.ui_support.SelectionBox import SelectionBox
-import random
-
-from kataja.ui_support.TwoColorButton import TwoColorButton
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from ui_widgets.PushButtonBase import PushButtonBase
+from ui_widgets.buttons.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 
@@ -15,40 +14,34 @@ __author__ = 'purma'
 def color_theme_fragment(panel, layout):
     hlayout = QtWidgets.QHBoxLayout()
     f = qt_prefs.get_font(g.MAIN_FONT)
-    panel.selector = SelectionBox(panel)
+    panel.selector = SelectionBox(parent=panel, action='set_active_color_theme').to_layout(hlayout)
     panel.selector.setMaximumWidth(120)
     panel.selector_items = ctrl.cm.list_available_themes()
     panel.selector.add_items(panel.selector_items)
-    panel.ui_manager.connect_element_to_action(panel.selector, 'set_active_color_theme')
-    hlayout.addWidget(panel.selector)
 
-    panel.randomise = UnicodeIconButton('')
-    panel.randomise.setFixedSize(40, 20)
-    ctrl.ui.connect_element_to_action(panel.randomise, 'randomise_palette')
-    hlayout.addWidget(panel.randomise, 1, QtCore.Qt.AlignRight)
+    panel.randomise = UnicodeIconButton(parent=panel, text='', size=(40, 20),
+                                        action='randomise_palette'
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
 
-    panel.remove_theme = TwoColorButton('Remove')
-    #panel.remove_theme.setFixedSize(40, 20)
-    ctrl.ui.connect_element_to_action(panel.remove_theme, 'remove_color_theme')
+    panel.remove_theme = TwoColorButton(parent=panel, text='Remove', action='remove_color_theme',
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
     panel.remove_theme.hide()
-    hlayout.addWidget(panel.remove_theme, 1, QtCore.Qt.AlignRight)
 
-    panel.store_favorite = UnicodeIconButton('★')
+    panel.store_favorite = UnicodeIconButton(parent=panel, text='★', size=(26, 20),
+                                             action='remember_palette'
+                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
     panel.store_favorite.setStyleSheet(
         'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
-    panel.store_favorite.setFixedSize(26, 20)
     panel.store_favorite.setEnabled(False)
-    ctrl.ui.connect_element_to_action(panel.store_favorite, 'remember_palette')
-    hlayout.addWidget(panel.store_favorite, 1, QtCore.Qt.AlignRight)
     layout.addLayout(hlayout)
 
 
-class UnicodeIconButton(QtWidgets.QPushButton):
-    """ PushButton that uses unicode characters as its icons. This requires that the main
-    stylesheet assigns a well-equipped and larger font face for this class.
+class UnicodeIconButton(PushButtonBase):
+    """ PushButton that uses unicode characters as its icons. The main
+    stylesheet assigns a well-equipped and larger font face for this class, and this requires
+    that there exists a separate class for styling, but otherwise it is just a button base class.
     """
-    def __init__(self, text):
-        QtWidgets.QPushButton.__init__(self, text=text)
+    pass
 
 
 class ColorPanel(Panel):

@@ -32,7 +32,7 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
-import kataja.ui_widgets.OverlayButton
+import ui_widgets.buttons.OverlayButton
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
@@ -42,11 +42,8 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
-from kataja.ui_support.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.DragInfo import DragInfo
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
@@ -56,17 +53,19 @@ from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
-from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.HelpPanel import HelpPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.panels.MergePanel import MergePanel
+from ui_widgets.buttons.QuickEditButtons import QuickEditButtons
+from ui_widgets.buttons.TopBarButtons import TopBarButtons
+from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -1148,7 +1147,7 @@ class UIManager:
         button = self.get_ui_by_type(host=node, ui_type=class_key)
         if button:
             return button
-        constructor = getattr(kataja.ui_widgets.OverlayButton, class_key)
+        constructor = getattr(ui_widgets.buttons.OverlayButton, class_key)
         button = constructor(node, self.main.graph_view)
         self.add_ui(button)
         button.update_position()
@@ -1191,7 +1190,7 @@ class UIManager:
 
         qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
         if not qe_label:
-            qe_label = kataja.ui_widgets.OverlayButton.OverlayLabel(node, self.main.graph_view)
+            qe_label = ui_widgets.buttons.OverlayButton.OverlayLabel(node, self.main.graph_view)
             self.add_ui(qe_label)
         qe_label.setText(node.label_object.edited_field + "→")
         qe_label.update_position()

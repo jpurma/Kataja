@@ -1,11 +1,9 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.globals import FOREST, DOCUMENT, PREFS
-from kataja.singletons import ctrl, prefs, log
-import kataja.globals as g
 from kataja.KatajaAction import KatajaAction, TransmitAction
-from kataja.ui_widgets.OverlayButton import VisButton
+from kataja.globals import DOCUMENT, PREFS
+from kataja.singletons import ctrl, log
 
 
 # ==== Class variables for KatajaActions:

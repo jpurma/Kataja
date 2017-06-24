@@ -1,10 +1,9 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 
 from kataja.singletons import qt_prefs, ctrl
-from kataja.ui_support.TwoColorButton import TwoColorButton
-from kataja.ui_support.panel_utils import text_button
 from kataja.ui_widgets.Panel import Panel
-import kataja.globals as g
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 
@@ -36,21 +35,19 @@ class NavigationPanel(Panel):
         self.treeset_counter = treeset_counter
 
         action = ctrl.ui.get_action('previous_forest')
-        prev_tree = TwoColorButton(action.k_shortcut, qt_prefs.left_arrow, self)
-        prev_tree.setMinimumWidth(72)
-        layout.addWidget(prev_tree, 1, 0, 1, 1)
-        self.prev_tree = prev_tree
-        ui = self.ui_manager
-        ui.connect_element_to_action(prev_tree, action.k_action_uid)
+        self.prev_tree = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.left_arrow,
+                                        parent=self, action=action)
+        self.prev_tree.setMinimumWidth(72)
+        layout.addWidget(self.prev_tree, 1, 0, 1, 1)
 
         action = ctrl.ui.get_action('next_forest')
-        next_tree = TwoColorButton(action.k_shortcut, qt_prefs.right_arrow, self)
-        next_tree.setMinimumWidth(72)
-        layout.addWidget(next_tree, 1, 1, 1, 1)
-        self.next_tree = next_tree
-        ui.connect_element_to_action(next_tree, action.k_action_uid)
+        self.next_tree = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.right_arrow,
+                                   parent=self, action=action)
+        self.next_tree.setMinimumWidth(72)
+        layout.addWidget(self.next_tree, 1, 1, 1, 1)
 
-        new_tree = text_button(ui, layout, text='New forest', action='new_forest', x=0, y=3)
+        new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest')
+        layout.addWidget(new_tree, 3, 0)
 
         self.der_label = QtWidgets.QLabel('Derivation step', self)
         layout.addWidget(self.der_label, 2, 0, 1, 1)
@@ -60,18 +57,16 @@ class NavigationPanel(Panel):
         self.derivation_counter = derivation_counter
 
         action = ctrl.ui.get_action('prev_derivation_step')
-        prev_der = TwoColorButton(action.k_shortcut, qt_prefs.left_arrow, self)
-        prev_der.setMaximumHeight(20)
-        layout.addWidget(prev_der, 3, 0, 1, 1)
-        self.prev_der = prev_der
-        ui.connect_element_to_action(prev_der, action.k_action_uid)
+        self.prev_der = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.left_arrow,
+                                       parent=self, action=action)
+        self.prev_der.setMaximumHeight(20)
+        layout.addWidget(self.prev_der, 3, 0, 1, 1)
 
         action = ctrl.ui.get_action('next_derivation_step')
-        next_der = TwoColorButton(action.k_shortcut, qt_prefs.right_arrow, self)
-        next_der.setMaximumHeight(20)
-        layout.addWidget(next_der, 3, 1, 1, 1)
-        self.next_der = next_der
-        ui.connect_element_to_action(next_der, action.k_action_uid)
+        self.next_der = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.right_arrow,
+                                       parent=self)
+        self.next_der.setMaximumHeight(20)
+        layout.addWidget(self.next_der, 3, 1, 1, 1)
         inner.setLayout(layout)
         if False: #ctrl.forest.supports_derivation:
             self.der_label.hide()

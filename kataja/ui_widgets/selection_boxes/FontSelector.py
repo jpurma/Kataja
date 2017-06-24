@@ -1,11 +1,10 @@
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QSize
 
 import kataja.globals as g
-from kataja.singletons import qt_prefs, ctrl
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.saved.movables.Node import Node
-
+from kataja.singletons import qt_prefs, ctrl
+from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 stylesheet = """
 QComboBox {
@@ -52,13 +51,10 @@ class FontSelector(TableModelSelectionBox):
     :param parent:
     """
 
-    def __init__(self, parent, flat=False):
-        super().__init__(parent)
-        if flat:
-            self.setMaximumWidth(20)
-            self.setMinimumWidth(20)
-        else:
-            self.setMinimumWidth(92)
+    def __init__(self, **kwargs):
+        TableModelSelectionBox.__init__(self, **kwargs)
+        self.setMaximumWidth(20)
+        self.setMinimumWidth(20)
         #self.setIconSize(QSize(92, 16))
         self.font_dialog = None
         # self.shape_selector.setView(view)

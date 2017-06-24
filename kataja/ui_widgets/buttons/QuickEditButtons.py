@@ -1,9 +1,23 @@
 # coding=utf-8
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui
 
 from kataja.UIItem import UIWidget
-from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_widgets.OverlayButton import QuickEditButton
+from kataja.singletons import qt_prefs
+from ui_widgets.buttons.OverlayButton import OverlayButton
+
+
+class QuickEditButton(OverlayButton):
+
+    permanent_ui = True
+
+    def __init__(self, size=24, color_key='accent3', **kwargs):
+        super().__init__(color_key=color_key, **kwargs)
+        if isinstance(size, tuple):
+            self.setMinimumSize(size[0]+2, size[1])
+            self.setMaximumSize(size[0]+2, size[1])
+        else:
+            self.setMinimumSize(size+2, size)
+            self.setMaximumSize(size+2, size)
 
 
 class QuickEditButtons(UIWidget, QtWidgets.QFrame):
@@ -34,58 +48,57 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         #self.right_align_icon = icon('align_right24.png')
         #self.remove_styles_icon = icon('no_format24.png')
 
-        self.italic = QuickEditButton('italic_button', parent=self,
+        self.italic = QuickEditButton(action='italic_button', parent=self,
                                       tooltip='Italic - \\emph{...} - <i>...</i>)',
-                                      pixmap=qt_prefs.italic_icon, size=(24, 24))
+                                      pixmap=qt_prefs.italic_icon)
         ui.add_button(self.italic, action='toggle_italic')
         self.italic.setCheckable(True)
         self._left_buttons.append(self.italic)
         layout.addWidget(self.italic)
 
-        self.bold = QuickEditButton('bold_button', parent=self,
+        self.bold = QuickEditButton(action='bold_button', parent=self,
                                     tooltip='Bold - \\textbf{...} - <b>...</b>)',
-                                    pixmap=qt_prefs.bold_icon, size=(24, 24))
+                                    pixmap=qt_prefs.bold_icon)
         ui.add_button(self.bold, action='toggle_bold')
         self.bold.setCheckable(True)
         self._left_buttons.append(self.bold)
         layout.addWidget(self.bold)
 
-        self.underline = QuickEditButton('underline_button', parent=self,
+        self.underline = QuickEditButton(action='underline_button', parent=self,
                                          tooltip='Underline - \\emph{...} - <u>...</u>)',
-                                         pixmap=qt_prefs.underline_icon, size=(24, 24))
+                                         pixmap=qt_prefs.underline_icon)
         ui.add_button(self.underline, action='toggle_underline')
         self.underline.setCheckable(True)
         self._left_buttons.append(self.underline)
         layout.addWidget(self.underline)
 
-        self.strikethrough = QuickEditButton('strikethrough_button', parent=self,
+        self.strikethrough = QuickEditButton(action='strikethrough_button', parent=self,
                                              tooltip='Strikethrough',
-                                             pixmap=qt_prefs.strikethrough_icon,
-                                             size=(24, 24))
+                                             pixmap=qt_prefs.strikethrough_icon)
         ui.add_button(self.strikethrough, action='toggle_strikethrough')
         self.strikethrough.setCheckable(True)
         self._left_buttons.append(self.strikethrough)
         layout.addWidget(self.strikethrough)
 
-        self.subscript = QuickEditButton('subscript_button', parent=self,
+        self.subscript = QuickEditButton(action='subscript_button', parent=self,
                                          tooltip='Subscript - \\_{...} - <sub>...</sub>)',
-                                         pixmap=qt_prefs.subscript_icon, size=(24, 24))
+                                         pixmap=qt_prefs.subscript_icon)
         ui.add_button(self.subscript, action='toggle_subscript')
         self.subscript.setCheckable(True)
         self._left_buttons.append(self.subscript)
         layout.addWidget(self.subscript)
 
-        self.superscript = QuickEditButton('superscript_button', parent=self,
+        self.superscript = QuickEditButton(action='superscript_button', parent=self,
                                            tooltip='Superscript - \\_{...} - <sup>...</sup>)',
-                                           pixmap=qt_prefs.superscript_icon, size=(24, 24))
+                                           pixmap=qt_prefs.superscript_icon)
         ui.add_button(self.superscript, action='toggle_superscript')
         self.superscript.setCheckable(True)
         self._left_buttons.append(self.superscript)
         layout.addWidget(self.superscript)
 
-        self.no_style = QuickEditButton('no_style_button', parent=self,
+        self.no_style = QuickEditButton(action='no_style_button', parent=self,
                                         tooltip='Remove styles',
-                                        pixmap=qt_prefs.remove_styles_icon, size=(24, 24))
+                                        pixmap=qt_prefs.remove_styles_icon)
         ui.add_button(self.no_style, action='remove_styles')
         self._left_buttons.append(self.no_style)
         layout.addWidget(self.no_style)

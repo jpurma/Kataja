@@ -1,12 +1,9 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs, prefs, classes
-from kataja.ui_support.panel_utils import box_row, icon_button, shape_selector, selector, \
-    mini_button
-from kataja.ui_widgets.OverlayButton import PanelButton
+from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.DraggableNodeFrame import DraggableNodeFrame
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 
@@ -21,12 +18,12 @@ class DraggableMergeFrame(QtWidgets.QFrame):
         self.setMinimumHeight(24)
         color_key = ctrl.settings.get_node_setting('color_id', node_type=g.CONSTITUENT_NODE,
                                                    level=ctrl.ui.active_scope)
-        self.add_button = icon_button(ctrl.ui, self, hlayout,
+        self.add_button = PanelButton(parent=self,
                                       icon=qt_prefs.add_icon,
                                       text='Add merge',
                                       action='add_merge',
                                       size=24,
-                                      color_key=color_key)
+                                      color_key=color_key).to_layout(hlayout)
         self.label = QtWidgets.QLabel('Merge -----------')
         hlayout.addWidget(self.label)
         self.setLayout(hlayout)
@@ -53,8 +50,8 @@ class DraggableMergeFrame(QtWidgets.QFrame):
             data.setText('kataja:new_node:%s' % self.key)
             drag = QtGui.QDrag(self)
             drag.setPixmap(qt_prefs.leaf_pixmap)
-            drag.setHotSpot(QtCore.QPoint(qt_prefs.leaf_pixmap.width() / 2,
-                            qt_prefs.leaf_pixmap.height() / 2))
+            drag.setHotSpot(QtCore.QPoint(int(qt_prefs.leaf_pixmap.width() / 2),
+                            int(qt_prefs.leaf_pixmap.height() / 2)))
             drag.setMimeData(data)
             drag.exec_(QtCore.Qt.CopyAction)
             self.add_button.setDown(False)

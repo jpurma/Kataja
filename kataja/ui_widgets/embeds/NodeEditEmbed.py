@@ -1,16 +1,15 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.parser.INodes import ITextNode, as_html
-from kataja.parser.LatexToINode import LatexFieldToINode
+from kataja.parser.INodes import as_html
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
-from kataja.ui_support.ProjectionButtons import ProjectionButtons
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
-from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
+from kataja.ui_widgets.UIEmbed import UIEmbed
+from ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):

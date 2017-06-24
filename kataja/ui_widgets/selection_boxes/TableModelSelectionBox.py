@@ -1,16 +1,11 @@
 
-from kataja.ui_support.SelectionBox import SelectionBox
+from ui_widgets.SelectionBox import SelectionBox
 
 
 class TableModelSelectionBox(SelectionBox):
+    """ SelectionBox that uses table model for values, more flexible than regular selector. Base
+    for specific graphical selectors (e.g. font, color, line type).
     """
-
-    :param args:
-    :param kwargs:
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def find_list_item(self, data):
         """ Return the item corresponding to this data

@@ -1,12 +1,11 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs, prefs, classes
-from kataja.ui_support.panel_utils import box_row, icon_button, shape_selector, selector, \
-    mini_button
-from kataja.ui_widgets.OverlayButton import PanelButton
-from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.DraggableNodeFrame import DraggableNodeFrame
+from kataja.singletons import ctrl, qt_prefs, prefs
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 
 __author__ = 'purma'
 
@@ -27,7 +26,6 @@ class ConstituentSheet(QtWidgets.QWidget):
         :param parent: self.main
         """
         QtWidgets.QWidget.__init__(self, parent=parent)
-        ui = ctrl.ui
         self.setMaximumWidth(220)
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
         layout = QtWidgets.QVBoxLayout()
@@ -38,64 +36,57 @@ class ConstituentSheet(QtWidgets.QWidget):
         label = QtWidgets.QLabel('Shape')
         hlayout.addWidget(label)
         w = 32
-        b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24)
+        b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24,
+                         action='set_no_frame_node_shape').to_layout(hlayout)
         b1.setFixedWidth(w)
-        b1.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b1, 'set_no_frame_node_shape')
-        hlayout.addWidget(b1)
-        b2 = PanelButton(pixmap=qt_prefs.shape_icon_scope, parent=self, size=24)
+        b2 = PanelButton(pixmap=qt_prefs.shape_icon_scope, parent=self, size=24,
+                         action='set_scopebox_node_shape').to_layout(hlayout)
         b2.setFixedWidth(w)
-        b2.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b2, 'set_scopebox_node_shape')
-        hlayout.addWidget(b2)
-        b3 = PanelButton(pixmap=qt_prefs.shape_icon_brackets, parent=self, size=24)
+        b3 = PanelButton(pixmap=qt_prefs.shape_icon_brackets, parent=self, size=24,
+                         action='set_bracketed_node_shape').to_layout(hlayout)
         b3.setFixedWidth(w)
-        b3.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b3, 'set_bracketed_node_shape')
-        hlayout.addWidget(b3)
-        b4 = PanelButton(pixmap=qt_prefs.shape_icon_box, parent=self, size=24)
+        b4 = PanelButton(pixmap=qt_prefs.shape_icon_box, parent=self, size=24,
+                         action='set_box_node_shape').to_layout(hlayout)
         b4.setFixedWidth(w)
-        b4.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b4, 'set_box_node_shape')
-        hlayout.addWidget(b4)
-        b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24)
+        b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24,
+                         action='set_card_node_shape').to_layout(hlayout)
         b5.setFixedWidth(w)
-        b5.setCheckable(True)
-        ctrl.ui.connect_element_to_action(b5, 'set_card_node_shape')
-        hlayout.addWidget(b5)
         layout.addLayout(hlayout)
 
         hlayout = box_row(layout)
         label = QtWidgets.QLabel('Edge', parent=self)
         hlayout.addWidget(label)
         hlayout.addStretch(24)
-        self.shape_selector = shape_selector(ui, self, hlayout,
-                                             action='change_edge_shape',
-                                             label='')
-        self.edge_options = icon_button(ui, self, hlayout,
-                                        icon=qt_prefs.settings_icon,
-                                        text='More edge options',
+        self.shape_selector = ShapeSelector(parent=self,
+                                            action='change_edge_shape',
+                                            ).to_layout(hlayout)
+        self.edge_options = PanelButton(parent=self,
+                                        pixmap=qt_prefs.settings_icon,
+                                        tooltip='More edge options',
                                         action='open_line_options',
-                                        align=QtCore.Qt.AlignRight)
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('label_text_mode')
-        self.label_selector = selector(ui, self, hlayout,
-                                       action='toggle_label_text_mode',
-                                       label='Labeling strategy',
-                                       data=data)
+        self.label_selector = SelectionBox(parent=self,
+                                           action='toggle_label_text_mode',
+                                           data=data).to_layout(hlayout,
+                                                                with_label='Labeling strategy')
+        hlayout.addWidget(self.label_selector)
         hlayout = box_row(layout)
         data = prefs.get_display_choices('projection_style')
-        self.projection_selector = selector(ui, self, hlayout,
-                                            action='select_projection_style',
-                                            label='Projection style',
-                                            data=data)
+        self.projection_selector = SelectionBox(parent=self,
+                                                action='select_projection_style',
+                                                data=data).to_layout(hlayout,
+                                                                     with_label='Projection style')
 
+        hlayout.addWidget(self.projection_selector)
         hlayout = box_row(layout)
         data = prefs.get_display_choices('trace_strategy')
-        self.trace_selector = selector(ui, self, hlayout,
-                                       action='select_trace_strategy',
-                                       label='Trace strategy',
-                                       data=data)
+        self.trace_selector = SelectionBox(parent=self,
+                                           action='select_trace_strategy',
+                                           data=data).to_layout(hlayout,
+                                                                with_label='Trace strategy')
+        hlayout.addWidget(self.trace_selector)
 

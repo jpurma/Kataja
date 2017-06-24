@@ -1,24 +1,26 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
-class ProjectionButton(QtWidgets.QPushButton):
+class ProjectionButton(PushButtonBase):
 
-    def __init__(self, text, value, tooltip):
-        QtWidgets.QPushButton.__init__(self, text)
+    def __init__(self, value, **kwargs):
+        PushButtonBase.__init__(self, **kwargs)
         self.setCheckable(True)
         self.setFlat(False)
         self.my_value = value
-        self.k_tooltip = tooltip
 
     def enterEvent(self, event):
+        PushButtonBase.enterEvent(self, event)
         node = ctrl.forest.nodes.get(self.my_value)
         if node:
             for n in node.heads:
                 n.toggle_halo(True)
 
     def leaveEvent(self, event):
+        PushButtonBase.leaveEvent(self, event)
         node = ctrl.forest.nodes.get(self.my_value)
         if node:
             for n in node.heads:
@@ -66,7 +68,7 @@ class ProjectionButtons(QtWidgets.QWidget):
             tt = f'project from {child_heads}'
             checked = current_heads and (child_heads == current_heads or child_heads in
                       current_heads)
-            button = ProjectionButton(text, child.uid, tt)
+            button = ProjectionButton(child.uid, text=text, tooltip=tt)
             button.setChecked(checked)
             button.setEnabled(bool(child_heads))
             self.bgroup.addButton(button)

@@ -1,13 +1,13 @@
-import queue
-import sys
 import code
+import sys
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.singletons import log, ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.panel_utils import text_button, selector, mini_button, mini_selector
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 
 class CommandPrompt(QtWidgets.QLineEdit):
@@ -105,10 +105,12 @@ class LogPanel(Panel):
 
         label = QtWidgets.QLabel('log level:', parent=titlewidget)
         tlayout.addWidget(label)
-        log_levels = mini_selector(ctrl.ui, titlewidget, tlayout, data=levels,
-                                   action='set_log_level')
+        log_levels = SelectionBox(parent=titlewidget, data=levels,
+                                  action='set_log_level', mini=True).to_layout(tlayout)
         log_levels.setMinimumWidth(72)
-        clear_log = mini_button(ctrl.ui, titlewidget, tlayout, text='clear', action='clear_log')
+        clear_log = PanelButton(parent=titlewidget, text='clear',
+                                action='clear_log').to_layout(tlayout)
+        clear_log.setMaximumHeight(20)
 
         self.inner = QtWidgets.QTextBrowser()
         layout = QtWidgets.QVBoxLayout()

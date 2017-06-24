@@ -23,15 +23,14 @@
 # ############################################################################
 import sys
 import traceback
-import logging
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, log, running_environment
-from kataja.ui_widgets.OverlayButton import PanelButton
-from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
-from kataja.ui_support.SelectionBox import SelectionBox
 from kataja.ui_graphicsitems.TouchArea import TouchArea
+from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
+from ui_widgets.SelectionBox import SelectionBox
+from ui_widgets.buttons.PanelButton import PanelButton
 
 
 class ShortcutSolver(QtCore.QObject):

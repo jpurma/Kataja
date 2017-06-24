@@ -1,9 +1,9 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import QSize
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
-from kataja.singletons import ctrl
-from kataja.PaletteManager import color_keys
 
+from kataja.PaletteManager import color_keys
+from kataja.singletons import ctrl
+from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 stylesheet = """
 QComboBox {
@@ -96,22 +96,13 @@ class LineColorIcon(QtGui.QIcon):
 
 
 class ColorSelector(TableModelSelectionBox):
-    """
-    :param parent:
-    :param role: 'node' or 'edge' or 'group'
-    """
 
-    def __init__(self, parent, role='node', flat=True):
-        super().__init__(parent)
+    def __init__(self, **kwargs):
+        TableModelSelectionBox.__init__(self, **kwargs)
         self.setIconSize(QSize(16, 16))
-        if flat:
-            self.setMinimumWidth(24)
-            self.setMaximumWidth(24)
-            self.setStyleSheet(stylesheet % {'current': 'transparent', 'lighter': 'transparent'})
-        else:
-            self.setMinimumWidth(40)
-            self.setMaximumWidth(40)
-        self.role = role
+        self.setMinimumWidth(24)
+        self.setMaximumWidth(24)
+        self.setStyleSheet(stylesheet % {'current': 'transparent', 'lighter': 'transparent'})
         self.color_items = []
         model = self.model()
         for c in color_keys:

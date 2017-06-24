@@ -26,12 +26,15 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
-from kataja.ui_support.panel_utils import mini_icon_button, label, selector, mini_button, \
-    modal_icon_button
+from kataja.ui_support.panel_utils import label
+from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.UIItem import UIWidget
+from kataja.ui_widgets.buttons.ModalIconButton import ModalIconButton
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 
 # Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
+
 
 class PanelTitle(QtWidgets.QWidget):
     """ Widget for displaying panel title and control buttons in a concise form """
@@ -59,27 +62,28 @@ class PanelTitle(QtWidgets.QWidget):
         layout.minimumSize = self.sizeHint
         ui = self.panel.ui_manager
 
-        self.close_button = mini_icon_button(ui, self, layout,
-                                             icon=qt_prefs.close_icon,
-                                             text='Close panel',
-                                             action='toggle_panel')
+        self.close_button = PanelButton(parent=self,
+                                        pixmap=qt_prefs.close_icon,
+                                        tooltip='Close panel',
+                                        action='toggle_panel',
+                                        size=12).to_layout(layout)
+        self.close_button.setMaximumWidth(16)
         self.close_button.data = panel.ui_key
 
-        self.pin_button = mini_icon_button(ui, self, layout,
-                                           icon=qt_prefs.pin_drop_icon,
-                                           text='Dock this panel',
-                                           action='pin_panel')
-        #self.fold_button = mini_icon_button(ui, self, layout,
-        #                                    icon=qt_prefs.fold_pixmap,
-        #                                    text='Minimize this panel',
-        #                                    action='toggle_fold_panel')
-        self.fold_button = modal_icon_button(ui, 'fold_%s_panel' % panel.name,
-                                             self, layout,
-                                             pixmap0=qt_prefs.fold_pixmap,
-                                             pixmap1=qt_prefs.more_pixmap,
-                                             action='toggle_fold_panel',
-                                             size=12)
+        self.pin_button = PanelButton(parent=self,
+                                      pixmap=qt_prefs.pin_drop_icon,
+                                      tooltip='Dock this panel',
+                                      action='pin_panel',
+                                      size=12).to_layout(layout)
+        self.pin_button.setMaximumWidth(16)
+        self.fold_button = ModalIconButton(ui_key='fold_%s_panel' % panel.name,
+                                           parent=self,
+                                           pixmap0=qt_prefs.fold_pixmap,
+                                           pixmap1=qt_prefs.more_pixmap,
+                                           action='toggle_fold_panel',
+                                           size=12).to_layout(layout)
         self.fold_button.data = panel.ui_key
+        self.fold_button.setMaximumWidth(16)
 
         layout.addSpacing(8)
         self.title = label(self, layout, name)
@@ -88,8 +92,8 @@ class PanelTitle(QtWidgets.QWidget):
             items = [(g.SELECTION, 'in this selection'), (g.FOREST, 'in this forest'),
                      (g.DOCUMENT, 'in this document'), (g.PREFS, 'in preferences')]
 
-            self.scope_selector = selector(ui, self, layout, data=items, action='style_scope',
-                                           label='')
+            self.scope_selector = SelectionBox(parent=self, data=items,
+                                               action='style_scope').to_layout(layout)
             self.scope_selector.setMaximumWidth(92)
 
 
