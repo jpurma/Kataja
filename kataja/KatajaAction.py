@@ -289,8 +289,6 @@ class KatajaAction(QtWidgets.QAction):
         :param element:
         """
         self.elements.add(element)
-        print('connecting element %s to action %s' % (element, self))
-        print('setting tooltip as:', self.tip0)
         element.k_tooltip = self.tip0
 
         # gray out ui element and its label if action is disabled

@@ -35,6 +35,7 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
             self.setIconSize(size)
         if tooltip:
             self.k_tooltip = tooltip
+        ctrl.ui.add_ui(self)
 
 
 

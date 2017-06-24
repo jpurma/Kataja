@@ -63,9 +63,9 @@ from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
-from ui_widgets.buttons.QuickEditButtons import QuickEditButtons
-from ui_widgets.buttons.TopBarButtons import TopBarButtons
-from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
+from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
+from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -1148,11 +1148,9 @@ class UIManager:
         if button:
             return button
         constructor = getattr(ui_widgets.buttons.OverlayButton, class_key)
-        button = constructor(node, self.main.graph_view)
+        button = constructor(host=node, parent=self.main.graph_view, action=action)
         self.add_ui(button)
         button.update_position()
-        if action:
-            self.connect_element_to_action(button, action)
         button.show()
         return button
 
