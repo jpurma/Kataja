@@ -1,16 +1,15 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.parser.INodes import ITextNode, as_html
-from kataja.parser.LatexToINode import LatexFieldToINode
+from kataja.parser.INodes import as_html
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
-from kataja.ui_support.ProjectionButtons import ProjectionButtons
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
-from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
+from kataja.ui_widgets.UIEmbed import UIEmbed
+from ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -18,9 +17,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     if palette:
         label.setPalette(palette)
     label.setBuddy(buddy)
-    label.setStatusTip(tooltip)
-    if ctrl.main.use_tooltips:
-        label.setToolTip(tooltip)
+    label.k_tooltip = tooltip
     if align:
         layout.addWidget(label, 1, align)
     else:
@@ -62,8 +59,8 @@ class NodeEditEmbed(UIEmbed):
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
             d = ed.get(field_name, {})
-            if d.get('hidden', False) or not self.host.check_conditions(d):
-                continue
+            #if d.get('hidden', False) or not self.host.check_conditions(d):
+            #    continue
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')

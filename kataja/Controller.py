@@ -172,26 +172,7 @@ class Controller:
         action.setChecked(value)
         self.play = value
 
-    def set_status(self, msg):
-        """ Show message in status bar. Send empty message to clear status
-        bar. """
-        if not (self.items_moving or self.is_zooming()):
-            if msg:
-                self.main.status_bar.showMessage(msg)
-            else:
-                self.main.status_bar.clearMessage()
-
-    def remove_status(self, msg):
-        """ Clears status message, but only if it is not been replaced by
-        another message
-            (E.g. when contained object has put its own message,
-            and hoverLeaveEvent has not been called for containing object. )
-        """
-        if not (self.items_moving or self.is_zooming()):
-            if msg == self.main.status_bar.currentMessage():
-                self.main.status_bar.clearMessage()
-
-                # ******* Selection *******
+    # ******* Selection *******
 
     # trees and edges can be selected.
     # UI objects are focused. multiple items can be selected, but actions do
@@ -251,6 +232,7 @@ class Controller:
         for obj in self.selected:
             obj.update_selection_status(False)
         self.selected = []
+        self.call_watchers(self, 'selection_changed', value=[])
 
     def select(self, objs):
         """
@@ -258,7 +240,10 @@ class Controller:
         :param objs:
         """
         had_objs = bool(self.selected)
-        self.deselect_objects()
+        if had_objs:
+            for obj in self.selected:
+                obj.update_selection_status(False)
+            self.selected = []
         if not objs:
             if had_objs:
                 self.call_watchers(self, 'selection_changed', value=self.selected)
@@ -301,7 +286,7 @@ class Controller:
         self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def press(self, obj):
-        """ Mark object to be the last pressed object. If it has on_press -hook, do it.
+        """ Mark object to be the last pressed object.
         :param obj:
         :return:
         """

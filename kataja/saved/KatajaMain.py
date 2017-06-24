@@ -183,7 +183,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.raise_()
         kataja_app.processEvents()
         self.activateWindow()
-        self.status_bar = self.statusBar()
+        #self.status_bar = self.statusBar()
         self.install_plugins()
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')

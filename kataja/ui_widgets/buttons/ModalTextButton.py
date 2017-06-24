@@ -3,13 +3,14 @@ from PyQt5 import QtGui, QtWidgets
 from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
-class ModalTextButton(UIWidget, QtWidgets.QPushButton):
+class ModalTextButton(PushButtonBase):
 
-    def __init__(self, text0, text1, ui_key, parent=None, pixmap=None):
-        UIWidget.__init__(self, ui_key=ui_key)
-        QtWidgets.QPushButton.__init__(self, text0, parent)
+    def __init__(self, text0, text1, pixmap=None, **kwargs):
+        PushButtonBase.__init__(self, **kwargs)
+        self.setText(text0)
         self.setCheckable(True)
         self.pixmap = pixmap
         self.text0 = text0
@@ -36,12 +37,12 @@ class ModalTextButton(UIWidget, QtWidgets.QPushButton):
             if self.icon1:
                 self.setIcon(self.icon1)
             self.setText(self.text1)
-            self.setToolTip(self.tooltip1)
+            self.k_tooltip = self.tooltip1
         else:
             if self.icon0:
                 self.setIcon(self.icon0)
             self.setText(self.text0)
-            self.setToolTip(self.tooltip0)
+            self.k_tooltip = self.tooltip0
         self.updateGeometry()
         self.update_position()
 

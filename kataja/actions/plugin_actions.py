@@ -103,9 +103,9 @@ class TogglePlugin(KatajaAction):
     k_tooltip = "Plugins can drastically change how Kataja operates and what it tries to do. " \
                 "Be sure you trust the code before enabling a plugin. "
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
-        return [sender.plugin_key, sender.isChecked()], {}
+        return [sender.plugin_key, sender.isChecked()], kwargs
 
     def method(self, plugin_key, value):
         """ Enable or disable plugin identified by plugin_key

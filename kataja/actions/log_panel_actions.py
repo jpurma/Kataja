@@ -33,9 +33,9 @@ class SetLogLevel(KatajaAction):
     k_undoable = False
     k_tooltip = 'Messages of lesser importance are filtered out'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         value = self.sender().currentData()
-        return [value], {}
+        return [value], kwargs
 
     def method(self, value):
         ctrl.settings.set('log_level', value, level=g.PREFS)

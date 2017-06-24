@@ -231,6 +231,7 @@ class FreeDrawing:
         ctrl.select(edge)
         return edge
 
+
     # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
     # here when something is removed from scene, it is made sure that it is
@@ -575,7 +576,8 @@ class FreeDrawing:
         # infinite loop somewhere
 
         if not set(new_node.trees) & set(old_node.trees):
-            new_node.copy_position(old_node)
+            if old_node.pos():
+                new_node.copy_position(old_node)
             new_node.update_visibility(fade_in=True)  # active=True,
 
         # add new node to relevant groups
@@ -689,7 +691,6 @@ class FreeDrawing:
         will be projecting.
         :return:
         """
-
         new_node.heads = [new_node]
 
         if add_left:
@@ -712,10 +713,10 @@ class FreeDrawing:
 
         for op, align in parent_info:
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
-        merger_node.copy_position(old_node)
         merger_node.heads = list(old_node.heads)
 
-    def merge_to_top(self, top, new, merge_to_left=True, pos=None):
+
+    def merge_to_top(self, top, new, merge_to_left=True):
         """
         :param top:
         :param new:
@@ -729,9 +730,7 @@ class FreeDrawing:
         else:
             left = top
             right = new
-        merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new,
-                                              heads=top.heads)
-        merger_node.copy_position(top)
+        self.create_merger_node(left=left, right=right, new=new, heads=top.heads)
 
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a trees: a new merge is created
@@ -762,10 +761,7 @@ class FreeDrawing:
             right = inserted
 
         # connections
-        p = insertion_pos[0], insertion_pos[1]
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=inserted)
-        merger_node.copy_position(child)
-        merger_node.current_position = merger_node.scene_position_to_tree_position(p)
+        merger_node = self.create_merger_node(left=left, right=right, new=inserted)
         self.connect_node(parent, merger_node, direction=direction)
 
         # groups
@@ -776,17 +772,22 @@ class FreeDrawing:
         # projections
         merger_node.set_heads(heads)
 
-    def create_merger_node(self, left=None, right=None, pos=None, new=None, heads=None):
+    def create_merger_node(self, left=None, right=None, new=None, heads=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
         :param right:
-        :param pos:
         :param new: which one is the new node to add. This connection is animated in.
         :param heads: which one is head?
         """
-        if not pos:
-            pos = (0, 0)
+        if new is left:
+            old = right
+        else:
+            old = left
+        lx, ly = left.current_scene_position
+        rx, ry = right.current_scene_position
+        pos = (lx + rx) / 2, (ly + ry) / 2 - ctrl.settings.get('edge_height')
+
         label = ''
         if heads:
             if isinstance(heads, Node):
@@ -799,7 +800,7 @@ class FreeDrawing:
                     l2 = figure_out_syntactic_label(heads[1])
                     label = f"({l1}, {l2})"
 
-        merger_node = self.create_node(label=label, relative=right)
+        merger_node = self.create_node(label=label, relative=old)
         merger_node.current_position = pos
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)

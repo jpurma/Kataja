@@ -43,21 +43,18 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
 
         self.setZValue(52)
         self._compute_position()
-        self.status_tip = ""
+        self.k_tooltip = ""
         if self.role == g.START_POINT:
-            self.status_tip = "Drag to move the starting point"
+            self.k_tooltip = "Drag to move the starting point"
         elif self.role == g.END_POINT:
-            self.status_tip = "Drag to move the ending point"
+            self.k_tooltip = "Drag to move the ending point"
         elif self.role == g.CURVE_ADJUSTMENT:
-            self.status_tip = "Drag to adjust the curvature of this line"
+            self.k_tooltip = "Drag to adjust the curvature of this line"
         elif self.role == g.LABEL_START:
-            self.status_tip = "Drag along the line to adjust the anchor point of label"
+            self.k_tooltip = "Drag along the line to adjust the anchor point of label"
             if prefs.touch:
                 self._wh = 6
                 self._xy = -3
-
-        if ctrl.main.use_tooltips:
-            self.setToolTip(self.status_tip)
         self.show()
 
     def type(self):
@@ -222,7 +219,6 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         :param event: somekind of qt mouse event?
         """
         self._hovering = True
-        ctrl.set_status(self.status_tip)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -230,7 +226,6 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         :param event: somekind of qt mouse event?
         """
         self._hovering = False
-        ctrl.remove_status(self.status_tip)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     def paint(self, painter, option, widget=None):

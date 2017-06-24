@@ -1,11 +1,10 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
-import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
-from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.SelectionBox import SelectionBox
+from kataja.visualizations.available import VISUALIZATIONS
+from ui_widgets.SelectionBox import SelectionBox
+from ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 
@@ -31,20 +30,17 @@ class VisualizationPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         hlayout = QtWidgets.QHBoxLayout()
 
-        self.selector = SelectionBox(self)
+        self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
         self.selector.add_items([(key, '%s (%s)' % (key, item.shortcut)) for key, item in
                                  VISUALIZATIONS.items()])
 
-        self.ui_manager.connect_element_to_action(self.selector, 'set_visualization')
-        hlayout.addWidget(self.selector)
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
-                                          parent=self, size=20)
+                                          action='toggle_panel',
+                                          parent=self,
+                                          size=20).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
-        ctrl.ui.connect_element_to_action(self.toggle_options,
-                                          'toggle_panel')
         self.toggle_options.data = 'VisualizationOptionsPanel'
-        hlayout.addWidget(self.toggle_options, 1, QtCore.Qt.AlignRight)
 
         layout.addLayout(hlayout)
 

@@ -1,13 +1,11 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
-
-import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs, prefs, classes
-from kataja.ui_support.panel_utils import box_row, icon_button, shape_selector, selector, \
-    mini_button
-from kataja.ui_widgets.OverlayButton import PanelButton
-from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.DraggableNodeFrame import DraggableNodeFrame
 import importlib
+
+from PyQt5 import QtWidgets, QtCore
+
+from kataja.singletons import ctrl, classes
+from kataja.ui_support.DraggableNodeFrame import DraggableNodeFrame
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 
@@ -67,10 +65,10 @@ class NodesPanel(Panel):
                 frame.sheet = sheet
             frame.set_folded(frame.folded)  # updates sheet visibility
 
-        self.reset_button = mini_button(ctrl.ui, outer, olayout,
+        self.reset_button = PanelButton(parent=outer,
                                         text='reset',
                                         action='reset_settings',
-                                        align=QtCore.Qt.AlignRight)
+                                        ).to_layout(olayout, align=QtCore.Qt.AlignRight)
         self.reset_button.setMinimumHeight(14)
         self.reset_button.setMaximumHeight(14)
 

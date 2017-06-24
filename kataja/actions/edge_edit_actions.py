@@ -34,7 +34,7 @@ class EditEdgeLabelEnterText(KatajaAction):
     #k_shortcut = 'Return'
     #k_shortcut_context = 'parent_and_children'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         if embed:
             edge_uid = embed.host.uid
@@ -42,7 +42,7 @@ class EditEdgeLabelEnterText(KatajaAction):
         else:
             edge_uid = ''
             text = ''
-        return [edge_uid, text], {}
+        return [edge_uid, text], kwargs
 
     def method(self, edge_uid: str, text: str):
         """ Set text for edge. (mostly used for labeling arrows)
@@ -64,13 +64,13 @@ class DisconnectEdge(KatajaAction):
     k_command = 'Disconnect nodes'
     k_tooltip = 'Disconnect nodes and remove this edge.'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         if embed:
             edge_uid = embed.host.uid
         else:
             edge_uid = ''
-        return [edge_uid], {}
+        return [edge_uid], kwargs
 
     def method(self, edge_uid: str):
         """ Remove connection between two nodes, this is triggered from the edge.
@@ -90,13 +90,13 @@ class DisconnectEdgeStart(KatajaAction):
     k_action_uid = 'disconnect_edge_start'
     k_command = 'Disconnect edge from start'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         if embed:
             edge_uid = embed.host.uid
         else:
             edge_uid = ''
-        return [edge_uid], {}
+        return [edge_uid], kwargs
 
     def method(self, edge_uid: str):
         """ Remove connection between two nodes, this is triggered from the edge.
@@ -119,13 +119,13 @@ class DisconnectEdgeEnd(KatajaAction):
     k_action_uid = 'disconnect_edge_end'
     k_command = 'Disconnect edge from end'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         if embed:
             edge_uid = embed.host.uid
         else:
             edge_uid = ''
-        return [edge_uid], {}
+        return [edge_uid], kwargs
 
     def method(self, edge_uid: str):
         """ Remove connection between two nodes, this is triggered from the edge.
@@ -150,13 +150,13 @@ class NewArrow(KatajaAction):
     # k_shortcut = 'a'
     #k_shortcut_context = 'parent_and_children'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         p1, p2 = embed.get_marker_points()
         end_point = int(p1.x()), int(p1.y())
         focus_point = int(p2.x()), int(p2.y())
         text = embed.input_line_edit.text()
-        return [focus_point, end_point, text], {}
+        return [focus_point, end_point, text], kwargs
 
     def method(self, focus_point, end_point, text):
         """ Create a new arrow into embed menu's location
@@ -172,10 +172,10 @@ class StartArrowFromNode(KatajaAction):
     # k_shortcut = 'a'
     # k_shortcut_context = 'parent_and_children'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         node_uid = embed.host.uid
-        return [node_uid], {}
+        return [node_uid], kwargs
 
     def method(self, node_uid: str):
         """ Create an arrow starting from a given node
@@ -196,13 +196,13 @@ class DeleteArrow(KatajaAction):
     k_action_uid = 'delete_arrow'
     k_command = 'Delete arrow'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
         if embed:
             edge_uid = embed.host.uid
         else:
             edge_uid = ''
-        return [edge_uid], {}
+        return [edge_uid], kwargs
 
     def method(self, edge_uid: str):
         """ Delete arrow with given uid

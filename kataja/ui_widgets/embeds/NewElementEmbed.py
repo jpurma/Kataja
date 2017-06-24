@@ -1,13 +1,14 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.singletons import qt_prefs, ctrl, prefs, classes
-from kataja.ui_support.drawn_icons import arrow, divider
-from kataja.utils import guess_node_type
+from kataja.singletons import qt_prefs, ctrl, classes
 from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_support.drawn_icons import arrow
+from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_support.panel_utils import icon_text_button, box_row
-from kataja.ui_support.SelectionBox import SelectionBox
+from kataja.utils import guess_node_type
+from ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 
 __author__ = 'purma'
 
@@ -21,9 +22,10 @@ class NewElementEmbed(UIEmbed):
         layout.addLayout(self.top_row_layout)
         hlayout = box_row(layout)
         ui = self.ui_manager
-        self.new_arrow_button = icon_text_button(ui, hlayout, self, '', '',
-                                                 " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
-                                                 draw_method=arrow)
+        self.new_arrow_button = OverlayButton(parent=self, layout=hlayout,
+                                              text=" &Arrow", action= 'new_arrow',
+                                              size=QtCore.QSize(48, 20),
+                                              draw_method=arrow)
         #self.divider_button = icon_text_button(ui, hlayout, self, '', '',
         #                                       " &Divider", 'new_divider',
         #                                       size=QtCore.QSize(48, 20), draw_method=divider)

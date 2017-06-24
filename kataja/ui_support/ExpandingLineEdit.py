@@ -29,11 +29,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.setLayout(layout)
         self.line_edit.setMinimumHeight(26)
         self.text_area.setMinimumHeight(40)
-        if tip:
-            if ctrl.main.use_tooltips:
-                self.setToolTip(tip)
-                self.setToolTipDuration(2000)
-            self.setStatusTip(tip)
+        self.k_tooltip = tip
         if big_font:
             self.line_edit.setFont(big_font)
         if smaller_font:

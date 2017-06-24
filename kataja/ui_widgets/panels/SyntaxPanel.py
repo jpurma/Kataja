@@ -2,9 +2,9 @@ from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.SelectionBox import SelectionBox
+from ui_widgets.SelectionBox import SelectionBox
+from ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 
@@ -31,20 +31,17 @@ class SyntaxPanel(Panel):
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
 
-        selector = SelectionBox(self)
-        self.selector = selector
+        self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
         for key, item in []:
-            selector.addItem('%s (%s)' % (key, item.shortcut), key)
+            self.selector.addItem('%s (%s)' % (key, item.shortcut), key)
 
-        self.ui_manager.connect_element_to_action(selector, 'set_visualization')
-        hlayout.addWidget(selector)
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
                                           tooltip='Visualization settings',
-                                          parent=self, size=20)
+                                          parent=self, size=20,
+                                          action='toggle_panel_%s' % g.VIS_OPTIONS
+                                          ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
-        ctrl.ui.connect_element_to_action(self.toggle_options, 'toggle_panel_%s' % g.VIS_OPTIONS)
-        hlayout.addWidget(self.toggle_options, 1, QtCore.Qt.AlignRight)
 
         layout.addLayout(hlayout)
         inner.setLayout(layout)

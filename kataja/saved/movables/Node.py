@@ -91,13 +91,14 @@ class Node(Movable):
     can_be_in_groups = True
     editable = {}
     ui_sheet = None
+    allowed_child_types = []
 
     default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
                      'card_width': 0, 'card_height': 0}
 
     default_edge = g.ABSTRACT_EDGE
-    touch_areas_when_dragging = {}
-    touch_areas_when_selected = {}
+    touch_areas_when_dragging = []
+    touch_areas_when_selected = []
 
     buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'start_editing_node'},
                              g.REMOVE_NODE: {'action': 'remove_node',
@@ -122,7 +123,6 @@ class Node(Movable):
         self.user_size = None
         self.text_parse_mode = 1
         self._magnets = []
-        self.status_tip = ""
         self.is_syntactically_valid = False
         self.width = 0
         self.height = 0
@@ -355,45 +355,6 @@ class Node(Movable):
 
     # Non-model-based properties ########################################
 
-    @property
-    def hovering(self):
-        """ Public access to _hovering. Pretty useless.
-        :return:
-        """
-        return self._hovering
-
-    @hovering.setter
-    def hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
-        :return:
-        """
-        if value and not self._hovering:
-            self._start_hover()
-        elif self._hovering and not value:
-            self._stop_hover()
-
-    def _start_hover(self):
-        """ Start all hovering effects
-        :return:
-        """
-        self._hovering = True
-        self.prepareGeometryChange()
-        self.update()
-        if self.zValue() < 150:
-            self.setZValue(150)
-        ctrl.set_status(self.status_tip)
-
-    def _stop_hover(self):
-        """ Stop all hovering effects
-        :return:
-        """
-        self._hovering = False
-        self.prepareGeometryChange()
-        self.setZValue(self.z_value)
-        self.update()
-        ctrl.remove_status(self.status_tip)
-
     def get_triangle_text(self):
         """ Label with triangled elements concatenated into it
         :return:
@@ -478,6 +439,7 @@ class Node(Movable):
          new position according to new parent so that there is no visible jump.
         :return:
         """
+        old_pos = self.current_scene_position
         old_parent = self.parentItem()
         if isinstance(old_parent, Node):
             return  # This is locked to some other node and should keep it as parent
@@ -490,44 +452,35 @@ class Node(Movable):
         elif old_parent:
             self.current_position = self.current_scene_position
             self.setParentItem(None)
+        assert(self.current_scene_position == old_pos)
 
-    def copy_position(self, other, ax=0, ay=0):
+    def copy_position(self, other):
         """ Helper method for newly created items. Takes other item and copies movement related
-        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
-        adjust these a little to avoid complete overlap.
+        attributes from it (physics settings, locks, adjustment etc).
         :param other:
-        :param ax:
-        :param ay:
         :return:
         """
-        shift = (ax, ay)
-        if self.parentItem() is other.parentItem():
-            self.current_position = add_xy(other.current_position, shift)
+        parent = self.parentItem()
+        if parent is other.parentItem():
+            self.current_position = other.current_position[0], other.current_position[1]
             self.target_position = other.target_position
         else:
             csp = other.current_scene_position
-            ctp = other.tree_position_to_scene_position(other.target_position)
-            self.current_position = self.scene_position_to_tree_position(add_xy(csp, shift))
-            self.target_position = self.scene_position_to_tree_position(ctp)
+            nsp = QtCore.QPointF(csp[0], csp[1])
+            if parent:
+                nsp = parent.mapFromScene(nsp)
+            else:
+                nsp = self.mapFromScene(nsp)
+            self.current_position = nsp.x(), nsp.y()
+            self.target_position = nsp.x(), nsp.y()
+        if self.current_scene_position != other.current_scene_position:
+            print('copy position led to different positions: ', self.current_scene_position,
+                  other.current_scene_position)
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
         self.adjustment = other.adjustment
         self.physics_x = other.physics_x
         self.physics_y = other.physics_y
-
-    def tree_position_to_scene_position(self, position):
-        """ Return trees position converted to scene position. Works for xy -tuples.
-        :param position:
-        :return:
-        """
-        #if isinstance(position, (QtCore.QPoint, QtCore.QPointF)):
-        #    position = position.x(), position.y()
-        x, y = position
-        tree = self.parentItem()
-        if not tree:
-            return x, y
-        tx, ty = tree.current_position
-        return x + tx, y + ty
 
     def scene_position_to_tree_position(self, scene_pos):
         """ Return scene position converted to coordinate system used by this node trees. Works for
@@ -536,12 +489,11 @@ class Node(Movable):
         :param scene_pos:
         :return:
         """
-        x, y = scene_pos
-        tree = self.parentItem()
-        if not tree:
+        parent = self.parentItem()
+        if not parent:
             return x, y
-        tx, ty = tree.current_position
-        return x - tx, y - ty
+        nsp = parent.mapFromScene(*scene_pos)
+        return nsp.x(), nsp.y()
 
 
     # ### Children and parents
@@ -741,13 +693,30 @@ class Node(Movable):
         return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
                 self]
 
-    def can_connect_with(self, other):
-        """ Override this in subclasses, checks conditions when other nodes could connect to this
-        node. (This node is child). Generally connection should be refuted if it already exists
+    def can_have_as_child(self, other=None):
+        """ Check, usually when dragging objects, if parent -- child relationship is possible in
+        current state. This can be affected by the editing mode, properties of child and parent
+        and if they already have this relationship.
         :param other:
         :return:
         """
-        return other not in self.get_parents(similar=False, visible=False)
+
+        if other is None:
+            if ctrl.dragged_focus:
+                other = ctrl.dragged_focus
+                other_type = other.node_type
+            else:
+                other_type = ctrl.dragged_text
+        else:
+            other_type = other.node_type
+        if (not ctrl.free_drawing_mode) and \
+                (other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
+            return False
+        elif other_type in self.allowed_child_types:
+            if other:
+                return other not in self.get_children(similar=False, visible=False)
+            return True
+        return False
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
@@ -842,7 +811,7 @@ class Node(Movable):
         self.label_object.update_label()
         self.update_label_visibility()
         self.update_bounding_rect()
-        self.update_status_tip()
+        self.update_tooltip()
 
     def update_label_visibility(self):
         """ Check if the label of the node has any content -- should it be
@@ -856,11 +825,11 @@ class Node(Movable):
                               self.label_object.is_card()
         self.label_object.setVisible(self._label_visible)
 
-    def update_status_tip(self):
+    def update_tooltip(self):
         """ implement properly in subclasses, let tooltip tell about the node
         :return: None
         """
-        self.status_tip = str(self)
+        self.k_tooltip = str(self)
 
     def has_empty_label(self):
         """
@@ -1163,26 +1132,27 @@ class Node(Movable):
             node.update_label()
             node.update_visibility()
 
-    def on_press(self, value):
-        """ Testing if we can add some push-depth effect.
-        :param value: pressed or not
-        :return:
-        """
-        # push-animation is unwanted if we are already editing the text:
-        if self.label_object and self.label_object.is_quick_editing():
-            pass
-        elif value:
-            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-            self.anim.setDuration(20)
-            self.anim.setStartValue(self.scale())
-            self.anim.setEndValue(0.95)
-            self.anim.start()
-        else:
-            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-            self.anim.setDuration(20)
-            self.anim.setStartValue(self.scale())
-            self.anim.setEndValue(1.0)
-            self.anim.start()
+    # def on_press(self, value):
+    #     """ Testing if we can add some push-depth effect.
+    #     :param value: pressed or not
+    #     :return:
+    #     """
+    #     print('on_press')
+    #     # push-animation is unwanted if we are already editing the text:
+    #     if self.label_object and self.label_object.is_quick_editing():
+    #         pass
+    #     elif value:
+    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+    #         self.anim.setDuration(20)
+    #         self.anim.setStartValue(self.scale())
+    #         self.anim.setEndValue(0.90)
+    #         self.anim.start()
+    #     else:
+    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+    #         self.anim.setDuration(20)
+    #         self.anim.setStartValue(self.scale())
+    #         self.anim.setEndValue(1.0)
+    #         self.anim.start()
 
     # ## Magnets
     # ######################################################################
@@ -1361,6 +1331,9 @@ class Node(Movable):
 
     # Drag flow:
 
+    # 0.
+    #
+
     # 1. drag -- compute drag's current situation, where is mouse cursor, should we start
     # dragging or just announce new position for 'dragged_to'.
     #
@@ -1372,7 +1345,7 @@ class Node(Movable):
     #   2b. prepare_children_for_dragging -- compute what should be included in drag for this
     #   type of node.
     #
-    #   3. start_dragging_tracking -- this is called for each node that is included into drag.
+    #   3. prepare_dragging_participiant -- this is called for each node that is included into drag.
     #   Prepares drag data and sets up animations.
     #
     #   4. dragged_to -- this is called for each node in drag set. Node moves to position
@@ -1421,7 +1394,7 @@ class Node(Movable):
                 if in_any_tree(item, dragged_trees):
                     continue
                 elif getattr(item, 'draggable', True):
-                    item.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    item.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
                     item.prepare_children_for_dragging(scene_pos)
                     multidrag = True
         # no selection -- drag what is under the pointer
@@ -1431,7 +1404,7 @@ class Node(Movable):
                 dragged_trees.add(tree)
             else:
                 self.prepare_children_for_dragging(scene_pos)
-            self.start_dragging_tracking(host=True, scene_pos=scene_pos)
+            self.prepare_dragging_participiant(host=True, scene_pos=scene_pos)
 
         moving = ctrl.dragged_set
         for tree in dragged_trees:
@@ -1446,10 +1419,15 @@ class Node(Movable):
         """
         pass
 
-    def start_dragging_tracking(self, host=False, scene_pos=None):
+    def prepare_dragging_participiant(self, host=False, scene_pos=None):
         """ Add this node into the entourage of dragged node. These nodes will
         maintain their relative position to dragged node while dragging.
+        This can and should be called also for the host of the dragging operation. In this case
+        host=True.
         :return: None
+        :param host: is this the main dragged node or one of its children
+        :param scene_pos: mouse position when dragging started -- dragging participiant will keep
+        its distance from pointer fixed during dragging
         """
         ctrl.dragged_set.add(self)
         ctrl.add_my_group_to_dragged_groups(self)
@@ -1458,18 +1436,19 @@ class Node(Movable):
 
         tree = self.tree_where_top()
         if tree:
-            tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
+            tree.prepare_dragging_participiant(host=host, scene_pos=scene_pos)
         parent = self.parentItem()
         if parent:
             parent.setZValue(500)
-        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        self.anim.setDuration(100)
-        self.anim.setStartValue(self.scale())
-        self.anim.setEndValue(1.1)
-        self.anim.start()
+        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+        # self.anim.setEasingCurve(QtCore.QEasingCurve.Linear)
+        # self.anim.setDuration(600)
+        # self.anim.setStartValue(self.scale())
+        # self.anim.setEndValue(1.5)
+        # self.anim.start()
 
     def drag(self, event):
-        """ Drags also elements that are counted to be involved: features,
+        """ Drag also elements that are counted to be involved: features,
         children etc. Drag is called to only one principal drag host element. 'dragged_to' is
         called for each element.
         :param event:
@@ -1479,8 +1458,6 @@ class Node(Movable):
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
         nx, ny = scene_pos
-        if not ctrl.dragged_focus:
-            self.start_dragging(scene_pos)
 
         # Call dragged_to -method for all nodes that are dragged with the drag focus
         # Their positions are relative to this focus, compute how much.
@@ -1578,11 +1555,11 @@ class Node(Movable):
                 self.drag_data.parent.setZValue(self.drag_data.parent_old_zvalue)
         self.drag_data = None
         ctrl.ui.remove_drag_info()
-        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        self.anim.setDuration(100)
-        self.anim.setStartValue(self.scale())
-        self.anim.setEndValue(1.0)
-        self.anim.start()
+        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+        # self.anim.setDuration(100)
+        # self.anim.setStartValue(self.scale())
+        # self.anim.setEndValue(1.0)
+        # self.anim.start()
 
     def cancel_dragging(self):
         """ Fixme: not called by anyone
@@ -1599,24 +1576,13 @@ class Node(Movable):
                     node.cancel_dragging()
             self.drag_data = None
 
-    def is_dragging_this_type(self, dtype):
-        """ Check if the currently dragged item is in principle compatible with self.
-        :return:
-        """
-        if ctrl.dragged_focus:
-            return ctrl.dragged_focus.node_type == dtype and \
-                   ctrl.dragged_focus.can_connect_with(self)
-        elif ctrl.dragged_text:
-            return ctrl.dragged_text == dtype
-        return False
-
     def lock(self):
         """ Display lock, unless already locked. Added functionality to
         recognize the state before
          dragging started.
         :return:
         """
-        was_locked = self.locked or self.use_adjustment
+        #was_locked = self.locked or self.use_adjustment
         super().lock()
         # if not was_locked:
         if self.is_visible():
@@ -1628,13 +1594,18 @@ class Node(Movable):
         ctrl.press(self)
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        # this only happens when this node is being pressed
-        if ctrl.dragged_set or (event.buttonDownScenePos(
-                QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
-            self.drag(event)
-            ctrl.graph_scene.dragging_over(event.scenePos())
-        super().mouseMoveEvent(event)
+    def mouseMoveEvent(self, e):
+        # mouseMoveEvents only happen between mousePressEvents and mouseReleaseEvents
+        scene_pos_pf = e.scenePos()
+        if ctrl.dragged_focus is self:
+            self.drag(e)
+            ctrl.graph_scene.dragging_over(scene_pos_pf)
+        elif (e.buttonDownScenePos(QtCore.Qt.LeftButton) - scene_pos_pf).manhattanLength() > 6:
+            scene_pos = to_tuple(scene_pos_pf)
+            self.start_dragging(scene_pos)
+            self.drag(e)
+            ctrl.graph_scene.dragging_over(scene_pos_pf)
+        super().mouseMoveEvent(e)
 
     def mouseReleaseEvent(self, event):
         """ Either we are finishing dragging or clicking the node. If clicking a node with
@@ -1664,20 +1635,6 @@ class Node(Movable):
             ctrl.graph_view.replay_mouse_press()
             self.label_object.editable_part.mouseReleaseEvent(event)
             ctrl.release(self)
-
-    def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method
-        :param event:
-        """
-        self.hovering = True
-        QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
-
-    def hoverLeaveEvent(self, event):
-        """ Object needs to be updated
-        :param event:
-        """
-        self.hovering = False
-        QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
         """ Dragging a foreign object (could be from ui_support) over a node, entering.
@@ -1788,25 +1745,31 @@ class Node(Movable):
 
     # ###### Halo for showing some association with selected node (e.g. c-command) ######
 
-    def toggle_halo(self, value):
+    def toggle_halo(self, value, small=False):
         if value and not self.halo_item:
             self.halo = True
             r = QtCore.QRectF(self.inner_rect)
-            iw = r.width()
-            ih = r.height()
-            if iw > ih:
-                w_adj = (iw - ih) / 2
-                r.setWidth(ih)
-                r.moveLeft(r.x() + w_adj)
-            elif ih > iw:
-                h_adj = (ih - iw) / 2
-                r.setHeight(iw)
-                r.moveTop(r.y() + h_adj)
-            self.halo_item = QtWidgets.QGraphicsEllipseItem(r)
+            iw = ew = r.width()
+            ih = eh = r.height()
+            if iw < ih:
+                eh = iw
+            else:
+                ew = ih
+            if small:
+                ew = 10
+                eh = 10
+            ex = ((iw - ew) / 2) - (iw / 2)
+            ey = ((ih - eh) / 2) - (ih / 2)
+            er = QtCore.QRectF(ex, ey, ew, eh)
+
+            self.halo_item = QtWidgets.QGraphicsEllipseItem(er)
             self.halo_item.setParentItem(self)
-            self.update_halo()
+            self.update_halo(color=ctrl.cm.selection())
             effect = QtWidgets.QGraphicsBlurEffect()
-            effect.setBlurRadius(8)
+            if small:
+                effect.setBlurRadius(2)
+            else:
+                effect.setBlurRadius(2)
             self.halo_item.setGraphicsEffect(effect)
             #self.halo_item.show()
         if (not value) and self.halo_item:
@@ -1823,11 +1786,10 @@ class Node(Movable):
                 self.halo_item = None
         self.update()
 
-    def update_halo(self):
-        op = 1 - ctrl.cm.background_lightness
-        op *= op * op
-        op = 0.40 + op / 3
-        c = ctrl.cm.transparent(self.contextual_color(), opacity=op * 100)
+    def update_halo(self, color):
+        c = color.lighter(100 + (1 - ctrl.cm.background_lightness) * 120)
+        c = ctrl.cm.transparent(c, opacity=50)
+        self.halo_item.setZValue(2)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 
@@ -1847,19 +1809,23 @@ class Node(Movable):
         """
         if not cond:
             return True
-        elif isinstance(cond, dict):
-            return self.check_conditions(cond.get('condition', None))
         elif isinstance(cond, list):
-            return all((self.check_conditions(c) for c in cond))
-        elif cond.startswith('not:'):
-            return not self.check_conditions(cond[4:])
-        else:
+            for c in cond:
+                if not self.check_conditions(c):
+                    return False
+            return True
+        elif isinstance(cond, str):
+            not_flag = False
+            if cond.startswith('not:'):
+                cond = cond[4:]
+                not_flag = True
             cmethod = getattr(self, cond)
-            if cmethod:
-                return cmethod()
-            elif self.syntactic_object:
+            if (not cmethod) and self.syntactic_object:
                 cmethod = getattr(self.syntactic_object, cond)
-                if cmethod:
+            if cmethod:
+                if not_flag:
+                    return not cmethod()
+                else:
                     return cmethod()
             raise NotImplementedError(cond)
 

@@ -33,9 +33,9 @@ class ToggleGroupOptions(KatajaAction):
     k_action_uid = 'toggle_group_options'
     k_command = 'Inspect, edit and keep this group'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         group_uid = self.get_host().uid
-        return [group_uid], {}
+        return [group_uid], kwargs
 
     def method(self, group_uid: str):
         """ Open group editing embed.
@@ -53,11 +53,11 @@ class ChangeGroupColor(KatajaAction):
     k_action_uid = 'change_group_color'
     k_command = 'Change color for group'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         group_uid = self.get_host().uid
         color_key = sender.currentData()
-        return [group_uid, color_key], {}
+        return [group_uid, color_key], kwargs
 
     def method(self, group_uid):
         """ """

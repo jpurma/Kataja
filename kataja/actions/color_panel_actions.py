@@ -36,10 +36,10 @@ class SetActiveColorMode(KatajaAction):
     k_command = 'Change palette'
     k_tooltip = 'Change palette used for UI and drawings'
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         theme = sender.currentData()
-        return [theme], {}
+        return [theme], kwargs
 
     def method(self, theme: str):
         """ Set the current color theme by using color theme keys.
@@ -86,8 +86,8 @@ class RemoveColorTheme(KatajaAction):
     k_command = 'Remove a custom color theme'
     k_tooltip = 'Remove a custom color theme'
 
-    def prepare_parameters(self):
-        return [ctrl.cm.theme_key], {}
+    def prepare_parameters(self, args, kwargs):
+        return [ctrl.cm.theme_key], kwargs
 
     def method(self, theme_key):
         """ Remove custom color theme from theme selection. Current active theme can be found from

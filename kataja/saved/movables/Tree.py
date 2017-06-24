@@ -230,7 +230,7 @@ class Tree(Movable):
         else:
             return None
 
-    def start_dragging_tracking(self, host=False, scene_pos=None):
+    def prepare_dragging_participiant(self, host=False, scene_pos=None):
         """ Add this *Tree* to entourage of dragged nodes. These nodes will
         maintain their relative position to drag pointer while dragging.
         :return: None

@@ -1,18 +1,15 @@
 # coding=utf-8
-from PyQt5 import QtGui, QtWidgets, QtCore
-from kataja.UIItem import UIWidget
-from kataja.singletons import qt_prefs, ctrl
-import kataja.globals as g
-from kataja.ui_widgets.OverlayButton import PanelButton
+from PyQt5 import QtGui
+from kataja.singletons import ctrl
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
-class ModalIconButton(UIWidget, QtWidgets.QPushButton):
+class ModalIconButton(PushButtonBase):
 
     permanent_ui = True
 
-    def __init__(self, ui_key, pixmap0=None, pixmap1=None, parent=None, size=None):
-        UIWidget.__init__(self, ui_key=ui_key)
-        QtWidgets.QPushButton.__init__(self, parent)
+    def __init__(self, pixmap0=None, pixmap1=None, **kwargs):
+        PushButtonBase.__init__(self, **kwargs)
         self.pixmap0 = pixmap0
         self.pixmap1 = pixmap1
         self.icon0 = None
@@ -21,14 +18,8 @@ class ModalIconButton(UIWidget, QtWidgets.QPushButton):
         self.setFlat(True)
         self.tooltip0 = ''
         self.tooltip1 = ''
-        if isinstance(size, tuple):
-            self.setMinimumWidth(size[0])
-            self.setMinimumHeight(size[1])
-            self.setIconSize(QtCore.QSize(*size))
-        elif isinstance(size, int):
-            self.setMinimumWidth(size)
-            self.setMinimumHeight(size)
-            self.setIconSize(QtCore.QSize(size, size))
+        if 'size' in kwargs:
+            self.setMinimumSize(self.iconSize())
         self.setContentsMargins(0, 0, 0, 0)
         self.update_colors()
         self.compose_icon()
@@ -38,10 +29,10 @@ class ModalIconButton(UIWidget, QtWidgets.QPushButton):
     def toggle_state(self, value):
         if value:
             self.setIcon(self.icon1)
-            self.setToolTip(self.tooltip1)
+            self.k_tooltip = self.tooltip1
         else:
             self.setIcon(self.icon0)
-            self.setToolTip(self.tooltip0)
+            self.k_tooltip = self.tooltip0
         self.updateGeometry()
         self.update_position()
 

@@ -93,12 +93,14 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.trees = set() # each Movable belongs to some trees, either formed by Movable
         # alone or set of Movables. Tree has abstract position adjustment information.
 
+        self.k_tooltip = ''
         # MOVE_TO -elements
         self.target_position = 0, 0
         self.adjustment = 0, 0
         self._start_position = 0, 0
         self._move_frames = 0
         self._move_counter = 0
+        self._is_moving = False
         self._use_easing = True
         self._distance = None
         self.unmoved = True  # flag to distinguish newly created nodes
@@ -351,6 +353,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """ Initiate moving animation for object.
         :return: None
         """
+        self._is_moving = True
         self._use_easing = True
         dx, dy = sub_xy(self.target_position, self.current_position)
         d = math.sqrt(dx * dx + dy * dy)
@@ -384,6 +387,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             self.after_move_function()
             self.after_move_function = None
         self._move_counter = 0
+        self._is_moving = False
 
     def _current_position_changed(self, value):
         self.setPos(value[0], value[1])
@@ -495,6 +499,73 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return: bool
         """
         return self._visible_by_logic
+
+    # ## Hover ################################################################
+
+    def hoverEnterEvent(self, event):
+        """ Hovering has some visual effects, usually handled in paint-method
+        :param event:
+        """
+        if not self._is_moving:
+            self.hovering = True
+            ctrl.ui.show_help(self, event)
+            event.accept()
+        #QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
+
+    def hoverMoveEvent(self, event):
+        if not self._is_moving:
+            ctrl.ui.move_help(event)
+            QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
+
+    def hoverLeaveEvent(self, event):
+        """ Object needs to be updated
+        :param event:
+        """
+        if self.hovering:
+            self.hovering = False
+            ctrl.ui.hide_help(self, event)
+            QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
+
+    @property
+    def hovering(self):
+        """ Public access to _hovering. Pretty useless.
+        :return:
+        """
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
+        """
+        if value and not self._hovering:
+            self._start_hover()
+        elif self._hovering and not value:
+            self._stop_hover()
+
+    def _start_hover(self):
+        """ Start all hovering effects
+        :return:
+        """
+        self._hovering = True
+        self.prepareGeometryChange()
+        self.update()
+        if self.zValue() < 150:
+            self.setZValue(150)
+        self.update_tooltip()
+
+    def _stop_hover(self):
+        """ Stop all hovering effects
+        :return:
+        """
+        self._hovering = False
+        self.prepareGeometryChange()
+        self.setZValue(self.z_value)
+        self.update()
+
+    def update_tooltip(self):
+        pass
 
     # ## Selection ############################################################
 

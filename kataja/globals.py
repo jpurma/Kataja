@@ -26,29 +26,6 @@ COMMENT_NODE = 4
 TREE = 100
 GUESS_FROM_INPUT = 99
 
-# Touch area types -- values have to match class names in TouchArea.py
-LEFT_ADD_TOP = 'LeftAddTop'
-RIGHT_ADD_TOP = 'RightAddTop'
-LEFT_ADD_SIBLING = 'LeftAddSibling'
-RIGHT_ADD_SIBLING = 'RightAddSibling'
-#TOUCH_ADD_CONSTITUENT = 'AddConstituentTouchArea'
-TOUCH_CONNECT_FEATURE = 'ConnectFeatureTouchArea'
-TOUCH_CONNECT_GLOSS = 'ConnectGlossTouchArea'
-TOUCH_CONNECT_COMMENT = 'ConnectCommentTouchArea'
-ADD_ARROW = 'StartArrowTouchArea'
-DELETE_ARROW = 'DeleteArrowTouchArea'
-LEFT_ADD_CHILD = 'LeftAddChild'
-RIGHT_ADD_CHILD = 'RightAddChild'
-ADD_TRIANGLE = 'AddTriangleTouchArea'
-REMOVE_TRIANGLE = 'RemoveTriangleTouchArea'
-INNER_ADD_SIBLING_LEFT = 'LeftAddInnerSibling'
-INNER_ADD_SIBLING_RIGHT = 'RightAddInnerSibling'
-UNARY_ADD_CHILD_LEFT = 'LeftAddUnaryChild'
-UNARY_ADD_CHILD_RIGHT = 'RightAddUnaryChild'
-LEAF_ADD_SIBLING_LEFT = 'LeftAddLeafSibling'
-LEAF_ADD_SIBLING_RIGHT = 'RightAddLeafSibling'
-MERGE_TO_TOP = 'MergeToTop'
-
 # Overlay buttons -- These refer to class names in OverlayButton.py
 REMOVE_MERGER = 'RemoveMergerButton'
 GROUP_OPTIONS = 'GroupOptionsButton'

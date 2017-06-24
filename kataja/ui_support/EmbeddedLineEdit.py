@@ -20,7 +20,6 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
             if ctrl.main.use_tooltips:
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
-            self.setStatusTip(tip)
         if font:
             self.setFont(font)
         if prefill:

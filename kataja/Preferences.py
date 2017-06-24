@@ -306,7 +306,7 @@ class Preferences(object):
         self.active_plugin_name = ''
         self._active_plugin_name_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
 
-        self.FPS = 60
+        self.FPS = 30
         self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
         self._fps_in_msec = 1000 / self.FPS
 

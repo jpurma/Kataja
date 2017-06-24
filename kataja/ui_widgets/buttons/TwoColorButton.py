@@ -24,8 +24,8 @@
 
 from PyQt5 import QtGui, QtCore
 
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.singletons import ctrl
-from kataja.utils import time_me
 
 
 class TwoColorIconEngine(QtGui.QIconEngine):
@@ -108,3 +108,16 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             painter.drawPixmap(rect, self.filter2)
 
 
+class TwoColorButton(PushButtonBase):
+    """ Buttons that change their color according to widget where they are.
+        Currently this is not doing anything special that can't be done by setting
+        TwoColorIconEngine for normal button,
+        but let's keep this in case we need to deliver palette updates to icon engines.
+     """
+
+    def __init__(self, bitmaps=None, **kwargs):
+        PushButtonBase.__init__(self, **kwargs)
+        if bitmaps:
+            e = TwoColorIconEngine(bitmaps)
+            i = QtGui.QIcon(e)
+            self.setIcon(i)

@@ -94,6 +94,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.label_data = {}
         self._nodes_overlap = False
         self._changed = False
+        self.k_tooltip = ''
+        self._is_moving = False
 
         self.in_projections = []
 
@@ -120,7 +122,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._curve_dir_start = BOTTOM_SIDE
         self._curve_dir_end = TOP_SIDE
         self.setZValue(100)
-        self.status_tip = ""
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
         self.crossed_out_flag = False
@@ -489,7 +490,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             base = ctrl.cm.get(self.in_projections[0].color_id)
         elif self.color_id:
-            print('getting color: ', self.color_id)
             base = ctrl.cm.get(self.color_id)
         elif self.end:
             base = ctrl.cm.get(self.end.get_color_id())
@@ -622,6 +622,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             self._nodes_overlap = False
         self.update_visibility()
+        if not self._is_moving:
+            self.update_tooltip()
 
     def path_bounding_rect(self) -> QtCore.QRectF:
         if self._path:
@@ -865,15 +867,17 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.end = end
         else:
             self.end = None
-        self.update_status_tip()
 
-    def update_status_tip(self):
+    def update_tooltip(self):
         """
 
         :return:
         """
         if self.edge_type == g.CONSTITUENT_EDGE:
-            self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)
+            self.k_tooltip = f"""Constituent relation<br/>
+            from {self.start_point} to {self.end_point} <br/> 
+            <br/> 
+            uid={self.uid}"""
 
     def description(self):
         """
@@ -992,13 +996,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self._hovering = True
             self.prepareGeometryChange()
             self.update()
-            ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.cached('z_value'))
             self.update()
-            ctrl.remove_status(self.status_tip)
 
     def hoverEnterEvent(self, event):
         """
@@ -1006,16 +1008,29 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
+        if self._is_moving:
+            return
         self.hovering = True
-        QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
+        ctrl.ui.show_help(self, event)
+        event.accept()
+        #QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
+
+    def hoverMoveEvent(self, event):
+        if self._is_moving:
+            return
+        ctrl.ui.move_help(event)
+        QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """
 
         :param event:
         """
-        self.hovering = False
-        QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+        if self.hovering:
+            self.hovering = False
+            ctrl.ui.hide_help(self, event)
+            QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+
 
     # ## Scene-managed call
 
@@ -1279,7 +1294,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """ Low level toggle off things that slow drawing
         :return: None
         """
-        pass
+        self._is_moving = True
         #if prefs.move_effect:
         #    self._use_simple_path = True
 
@@ -1303,6 +1318,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """ Low level toggle back complex drawing
         :return: None
         """
+        self._is_moving = False
         self._make_fat_path = True
         #if prefs.move_effect:
         #    self._use_simple_path = False

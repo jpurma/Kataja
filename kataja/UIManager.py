@@ -32,7 +32,7 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
-import kataja.ui_widgets.OverlayButton
+import ui_widgets.buttons.OverlayButton
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
@@ -42,11 +42,8 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
-from kataja.ui_support.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.DragInfo import DragInfo
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
@@ -56,17 +53,19 @@ from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
-from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.HelpPanel import HelpPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.panels.MergePanel import MergePanel
+from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
+from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
+from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -116,6 +115,32 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('help_menu', ('&Help', ['help']))])
 
 
+class FloatingTip(QtWidgets.QLabel):
+
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self, None, QtCore.Qt.ToolTip)
+        self.setText('')
+        self.setFont(qt_prefs.get_font('ui_font'))
+        #self.setMinimumHeight(20)
+        #self.setMinimumWidth(40)
+        #self.setMaximumWidth(120)
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
+        self.setContentsMargins(2, 2, 2, 2)
+        self.setWordWrap(True)
+        self.item = None
+
+    def set_item(self, item):
+        if item is not self.item:
+            self.item = item
+            self.setText(item.k_tooltip)
+
+    def enterEvent(self, event):
+        self.show()
+
+    def set_position(self, pos):
+        self.move(pos.x(), pos.y())
+
+
 class UIManager:
     """
     UIManager Keeps track of all UI-related widgets and tries to do the most
@@ -154,6 +179,7 @@ class UIManager:
         self.drag_info = None
         self.activity_marker = None
         self.ui_activity_marker = None
+        self.floating_tip = None
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -383,12 +409,12 @@ class UIManager:
                     item.toggle_halo(True)
                 if ctrl.settings.get('show_c_command') and not self.active_embed:
                     if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
-                        c_commanded_synobjs = ctrl.forest.syntax.get_dominated_nodes(
+                        dominated_synobjs = ctrl.forest.syntax.get_dominated_nodes(
                             item)
-                        for synobj in c_commanded_synobjs:
+                        for synobj in dominated_synobjs:
                             node = ctrl.forest.get_node(synobj)
                             if node and node.is_visible():
-                                node.toggle_halo(True)
+                                node.toggle_halo(True, small=True)
                 if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
                     self.start_editing_node(item, active_embed)
 
@@ -604,7 +630,10 @@ class UIManager:
             a = self.actions.get(key, None)
             if a:
                 return a
-            print('missing action ', key)
+            else:
+                log.critical(f'missing action: {key}')
+        else:
+            log.critical(f'get_action called with empty key')
 
     def create_menus(self):
         """ Put actions to menus. Menu structure is defined at the top of this file.
@@ -944,18 +973,6 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-    def get_or_create_touch_area(self, host, subtype, action=None, **kwargs):
-        """ Get touch area for specific purpose or create one if it doesn't exist.
-        :param host: element that has UI items associated with it
-        :param subtype: toucharea type id
-        :param action: action to associate with toucharea if one is created
-        :return:
-        """
-        ta = self.get_ui_by_type(host=host, ui_type=subtype)
-        if not ta:
-            ta = self.create_touch_area(host, subtype, action, **kwargs)
-        return ta
-
     def get_touch_area(self, host, subtype):
         """ Get existing touch area for a node or other scene element.
         :param host: element that has UI items associated with it
@@ -964,17 +981,6 @@ class UIManager:
         """
         return self.get_ui_by_type(host=host, ui_type=subtype)
 
-    def create_touch_area(self, host, subtype, action, **kwargs):
-        """ Create touch area, doesn't check if it exists already.
-        :param host: element that has UI items associated with it
-        :param subtype: toucharea type id
-        :param action: action to associate with toucharea
-        :return:
-        """
-        ta_class = getattr(kataja.ui_graphicsitems.TouchArea, subtype)
-        ta = ta_class(host, action, **kwargs)
-        self.add_ui(ta)
-        return ta
 
     def remove_touch_areas(self):
         """ Remove all touch areas from UI. Needs to be done when changing
@@ -1000,23 +1006,13 @@ class UIManager:
         """
         if not node.is_visible():
             return
-        d = node.__class__.touch_areas_when_selected
-        for ta_type, values in d.items():
-            if node.check_conditions(values):
-                action = self.get_action(values.get('action'))
-                if 'action_arg' in values:
-                    action_args = {'action_arg': values['action_arg']}
-                else:
-                    action_args = {}
-                place = values.get('place', '')
-                if place == 'edge_up':
-                    hosts = node.get_edges_up(similar=True, visible=True)
-                elif place == 'parent_above':
-                    hosts = node.get_parents(similar=True, visible=True)
-                else:
-                    hosts = [node]
-                for host in hosts:
-                    self.get_or_create_touch_area(host, ta_type, action, **action_args)
+        ta_classes = node.__class__.touch_areas_when_selected
+        for ta_class in ta_classes:
+            hosts = ta_class.hosts_for_node(node)
+            for host in hosts:
+                if ta_class.select_condition(host):
+                    ta = ta_class(host)
+                    self.add_ui(ta)
 
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
@@ -1024,11 +1020,12 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
-            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
-                                          self.get_action('inner_add_sibling_left'))
-            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
-                                          self.get_action('inner_add_sibling_right'))
+        print('update_touch_areas_for_selected_edge')
+        #if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
+        #    self.get_or_create_touch_area(edge, 'LeftAddInnerSibling',
+        #                                  self.get_action('inner_add_sibling_left'))
+        #    self.get_or_create_touch_area(edge, 'RightAddInnerSibling',
+        #                                  self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """ Show connection points for dragged nodes.
@@ -1047,18 +1044,25 @@ class UIManager:
                 continue
             if node is ctrl.dragged_focus:
                 continue
-            d = node.__class__.touch_areas_when_dragging
-            for ta_type, values in d.items():
-                if node.check_conditions(values):
-                    action = self.get_action(values.get('action'))
-                    place = values.get('place', '')
-                    if place == 'edge_up':
-                        for edge in node.get_edges_up(similar=True, visible=True):
-                            self.get_or_create_touch_area(edge, ta_type, action)
-                    elif not place:
-                        self.get_or_create_touch_area(node, ta_type, action)
-                    else:
-                        raise NotImplementedError
+
+            ta_classes = node.__class__.touch_areas_when_dragging
+            for ta_class in ta_classes:
+                hosts = ta_class.hosts_for_node(node)
+                for host in hosts:
+                    if ta_class.drop_condition(host):
+                        ta = ta_class(host)
+                        self.add_ui(ta)
+
+    def is_dragging_this_type(self, dtype):
+        """ Check if the currently dragged item is in principle compatible with
+        self.
+        :return:
+        """
+        if ctrl.dragged_focus:
+            return ctrl.dragged_focus.node_type == dtype
+        elif ctrl.dragged_text:
+            return ctrl.dragged_text == dtype
+        return False
 
     # ### Flashing symbols
     # ################################################################
@@ -1143,12 +1147,10 @@ class UIManager:
         button = self.get_ui_by_type(host=node, ui_type=class_key)
         if button:
             return button
-        constructor = getattr(kataja.ui_widgets.OverlayButton, class_key)
-        button = constructor(node, self.main.graph_view)
+        constructor = getattr(ui_widgets.buttons.OverlayButton, class_key)
+        button = constructor(host=node, parent=self.main.graph_view, action=action)
         self.add_ui(button)
         button.update_position()
-        if action:
-            self.connect_element_to_action(button, action)
         button.show()
         return button
 
@@ -1186,7 +1188,7 @@ class UIManager:
 
         qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
         if not qe_label:
-            qe_label = kataja.ui_widgets.OverlayButton.OverlayLabel(node, self.main.graph_view)
+            qe_label = ui_widgets.buttons.OverlayButton.OverlayLabel(node, self.main.graph_view)
             self.add_ui(qe_label)
         qe_label.setText(node.label_object.edited_field + "→")
         qe_label.update_position()
@@ -1301,6 +1303,25 @@ class UIManager:
     #         self.get_ui_activity_marker().hide()
     #         self.killTimer(self._timer_id)
     #         self._timer_id = 0
+
+
+    def show_help(self, item, event):
+        if not item.k_tooltip:
+            print('item %s is missing k_tooltip.' % item)
+            return
+        if not self.floating_tip:
+            self.floating_tip = FloatingTip()
+        self.floating_tip.set_item(item)
+        self.floating_tip.show()
+        self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
+
+    def hide_help(self, item, event):
+        if self.floating_tip and self.floating_tip.item is item:
+            self.floating_tip.hide()
+
+    def move_help(self, event):
+        if self.floating_tip:
+            self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to

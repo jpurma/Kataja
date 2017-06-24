@@ -1,9 +1,7 @@
 from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import Panel
-from PyQt5 import QtWidgets, QtCore
-from kataja.ui_support.panel_utils import mini_button, text_button, set_value, label, box_row, \
-    checkbox
-import kataja.globals as g
+from PyQt5 import QtWidgets
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -32,7 +30,6 @@ class VisualizationOptionsPanel(Panel):
 
         hlayout = box_row(layout)
         layout.addLayout(hlayout)
-        ui = self.ui_manager
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
 

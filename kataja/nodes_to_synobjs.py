@@ -55,9 +55,9 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     :return:
     """
 
-    print('*********************************')
-    print('**** Nodes to synobjs called ****')
-    print('*********************************')
+    #print('*********************************')
+    #print('**** Nodes to synobjs called ****')
+    #print('*********************************')
 
     if roots is None:
         roots = []

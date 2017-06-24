@@ -1,11 +1,16 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui
 
-from kataja.singletons import ctrl, prefs, classes
-from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button, \
-    knob, KnobDial, checkbox, radiobutton, selector, shape_selector, color_selector
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
+from kataja.singletons import ctrl, classes
+from kataja.ui_support.panel_utils import box_row, spinbox, decimal_spinbox, \
+    checkbox, \
+    radiobutton
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
+from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 
 __author__ = 'purma'
 
@@ -43,23 +48,21 @@ class LineOptionsPanel(Panel):
         ui = self.ui_manager
         hlayout = box_row(layout)
 
-        self.scope_selector = selector(ui, self, hlayout,
-                                       data=[],
-                                       action='style_scope',
-                                       label='Style for')
+        self.scope_selector = SelectionBox(parent=self, data=[], action='style_scope',
+                                           ).to_layout(hlayout, with_label='Style for')
         self.scope_selector.setMinimumWidth(96)
 
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.shape_selector = shape_selector(ui, self, hlayout,
-                                             action='change_edge_shape',
-                                             label='Shape')
+        self.shape_selector = ShapeSelector(parent=self,
+                                            action='change_edge_shape',
+                                            ).to_layout(hlayout, with_label='Shape')
 
-        self.edge_color_selector = color_selector(ui, self, hlayout,
-                                                  action='change_edge_color',
-                                                  label='Color', role='edge')
+        self.edge_color_selector = ColorSelector(parent=self,
+                                                 action='change_edge_color',
+                                                 role='edge').to_layout(hlayout, with_label='Color')
 
         # Line thickness
         hlayout = box_row(layout)
@@ -130,11 +133,14 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.reset_all = mini_button(ui, self, hlayout, text='Reset edge settings',
-                                     action='reset_edge_settings', width=-1)
-        self.reset_adjustment = mini_button(ui, self, hlayout,
+        self.reset_all = PanelButton(parent=self, text='Reset edge settings',
+                                     action='reset_edge_settings').to_layout(hlayout)
+        self.reset_all.setMaximumHeight(20)
+
+        self.reset_adjustment = PanelButton(parent=self,
                                             text='Reset curves',
-                                            action='reset_control_points', width=-1)
+                                            action='reset_control_points').to_layout(hlayout)
+        self.reset_adjustment.setMaximumHeight(20)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()

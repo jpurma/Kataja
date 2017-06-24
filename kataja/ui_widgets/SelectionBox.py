@@ -1,11 +1,22 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+from kataja.UIItem import UIWidget
+from kataja.singletons import ctrl
 
-class SelectionBox(QtWidgets.QComboBox):
 
-    def __init__(self, parent):
+class SelectionBox(QtWidgets.QComboBox, UIWidget):
+
+    def __init__(self, parent=None, data=None, action='', mini=False, **kwargs):
         QtWidgets.QComboBox.__init__(self, parent)
+        UIWidget.__init__(self, **kwargs)
         self.uses_data = True
+        if data is None:
+            data = []
+        self.add_items(data)
+        if mini:
+            self.setMinimumSize(QtCore.QSize(40, 20))
+            self.setMaximumSize(QtCore.QSize(40, 20))
+        ctrl.ui.connect_element_to_action(self, action)
 
     def find_list_item(self, data):
         """ Helper method to check the index of data item in list

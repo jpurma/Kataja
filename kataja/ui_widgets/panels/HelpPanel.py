@@ -4,8 +4,6 @@ from kataja.globals import UI_FONT
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 
-from kataja.ui_support.panel_utils import text_button
-
 __author__ = 'purma'
 
 

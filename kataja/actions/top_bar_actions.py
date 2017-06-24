@@ -1,11 +1,9 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.globals import FOREST, DOCUMENT, PREFS
-from kataja.singletons import ctrl, prefs, log
-import kataja.globals as g
 from kataja.KatajaAction import KatajaAction, TransmitAction
-from kataja.ui_widgets.OverlayButton import VisButton
+from kataja.globals import DOCUMENT, PREFS
+from kataja.singletons import ctrl, log
 
 
 # ==== Class variables for KatajaActions:
@@ -206,22 +204,24 @@ class ChangeVisualisation(KatajaAction):
     k_viewgroup = 'visualizations'
     k_checkable = False
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         """ There are four ui ways to trigger visualisation change. ComboBox in panel, top menu
         and buttons in top row. Top row buttons also set keyboard shortcuts 1-9, 0, +.
+        :param args:
+        :param kwargs:
         :return:
         """
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
-            return [str(sender.currentData())], {}
+            return [str(sender.currentData())], kwargs
         elif isinstance(sender, TransmitAction):
-            return [sender.key], {}
+            return [sender.key], kwargs
         elif isinstance(sender, QtWidgets.QButtonGroup):
-            button = self.args[0]
-            return [button.sub_type], {}
+            button = args[0]
+            return [button.sub_type], kwargs
         else:
             print('unknown sender:', sender)
-        return [], {}
+        return [], kwargs
 
     def method(self, visualization_key: str):
         """ Change current visualisation and play the animations.

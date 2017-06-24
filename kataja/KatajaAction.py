@@ -23,15 +23,14 @@
 # ############################################################################
 import sys
 import traceback
-import logging
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, log, running_environment
-from kataja.ui_widgets.OverlayButton import PanelButton
-from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
-from kataja.ui_support.SelectionBox import SelectionBox
 from kataja.ui_graphicsitems.TouchArea import TouchArea
+from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
+from ui_widgets.SelectionBox import SelectionBox
+from ui_widgets.buttons.PanelButton import PanelButton
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -138,7 +137,6 @@ class KatajaAction(QtWidgets.QAction):
         self.elements = set()
         self.command = self.k_command
         self.command_alt = self.k_command_alt
-        self.args = []
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
@@ -175,9 +173,8 @@ class KatajaAction(QtWidgets.QAction):
             ag.setExclusive(self.k_exclusive)
         self.setCheckable(self.k_checkable)
         self.setToolTip(self.tip0)
-        self.setStatusTip(self.tip0)
 
-    def prepare_parameters(self):
+    def prepare_parameters(self, args, kwargs):
         return [], {}
 
     def method(self, *args, **kwargs):
@@ -190,11 +187,9 @@ class KatajaAction(QtWidgets.QAction):
         return None
 
     def manual_run_command(self, *args, **kwargs):
-        kwargs['has_params'] = True
-        kwargs['did_feedback'] = True
-        return self.run_command(*args, **kwargs)
+        return self.run_command(*args, has_params=True, did_feedback=True, **kwargs)
 
-    def run_command(self, *args, **kwargs):
+    def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :return: None
         """
@@ -206,16 +201,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-
-        # Some rare triggers pass values, e.g. ButtonGroups pass the id of button.
-        # prepare_parameters should put these to args, kwargs, but we don't want to burden that
-        # method with parameters, so keep store them as instance variables.
-        if args:
-            self.args = args
-
         autoplay = self.k_start_animations or not ctrl.free_drawing_mode
-
-        give_feedback = 'did_feedback' not in kwargs
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -223,14 +209,10 @@ class KatajaAction(QtWidgets.QAction):
         # is logged and made available in command prompt so that the user has better grasp of
         # inner workings of Kataja.
 
-        if 'has_params' not in kwargs:
-            args, kwargs = self.prepare_parameters()
-        else:
-            del kwargs['has_params']
-            if not give_feedback:
-                del kwargs['did_feedback']
+        if not has_params:
+            args, kwargs = self.prepare_parameters(args, kwargs)
 
-        if give_feedback:
+        if not did_feedback:
             # Print the command into console
             arg_parts = [repr(a) for a in args]
             kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
@@ -307,10 +289,7 @@ class KatajaAction(QtWidgets.QAction):
         :param element:
         """
         self.elements.add(element)
-
-        tooltip = self.toolTip()
-        if tooltip:
-            self.set_tooltip_for_element(tooltip, element)
+        element.k_tooltip = self.tip0
 
         # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
@@ -359,33 +338,6 @@ class KatajaAction(QtWidgets.QAction):
         if element in self.elements:
             self.elements.remove(element)
 
-    @staticmethod
-    def set_tooltip_for_element(tooltip, element):
-        """ Tries to set action's tooltip as a tooltip and a status tip for UI elements
-        corresponding to action. There are few cases when this is unwanted, and this method
-         tries to recognize them.
-        :param tooltip:
-        :param element:
-        :return:
-        """
-        # Element class may have tooltip that overrides the action tooltip -- e.g.
-        # group of buttons that are controlled by one action, but each button has its own
-        # explanation
-        if hasattr(element, 'k_tooltip'):
-            tooltip = element.k_tooltip
-
-        if isinstance(element, QtWidgets.QGraphicsObject):
-            # These don't have setStatusTip
-            element.status_tip = tooltip
-        else:
-            try:
-                element.setStatusTip(tooltip)
-                element.setToolTipDuration(2000)
-            except AttributeError:
-                return
-        if ctrl.main.use_tooltips:
-            element.setToolTip(tooltip)
-
     def set_enabled(self, value):
         """ Sets the action enabled/disabled and also the connected ui_items.
         :param value:
@@ -416,9 +368,9 @@ class KatajaAction(QtWidgets.QAction):
                 if value != element.isChecked():
                     element.setChecked(value)
                     if value:
-                        self.set_tooltip_for_element(self.tip1, element)
+                        element.k_tooltip = self.tip1
                     else:
-                        self.set_tooltip_for_element(self.tip0, element)
+                        element.k_tooltip = self.tip0
                 element.blockSignals(False)
         else:
             for element in self.elements:

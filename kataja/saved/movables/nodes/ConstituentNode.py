@@ -28,6 +28,7 @@ from kataja.SavedField import SavedField
 from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
     as_html
 from kataja.saved.movables.Node import Node
+import kataja.ui_graphicsitems.TouchArea as ta
 from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import time_me
@@ -64,58 +65,29 @@ class ConstituentNode(Node):
 
     default_edge = g.CONSTITUENT_EDGE
     ui_sheet = ('kataja.ui_widgets.panels.ConstituentSheet', 'ConstituentSheet')
+    allowed_child_types = [g.CONSTITUENT_NODE, g.FEATURE_NODE, g.GLOSS_NODE, g.COMMENT_NODE]
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the
     # suggested shape.
 
-    # touch_areas_when_dragging and touch_areas_when_selected use the same
+    # touch_areas_when_dragging and touch_areas_when_selected are lists of strings, where strings
+    # are names of classes found in TouchArea. There are ways for plugins to inject new
+    # TouchAreas.
+    #
+    # TouchAreas have classmethods 'select_condition' and 'drop_condition' which are used to
+    # check if this is an appropriate toucharea to draw for given node or edge.
     # format.
 
-    # 'condition': there are some general conditions implemented in UIManager,
-    # but condition can refer to method defined for node instance. When used
-    # for when-dragging checks, the method will be called with two parameters
-    # 'dragged_type' and 'dragged_host'.
-    # 'place': there are some general places defined in UIManager. The most
-    # important is 'edge_up': in this case touch areas are associated with
-    # edges going up. When left empty, touch area is associated with the node.
-
-    touch_areas_when_dragging = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
-        g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent', 'free_drawing_mode']},
-        g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent',
-                                                                'free_drawing_mode']},
-        g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
-        g.TOUCH_CONNECT_FEATURE: {'condition': ['dragging_feature', 'free_drawing_mode']},
-        g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
-
-    touch_areas_when_selected = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
-                         'action': 'add_node_to', 'action_arg': 'top_left'},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
-                          'action': 'add_node_to', 'action_arg': 'top_right'},
-        g.MERGE_TO_TOP: {'condition': ['not:is_top_node', 'free_drawing_mode'],
-                         'action': 'merge_to_top'},
-        g.INNER_ADD_SIBLING_LEFT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
-                                   'place': 'edge_up',
-                                   'action': 'add_node_to', 'action_arg': 'sibling_left'},
-        g.INNER_ADD_SIBLING_RIGHT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
-                                    'place': 'edge_up',
-                                    'action': 'add_node_to', 'action_arg': 'sibling_right'},
-        g.UNARY_ADD_CHILD_LEFT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                 'action': 'add_node_to', 'action_arg': 'child_left'},
-        g.UNARY_ADD_CHILD_RIGHT: {'condition': ['has_one_child', 'free_drawing_mode'],
-                                  'action': 'add_node_to', 'action_arg': 'child_right'},
-        g.LEAF_ADD_SIBLING_LEFT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                  'action': 'add_node_to', 'action_arg': 'sibling_left'},
-        g.LEAF_ADD_SIBLING_RIGHT: {'condition': ['is_leaf', 'free_drawing_mode'],
-                                   'action': 'add_node_to', 'action_arg': 'sibling_right'},
-        g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
-                         'action': 'add_triangle'},
-        g.REMOVE_TRIANGLE: {'condition': 'is_triangle_host',
-                            'action': 'remove_triangle'}
-    }
+    touch_areas_when_dragging = [
+        ta.LeftAddTop, ta.LeftAddSibling, ta.RightAddSibling, ta.AddBelowTouchArea
+    ]
+    touch_areas_when_selected= [
+        ta.LeftAddTop, ta.RightAddTop, ta.MergeToTop, ta.LeftAddInnerSibling,
+        ta.RightAddInnerSibling, ta.LeftAddUnaryChild, ta.RightAddUnaryChild,
+        ta.LeftAddLeafSibling, ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
+        ta.RemoveTriangleTouchArea
+    ]
 
     buttons_when_selected = {
         g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'],
@@ -159,7 +131,7 @@ class ConstituentNode(Node):
         self.update_label_shape()
         self.update_label()
         self.update_visibility()
-        self.update_status_tip()
+        self.update_tooltip()
         self.announce_creation()
         if prefs.glow_effect:
             self.toggle_halo(True)
@@ -251,39 +223,33 @@ class ConstituentNode(Node):
     def should_show_gloss_in_label(self) -> bool:
         return ctrl.settings.get('lock_glosses_to_label') == 1
 
-    def update_status_tip(self) -> None:
+    def update_tooltip(self) -> None:
         """ Hovering status tip """
-
-        if self.label:
-            label = f'Label: "{as_text(self.label)}" '
-        else:
-            label = ''
-        syn_label = self.get_syn_label()
-        if syn_label:
-            syn_label = f' Constituent: "{as_text(syn_label)}" '
-        else:
-            syn_label = ''
-        if self.index:
-            index = f' Index: "{self.index}"'
-        else:
-            index = ''
-
+        lines = []
         if self.is_trace:
-            name = "Trace"
+            lines.append("Trace")
         elif self.is_leaf():
-            name = "Leaf "
-        # elif self.is_top_node():
-        #    name = "Set %s" % self.set_string() # "Root constituent"
+            lines.append("Leaf Constituent")
+            lines.append(f"Syntactic label: {self.get_syn_label()}")
         else:
-            #name = f"Set {self.set_string()}"
-            name = "Set "
+            lines.append("<strong>Set Constituent</strong>")
+            lines.append(f"Syntactic label: {self.get_syn_label()}")
+        if self.index:
+            lines.append(f' Index: "{self.index}"')
+
+        heads = ', '.join([x.get_syn_label() for x in self.heads])
+        if len(self.heads) == 1:
+            lines.append(f'head: {heads}')
+        elif len(self.heads) > 1:
+            lines.append(f'heads: {heads}')
+
+        x, y = self.current_scene_position
+        lines.append(f'pos: ({x:.1f},{y:.1f})')
+
         if self.use_adjustment:
-            adjustment = f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})'
-        else:
-            adjustment = ''
-        heads = ', '.join([as_text(x.label) for x in self.heads])
-        self.status_tip = f"{name} ({label}{syn_label}{index} pos: ({self.current_scene_position[0]:.1f}, " \
-                          f"{self.current_scene_position[1]:.1f}){adjustment} head: {heads})"
+            lines.append(f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+
+        self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):
         label = as_text(self.label)
@@ -702,24 +668,6 @@ class ConstituentNode(Node):
         """
         return self.is_dragging_this_type(g.CONSTITUENT_NODE)
 
-    def dragging_feature(self):
-        """ Check if the currently dragged item is feature and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.FEATURE_NODE)
-
-    def dragging_gloss(self):
-        """ Check if the currently dragged item is gloss and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.GLOSS_NODE)
-
-    def dragging_comment(self):
-        """ Check if the currently dragged item is comment and can connect with me
-        :return:
-        """
-        return self.is_dragging_this_type(g.COMMENT_NODE)
-
     # ### Features #########################################
 
     def get_features(self):
@@ -757,7 +705,7 @@ class ConstituentNode(Node):
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
-                    node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    node.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
 
     #################################
 
