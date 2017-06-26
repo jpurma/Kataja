@@ -2,7 +2,7 @@
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_ui_key
 from PyQt5 import QtWidgets, QtCore
-from kataja.utils import time_me
+from kataja.ui_widgets.KatajaLabel import KatajaBuddyLabel
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
@@ -177,9 +177,7 @@ class UIWidget(UIItem):
         :return: self, so that this can be used with constructors
         """
         if with_label:
-            labelw = QtWidgets.QLabel(with_label, self.parentWidget())
-            labelw.setBuddy(self)
-            self.k_buddy = labelw
+            labelw = KatajaBuddyLabel(text=with_label, buddy=self)
             layout.addWidget(labelw)
         if align:
             layout.addWidget(self, alignment=align)

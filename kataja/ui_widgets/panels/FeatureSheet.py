@@ -5,6 +5,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
+from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
 
 __author__ = 'purma'
 
@@ -33,7 +34,9 @@ class FeatureSheet(QtWidgets.QWidget):
         self.setLayout(layout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel('Checking')
+        label = KatajaInfoLabel('Checking',
+                                tooltip='How the checking relation is displayed',
+                                parent=self)
         hlayout.addWidget(label)
         w = 32
         b1 = PanelButton(pixmap=qt_prefs.features_apart_icon, parent=self, size=24,
@@ -48,7 +51,9 @@ class FeatureSheet(QtWidgets.QWidget):
         layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel('Arrangement')
+        label = KatajaInfoLabel('Arrangement',
+                                tooltip='How features are arranged around the constituent',
+                                parent=self)
         hlayout.addWidget(label)
         w = 32
         b1 = PanelButton(pixmap=qt_prefs.feature_row_icon, parent=self, size=24,
@@ -66,7 +71,9 @@ class FeatureSheet(QtWidgets.QWidget):
         layout.addLayout(hlayout)
 
         hlayout = box_row(layout)
-        label = QtWidgets.QLabel('Edge', parent=self)
+        label = KatajaInfoLabel('Edge',
+                                tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
+                                parent=self)
         hlayout.addWidget(label)
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,

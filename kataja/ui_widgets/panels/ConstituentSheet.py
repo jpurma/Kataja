@@ -6,6 +6,7 @@ from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
+from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
 
 __author__ = 'purma'
 
@@ -33,7 +34,7 @@ class ConstituentSheet(QtWidgets.QWidget):
         self.setLayout(layout)
 
         hlayout = box_row(layout)
-        label = QtWidgets.QLabel('Shape')
+        label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed', parent=self)
         hlayout.addWidget(label)
         w = 32
         b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24,
@@ -54,7 +55,9 @@ class ConstituentSheet(QtWidgets.QWidget):
         layout.addLayout(hlayout)
 
         hlayout = box_row(layout)
-        label = QtWidgets.QLabel('Edge', parent=self)
+        label = KatajaInfoLabel('Edge',
+                                tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
+                                parent=self)
         hlayout.addWidget(label)
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
