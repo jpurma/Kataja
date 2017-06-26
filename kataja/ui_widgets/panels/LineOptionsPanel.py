@@ -3,8 +3,9 @@ from PyQt5 import QtWidgets, QtGui
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 from kataja.singletons import ctrl, classes
-from kataja.ui_support.panel_utils import box_row, checkbox, \
-    radiobutton
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
+from kataja.ui_widgets.KatajaRadioButton import KatajaRadioButton
 from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox, KatajaDecimalSpinbox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
@@ -45,7 +46,6 @@ class LineOptionsPanel(Panel):
         self.watchlist = ['scope_changed', 'selection_changed']
 
         spac = 8
-        ui = self.ui_manager
         hlayout = box_row(layout)
 
         self.scope_selector = SelectionBox(parent=self, data=[], action='style_scope',
@@ -66,11 +66,13 @@ class LineOptionsPanel(Panel):
 
         # Line thickness
         hlayout = box_row(layout)
-        self.fill_button = checkbox(ui, self, hlayout, label='Fill',
-                                    action='edge_shape_fill')
+        self.fill_button = KatajaCheckBox(parent=self,
+                                          action='edge_shape_fill'
+                                          ).to_layout(hlayout, with_label='Fill')
 
-        self.line_button = checkbox(ui, self, hlayout, label='Outline',
-                                    action='edge_shape_line')
+        self.line_button = KatajaCheckBox(parent=self,
+                                          action='edge_shape_line'
+                                          ).to_layout(hlayout, with_label='Outline')
         self.thickness_spinbox = KatajaDecimalSpinbox(parent=self,
                                                       range_min=0.0,
                                                       range_max=10.0,
@@ -82,18 +84,24 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.arrowhead_start_button = checkbox(ui, self, hlayout, label='Arrowheads at start',
-                                               action='edge_arrowhead_start')
-        self.arrowhead_end_button = checkbox(ui, self, hlayout, label='at end',
-                                             action='edge_arrowhead_end')
+        self.arrowhead_start_button = KatajaCheckBox(parent=self,
+                                                     action='edge_arrowhead_start'
+                                                     ).to_layout(hlayout,
+                                                                 with_label='Arrowheads at start')
+        self.arrowhead_end_button = KatajaCheckBox(parent=self,
+                                                   action='edge_arrowhead_end'
+                                                   ).to_layout(hlayout, with_label='at end')
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
         # Curvature
 
         hlayout = box_row(layout)
-        curve_modes = QtWidgets.QButtonGroup()
-        self.relative_arc_button = radiobutton(ui, self, hlayout, label='Relative curve',
-                                               action='edge_curvature_relative', group=curve_modes)
+        self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
+        self.relative_arc_button = KatajaRadioButton(parent=self,
+                                                     action='edge_curvature_relative',
+                                                     group=self.arc_reference_buttons
+                                                     ).to_layout(hlayout,
+                                                                 with_label='Relative curve')
         self.arc_rel_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_x',
                                                 suffix='%'
@@ -104,8 +112,10 @@ class LineOptionsPanel(Panel):
                                                 ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
-        self.fixed_arc_button = radiobutton(ui, self, hlayout, label='Fixed curve',
-                                            action='edge_curvature_fixed', group=curve_modes)
+        self.fixed_arc_button = KatajaRadioButton(parent=self,
+                                                  action='edge_curvature_fixed',
+                                                  group=self.arc_reference_buttons
+                                                  ).to_layout(hlayout, with_label='Fixed curve')
         self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_x',
                                                   suffix=' px'
@@ -115,10 +125,6 @@ class LineOptionsPanel(Panel):
                                                   action='change_edge_fixed_curvature_y',
                                                   suffix=' px'
                                                   ).to_layout(hlayout, with_label='Y')
-
-        self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
-        self.arc_reference_buttons.addButton(self.fixed_arc_button)
-        self.arc_reference_buttons.addButton(self.relative_arc_button)
 
 
         # Leaf size

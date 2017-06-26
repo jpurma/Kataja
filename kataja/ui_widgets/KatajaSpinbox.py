@@ -18,6 +18,13 @@ class KatajaSpinbox(QtWidgets.QSpinBox, UIWidget):
         spinbox.setFixedWidth(50)
         #slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
+    def set_value(self, value):
+        self.blockSignals(True)
+        if self._cached_value != value:
+            self.setValue(value)
+            self._cached_value = value
+        self.blockSignals(False)
+
 
 class KatajaDecimalSpinbox(QtWidgets.QSpinBox, UIWidget):
 
@@ -36,3 +43,9 @@ class KatajaDecimalSpinbox(QtWidgets.QSpinBox, UIWidget):
         spinbox.setFixedWidth(58)
         #slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
+    def set_value(self, value):
+        self.blockSignals(True)
+        if self._cached_value != value:
+            self.setValue(value)
+            self._cached_value = value
+        self.blockSignals(False)

@@ -85,56 +85,6 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
     return dial
 
 
-def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
-    """
-
-    :param ui_manager:
-    :param parent:
-    :param layout:
-    :param label:
-    :param action:
-    :return:
-    """
-    slabel = QtWidgets.QLabel(label, parent)
-    scheckbox = QtWidgets.QCheckBox()
-    if x > -1:
-        layout.addWidget(slabel, y, x)
-        layout.addWidget(scheckbox, y, x + 1)
-    else:
-        layout.addWidget(slabel)
-        layout.addWidget(scheckbox)
-    slabel.setBuddy(scheckbox)
-    scheckbox.k_buddy = slabel
-    ui_manager.connect_element_to_action(scheckbox, action)
-    return scheckbox
-
-
-def radiobutton(ui_manager, parent, layout, label='', action='', x=-1, y=-1, group=None):
-    """
-
-    :param ui_manager:
-    :param panel:
-    :param layout:
-    :param label:
-    :param action:
-    :return:
-    """
-    slabel = QtWidgets.QLabel(label, parent)
-    sradio = QtWidgets.QRadioButton()
-    if x > -1:
-        layout.addWidget(slabel, y, x)
-        layout.addWidget(sradio, y, x + 1)
-    else:
-        layout.addWidget(slabel)
-        layout.addWidget(sradio)
-    if group:
-        group.addButton(sradio)
-    slabel.setBuddy(sradio)
-    sradio.k_buddy = slabel
-    ui_manager.connect_element_to_action(sradio, action)
-    return sradio
-
-
 def box_row(container):
     """
 
@@ -160,9 +110,7 @@ def set_value(field, value):
     field.blockSignals(True)
     old_v = getattr(field, 'cached_value', None)
     if old_v != value:
-        if isinstance(field, QtWidgets.QSpinBox):
-            field.setValue(value)
-        elif isinstance(field, TableModelSelectionBox):
+        if isinstance(field, TableModelSelectionBox):
             field.select_by_data(value)
         elif isinstance(field, SelectionBox):
             field.setCurrentIndex(value)

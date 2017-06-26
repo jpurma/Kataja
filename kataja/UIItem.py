@@ -163,7 +163,8 @@ class UIWidget(UIItem):
 
     def __init__(self, action='', **kwargs):
         UIItem.__init__(self, **kwargs)
-        k_buddy = None
+        self.k_buddy = None
+        self._cached_value = None
         if action:
             ctrl.ui.connect_element_to_action(self, action)
 
