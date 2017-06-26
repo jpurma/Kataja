@@ -20,7 +20,7 @@ class UIItem:
     is_widget = False
     selection_independent = False
 
-    def __init__(self, host=None, ui_key=None, role=None):
+    def __init__(self, host=None, ui_key=None, role=None, tooltip=''):
         if ui_key:
             self.ui_key = ui_key
         elif self.unique:
@@ -33,7 +33,7 @@ class UIItem:
         self.host = host
         self.watchlist = []
         self.priority = 10
-        self.k_tooltip = ''
+        self.k_tooltip = tooltip
         self.is_fading_in = False
         self.is_fading_out = False
         self._fade_in_anim = None
@@ -154,11 +154,18 @@ class UIGraphicsItem(UIItem):
         self._hovering = False
         ctrl.ui.hide_help(self, event)
 
+
 class UIWidget(UIItem):
     """ UIWidgets have to inherit QWidget at some point. """
     can_fade = True
     is_widget = True
     scene_item = False
+
+    def __init__(self, action='', **kwargs):
+        UIItem.__init__(self, **kwargs)
+        k_buddy = None
+        if action:
+            ctrl.ui.connect_element_to_action(self, action)
 
     def to_layout(self, layout, align=None, with_label=None):
         """ Because widgets cannot be reliably put to layout in their __init__-methods,
@@ -170,6 +177,8 @@ class UIWidget(UIItem):
         """
         if with_label:
             labelw = QtWidgets.QLabel(with_label, self.parentWidget())
+            labelw.setBuddy(self)
+            self.k_buddy = labelw
             layout.addWidget(labelw)
         if align:
             layout.addWidget(self, alignment=align)

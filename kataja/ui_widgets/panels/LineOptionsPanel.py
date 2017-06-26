@@ -3,9 +3,9 @@ from PyQt5 import QtWidgets, QtGui
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 from kataja.singletons import ctrl, classes
-from kataja.ui_support.panel_utils import box_row, spinbox, decimal_spinbox, \
-    checkbox, \
+from kataja.ui_support.panel_utils import box_row, checkbox, \
     radiobutton
+from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox, KatajaDecimalSpinbox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
@@ -71,9 +71,13 @@ class LineOptionsPanel(Panel):
 
         self.line_button = checkbox(ui, self, hlayout, label='Outline',
                                     action='edge_shape_line')
-        self.thickness_spinbox = decimal_spinbox(ui, self, hlayout,
-                                                 label='Thickness', range_min=0.0, range_max=10.0,
-                                                 step=0.1, action='edge_thickness', suffix=' px')
+        self.thickness_spinbox = KatajaDecimalSpinbox(parent=self,
+                                                      range_min=0.0,
+                                                      range_max=10.0,
+                                                      step=0.1,
+                                                      action='edge_thickness',
+                                                      suffix=' px'
+                                                      ).to_layout(hlayout, with_label='Thickness')
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
 
@@ -90,27 +94,27 @@ class LineOptionsPanel(Panel):
         curve_modes = QtWidgets.QButtonGroup()
         self.relative_arc_button = radiobutton(ui, self, hlayout, label='Relative curve',
                                                action='edge_curvature_relative', group=curve_modes)
-        self.arc_rel_dx_spinbox = spinbox(ui, self, hlayout,
-                                          label='X', range_min=-200, range_max=200,
-                                          action='change_edge_relative_curvature_x',
-                                          suffix='%')
-        self.arc_rel_dy_spinbox = spinbox(ui, self, hlayout,
-                                          label='Y', range_min=-200, range_max=200,
-                                          action='change_edge_relative_curvature_y',
-                                          suffix='%')
+        self.arc_rel_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+                                                action='change_edge_relative_curvature_x',
+                                                suffix='%'
+                                                ).to_layout(hlayout, with_label='X')
+        self.arc_rel_dy_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+                                                action='change_edge_relative_curvature_y',
+                                                suffix='%'
+                                                ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
         self.fixed_arc_button = radiobutton(ui, self, hlayout, label='Fixed curve',
                                             action='edge_curvature_fixed', group=curve_modes)
-        self.arc_fixed_dx_spinbox = spinbox(ui, self, hlayout,
-                                            label='X', range_min=-200, range_max=200,
-                                            action='change_edge_fixed_curvature_x',
-                                            suffix=' px')
+        self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+                                                  action='change_edge_fixed_curvature_x',
+                                                  suffix=' px'
+                                                  ).to_layout(hlayout, with_label='X')
 
-        self.arc_fixed_dy_spinbox = spinbox(ui, self, hlayout,
-                                            label='Y', range_min=-200, range_max=200,
-                                            action='change_edge_fixed_curvature_y',
-                                            suffix=' px')
+        self.arc_fixed_dy_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+                                                  action='change_edge_fixed_curvature_y',
+                                                  suffix=' px'
+                                                  ).to_layout(hlayout, with_label='Y')
 
         self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
         self.arc_reference_buttons.addButton(self.fixed_arc_button)
@@ -119,16 +123,20 @@ class LineOptionsPanel(Panel):
 
         # Leaf size
         hlayout = box_row(layout)
-        self.leaf_x_spinbox = decimal_spinbox(ui, self, hlayout, label='Brush spread X',
-                                              range_min=-20.0,
-                                              range_max=20.0,
-                                              step=0.5,
-                                              action='leaf_shape_x', suffix=' px')
-        self.leaf_y_spinbox = decimal_spinbox(ui, self, hlayout, label='Y',
-                                              range_min=-20.0,
-                                              range_max=20.0,
-                                              step=0.5,
-                                              action='leaf_shape_y', suffix=' px')
+        self.leaf_x_spinbox = KatajaDecimalSpinbox(parent=self,
+                                                   range_min=-20.0,
+                                                   range_max=20.0,
+                                                   step=0.5,
+                                                   action='leaf_shape_x',
+                                                   suffix=' px'
+                                                   ).to_layout(hlayout, with_label='Brush spread X')
+        self.leaf_y_spinbox = KatajaDecimalSpinbox(parent=self,
+                                                   range_min=-20.0,
+                                                   range_max=20.0,
+                                                   step=0.5,
+                                                   action='leaf_shape_y',
+                                                   suffix=' px'
+                                                   ).to_layout(hlayout, with_label='Y')
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
 

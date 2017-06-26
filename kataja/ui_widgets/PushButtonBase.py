@@ -14,11 +14,9 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
         special buttons and buttons with icons.
     """
 
-    def __init__(self, parent=None, host=None, ui_key=None, role=None, action=None,
-                 text=None, size=None, tooltip=None):
+    def __init__(self, parent=None, text=None, size=None, **kwargs):
         QtWidgets.QPushButton.__init__(self, parent=parent)
-        UIWidget.__init__(self, host=host, ui_key=ui_key, role=role)
-        ctrl.ui.connect_element_to_action(self, action)
+        UIWidget.__init__(self, **kwargs)
         if text:
             self.setText(text)
         if size:
@@ -33,8 +31,6 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
                 height = size
             size = QtCore.QSize(width, height)
             self.setIconSize(size)
-        if tooltip:
-            self.k_tooltip = tooltip
         ctrl.ui.add_ui(self)
 
 

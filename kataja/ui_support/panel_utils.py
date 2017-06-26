@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
+
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
@@ -55,37 +56,6 @@ def label(panel, layout, text='', x=-1, y=-1):
     return slabel
 
 
-def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, action='', suffix='',
-            wrapping=False):
-    """
-
-    :param ui_manager:
-    :param panel:
-    :param layout:
-    :param label:
-    :param range_min:
-    :param range_max:
-    :param action:
-    :return:
-    """
-    slabel = QtWidgets.QLabel(label, panel)
-    slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-    spinbox = QtWidgets.QSpinBox()
-    spinbox.setAccelerated(True)
-    spinbox.setReadOnly(False)
-    spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
-    spinbox.setRange(range_min, range_max)
-    spinbox.setSuffix(suffix)
-    spinbox.setWrapping(wrapping)
-    spinbox.setFixedWidth(50)
-    slabel.setBuddy(spinbox)
-    spinbox.k_buddy = slabel
-    ui_manager.connect_element_to_action(spinbox, action)
-    layout.addWidget(slabel)
-    layout.addWidget(spinbox)
-    return spinbox
-
-
 def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, action='', suffix='',
          wrapping=True):
     """
@@ -112,39 +82,7 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
     ui_manager.connect_element_to_action(dial, action)
     layout.addWidget(slabel)
     layout.addWidget(dial)
-    return spinbox
-
-
-def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, step=0,
-                    action='', suffix=''):
-    """
-
-    :param ui_manager:
-    :param panel:
-    :param layout:
-    :param label:
-    :param range_min:
-    :param range_max:
-    :param step:
-    :param action:
-    :param suffix:
-    :return:
-    """
-    slabel = QtWidgets.QLabel(label, panel)
-    spinbox = QtWidgets.QDoubleSpinBox()
-    spinbox.setAccelerated(True)
-    spinbox.setReadOnly(False)
-    spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
-    spinbox.setRange(range_min, range_max)
-    spinbox.setSingleStep(step)
-    spinbox.setSuffix(suffix)
-    spinbox.setFixedWidth(58)
-    slabel.setBuddy(spinbox)
-    spinbox.k_buddy = slabel
-    ui_manager.connect_element_to_action(spinbox, action)
-    layout.addWidget(slabel)
-    layout.addWidget(spinbox)
-    return spinbox
+    return dial
 
 
 def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):

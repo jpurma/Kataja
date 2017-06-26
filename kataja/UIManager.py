@@ -1307,7 +1307,9 @@ class UIManager:
 
     def show_help(self, item, event):
         if not item.k_tooltip:
-            print('item %s is missing k_tooltip.' % item)
+            if self.floating_tip and self.floating_tip.isVisible():
+                self.floating_tip.hide()
+            #print('item %s is missing k_tooltip.' % item)
             return
         if not self.floating_tip:
             self.floating_tip = FloatingTip()
