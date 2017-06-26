@@ -45,6 +45,8 @@ from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_widgets.DragInfo import DragInfo
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
+from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
+from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
@@ -62,10 +64,9 @@ from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
-from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
-from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
+from kataja.visualizations.available import VISUALIZATIONS
+from kataja.ui_support.FloatingTip import FloatingTip
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -113,32 +114,6 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('plugin_menu', ('&Plugin', ['manage_plugins', 'reload_plugin',
                                                            '---', '$switch_plugin'])),
                               ('help_menu', ('&Help', ['help']))])
-
-
-class FloatingTip(QtWidgets.QLabel):
-
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self, None, QtCore.Qt.ToolTip)
-        self.setText('')
-        self.setFont(qt_prefs.get_font('ui_font'))
-        #self.setMinimumHeight(20)
-        #self.setMinimumWidth(40)
-        #self.setMaximumWidth(120)
-        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
-        self.setContentsMargins(2, 2, 2, 2)
-        self.setWordWrap(True)
-        self.item = None
-
-    def set_item(self, item):
-        if item is not self.item:
-            self.item = item
-            self.setText(item.k_tooltip)
-
-    def enterEvent(self, event):
-        self.show()
-
-    def set_position(self, pos):
-        self.move(pos.x(), pos.y())
 
 
 class UIManager:

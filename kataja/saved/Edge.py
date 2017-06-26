@@ -874,9 +874,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
         if self.edge_type == g.CONSTITUENT_EDGE:
-            self.k_tooltip = f"""Constituent relation<br/>
-            from {self.start_point} to {self.end_point} <br/> 
-            <br/> 
+            s_uid = (self.start and self.start.uid) or ''
+            e_uid = (self.end and self.end.uid) or ''
+            sx, sy = self.start_point
+            ex, ey = self.end_point
+            self.k_tooltip = f"""<strong>Constituent relation</strong><br/>
+            from {s_uid} (x:{sx}, y:{sy})<br/>
+             to {e_uid} (x:{ex}, y:{ey}) <br/> 
             uid={self.uid}"""
 
     def description(self):

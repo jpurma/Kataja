@@ -227,12 +227,12 @@ class ConstituentNode(Node):
         """ Hovering status tip """
         lines = []
         if self.is_trace:
-            lines.append("Trace")
+            lines.append("<strong>Trace</strong>")
         elif self.is_leaf():
-            lines.append("Leaf Constituent")
+            lines.append("<strong>Leaf constituent</strong>")
             lines.append(f"Syntactic label: {self.get_syn_label()}")
         else:
-            lines.append("<strong>Set Constituent</strong>")
+            lines.append("<strong>Set constituent</strong>")
             lines.append(f"Syntactic label: {self.get_syn_label()}")
         if self.index:
             lines.append(f' Index: "{self.index}"')
@@ -248,7 +248,7 @@ class ConstituentNode(Node):
 
         if self.use_adjustment:
             lines.append(f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
-
+        lines.append(f'uid={self.uid}')
         self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):
