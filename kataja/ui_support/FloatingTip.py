@@ -25,8 +25,8 @@ class FloatingTip(QtWidgets.QLabel):
             self.item = item
             self.setText(item.k_tooltip)
 
-    def enterEvent(self, event):
-        self.show()
+    ##def enterEvent(self, event):
+    #    self.show()
 
     def set_position(self, pos):
         if isinstance(pos, QtCore.QPointF):

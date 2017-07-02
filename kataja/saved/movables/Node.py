@@ -998,6 +998,7 @@ class Node(Movable):
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
+        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache) # self.inner_rect.size().toSize()
 
         return self.inner_rect
 

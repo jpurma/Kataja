@@ -598,7 +598,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self._fat_path = outline_stroker.createStroke(self._path)
         else:
             self._fat_path = self._path
-        self._cached_cp_rect = self._path.controlPointRect()
+        self._cached_cp_rect = self._path.controlPointRect().adjusted(-2, -2, 2, 2)
         #
         if self.label_item:
             self.label_item.update_position()
@@ -621,6 +621,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.update_visibility()
         if not self._is_moving:
             self.update_tooltip()
+        #self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache,
+        #                  self._cached_cp_rect.size().toSize())
+
 
     def path_bounding_rect(self) -> QtCore.QRectF:
         return self._path.boundingRect() if self._path else QtCore.QRectF()

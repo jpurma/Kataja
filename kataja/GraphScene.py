@@ -608,10 +608,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         frame_has_moved = False
         background_fade = False
         ctrl.items_moving = True
-        #self.setRenderHint(QtGui.QPainter.Antialiasing)
-        #self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-
-
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
@@ -678,4 +674,3 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.items_moving = False
             self.keep_updating_visible_area = False
         f.edge_visibility_check()  # only does something if flagged
-

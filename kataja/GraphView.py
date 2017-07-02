@@ -46,7 +46,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main = main
         self.graph_scene = graph_scene
         self.setScene(graph_scene)
-        # self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
+        self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -58,9 +58,11 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
-        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
+        self.setOptimizationFlag(QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
+        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
+        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(False)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #self.setAcceptDrops(True)

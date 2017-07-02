@@ -1289,7 +1289,8 @@ class UIManager:
         if not self.floating_tip:
             self.floating_tip = FloatingTip()
         self.floating_tip.set_item(item)
-        self.floating_tip.show()
+        if not self.floating_tip.isVisible():
+            self.floating_tip.show()
         self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
     def hide_help(self, item, event):
