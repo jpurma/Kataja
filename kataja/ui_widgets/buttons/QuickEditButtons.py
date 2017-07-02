@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtGui
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs
-from ui_widgets.buttons.OverlayButton import OverlayButton
+from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 
 
 class QuickEditButton(OverlayButton):

@@ -29,14 +29,17 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.singletons import ctrl, log, running_environment
 from kataja.ui_graphicsitems.TouchArea import TouchArea
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
-from ui_widgets.SelectionBox import SelectionBox
-from ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 
 class ShortcutSolver(QtCore.QObject):
     """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
     panels when the relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts,
     so we interrupt those and only pseudo-click the button in those cases.
+
+    Also I want to map all changing the forest or derivation step, scrolling the view area and
+    moving selection to arrow keys depending on mode.
 
     :param ui_manager:
     """
@@ -56,7 +59,12 @@ class ShortcutSolver(QtCore.QObject):
         """
         if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
             key = event.key().toString()
-            if key in self.clickable_actions:
+            print(key)
+            if key in ['Left', 'Right', 'Up', 'Down']:
+                print('arrow key ambiguity: ', key)
+                print('none shall pass!')
+                return True
+            elif key in self.clickable_actions:
                 els = self.clickable_actions.get(key, [])
                 for e in els:
                     if e.isVisible():

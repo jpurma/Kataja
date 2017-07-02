@@ -47,7 +47,7 @@ class NewStructure(KatajaAction):
 class NextForest(KatajaAction):
     k_action_uid = 'next_forest'
     k_command = 'Next forest'
-    k_shortcut = 's'
+    k_shortcut = 'Right'
     k_undoable = False
     k_tooltip = 'Switch to next forest'
 
@@ -63,7 +63,7 @@ class NextForest(KatajaAction):
 class PreviousForest(KatajaAction):
     k_action_uid = 'previous_forest'
     k_command = 'Previous forest'
-    k_shortcut = 'w'
+    k_shortcut = 'Left'
     k_undoable = False
     k_tooltip = 'Switch to previous forest'
 
@@ -79,7 +79,7 @@ class PreviousForest(KatajaAction):
 class NextStep(KatajaAction):
     k_action_uid = 'next_derivation_step'
     k_command = 'Next derivation step'
-    k_shortcut = 'd'
+    k_shortcut = 'Up'
     k_undoable = False
     k_tooltip = 'Move to next frame in animation / derivation'
 
@@ -95,7 +95,7 @@ class NextStep(KatajaAction):
 class PreviousStep(KatajaAction):
     k_action_uid = 'prev_derivation_step'
     k_command = 'Previous derivation step'
-    k_shortcut = 'a'
+    k_shortcut = 'Down'
     k_undoable = False
     k_tooltip = 'Move to previous frame in animation / derivation'
 

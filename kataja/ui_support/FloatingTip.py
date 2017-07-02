@@ -29,4 +29,6 @@ class FloatingTip(QtWidgets.QLabel):
         self.show()
 
     def set_position(self, pos):
-        self.move(pos.x(), pos.y())
+        if isinstance(pos, QtCore.QPointF):
+            pos = pos.toPoint()
+        self.move(pos)

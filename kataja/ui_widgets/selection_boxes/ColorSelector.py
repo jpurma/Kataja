@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize
 
 from kataja.PaletteManager import color_keys
 from kataja.singletons import ctrl
-from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 stylesheet = """
 QComboBox {

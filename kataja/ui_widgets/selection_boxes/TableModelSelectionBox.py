@@ -1,5 +1,5 @@
 
-from ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.SelectionBox import SelectionBox
 
 
 class TableModelSelectionBox(SelectionBox):

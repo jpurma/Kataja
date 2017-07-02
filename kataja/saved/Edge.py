@@ -542,10 +542,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         cx, cy = self.control_points[point_index]
         rdist, rrad = self.curve_adjustment[point_index]
-        if point_index == 0:
-            sx, sy = self.start_point
-        else:
-            sx, sy = self.end_point
+        sx, sy = self.start_point if point_index == 0 else self.end_point
         sx_to_cx = cx - sx
         sy_to_cy = cy - sy
         line_rad = math.atan2(sy_to_cy, sx_to_cx)
@@ -626,10 +623,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.update_tooltip()
 
     def path_bounding_rect(self) -> QtCore.QRectF:
-        if self._path:
-            return self._path.boundingRect()
-        else:
-            return QtCore.QRectF()
+        return self._path.boundingRect() if self._path else QtCore.QRectF()
 
     def shape(self) -> QtGui.QPainterPath:
         """ Override of the QGraphicsItem method. Should returns the real
@@ -874,8 +868,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
         if self.edge_type == g.CONSTITUENT_EDGE:
-            s_uid = (self.start and self.start.uid) or ''
-            e_uid = (self.end and self.end.uid) or ''
+            s_uid = self.start.uid if self.start else ''
+            e_uid = self.end.uid if self.end else ''
             sx, sy = self.start_point
             ex, ey = self.end_point
             self.k_tooltip = f"""<strong>Constituent relation</strong><br/>
@@ -888,10 +882,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :return:
         """
-        if self.edge_type == g.ARROW:
-            label = 'Arrow'
-        else:
-            label = 'Edge'
+        label = 'Arrow' if self.edge_type == g.ARROW else 'Edge'
         if self.start:
             s1 = f'"{self.start}"'
         elif self.fixed_start_point:

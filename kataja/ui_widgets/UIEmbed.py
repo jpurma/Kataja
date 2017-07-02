@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 

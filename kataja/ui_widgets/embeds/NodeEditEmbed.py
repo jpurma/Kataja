@@ -9,7 +9,7 @@ from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from ui_widgets.buttons.ProjectionButtons import ProjectionButtons
+from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):

@@ -5,7 +5,7 @@ from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.Panel import Panel
-from ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 

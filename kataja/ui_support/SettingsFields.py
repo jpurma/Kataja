@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from kataja.PaletteManager import color_themes
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.available import VISUALIZATIONS
-from ui_widgets.selection_boxes.PluginSelector import PluginSelector
+from kataja.ui_widgets.selection_boxes.PluginSelector import PluginSelector
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):

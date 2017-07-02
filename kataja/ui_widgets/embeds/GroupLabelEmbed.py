@@ -5,7 +5,7 @@ from kataja.singletons import qt_prefs
 from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import make_label
-from ui_widgets.selection_boxes.ColorSelector import ColorSelector
+from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
 
 __author__ = 'purma'
 

@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSize
 import kataja.globals as g
 from kataja.saved.movables.Node import Node
 from kataja.singletons import qt_prefs, ctrl
-from ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 stylesheet = """
 QComboBox {

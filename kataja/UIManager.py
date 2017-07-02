@@ -32,7 +32,7 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
-import ui_widgets.buttons.OverlayButton
+import kataja.ui_widgets.buttons.OverlayButton as OverlayButtons
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
@@ -1122,7 +1122,7 @@ class UIManager:
         button = self.get_ui_by_type(host=node, ui_type=class_key)
         if button:
             return button
-        constructor = getattr(ui_widgets.buttons.OverlayButton, class_key)
+        constructor = getattr(OverlayButtons, class_key)
         button = constructor(host=node, parent=self.main.graph_view, action=action)
         self.add_ui(button)
         button.update_position()
@@ -1163,7 +1163,7 @@ class UIManager:
 
         qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
         if not qe_label:
-            qe_label = ui_widgets.buttons.OverlayButton.OverlayLabel(node, self.main.graph_view)
+            qe_label = OverlayButtons.OverlayLabel(node, self.main.graph_view)
             self.add_ui(qe_label)
         qe_label.setText(node.label_object.edited_field + "→")
         qe_label.update_position()

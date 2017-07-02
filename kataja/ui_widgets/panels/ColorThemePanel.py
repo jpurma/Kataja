@@ -4,8 +4,8 @@ import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
-from ui_widgets.PushButtonBase import PushButtonBase
-from ui_widgets.buttons.TwoColorButton import TwoColorButton
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 

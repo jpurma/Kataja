@@ -95,11 +95,13 @@ class QuickEditTextItem(QtWidgets.QGraphicsTextItem):
         """
         p = self.parent()
         c = self.textCursor()
+        print('label keyreleaseevent')
         p.cursor_position_changed(c)
         next_sel = None
         if p._fresh_focus:
             p._fresh_focus = False
         elif p._last_blockpos:
+            print('previous block pos: ', p._last_blockpos)
             first, last, first_line, last_line = p._last_blockpos
             if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
                 next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'left')
