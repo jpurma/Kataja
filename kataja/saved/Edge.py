@@ -559,6 +559,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if (self._path is not None) and not self._changed:
             return
         self._changed = False
+        self.prepareGeometryChange()
         sx, sy = self.start_point
         ex, ey = self.end_point
         if sx == ex:

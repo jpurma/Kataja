@@ -928,6 +928,8 @@ class Node(Movable):
             elif b.height() < b.width():
                 b.setHeight(b.width())
             painter.drawEllipse(b)
+        #painter.drawRect(self.inner_rect)
+
 
     def has_visible_label(self):
         """
@@ -940,6 +942,7 @@ class Node(Movable):
         :return:
         """
         my_class = self.__class__
+        self.prepareGeometryChange()
         if self.user_size is None:
             user_width, user_height = 0, 0
         else:

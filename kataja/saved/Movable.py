@@ -502,20 +502,22 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Hover ################################################################
 
+
+    #def shape(self):
+    #    p = QtGui.QPainterPath()
+    #    p.addRect(self.boundingRect())
+    #    return p
+
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method
         :param event:
         """
-        if not self._is_moving:
-            self.hovering = True
-            ctrl.ui.show_help(self, event)
-            event.accept()
-        #QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
+        self.hovering = True
+        ctrl.ui.show_help(self, event)
+        event.accept()
 
     def hoverMoveEvent(self, event):
-        if not self._is_moving:
-            ctrl.ui.move_help(event)
-            QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
+        ctrl.ui.move_help(event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
@@ -524,7 +526,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         if self.hovering:
             self.hovering = False
             ctrl.ui.hide_help(self, event)
-            QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     @property
     def hovering(self):
@@ -549,7 +550,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         self._hovering = True
-        self.prepareGeometryChange()
+        #self.prepareGeometryChange()
         self.update()
         if self.zValue() < 150:
             self.setZValue(150)
@@ -560,7 +561,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         self._hovering = False
-        self.prepareGeometryChange()
+        #self.prepareGeometryChange()
         self.setZValue(self.z_value)
         self.update()
 

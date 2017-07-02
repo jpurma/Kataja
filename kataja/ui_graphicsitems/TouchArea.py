@@ -90,6 +90,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.drop_kwargs = drop_kwargs or {}
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         if click_action and isinstance(click_action, str):
             action_obj = ctrl.ui.get_action(click_action)
             if action_obj:
@@ -249,12 +250,16 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
 
     def hoverEnterEvent(self, event):
         if (not self._hovering) and not ctrl.pressed:
+            self.prepareGeometryChange()
             self.hovering = True
+            ctrl.ui.show_help(self, event)
         QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         if self._hovering:
+            self.prepareGeometryChange()
             self.hovering = False
+            ctrl.ui.show_help(self, event)
         QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
@@ -547,6 +552,24 @@ class MergeToTop(AbstractBranchingTouchArea):
             ey = sy - 10
             self.end_point = ex, ey
         self.setPos(self.end_point[0], self.end_point[1])
+
+    def boundingRect(self):
+        dx = self.start_point[0] - self.end_point[0]
+        dy = self.start_point[1] - self.end_point[1]
+        if self._hovering:
+            if len(self.host.trees) != 1:
+                es = end_spot_size / 2
+                return QtCore.QRectF(-es, 0, dx + es, dy)
+            else:
+                top = list(self.host.trees)[0].top
+                lmx, lmy = top.magnet(5)
+                scene_point = QtCore.QPointF(lmx, lmy)
+                end_point = self.mapFromScene(scene_point)
+                path = QtGui.QPainterPath(QtCore.QPointF(dx, dy))
+                path.quadTo(QtCore.QPointF(end_point.x() - 200, end_point.y()), end_point)
+                return path.controlPointRect().adjusted(-4, -4, 0, 0)
+        else:
+            return QtCore.QRectF(0, 0, dx, dy)
 
     def paint(self, painter, option, widget):
         """
