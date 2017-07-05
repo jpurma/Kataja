@@ -789,43 +789,50 @@ def draw_plus(painter, x, y):
                      x + 1, y + 3)
 
 
-def draw_leaf(painter, x, y, end_spot_size):
-    x -= 4
-    path = QtGui.QPainterPath(QtCore.QPointF(x, y - end_spot_size))
+def draw_leaf(painter, x, y, radius):
+    shift = 0.4 * radius
+    minor_shift = 0.2 * radius
+    path = QtGui.QPainterPath(QtCore.QPointF(x, y - radius))
 
-    path.cubicTo(x + 1.2 * end_spot_size, y - end_spot_size,
+    # leaf part
+    path.cubicTo(x + radius + minor_shift, y - radius,
                  x, y,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
-    path.cubicTo(x - 4, y + end_spot_size,
-                 x - end_spot_size, y - end_spot_size,
-                 x, y - end_spot_size)
+                 x + minor_shift, y + radius)
+    path.cubicTo(x - shift, y + radius,
+                 x - radius, y - radius,
+                 x, y - radius)
     painter.fillPath(path, painter.brush())
     painter.drawPath(path)
-    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
-    path.cubicTo(x, y - end_spot_size,
-                 x - 0.2 * end_spot_size, y,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
+    # leaf stem
+    path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
+    path.cubicTo(x, y - radius,
+                 x - minor_shift, y,
+                 x + minor_shift, y + radius)
     painter.setBrush(QtCore.Qt.NoBrush)
+    #path.addRect(x - radius, y - radius, radius * 2, radius * 2) # for debugging
     painter.drawPath(path)
 
 
-def draw_tailed_leaf(painter, x, y, end_spot_size):
-    x -= 4
-    leaf_top = y - end_spot_size / 2.0
+def draw_tailed_leaf(painter, x, y, radius):
+    leaf_top = y - radius
+    shift = 0.4 * radius
+    minor_shift = 0.2 * radius
+    # leaf part
     path = QtGui.QPainterPath(QtCore.QPointF(x, leaf_top))
 
-    path.cubicTo(x + 1.2 * end_spot_size, leaf_top ,
+    path.cubicTo(x + radius + minor_shift, leaf_top ,
                  x, y,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
-    path.cubicTo(x - 4, y + end_spot_size,
-                 x - end_spot_size, leaf_top,
+                 x + minor_shift, y + radius)
+    path.cubicTo(x - shift, y + radius,
+                 x - radius, leaf_top,
                  x, leaf_top)
     painter.fillPath(path, painter.brush())
     painter.drawPath(path)
-    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
-    path.cubicTo(x, y - end_spot_size,
-                 x - 0.3 * end_spot_size, y + 6,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
+    # stem part
+    path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
+    path.cubicTo(x, y - radius,
+                 x - minor_shift, y + shift,
+                 x + minor_shift, y + radius)
     painter.setBrush(QtCore.Qt.NoBrush)
     painter.drawPath(path)
 

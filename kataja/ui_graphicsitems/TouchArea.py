@@ -33,9 +33,15 @@ from kataja.UIItem import UIGraphicsItem
 from kataja.saved.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, sub_xy
+from kataja.utils import to_tuple
+from math import sqrt
 
-end_spot_size = 10
+symbol_radius = 10
+symbol_radius_sqr = sqrt(2) * symbol_radius
+
+LEAF_BR = QtCore.QRectF(-symbol_radius_sqr, -symbol_radius_sqr, symbol_radius_sqr * 2,
+                        symbol_radius_sqr * 2)
+PLUS_BR = QtCore.QRectF(-1, -1, 4, 4)
 
 
 class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
@@ -122,8 +128,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             self.update_end_points()
             assert self.end_point
         # Just the bounding rect of end spot ellipse
-        return QtCore.QRectF(-end_spot_size, -end_spot_size, end_spot_size + end_spot_size,
-                             end_spot_size + end_spot_size)
+        return LEAF_BR
 
     def sensitive_area(self):
         return self.boundingRect()
@@ -320,13 +325,13 @@ class DeleteArrowTouchArea(TouchArea):
         if ctrl.pressed is self:
             pass
         painter.setPen(self.contextual_color())
-        draw_x(painter, 0, 0, end_spot_size)
+        draw_x(painter, 0, 0, symbol_radius)
 
 
 class AbstractBelowTouchArea(TouchArea):
     def update_end_points(self):
         x, y = self.host.centered_scene_position
-        y += self.host.height / 2 + end_spot_size
+        y += self.host.height / 2 + symbol_radius
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(self.end_point[0], self.end_point[1])
@@ -347,10 +352,10 @@ class AbstractBelowTouchArea(TouchArea):
         else:
             painter.setBrush(qt_prefs.no_brush)
         painter.setPen(c)
-        draw_tailed_leaf(painter, 0, 0, end_spot_size)
+        draw_tailed_leaf(painter, 0, 0, symbol_radius)
         if self._hovering:
             painter.setPen(c)
-            draw_plus(painter, 4, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class AddBelowTouchArea(AbstractBelowTouchArea):
@@ -413,7 +418,7 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
     def update_end_points(self):
         x, y = self.host.centered_scene_position
         lbr = self.host.label_object.boundingRect()
-        y += self.host.label_object.triangle_y + lbr.top() + end_spot_size + 2
+        y += self.host.label_object.triangle_y + lbr.top() + symbol_radius + 2
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(x, y)
@@ -431,12 +436,12 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
         c = self.contextual_color()
         painter.setPen(c)
         # draw_triangle(painter, 0, 0)
-        draw_x(painter, 0, 0, end_spot_size / 2)
+        draw_x(painter, 0, 0, symbol_radius / 2)
         if self._hovering:
             p = QtGui.QPen(c)
             p.setWidth(2)
             painter.setPen(p)
-            draw_x(painter, 0, 0, end_spot_size)
+            draw_x(painter, 0, 0, symbol_radius)
 
 
 class StartArrowTouchArea(AbstractBelowTouchArea):
@@ -491,33 +496,12 @@ class AbstractBranchingTouchArea(TouchArea):
     nodes in middle of the trees. """
 
     def boundingRect(self):
-        """
-
-
-        :return:
-        """
-        if not self.end_point:
-            self.update_end_points()
-            assert self.end_point
-        # Bounding rect that includes the tail and end spot ellipse
-        ex, ey = 0, 0
-        sx, sy = sub_xy(self.start_point, self.end_point)
-        ss2 = end_spot_size * 2
-        ss = end_spot_size
-        if sx < ex:
-            w = max((ex - sx + ss, ss2))
-            x = min((sx, ex - ss))
-        else:
-            w = max((sx - ex + ss, ss2))
-            x = ex - ss
-        if sy < ey:
-            h = max((ey - sy + ss, ss2))
-            y = min((sy, ey - ss))
-        else:
-            h = max((sy - ey + ss, ss2))
-            y = ey - ss
-        r = QtCore.QRectF(x, y, w, h)
-        return r
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        br = QtCore.QRectF(0, 0, sx - ex, sy - ey)
+        if self._hovering:
+            br = br.united(LEAF_BR).united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+        return br
 
 
 class MergeToTop(AbstractBranchingTouchArea):
@@ -558,8 +542,7 @@ class MergeToTop(AbstractBranchingTouchArea):
         dy = self.start_point[1] - self.end_point[1]
         if self._hovering:
             if len(self.host.trees) != 1:
-                es = end_spot_size / 2
-                return QtCore.QRectF(-es, 0, dx + es, dy)
+                return QtCore.QRectF(-2, -2, dx + 4, dy + 4).united(LEAF_BR)
             else:
                 top = list(self.host.trees)[0].top
                 lmx, lmy = top.magnet(5)
@@ -593,9 +576,9 @@ class MergeToTop(AbstractBranchingTouchArea):
                 painter.save()
                 painter.setBrush(ctrl.cm.ui())
                 painter.rotate(20)
-                draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+                draw_leaf(painter, 0, 0, symbol_radius)
                 painter.restore()
-                draw_plus(painter, 4, 0)
+                draw_plus(painter, 1.2 * symbol_radius, 0)
                 return
             else:
                 top = list(self.host.trees)[0].top
@@ -671,14 +654,16 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        painter.drawLine(*sub_xy(self.start_point, self.end_point), 0, 0)
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        painter.drawLine(sx - ex, sy - ey, 0, 0)
         if self._hovering:
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-20)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 4, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class LeftAddSibling(AbstractLeftBranching):
@@ -751,6 +736,7 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
         sx, sy = to_tuple(e.get_point_at(0.4))
         self.start_point = sx, sy
         if end_point:
+            ex, ey = end_point
             self.end_point = end_point
         else:
             d = e.get_angle_at(0.4)
@@ -759,10 +745,10 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
             dx = math.cos(angle)
             dy = math.sin(angle)
             l = 12
-            x = sx + dx * l
-            y = sy + dy * l
-            self.end_point = x, y
-        self.setPos(self.end_point[0], self.end_point[1])
+            ex = sx + dx * l
+            ey = sy + dy * l
+            self.end_point = ex, ey
+        self.setPos(ex, ey)
 
     def paint(self, painter, option, widget):
         """
@@ -776,14 +762,18 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
             pass
         c = self.contextual_color()
         painter.setPen(c)
-        painter.drawLine(*sub_xy(self.start_point, self.end_point), 0, 0)
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+
+        painter.drawLine(sx - ex, sy - ey, 0, 0)
         if self._hovering:
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            print('painting leaf at ', 0, 0, symbol_radius)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 14, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class RightAddSibling(AbstractRightBranching):
@@ -840,33 +830,12 @@ class AbstractJointedTouchArea(TouchArea):
     to top of the trees. """
 
     def boundingRect(self):
-        """
-
-
-        :return:
-        """
         if not self.end_point:
             self.update_end_points()
             assert self.end_point
-        # Bounding rect that includes the tail and end spot ellipse
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        sx, sy = rel_sp
-        ex, ey = 0, 0
-        e2 = end_spot_size * 2
-        if sx < ex:
-            w = max((ex - sx + end_spot_size, e2))
-            x = min((sx, ex - end_spot_size))
-        else:
-            w = max((sx - ex + end_spot_size, e2))
-            x = ex - end_spot_size
-        if sy < ey:
-            h = max((ey - sy + end_spot_size, e2))
-            y = min((sy, ey - end_spot_size))
-        else:
-            h = max((sy - ey + end_spot_size, e2))
-            y = ey - end_spot_size
-        r = QtCore.QRectF(x, y, w, h)
-        return r.united(self._path.controlPointRect())
+        return self._path.controlPointRect()\
+            .united(LEAF_BR)\
+            .united(PLUS_BR.translated(1.2 * symbol_radius, 0))
 
     def shape(self):
         """ Shape is used for collisions and it shouldn't go over the originating node. So use
@@ -875,23 +844,26 @@ class AbstractJointedTouchArea(TouchArea):
         """
         path = QtGui.QPainterPath()
         # Bounding rect that includes the tail and end spot ellipse
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        sx, sy = rel_sp
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+
+        sx -= ex
+        sy -= ey
         sx /= 2.0
         ex, ey = 0, 0
-        e2 = end_spot_size * 2
+        e2 = symbol_radius_sqr * 2
         if sx < ex:
-            w = max((ex - sx + end_spot_size, e2))
-            x = min((sx, ex - end_spot_size))
+            w = max((ex - sx + symbol_radius_sqr, e2))
+            x = min((sx, ex - symbol_radius_sqr))
         else:
-            w = max((sx - ex + end_spot_size, e2))
-            x = ex - end_spot_size
+            w = max((sx - ex + symbol_radius_sqr, e2))
+            x = ex - symbol_radius_sqr
         if sy < ey:
-            h = max((ey - sy + end_spot_size, e2))
-            y = min((sy, ey - end_spot_size))
+            h = max((ey - sy + symbol_radius_sqr, e2))
+            y = min((sy, ey - symbol_radius_sqr))
         else:
-            h = max((sy - ey + end_spot_size, e2))
-            y = ey - end_spot_size
+            h = max((sy - ey + symbol_radius_sqr, e2))
+            y = ey - symbol_radius_sqr
         r = QtCore.QRectF(x, y, w, h)
         path.addRect(r)
         return path
@@ -919,8 +891,11 @@ class AbstractJointedTouchArea(TouchArea):
             else:
                 self.end_point = sx + good_width, sy
         self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
-        sx, sy = rel_sp
+
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        sx -= ex
+        sy -= ey
         ex, ey = 0, 0
         line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
         adjust = []
@@ -982,9 +957,9 @@ class LeftAddTop(AbstractJointedTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 4, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class RightAddTop(AbstractJointedTouchArea):
@@ -1028,9 +1003,9 @@ class RightAddTop(AbstractJointedTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 14, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class AbstractChildTouchArea(TouchArea):
@@ -1047,23 +1022,12 @@ class AbstractChildTouchArea(TouchArea):
             self.update_end_points()
             assert self.end_point
         # Bounding rect that includes the tail and end spot ellipse
-        ex, ey = 0, 0
-        sx, sy = sub_xy(self.start_point, self.end_point)
-        e2 = end_spot_size * 2
-        if sx < ex:
-            w = max((ex - sx + end_spot_size, e2))
-            x = min((sx, ex - end_spot_size))
-        else:
-            w = max((sx - ex + end_spot_size, e2))
-            x = ex - end_spot_size
-        if sy < ey:
-            h = max((ey - sy + end_spot_size, e2))
-            y = min((sy, ey - end_spot_size))
-        else:
-            h = max((sy - ey + end_spot_size, e2))
-            y = ey - end_spot_size
-        r = QtCore.QRectF(x, y, w, h)
-        return r
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        w = sx - ex
+        h = sy - ey
+        r = QtCore.QRectF(0, 0, w, h)
+        return r.united(LEAF_BR).united(PLUS_BR.translated(symbol_radius * 1.2, 0))
 
     def drag(self, event):
         self._dragging = True
@@ -1085,14 +1049,16 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
+            ex, ey = end_point
         else:
             ex = sx - 20  # 75
             ey = sy + 10
             self.end_point = ex, ey
-        self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
+        self.setPos(ex, ey)
+        sx -= ex
+        sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0), alignment=g.LEFT,
+        self._path = SHAPE_PRESETS[shape_name].path((sx, sy), (0, 0), alignment=g.LEFT,
                                                     curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
@@ -1103,6 +1069,7 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         :param widget:
         :raise:
         """
+        print(self)
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -1115,9 +1082,9 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 4, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class LeftAddUnaryChild(AbstractLeftAddChild):
@@ -1183,14 +1150,17 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
+            ex, ey = end_point
         else:
             ex = sx + 20  # 75
             ey = sy + 10
             self.end_point = ex, ey
-        self.setPos(self.end_point[0], self.end_point[1])
-        rel_sp = sub_xy(self.start_point, self.end_point)
+        self.setPos(ex, ey)
+        ex, ey = self.end_point
+        sx -= ex
+        sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0), alignment=g.RIGHT,
+        self._path = SHAPE_PRESETS[shape_name].path((sx, sy), (0, 0), alignment=g.RIGHT,
                                                     curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
@@ -1201,6 +1171,7 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         :param widget:
         :raise:
         """
+        print(self)
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -1213,9 +1184,9 @@ class AbstractRightAddChild(AbstractChildTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
+            draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
-            draw_plus(painter, 14, 0)
+            draw_plus(painter, 1.2 * symbol_radius, 0)
 
 
 class RightAddUnaryChild(AbstractRightAddChild):

@@ -351,13 +351,6 @@ def add_xy(a, b):
     return a[0] + b[0], a[1] + b[1]
 
 
-def sub_xy(a, b):
-    """
-    :rtype : tuple
-    """
-    return a[0] - b[0], a[1] - b[1]
-
-
 def div_xy(a, div):
     """
     :rtype : tuple

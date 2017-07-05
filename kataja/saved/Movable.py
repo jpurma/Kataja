@@ -32,7 +32,7 @@ from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM, LEFT_ALIGN,
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.utils import add_xy, multiply_xy, div_xy, sub_xy, time_me
+from kataja.utils import add_xy, multiply_xy, div_xy, time_me
 
 
 qbytes_opacity = QtCore.QByteArray()
@@ -333,7 +333,9 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :param movable:
         :return: x, y
         """
-        return sub_xy(self.current_position, movable.current_position)
+        sx, sy = self.current_position
+        mx, my = movable.current_position
+        return sx - mx, sy - my
 
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
@@ -355,7 +357,9 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         self._is_moving = True
         self._use_easing = True
-        dx, dy = sub_xy(self.target_position, self.current_position)
+        tx, ty = self.target_position
+        x, y = self.current_position
+        dx, dy = tx - x, ty - y
         d = math.sqrt(dx * dx + dy * dy)
         self._distance = dx, dy
         # We want longer movements to take longer time, but not linearly so. It helps viewer to
@@ -583,12 +587,14 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.current_position = self.from_scene_position(*scene_pos)
 
     def set_adjustment_from_scene_pos(self, scene_pos):
-        new_pos = self.from_scene_position(*scene_pos)
+        nx, ny = self.from_scene_position(*scene_pos)
+        x, y = self.current_position
         self.use_adjustment = True
-        diff = sub_xy(new_pos, self.current_position)
-        self.adjustment = add_xy(self.adjustment, diff)
-        self.target_position = new_pos
-        self.current_position = new_pos
+        dx, dy = nx - x, ny - y
+
+        self.adjustment = self.adjustment[0] + dx, self.adjustment[1] + dy
+        self.target_position = nx, ny
+        self.current_position = nx, ny
 
     def dragged_to(self, scene_pos):
         """ Dragged focus is in scene_pos. Move there.

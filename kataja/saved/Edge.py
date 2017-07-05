@@ -35,7 +35,7 @@ from kataja.SavedObject import SavedObject
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, add_xy, sub_xy, time_me
+from kataja.utils import to_tuple, add_xy, time_me
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -524,16 +524,19 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         # self.draggable = not (self.start or self.end)
 
-        scene_pos = to_tuple(event.scenePos())
-        dist = sub_xy(self.end_point, self.start_point)
+        scene_x, scene_y = to_tuple(event.scenePos())
+        ex, ey = self.end_point
+        sx, sy = self.start_point
         if not self._local_drag_handle_position:
-            drag = to_tuple(event.buttonDownScenePos(QtCore.Qt.LeftButton))
-            self._local_drag_handle_position = sub_xy(drag, self.start_point)
-        start = sub_xy(scene_pos, self._local_drag_handle_position)
+            drag_x, drag_y = to_tuple(event.buttonDownScenePos(QtCore.Qt.LeftButton))
+            self._local_drag_handle_position = drag_x - sx, drag_y - sy
+        handle_x, handle_y = self._local_drag_handle_position
+        start_x = scene_x - handle_x
+        start_y = scene_y - handle_y
         if not self.start:
-            self.set_start_point(*start)
+            self.set_start_point(start_x, start_y)
         if not self.end:
-            self.set_end_point(add_xy(start, dist))
+            self.set_end_point(start_x + ex - sx, start_y + ey - sy)
 
     def compute_pos_from_adjust(self, point_index) -> tuple:
         """ Works with 1 or 2 control points.
@@ -1211,7 +1214,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 p0 = self.adjusted_control_points[0]
             else:
                 p0 = self.end_point
-            dx, dy = sub_xy(self.start_point, p0)
+            p0x, p0y = p0
+            sx, sy = self.start_point
+            dx, dy = sx - p0x, sy - p0y
             a = math.atan2(dy, dx)
         elif pos == 'end':
             size = self.arrowhead_size_at_end
@@ -1220,11 +1225,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             x, y = self.end_point
             # average between last control point and general direction seems to be ok.
             if self.control_points:
-                plast = self.adjusted_control_points[-1]
+                last_x, last_y = self.adjusted_control_points[-1]
             else:
-                plast = self.start_point
+                last_x, last_y = self.start_point
 
-            dx, dy = sub_xy(self.end_point, plast)
+            dx, dy = x - last_x, y - last_y
             a = math.atan2(dy, dx)
         p = QtGui.QPainterPath()
         p.moveTo(x, y)
