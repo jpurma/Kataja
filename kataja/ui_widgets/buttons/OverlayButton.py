@@ -44,6 +44,20 @@ class OverlayButton(PanelButton):
             self.setIcon(self.normal_icon)
         PanelButton.mouseReleaseEvent(self, event)
 
+    @classmethod
+    def condition(cls, host):
+        """ Buttons may set conditions that have to apply (often related to the 'host' item) or the
+        button is omitted. These conditions are checked before the button instances are created.
+        Also because there are often one action related to many buttons (the host is given as a
+        parameter when the action is activated), the condition to enable or disable the action is no
+         help for this purpose.
+        :param host: usually node, can also be edge. Condition check may evaluate if host has
+        certain qualities or use some more general state/mode.
+        :return:
+        """
+        # implement in subclasses
+        return True
+
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary
         to update the overlay color.
@@ -153,10 +167,19 @@ class VisButton(OverlayButton):
 
 class CutFromStartButton(OverlayButton):
 
-    def __init__(self, host, size=16, tooltip='Disconnect edge from the start',
-                 pixmap=qt_prefs.cut_icon, **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Disconnect edge from the start',
+                         pixmap=qt_prefs.cut_icon,
+                         action='disconnect_edge_start')
         self.priority = 54
+
+    @classmethod
+    def condition(cls, edge):
+        return edge.start \
+            and (not edge.end) \
+            and (ctrl.free_drawing_mode
+                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -172,10 +195,19 @@ class CutFromStartButton(OverlayButton):
 
 class CutFromEndButton(OverlayButton):
 
-    def __init__(self, host, size=16, tooltip='Disconnect edge from the end',
-                 pixmap=qt_prefs.cut_icon, **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Disconnect edge from the end',
+                         pixmap=qt_prefs.cut_icon,
+                         action='disconnect_edge_end')
         self.priority = 55
+
+    @classmethod
+    def condition(cls, edge):
+        return edge.end \
+            and (not edge.start) \
+            and (ctrl.free_drawing_mode
+                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -194,11 +226,19 @@ class CutFromEndButton(OverlayButton):
 
 class CutEdgeButton(OverlayButton):
 
-    def __init__(self, host, size=16, tooltip='Disconnect edge', color_key='accent3',
-                 pixmap=qt_prefs.cut_icon, **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap,
-                         color_key=color_key, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Disconnect edge',
+                         color_key='accent3',
+                         pixmap=qt_prefs.cut_icon,
+                         action='disconnect_edge')
         self.priority = 50
+
+    @classmethod
+    def condition(cls, edge):
+        return edge.start and edge.end \
+            and (ctrl.free_drawing_mode
+                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -213,51 +253,20 @@ class CutEdgeButton(OverlayButton):
             self.move(pos)
 
 
-class AddTriangleButton(OverlayButton):
-
-    def __init__(self, host, size=16, tooltip='Disconnect edge from the end',
-                 pixmap=qt_prefs.cut_icon, **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
-        self.priority = 30
-
-    def update_position(self):
-        """ Put button left and below the starting point of edge.
-        """
-        if self.host:
-            x, y = self.host.centered_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 +
-                                                                 self.h2))
-            pos = p - QtCore.QPoint(self.w2 + 4, 0)
-            pos = self.avoid_overlaps(pos, 0, 8)
-            self.move(pos)
-
-
-class RemoveTriangleButton(OverlayButton):
-
-    def __init__(self, host, size=16, tooltip='Remove triangle',
-                 pixmap=qt_prefs.cut_icon, **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
-        self.priority = 30
-
-
-    def update_position(self):
-        """ Put button left and below the starting point of edge.
-        """
-        if self.host:
-            x, y = self.host.centered_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 + self.h2))
-            pos = p - QtCore.QPoint(self.w2 + 4, 0)
-            self.avoid_overlaps(pos, 0, 8)
-            self.move(pos)
-
-
 class RemoveMergerButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, size=16, tooltip='Remove this non-merging node', pixmap='delete_icon',
-                 **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Remove this non-merging node',
+                         pixmap='delete_icon',
+                         action='remove_merger')
         self.priority = 99
+
+    @classmethod
+    def condition(cls, host):
+        return ctrl.free_drawing_mode and host.node_type == g.CONSTITUENT_NODE and \
+                host.is_unnecessary_merger()
 
     def update_position(self):
         """ """
@@ -280,11 +289,18 @@ class RemoveMergerButton(OverlayButton):
 class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, size=16, tooltip='Remove node', pixmap='delete_icon',
-                 color_key='accent3', **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip,
-                         pixmap=pixmap, color_key=color_key, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Remove node',
+                         color_key='accent3',
+                         pixmap='delete_icon',
+                         action='remove_node')
         self.priority = 100
+
+    @classmethod
+    def condition(cls, host):
+        return ctrl.free_drawing_mode and (host.node_type == g.CONSTITUENT_NODE and \
+                not host.is_unnecessary_merger()) or host.node_type != g.CONSTITUENT_NODE
 
     def update_position(self):
         """ """
@@ -307,10 +323,13 @@ class RemoveNodeButton(OverlayButton):
 
 class GroupOptionsButton(OverlayButton):
 
-    def __init__(self, host, size=16, tooltip='Name this selection', pixmap=qt_prefs.info_icon,
-                 **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip,
-                         pixmap=pixmap, color_key=host.color_key, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Name this selection',
+                         color_key=host.color_key,
+                         pixmap=qt_prefs.info_icon,
+                         action='toggle_group_options')
+        self.priority = 25
 
     def update_position(self):
         """ Tries to find an unoccupied position in the radius of the group """
@@ -337,9 +356,12 @@ class GroupOptionsButton(OverlayButton):
 
 class NodeEditorButton(OverlayButton):
 
-    def __init__(self, host, size=16, tooltip='Edit this node', pixmap=qt_prefs.info_icon,
-                 **kwargs):
-        super().__init__(host=host, size=size, tooltip=tooltip, pixmap=pixmap, **kwargs)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         tooltip='Edit this node',
+                         color_key=host.get_color_id(),
+                         pixmap=qt_prefs.info_icon,
+                         action='start_editing_node')
         self.priority = 25
 
     def update_position(self):
@@ -367,9 +389,8 @@ class OverlayLabel(UIWidget, QtWidgets.QLabel):
     """
     selection_independent = True
 
-    def __init__(self, host, parent=None, ui_key=None, text=None,
-                 size=16, color_key='accent8', tooltip='', **kwargs):
-        UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host)
+    def __init__(self, host, parent=None, ui_key=None, tooltip='', **kwargs):
+        UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host, **kwargs)
         text = host.label_object.edited_field + "→"
         QtWidgets.QLabel.__init__(self, text, parent)
         self.k_tooltip = tooltip

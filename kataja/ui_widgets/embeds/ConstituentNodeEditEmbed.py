@@ -113,7 +113,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
-        ui_p = self._palette
+        ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())

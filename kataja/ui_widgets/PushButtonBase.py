@@ -33,5 +33,11 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
             self.setIconSize(size)
         ctrl.ui.add_ui(self)
 
+    def enterEvent(self, event):
+        UIWidget.enterEvent(self, event)
+        return QtWidgets.QPushButton.enterEvent(self, event)
 
+    def leaveEvent(self, event):
+        UIWidget.leaveEvent(self, event)
+        return QtWidgets.QPushButton.leaveEvent(self, event)
 

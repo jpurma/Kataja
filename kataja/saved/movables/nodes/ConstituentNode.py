@@ -29,6 +29,7 @@ from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_trian
     as_html
 from kataja.saved.movables.Node import Node
 import kataja.ui_graphicsitems.TouchArea as ta
+import kataja.ui_widgets.buttons.OverlayButton as ob
 from kataja.singletons import ctrl, classes, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import time_me
@@ -89,14 +90,9 @@ class ConstituentNode(Node):
         ta.RemoveTriangleTouchArea
     ]
 
-    buttons_when_selected = {
-        g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'],
-                          'action': 'remove_merger'},
-        g.NODE_EDITOR_BUTTON: {'action': 'start_editing_node'},
-        g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'],
-                        'action': 'remove_node'},
-        #g.QUICK_EDIT_LABEL: {}, # 'condition': 'is_quick_editing'
-    }
+    buttons_when_selected = [
+        ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton
+    ]
 
     def __init__(self, label=''):
         """ Most of the initiation is inherited from Node """

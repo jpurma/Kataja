@@ -67,6 +67,7 @@ from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_support.FloatingTip import FloatingTip
+import kataja.ui_widgets.buttons.OverlayButton as ob
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -239,6 +240,7 @@ class UIManager:
         :param show: by default, show it. Easy to forget otherwise.
         """
         if item.ui_key in self._items:
+            other = self._items[item.ui_key]
             raise KeyError
         self._items[item.ui_key] = item
         if item.host:
@@ -1092,11 +1094,8 @@ class UIManager:
         self.update_edit_mode()
 
     def add_button(self, button, action):
-        if button.ui_key not in self._items:
-            self.add_ui(button)
-            button.update_position()
-            self.connect_element_to_action(button, action)
-            button.show()
+        button.update_position()
+        button.show()
         return button
 
     def update_buttons_for_selected_node(self, node):
@@ -1106,11 +1105,9 @@ class UIManager:
         """
         if not node.is_visible():
             return
-        d = node.__class__.buttons_when_selected
-        for key, values in d.items():
-            if node.check_conditions(values):
-                action = values.get('action', '')
-                self.get_or_create_button(node, key, action)
+        for button_class in node.__class__.buttons_when_selected:
+            if button_class.condition(node):
+                self.get_or_create_button(node, button_class)
         if node.resizable:
             handle = self.get_ui_by_type(node, 'GraphicsResizeHandle')
             if not handle:
@@ -1118,13 +1115,11 @@ class UIManager:
                 self.add_ui(handle)
             # self.scene.addItem(handle)
 
-    def get_or_create_button(self, node, class_key, action):
-        button = self.get_ui_by_type(host=node, ui_type=class_key)
+    def get_or_create_button(self, host, button_class):
+        button = self.get_ui_by_type(host=host, ui_type=button_class.__name__)
         if button:
             return button
-        constructor = getattr(OverlayButtons, class_key)
-        button = constructor(host=node, parent=self.main.graph_view, action=action)
-        self.add_ui(button)
+        button = button_class(host=host, parent=self.main.graph_view)
         button.update_position()
         button.show()
         return button
@@ -1134,7 +1129,7 @@ class UIManager:
         :param group:
         :return:
         """
-        button = self.get_or_create_button(group, g.GROUP_OPTIONS, 'toggle_group_options')
+        button = self.get_or_create_button(group, ob.GroupOptionsButton)
         return button
 
     def add_buttons_for_edge(self, edge):
@@ -1142,14 +1137,12 @@ class UIManager:
         in between.
         :param edge:
         """
-        # Constituent edges don't have cut-button at the start
-        # if edge.edge_type is not g.CONSTITUENT_EDGE:
-        if edge.start and edge.end:
-            self.get_or_create_button(edge, g.CUT_EDGE, 'disconnect_edge')
-        elif edge.start:
-            self.get_or_create_button(edge, g.CUT_FROM_START_BUTTON, 'disconnect_edge_start')
-        elif edge.end:
-            self.get_or_create_button(edge, g.CUT_FROM_END_BUTTON, 'disconnect_edge_end')
+        if ob.CutEdgeButton.condition(edge):
+            self.get_or_create_button(edge, ob.CutEdgeButton)
+        elif ob.CutFromStartButton.condition(edge):
+            self.get_or_create_button(edge, ob.CutFromStartButton)
+        elif ob.CutFromEndButton.condition(edge):
+            self.get_or_create_button(edge, ob.CutFromEndButton)
 
     def add_quick_edit_buttons_for(self, node, doc):
         if not self.quick_edit_buttons:
@@ -1161,7 +1154,7 @@ class UIManager:
         self.quick_edit_buttons.update_position()
         self.quick_edit_buttons.update_values()
 
-        qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
+        qe_label = self.get_ui(ob.OverlayLabel)
         if not qe_label:
             qe_label = OverlayButtons.OverlayLabel(node, self.main.graph_view)
             self.add_ui(qe_label)
@@ -1171,7 +1164,7 @@ class UIManager:
 
     def remove_quick_edit_buttons(self):
         self.quick_edit_buttons.hide()
-        qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
+        qe_label = self.get_ui(ob.OverlayLabel)
         if qe_label:
             self.remove_ui(qe_label)
 

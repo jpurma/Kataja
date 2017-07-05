@@ -770,7 +770,6 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            print('painting leaf at ', 0, 0, symbol_radius)
             draw_leaf(painter, 0, 0, symbol_radius)
             painter.restore()
             draw_plus(painter, 1.2 * symbol_radius, 0)

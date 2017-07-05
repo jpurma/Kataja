@@ -38,6 +38,7 @@ from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me, create_blur_effect
 from kataja.parser.INodes import as_html
+import kataja.ui_widgets.buttons.OverlayButton as ob
 
 call_counter = [0]
 
@@ -99,10 +100,7 @@ class Node(Movable):
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
-
-    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'start_editing_node'},
-                             g.REMOVE_NODE: {'action': 'remove_node',
-                                             'condition': 'free_drawing_mode'}}
+    buttons_when_selected = [ob.NodeEditorButton, ob.RemoveNodeButton]
 
     def __init__(self):
         """ Node is an abstract class that shouldn't be used by itself, though

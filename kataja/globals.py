@@ -26,16 +26,6 @@ COMMENT_NODE = 4
 TREE = 100
 GUESS_FROM_INPUT = 99
 
-# Overlay buttons -- These refer to class names in OverlayButton.py
-REMOVE_MERGER = 'RemoveMergerButton'
-GROUP_OPTIONS = 'GroupOptionsButton'
-NODE_EDITOR_BUTTON = 'NodeEditorButton'
-REMOVE_NODE = 'RemoveNodeButton'
-CUT_FROM_START_BUTTON = 'CutFromStartButton'
-CUT_FROM_END_BUTTON = 'CutFromEndButton'
-CUT_EDGE = 'CutEdgeButton'
-QUICK_EDIT_LABEL = 'OverlayLabel'
-
 # ## Our custom signals
 
 EDGE_SHAPES_CHANGED = 101
