@@ -33,8 +33,8 @@ class TopBarButtons(QtWidgets.QFrame):
 
         # Center side
         self.view_mode_button = ModalTextButton(ui_key='view_mode_label', parent=self,
-                                                text0='All objects',
-                                                text1='Syntactic only',
+                                                text0='Showing all layers',
+                                                text1='Showing only syntactic layer',
                                                 pixmap=qt_prefs.eye_pixmap,
                                                 action='switch_view_mode').to_layout(layout)
 

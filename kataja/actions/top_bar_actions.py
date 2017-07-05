@@ -94,10 +94,9 @@ class SwitchViewMode(KatajaAction):
     k_action_uid = 'switch_view_mode'
     k_command = 'Show all objects and their data'
     k_command_alt = 'Show only data available for syntactic computations.'
-    k_tooltip = 'Some objects and some data fields in objects have no effect for' \
-                ' syntactic computation. Omit them.'
-    k_tooltip_alt = 'Nodes can show additional data because of a linguistic convention or ' \
-                    'for other reason to help readability.'
+    k_tooltip = 'Nodes show only information that has effect on syntactic computation.'
+    k_tooltip_alt = 'Nodes show a layer of additional information, because of linguistic ' \
+                    'convention, or otherwise to help understanding.'
     k_shortcut = 'Shift+b'
     k_checkable = True
     k_undoable = False

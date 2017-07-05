@@ -28,7 +28,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
     unique = True
 
     def __init__(self, parent, host, text):
-        UIWidget.__init__(self, host)
+        UIWidget.__init__(self, host=host)
         QtWidgets.QWidget.__init__(self, parent)
         self._palette = None
         self.update_colors()
@@ -180,11 +180,17 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
 
     def mousePressEvent(self, event):
         self._drag_diff = event.pos()
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        self.move(self.mapToParent(event.pos()) - self._drag_diff)
-        self.moved_by_hand = True
+        if self._drag_diff:
+            self.move(self.mapToParent(event.pos()) - self._drag_diff)
+            self.moved_by_hand = True
         QtWidgets.QWidget.mouseMoveEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_diff = None
+        super().mouseReleaseEvent(event)
 
     def resizeEvent(self, event):
         QtWidgets.QWidget.resizeEvent(self, event)
