@@ -80,11 +80,6 @@ color_themes = OrderedDict([('solarized_dk', {
 }), ('random', {
     'name': 'Random for each treeset',
     'build': 'random',
-}), ('print', {
-    'name': 'Print-friendly',
-    'build': 'fixed',
-    'contrast': 72,
-    'hsv': [0.2, 0.2, 0.2],
 }), ('bw', {
     'name': 'Black and white',
     'build': 'fixed',

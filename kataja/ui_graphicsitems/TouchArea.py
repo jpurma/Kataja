@@ -264,7 +264,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if self._hovering:
             self.prepareGeometryChange()
             self.hovering = False
-            ctrl.ui.show_help(self, event)
+            ctrl.ui.hide_help(self, event)
         QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
