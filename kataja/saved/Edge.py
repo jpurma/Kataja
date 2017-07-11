@@ -92,6 +92,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         # shape algorithms
         self.adjusted_control_points = []  # combines those two above
         self.label_data = {}
+        self.selected = False
         self._nodes_overlap = False
         self._changed = False
         self.k_tooltip = ''
@@ -606,7 +607,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         #
         if self.label_item:
             self.label_item.update_position()
-        if ctrl.is_selected(self):
+        if self.selected:
             ctrl.ui.update_position_for(self)
         # overlap detection is costly, so do checks for cases that make it unnecessary
         if self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
@@ -875,14 +876,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
         if self.edge_type == g.CONSTITUENT_EDGE:
+            tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
+
             s_uid = self.start.uid if self.start else ''
             e_uid = self.end.uid if self.end else ''
             sx, sy = self.start_point
             ex, ey = self.end_point
             self.k_tooltip = f"""<strong>Constituent relation</strong><br/>
-            from {s_uid} (x:{sx}, y:{sy})<br/>
-             to {e_uid} (x:{ex}, y:{ey}) <br/> 
-            uid={self.uid}"""
+            from {tt_style % s_uid} (x:{sx}, y:{sy})<br/>
+             to {tt_style % e_uid} (x:{ex}, y:{ey}) <br/> 
+            uid:{tt_style % self.uid}"""
 
     def description(self):
         """
@@ -926,12 +929,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :param selected:
         """
+        self.selected = selected
         if selected:
             if self.uses_labels():
                 if not self.label_item:
                     self.label_item = EdgeLabel('', self, placeholder=True)
                     self.label_item.update_position()
-                self.label_item.selected = True
         else:
             if self.label_item:
                 if self.label_item.placeholder:
@@ -939,8 +942,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     if scene:
                         scene.removeItem(self.label_item)
                     self.label_item = None
-                else:
-                    self.label_item.selected = False
         self.update()
 
     def boundingRect(self):
@@ -1049,7 +1050,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if select_area:
             return self.uid
         if adding:
-            if ctrl.is_selected(self):
+            if self.selected:
                 action = ctrl.ui.get_action('remove_from_selection')
             else:
                 action = ctrl.ui.get_action('add_to_selection')
@@ -1115,7 +1116,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             if self.cached('arrowhead_at_end') and self._arrowhead_end_path:
                 painter.fillPath(self._arrowhead_end_path, c)
 
-        if ctrl.is_selected(self):
+        if self.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())
             painter.setPen(p)
             painter.drawPath(self._true_path)

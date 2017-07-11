@@ -297,7 +297,8 @@ class KatajaAction(QtWidgets.QAction):
         :param element:
         """
         self.elements.add(element)
-        element.k_tooltip = self.tip0
+        if self.tip0:
+            element.k_tooltip = self.tip0
 
         # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
@@ -375,9 +376,9 @@ class KatajaAction(QtWidgets.QAction):
                 element.blockSignals(True)
                 if value != element.isChecked():
                     element.setChecked(value)
-                    if value:
+                    if value and self.tip1:
                         element.k_tooltip = self.tip1
-                    else:
+                    elif (not value) and self.tip0:
                         element.k_tooltip = self.tip0
                 element.blockSignals(False)
         else:

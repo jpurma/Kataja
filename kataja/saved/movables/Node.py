@@ -111,6 +111,7 @@ class Node(Movable):
         self.syntactic_object = None
         self.label = ''
 
+        self.selected = False
         self._label_visible = True
         self._label_qdocument = None
         self.label_rect = None
@@ -790,7 +791,7 @@ class Node(Movable):
             # return ctrl.cm.hover()
             return self.color
             # return ctrl.cm.hovering(ctrl.cm.selection())
-        elif ctrl.is_selected(self):
+        elif self.selected:
             return ctrl.cm.selection()
             # return ctrl.cm.selected(ctrl.cm.selection())
         else:
@@ -901,7 +902,7 @@ class Node(Movable):
             if rect:
                 brush = ctrl.cm.paper()
             rect = True
-        elif ctrl.pressed is self or ctrl.is_selected(self):
+        elif ctrl.pressed is self or self.selected:
             if rect:
                 brush = ctrl.cm.paper()
             if not hasattr(self, 'halo'):
@@ -1264,19 +1265,15 @@ class Node(Movable):
         appearance and related local elements.
         :param selected:
         """
-        if not selected:
-            self.setZValue(self.z_value)
-            if ctrl.main.use_tooltips:
-                self.setToolTip("")
-            self.label_object.set_quick_editing(False)
-        else:
+        self.selected = selected
+        if selected:
             self.setZValue(200)
-            if ctrl.main.use_tooltips:
-                self.setToolTip("Click to edit node text, click (i) to inspect and edit field by "
-                                "field")
             if ctrl.single_selection() and not ctrl.multiselection_delay:
                 if ctrl.settings.get('single_click_editing'):
                     self.label_object.set_quick_editing(True)
+        else:
+            self.setZValue(self.z_value)
+            self.label_object.set_quick_editing(False)
         self.update()
 
     # ### MOUSE - kataja
@@ -1314,12 +1311,12 @@ class Node(Movable):
         if select_area:
             return self.uid
         if adding:
-            if ctrl.is_selected(self):
+            if self.selected:
                 action = ctrl.ui.get_action('remove_from_selection')
             else:
                 action = ctrl.ui.get_action('add_to_selection')
             action.run_command(self.uid, has_params=True)
-        elif ctrl.is_selected(self):
+        elif self.selected:
             if len(ctrl.selected) > 1:
                 action = ctrl.ui.get_action('select')
                 action.run_command(self.uid, has_params=True)
@@ -1380,7 +1377,7 @@ class Node(Movable):
         dragged_trees = set()
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
-        if ctrl.is_selected(self):
+        if self.selected:
             selected_nodes = [x for x in ctrl.selected if isinstance(x, Node)]
             # find trees tops in selection
             for item in selected_nodes:
@@ -1689,7 +1686,7 @@ class Node(Movable):
         """
         Movable.stop_moving(self)
         if prefs.move_effect:
-            if not ctrl.is_selected(self):
+            if not self.selected:
                 self.toggle_halo(False)
         for edge in self.edges_down:
             edge.start_node_stopped_moving()

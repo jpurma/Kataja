@@ -2,9 +2,10 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import open_symbol_data
+from kataja.UIItem import UIWidget
 
 
-class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
+class EmbeddedTextarea(QtWidgets.QPlainTextEdit, UIWidget):
     """
 
     :param parent:
@@ -13,11 +14,9 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
     :param prefill:
     """
 
-    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None):
+    def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None):
+        UIWidget.__init__(self, tooltip=tooltip)
         QtWidgets.QPlainTextEdit.__init__(self, parent)
-        if tip:
-            if ctrl.main.use_tooltips:
-                self.k_tooltip = tip
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)

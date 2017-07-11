@@ -220,6 +220,19 @@ class Preferences(object):
                                     'help': 'Should the tree show freely editable labels (node '
                                             'labels) or labels used in syntactic computation. ',
                                     'order': 2}
+
+        self.linearization_mode = 0
+        self._linearization_mode_ui = {'tab': 'Syntax',
+                                       'choices': [(IMPLICIT_ORDERING,
+                                                    'Implicit ordering (use lists)'),
+                                                   (NO_LINEARIZATION,
+                                                    'Show as unordered sets, disable linearization'),
+                                                   (RANDOM_NO_LINEARIZATION,
+                                                    'Show as sets, shuffle on redraw'),
+                                                   (USE_LINEARIZATION,
+                                                    'Use provided linearization algorithm')
+                                                   ]}
+
         self.lock_glosses_to_label = 0
         self._lock_glosses_to_label_ui = {'tab': 'Drawing',
                                           'label': 'Lock glosses to labels',

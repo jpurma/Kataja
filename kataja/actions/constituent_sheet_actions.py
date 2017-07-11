@@ -30,8 +30,8 @@ from kataja.KatajaAction import KatajaAction
 #
 
 
-class ToggleLabelShape(KatajaAction):
-    k_action_uid = 'toggle_label_shape'
+class SelectLabelShape(KatajaAction):
+    k_action_uid = 'select_label_shape'
     k_command = 'Rotate between node shapes'
     k_shortcut = 'b'
     k_checkable = True
@@ -78,7 +78,7 @@ class ActivateNoFrameNodeShape(KatajaAction):
         """
         ctrl.settings.set('label_shape', g.NORMAL, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleLabelShape.k_shortcut})'
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.NORMAL
@@ -99,7 +99,7 @@ class ActivateScopeboxNodeShape(KatajaAction):
         """
         ctrl.settings.set('label_shape', g.SCOPEBOX, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleLabelShape.k_shortcut})'
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.SCOPEBOX
@@ -120,7 +120,7 @@ class ActivateBracketedNodeShape(KatajaAction):
         """
         ctrl.settings.set('label_shape', g.BRACKETED, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleLabelShape.k_shortcut})'
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.BRACKETED
@@ -141,7 +141,7 @@ class ActivateBoxShape(KatajaAction):
         """
         ctrl.settings.set('label_shape', g.BOX, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleLabelShape.k_shortcut})'
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.BOX
@@ -163,7 +163,7 @@ class ActivateCardNodeShape(KatajaAction):
         ctrl.settings.set('label_shape', g.CARD, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleLabelShape.k_shortcut})'
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.CARD
@@ -173,7 +173,7 @@ class ActivateCardNodeShape(KatajaAction):
                g.CARD not in ctrl.forest.visualization.banned_node_shapes
 
 
-class SwitchTraceMode(KatajaAction):
+class SelectTraceMode(KatajaAction):
     k_action_uid = 'select_trace_strategy'
     k_command = 'Show traces'
     k_shortcut = 't'
@@ -212,9 +212,49 @@ class SwitchTraceMode(KatajaAction):
         return ctrl.ui.active_scope != g.SELECTION
 
 
-class ToggleLabelTextModes(KatajaAction):
-    k_action_uid = 'toggle_label_text_mode'
-    k_command = 'Switch label text mode'
+class SelectLinearizationMode(KatajaAction):
+    k_action_uid = 'select_linearization_mode'
+    k_command = 'Select linearization strategy'
+    k_shortcut = 'i'
+
+    def prepare_parameters(self, args, kwargs):
+        sender = self.sender()
+        if isinstance(sender, QtWidgets.QComboBox):
+            linearization_mode = sender.currentData()
+        else:
+            linearization_mode = None
+        return [], {'linearization_mode': linearization_mode}
+
+    def method(self, linearization_mode=None):
+        """
+        :param linearization_mode: int or None -- either switch to given trace mode, or rotate to
+        next one if None is given.
+        :return: None
+        """
+
+        level = ctrl.ui.active_scope
+        if level == g.HIGHEST or level == g.OBJECT:
+            level = g.FOREST
+        if linearization_mode is None:
+            linearization_mode = ctrl.settings.get('linearization_mode', level=level)
+            linearization_mode += 1
+            if linearization_mode == 3:
+                linearization_mode = 0
+        ctrl.settings.set('linearization_mode', linearization_mode, level=level)
+        ctrl.forest.forest_edited()
+        mode_text = prefs.get_ui_text_for_choice(linearization_mode, 'linearization_mode')
+        return f'Set linearization mode: {mode_text}'
+
+    def getter(self):
+        return ctrl.settings.get('linearization_mode', level=ctrl.ui.active_scope)
+
+    def enabler(self):
+        return ctrl.ui.active_scope != g.SELECTION
+
+
+class SelectLabelTextMode(KatajaAction):
+    k_action_uid = 'select_label_text_mode'
+    k_command = 'Select label text mode'
     k_undoable = True
     k_shortcut = 'l'
     k_tooltip = 'Switch what to show as label text'

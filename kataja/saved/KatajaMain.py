@@ -212,6 +212,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                                          'main_font': fm.family(),
                                          'main_font_size': fm.pointSize()})
 
+    def leaveEvent(self, event):
+        ctrl.ui.force_hide_help()
+
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
         Don't try to load actual python code yet

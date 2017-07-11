@@ -28,8 +28,9 @@ import math
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs
+from kataja.singletons import prefs, ctrl
 from kataja.utils import caller, time_me
+import random
 
 
 class LeftFirstTree(BaseVisualization):
@@ -46,6 +47,7 @@ class LeftFirstTree(BaseVisualization):
         self._max_hits = {}
         self._directed = True
         self._indentation = 0
+        self._shuffle = False
         self.traces_to_draw = {}
 
     def prepare(self, forest, reset=True):
@@ -85,7 +87,6 @@ class LeftFirstTree(BaseVisualization):
         elif not self.forest.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
-        fy = y
 
         children = [x for x in node.get_children(similar=True, visible=True)
                     if not x.locked_to_node]
@@ -98,6 +99,9 @@ class LeftFirstTree(BaseVisualization):
         ny = y + y_step
         onx = nx
         ony = ny
+        if self._shuffle and len(children) > 1:
+            random.shuffle(children)
+
         for child in children:
             blocked = True
             grandchildren = [x for x in child.get_children(similar=True, visible=True)
@@ -160,6 +164,7 @@ class LeftFirstTree(BaseVisualization):
         edge_width = prefs.edge_width
         merged_grid = Grid()
         self._indentation = 0
+        self._shuffle = ctrl.settings.get('linearization_mode') == g.RANDOM_NO_LINEARIZATION
         if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
             self._put_to_grid(merged_grid, tree.top, 0, 0)
         offset_x = 0  # tree_w/-2

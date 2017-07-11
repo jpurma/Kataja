@@ -72,12 +72,14 @@ class NodeEditEmbed(UIEmbed):
             field = None
             if itype == 'text':
                 width = d.get('width', 140)
-                field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill, on_edit=on_edit)
+                field = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill=prefill,
+                                         on_edit=on_edit)
                 field.setMaximumWidth(width)
             elif itype == 'textarea':
                 self._disable_effect = True
                 template_width = d.get('width', 0)
-                field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill, on_edit=on_edit)
+                field = EmbeddedTextarea(self, tooltip=tt, font=smaller_font, prefill=prefill,
+                                         on_edit=on_edit)
                 max_w = 200
                 if node.user_size:
                     w = node.user_size[0]

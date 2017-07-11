@@ -20,7 +20,7 @@ class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
 
 class ExpandingTextArea(QtWidgets.QWidget):
 
-    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None, label=None,
+    def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None, label=None,
                  on_focus_out=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.raw_text = ''
@@ -64,9 +64,9 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.setLayout(layout)
         self.text_area.setMinimumHeight(40)
         self.text_area.setMinimumWidth(200)
-        if tip:
+        if tooltip:
             if ctrl.main.use_tooltips:
-                self.setToolTip(tip)
+                self.setToolTip(tooltip)
                 self.setToolTipDuration(2000)
         if prefill:
             self.text_area.setPlaceholderText(prefill)

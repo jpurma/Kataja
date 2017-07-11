@@ -134,7 +134,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = 'Label used in syntactic computations, plain string. Visible in <i>syntactic mode</i> ' \
              'or if <i>Displayed label</i> is empty.'
         title = 'Syntactic label'
-        self.synlabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='label',
+        self.synlabel = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='label',
                                          on_edit=self.synlabel_edited,
                                          on_finish=self.synlabel_finished,
                                          on_return=self.synlabel_finished)
@@ -148,7 +148,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.ui_manager.connect_element_to_action(self.nodeframebutton, 'set_node_labels_visible')
         tt = "Freeform label or text for node, has no effect for syntactic computation"
         title = 'User label'
-        self.label = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill='label',
+        self.label = ExpandingTextArea(self, tooltip=tt, font=smaller_font, prefill='label',
                                        on_edit=self.label_edited, label=title,
                                        on_focus_out=self.label_finished)
         self.label.setPalette(ui_p)
@@ -169,7 +169,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "These are either XBar or Bare phrase structure labels that are updated " \
              "automatically based on projections."
         title = 'Generated label'
-        self.autolabel = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='autolabel')
+        self.autolabel = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel')
         self.autolabel.setReadOnly(True)
         make_label(title, self, vlayout, tt, self.autolabel)
         vlayout.addWidget(self.autolabel)
@@ -177,7 +177,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         vlayout = QtWidgets.QVBoxLayout()
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
-        self.index = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill='i',
+        self.index = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='i',
                                       on_finish=self.index_finished)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)

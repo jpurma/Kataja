@@ -102,9 +102,9 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                          'prev_derivation_step'])),
                               ('drawing_menu', ('&Drawing', ['$set_visualization',
                                                              '---',
-                                                             'toggle_label_shape',
+                                                             'select_label_shape',
                                                              'select_trace_strategy',
-                                                             'toggle_feature_display_mode',
+                                                             'select_feature_display_mode',
                                                              'switch_syntax_view_mode',
                                                              'switch_view_mode'])),
                               ('view_menu', ('&View', ['zoom_to_fit', '---',
@@ -1288,6 +1288,10 @@ class UIManager:
 
     def hide_help(self, item, event):
         if self.floating_tip and self.floating_tip.item is item:
+            self.floating_tip.hide()
+
+    def force_hide_help(self):
+        if self.floating_tip:
             self.floating_tip.hide()
 
     def move_help(self, event):

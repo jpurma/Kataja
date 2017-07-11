@@ -2,9 +2,10 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
 from kataja.utils import open_symbol_data
+from kataja.UIItem import UIWidget
 
 
-class EmbeddedLineEdit(QtWidgets.QLineEdit):
+class EmbeddedLineEdit(QtWidgets.QLineEdit, UIWidget):
     """
 
     :param parent:
@@ -13,13 +14,10 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
     :param prefill:
     """
 
-    def __init__(self, parent, tip='', font=None, prefill='', stretch=False, on_edit=None,
+    def __init__(self, parent, tooltip='', font=None, prefill='', stretch=False, on_edit=None,
                  on_finish=None, on_return=None):
         QtWidgets.QLineEdit.__init__(self, parent)
-        if tip:
-            if ctrl.main.use_tooltips:
-                self.setToolTip(tip)
-                self.setToolTipDuration(2000)
+        UIWidget.__init__(self, tooltip=tooltip)
         if font:
             self.setFont(font)
         if prefill:
@@ -48,6 +46,15 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         :return:
         """
         self.original = text
+
+    def renterEvent(self, event):
+        QtWidgets.QLineEdit.enterEvent(self, event)
+        UIWidget.enterEvent(self, event)
+
+    def rleaveEvent(self, event):
+        UIWidget.leaveEvent(self, event)
+        QtWidgets.QLineEdit.leaveEvent(self, event)
+
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters

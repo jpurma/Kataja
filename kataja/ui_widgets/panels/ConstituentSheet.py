@@ -73,7 +73,7 @@ class ConstituentSheet(QtWidgets.QWidget):
         hlayout = box_row(layout)
         data = prefs.get_display_choices('label_text_mode')
         self.label_selector = SelectionBox(parent=self,
-                                           action='toggle_label_text_mode',
+                                           action='select_label_text_mode',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Labeling strategy')
         hlayout.addWidget(self.label_selector)
@@ -85,6 +85,15 @@ class ConstituentSheet(QtWidgets.QWidget):
                                                                      with_label='Projection style')
 
         hlayout.addWidget(self.projection_selector)
+
+        hlayout = box_row(layout)
+        data = prefs.get_display_choices('linearization_mode')
+        self.linearization_mode = SelectionBox(parent=self,
+                                               action='select_linearization_mode',
+                                               data=data).to_layout(hlayout,
+                                                                    with_label='Linearization')
+        hlayout.addWidget(self.linearization_mode)
+
         hlayout = box_row(layout)
         data = prefs.get_display_choices('trace_strategy')
         self.trace_selector = SelectionBox(parent=self,

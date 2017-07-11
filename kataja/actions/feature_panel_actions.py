@@ -124,8 +124,8 @@ class SetFeaturesConnected(KatajaAction):
         return ctrl.ui.active_scope != g.SELECTION
 
 
-class ToggleFeatureDisplayMode(KatajaAction):
-    k_action_uid = 'toggle_feature_display_mode'
+class SelectFeatureDisplayMode(KatajaAction):
+    k_action_uid = 'select_feature_display_mode'
     k_command = 'Change how to display features'
     k_tooltip = 'Switch between ways to arrange features'
     k_shortcut = 'f'

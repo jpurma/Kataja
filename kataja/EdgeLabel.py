@@ -49,7 +49,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
         self.placeholder = placeholder
-        self.selected = False
         w = self.document().idealWidth()
         if w > 200:
             self.setTextWidth(200)
@@ -222,14 +221,14 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         super().mouseReleaseEvent(event)
 
     def click(self, event):
-        if self._host and ctrl.is_selected(self._host):
+        if self._host and self._host.selected:
             ctrl.ui.start_edge_label_editing(self._host)
         else:
             adding = event.modifiers() == Qt.ShiftModifier
             self._host.select(adding=adding, select_area=False)
 
     def select(self, adding=False, select_area=False):
-        if self._host and ctrl.is_selected(self._host):
+        if self._host and self._host.selected:
             ctrl.ui.start_edge_label_editing(self._host)
         else:
             return self._host.select(adding=adding, select_area=select_area)
@@ -262,8 +261,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._size = self.boundingRect().size()
         if value:
             self.placeholder = False
-        if self._host:
-            self._host.update_selection_status(ctrl.is_selected(self._host))
 
     def find_closest_magnet(self, top_left, start_pos):
         spx, spy = start_pos.x(), start_pos.y()
@@ -369,7 +366,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             QPainter.setPen(p)
             QPainter.drawEllipse(self.mapFromScene(end_point), 4, 4)
 
-        if self.selected:
+        if self._host.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())
             p.setWidthF(0.5)
             QPainter.setPen(p)

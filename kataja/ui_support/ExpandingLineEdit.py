@@ -6,7 +6,8 @@ from kataja.utils import open_symbol_data
 
 class ExpandingLineEdit(QtWidgets.QWidget):
 
-    def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
+    def __init__(self, parent, tooltip='', big_font=None, smaller_font=None, prefill='',
+                 on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.line_mode = True
         self.original_text = ''
@@ -29,7 +30,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.setLayout(layout)
         self.line_edit.setMinimumHeight(26)
         self.text_area.setMinimumHeight(40)
-        self.k_tooltip = tip
+        self.k_tooltip = tooltip
         if big_font:
             self.line_edit.setFont(big_font)
         if smaller_font:

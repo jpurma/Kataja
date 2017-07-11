@@ -209,9 +209,13 @@ class ConstituentNode(Node):
             return gs[0]
 
     def has_ordered_children(self):
-        #if self.syntactic_object:
-        #    return getattr(self.syntactic_object, 'is_ordered', False)
-        return True
+        mode = ctrl.settings.get('linearization_mode', level=g.FOREST)
+        if mode == g.NO_LINEARIZATION or mode == g.RANDOM_NO_LINEARIZATION:
+            return False
+        elif mode == g.USE_LINEARIZATION:
+            return getattr(self.syntactic_object, 'is_ordered', False)
+        else:
+            return True
 
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
@@ -221,30 +225,42 @@ class ConstituentNode(Node):
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
+        tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
+        ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
+
         lines = []
         if self.is_trace:
             lines.append("<strong>Trace</strong>")
         elif self.is_leaf():
             lines.append("<strong>Leaf constituent</strong>")
-            lines.append(f"Syntactic label: {self.get_syn_label()}")
+            lines.append(f"Syntactic label: {repr(self.get_syn_label())}")
         else:
             lines.append("<strong>Set constituent</strong>")
-            lines.append(f"Syntactic label: {self.get_syn_label()}")
+            lines.append(f"Syntactic label: {repr(self.get_syn_label())}")
         if self.index:
-            lines.append(f' Index: "{self.index}"')
+            lines.append(f' Index: {repr(self.index)}')
 
-        heads = ', '.join([x.get_syn_label() for x in self.heads])
+        heads = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h
+                 in self.heads]
+        heads = '; '.join(heads)
         if len(self.heads) == 1:
             lines.append(f'head: {heads}')
         elif len(self.heads) > 1:
             lines.append(f'heads: {heads}')
 
-        x, y = self.current_scene_position
-        lines.append(f'pos: ({x:.1f},{y:.1f})')
+        #x, y = self.current_scene_position
+        #lines.append(f'pos: ({x:.1f},{y:.1f})')
 
         if self.use_adjustment:
-            lines.append(f' w. adjustment ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
-        lines.append(f'uid={self.uid}')
+            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+        lines.append(f'uid: {tt_style % self.uid}')
+
+        lines.append('')
+        if self.selected:
+            lines.append(ui_style % 'Click to edit text, drag to move')
+        else:
+            lines.append(ui_style % 'Click to select, drag to move')
+
         self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):
@@ -510,7 +526,7 @@ class ConstituentNode(Node):
         :return: QColor
         """
 
-        if ctrl.is_selected(self):
+        if self.selected:
             base = ctrl.cm.selection()
         elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             base = ctrl.cm.get(self.in_projections[0].color_id)

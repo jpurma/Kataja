@@ -1068,7 +1068,6 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         :param widget:
         :raise:
         """
-        print(self)
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -1170,7 +1169,6 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         :param widget:
         :raise:
         """
-        print(self)
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
