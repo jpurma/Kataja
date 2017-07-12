@@ -38,7 +38,6 @@ from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, prefs, qt_prefs, log
-from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
@@ -153,8 +152,6 @@ class UIManager:
         self.preferences_dialog = None
         self.qe_label = None
         self.drag_info = None
-        self.activity_marker = None
-        self.ui_activity_marker = None
         self.floating_tip = None
 
     def populate_ui_elements(self):
@@ -1207,25 +1204,6 @@ class UIManager:
             if isinstance(item, ControlPoint):
                 self.remove_ui(item)
 
-    # ### Activity marker ##############################################
-
-    def get_activity_marker(self):
-        """
-
-        :return:
-        """
-        if not self.activity_marker:
-            self.activity_marker = ActivityMarker(role=0)
-        return self.activity_marker
-
-    def get_ui_activity_marker(self):
-        """
-
-        :return:
-        """
-        if not self.ui_activity_marker:
-            self.ui_activity_marker = ActivityMarker(role=0)
-        return self.ui_activity_marker
 
     # ### Drag info ###################################################
 
@@ -1244,33 +1222,6 @@ class UIManager:
         if self.drag_info:
             self.remove_ui(self.drag_info)
             self.drag_info = None
-
-    # ### Timer for moving UI items ########################################################
-    # This is currently unused, there are no spontaneously moving UI elements that require this
-    # kind of timer. To reactivate this, this should reside in some QObject. UIManager is plain
-    # python object.
-
-    # def item_moved(self):
-    #     """ Wake up timer if it is not running """
-    #     assert(False)
-    #     if not self._timer_id:
-    #         self._timer_id = self.startTimer(prefs._fps_in_msec)
-    #         #print('ui_support timer id ', self._timer_id)
-    #
-    # def timerEvent(self, event):
-    #     """ Called by Qt on timer tick
-    #     :param event: timer event, could be used to inspect how far it is
-    #     """
-    #     items_have_moved = False
-    #     for item in self.moving_things:
-    #         if item.move_towards_target_position():
-    #             items_have_moved = True
-    #     if items_have_moved:
-    #         self.get_ui_activity_marker().show()
-    #     if not items_have_moved:
-    #         self.get_ui_activity_marker().hide()
-    #         self.killTimer(self._timer_id)
-    #         self._timer_id = 0
 
 
     def show_help(self, item, event):

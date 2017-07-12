@@ -247,7 +247,7 @@ class Tree(Movable):
                 if node.is_visible() and not node.locked_to_node:
                     nbr = node.future_children_bounding_rect()
                     if node.physics_x or node.physics_y:
-                        x, y = node.x(), node.y()
+                        x, y = node.current_position
                     else:
                         x, y = node.target_position
                     x1, y1, x2, y2 = nbr.getCoords()
@@ -299,6 +299,20 @@ class Tree(Movable):
         if self.numeration: # or True:
             br = self.boundingRect()
             painter.drawRect(br)
+
             #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
+            # for node in self.sorted_nodes:
+            #     if node.is_visible() and not node.locked_to_node:
+            #         nbr = node.future_children_bounding_rect()
+            #         if node.physics_x or node.physics_y:
+            #             x, y = node.current_position
+            #         else:
+            #             x, y = node.target_position
+            #         x1, y1, x2, y2 = nbr.getCoords()
+            #         x1 += x
+            #         y1 += y
+            #         x2 += x
+            #         y2 += y
+            #         painter.drawRect(x1, y1, x2 - x1, y2 - y1)
 
     top = SavedField("top")

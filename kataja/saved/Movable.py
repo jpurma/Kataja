@@ -326,6 +326,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             elif diff_y < -6:
                 diff_y = -6
             self.current_position = sx + diff_x, sy + diff_y
+        else:
+            ban_normalization = True
         return diff_x, diff_y, can_normalize, ban_normalization
 
     def distance_to(self, movable):

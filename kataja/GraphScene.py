@@ -59,7 +59,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
         self._timer_id = 0
-        self._timer_min_count = 0
+        self.timer_counter = 0
         self._fade_steps = 0
         self._fade_steps_list = []
         self.manual_zoom = False
@@ -207,7 +207,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             #self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
             #self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            self._timer_min_count = 0
+            self.timer_counter = 0
             ctrl.set_play(True)
 
 
@@ -420,8 +420,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             select = ctrl.ui.get_action('select')
             select.run_command(None, has_params=True)
 
-
-
     def dragEnterEvent(self, event):
         """ Dragging new nodes from UI items or text snippets from desktop/other programs should
         raise hints of where the dragged object can connect.
@@ -600,6 +598,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         and tells them to update their position
         :param event: timer event? sent by Qt
         """
+        t = time.time()
         # Uncomment to check what is the actual framerate:
         # n_time = time.time()
         # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
@@ -616,7 +615,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         f = self.main.forest
         items_moving = 0
-        self._timer_min_count += 1
+        self.timer_counter += 1
 
         if ctrl.pressed:
             return
@@ -655,22 +654,25 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 for node in to_normalize:
                     node.current_position = node.current_position[0] - avg_x, \
                                             node.current_position[1] - avg_y
-        if items_moving or self._timer_min_count < 20:
+        if items_moving or self.timer_counter < 20:
             items_have_moved = True
             for e in f.edges.values():
                 e.make_path()
 
-        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
+        if items_have_moved \
+                and (not self.manual_zoom) \
+                and (not ctrl.dragged_focus) \
+                and self.timer_counter % 20 == 0:
             self.fit_to_window()
         if items_have_moved:
-            #self.main.ui_manager.get_activity_marker().show()
             # for area in f.touch_areas:
             # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
         elif not (items_have_moved or frame_has_moved or background_fade):
+            if (not self.manual_zoom) and (not ctrl.dragged_focus):
+                self.fit_to_window()
             self.stop_animations()
-            self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
             self.keep_updating_visible_area = False
         f.edge_visibility_check()  # only does something if flagged
