@@ -1017,7 +1017,11 @@ class Node(Movable):
 
     def future_children_bounding_rect(self, limit_height=False) -> QtCore.QRectF:
         """ This combines boundingRect with children's boundingRects based on children's
-        target_positions instead of current ones.
+        target_positions instead of their current positions. This is needed because when you are
+        trying to calculate node's effective size, its childItems may still be far away and
+        moving into place -- including these would make the node unreasonably large and mess up
+        attempts to position it in visualisation. Using this you will get the final, intended
+        size of the node.
         You'll want to use this to estimate the actual size of node + childItems when reserving
         room for node in visualisation.
         :param limit_height: return boundingRect that only expands its width to include children,
@@ -1042,6 +1046,18 @@ class Node(Movable):
             return self.update_bounding_rect()
         else:
             return self.inner_rect
+
+    def node_center_position(self):
+        """ Return coordinates for center of node. Nodes, especially with children
+        included, are often offset in such way that we shouldn't use bounding_rect's 0,
+        0 for their center point.
+        :return:
+        """
+        px, py = self.current_position
+        cp = self.future_children_bounding_rect().center()
+        px += cp.x()
+        py += cp.y()
+        return px, py
 
     # #### Locking node to another node (e.g. features to constituent and in triangles)
 

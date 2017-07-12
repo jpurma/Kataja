@@ -78,23 +78,26 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-    def fit_to_window(self, force=False, soft=False):
-        """ Calls up to graph view and makes it to fit all visible items here
-        to view window."""
+    def fit_to_window(self, force=False, zoom_in=True):
+        """ Fit all visible items to view window. Resizing may be skipped if there are
+        :param force: force resize
+        :param zoom_in: do resize when it means that
+
+        """
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
         use_current_positions = len(ctrl.forest.nodes) < 10
         vr = self.visible_rect(current=use_current_positions) + margins
-        if self._cached_visible_rect and not force:
-            if vr != self._cached_visible_rect:
-                if self.keep_updating_visible_area or \
-                        prefs.auto_zoom or \
-                        vr.width() > self._cached_visible_rect.width() or \
-                        vr.height() > self._cached_visible_rect.height():
-                    self.graph_view.instant_fit_to_view(vr)
-                    self._cached_visible_rect = vr
-        else:
+        if force or not self._cached_visible_rect:
+            self.graph_view.instant_fit_to_view(vr)
+            self._cached_visible_rect = vr
+            return
+        if vr == self._cached_visible_rect:
+            return
+        zooming_out = vr.width() > self._cached_visible_rect.width() or \
+                      vr.height() > self._cached_visible_rect.height()
+        if zooming_out or (zoom_in and (self.keep_updating_visible_area or prefs.auto_zoom)):
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 
@@ -603,7 +606,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # n_time = time.time()
         # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
         # self.prev_time = n_time
-        items_have_moved = False
         frame_has_moved = False
         background_fade = False
         ctrl.items_moving = True
@@ -641,7 +643,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     y_sum += diff_y
                 if ban_normalization:
                     allow_normalization = False
-                if abs(diff_x) + abs(diff_y) > 1:
+                if abs(diff_x) + abs(diff_y) > 0.5:
                     node._is_moving = True
                     items_moving += 1
                 else:
@@ -655,21 +657,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     node.current_position = node.current_position[0] - avg_x, \
                                             node.current_position[1] - avg_y
         if items_moving or self.timer_counter < 20:
-            items_have_moved = True
             for e in f.edges.values():
                 e.make_path()
-
-        if items_have_moved \
-                and (not self.manual_zoom) \
-                and (not ctrl.dragged_focus) \
-                and self.timer_counter % 20 == 0:
-            self.fit_to_window()
-        if items_have_moved:
             # for area in f.touch_areas:
             # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
-        elif not (items_have_moved or frame_has_moved or background_fade):
+            if (not self.manual_zoom) \
+                    and (not ctrl.dragged_focus) \
+                    and self.timer_counter % 20 == 0:
+                self.fit_to_window(zoom_in=False)
+        elif not (frame_has_moved or background_fade):
             if (not self.manual_zoom) and (not ctrl.dragged_focus):
                 self.fit_to_window()
             self.stop_animations()

@@ -70,6 +70,85 @@ class SymmetricElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         fbr = node.future_children_bounding_rect()
+        my_w = fbr.width()
+        my_h = fbr.height()
+        node_x, node_y = node.node_center_position()
+
+        connected = set()
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is not node:
+                connected.add(other)
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is not node:
+                connected.add(other)
+
+        # Sum up all forces pushing this item away.
+        for other in other_nodes:
+            if other is node:
+                continue
+            fbr_other = other.future_children_bounding_rect()
+            other_w = fbr_other.width()
+            other_h = fbr_other.height()
+            other_x, other_y = other.node_center_position()
+            dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0:
+                continue
+            if dist_y == 0:
+                minimum_dist = (my_w + other_w) / 2
+            elif dist_x == 0:
+                minimum_dist = (my_h + other_h) / 2
+            else:
+                a = dist_x / dist_y
+                if abs(a * my_w) < my_h:
+                    minimum_dist = my_h
+                else:
+                    minimum_dist = my_w
+                if abs(a * other_w) < other_h:
+                    minimum_dist += other_h
+                else:
+                    minimum_dist += other_w
+                minimum_dist /= 2
+
+            repulsion = dist - minimum_dist
+            if repulsion <= 0:
+                repulsion = abs(repulsion)
+            else:
+                repulsion = 20 / (repulsion * repulsion)
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+
+            xvel += repulsion * x_component
+            yvel += repulsion * y_component
+
+            if other in connected:
+                preferred_dist = minimum_dist + 20
+                pulling_force = dist - preferred_dist
+                if pulling_force > 1:
+                    pulling_force = math.sqrt(math.sqrt(pulling_force))
+
+                # pulling_force = dist * edge_pull * 0.4 #/ total_edges
+                xvel -= x_component * pulling_force
+                yvel -= y_component * pulling_force
+
+        return round(xvel), round(yvel)
+
+    def calculate_movement_old(self, node, other_nodes):
+        """
+
+        :param node:
+        :param other_nodes:
+        :return:
+        """
+        xvel = 0.0
+        yvel = 0.0
+        fbr = node.future_children_bounding_rect()
         node_x, node_y = self.centered_node_position(node, fbr)
         # Sum up all forces pushing this item away.
         for other in other_nodes:
