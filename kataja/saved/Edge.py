@@ -102,6 +102,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         self._computed_start_point = (0, 0)
         self._computed_end_point = (0, 0)
+        self._abstract_start_point = (0, 0)
+        self._abstract_end_point = (0, 0)
 
         self._local_drag_handle_position = None
 
@@ -674,14 +676,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ex, ey = self.end.current_scene_position
         elif self.start:
             ex, ey = self.end_point
-            ex = int(ex)
-            ey = int(ey)
             sx, sy = self.start.current_scene_position
             self._computed_end_point = ex, ey
         elif self.end:
             sx, sy = self.start_point
-            sx = int(sx)
-            sy = int(sy)
             ex, ey = self.end.current_scene_position
             self._computed_start_point = sx, sy
         else:
@@ -692,6 +690,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 self._computed_start_point, self._curve_dir_start = \
                     self.start.special_connection_point(sx, sy, ex, ey, start=True,
                                                         edge_type=self.edge_type)
+                self._abstract_start_point = self._computed_start_point
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = sx, sy
                 if abs(sx - ex) < abs(sy - ey):
@@ -704,15 +703,18 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                         self._curve_dir_start = RIGHT_SIDE
                     else:
                         self._curve_dir_start = LEFT_SIDE
+                self._abstract_start_point = self._computed_start_point
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
                 self._computed_start_point = self.start.bottom_center_magnet(scene_pos=(sx, sy))
                 self._curve_dir_start = BOTTOM_SIDE
+                self._abstract_start_point = self._computed_start_point
             elif connection_style == CONNECT_TO_MAGNETS:
                 e_n, e_count = self.edge_index()
                 if not self.start.has_ordered_children():
                     e_n = e_count - e_n - 1
                 self._computed_start_point = self.start.bottom_magnet(e_n, e_count, scene_pos=(sx, sy))
                 self._curve_dir_start = BOTTOM_SIDE
+                self._abstract_start_point = self._computed_start_point
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of start node to
                 # center of end node / end_point. It is simple, but the point can be in any of four
@@ -721,6 +723,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 dx = ex - sx
                 dy = ey - sy
                 sbr = self.start.boundingRect()
+                self._abstract_start_point = sx, sy
                 s_left, s_top, s_right, s_bottom = (int(x * .8) for x in sbr.getCoords())
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
@@ -776,6 +779,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             if connection_style == SPECIAL:
                 self._computed_end_point, self._curve_dir_end = self.end.special_connection_point(
                     sx, sy, ex, ey, start=False, edge_type=self.edge_type)
+                self._abstract_end_point = self._computed_end_point
             elif connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = ex, ey
                 if abs(sx - ex) < abs(sy - ey):
@@ -788,10 +792,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                         self._curve_dir_end = RIGHT_SIDE
                     else:
                         self._curve_dir_end = LEFT_SIDE
+                self._abstract_end_point = self._computed_end_point
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
                     CONNECT_TO_MAGNETS:
                 self._computed_end_point = self.end.top_center_magnet(scene_pos=(ex, ey))
                 self._curve_dir_end = TOP_SIDE
+                self._abstract_end_point = self._computed_end_point
 
             elif connection_style == CONNECT_TO_BORDER:
                 # Find the point in bounding rect that is on the line from center of end node to
@@ -800,6 +806,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 dx = ex - sx
                 dy = ey - sy
                 ebr = self.end.boundingRect()
+                self._abstract_end_point = ex, ey
                 e_left, e_top, e_right, e_bottom = (int(x * .8) for x in ebr.getCoords())
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
@@ -883,8 +890,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             sx, sy = self.start_point
             ex, ey = self.end_point
             self.k_tooltip = f"""<strong>Constituent relation</strong><br/>
-            from {tt_style % s_uid} (x:{sx}, y:{sy})<br/>
-             to {tt_style % e_uid} (x:{ex}, y:{ey}) <br/> 
+            from {tt_style % s_uid} (x:{int(sx)}, y:{int(sy)})<br/>
+             to {tt_style % e_uid} (x:{int(ex)}, y:{int(ey)}) <br/> 
             uid:{tt_style % self.uid}"""
 
     def description(self):

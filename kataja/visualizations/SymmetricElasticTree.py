@@ -67,6 +67,73 @@ class SymmetricElasticTree(BaseVisualization):
         :param other_nodes:
         :return:
         """
+
+        def similar_edges_up(edge):
+            c = 0
+            for e in edge.end.edges_up:
+                if e is not edge and e.edge_type == edge.edge_type:
+                    c += 1
+            return c
+
+        target_distance = 30
+        inner_repulsion = 0.5
+        outer_repulsion = 0.5
+        pull = 0.5
+
+        # Push nodes away
+        push_x, push_y = BaseVisualization.elliptic_repulsion(node,
+                                                              other_nodes,
+                                                              inner_repulsion,
+                                                              outer_repulsion)
+        #print('node push: ', push_x, push_y)
+
+        # Pull them to preferred distance
+        pull_x = 0
+        pull_y = 0
+        connected = set()
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is not node:
+                connected.add((e._abstract_end_point,
+                               e._abstract_start_point,
+                               target_distance * (similar_edges_up(e) + 1),
+                               e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is not node:
+                connected.add((e._abstract_start_point,
+                               e._abstract_end_point,
+                               target_distance * (similar_edges_up(e) + 1),
+                               e.pull))
+
+        for (sx, sy), (ex, ey), preferred_dist, weight in connected:
+            dist_x, dist_y = int(sx - ex), int(sy - ey)
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0:
+                continue
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+
+            pulling_force = dist - preferred_dist
+            pull_x -= x_component * pulling_force * pull * weight
+            pull_y -= y_component * pulling_force * pull * weight
+
+        #print('node pull: ', pull_x, pull_y)
+
+        return push_x + pull_x, push_y + pull_y #round(xvel), round(yvel)
+
+
+    def calculate_movement_good(self, node, other_nodes):
+        """
+
+        :param node:
+        :param other_nodes:
+        :return:
+        """
         xvel = 0.0
         yvel = 0.0
         fbr = node.future_children_bounding_rect()

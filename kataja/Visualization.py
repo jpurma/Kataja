@@ -211,6 +211,118 @@ class BaseVisualization:
                 x, y = node.current_position
                 node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
+
+    @staticmethod
+    def elliptic_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=.5):
+
+        # Sum up all forces pushing this item away.
+        xvel = 0.0
+        yvel = 0.0
+        fbr = node.future_children_bounding_rect()
+        my_w = fbr.width() / 2
+        my_h = fbr.height() / 2
+        my_w2 = my_w * my_w
+        my_h2 = my_h * my_h
+        my_wh = my_w * my_h
+        node_x, node_y = node.node_center_position()
+        # ( * 16 ) is there so that inner_repulsion and outer_repulsion can be given similar values
+        outer_repulsion *= 16
+
+        for other in other_nodes:
+            if other is node:
+                continue
+            fbr_other = other.future_children_bounding_rect()
+            other_w = fbr_other.width() / 2
+            other_h = fbr_other.height() / 2
+            other_x, other_y = other.node_center_position()
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            if dist_x == 0 and dist_y == 0:
+                xvel += (random.random() * 4) - 2
+                yvel += (random.random() * 4) - 2
+            elif dist_x == 0:
+                force_ratio = (my_h / my_w + other_h / other_w) / 2
+                dist = abs(dist_y)
+                gap = dist - my_h - other_h
+            elif dist_y == 0:
+                force_ratio = 1
+                dist = abs(dist_x)
+                gap = dist - my_w - other_w
+
+            elif dist_x != 0:
+                g = dist_y / dist_x
+                g2 = g * g
+                x1 = my_wh / math.sqrt(my_h2 + g2 * my_w2)
+                y1 = g * x1
+                d1 = math.hypot(x1, y1)
+                force_ratio1 = d1 / my_w
+
+                x2 = (other_w * other_h) / math.sqrt(other_h * other_h + g2 * other_w * other_w)
+                y2 = g * x2
+                d2 = math.hypot(x2, y2)
+                force_ratio2 = d2 / other_w
+                dist = math.hypot(dist_x, dist_y)
+                gap = dist - d2 - d1
+                force_ratio = (force_ratio1 + force_ratio2) / 2
+
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+            if gap < 0:
+                repulsion = min(max(1.0, inner_repulsion * force_ratio * -gap), 5.0)
+                xvel += repulsion * x_component
+                yvel += repulsion * y_component
+            else:
+                repulsion = (force_ratio * outer_repulsion) / gap
+                xvel += repulsion * x_component
+                yvel += repulsion * y_component
+
+        return xvel, yvel
+
+
+    @staticmethod
+    def shape_aware_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=.5):
+
+        # Sum up all forces pushing this item away.
+        xvel = 0.0
+        yvel = 0.0
+        fbr = node.future_children_bounding_rect()
+        my_w = fbr.width()
+        my_h = fbr.height()
+        node_x, node_y = node.node_center_position()
+        # ( * 16 ) is there so that inner_repulsion and outer_repulsion can be given similar values
+        outer_repulsion *= 16
+
+        for other in other_nodes:
+            if other is node:
+                continue
+            fbr_other = other.future_children_bounding_rect()
+            other_w = fbr_other.width()
+            other_h = fbr_other.height()
+            minimum_dx = .5 * (my_w + other_w)
+            minimum_dy = .5 * (my_h + other_h)
+            other_x, other_y = other.node_center_position()
+            dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
+            overlap_y = minimum_dy - abs(dist_y)
+            overlap_x = minimum_dx - abs(dist_x)
+            if dist_x == 0 and dist_y == 0:
+                xvel += (random.random() * 4) - 2
+                yvel += (random.random() * 4) - 2
+            elif overlap_x > 0 and overlap_y > 0:
+                if overlap_x > overlap_y:
+                    xvel += math.copysign(1.0, dist_x) * inner_repulsion * overlap_x
+                else:
+                    yvel += math.copysign(1.0, dist_y) * inner_repulsion * overlap_y
+            else:
+                dist = math.hypot(dist_x - minimum_dx, dist_y - minimum_dy)
+                #a = minimum_dy / minimum_dx
+                a = other_w / other_h
+                repulsion = outer_repulsion / dist
+                x_component = dist_x / dist
+                y_component = dist_y / dist
+                xvel += repulsion * x_component
+                yvel += repulsion * y_component * a
+
+        return xvel, yvel
+
     def calculate_movement(self, node: 'Node', other_nodes: list):
         """
 
@@ -228,27 +340,7 @@ class BaseVisualization:
         cbr_h = cbr.height()
 
         # Sum up all forces pushing this item away.
-        for other in other_nodes:
-            other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            if dist == 0:
-                node_x += 5
-                continue
-            safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() +
-                            cbr_h) / 2
-            safe_zone += 10
-
-            if dist == safe_zone:
-                pushing_force = 0.1
-            elif dist < safe_zone:
-                required_dist = abs(dist - safe_zone)
-                pushing_force = required_dist / (dist * dist * alpha)
-            else:
-                continue
-            x_vel += pushing_force * dist_x
-            y_vel += pushing_force * dist_y
+        x_vel, y_vel = BaseVisualization.elliptic_repulsion(node, other_nodes)
 
         total_edges = 0
         edges = []

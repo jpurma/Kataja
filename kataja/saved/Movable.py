@@ -161,7 +161,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     @current_position.setter
     def current_position(self, value):
-        value = round(value[0]), round(value[1])
+        #value = round(value[0]), round(value[1])
         self._current_position = value
         self.setPos(*value)
 
@@ -171,7 +171,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         xy = self.scenePos()
-        return int(xy.x()), int(xy.y())
+        return xy.x(), xy.y()
 
     def from_scene_position(self, x, y):
         """ Return position in local coordinates given a scene position
@@ -179,9 +179,9 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         if self.parentItem():
             p = self.parentItem().mapFromScene(x, y)
-            return int(p.x()), int(p.y())
+            return p.x(), p.y()
         else:
-            return int(x), int(y)
+            return x, y
 
 
     # ## Movement ##############################################################

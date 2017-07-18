@@ -38,8 +38,9 @@ class MyReceiver(QtCore.QObject):
             self.mysignal.emit(text)
 
 
-def capture_stdout(logger, outputter):
+def capture_stdout(logger, outputter, ctrl):
     logger.write_queue = queue.Queue()
+    ctrl.original_stdout = sys.stdout
     sys.stdout = WriteStream(logger.write_queue)
     logger.watcher_thread = QtCore.QThread()
     logger.my_receiver = MyReceiver(logger.write_queue)
@@ -48,6 +49,9 @@ def capture_stdout(logger, outputter):
     logger.watcher_thread.started.connect(logger.my_receiver.run)
     logger.watcher_thread.start()
 
+def release_stdout(logger, ctrl):
+    logger.watcher_thread.started.disconnect(logger.my_receiver.run)
+    sys.stdout = ctrl.original_stdout
 
 class LogWidgetPusher(logging.Handler):
     """ This receives all logging messages and emits them to available widget (QTextBrowser).

@@ -451,7 +451,9 @@ class Node(Movable):
         elif old_parent:
             self.current_position = self.current_scene_position
             self.setParentItem(None)
-        assert(self.current_scene_position == old_pos)
+        if self.current_scene_position != old_pos:
+            print('graphics parent update caused movement in scene position: ',
+                  self.current_scene_position, old_pos)
 
     def copy_position(self, other):
         """ Helper method for newly created items. Takes other item and copies movement related

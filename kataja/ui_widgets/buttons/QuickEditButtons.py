@@ -48,7 +48,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         #self.right_align_icon = icon('align_right24.png')
         #self.remove_styles_icon = icon('no_format24.png')
 
-        self.italic = QuickEditButton(action='italic_button', parent=self,
+        self.italic = QuickEditButton(action='toggle_italic', parent=self,
                                       tooltip='Italic - \\emph{...} - <i>...</i>)',
                                       pixmap=qt_prefs.italic_icon)
         ui.add_button(self.italic, action='toggle_italic')
@@ -56,7 +56,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.italic)
         layout.addWidget(self.italic)
 
-        self.bold = QuickEditButton(action='bold_button', parent=self,
+        self.bold = QuickEditButton(action='toggle_bold', parent=self,
                                     tooltip='Bold - \\textbf{...} - <b>...</b>)',
                                     pixmap=qt_prefs.bold_icon)
         ui.add_button(self.bold, action='toggle_bold')
@@ -64,7 +64,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.bold)
         layout.addWidget(self.bold)
 
-        self.underline = QuickEditButton(action='underline_button', parent=self,
+        self.underline = QuickEditButton(action='toggle_underline', parent=self,
                                          tooltip='Underline - \\emph{...} - <u>...</u>)',
                                          pixmap=qt_prefs.underline_icon)
         ui.add_button(self.underline, action='toggle_underline')
@@ -72,7 +72,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.underline)
         layout.addWidget(self.underline)
 
-        self.strikethrough = QuickEditButton(action='strikethrough_button', parent=self,
+        self.strikethrough = QuickEditButton(action='toggle_strikethrough', parent=self,
                                              tooltip='Strikethrough',
                                              pixmap=qt_prefs.strikethrough_icon)
         ui.add_button(self.strikethrough, action='toggle_strikethrough')
@@ -80,7 +80,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.strikethrough)
         layout.addWidget(self.strikethrough)
 
-        self.subscript = QuickEditButton(action='subscript_button', parent=self,
+        self.subscript = QuickEditButton(action='toggle_subscript', parent=self,
                                          tooltip='Subscript - \\_{...} - <sub>...</sub>)',
                                          pixmap=qt_prefs.subscript_icon)
         ui.add_button(self.subscript, action='toggle_subscript')
@@ -88,7 +88,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.subscript)
         layout.addWidget(self.subscript)
 
-        self.superscript = QuickEditButton(action='superscript_button', parent=self,
+        self.superscript = QuickEditButton(action='toggle_superscript', parent=self,
                                            tooltip='Superscript - \\_{...} - <sup>...</sup>)',
                                            pixmap=qt_prefs.superscript_icon)
         ui.add_button(self.superscript, action='toggle_superscript')
@@ -96,7 +96,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.superscript)
         layout.addWidget(self.superscript)
 
-        self.no_style = QuickEditButton(action='no_style_button', parent=self,
+        self.no_style = QuickEditButton(action='remove_styles', parent=self,
                                         tooltip='Remove styles',
                                         pixmap=qt_prefs.remove_styles_icon)
         ui.add_button(self.no_style, action='remove_styles')

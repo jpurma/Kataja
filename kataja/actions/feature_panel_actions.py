@@ -162,7 +162,7 @@ class SetFeaturesAsRow(KatajaAction):
         ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW,
                           level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleFeatureDisplayMode.k_shortcut})'
+        return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
@@ -184,7 +184,7 @@ class SetFeaturesAsColumn(KatajaAction):
         ctrl.settings.set('feature_positioning', g.VERTICAL_COLUMN,
                           level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleFeatureDisplayMode.k_shortcut})'
+        return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
@@ -192,6 +192,7 @@ class SetFeaturesAsColumn(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
+
 
 class SetFeaturesAsTwoColumns(KatajaAction):
     k_action_uid = 'set_features_as_2_columns'
@@ -205,7 +206,7 @@ class SetFeaturesAsTwoColumns(KatajaAction):
         ctrl.settings.set('feature_positioning', g.TWO_COLUMNS,
                           level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleFeatureDisplayMode.k_shortcut})'
+        return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
@@ -227,7 +228,7 @@ class SetFeaturesHanging(KatajaAction):
         ctrl.settings.set('feature_positioning', g.FREE_FLOATING,
                           level=ctrl.ui.active_scope)
         ctrl.forest.update_label_shapes()
-        return f'{self.k_command} ({ToggleFeatureDisplayMode.k_shortcut})'
+        return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
         return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \

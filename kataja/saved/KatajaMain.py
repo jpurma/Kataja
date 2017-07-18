@@ -148,7 +148,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest_keepers = []
         self.forest_keeper = None
         ctrl.late_init(self)
-        capture_stdout(log, self.log_stdout_as_debug)
+        #capture_stdout(log, self.log_stdout_as_debug, ctrl)
 
         classes.late_init()
         prefs.import_node_classes(classes)

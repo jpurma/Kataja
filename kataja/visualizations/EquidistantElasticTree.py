@@ -61,7 +61,6 @@ class EquidistantElasticTree(BaseVisualization):
         """
         super().reset_node(node)
 
-
     def calculate_movement(self, node, other_nodes):
         """ Try to keep the edge between start_point and end_point at a certain length. This has 
         the effect that positioning of edge magnets ends up adjusting the form of the graph. 
