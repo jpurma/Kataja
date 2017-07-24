@@ -49,7 +49,6 @@ class DragData:
         self.is_host = is_host
         self.position_before_dragging = node.current_position
         self.adjustment_before_dragging = node.adjustment
-        self.tree_top = node.tree_where_top()
         mx, my = mousedown_scene_pos
         scx, scy = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
@@ -305,12 +304,6 @@ class Node(Movable):
         return False
 
 
-    def synobj_to_node(self):
-        """ Update node's values from its synobj. Subclasses implement this.
-        :return:
-        """
-        pass
-
     def cut(self, others):
         """
         :param others: other items targeted for cutting, to help decide which relations to maintain
@@ -388,73 +381,6 @@ class Node(Movable):
     #     super().fade_in(s=s)
 
 
-    # Tree membership ##########################################################
-    #
-    # Note that tree membership is bidirectional: trees keep a record of nodes that belong to
-    # them and nodes keep record of which trees they belong to. This can easily lead to endless
-    # loops, where removal for one calls for removal from another, or same with addition.
-    # To prevent this: LET 'TREE' OBJECTS DO THE CALLING OF ADD/REMOVE METHODS IN HERE
-
-    def pick_tallest_tree(self):
-        """ A node can belong to many trees, but in some cases only one is needed. Choose taller
-        trees. There is no good reason for why to choose that, but it is necessary to at least
-        to have predictable behaviour for complex cases.
-        :return:
-        """
-        ltrees = list(self.trees)
-        if len(ltrees) == 0:
-            return None
-        elif len(ltrees) == 1:
-            return ltrees[0]
-        max_len = -1
-        bigger = None
-        for tree in ltrees:
-            l = len(tree.sorted_constituents) + len(tree.sorted_nodes)
-            if l > max_len:
-                bigger = tree
-        return bigger
-
-    def tree_where_top(self):
-        """ Returns a trees where this node is the topmost node. Cannot be topping more than one
-        trees!  (They would be identical trees otherwise.)
-        :return: None if not top, Tree if found
-        """
-        for tree in self.trees:
-            if self is tree.top:
-                return tree
-
-    def shares_tree_with_node(self, other):
-        """ Checks if this node has one or more same trees with other node
-        :param other: node
-        :return:
-        """
-        if other.trees is None or self.trees is None:
-            return False
-        return bool(self.trees & other.tree)
-
-    def update_graphics_parent(self):
-        """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate
-        system switches to that of parent (or scene, if parent is None). If this happens, compute
-         new position according to new parent so that there is no visible jump.
-        :return:
-        """
-        old_pos = self.current_scene_position
-        old_parent = self.parentItem()
-        if isinstance(old_parent, Node):
-            return  # This is locked to some other node and should keep it as parent
-        new_parent = self.pick_tallest_tree()
-        if new_parent:
-            if old_parent is not new_parent:
-                scene_position = self.current_scene_position
-                self.setParentItem(new_parent)
-                self.current_position = self.scene_position_to_tree_position(scene_position)
-        elif old_parent:
-            self.current_position = self.current_scene_position
-            self.setParentItem(None)
-        if self.current_scene_position != old_pos:
-            print('graphics parent update caused movement in scene position: ',
-                  self.current_scene_position, old_pos)
-
     def copy_position(self, other):
         """ Helper method for newly created items. Takes other item and copies movement related
         attributes from it (physics settings, locks, adjustment etc).
@@ -482,20 +408,6 @@ class Node(Movable):
         self.adjustment = other.adjustment
         self.physics_x = other.physics_x
         self.physics_y = other.physics_y
-
-    def scene_position_to_tree_position(self, scene_pos):
-        """ Return scene position converted to coordinate system used by this node trees. Works for
-         xy  -tuples.
-
-        :param scene_pos:
-        :return:
-        """
-        parent = self.parentItem()
-        if not parent:
-            return x, y
-        nsp = parent.mapFromScene(*scene_pos)
-        return nsp.x(), nsp.y()
-
 
     # ### Children and parents
     # ####################################################
@@ -603,23 +515,6 @@ class Node(Movable):
         """
         return not self.get_parents(similar=only_similar, visible=only_visible)
 
-    def get_top_node(self, return_set=False):
-        """ Getting the top node is easiest by looking from the stored trees. Don't use this if
-        this is about fixing trees!
-        :param return_set: Return result as a set which may contain more than 1 roots.  """
-        s = set()
-
-        for tree in ctrl.forest:
-            if self in tree:
-                if return_set:
-                    s.add(tree.top)
-                else:
-                    return tree.top
-        if return_set:
-            return s
-        else:
-            return None
-
     def get_edge_to(self, other, edge_type='') -> QtWidgets.QGraphicsItem:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
@@ -718,6 +613,44 @@ class Node(Movable):
                 return other not in self.get_children(similar=False, visible=False)
             return True
         return False
+
+    def get_sorted_nodes(self):
+        """ Recursively get children nodes, their children etc. sorted.
+        :return:
+        """
+        sorted_nodes = []
+        used = set()
+
+        def add_children(node):
+            if node not in used:
+                used.add(node)
+                sorted_nodes.append(node)
+                for child in node.get_children(similar=False, visible=False):
+                    add_children(child)
+
+        add_children(self)
+        return sorted_nodes
+
+    def get_highest(self):
+        """ Recursively get highest grandparents/parents that can be found. Because
+        multidomination, there can be more than one result, so this returns a list.
+        :return:
+        """
+        tops = []
+        used = set()
+
+        def go_up(node):
+            if node not in used:
+                used.add(node)
+                parents = node.get_parents(similar=False, visible=False)
+                if parents:
+                    for parent in parents:
+                        go_up(parent)
+                else:
+                    tops.append(node)
+
+        go_up(self)
+        return tops
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
@@ -921,14 +854,15 @@ class Node(Movable):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
         #painter.drawRect(-2, -2, 4, 4)
-        if False and not self.static:
+        if False : #False and not self.static:
             painter.setBrush(ctrl.cm.get('accent4tr'))
             b = QtCore.QRectF(self.future_children_bounding_rect())
-            if b.width() < b.height():
-                b.setWidth(b.height())
-            elif b.height() < b.width():
-                b.setHeight(b.width())
+            #if b.width() < b.height():
+            #    b.setWidth(b.height())
+            #elif b.height() < b.width():
+            #    b.setHeight(b.width())
             painter.drawEllipse(b)
+
         #painter.drawRect(self.inner_rect)
 
 
@@ -1016,6 +950,14 @@ class Node(Movable):
         self.user_size = (width, height)
         if self.label_object:
             self.label_object.resize_label()
+
+    def future_scene_bounding_rect(self):
+        r = self.future_children_bounding_rect()
+        p = self.parentItem()
+        if p:
+            return p.mapToScene(r)
+        else:
+            return self.mapToScene(r)
 
     def future_children_bounding_rect(self, limit_height=False) -> QtCore.QRectF:
         """ This combines boundingRect with children's boundingRects based on children's
@@ -1378,37 +1320,20 @@ class Node(Movable):
 
     def start_dragging(self, scene_pos):
         """ Figure out which nodes belong to the dragged set of nodes.
-        It may be that a whole trees is dragged. If this is the case, drag_to commands that
-        target top nodes are directed to trees instead. Node doesn't change its position in trees
-         if the whole trees moves.
-
         :param scene_pos:
         """
-        def in_any_tree(item, treeset):
-            for tree in treeset:
-                if item in tree:
-                    return True
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         ctrl.dragged_groups = set()
         multidrag = False
-        dragged_trees = set()
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
         if self.selected:
             selected_nodes = [x for x in ctrl.selected if isinstance(x, Node)]
-            # find trees tops in selection
-            for item in selected_nodes:
-                if hasattr(item, 'tree_where_top'):
-                    tree = item.tree_where_top()
-                    if tree:
-                        dragged_trees.add(tree)
             # include those nodes in selection and their children that are not part of wholly
             # dragged trees
             for item in selected_nodes:
                 if item.drag_data:
-                    continue
-                if in_any_tree(item, dragged_trees):
                     continue
                 elif getattr(item, 'draggable', True):
                     item.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
@@ -1416,16 +1341,10 @@ class Node(Movable):
                     multidrag = True
         # no selection -- drag what is under the pointer
         else:
-            tree = self.tree_where_top()
-            if tree:
-                dragged_trees.add(tree)
-            else:
-                self.prepare_children_for_dragging(scene_pos)
+            self.prepare_children_for_dragging(scene_pos)
             self.prepare_dragging_participiant(host=True, scene_pos=scene_pos)
 
         moving = ctrl.dragged_set
-        for tree in dragged_trees:
-            moving = moving.union(tree.sorted_nodes)
         ctrl.ui.prepare_touch_areas_for_dragging(moving=moving, multidrag=multidrag)
         ctrl.ui.create_drag_info(self)
         self.start_moving()
@@ -1451,9 +1370,6 @@ class Node(Movable):
         self.drag_data = True
         self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
 
-        tree = self.tree_where_top()
-        if tree:
-            tree.prepare_dragging_participiant(host=host, scene_pos=scene_pos)
         parent = self.parentItem()
         if parent:
             parent.setZValue(500)
@@ -1480,17 +1396,8 @@ class Node(Movable):
         # Their positions are relative to this focus, compute how much.
         for node in ctrl.dragged_set:
             d = node.drag_data
-
-            # Tree heads are a special case
-            if d.tree_top:
-                dx, dy = d.tree_top.drag_data.distance_from_pointer
-                d.tree_top.dragged_to((nx + dx, ny + dy))
-                for edge in ctrl.forest.edges.values():
-                    edge.make_path()
-                    edge.update()
-            else:
-                dx, dy = d.distance_from_pointer
-                node.dragged_to((int(nx + dx), int(ny + dy)))
+            dx, dy = d.distance_from_pointer
+            node.dragged_to((int(nx + dx), int(ny + dy)))
         ctrl.ui.show_drag_adjustment()
         for group in ctrl.dragged_groups:
             group.update_shape()
@@ -1713,8 +1620,6 @@ class Node(Movable):
 
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
-            for tree in self.trees:
-                tree.tree_changed = True
             ctrl.ui.update_position_for(self)
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 

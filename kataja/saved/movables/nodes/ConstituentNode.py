@@ -217,6 +217,20 @@ class ConstituentNode(Node):
         else:
             return True
 
+    def get_sorted_constituents(self):
+        sorted_constituents = []
+        used = set()
+
+        def add_children(node):
+            if node not in used:
+                if node.node_type == g.CONSTITUENT_NODE:
+                    used.add(node)
+                    sorted_constituents.append(node)
+                    for child in node.get_children(similar=False, visible=False):
+                        add_children(child)
+        add_children(self)
+        return sorted_constituents
+
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
 
@@ -490,37 +504,6 @@ class ConstituentNode(Node):
         else:
             raise ValueError
 
-    def synobj_to_node(self):
-        """ Update node's values from its synobj. Subclasses implement this.
-        :return:
-        """
-        self.synheads_to_heads()
-
-    def synheads_to_heads(self):
-        """ Make sure that node's heads reflect synobjs heads.
-        :return:
-        """
-        self.heads = []
-        if self.syntactic_object:
-            synlabel = self.syntactic_object.label
-            parts = self.syntactic_object.parts
-            if len(parts) == 0:
-                self.heads = [self]
-            if len(parts) == 1:
-                if parts[0].label == synlabel:
-                    self.heads = [ctrl.forest.get_node(parts[0])]
-                else:
-                    self.heads = [self]
-            elif len(parts) == 2:
-                if parts[0].label == synlabel:
-                    self.heads = [ctrl.forest.get_node(parts[0])]
-                elif parts[1].label == synlabel:
-                    self.heads = [ctrl.forest.get_node(parts[1])]
-                elif synlabel == f"({parts[0].label}, {parts[1].label})":
-                    self.heads = [ctrl.forest.get_node(parts[0]), ctrl.forest.get_node(parts[1])]
-                elif synlabel == f"({parts[1].label}, {parts[0].label})":
-                    self.heads = [ctrl.forest.get_node(parts[1]), ctrl.forest.get_node(parts[0])]
-
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state
         :return: QColor
@@ -700,24 +683,27 @@ class ConstituentNode(Node):
         """
         :return:
         """
-        top = self.get_top_node()
-        return self is not top and self not in top.get_children(similar=True, visible=False)
+        return bool(self.get_parents())
 
     # ### Dragging #####################################################################
 
     # ## Most of this is implemented in Node
 
     def prepare_children_for_dragging(self, scene_pos):
-        """ Implement this if structure is supposed to drag with the node
+        """ Drag those nodes that are children of the current node, but don't include them into
+        drag them if they are (also) raised above it.
         :return:
         """
-        children = ctrl.forest.list_nodes_once(self)
+        nodes_above = set()
+        for top_node in self.get_highest():
+            for node in top_node.get_sorted_nodes():
+                if node is self:
+                    break
+                nodes_above.add(node)
 
-        for tree in self.trees:
-            dragged_index = tree.sorted_constituents.index(self)
-            for i, node in enumerate(tree.sorted_constituents):
-                if node is not self and i > dragged_index and node in children:
-                    node.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
+        for child in self.get_sorted_nodes():
+            if child not in nodes_above:
+                child.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
 
     #################################
 

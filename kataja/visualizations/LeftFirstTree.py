@@ -157,7 +157,7 @@ class LeftFirstTree(BaseVisualization):
         new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Draws the trees to a table or a grid, much like latex qtree and
         then scales the grid to the scene. """
         edge_height = prefs.edge_height
@@ -165,8 +165,8 @@ class LeftFirstTree(BaseVisualization):
         merged_grid = Grid()
         self._indentation = 0
         self._shuffle = ctrl.settings.get('linearization_mode') == g.RANDOM_NO_LINEARIZATION
-        if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
-            self._put_to_grid(merged_grid, tree.top, 0, 0)
+        if tree_top and tree_top.node_type == g.CONSTITUENT_NODE:
+            self._put_to_grid(merged_grid, tree_top, 0, 0)
         offset_x = 0  # tree_w/-2
         y = 0
         # Actual drawing: set nodes to their places in scene

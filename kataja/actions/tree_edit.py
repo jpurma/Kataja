@@ -77,12 +77,8 @@ class CreateNewNodeFromText(KatajaAction):
             # fixme: finish this!
         elif node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
-            #if node:
-            #    ctrl.forest.tree_manager.create_tree_for(node)
         else:
             node = ctrl.free_drawing.create_node(pos=focus_point, node_type=node_type, label=text)
-            #if node and node_type == g.CONSTITUENT_NODE:
-            #    ctrl.forest.tree_manager.create_tree_for(node)
         if node:
             node.lock()
         ctrl.ui.close_active_embed()
@@ -328,8 +324,10 @@ class MergeToTop(KatajaAction):
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
-        ctrl.free_drawing.merge_to_top(node.get_top_node(), node, merge_to_left=left)
-        ctrl.forest.forest_edited()
+        tops = node.get_highest()
+        if len(tops) == 1:
+            ctrl.free_drawing.merge_to_top(tops[0], node, merge_to_left=left)
+            ctrl.forest.forest_edited()
 
 
 # Floating buttons ##################################

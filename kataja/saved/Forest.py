@@ -33,13 +33,11 @@ from kataja.FreeDrawing import FreeDrawing
 from kataja.ProjectionManager import ProjectionManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.TreeManager import TreeManager
 from kataja.UndoManager import UndoManager
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
-from kataja.saved.movables.Tree import Tree
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.singletons import ctrl, classes
@@ -78,7 +76,6 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.tree_manager = TreeManager(self)
         self.free_drawing = FreeDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
@@ -114,8 +111,6 @@ class Forest(SavedObject):
             for node in self.nodes.values():
                 if node.syntactic_object:
                     self.nodes_from_synobs[node.syntactic_object.uid] = node
-            for tree in self.trees:
-                tree.update_items()
         if 'vis_data' in updated_fields:
             self.restore_visualization()
 
@@ -185,7 +180,6 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.tree_manager = TreeManager(self)
         self.free_drawing = FreeDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
@@ -205,11 +199,29 @@ class Forest(SavedObject):
         :return:
         """
         self.chain_manager.update()
-        self.tree_manager.update_trees()
+
+        # Update list of trees
+        new_tops = []
+        for top in self.trees:
+            if top.is_top_node(only_similar=True, only_visible=True):
+                if top not in new_tops:
+                    new_tops.append(top)
+            else:
+                for nt in top.get_highest():
+                    if nt not in new_tops:
+                        new_tops.append(nt)
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE and \
+                    node.is_top_node(only_similar=True, only_visible=True) and \
+                    node not in new_tops:
+                new_tops.append(node)
+
+        self.trees = new_tops
+
         self.projection_manager.update_projections()
         if ctrl.free_drawing_mode:
             #print('doing nodes to synobjs in forest_edited')
-            self.syntax.nodes_to_synobjs(self, [x.top for x in self.trees])
+            self.syntax.nodes_to_synobjs(self, self.trees)
 
 
     @staticmethod
@@ -288,16 +300,6 @@ class Forest(SavedObject):
         return head, traces
 
 
-    def get_numeration(self):
-        for tree in self.trees:
-            if tree.numeration:
-                return tree
-        tree = Tree(numeration=True)
-        self.add_to_scene(tree)
-        self.trees.append(tree)
-        #tree.show()
-        return tree
-
     def set_visualization(self, name):
         """ Switches the active visualization to visualization with given key
         :param name: string
@@ -338,7 +340,7 @@ class Forest(SavedObject):
     def __iter__(self):
         return self.trees.__iter__()
 
-    def textual_form(self, tree=None, node=None):
+    def textual_form(self, tree_top=None, node=None):
         """ return (unicode) version of linearizations of all trees with
         traces removed --
             as close to original sentences as possible. If trees or node is given,
@@ -347,23 +349,23 @@ class Forest(SavedObject):
         :param node: Node instance
         """
 
-        def _tree_as_text(tree, node, gap):
+        def _tree_as_text(tree_top, node, gap):
             """ Cheapo linearization algorithm for Node structures."""
-            l = []
-            if node in tree.sorted_constituents:
-                i = tree.sorted_constituents.index(node)
-                for n in tree.sorted_constituents[i:]:
-                    l.append(str(n.syntactic_object))
+            sorted_cons = tree_top.get_sorted_constituents()
+            if node not in sorted_cons:
+                return ''
+            i = sorted_cons.index(node)
+            l = [str(n.syntactic_object) for n in sorted_cons[i:]]
             return gap.join(l)
 
-        if tree:
-            return _tree_as_text(tree, tree.top, ' ')
+        if tree_top:
+            return _tree_as_text(tree_top, tree_top, ' ')
         elif node:
-            return _tree_as_text(node.tree[0], node, ' ')
+            return _tree_as_text(node.get_highest(), node, ' ')
         else:
             trees = []
-            for tree in self.trees:
-                new_line = _tree_as_text(tree, tree.top, ' ')
+            for tree_top in self.trees:
+                new_line = _tree_as_text(tree_top, tree_top, ' ')
                 if new_line:
                     trees.append(new_line)
             return '/ '.join(trees)
@@ -373,9 +375,9 @@ class Forest(SavedObject):
         :return:
         """
         s = []
-        for tree in self.trees:
-            if tree.top and tree.top.is_constituent:
-                s.append(tree.top.syntactic_object.print_tree())
+        for tree_top in self.trees:
+            if tree_top.is_constituent:
+                s.append(tree_top.syntactic_object.print_tree())
         return '\n'.join(s)
 
     # Scene and storage ---------------------------------------------------------------
@@ -556,29 +558,13 @@ class Forest(SavedObject):
         assert self.is_parsed
         sc = ctrl.graph_scene
         sc.stop_animations()
-        #self.tree_manager.update_trees()
-        #for tree in self.trees:
-        #    if tree.top:
-        #        tree.top.update_visibility()  # fixme, delete trees with no visible tops
         #self.projection_manager.update_projections()
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
-            x = 0
-            first = True
-            for tree in self.trees:
-                if tree.top:
-                    #self.visualization.prepare_to_normalise(tree)
-                    self.visualization.draw_tree(tree)
-                    self.visualization.normalise_to_origo(tree)
-                    #self.visualization.normalise_movers_to_top(tree)
-                    br = tree.boundingRect()
-                    if not first:
-                        x -= br.left()
-                    tree.move_to(x, 0)
-                    x += br.right()
-                    tree.start_moving()
-                    first = False
+            for tree_top in self.trees:
+                self.visualization.draw_tree(tree_top)
+                self.visualization.normalise_to_origo(tree_top)
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
         self.chain_manager.after_draw_update()
@@ -656,7 +642,7 @@ class Forest(SavedObject):
             if strat == 'linearisation':
                 gts = []
                 for tree in self.trees:
-                    gt = ctrl.syntax.linearize(tree.top)
+                    gt = ctrl.syntax.linearize(tree_top)
                     if gt:
                         gts.append(gt)
                 self.gloss_text = ' '.join(gts)
@@ -707,9 +693,9 @@ class Forest(SavedObject):
         trace_dict = {}
         sorted_parents = []
         required_keys = set()
-        for tree in self:
+        for tree_top in self:
             sortable_parents = []
-            ltree = tree.sorted_nodes
+            ltree = tree_top.get_sorted_nodes()
             for node in ltree:
                 if not hasattr(node, 'index'):
                     continue
@@ -783,8 +769,8 @@ class Forest(SavedObject):
             return w
 
         self.width_map = {}
-        for tree in self:
-            recursive_width(tree.top)
+        for tree_top in self:
+            recursive_width(tree_top)
         return self.width_map
 
     # ### Minor updates for forest elements

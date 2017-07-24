@@ -116,6 +116,75 @@ class AsymmetricElasticTree(BaseVisualization):
         BaseVisualization.__init__(self)
         self.forest = None
 
+    def calculate_movement_foo(self, node, other_nodes):
+        """ The idea here is that each node has their preferred position below their parent node.
+        The strings that pull are computed to pull towards that position instead of pulling nodes
+        over each other.
+
+             N
+                      C
+           X <-- try to move child node C here instead of towards N
+
+        :param node:
+        :param other_nodes:
+        :return:
+        """
+        xvel = 0.0
+        yvel = 0.0
+        node_cbr = node.future_children_bounding_rect()
+        node_x, node_y = self.centered_node_position(node, node_cbr)
+
+        inner_repulsion = 0.5
+        outer_repulsion = 1
+
+        # Push nodes away
+        push_x, push_y = BaseVisualization.elliptic_repulsion(node,
+                                                              other_nodes,
+                                                              inner_repulsion,
+                                                              outer_repulsion)
+        xvel += push_x
+        yvel += push_y
+
+        # Now subtract all forces pulling items together.
+        for edge in node.edges_down:
+            if not edge.is_visible():
+                continue
+            elif edge.end.locked_to_node: #is node:
+                continue
+            edge_n, edge_count = edge.edge_index()
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
+            start_y += prefs.edge_height
+            end_x, end_y = edge.end_point  # @UnusedVariable
+            d_x = start_x - end_x
+            d_y = start_y - end_y
+            xvel -= d_x * edge.pull * 0.4
+            yvel -= d_y * edge.pull * 0.4
+
+        for i, edge in enumerate(node.edges_up):
+            if not edge.is_visible():
+                continue
+            elif node.locked_to_node: # is edge.end:
+                continue
+            edge_n, edge_count = edge.edge_index()
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
+            start_y += prefs.edge_height
+            end_x, end_y = edge.end_point  # @UnusedVariable
+            d_x = end_x - start_x
+            d_y = end_y - start_y
+            xvel -= d_x * edge.pull * 0.4
+            yvel -= d_y * edge.pull * 0.4
+
+        # pull roots to center (0, 0)
+        if not node.edges_up:
+            xvel += node_x * -0.02
+            yvel += node_y * -0.02
+
+        return xvel, yvel
+
+
+
     def calculate_movement(self, node, other_nodes):
         """ The idea here is that each node has their preferred position below their parent node. 
         The strings that pull are computed to pull towards that position instead of pulling nodes 
@@ -185,16 +254,8 @@ class AsymmetricElasticTree(BaseVisualization):
         if not node.edges_up:
             xvel += node_x * -0.02
             yvel += node_y * -0.02
+        return xvel, yvel
 
-        return round(xvel), round(yvel)
-
-
-
-    def calculate_tree_movement(self):
-        """ Make trees to maintain some distance from each other
-        :return:
-        """
-        pass
 
     def reset_node(self, node):
         """

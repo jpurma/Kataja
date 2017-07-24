@@ -90,7 +90,7 @@ class BracketedLinearization(BaseVisualization):
         self.forest.prepare_width_map()
         self.set_data('rotation', new_rotation)
 
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Bracket manager's width map tells the required widths and labels know already how to
         draw themselves """
 
@@ -116,7 +116,7 @@ class BracketedLinearization(BaseVisualization):
             return left_edge
 
         start = 0
-        if tree.top.node_type == g.CONSTITUENT_NODE:
-            start = draw_node(tree.top, left_edge=start)  # used=set(),
+        if tree_top.node_type == g.CONSTITUENT_NODE:
+            start = draw_node(tree_top, left_edge=start)  # used=set(),
             start += prefs.edge_width
 

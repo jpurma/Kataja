@@ -102,6 +102,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._cached_visible_rect = vr
 
     @staticmethod
+    @time_me
     def visible_rect(min_w=200, min_h=100, current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
@@ -124,14 +125,21 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #     empty = False
 
         # , ctrl.forest.groups.values())
-        for tree in ctrl.forest.trees:
-            if not tree:
+        for node in ctrl.forest.nodes.values():
+            if not node:
+                continue
+            if node.parentItem():
                 continue
             empty = False
             if current:
-                minx, miny, maxx, maxy = (int(x) for x in tree.current_scene_bounding_rect().getCoords())
+                minx, miny, maxx, maxy = (int(x) for x in node.sceneBoundingRect().getCoords())
             else:
-                minx, miny, maxx, maxy = (int(x) for x in tree.sceneBoundingRect().getCoords())
+                r = node.future_children_bounding_rect()
+                scx, scy = node.target_position
+                minx = r.left() + scx
+                miny = r.top() + scy
+                maxx = r.right() + scx
+                maxy = r.bottom() + scy
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:
@@ -621,16 +629,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        for tree in f.trees:
-            if not tree.isVisible():
+        for tree_top in f.trees:
+            if not tree_top.isVisible():
                 continue
+            sorted_nodes = tree_top.get_sorted_nodes()
             to_normalize = []
             x_sum = 0
             y_sum = 0
             allow_normalization = True
-            other_nodes = [x for x in tree.sorted_nodes if not x.locked_to_node]
+            other_nodes = [x for x in sorted_nodes if not x.locked_to_node]
 
-            for node in tree.sorted_nodes:
+            for node in sorted_nodes:
                 if not node.isVisible():
                     continue
                 # Computed movement

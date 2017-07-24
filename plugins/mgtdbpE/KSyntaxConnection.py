@@ -81,30 +81,23 @@ class KSyntaxConnection(SyntaxConnection):
             self.syntax_display_mode = 0
         return self.display_modes[self.syntax_display_mode]
 
-    def transform_trees_for_display(self, synobjs):
-        if self.syntax_display_mode == DERIVATION_TREE:
-            # Just derivation trees
-            return synobjs
-        elif self.syntax_display_mode == STATE_TREE:
+    def transform_trees_for_display(self, syn_state):
+        new_class = None
+        if self.syntax_display_mode == STATE_TREE:
             # StateTree(dt)
-            res = []
-            for synobj in synobjs:
-                const = StateTree(synobj).to_constituent()
-                res.append(const)
-            return res
+            new_class = StateTree
         elif self.syntax_display_mode == BARE_TREE:
             # BareTree(dt)
-            res = []
-            for synobj in synobjs:
-                const = BareTree(synobj).to_constituent()
-                res.append(const)
-            return res
+            new_class = BareTree
         elif self.syntax_display_mode == XBAR_TREE:
             # XBarTree(dt)
+            new_class = TracelessXBarTree
+        if new_class:
             res = []
-            for synobj in synobjs:
-                const = TracelessXBarTree(synobj).to_constituent()
-                res.append(const)
+            for synobj in syn_state:
+                if synobj.class_name == 'Constituent':
+                    synobj = new_class(synobj).to_constituent()
+                res.append(synobj)
             return res
         else:
-            return synobjs
+            return syn_state

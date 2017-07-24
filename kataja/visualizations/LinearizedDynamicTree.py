@@ -45,7 +45,8 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """
         self.forest = forest
         if reset:
-            max_height_steps = max([len(tree.sorted_nodes) / 2 for tree in self.forest])
+            max_height_steps = max([len(tree_top.get_sorted_nodes()) / 2 for tree_top in
+                                        self.forest])
             self.set_data('max_height_steps', max_height_steps)
             self.set_data('height_steps', max_height_steps / 2)
             self.reset_nodes()
@@ -77,20 +78,19 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         self.set_data('height_steps', hs)
         log.info('Set height: %s' % hs)
 
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """
 
 
         """
 
-        top = tree.top
-        if top.node_type != CONSTITUENT_NODE:
+        if tree_top.node_type != CONSTITUENT_NODE:
             return
         # linearized = ctrl.FL.Linearize(root.syntactic_object)
         nodelist = []
-        top.physics_x = True
-        top.physics_y = True
-        for node in tree.sorted_nodes[1:]:
+        tree_top.physics_x = True
+        tree_top.physics_y = True
+        for node in tree_top.get_sorted_nodes()[1:]:
             if node.is_leaf() and node.node_type == CONSTITUENT_NODE:
                 if node and not node.locked_to_node:
                     node.physics_x = False

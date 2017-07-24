@@ -48,14 +48,13 @@ class KatajaFactory:
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
         from kataja.saved.KatajaDocument import KatajaDocument
-        from kataja.saved.movables.Tree import Tree
         from syntax.SyntaxConnection import SyntaxConnection
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import BaseConstituent
 
         self.default_models = {ConstituentNode, FeatureNode,
                                GlossNode, CommentNode, Edge, Forest, DerivationStep,
-                               DerivationStepManager, BaseConstituent, BaseFeature, Tree,
+                               DerivationStepManager, BaseConstituent, BaseFeature,
                                Group, KatajaDocument, SyntaxConnection}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,

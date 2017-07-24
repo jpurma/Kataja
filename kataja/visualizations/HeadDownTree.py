@@ -102,7 +102,7 @@ class HeadDownTree(BaseVisualization):
         self.set_data('rotation', new_rotation)
 
     # @time_me
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree.
 
         Grid L + Grid R -> rightmost free of L, leftmost node of R,  sum     max of sums=4 + padding=1 = 5
@@ -229,7 +229,7 @@ class HeadDownTree(BaseVisualization):
             #    grid.fill_path(path)
             return grid
 
-        merged_grid = _build_grid(node=tree.top)
+        merged_grid = _build_grid(node=tree_top)
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height

@@ -33,9 +33,9 @@ from kataja.singletons import ctrl
 from kataja.utils import time_me
 
 
-#@time_me
-def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, gloss=None,
-                     transferred=None, mover=None):
+@time_me
+def syntactic_state_to_nodes(forest, syntactic_state, msg):
+    #, numeration=None, other=None, msg=None, gloss=None,  transferred=None, mover=None):
     """ This is a big important function to ensure that Nodes on display are only those that
     are present in syntactic objects. Clean up the residue, create those nodes that are
     missing and create the edges.
@@ -372,7 +372,6 @@ def synobjs_to_nodes(forest, synobjs, numeration=None, other=None, msg=None, glo
         forest.gloss_text = msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
-    forest.tree_manager.update_trees()
     #ctrl.graph_scene.fit_to_window(force=True)
 
 

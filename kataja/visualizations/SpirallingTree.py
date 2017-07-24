@@ -177,7 +177,7 @@ class SpirallingTree(BaseVisualization):
         new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
-    def draw_tree(self, tree, sides=0):
+    def draw_tree(self, tree_top, sides=0):
         """
 
         :return:
@@ -226,15 +226,15 @@ class SpirallingTree(BaseVisualization):
                 return someone_must_expand(layer.parent, sides)
             else:
                 sides += 1
-                self.draw_tree(tree, sides=sides)
+                self.draw_tree(tree_top, sides=sides)
 
-        for node in tree.sorted_nodes:
+        for node in tree_top.get_sorted_nodes():
             my_sides = len([x for x in node.get_children(visible=True, similar=True) if
                             not x.locked_to_node]) + 1
             if my_sides > sides:
                 sides = my_sides
 
-        my_layer = Layer(tree.top, parent=None, vis=self)
+        my_layer = Layer(tree_top, parent=None, vis=self)
         success = my_layer.try_to_draw(0, 1)
         while not success:
             self.start_x += 100

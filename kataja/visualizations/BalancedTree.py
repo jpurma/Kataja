@@ -74,7 +74,7 @@ class BalancedTree(BaseVisualization):
         self.set_data('rotation', new_rotation)
 
     # @time_me
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
         linearisation of leaves."""
 
@@ -105,5 +105,5 @@ class BalancedTree(BaseVisualization):
                 node.move_to(new_x, y)
                 return x, y + my_rect.top(), largest_x
 
-        recursive_position(tree.top, 0, 0, 0)
+        recursive_position(tree_top, 0, 0, 0)
 

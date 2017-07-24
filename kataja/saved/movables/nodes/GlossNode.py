@@ -113,20 +113,15 @@ class GlossNode(Node):
         y = 100
         found = False
         my_tree = None
-        for tree in ctrl.forest.trees:
-            if tree.top is self:
-                my_tree = tree
-            elif tree.numeration:
-                continue
-            else:
-                found = True
-                br = tree.boundingRect()
-                ty = br.y() + tree.y() - prefs.edge_height
-                tx = br.center().x() + tree.x()
-                if tx > x:
-                    x = tx
-                if ty < y:
-                    y = ty
+        for tree_top in ctrl.forest.trees:
+            found = True
+            br = tree_top.boundingRect()
+            ty = br.y() + tree_top.y() - prefs.edge_height
+            tx = br.center().x() + tree_top.x()
+            if tx > x:
+                x = tx
+            if ty < y:
+                y = ty
         if not found:
             x = 0
             y = 0

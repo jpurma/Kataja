@@ -28,9 +28,9 @@ from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
 
-# Use these to debug
-disable_loading_preferences = True
-disable_saving_preferences = False
+# Disable these if necessary for debugging
+enable_loading_preferences = True
+enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
           'InOutCubic', 'OutInCubic', 'InQuart', 'OutQuart', 'InOutQuart', 'OutInQuart', 'InQuint',
@@ -426,7 +426,7 @@ class Preferences(object):
             else:
                 return value
 
-        if disable_saving_preferences:
+        if not enable_saving_preferences:
             return
 
         settings = QtCore.QSettings()
@@ -474,7 +474,7 @@ class Preferences(object):
                     result[data_key] = value
             return result
 
-        if disable_loading_preferences:
+        if not enable_loading_preferences:
             print('skipping loading preferences because disable_loading_preferences -flag in code')
             return
         elif disable:

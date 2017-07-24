@@ -228,7 +228,7 @@ class CommentNode(Node):
         if self.preferred_host:
             x, y = self.preferred_host.current_scene_position
             dx, dy = self.pos_relative_to_host
-            self.current_position = self.scene_position_to_tree_position((x + dx, y + dy))
+            self.current_position = x + dx, y + dy
             return 0, 0, False, False
         else:
             return super().move(other_nodes)

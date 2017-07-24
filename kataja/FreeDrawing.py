@@ -715,7 +715,6 @@ class FreeDrawing:
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.heads = list(old_node.heads)
 
-
     def merge_to_top(self, top, new, merge_to_left=True):
         """
         :param top:

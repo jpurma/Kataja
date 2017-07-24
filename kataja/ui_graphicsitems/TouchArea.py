@@ -541,10 +541,11 @@ class MergeToTop(AbstractBranchingTouchArea):
         dx = self.start_point[0] - self.end_point[0]
         dy = self.start_point[1] - self.end_point[1]
         if self._hovering:
-            if len(self.host.trees) != 1:
+            tops = self.host.get_highest()
+            if len(tops) != 1:
                 return QtCore.QRectF(-2, -2, dx + 4, dy + 4).united(LEAF_BR)
             else:
-                top = list(self.host.trees)[0].top
+                top = tops[0]
                 lmx, lmy = top.magnet(5)
                 scene_point = QtCore.QPointF(lmx, lmy)
                 end_point = self.mapFromScene(scene_point)
@@ -571,7 +572,8 @@ class MergeToTop(AbstractBranchingTouchArea):
         l = QtCore.QLineF(dx, dy, 0, 0)
 
         if self._hovering:
-            if len(self.host.trees) != 1:
+            tops = self.host.get_highest()
+            if len(tops) != 1:
                 painter.drawLine(l)
                 painter.save()
                 painter.setBrush(ctrl.cm.ui())
@@ -581,7 +583,7 @@ class MergeToTop(AbstractBranchingTouchArea):
                 draw_plus(painter, 1.2 * symbol_radius, 0)
                 return
             else:
-                top = list(self.host.trees)[0].top
+                top = tops[0]
                 lmx, lmy = top.magnet(5)
                 scene_point = QtCore.QPointF(lmx, lmy)
                 end_point = self.mapFromScene(scene_point)

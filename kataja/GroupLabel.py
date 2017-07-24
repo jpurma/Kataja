@@ -28,7 +28,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
 from kataja.singletons import ctrl, qt_prefs, prefs
-from kataja.saved.movables.Tree import Tree
 import kataja.globals as g
 import kataja.utils as utils
 from kataja.uniqueness_generator import next_available_type_id
@@ -310,11 +309,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
                 else:
                     my += 2
                 items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
-                collision = False
-                for item in items:
-                    if not isinstance(item, Tree):
-                        collision = True
-                if not collision:
+                if not items:
                     min_dist = d
                     best_x, best_y = mx, my
             prev_x, prev_y = x, y

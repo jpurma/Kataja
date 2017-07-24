@@ -149,15 +149,15 @@ class BaseVisualization:
             found = (0, 0)
         self._stored_top_node_positions.append(found)
 
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Subclasses implement this """
         pass
 
-    def normalise_to_origo(self, tree):
-        if tree not in self.forest.trees:
+    def normalise_to_origo(self, tree_top):
+        if tree_top not in self.forest.trees:
             return
-        top_x, top_y = tree.top.target_position
-        for node in tree.sorted_nodes:
+        top_x, top_y = tree_top.target_position
+        for node in tree_top.get_sorted_nodes():
             if node.locked_to_node:
                 continue
             elif node.physics_x and node.physics_y:
@@ -165,17 +165,16 @@ class BaseVisualization:
             pass
             node.target_position = node.target_position[0] - top_x, node.target_position[1] - top_y
             node.start_moving()  # restart moving since we shifted the end point
-        tree.tree_changed = True
 
-    def normalise_movers_to_top(self, tree):
-        if tree not in self.forest.trees:
+    def normalise_movers_to_top(self, tree_top):
+        if tree_top not in self.forest.trees:
             return
-        i = self.forest.trees.index(tree)
+        i = self.forest.trees.index(tree_top)
         old = self._stored_top_node_positions[i]
-        new = tree.top.target_position
+        new = tree_top.target_position
         dx = old[0] - new[0]
         dy = old[1] - new[1]
-        for node in tree.sorted_nodes:
+        for node in tree_top.get_sorted_nodes():
             if node.locked_to_node:
                 continue
             elif node.physics_x and node.physics_y:
@@ -183,7 +182,6 @@ class BaseVisualization:
             node.target_position = node.target_position[0] + dx, node.target_position[1] + dy
             if node.target_position != node.current_position:
                 node.start_moving()  # restart moving since we shifted the end point
-        tree.tree_changed = True
 
     # def reset(self):
     # """ Not sure if this should be used at all, it is confusing in its purpose """
@@ -213,7 +211,7 @@ class BaseVisualization:
 
 
     @staticmethod
-    def elliptic_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=.5):
+    def elliptic_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=4):
 
         # Sum up all forces pushing this item away.
         xvel = 0.0
@@ -247,8 +245,7 @@ class BaseVisualization:
                 force_ratio = 1
                 dist = abs(dist_x)
                 gap = dist - my_w - other_w
-
-            elif dist_x != 0:
+            else:
                 g = dist_y / dist_x
                 g2 = g * g
                 x1 = my_wh / math.sqrt(my_h2 + g2 * my_w2)
@@ -266,7 +263,7 @@ class BaseVisualization:
 
             x_component = dist_x / dist
             y_component = dist_y / dist
-            if gap < 0:
+            if gap <= 0:
                 repulsion = min(max(1.0, inner_repulsion * force_ratio * -gap), 5.0)
                 xvel += repulsion * x_component
                 yvel += repulsion * y_component

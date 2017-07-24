@@ -81,7 +81,7 @@ class DivideAndConquerTree(BalancedTree):
         new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
-    def draw_tree(self, tree):
+    def draw_tree(self, tree_top):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
         
         Grid L + Grid R -> rightmost free of L, leftmost node of R,  sum     max of sums=4 + padding=1 = 5
@@ -178,7 +178,7 @@ class DivideAndConquerTree(BalancedTree):
             else:
                 return Grid()
 
-        merged_grid = _build_grid(node=tree.top, done=set())
+        merged_grid = _build_grid(node=tree_top, done=set())
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height
