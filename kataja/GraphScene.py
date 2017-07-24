@@ -102,7 +102,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._cached_visible_rect = vr
 
     @staticmethod
-    @time_me
     def visible_rect(min_w=200, min_h=100, current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
@@ -609,7 +608,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         and tells them to update their position
         :param event: timer event? sent by Qt
         """
-        t = time.time()
+        #t = time.time()
         # Uncomment to check what is the actual framerate:
         # n_time = time.time()
         # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)

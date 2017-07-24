@@ -35,6 +35,19 @@ NO_ALIGN = 0
 RIGHT = 2
 
 
+def centered_node_position(node, cbr):
+    """ Return coordinates for center of current node. Nodes, especially with children
+    included, are often offset in such way that we shouldn't use bounding_rect's 0,
+    0 for their center point.
+
+    :param cbr: bounding_rect of node, includes children. QRect or QRectF
+    :return:
+    """
+    px, py = node.current_position
+    cp = cbr.center()
+    return px + cp.x(), py + cp.y()
+
+
 class BaseVisualization:
     """ Base class for different 'drawTree' implementations """
     name = 'BaseVisualization base class'
@@ -49,6 +62,7 @@ class BaseVisualization:
         self._hits = {}
         self._max_hits = {}
         self.use_gravity = True
+        self.gravity = 1.0
         self._stored_top_node_positions = []
         self.traces_to_draw = {}
 
@@ -209,9 +223,57 @@ class BaseVisualization:
                 x, y = node.current_position
                 node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
+    @staticmethod
+    def edge_pull(node, node_x, node_y, pull_factor=.7):
+        # attract
+        cbr = node.future_children_bounding_rect()
+        cbr_w = cbr.width()
+        cbr_h = cbr.height()
+        x_vel = 0
+        y_vel = 0
+        ghosting = 1.0
+
+        total_edges = 0
+        edges = []
+        for e in node.get_edges_up_with_children():
+            other = e.start
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+        for e in node.get_edges_down_with_children():
+            other = e.end
+            while other.locked_to_node:
+                other = other.locked_to_node
+            if other is node:
+                continue
+            total_edges += 1
+            edges.append((other, e.pull))
+
+        for other, edge_pull in edges:
+            other_cbr = other.future_children_bounding_rect()
+            other_x, other_y = centered_node_position(other, other_cbr)
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = (other_cbr.width() + cbr_w + other_cbr.height() + cbr_h) / 4
+            if dist != 0 and dist - radius > 0:
+                pulling_force = ((dist - radius) * edge_pull * pull_factor) / dist
+                x_vel -= dist_x * pulling_force
+                y_vel -= dist_y * pulling_force
+            else:
+                x_vel += 1
+
+        if not total_edges:
+            # pull to center (0, 0)
+            x_vel += node_x * -0.009
+            y_vel += node_y * -0.009
+        return x_vel, y_vel, ghosting
 
     @staticmethod
-    def elliptic_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=4):
+    def elliptic_repulsion(node, node_x, node_y, other_nodes: list, inner_repulsion=.5,
+                           outer_repulsion=4, min_push=1, max_push=4):
 
         # Sum up all forces pushing this item away.
         xvel = 0.0
@@ -222,7 +284,6 @@ class BaseVisualization:
         my_w2 = my_w * my_w
         my_h2 = my_h * my_h
         my_wh = my_w * my_h
-        node_x, node_y = node.node_center_position()
         # ( * 16 ) is there so that inner_repulsion and outer_repulsion can be given similar values
         outer_repulsion *= 16
 
@@ -264,7 +325,7 @@ class BaseVisualization:
             x_component = dist_x / dist
             y_component = dist_y / dist
             if gap <= 0:
-                repulsion = min(max(1.0, inner_repulsion * force_ratio * -gap), 5.0)
+                repulsion = min(max(min_push, inner_repulsion * force_ratio * -gap), max_push)
                 xvel += repulsion * x_component
                 yvel += repulsion * y_component
             else:
@@ -321,66 +382,38 @@ class BaseVisualization:
         return xvel, yvel
 
     def calculate_movement(self, node: 'Node', other_nodes: list):
-        """
-
+        """ Base force-directed graph calculation for nodes that are free to float around,
+        not given positions by visualisation algo.
         :param node:
         :param other_nodes:
         :return:
         """
         cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, cbr)
-        x_vel = 0
-        y_vel = 0
-        alpha = 0.4
-        # attract
-        cbr_w = cbr.width()
-        cbr_h = cbr.height()
+        node_x, node_y = centered_node_position(node, cbr)
+
+        # Sum up edges pulling nodes together
+        x_pull, y_pull, ghosting = BaseVisualization.edge_pull(node, node_x, node_y)
+        # Add a bit of random shuffle if moving fast to prevent lockups
 
         # Sum up all forces pushing this item away.
-        x_vel, y_vel = BaseVisualization.elliptic_repulsion(node, other_nodes)
+        x_push, y_push = BaseVisualization.elliptic_repulsion(node, node_x, node_y, other_nodes)
 
-        total_edges = 0
-        edges = []
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
-            total_edges += 1
-            edges.append((other, e.pull))
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
-            total_edges += 1
-            edges.append((other, e.pull))
+        # Let feature nodes slide through constituents on their way down -- prevent pushing up
+        if y_push < 0:
+            y_push = 0
 
-        for other, edge_pull in edges:
-            other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            radius = max(other_cbr.width() + cbr_w, other_cbr.height() +
-                      cbr_h)
-            if dist != 0 and dist - radius > 0:
-                pulling_force = ((dist - radius) * edge_pull * alpha) / dist
-                x_vel -= dist_x * pulling_force
-                y_vel -= dist_y * pulling_force
-            else:
-                x_vel += 1
+        # add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
+        if x_pull or y_pull:
+            y_pull += self.gravity
 
-        if not total_edges:
-            # pull to center (0, 0)
-            x_vel += node_x * -0.009
-            y_vel += node_y * -0.009
-            # elif (not down) and self.use_gravity:
-        elif self.use_gravity:
-            y_vel += node._gravity
+        x_vel = x_push * ghosting + x_pull
+        y_vel = y_push * ghosting + y_pull
 
-        return round(x_vel), round(y_vel)
+        if abs(x_vel) > 3:
+            y_vel += (random.random() * -4) + 2
+        if abs(y_vel) > 3:
+            x_vel += (random.random() * -4) + 2
+        return x_vel, y_vel
 
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """
@@ -436,19 +469,6 @@ class BaseVisualization:
         """
         return True
 
-    def centered_node_position(self, node, cbr):
-        """ Return coordinates for center of current node. Nodes, especially with children 
-        included, are often offset in such way that we shouldn't use bounding_rect's 0,
-        0 for their center point.
-        
-        :param cbr: bounding_rect of node, includes children. QRect or QRectF
-        :return: 
-        """
-        px, py = node.current_position
-        cp = cbr.center()
-        px += cp.x()
-        py += cp.y()
-        return px, py
 
 
 

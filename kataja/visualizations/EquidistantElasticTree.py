@@ -28,7 +28,7 @@ import math
 import itertools
 
 import kataja.globals as g
-from kataja.Visualization import BaseVisualization
+from kataja.Visualization import BaseVisualization, centered_node_position
 
 
 class EquidistantElasticTree(BaseVisualization):
@@ -74,7 +74,7 @@ class EquidistantElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, cbr)
+        node_x, node_y = centered_node_position(node, cbr)
 
         # Sum up all forces pushing this item away.
         for other in other_nodes:
@@ -83,7 +83,7 @@ class EquidistantElasticTree(BaseVisualization):
             if other is node:
                 continue
             other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
             dist_x = int(node_x - other_x)
             dist_y = int(node_y - other_y)
             safe_zone = max(cbr.width() + other_cbr.width(), cbr.height() + other_cbr.height()) / 2

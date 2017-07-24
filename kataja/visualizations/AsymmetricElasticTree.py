@@ -26,7 +26,7 @@
 import math
 
 import kataja.globals as g
-from kataja.Visualization import BaseVisualization
+from kataja.Visualization import BaseVisualization, centered_node_position
 from kataja.singletons import prefs
 
 
@@ -132,7 +132,7 @@ class AsymmetricElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         node_cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, node_cbr)
+        node_x, node_y = centered_node_position(node, node_cbr)
 
         inner_repulsion = 0.5
         outer_repulsion = 1
@@ -201,7 +201,7 @@ class AsymmetricElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         node_cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, node_cbr)
+        node_x, node_y = centered_node_position(node, node_cbr)
         nw2, nh2 = node_cbr.width() / 2.0, node_cbr.height() / 2.0
 
         for other in other_nodes:
@@ -209,7 +209,7 @@ class AsymmetricElasticTree(BaseVisualization):
             if other is node:
                 continue
 
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
 
             d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
                                                  other_cbr.width() / 2,

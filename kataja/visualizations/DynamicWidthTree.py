@@ -25,6 +25,7 @@ import math
 import random
 
 from kataja.singletons import prefs, ctrl
+from kataja.Visualization import centered_node_position
 from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 import kataja.globals as g
 
@@ -59,7 +60,7 @@ class DynamicWidthTree(DivideAndConquerTree):
         :return:
         """
         cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, cbr)
+        node_x, node_y = centered_node_position(node, cbr)
         x_vel = 0
         alpha = 0.4
         # attract
@@ -69,7 +70,7 @@ class DynamicWidthTree(DivideAndConquerTree):
         # Sum up all forces pushing this item away.
         for other in other_nodes:
             other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
@@ -108,7 +109,7 @@ class DynamicWidthTree(DivideAndConquerTree):
 
         for other, edge_pull in edges:
             other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             radius = max(other_cbr.width() + cbr_w, other_cbr.height() +

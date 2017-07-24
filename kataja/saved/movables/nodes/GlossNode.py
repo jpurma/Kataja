@@ -83,7 +83,7 @@ class GlossNode(Node):
     def __str__(self):
         return 'gloss "%s"' % self.label
 
-    def move(self, other_nodes: list) -> (int, int):
+    def move(self, other_nodes: list) -> (int, int, bool, bool):
         """ Special behavior for glosses that describe the whole forest
         :return: diff_x, diff_y, normalize, ban_normalization  -- announce how much we moved and if 
         the movement is such that it should be included in normalization calculations. 

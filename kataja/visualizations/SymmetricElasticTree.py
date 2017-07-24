@@ -25,7 +25,7 @@ import math
 import random
 
 import kataja.globals as g
-from kataja.Visualization import BaseVisualization
+from kataja.Visualization import BaseVisualization, centered_node_position
 
 
 class SymmetricElasticTree(BaseVisualization):
@@ -79,9 +79,11 @@ class SymmetricElasticTree(BaseVisualization):
         inner_repulsion = 0.5
         outer_repulsion = 0.5
         pull = 0.5
+        cbr = node.future_children_bounding_rect()
+        node_x, node_y = centered_node_position(node, cbr)
 
         # Push nodes away
-        push_x, push_y = BaseVisualization.elliptic_repulsion(node,
+        push_x, push_y = BaseVisualization.elliptic_repulsion(node, node_x, node_y,
                                                               other_nodes,
                                                               inner_repulsion,
                                                               outer_repulsion)
@@ -216,13 +218,13 @@ class SymmetricElasticTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         fbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, fbr)
+        node_x, node_y = centered_node_position(node, fbr)
         # Sum up all forces pushing this item away.
         for other in other_nodes:
             if other is node:
                 continue
             fbr_other = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, fbr_other)
+            other_x, other_y = centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             safe_zone = (fbr.width() + fbr_other.width()) / 2
             dist = math.hypot(dist_x, dist_y)
@@ -262,7 +264,7 @@ class SymmetricElasticTree(BaseVisualization):
 
         for other, edge_pull in edges:
             fbr_other = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, fbr_other)
+            other_x, other_y = centered_node_position(other, fbr_other)
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
