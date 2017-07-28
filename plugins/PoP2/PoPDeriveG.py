@@ -13,6 +13,7 @@ try:
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from PoP2.ConstituentB import Constituent, find_shared_features, expanded_features
     from PoP2.FeatureB import Feature, has_part, get_by_part
+    from syntax.SyntaxState import SyntaxState
     in_kataja = True
 except ImportError:
     from Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
@@ -284,10 +285,10 @@ class Generate:
             num = []
         if self.stack.is_main():
             self.sub_workspace = []
-        self.forest.derivation_steps.save_and_create_derivation_step(self.sub_workspace +
-                                                                     self.workspace,
-                                                                     numeration=num,
-                                                                     msg=msg)
+        syn_state = SyntaxState(tree_roots=self.sub_workspace + self.workspace,
+                                numeration=num,
+                                msg=msg)
+        self.forest.add_step(syn_state)
 
     def merge_so(self, x, spine):
         """ Select new item and merge it into structure

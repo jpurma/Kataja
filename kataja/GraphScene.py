@@ -134,7 +134,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 minx, miny, maxx, maxy = (int(x) for x in node.sceneBoundingRect().getCoords())
             else:
                 r = node.future_children_bounding_rect()
-                scx, scy = node.target_position
+                if node._is_moving:
+                    scx, scy = node.target_position
+                else:
+                    scx, scy = node.current_position
                 minx = r.left() + scx
                 miny = r.top() + scy
                 maxx = r.right() + scx

@@ -1014,11 +1014,10 @@ class Node(Movable):
 
             new_parent = self.parentItem().parentItem()
             if new_parent:
-                self.setParentItem(new_parent)
                 lp = new_parent.mapFromScene(scene_pos)
             else:
-                print('node %s doesnt belong to any tree.' % self)
                 lp = scene_pos
+            self.setParentItem(new_parent)
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
             self.update_bounding_rect()

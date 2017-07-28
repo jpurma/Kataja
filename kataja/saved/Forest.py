@@ -42,6 +42,7 @@ from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.singletons import ctrl, classes
 from kataja.utils import time_me
+from syntax.SyntaxState import SyntaxState
 
 
 class Forest(SavedObject):
@@ -223,6 +224,13 @@ class Forest(SavedObject):
             #print('doing nodes to synobjs in forest_edited')
             self.syntax.nodes_to_synobjs(self, self.trees)
 
+    def add_step(self, syn_state: SyntaxState):
+        """ Store given syntactic state as a derivation step. Forest can switch which derivation
+        state it is currently displaying.
+        :param syn_state: SyntaxState object
+        :return:
+        """
+        self.derivation_steps.save_and_create_derivation_step(syn_state)
 
     @staticmethod
     def list_nodes(first):

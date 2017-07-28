@@ -34,25 +34,18 @@ from kataja.utils import time_me
 
 
 @time_me
-def syntactic_state_to_nodes(forest, syntactic_state, msg):
-    #, numeration=None, other=None, msg=None, gloss=None,  transferred=None, mover=None):
+def syntactic_state_to_nodes(forest, syn_state):
     """ This is a big important function to ensure that Nodes on display are only those that
     are present in syntactic objects. Clean up the residue, create those nodes that are
     missing and create the edges.
     :param forest: forest where everything happens
-    :param synobjs: syntactic objects
-    :param numeration: list of objects waiting to be processed
-    :param other: what else we need?
-    :param msg: message associated with this derivation step, this will be used as gloss
-    :param gloss: gloss text for the whole forest
-    :param transferred: list of items spelt out/transferred. These will form a group
-    :param mover: single items to point out as special. This will form a group
+    :param syn_state: SyntaxState -instance
     :return:
     """
     free_drawing = forest.free_drawing
 
     if forest.syntax.display_modes:
-        synobjs = forest.syntax.transform_trees_for_display(synobjs)
+        syntactic_state = forest.syntax.transform_trees_for_display(syntactic_state)
 
     node_keys_to_validate = set(forest.nodes.keys())
     edge_keys_to_validate = set(forest.edges.keys())
@@ -62,7 +55,7 @@ def syntactic_state_to_nodes(forest, syntactic_state, msg):
     # Don't delete gloss node if we have message to show
     gloss_strat = ctrl.settings.get('gloss_strategy')
     if gloss_strat != 'no':
-        if msg and forest.gloss:
+        if syn_state.msg and forest.gloss:
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
@@ -130,9 +123,8 @@ def syntactic_state_to_nodes(forest, syntactic_state, msg):
     fns_to_create = []
     done_nodes = set()
     found_nodes = set()
-    for tree_root in synobjs:
-        if tree_root:
-            recursive_add_const_node(tree_root, None)
+    for tree_root in syn_state.tree_roots:
+        recursive_add_const_node(tree_root, None)
     node_keys_to_validate -= found_nodes
     for syn_bare, syn_parent in cns_to_create:
         host = forest.get_node(syn_parent)
@@ -248,12 +240,12 @@ def syntactic_state_to_nodes(forest, syntactic_state, msg):
     # exist.
     done_nodes = set()
     found_edges = set()
-    for tree_root in synobjs:
+    for tree_root in syn_state.tree_roots:
         recursive_create_edges(tree_root)
     edge_keys_to_validate -= found_edges
 
     done_nodes = set()
-    for tree_root in synobjs:
+    for tree_root in syn_state.tree_roots:
         recursive_update_heads(forest.get_node(tree_root))
 
     # for item in numeration:
@@ -293,7 +285,7 @@ def syntactic_state_to_nodes(forest, syntactic_state, msg):
         for group in old_groups:
             all_old_items.update(set(group.selection))
 
-    if transferred:
+    if syn_state.transferred:
         new_groups = []
         if transferred:
             for transfer_top in transferred:
@@ -349,27 +341,27 @@ def syntactic_state_to_nodes(forest, syntactic_state, msg):
         if group.purpose == 'mover':
             old_group = group
             break
-    if mover:
-        mover = forest.get_node(mover)
-        if old_group:
-            old_group.clear(remove=False)
-            group = old_group
-        else:
-            group = free_drawing.create_group()
-            group.purpose = 'mover'
-            #group.set_label_text('Next mover')
-            group.include_children = False
-            group.fill = True
-            group.outline = False
-            group.update_colors('accent8')
-        group.update_selection([mover])
-    else:
-        if old_group:
-            old_group.clear(remove=True)
+    # if mover:
+    #     mover = forest.get_node(mover)
+    #     if old_group:
+    #         old_group.clear(remove=False)
+    #         group = old_group
+    #     else:
+    #         group = free_drawing.create_group()
+    #         group.purpose = 'mover'
+    #         #group.set_label_text('Next mover')
+    #         group.include_children = False
+    #         group.fill = True
+    #         group.outline = False
+    #         group.update_colors('accent8')
+    #     group.update_selection([mover])
+    # else:
+    #     if old_group:
+    #         old_group.clear(remove=True)
     # ---------
     strat = ctrl.settings.get('gloss_strategy')
     if strat and strat == 'message':
-        forest.gloss_text = msg
+        forest.gloss_text = syn_state.msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
     #ctrl.graph_scene.fit_to_window(force=True)

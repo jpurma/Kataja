@@ -35,6 +35,7 @@ if in_kataja:
     from mgtdbpE.Constituent import Constituent as DTree
     from mgtdbpE.OutputTrees import print_results
     from syntax.BaseFeature import BaseFeature as Feature
+    from syntax.SyntaxState import SyntaxState
 else:
     #from OutputTrees import DTree, print_results
     from OutputTrees import print_results
@@ -542,7 +543,8 @@ class Parser:
         dtree = DTree.dnodes_to_dtree(derivation.results, all_features=True, dtrees=self.dtrees)
         #input()
         if in_kataja:
-            self.forest.derivation_steps.save_and_create_derivation_step([dtree])
+            syn_state = SyntaxState(tree_roots=[dtree])
+            self.forest.add_step(syn_state)
             pprint.pprint(dtree)
         else:
             print('******* dtree *******')

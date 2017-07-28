@@ -24,6 +24,7 @@
 
 
 import math
+import random
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization, centered_node_position
@@ -185,7 +186,7 @@ class AsymmetricElasticTree(BaseVisualization):
 
 
 
-    def calculate_movement(self, node, other_nodes):
+    def calculate_movement_good(self, node, other_nodes):
         """ The idea here is that each node has their preferred position below their parent node. 
         The strings that pull are computed to pull towards that position instead of pulling nodes 
         over each other.
@@ -255,6 +256,7 @@ class AsymmetricElasticTree(BaseVisualization):
             xvel += node_x * -0.02
             yvel += node_y * -0.02
         return xvel, yvel
+
 
 
     def reset_node(self, node):

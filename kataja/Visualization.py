@@ -62,7 +62,7 @@ class BaseVisualization:
         self._hits = {}
         self._max_hits = {}
         self.use_gravity = True
-        self.gravity = 1.0
+        self.gravity = 2.0
         self._stored_top_node_positions = []
         self.traces_to_draw = {}
 
@@ -223,15 +223,13 @@ class BaseVisualization:
                 x, y = node.current_position
                 node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
-    @staticmethod
-    def edge_pull(node, node_x, node_y, pull_factor=.7):
+    def edge_pull(self, node, node_x, node_y, pull_factor=.7):
         # attract
         cbr = node.future_children_bounding_rect()
         cbr_w = cbr.width()
         cbr_h = cbr.height()
         x_vel = 0
         y_vel = 0
-        ghosting = 1.0
 
         total_edges = 0
         edges = []
@@ -269,10 +267,9 @@ class BaseVisualization:
             # pull to center (0, 0)
             x_vel += node_x * -0.009
             y_vel += node_y * -0.009
-        return x_vel, y_vel, ghosting
+        return x_vel, y_vel
 
-    @staticmethod
-    def elliptic_repulsion(node, node_x, node_y, other_nodes: list, inner_repulsion=.5,
+    def elliptic_repulsion(self, node, node_x, node_y, other_nodes: list, inner_repulsion=.5,
                            outer_repulsion=4, min_push=1, max_push=4):
 
         # Sum up all forces pushing this item away.
@@ -381,6 +378,26 @@ class BaseVisualization:
 
         return xvel, yvel
 
+    def feature_sliding(self, node, x_push, y_push):
+        if node.node_type == g.FEATURE_NODE:
+            if x_push > 0:
+                x_push = 0
+            if y_push < 0:
+                y_push = 0
+        return x_push, y_push
+
+    def gravity_force(self, node, is_alone):
+        if is_alone:
+            return 0, self.gravity
+        return 0, 0
+
+    def speed_noise(self, node, x_vel, y_vel):
+        if abs(x_vel) > 3:
+            y_vel += (random.random() * -4) + 2
+        if abs(y_vel) > 3:
+            x_vel += (random.random() * -4) + 2
+        return x_vel, y_vel
+
     def calculate_movement(self, node: 'Node', other_nodes: list):
         """ Base force-directed graph calculation for nodes that are free to float around,
         not given positions by visualisation algo.
@@ -392,27 +409,25 @@ class BaseVisualization:
         node_x, node_y = centered_node_position(node, cbr)
 
         # Sum up edges pulling nodes together
-        x_pull, y_pull, ghosting = BaseVisualization.edge_pull(node, node_x, node_y)
+        x_pull, y_pull = self.edge_pull(node, node_x, node_y)
         # Add a bit of random shuffle if moving fast to prevent lockups
 
         # Sum up all forces pushing this item away.
-        x_push, y_push = BaseVisualization.elliptic_repulsion(node, node_x, node_y, other_nodes)
+        x_push, y_push = self.elliptic_repulsion(node, node_x, node_y, other_nodes)
 
         # Let feature nodes slide through constituents on their way down -- prevent pushing up
+        x_push, y_push = self.feature_sliding(node, x_push, y_push)
         if y_push < 0:
             y_push = 0
 
-        # add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
-        if x_pull or y_pull:
-            y_pull += self.gravity
+        # Add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
+        gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
 
-        x_vel = x_push * ghosting + x_pull
-        y_vel = y_push * ghosting + y_pull
+        x_vel = x_pull + x_push + gx
+        y_vel = y_pull + y_push + gy
 
-        if abs(x_vel) > 3:
-            y_vel += (random.random() * -4) + 2
-        if abs(y_vel) > 3:
-            x_vel += (random.random() * -4) + 2
+        # Add random shuffle for high-energy situations
+        x_vel, y_vel = self.speed_noise(node, x_vel, y_vel)
         return x_vel, y_vel
 
     # def calculateFeatureMovement(self, feat, node):
