@@ -667,15 +667,21 @@ class ConstituentNode(Node):
 
     def get_features(self):
         """ Returns FeatureNodes """
-        return self.get_children(visible=True, of_type=g.FEATURE_EDGE)
+        if self.syntactic_object:
+            g = ctrl.forest.get_node
+            return [g(f) for f in self.syntactic_object.get_features()]
+        else:
+            return [f for f in self.get_children(visible=True, of_type=g.FEATURE_EDGE) if
+                    f.node_type != g.FEATURE_NODE]
 
     def get_features_as_string(self):
         """
         :return:
         """
-        features = [f.syntactic_object for f in self.get_features()]
-        feature_strings = [str(f) for f in features]
-        return ', '.join(feature_strings)
+        if self.syntactic_object:
+            feature_strings = [str(f) for f in self.syntactic_object.features]
+            return ', '.join(feature_strings)
+        return ''
 
     # ### Checks for callable actions ####
 

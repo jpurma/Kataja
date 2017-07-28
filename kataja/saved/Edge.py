@@ -72,12 +72,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, start=None, end=None, edge_type=''):
+    def __init__(self, start=None, end=None, edge_type='', extra=None):
         """
         :param Node start:
         :param Node end:
         :param string edge_type:
-        :param string order:
+        :param extra: optional data for e.g. referring to third object
         """
         SavedObject.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
@@ -85,6 +85,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.edge_type = edge_type
         self.start = start
         self.end = end
+        self.extra = extra
         self.fixed_start_point = (0, 0)
         self.fixed_end_point = (0, 0)
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
@@ -1159,8 +1160,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             painter.drawLine(cx - 20, cy - 10, cx + 20, cy + 10)
             painter.drawLine(cx - 20, cy + 10, cx + 20, cy - 10)
 
-
-
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
         :param d: float
@@ -1547,5 +1546,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
     start = SavedField("start")
     end = SavedField("end")
+    extra = SavedField("extra")
     forest = SavedField("forest")
     label_data = SavedField("label_data")

@@ -161,7 +161,7 @@ class FreeDrawing:
             cn.set_image_path(pixmap_path)
         return cn
 
-    def create_edge(self, start=None, end=None, edge_type='', fade=False):
+    def create_edge(self, start=None, end=None, edge_type='', fade=False, extra=None):
         """
 
         :param start:
@@ -170,7 +170,7 @@ class FreeDrawing:
         :param fade:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type)
+        rel = Edge(start=start, end=end, edge_type=edge_type, extra=extra)
         rel.after_init()
         self.f.store(rel)
         self.f.add_to_scene(rel)
@@ -453,7 +453,7 @@ class FreeDrawing:
     # by forest's higher level methods.
     #
     def connect_node(self, parent=None, child=None, direction='', edge_type=None,
-                     fade_in=False):
+                     fade_in=False, extra=None):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -485,7 +485,8 @@ class FreeDrawing:
             # With arrows identical or circular edges are not a problem
             for old_edge in child.edges_up:
                 if old_edge.edge_type == edge_type:
-                    if old_edge.end == child and old_edge.start == parent:
+                    if old_edge.end == child and old_edge.start == parent and old_edge.extra == \
+                            extra:
                         raise ForestError('Identical edge exists already')
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
@@ -494,7 +495,8 @@ class FreeDrawing:
         new_edge = self.create_edge(start=parent,
                                     end=child,
                                     edge_type=edge_type,
-                                    fade=fade_in)
+                                    fade=fade_in,
+                                    extra=extra)
         child.poke('edges_up')
         parent.poke('edges_down')
         if direction == g.LEFT:

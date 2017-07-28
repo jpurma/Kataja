@@ -83,7 +83,7 @@ class SymmetricElasticTree(BaseVisualization):
         node_x, node_y = centered_node_position(node, cbr)
 
         # Push nodes away
-        push_x, push_y = BaseVisualization.elliptic_repulsion(node, node_x, node_y,
+        push_x, push_y = self.elliptic_repulsion(node, node_x, node_y,
                                                               other_nodes,
                                                               inner_repulsion,
                                                               outer_repulsion)

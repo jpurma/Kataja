@@ -139,10 +139,12 @@ class AsymmetricElasticTree(BaseVisualization):
         outer_repulsion = 1
 
         # Push nodes away
-        push_x, push_y = BaseVisualization.elliptic_repulsion(node,
-                                                              other_nodes,
-                                                              inner_repulsion,
-                                                              outer_repulsion)
+        push_x, push_y = self.elliptic_repulsion(node,
+                                                 node_x,
+                                                 node_y,
+                                                 other_nodes,
+                                                 inner_repulsion,
+                                                 outer_repulsion)
         xvel += push_x
         yvel += push_y
 

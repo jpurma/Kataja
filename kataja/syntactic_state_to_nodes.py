@@ -66,17 +66,29 @@ def syntactic_state_to_nodes(forest, syn_state):
     sc_center = scene_rect.center().x()
     sc_middle = scene_rect.center().y()
 
-    # ################ Nodes ###################################
+    # ################ Helpers ###################################
 
-    def iter_values(listlike):
+
+    def iter_once(listlike):
         if isinstance(listlike, dict):
             for my_item in listlike.values():
                 if my_item.uid not in done_nodes:
                     yield my_item
         elif isinstance(listlike, (list, set, tuple)):
+            print(listlike)
             for my_item in listlike:
                 if my_item.uid not in done_nodes:
                     yield my_item
+
+    def iter_me(listlike):
+        if isinstance(listlike, dict):
+            for my_item in listlike.values():
+                yield my_item
+        elif isinstance(listlike, (list, set, tuple)):
+            for my_item in listlike:
+                yield my_item
+
+    # ################ Nodes ###################################
 
     def recursive_add_const_node(me, parent_synobj):
         """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
@@ -89,10 +101,11 @@ def syntactic_state_to_nodes(forest, syn_state):
             node.label = me.label
         else:
             cns_to_create.append((me, parent_synobj))
-        for part in iter_values(me.parts):
+        for part in iter_once(me.parts):
             recursive_add_const_node(part, me)
-        for feat in iter_values(me.features):
-            recursive_add_feature_node(feat, me)
+        for feat in me.get_features():
+            if feat.uid not in done_nodes:
+                recursive_add_feature_node(feat, me)
 
     def recursive_add_feature_node(me, parent_synobj):
         """ First we have to create new nodes close to existing nodes to avoid 
@@ -110,11 +123,12 @@ def syntactic_state_to_nodes(forest, syn_state):
             fns_to_create.append((me, parent_synobj))
         # we usually don't have feature structure, but lets assume that possibility
         if hasattr(me, 'parts'):
-            for part in iter_values(me.parts):
+            for part in iter_once(me.parts):
                 recursive_add_feature_node(part, me)
         if hasattr(me, 'features'):
-            for feat in iter_values(me.features):
-                recursive_add_feature_node(feat, me)
+            for feat in me.get_features():
+                if feat.uid not in done_nodes:
+                    recursive_add_feature_node(feat, me)
         if hasattr(me, 'checks'):
             if me.checks and me.checks.uid not in done_nodes:
                 recursive_add_feature_node(me.checks, me)
@@ -159,14 +173,6 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     # ################ Edges & Heads ###################################
 
-    def iter_me(listlike):
-        if isinstance(listlike, dict):
-            for my_item in listlike.values():
-                yield my_item
-        elif isinstance(listlike, (list, set, tuple)):
-            for my_item in listlike:
-                yield my_item
-
     # I guess that ordering of connections will be broken because of making
     # and deleting connections in unruly fashion
     def connect_if_necessary(parent, child, edge_type):
@@ -175,6 +181,14 @@ def syntactic_state_to_nodes(forest, syn_state):
             free_drawing.connect_node(parent, child, edge_type=edge_type)
         else:
             found_edges.add(edge.uid)
+
+    def connect_feature_if_necessary(parent, child, feature):
+        edge = parent.get_edge_to(child, g.FEATURE_EDGE, extra=feature)
+        if not edge:
+            free_drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, extra=feature)
+        else:
+            found_edges.add(edge.uid)
+
 
     def recursive_create_edges(synobj):
         """ All of the nodes exist already, now put the edges in place. Goes to the bottom and 
@@ -192,10 +206,20 @@ def syntactic_state_to_nodes(forest, syn_state):
                 child = recursive_create_edges(part)
                 if child:
                     connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
-            for feature in iter_me(synobj.features):
-                nfeature = recursive_create_edges(feature)
-                if nfeature:
-                    connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
+            if synobj.parts:
+                for feature in synobj.get_features():
+                    # Try to find where from this from this edge has been inherited.
+                    # Connect this node to there.
+                    nfeature = recursive_create_edges(feature)
+                    for child in iter_me(synobj.parts):
+                        if feature in child.get_features():
+                            nchild = recursive_create_edges(child)
+                            connect_feature_if_necessary(node, nchild, nfeature)
+            else:
+                for feature in synobj.get_features():
+                    nfeature = recursive_create_edges(feature)
+                    if nfeature:
+                        connect_feature_if_necessary(node, nfeature, nfeature)
             verify_edge_order_for_constituent_nodes(node)
         elif node.node_type == g.FEATURE_NODE:
             if hasattr(synobj, 'parts'):

@@ -515,7 +515,7 @@ class Node(Movable):
         """
         return not self.get_parents(similar=only_similar, visible=only_visible)
 
-    def get_edge_to(self, other, edge_type='') -> QtWidgets.QGraphicsItem:
+    def get_edge_to(self, other, edge_type='', extra=None) -> QtWidgets.QGraphicsItem:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
         of certain type between two elements.
@@ -524,17 +524,23 @@ class Node(Movable):
         """
         if edge_type:
             for edge in self.edges_down:
-                if edge.end is other and edge_type == edge.edge_type:
+                if (extra is edge.extra or not extra) and \
+                        edge.end is other and \
+                        edge_type == edge.edge_type:
                     return edge
             for edge in self.edges_up:
-                if edge.start is other and edge_type == edge.edge_type:
+                if (extra is edge.extra or not extra) and \
+                        edge.start is other and \
+                        edge_type == edge.edge_type:
                     return edge
         else:
             for edge in self.edges_down:
-                if edge.end is other:
+                if (extra is edge.extra or not extra) and \
+                        edge.end is other:
                     return edge
             for edge in self.edges_up:
-                if edge.start is other:
+                if (extra is edge.extra or not extra) and \
+                        edge.start is other:
                     return edge
         return None
 
