@@ -902,16 +902,16 @@ class AbstractJointedTouchArea(TouchArea):
         adjust = []
         shape = SHAPE_PRESETS[shape_name]
         if self._align_left:
-            path1 = shape.path(line_middle_point, (sx, sy),
+            path1 = shape.path(start_point=line_middle_point, end_point=(sx, sy),
                                alignment=g.RIGHT, curve_adjustment=adjust)[0]
             path1.moveTo(sx, sy)
-            path2 = shape.path(line_middle_point, (ex, ey),
+            path2 = shape.path(start_point=line_middle_point, end_point=(ex, ey),
                                alignment=g.LEFT, curve_adjustment=adjust)[0]
         else:
-            path1 = shape.path(line_middle_point, (ex, ey),
+            path1 = shape.path(start_point=line_middle_point, end_point=(ex, ey),
                                alignment=g.RIGHT, curve_adjustment=adjust)[0]
             path1.moveTo(ex, ey)
-            path2 = shape.path(line_middle_point, (sx, sy),
+            path2 = shape.path(start_point=line_middle_point, end_point=(sx, sy),
                                alignment=g.LEFT, curve_adjustment=adjust)[0]
         self._path = path1 | path2
 
@@ -1059,7 +1059,8 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         sx -= ex
         sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path((sx, sy), (0, 0), alignment=g.LEFT,
+        self._path = SHAPE_PRESETS[shape_name].path(start_point=(sx, sy), end_point=(0, 0),
+                                                    alignment=g.LEFT,
                                                     curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
@@ -1160,7 +1161,8 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         sx -= ex
         sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path((sx, sy), (0, 0), alignment=g.RIGHT,
+        self._path = SHAPE_PRESETS[shape_name].path(start_point=(sx, sy), end_point=(0, 0),
+                                                    alignment=g.RIGHT,
                                                     curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):

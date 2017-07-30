@@ -99,6 +99,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         if node:
             found_nodes.add(node.uid)
             node.label = me.label
+            node.update_label()
         else:
             cns_to_create.append((me, parent_synobj))
         for part in iter_once(me.parts):
@@ -119,6 +120,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             node.name = getattr(me, 'name', '')
             node.value = getattr(me, 'value', '')
             node.family = getattr(me, 'family', '')
+            node.update_label()
         else:
             fns_to_create.append((me, parent_synobj))
         # we usually don't have feature structure, but lets assume that possibility
@@ -211,10 +213,16 @@ def syntactic_state_to_nodes(forest, syn_state):
                     # Try to find where from this from this edge has been inherited.
                     # Connect this node to there.
                     nfeature = recursive_create_edges(feature)
+                    # fixme! hack, blocked_inheritance is specific to MyParser
+                    blocked = getattr(synobj, 'blocked_inheritance', None)
                     for child in iter_me(synobj.parts):
+                        if blocked == child:
+                            print('skip, skip')
+                            continue
                         if feature in child.get_features():
                             nchild = recursive_create_edges(child)
                             connect_feature_if_necessary(node, nchild, nfeature)
+                            break
             else:
                 for feature in synobj.get_features():
                     nfeature = recursive_create_edges(feature)

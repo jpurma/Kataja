@@ -427,7 +427,12 @@ class FeatureNode(Node):
         """
         :return:
         """
-        return ctrl.settings.get_node_setting('color_id', node=self)
+        if 'color_id' in self.settings:
+            return self.settings['color_id']
+        elif self.name in color_map:
+            return color_map[self.name]
+        else:
+            return ctrl.settings.get_node_setting('color_id', node=self)
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """

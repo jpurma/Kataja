@@ -295,6 +295,7 @@ class BaseVisualization:
             if dist_x == 0 and dist_y == 0:
                 xvel += (random.random() * 4) - 2
                 yvel += (random.random() * 4) - 2
+                return xvel, yvel
             elif dist_x == 0:
                 force_ratio = (my_h / my_w + other_h / other_w) / 2
                 dist = abs(dist_y)

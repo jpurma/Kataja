@@ -82,8 +82,9 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if self.role == g.CURVE_ADJUSTMENT and self._index < len(self.host.adjusted_control_points):
-            p = Pf(*self.host.adjusted_control_points[self._index])
+        if self.role == g.CURVE_ADJUSTMENT and self._index < len(
+                self.host.path.adjusted_control_points):
+            p = Pf(*self.host.path.adjusted_control_points[self._index])
         elif self.role == g.START_POINT:
             p = Pf(self.host.start_point[0], self.host.start_point[1])
         elif self.role == g.END_POINT:
@@ -98,17 +99,11 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
 
     def boundingRect(self):
         """
-
-
         :return:
         """
         return QtCore.QRectF(self._xy, self._xy, self._wh, self._wh)
 
     def update_position(self):
-        """
-
-
-        """
         ok = self._compute_position()
         self.update()
         return ok
@@ -116,14 +111,14 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
         assert (self._index != -1)
-        p = self.host.control_points[self._index]
+        p = self.host.path.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
         # print 'computed curve_adjustment:', self.curve_adjustment
 
     def _compute_adjust_from_pos(self, scene_pos):
         x, y = to_tuple(scene_pos)
         assert (self._index != -1)
-        cx, cy = self.host.control_points[self._index]
+        cx, cy = self.host.path.control_points[self._index]
         x_adjust = int(x - cx)
         y_adjust = int(y - cy)
         if self._index == 0:

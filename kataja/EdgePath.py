@@ -73,6 +73,8 @@ class EdgePath:
         oex, oey = self.computed_end_point
         start = self.edge.start
         end = self.edge.end
+        self.cached_start_index = self.edge.edge_start_index()
+        self.cached_end_index = self.edge.edge_end_index()
 
         if start and end:
             sx, sy = start.current_scene_position
@@ -89,6 +91,9 @@ class EdgePath:
             return
         if start:
             connection_style = self.edge.cached_for_type('start_connects_to')
+            i, i_of = self.cached_start_index
+            i_shift = (i - math.ceil(i_of / 2)) * 2
+
             if connection_style == SPECIAL:
                 self.computed_start_point, self.curve_dir_start = \
                     start.special_connection_point(sx, sy, ex, ey, start=True,
@@ -112,7 +117,7 @@ class EdgePath:
                 self.curve_dir_start = BOTTOM_SIDE
                 self.abstract_start_point = self.computed_start_point
             elif connection_style == CONNECT_TO_MAGNETS:
-                e_n, e_count = self.edge.edge_index()
+                e_n, e_count = self.edge.edge_start_index()
                 if not start.has_ordered_children():
                     e_n = e_count - e_n - 1
                 self.computed_start_point = start.bottom_magnet(e_n, e_count, scene_pos=(sx, sy))
@@ -131,54 +136,56 @@ class EdgePath:
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
                     if dy > 0:
-                        self.computed_start_point = sx, sy + s_bottom
+                        self.computed_start_point = sx + i_shift, sy + s_bottom
                         self.curve_dir_start = BOTTOM_SIDE
                     else:
-                        self.computed_start_point = sx, sy + s_top
+                        self.computed_start_point = sx + i_shift, sy + s_top
                         self.curve_dir_start = TOP_SIDE
                 elif dy == 0:
                     if dx > 0:
-                        self.computed_start_point = sx + s_right, sy
+                        self.computed_start_point = sx + s_right, sy + i_shift
                         self.curve_dir_start = RIGHT_SIDE
                     else:
-                        self.computed_start_point = sx + s_left, sy
+                        self.computed_start_point = sx + s_left, sy + i_shift
                         self.curve_dir_start = LEFT_SIDE
                 else:
                     ratio = dy / dx
                     if dx > 0:
                         if dy > 0:
                             if int(s_right * ratio) < s_bottom:
-                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio)
+                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio) + i_shift
                                 self.curve_dir_start = RIGHT_SIDE
                             else:
-                                self.computed_start_point = sx + int(s_bottom / ratio), \
+                                self.computed_start_point = sx + int(s_bottom / ratio) + i_shift, \
                                                             sy + s_bottom
                                 self.curve_dir_start = BOTTOM_SIDE
                         else:
                             if int(s_right * ratio) > s_top:
-                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio)
+                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio) + i_shift
                                 self.curve_dir_start = RIGHT_SIDE
                             else:
-                                self.computed_start_point = sx + int(s_top / ratio), sy + s_top
+                                self.computed_start_point = sx + int(s_top / ratio) + i_shift, sy + s_top
                                 self.curve_dir_start = TOP_SIDE
                     else:
                         if dy > 0:
                             if int(s_left * ratio) < s_bottom:
-                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio)
+                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio) + i_shift
                                 self.curve_dir_start = LEFT_SIDE
                             else:
-                                self.computed_start_point = sx + int(s_bottom / ratio), \
+                                self.computed_start_point = sx + int(s_bottom / ratio) + i_shift, \
                                                              sy + s_bottom
                                 self.curve_dir_start = BOTTOM_SIDE
                         else:
                             if int(s_left * ratio) > s_top:
-                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio)
+                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio) + i_shift
                                 self.curve_dir_start = LEFT_SIDE
                             else:
-                                self.computed_start_point = sx + int(s_top / ratio), sy + s_top
+                                self.computed_start_point = sx + int(s_top / ratio) + i_shift, sy + s_top
                                 self.curve_dir_start = TOP_SIDE
         if end:
             connection_style = self.edge.cached_for_type('end_connects_to')
+            i, i_of = self.cached_end_index
+            i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
                 self.computed_end_point, self.curve_dir_end = end.special_connection_point(
                     sx, sy, ex, ey, start=False, edge_type=self.edge.edge_type)
@@ -214,49 +221,53 @@ class EdgePath:
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
                     if dy > 0:
-                        self.computed_end_point = ex, ey + e_top
+                        self.computed_end_point = ex + i_shift, ey + e_top
                         self.curve_dir_end = TOP_SIDE
                     else:
-                        self.computed_end_point = ex, ey + e_bottom
+                        self.computed_end_point = ex + i_shift, ey + e_bottom
                         self.curve_dir_end = BOTTOM_SIDE
                 elif dy == 0:
                     if dx > 0:
-                        self.computed_end_point = ex + e_left, ey
+                        self.computed_end_point = ex + e_left, ey + i_shift
                         self.curve_dir_end = LEFT_SIDE
                     else:
-                        self.computed_end_point = ex + e_right, ey
+                        self.computed_end_point = ex + e_right, ey + i_shift
                         self.curve_dir_end = RIGHT_SIDE
                 else:
                     ratio = dy / dx
                     if dx > 0:
                         if dy > 0:
                             if int(e_left * ratio) > e_top:
-                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio)
+                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio) + i_shift
                                 self.curve_dir_end = LEFT_SIDE
                             else:
-                                self.computed_end_point = ex + int(e_top / ratio), ey + e_top
+                                self.computed_end_point = ex + int(e_top / ratio) + i_shift, ey + e_top
                                 self.curve_dir_end = TOP_SIDE
                         else:
                             if int(e_left * ratio) < e_bottom:
-                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio)
+                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio) + i_shift
                                 self.curve_dir_end = LEFT_SIDE
                             else:
-                                self.computed_end_point = ex + int(e_bottom / ratio), ey + e_bottom
+                                self.computed_end_point = ex + int(e_bottom / ratio) + i_shift, \
+                                                          ey + e_bottom
                                 self.curve_dir_end = BOTTOM_SIDE
                     else:
                         if dy > 0:
                             if int(e_right * ratio) > e_top:
-                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)
+                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)\
+                                                          + i_shift
                                 self.curve_dir_end = RIGHT_SIDE
                             else:
-                                self.computed_end_point = ex + int(e_top / ratio), ey + e_top
+                                self.computed_end_point = ex + int(e_top / ratio) + i_shift, ey + e_top
                                 self.curve_dir_end = TOP_SIDE
                         else:
                             if int(e_right * ratio) < e_bottom:
-                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)
+                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)\
+                                                          + i_shift
                                 self.curve_dir_end = RIGHT_SIDE
                             else:
-                                self.computed_end_point = ex + int(e_bottom / ratio), ey + e_bottom
+                                self.computed_end_point = ex + int(e_bottom / ratio) + i_shift, \
+                                                          ey + e_bottom
                                 self.curve_dir_end = BOTTOM_SIDE
         nsx, nsy = self.computed_start_point
         nex, ney = self.computed_end_point
@@ -417,6 +428,7 @@ class EdgePath:
             self.draw_path.setElementPositionAt(self.draw_path.elementCount() - 1, xm, ym)
 
     def draw_control_point_hints(self, painter, pen, adjust):
+        adjust = adjust or []
         painter.setPen(pen)
         painter.drawPath(self.true_path)
         if self.control_points:

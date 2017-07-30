@@ -154,7 +154,7 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif edge.end.locked_to_node: #is node:
                 continue
-            edge_n, edge_count = edge.edge_index()
+            edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
             start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
             start_y += prefs.edge_height
@@ -169,7 +169,7 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif node.locked_to_node: # is edge.end:
                 continue
-            edge_n, edge_count = edge.edge_index()
+            edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
             start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
             start_y += prefs.edge_height
@@ -228,7 +228,7 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif edge.end.locked_to_node: #is node:
                 continue
-            edge_n, edge_count = edge.edge_index()
+            edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
             start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
             start_y += prefs.edge_height
@@ -243,7 +243,7 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif node.locked_to_node: # is edge.end:
                 continue
-            edge_n, edge_count = edge.edge_index()
+            edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
             start_x += prefs.edge_width * direction_multiplier(edge_n, edge_count)
             start_y += prefs.edge_height

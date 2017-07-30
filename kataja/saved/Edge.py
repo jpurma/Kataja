@@ -37,17 +37,6 @@ from kataja.FadeInOut import FadeInOut
 from kataja.EdgePath import EdgePath
 
 
-angle_magnet_map = {
-    0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11,
-    15: 6, 16: 6
-    }
-
-atan_magnet_map = {
-    -8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10, 4: 9, 5: 8,
-    6: 7, 7: 5, 8: 5
-    }
-
-
 class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
@@ -76,7 +65,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.label_data = {}
         self.selected = False
         self._nodes_overlap = False
-        self._changed = False
         self.k_tooltip = ''
         self._is_moving = False
 
@@ -162,7 +150,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @color_id.setter
     def color_id(self, value):
-        self._changed = True
+        self.path.changed = True
         ctrl.settings.set_edge_setting('color_id', value, edge=self)
 
     @property
@@ -171,7 +159,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @shape_name.setter
     def shape_name(self, value):
-        self._changed = True
+        self.path.changed = True
         ctrl.settings.set_edge_setting('shape_name', value, edge=self)
 
     @property
@@ -381,7 +369,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return False
         return not (self.start and self.end)
 
-    def edge_index(self) -> tuple:
+    def edge_start_index(self) -> tuple:
         """ Return tuple where first value is the order of this edge among similar type of edges
         for this parent (parent = edge.start) and the second is the total amount of siblings (
         edges of this type)
@@ -398,12 +386,29 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 count += 1
         return found, count
 
+    def edge_end_index(self) -> tuple:
+        """ Return tuple where first value is the order of this edge among similar type of edges
+        for this child (child = edge.end) and the second is the total amount of parents (
+        edges of this type)
+        :return:
+        """
+        if not self.end:
+            return 0, 0
+        count = 0
+        found = 0
+        for ed in self.end.edges_up:
+            if ed.edge_type == self.edge_type:
+                if ed is self:
+                    found = count
+                count += 1
+        return found, count
+
     def direction(self) -> int:
         """ Coarse direction of this edge, either g.LEFT or g.RIGHT. Useful for knowing if
          to prepend or append the sibling node compared to this.
         :return:
         """
-        en, ecount = self.edge_index()
+        en, ecount = self.edge_start_index()
         if en < ecount / 2:
             return g.LEFT
         else:
@@ -419,6 +424,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             base = ctrl.cm.get(self.in_projections[0].color_id)
         elif self.color_id:
             base = ctrl.cm.get(self.color_id)
+        elif self.extra and hasattr(self.extra, 'get_color_id'):
+            base = ctrl.cm.get(self.extra.get_color_id())
         elif self.end:
             base = ctrl.cm.get(self.end.get_color_id())
         else:
@@ -960,7 +967,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             rad = orad
         self.curve_adjustment[index] = dist, rad
         self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
-        self._changed = True
+        self.path.changed = True
         self.make_path()
         self.update()
 
