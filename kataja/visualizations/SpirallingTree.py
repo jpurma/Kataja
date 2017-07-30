@@ -58,7 +58,7 @@ class Layer:
         self.rect = self.focus.inner_rect.translated(self.x, self.y)
         if not self.has_room(self.rect):
             return False
-        self.focus.move_to(self.x, self.y, 0, valign=g.TOP_ROW)
+        self.focus.move_to(self.x, self.y, valign=g.TOP_ROW)
         self.add_area()
         return True
 
@@ -105,7 +105,7 @@ class Layer:
             if not self.has_room(self.rect):
                 return False
             self.angle = math.pi / 2
-        self.focus.move_to(self.x, self.y, 0, valign=g.TOP_ROW)
+        self.focus.move_to(self.x, self.y, valign=g.TOP_ROW)
         self.add_area()
         return True
 

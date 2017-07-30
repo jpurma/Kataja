@@ -233,6 +233,6 @@ class LeftFirstTree(BaseVisualization):
             for x_i, node in enumerate(row):
                 x += extra_widths[x_i]
                 if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
-                    node.move_to(x, y, 0, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
+                    node.move_to(x, y, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
                 x += edge_width
             y += edge_height + extra_heights[y_i]

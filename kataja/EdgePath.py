@@ -311,18 +311,18 @@ class EdgePath:
         :param d: float
         :return: QPoint
         """
-        if not self._true_path:
+        if not self.true_path:
             self.make()
-        return self._true_path.pointAtPercent(d)
+        return self.true_path.pointAtPercent(d)
 
     def get_angle_at(self, d: float) -> float:
         """ Get angle at the percentage of the length of the path.
         :param d: int
         :return: float
         """
-        if not self._true_path:
+        if not self.true_path:
             self.make()
-        return self._true_path.angleAtPercent(d)
+        return self.true_path.angleAtPercent(d)
 
     def get_closest_path_point(self, pos):
         """ When dragging object along path, gives the coordinates to closest
@@ -333,13 +333,13 @@ class EdgePath:
         :param pos: position looking for closest path position
         :return: (float:pointAtPercent, QPos:path position)
         """
-        if not self._true_path:
+        if not self.true_path:
             self.make()
         min_d = 1000
         min_i = -1
         min_pos = None
         for i in range(0, 100, 2):
-            p2 = self._true_path.pointAtPercent(i / 100.0)
+            p2 = self.true_path.pointAtPercent(i / 100.0)
             d = (pos - p2).manhattanLength()
             if d < min_d:
                 min_d = d
@@ -420,14 +420,14 @@ class EdgePath:
         painter.setPen(pen)
         painter.drawPath(self.true_path)
         if self.control_points:
-            p.setWidthF(0.5)
-            painter.setPen(p)
+            pen.setWidthF(0.5)
+            painter.setPen(pen)
             sx, sy = self.edge.start_point
             for i, (cpx, cpy) in enumerate(self.control_points):
                 painter.drawLine(sx, sy, cpx, cpy)
                 if len(adjust) > i:
-                    p.setStyle(QtCore.Qt.DashLine)
+                    pen.setStyle(QtCore.Qt.DashLine)
                     ax, ay = adjust[i]
                     painter.drawLine(cpx, cpy, ax, ay)
-                    p.setStyle(QtCore.Qt.SolidLine)
+                    pen.setStyle(QtCore.Qt.SolidLine)
                 sx, sy = self.edge.end_point

@@ -33,7 +33,7 @@ from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.utils import add_xy, multiply_xy, div_xy, time_me
-
+from kataja.FadeInOut import FadeInOut
 
 def about_there(pos1, pos2):
     """ Two triplets are about equal
