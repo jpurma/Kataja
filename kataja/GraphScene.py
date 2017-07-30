@@ -196,7 +196,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if not item.isVisible():
                 continue
             empty = False
-            minx, miny, maxx, maxy = item.path_bounding_rect().getCoords()
+            minx, miny, maxx, maxy = item.boundingRect().getCoords()
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:

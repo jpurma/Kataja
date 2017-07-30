@@ -1178,7 +1178,7 @@ class UIManager:
             self.add_ui(cp)
             cp.update_position()
 
-        for i, point in enumerate(edge.control_points):
+        for i, point in enumerate(edge.path.control_points):
             _add_cp(i, g.CURVE_ADJUSTMENT)
         if not edge.start:
             _add_cp(-1, g.START_POINT)

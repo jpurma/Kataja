@@ -239,8 +239,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         end- and start points for such line.
         :return: None
         """
-        start = self._host.get_point_at(self.label_start)
-        angle = (360 - self._host.get_angle_at(self.label_start)) + self.label_angle
+        start = self._host.path.get_point_at(self.label_start)
+        angle = (360 - self._host.path.get_angle_at(self.label_start)) + self.label_angle
         if angle > 360:
             angle -= 360
         if angle < 0:
@@ -329,7 +329,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         line_x = event_pos.x() - start_pos.x()
         line_y = event_pos.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
-        edge_angle = (360 - edge.get_angle_at(self.label_start))
+        edge_angle = (360 - edge.path.get_angle_at(self.label_start))
         my_angle = math.degrees(rad)
         if my_angle < 0:
             my_angle += 360

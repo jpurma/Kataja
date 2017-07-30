@@ -206,7 +206,7 @@ class FreeDrawing:
         trace.update_label()
         return trace
 
-    def create_arrow(self, p1, p2, text=None):
+    def create_arrow(self, p1: tuple, p2: tuple, text=None):
         """ Create an arrow (Edge) using the default arrow style
 
         :param p1: start point
@@ -215,8 +215,8 @@ class FreeDrawing:
         :return:
         """
         edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
-        edge.set_start_point(p1)
-        edge.set_end_point(p2)
+        edge.fixed_start_point = p1
+        edge.fixed_end_point = p2
         if text:
             edge.set_label_text(text)
         edge.show()
@@ -516,13 +516,13 @@ class FreeDrawing:
             edge.start.edges_down.remove(edge)
             bx, by = edge.start.bottom_center_magnet()
             edge.start = None
-            edge.set_start_point(bx, by + 10)
+            edge.fixed_start_point = (bx, by + 10)
         if end and edge.end:
             edge.end.poke('edges_up')
             bx, by = edge.end.top_center_magnet()
             edge.end.edges_up.remove(edge)
             edge.end = None
-            edge.set_end_point(bx, by - 10)
+            edge.fixed_end_point = (bx, by - 10)
         edge.update_end_points()
 
     def disconnect_edge(self, edge):

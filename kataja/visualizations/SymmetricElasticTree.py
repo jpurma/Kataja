@@ -98,8 +98,8 @@ class SymmetricElasticTree(BaseVisualization):
             while other.locked_to_node:
                 other = other.locked_to_node
             if other is not node:
-                connected.add((e._abstract_end_point,
-                               e._abstract_start_point,
+                connected.add((e.path.abstract_end_point,
+                               e.path.abstract_start_point,
                                target_distance * (similar_edges_up(e) + 1),
                                e.pull))
         for e in node.get_edges_down_with_children():
@@ -107,8 +107,8 @@ class SymmetricElasticTree(BaseVisualization):
             while other.locked_to_node:
                 other = other.locked_to_node
             if other is not node:
-                connected.add((e._abstract_start_point,
-                               e._abstract_end_point,
+                connected.add((e.path.abstract_start_point,
+                               e.path.abstract_end_point,
                                target_distance * (similar_edges_up(e) + 1),
                                e.pull))
 

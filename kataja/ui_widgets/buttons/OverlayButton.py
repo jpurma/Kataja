@@ -244,7 +244,7 @@ class CutEdgeButton(OverlayButton):
         """ Put button left and below the starting point of edge.
         """
         if self.host:
-            p = self.host.get_point_at(0.7)
+            p = self.host.path.get_point_at(0.7)
             if abs(self.host.start_point[0] - self.host.end_point[0]) < 10:
                 p.setX(p.x() + 15)
             p.setY(p.y() - 30)

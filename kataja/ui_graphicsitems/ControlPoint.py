@@ -160,7 +160,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         """
         scenepos = event.scenePos()
         if self.role == g.LABEL_START:
-            d, point = self.host.get_closest_path_point(scenepos)
+            d, point = self.host.path.get_closest_path_point(scenepos)
             self.host.label_item.label_start = d
         else:
             self.setPos(scenepos)
@@ -168,11 +168,11 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             rdist, rrad = self._compute_adjust_from_pos(scenepos)
             self.host.adjust_control_point(self._index, rdist, rrad)
         elif self.role == g.START_POINT:
-            self.host.set_start_point(event.scenePos())
+            self.host.fixed_start_point = scenepos.x(), scenepos.y()
             self.host.make_path()
             self.host.update()
         elif self.role == g.END_POINT:
-            self.host.set_end_point(event.scenePos())
+            self.host.fixed_end_point = scenepos.x(), scenepos.y()
             self.host.make_path()
             self.host.update()
         self.being_dragged = True

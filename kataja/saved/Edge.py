@@ -22,35 +22,20 @@
 #
 # ############################################################################
 
-import math
 
 import time
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
 
 import kataja.globals as g
 from kataja.EdgeLabel import EdgeLabel
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, add_xy, time_me
+from kataja.FadeInOut import FadeInOut
+from kataja.EdgePath import EdgePath
 
-CONNECT_TO_CENTER = 0
-CONNECT_TO_BOTTOM_CENTER = 1
-CONNECT_TO_MAGNETS = 2
-CONNECT_TO_BORDER = 3
-SPECIAL = 4
-
-TOP_LEFT_CORNER = 0
-TOP_SIDE = 1
-TOP_RIGHT_CORNER = 2
-LEFT_SIDE = 3
-RIGHT_SIDE = 4
-BOTTOM_LEFT_CORNER = 5
-BOTTOM_SIDE = 6
-BOTTOM_RIGHT_CORNER = 7
 
 angle_magnet_map = {
     0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11,
@@ -62,11 +47,8 @@ atan_magnet_map = {
     6: 7, 7: 5, 8: 5
     }
 
-qbytes_opacity = QtCore.QByteArray()
-qbytes_opacity.append("opacity")
 
-
-class Edge(QtWidgets.QGraphicsObject, SavedObject):
+class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
 
@@ -79,8 +61,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param string edge_type:
         :param extra: optional data for e.g. referring to third object
         """
+        FadeInOut.__init__(self)
         SavedObject.__init__(self)
-        QtWidgets.QGraphicsItem.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
         self.label_item = None
         self.edge_type = edge_type
         self.start = start
@@ -89,9 +72,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.fixed_start_point = (0, 0)
         self.fixed_end_point = (0, 0)
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
-        self.control_points = []  # control_points are tuples of coordinates, computed by
-        # shape algorithms
-        self.adjusted_control_points = []  # combines those two above
+        self.path = EdgePath(self)
         self.label_data = {}
         self.selected = False
         self._nodes_overlap = False
@@ -100,11 +81,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._is_moving = False
 
         self.in_projections = []
-
-        self._computed_start_point = (0, 0)
-        self._computed_end_point = (0, 0)
-        self._abstract_start_point = (0, 0)
-        self._abstract_end_point = (0, 0)
 
         self._local_drag_handle_position = None
 
@@ -115,34 +91,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         # self.center_point = (0, 0, 0)
 
         # ## Derivative elements
-        self._path = None
-        self._true_path = None  # inner arc or line without the leaf effect
-        self._fat_path = None
-        self._use_simple_path = False
         self._hovering = False
         self._start_node_moving = False
         self._end_node_moving = False
-        self._make_fat_path = False
-        self._curve_dir_start = BOTTOM_SIDE
-        self._curve_dir_end = TOP_SIDE
         self.setZValue(100)
-        self.arrowhead_size_at_start = 6
-        self.arrowhead_size_at_end = 6
         self.crossed_out_flag = False
-        self._arrow_cut_point_start = None
-        self._arrow_cut_point_end = None
-        self._arrowhead_start_path = None
-        self._arrowhead_end_path = None
-        self._cached_cp_rect = None
         self._use_labels = None
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self._visible_by_logic = True
-        self._fade_in_anim = None
-        self._fade_out_anim = None
-        self.is_fading_in = False
-        self.is_fading_out = False
 
     def type(self) -> int:
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -172,10 +130,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-
-        print('edge after_model_update (1=CREATED, -1=DELETED), ', transition_type)
         if transition_type == g.CREATED:
-            print('re-creating edge')
             ctrl.forest.store(self)
             ctrl.forest.add_to_scene(self)
             print(self.start, self.end)
@@ -234,7 +189,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: tuple (x, y, z)
         """
         if self.start:
-            return self._computed_start_point
+            return self.path.computed_start_point
         else:
             return self.fixed_start_point
 
@@ -245,7 +200,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: tuple (x, y, z)
         """
         if self.end:
-            return self._computed_end_point
+            return self.path.computed_end_point
         else:
             return self.fixed_end_point
 
@@ -416,37 +371,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         ctrl.free_drawing.set_edge_end(self, node)
         self.update_shape()
 
-    def set_start_point(self, p, y=None):
-        """ Convenience method for setting start point: accepts QPoint(F)s,
-        tuples and x,y coords.
-        :param p: first argument, either QPoint, tuple or x coordinate if y
-        is also given
-        :param y: y coordinate if p was used to give x coordinate
-        :return:
-        """
-
-        if y is not None:
-            self.fixed_start_point = p, y
-        elif isinstance(p, tuple):
-            self.fixed_start_point = p
-        if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.fixed_start_point = p.x(), p.y()
-
-    def set_end_point(self, p, y=None):
-        """ Convenience method for setting end point: accepts QPoint(F)s,
-        tuples and x,y coords.
-        :param p: first argument, either QPoint, tuple or x coordinate if y
-        is also given
-        :param y: y coordinate if p was used to give x coordinate
-        :return:
-        """
-        if y is not None:
-            self.fixed_end_point = p, y
-        elif isinstance(p, tuple):
-            self.fixed_end_point = p
-        if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.fixed_end_point = p.x(), p.y()
-
     def is_broken(self) -> bool:
         """ If this edge should be a connection between two nodes and either
         node is missing, the edge
@@ -538,76 +462,32 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         start_x = scene_x - handle_x
         start_y = scene_y - handle_y
         if not self.start:
-            self.set_start_point(start_x, start_y)
+            self.fixed_start_point = start_x, start_y
         if not self.end:
-            self.set_end_point(start_x + ex - sx, start_y + ey - sy)
+            self.fixed_end_point = start_x + ex - sx, start_y + ey - sy
 
-    def compute_pos_from_adjust(self, point_index) -> tuple:
-        """ Works with 1 or 2 control points.
-        :param point_index:
-        :return:
-        """
-        cx, cy = self.control_points[point_index]
-        rdist, rrad = self.curve_adjustment[point_index]
-        sx, sy = self.start_point if point_index == 0 else self.end_point
-        sx_to_cx = cx - sx
-        sy_to_cy = cy - sy
-        line_rad = math.atan2(sy_to_cy, sx_to_cx)
-        line_dist = math.hypot(sx_to_cx, sy_to_cy)
-        new_dist = rdist * line_dist
-        new_x = cx + (new_dist * math.cos(rrad + line_rad))
-        new_y = cy + (new_dist * math.sin(rrad + line_rad))
-        return new_x, new_y
+    # # Not used. What is this for?
+    # def compute_pos_from_adjust(self, point_index) -> tuple:
+    #     """ Works with 1 or 2 control points.
+    #     :param point_index:
+    #     :return:
+    #     """
+    #     cx, cy = self.control_points[point_index]
+    #     rdist, rrad = self.curve_adjustment[point_index]
+    #     sx, sy = self.start_point if point_index == 0 else self.end_point
+    #     sx_to_cx = cx - sx
+    #     sy_to_cy = cy - sy
+    #     line_rad = math.atan2(sy_to_cy, sx_to_cx)
+    #     line_dist = math.hypot(sx_to_cx, sy_to_cy)
+    #     new_dist = rdist * line_dist
+    #     new_x = cx + (new_dist * math.cos(rrad + line_rad))
+    #     new_y = cy + (new_dist * math.sin(rrad + line_rad))
+    #     return new_x, new_y
 
     # ### Derivative features ############################################
+
     def make_path(self):
-        """ Draws the shape as a path """
-        self.update_end_points()
-        if (self._path is not None) and not self._changed:
-            return
-        self._changed = False
-        self.prepareGeometryChange()
-        sx, sy = self.start_point
-        ex, ey = self.end_point
-        if sx == ex:
-            ex += 0.001  # fix disappearing vertical paths
-
-        thick = 1
-
-        c = dict(start_point=self.start_point, end_point=(ex, ey),
-                 curve_adjustment=self.curve_adjustment, thick=thick,
-                 start=self.start, end=self.end, inner_only=self._use_simple_path,
-                 curve_dir_start=self._curve_dir_start, curve_dir_end=self._curve_dir_end)
-
-        method = SHAPE_PRESETS[self.shape_name].path
-
-        self._path, self._true_path, self.control_points, self.adjusted_control_points = method(**c)
-        uses_pen = c.get('thickness', 0)
-
-        if self._use_simple_path:
-            self._path = self._true_path
-
-        if self.cached('arrowhead_at_start'):
-            self._arrowhead_start_path = self.make_arrowhead_path('start')
-            if uses_pen:
-                self._path = self.sharpen_arrowhead_at_start(self._path)
-        else:
-            self._arrowhead_start_path = None
-
-        if self.cached('arrowhead_at_end'):
-            self._arrowhead_end_path = self.make_arrowhead_path('end')
-            if uses_pen:
-                self._path = self.sharpen_arrowhead_at_end(self._path)
-        else:
-            self._arrowhead_end_path = None
-        if self._make_fat_path and not self._use_simple_path:
-            # Fat path is the shape of the path with some extra margin to
-            # make it easier to click/touch
-            self._fat_path = outline_stroker.createStroke(self._path)
-        else:
-            self._fat_path = self._path
-        self._cached_cp_rect = self._path.controlPointRect().adjusted(-2, -2, 2, 2)
-        #
+        self.path.make()
         if self.label_item:
             self.label_item.update_position()
         if self.selected:
@@ -629,24 +509,17 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.update_visibility()
         if not self._is_moving:
             self.update_tooltip()
-        #self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache,
-        #                  self._cached_cp_rect.size().toSize())
 
+    # override
+    def boundingRect(self):
+        return self.path.boundingRect()
 
-    def path_bounding_rect(self) -> QtCore.QRectF:
-        return self._path.boundingRect() if self._path else QtCore.QRectF()
-
+    # override
     def shape(self) -> QtGui.QPainterPath:
-        """ Override of the QGraphicsItem method. Should returns the real
-        shape of item to
-        allow exact hit detection.
-        In our case we should have special '_fat_path' for those shapes that
-        are just narrow lines.
+        """ Overrides the QGraphicsItem method.
         :return: QGraphicsPath
         """
-        if not self._fat_path:
-            self.make_path()
-        return self._fat_path
+        return self.path.shape()
 
     def reset_style(self):
         self.shape_name = None
@@ -656,210 +529,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def update_shape(self):
         """ Reload shape and shape settings """
-        cpl = len(self.control_points)
+        cpl = len(self.path.control_points)
         self.make_path()
         # while len(self.curve_adjustment) < len(self.control_points):
         # self.curve_adjustment.append((0, 0, 0))
-        if cpl != len(self.control_points):
+        if cpl != len(self.path.control_points):
             ctrl.ui.update_control_points()
         self.update()
-
-    def update_end_points(self):
-        """
-
-        :return:
-        """
-        osx, osy = self._computed_start_point
-        oex, oey = self._computed_end_point
-
-        if self.start and self.end:
-            sx, sy = self.start.current_scene_position
-            ex, ey = self.end.current_scene_position
-        elif self.start:
-            ex, ey = self.end_point
-            sx, sy = self.start.current_scene_position
-            self._computed_end_point = ex, ey
-        elif self.end:
-            sx, sy = self.start_point
-            ex, ey = self.end.current_scene_position
-            self._computed_start_point = sx, sy
-        else:
-            return
-        if self.start:
-            connection_style = self.cached_for_type('start_connects_to')
-            if connection_style == SPECIAL:
-                self._computed_start_point, self._curve_dir_start = \
-                    self.start.special_connection_point(sx, sy, ex, ey, start=True,
-                                                        edge_type=self.edge_type)
-                self._abstract_start_point = self._computed_start_point
-            elif connection_style == CONNECT_TO_CENTER:
-                self._computed_start_point = sx, sy
-                if abs(sx - ex) < abs(sy - ey):
-                    if sy < ey:
-                        self._curve_dir_start = BOTTOM_SIDE
-                    else:
-                        self._curve_dir_start = TOP_SIDE
-                else:
-                    if sx < ex:
-                        self._curve_dir_start = RIGHT_SIDE
-                    else:
-                        self._curve_dir_start = LEFT_SIDE
-                self._abstract_start_point = self._computed_start_point
-            elif connection_style == CONNECT_TO_BOTTOM_CENTER:
-                self._computed_start_point = self.start.bottom_center_magnet(scene_pos=(sx, sy))
-                self._curve_dir_start = BOTTOM_SIDE
-                self._abstract_start_point = self._computed_start_point
-            elif connection_style == CONNECT_TO_MAGNETS:
-                e_n, e_count = self.edge_index()
-                if not self.start.has_ordered_children():
-                    e_n = e_count - e_n - 1
-                self._computed_start_point = self.start.bottom_magnet(e_n, e_count, scene_pos=(sx, sy))
-                self._curve_dir_start = BOTTOM_SIDE
-                self._abstract_start_point = self._computed_start_point
-            elif connection_style == CONNECT_TO_BORDER:
-                # Find the point in bounding rect that is on the line from center of start node to
-                # center of end node / end_point. It is simple, but the point can be in any of four
-                # sides of the rect.
-
-                dx = ex - sx
-                dy = ey - sy
-                sbr = self.start.boundingRect()
-                self._abstract_start_point = sx, sy
-                s_left, s_top, s_right, s_bottom = (int(x * .8) for x in sbr.getCoords())
-                # orthogonal cases, handle separately to avoid division by zero
-                if dx == 0:
-                    if dy > 0:
-                        self._computed_start_point = sx, sy + s_bottom
-                        self._curve_dir_start = BOTTOM_SIDE
-                    else:
-                        self._computed_start_point = sx, sy + s_top
-                        self._curve_dir_start = TOP_SIDE
-                elif dy == 0:
-                    if dx > 0:
-                        self._computed_start_point = sx + s_right, sy
-                        self._curve_dir_start = RIGHT_SIDE
-                    else:
-                        self._computed_start_point = sx + s_left, sy
-                        self._curve_dir_start = LEFT_SIDE
-                else:
-                    ratio = dy / dx
-                    if dx > 0:
-                        if dy > 0:
-                            if int(s_right * ratio) < s_bottom:
-                                self._computed_start_point = sx + s_right, sy + int(s_right * ratio)
-                                self._curve_dir_start = RIGHT_SIDE
-                            else:
-                                self._computed_start_point = sx + int(s_bottom / ratio), \
-                                                             sy + s_bottom
-                                self._curve_dir_start = BOTTOM_SIDE
-                        else:
-                            if int(s_right * ratio) > s_top:
-                                self._computed_start_point = sx + s_right, sy + int(s_right * ratio)
-                                self._curve_dir_start = RIGHT_SIDE
-                            else:
-                                self._computed_start_point = sx + int(s_top / ratio), sy + s_top
-                                self._curve_dir_start = TOP_SIDE
-                    else:
-                        if dy > 0:
-                            if int(s_left * ratio) < s_bottom:
-                                self._computed_start_point = sx + s_left, sy + int(s_left * ratio)
-                                self._curve_dir_start = LEFT_SIDE
-                            else:
-                                self._computed_start_point = sx + int(s_bottom / ratio), \
-                                                             sy + s_bottom
-                                self._curve_dir_start = BOTTOM_SIDE
-                        else:
-                            if int(s_left * ratio) > s_top:
-                                self._computed_start_point = sx + s_left, sy + int(s_left * ratio)
-                                self._curve_dir_start = LEFT_SIDE
-                            else:
-                                self._computed_start_point = sx + int(s_top / ratio), sy + s_top
-                                self._curve_dir_start = TOP_SIDE
-        if self.end:
-            connection_style = self.cached_for_type('end_connects_to')
-            if connection_style == SPECIAL:
-                self._computed_end_point, self._curve_dir_end = self.end.special_connection_point(
-                    sx, sy, ex, ey, start=False, edge_type=self.edge_type)
-                self._abstract_end_point = self._computed_end_point
-            elif connection_style == CONNECT_TO_CENTER:
-                self._computed_end_point = ex, ey
-                if abs(sx - ex) < abs(sy - ey):
-                    if sy > ey:
-                        self._curve_dir_end = BOTTOM_SIDE
-                    else:
-                        self._curve_dir_end = TOP_SIDE
-                else:
-                    if sx > ex:
-                        self._curve_dir_end = RIGHT_SIDE
-                    else:
-                        self._curve_dir_end = LEFT_SIDE
-                self._abstract_end_point = self._computed_end_point
-            elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
-                    CONNECT_TO_MAGNETS:
-                self._computed_end_point = self.end.top_center_magnet(scene_pos=(ex, ey))
-                self._curve_dir_end = TOP_SIDE
-                self._abstract_end_point = self._computed_end_point
-
-            elif connection_style == CONNECT_TO_BORDER:
-                # Find the point in bounding rect that is on the line from center of end node to
-                # center of start node / start_point. It is simple, but the point can be in any of
-                # four sides of the rect.
-                dx = ex - sx
-                dy = ey - sy
-                ebr = self.end.boundingRect()
-                self._abstract_end_point = ex, ey
-                e_left, e_top, e_right, e_bottom = (int(x * .8) for x in ebr.getCoords())
-                # orthogonal cases, handle separately to avoid division by zero
-                if dx == 0:
-                    if dy > 0:
-                        self._computed_end_point = ex, ey + e_top
-                        self._curve_dir_end = TOP_SIDE
-                    else:
-                        self._computed_end_point = ex, ey + e_bottom
-                        self._curve_dir_end = BOTTOM_SIDE
-                elif dy == 0:
-                    if dx > 0:
-                        self._computed_end_point = ex + e_left, ey
-                        self._curve_dir_end = LEFT_SIDE
-                    else:
-                        self._computed_end_point = ex + e_right, ey
-                        self._curve_dir_end = RIGHT_SIDE
-                else:
-                    ratio = dy / dx
-                    if dx > 0:
-                        if dy > 0:
-                            if int(e_left * ratio) > e_top:
-                                self._computed_end_point = ex + e_left, ey + int(e_left * ratio)
-                                self._curve_dir_end = LEFT_SIDE
-                            else:
-                                self._computed_end_point = ex + int(e_top / ratio), ey + e_top
-                                self._curve_dir_end = TOP_SIDE
-                        else:
-                            if int(e_left * ratio) < e_bottom:
-                                self._computed_end_point = ex + e_left, ey + int(e_left * ratio)
-                                self._curve_dir_end = LEFT_SIDE
-                            else:
-                                self._computed_end_point = ex + int(e_bottom / ratio), ey + e_bottom
-                                self._curve_dir_end = BOTTOM_SIDE
-                    else:
-                        if dy > 0:
-                            if int(e_right * ratio) > e_top:
-                                self._computed_end_point = ex + e_right, ey + int(e_right * ratio)
-                                self._curve_dir_end = RIGHT_SIDE
-                            else:
-                                self._computed_end_point = ex + int(e_top / ratio), ey + e_top
-                                self._curve_dir_end = TOP_SIDE
-                        else:
-                            if int(e_right * ratio) < e_bottom:
-                                self._computed_end_point = ex + e_right, ey + int(e_right * ratio)
-                                self._curve_dir_end = RIGHT_SIDE
-                            else:
-                                self._computed_end_point = ex + int(e_bottom / ratio), ey + e_bottom
-                                self._curve_dir_end = BOTTOM_SIDE
-        nsx, nsy = self._computed_start_point
-        nex, ney = self._computed_end_point
-        if osx != nsx or osy != nsy or oex != nex or oey != ney:
-            self._changed = True
 
     def connect_end_points(self, start, end):
         """
@@ -868,12 +544,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param end:
         """
         if start:
-            self._computed_start_point = start.current_scene_position
+            self.path.computed_start_point = start.current_scene_position
             self.start = start
         else:
             self.start = None
         if end:
-            self._computed_end_point = end.current_scene_position
+            self.path.computed_end_point = end.current_scene_position
             self.end = end
         else:
             self.end = None
@@ -952,14 +628,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     self.label_item = None
         self.update()
 
-    def boundingRect(self):
-        """ BoundingRect that includes the control points of the arc
-
-        :return:
-        """
-        if not self._path:
-            self.make_path()
-        return self._cached_cp_rect
 
     # ### Mouse - Qt events ##################################################
 
@@ -1078,12 +746,15 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
         c = self.contextual_color()
-        if self._use_simple_path:
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        if self.path.use_simple_path:
             p = QtGui.QPen()
             p.setColor(c)
             painter.setPen(p)
-            painter.drawPath(self._true_path)
+            painter.drawPath(self.path.true_path)
         else:
+            dpath = self.path.draw_path
             if self.has_outline():
                 thickness = self.cached('thickness')
                 p = QtGui.QPen()
@@ -1092,66 +763,40 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 # Show many projections
                 if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
                     p.setWidthF(thickness)
-                    left = self.start_point[0] > self.end_point[0]
+                    left = sx > ex
                     for i, proj in enumerate(self.in_projections):
                         cp = QtGui.QPen(p)
                         cp.setColor(ctrl.cm.get(proj.color_id))
                         painter.setPen(cp)
                         if left:
-                            cpath = self._path.translated(i, i)
+                            painter.drawPath(dpath.translated(i, i))
                         else:
-                            cpath = self._path.translated(-i, i)
-                        painter.drawPath(cpath)
+                            painter.drawPath(dpath.translated(-i, i))
                 else:
                     p.setWidthF(thickness)
                     painter.setPen(p)
-                    painter.drawPath(self._path)
+                    painter.drawPath(dpath)
 
             if self.is_filled():
                 if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-                    left = self.start_point[0] > self.end_point[0]
+                    left = sx > ex
                     for i, proj in enumerate(self.in_projections):
                         cp = ctrl.cm.get(proj.color_id)
                         if left:
-                            cpath = self._path.translated(i, i)
+                            painter.fillPath(self._path.translated(i, i), cp)
                         else:
-                            cpath = self._path.translated(-i, i)
-                        painter.fillPath(cpath, cp)
+                            painter.fillPath(self._path.translated(-i, i), cp)
                 else:
-                    painter.fillPath(self._path, c)
-            if self.cached('arrowhead_at_start') and self._arrowhead_start_path:
-                painter.fillPath(self._arrowhead_start_path, c)
-            if self.cached('arrowhead_at_end') and self._arrowhead_end_path:
-                painter.fillPath(self._arrowhead_end_path, c)
+                    painter.fillPath(dpath, c)
+
+            if self.path.arrowhead_start_path:
+                painter.fillPath(self.path.arrowhead_start_path, c)
+            if self.path.arrowhead_end_path:
+                painter.fillPath(self.path.arrowhead_end_path, c)
 
         if self.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())
-            painter.setPen(p)
-            painter.drawPath(self._true_path)
-            if self.control_points:
-                if self.curve_adjustment:
-                    ca = len(self.curve_adjustment)
-                else:
-                    ca = 0
-
-                p.setWidthF(0.5)
-                painter.setPen(p)
-                if len(self.control_points) > 1:
-                    painter.drawLine(self.end_point[0], self.end_point[1],
-                                     self.control_points[1][0], self.control_points[1][1])
-                    if ca > 1 and self.curve_adjustment[1][0]:
-                        p.setStyle(QtCore.Qt.DashLine)
-                        painter.drawLine(self.control_points[1][0], self.control_points[1][1],
-                                         self.adjusted_control_points[1][0],
-                                         self.adjusted_control_points[1][1])
-                        p.setStyle(QtCore.Qt.SolidLine)
-                painter.drawLine(self.start_point[0], self.start_point[1],
-                                 self.control_points[0][0], self.control_points[0][1])
-                if ca > 0 and self.curve_adjustment[0][0]:
-                    p.setStyle(QtCore.Qt.DashLine)
-                    painter.drawLine(self.control_points[0][0], self.control_points[0][1],
-                                     self.adjusted_control_points[0][0],
-                                     self.adjusted_control_points[0][1])
+            self.path.draw_control_point_hints(painter, p, self.curve_adjustment)
         if self.crossed_out_flag:
             cx, cy = to_tuple(self._true_path.pointAtPercent(0.5))
             p = QtGui.QPen(ctrl.cm.ui())
@@ -1160,135 +805,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             painter.drawLine(cx - 20, cy - 10, cx + 20, cy + 10)
             painter.drawLine(cx - 20, cy + 10, cx + 20, cy - 10)
 
-    def get_point_at(self, d: float) -> Pf:
-        """ Get coordinates at the percentage of the length of the path.
-        :param d: float
-        :return: QPoint
-        """
-        if not self._true_path:
-            self.make_path()
-        return self._true_path.pointAtPercent(d)
-
-    def get_angle_at(self, d: float) -> float:
-        """ Get angle at the percentage of the length of the path.
-        :param d: int
-        :return: float
-        """
-        if not self._true_path:
-            self.make_path()
-        return self._true_path.angleAtPercent(d)
-
-    def get_closest_path_point(self, pos):
-        """ When dragging object along path, gives the coordinates to closest
-        point in path corresponding to
-        given position. There is no exact way of doing this, what we do is to
-        take 100 points along the line and
-        find the closest point from there.
-        :param pos: position looking for closest path position
-        :return: (float:pointAtPercent, QPos:path position)
-        """
-        if not self._true_path:
-            self.make_path()
-        min_d = 1000
-        min_i = -1
-        min_pos = None
-        for i in range(0, 100, 2):
-            p2 = self._true_path.pointAtPercent(i / 100.0)
-            d = (pos - p2).manhattanLength()
-            if d < min_d:
-                min_d = d
-                min_i = i
-                min_pos = p2
-        return min_i / 100.0, min_pos
-
-    def make_arrowhead_path(self, pos='end'):
-        """ Assumes that the path exists already, creates arrowhead path to
-        either at the end or at start,
-        but doesn't yet combine these paths.
-        :param pos: 'end' or 'start'
-        :return: QPainterPath for arrowhead
-        """
-        ad = 0.5
-        x = y = size = a = 0
-        t = self.cached('thickness')
-        if pos == 'start':
-            size = self.arrowhead_size_at_start
-            if t:
-                size *= t
-            x, y = self.start_point
-            # average between last control point and general direction seems to be ok.
-            if self.control_points:
-                p0 = self.adjusted_control_points[0]
-            else:
-                p0 = self.end_point
-            p0x, p0y = p0
-            sx, sy = self.start_point
-            dx, dy = sx - p0x, sy - p0y
-            a = math.atan2(dy, dx)
-        elif pos == 'end':
-            size = self.arrowhead_size_at_end
-            if t:
-                size *= t
-            x, y = self.end_point
-            # average between last control point and general direction seems to be ok.
-            if self.control_points:
-                last_x, last_y = self.adjusted_control_points[-1]
-            else:
-                last_x, last_y = self.start_point
-
-            dx, dy = x - last_x, y - last_y
-            a = math.atan2(dy, dx)
-        p = QtGui.QPainterPath()
-        p.moveTo(x, y)
-        x1, y1 = x - (math.cos(a + ad) * size), y - (math.sin(a + ad) * size)
-        xm, ym = x - (math.cos(a) * size * 0.5), y - (math.sin(a) * size * 0.5)
-        x2, y2 = x - (math.cos(a - ad) * size), y - (math.sin(a - ad) * size)
-        p.lineTo(x1, y1)
-        p.lineTo(xm, ym)
-        p.lineTo(x2, y2)
-        p.lineTo(x, y)
-        if pos == 'start':
-            self._arrow_cut_point_start = xm, ym
-        elif pos == 'end':
-            self._arrow_cut_point_end = xm, ym
-        return p
-
-    def sharpen_arrowhead_at_start(self, path):
-        """ Move the start point of given path few pixels inwards, so when
-        path is drawn with solid line it won't end with blunt end of a line
-        but with the sharp end of the arrowhead shape.
-        :param path: the path where sharpening occurs
-        :return:
-        """
-        i = 0
-        if self._arrow_cut_point_start:
-            x, y = self._arrow_cut_point_start
-        else:
-            return path
-        path.setElementPositionAt(i, x, y)
-        return path
-
-    def sharpen_arrowhead_at_end(self, path):
-        """ Move the end point of given path few pixels inwards, so when
-        path is drawn with solid line it won't end with blunt end of a line
-        but with the sharp end of the arrowhead shape.
-        :param path: the path where sharpening occurs
-        :return:
-        """
-        i = path.elementCount() - 1
-        if self._arrow_cut_point_end:
-            x, y = self._arrow_cut_point_end
-        else:
-            return path
-        path.setElementPositionAt(i, x, y)
-        return path
-
     def end_node_started_moving(self):
         """ Called if the end node has started moving.
         :return:
         """
         self._end_node_moving = True
-        self._make_fat_path = False
+        self.path.make_fat_path = False
         if not self._start_node_moving:
             self._start_moving()
 
@@ -1297,7 +819,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
         self._start_node_moving = True
-        self._make_fat_path = False
+        self.path.make_fat_path = False
         if not self._end_node_moving:
             self._start_moving()
 
@@ -1330,88 +852,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         self._is_moving = False
-        self._make_fat_path = True
+        self.path.make_fat_path = True
         #if prefs.move_effect:
         #    self._use_simple_path = False
-
-    def fade_in(self, s=150):
-        """ Simple fade effect. The object exists already when fade starts.
-        :return: None
-        :param s: speed in ms
-        """
-        if self.is_fading_in:
-            return
-        self.is_fading_in = True
-        if not self.isVisible():
-            self.show()
-        if self.is_fading_out:
-            self.is_fading_out = False
-            self._fade_out_anim.stop()
-        self._fade_in_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_in_anim.setDuration(s)
-        self._fade_in_anim.setStartValue(0.0)
-        self._fade_in_anim.setEndValue(1.0)
-        self._fade_in_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
-        self._fade_in_anim.finished.connect(self.fade_in_finished)
-        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-
-    def fade_in_finished(self):
-        self.is_fading_in = False
-
-    def fade_out(self, s=150):
-        """ Start fade out. The object exists until fade end.
-        :return: None
-        """
-        if not self.isVisible():
-            return
-        if self.is_fading_out:
-            return
-        self.is_fading_out = True
-        if self.is_fading_in:
-            self.is_fading_in = False
-            self._fade_in_anim.stop()
-        self._fade_out_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_out_anim.setDuration(s)
-        self._fade_out_anim.setStartValue(1.0)
-        self._fade_out_anim.setEndValue(0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_out_anim.finished.connect(self.fade_out_finished)
-        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-
-    def fade_out_and_delete(self, s=150):
-        """ Start fade out. The object exists until fade end.
-        :return: None
-        """
-        if self.is_fading_out:
-            self._fade_out_anim.finished.disconnect()
-            self._fade_out_anim.finished.connect(self.fade_out_finished_delete)
-            if self.is_fading_in:
-                self.is_fading_in = False
-                self._fade_in_anim.stop()
-            return
-        if not self.isVisible():
-            self.fade_out_finished_delete()
-            return
-        self.is_fading_out = True
-        if self.is_fading_in:
-            self.is_fading_in = False
-            self._fade_in_anim.stop()
-        self._fade_out_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_out_anim.setDuration(s)
-        self._fade_out_anim.setStartValue(1.0)
-        self._fade_out_anim.setEndValue(0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_out_anim.finished.connect(self.fade_out_finished_delete)
-        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-
-    def fade_out_finished_delete(self):
-        self.is_fading_out = False
-        self.hide()
-        ctrl.forest.remove_from_scene(self, fade_out=False)
-
-    def fade_out_finished(self):
-        self.is_fading_out = False
-        self.hide()
 
     def free_drawing_mode(self, *args, **kwargs):
         """ Utility method for checking conditions for editing operations

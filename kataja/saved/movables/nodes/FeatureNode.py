@@ -33,7 +33,7 @@ from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.saved.Edge import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
+from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.utils import to_tuple
 
 color_map = {'tense': 'accent7',

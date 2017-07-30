@@ -628,12 +628,12 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        sx, sy = to_tuple(e.get_point_at(0.4))
+        sx, sy = to_tuple(e.path.get_point_at(0.4))
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
         else:
-            d = e.get_angle_at(0.4)
+            d = e.path.get_angle_at(0.4)
             d -= 60  # 75
             angle = math.radians(-d)
             dx = math.cos(angle)
@@ -735,13 +735,13 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        sx, sy = to_tuple(e.get_point_at(0.4))
+        sx, sy = to_tuple(e.path.get_point_at(0.4))
         self.start_point = sx, sy
         if end_point:
             ex, ey = end_point
             self.end_point = end_point
         else:
-            d = e.get_angle_at(0.4)
+            d = e.path.get_angle_at(0.4)
             d += 60  # 75
             angle = math.radians(-d)
             dx = math.cos(angle)
