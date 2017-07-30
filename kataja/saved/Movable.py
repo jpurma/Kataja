@@ -35,10 +35,6 @@ from kataja.SavedField import SavedField
 from kataja.utils import add_xy, multiply_xy, div_xy, time_me
 
 
-qbytes_opacity = QtCore.QByteArray()
-qbytes_opacity.append("opacity")
-
-
 def about_there(pos1, pos2):
     """ Two triplets are about equal
     :param pos1:
@@ -48,7 +44,7 @@ def about_there(pos1, pos2):
     return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(pos2[1])
 
 
-class Movable(SavedObject, QtWidgets.QGraphicsObject):
+class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     """
     Movable items
     -------------
@@ -85,8 +81,10 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     """
     def __init__(self):
+        FadeInOut.__init__(self)
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
+
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
         self._dragged = False
@@ -104,7 +102,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._use_easing = True
         self._distance = None
         self.unmoved = True  # flag to distinguish newly created nodes
-        self.after_move_function = None
         self.use_adjustment = False
         self._high_priority_move = False
         self.locked_to_node = None
@@ -185,12 +182,11 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, after_move_function=None, valign=MIDDLE, align=NO_ALIGN,
+    def move_to(self, x, y, valign=MIDDLE, align=NO_ALIGN,
                 can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:
-        :param after_move_function: Function to call when the movement is finished
         :param valign: What position inside the moved item should correspond to given coordinates.
         By default align is in center, but often you may want to move items
         so that e.g. their top rows are aligned.
@@ -224,8 +220,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             # already moving there
             return
         self.target_position = x, y
-        if after_move_function:
-            self.after_move_function = after_move_function
         self.start_moving()
 
     def get_lower_part_y(self):
@@ -388,9 +382,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         self._high_priority_move = False
         self.target_position = self.current_position
-        if self.after_move_function:
-            self.after_move_function()
-            self.after_move_function = None
         self._move_counter = 0
         self._is_moving = False
 
@@ -421,82 +412,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             self.locked = True
         else:
             self.use_adjustment = True
-
-    # ## Opacity ##############################################################
-
-    def fade_in(self, s=300):
-        """ Simple fade effect. The object exists already when fade starts.
-        :return: None
-        """
-        if self.is_fading_in:
-            return
-        self.is_fading_in = True
-        self.show()
-        if self.is_fading_out:
-            print('interrupting fade out ', self.uid)
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(0.0)
-        self._fade_anim.setEndValue(1.0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
-        self._fade_anim.finished.connect(self.fade_in_finished)
-
-    def fade_in_finished(self):
-        self.is_fading_in = False
-
-    def fade_out(self, s=300):
-        """ Start fade out. The object exists until fade end.
-        :return: None
-        """
-        if self.is_fading_out:
-            return
-        if not self.isVisible():
-            return
-        self.is_fading_out = True
-        if self.is_fading_in:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(1.0)
-        self._fade_anim.setEndValue(0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
-        self._fade_anim.finished.connect(self.fade_out_finished)
-
-    def fade_out_and_delete(self, s=300):
-        """ Start fade out. The object exists until fade end.
-        :return: None
-        """
-        if self.is_fading_out:
-            self._fade_anim.finished.disconnect() # regular fade_out isn't enough
-            self._fade_anim.finished.connect(self.fade_out_finished_delete)
-            return
-        if not self.isVisible():
-            self.fade_out_finished_delete()
-            return
-        self.is_fading_out = True
-        if self.is_fading_in:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(1.0)
-        self._fade_anim.setEndValue(0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.KeepWhenStopped)
-        self._fade_anim.finished.connect(self.fade_out_finished_delete)
-
-    def fade_out_finished(self):
-        self.is_fading_out = False
-        if self.after_move_function:
-            self.after_move_function()
-            self.after_move_function = None
-        self.hide()
-
-    def fade_out_finished_delete(self):
-        self.is_fading_out = False
-        ctrl.forest.remove_from_scene(self, fade_out=False)
 
     def is_visible(self):
         """ Our own tracking of object visibility, not based on Qt's scene
