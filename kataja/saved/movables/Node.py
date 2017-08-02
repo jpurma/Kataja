@@ -1028,7 +1028,7 @@ class Node(Movable):
             self.stop_moving()
             self.update_bounding_rect()
 
-    def lock_to_node(self, parent):
+    def lock_to_node(self, parent, move_to=None):
         previously = self.locked_to_node
         if previously is not parent:
             self.locked_to_node = parent
@@ -1038,6 +1038,12 @@ class Node(Movable):
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
             self.update_bounding_rect()
+            if move_to:
+                self.move_to(*move_to)
+            parent.update_bounding_rect()
+        elif move_to:
+            self.move_to(*move_to)
+            parent.update_bounding_rect()
 
     def get_edges_down_with_children(self):
         """ Sometimes you need to count in also edges of locked in nodes (they are childItems). 

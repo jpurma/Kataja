@@ -75,7 +75,6 @@ def syntactic_state_to_nodes(forest, syn_state):
                 if my_item.uid not in done_nodes:
                     yield my_item
         elif isinstance(listlike, (list, set, tuple)):
-            print(listlike)
             for my_item in listlike:
                 if my_item.uid not in done_nodes:
                     yield my_item
@@ -444,7 +443,6 @@ def verify_edge_order_for_constituent_nodes(node):
                         passed.append(edge)
                 else:
                     passed.append(edge)
-            print(new_order)
             new_order = [edge for i, edge in sorted(new_order)]
             node.edges_down = passed + new_order
 

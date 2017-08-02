@@ -255,8 +255,7 @@ class FeatureNode(Node):
                 if self.locked_to_node != checked_by:
                     x = checked_by.future_children_bounding_rect().right() - \
                         self.future_children_bounding_rect().x() - 8
-                    self.lock_to_node(checked_by)
-                    self.move_to(x, 0)
+                    self.lock_to_node(checked_by, move_to=(x, 0))
                     for parent in self.get_parents(similar=False, visible=True):
                         if parent.node_type == g.CONSTITUENT_NODE:
                             parents.append(parent)
