@@ -46,6 +46,7 @@ color_map = {'tense': 'accent7',
              'D': 'accent2',
              'V': 'accent3',
              'T': 'accent4',
+             'F': 'accent5',
              'C': 'accent7',
              'wh': 'accent6',
              'n': 'accent1',
@@ -421,6 +422,14 @@ class FeatureNode(Node):
                 painter.setPen(self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
+
+    @staticmethod
+    def get_color_for(feature_name):
+        if feature_name in color_map:
+            return color_map[feature_name]
+        else:
+            return 'accent7'
+
 
     def get_color_id(self):
         """

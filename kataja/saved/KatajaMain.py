@@ -277,7 +277,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 else:
                     m = "adding %s " % classobj.__name__
                 log.info(m)
-                print(m)
         if hasattr(self.active_plugin_setup, 'help_file'):
             dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
             print(dir_path)

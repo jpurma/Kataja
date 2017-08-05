@@ -10,6 +10,7 @@ CONNECT_TO_BOTTOM_CENTER = 1
 CONNECT_TO_MAGNETS = 2
 CONNECT_TO_BORDER = 3
 SPECIAL = 4
+CONNECT_TO_SIMILAR = 5
 
 TOP_LEFT_CORNER = 0
 TOP_SIDE = 1
@@ -19,6 +20,17 @@ RIGHT_SIDE = 4
 BOTTOM_LEFT_CORNER = 5
 BOTTOM_SIDE = 6
 BOTTOM_RIGHT_CORNER = 7
+
+
+def opposite(curve_dir):
+    if curve_dir == LEFT_SIDE:
+        return RIGHT_SIDE
+    elif curve_dir == TOP_SIDE:
+        return BOTTOM_SIDE
+    elif curve_dir == RIGHT_SIDE:
+        return LEFT_SIDE
+    elif curve_dir == BOTTOM_SIDE:
+        return TOP_SIDE
 
 
 class EdgePath:
@@ -90,7 +102,8 @@ class EdgePath:
         else:
             return
         if start:
-            connection_style = self.edge.cached_for_type('start_connects_to')
+            #connection_style = self.edge.cached_for_type('start_connects_to')
+            connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
@@ -182,8 +195,35 @@ class EdgePath:
                             else:
                                 self.computed_start_point = sx + int(s_top / ratio) + i_shift, sy + s_top
                                 self.curve_dir_start = TOP_SIDE
+            elif connection_style == CONNECT_TO_SIMILAR:
+                found = False
+                for edge in start.edges_up:
+                    if edge.extra == self.edge.extra:
+                        self.computed_start_point = edge.path.computed_end_point
+                        self.curve_dir_start = opposite(edge.path.curve_dir_end)
+                        found = True
+                        break
+                if not found:
+                    if self.edge.extra and self.edge.extra.syntactic_object:
+                        ee = self.edge.extra.syntactic_object
+                        for edge in start.edges_down:
+                            if edge == self.edge:
+                                self.computed_start_point = sx + i_shift, sy
+                                self.curve_dir_start = LEFT_SIDE
+                                found = True
+                                break
+                            elif edge.extra and edge.extra.syntactic_object.name == ee.name:
+                                self.computed_start_point = edge.path.computed_start_point
+                                self.curve_dir_start = opposite(edge.path.curve_dir_start)
+                                found = True
+                                break
+                if not found:
+                    self.computed_start_point = sx + i_shift, sy
+                    self.curve_dir_start = BOTTOM_SIDE
+                self.abstract_start_point = sx, sy
         if end:
-            connection_style = self.edge.cached_for_type('end_connects_to')
+            #connection_style = self.edge.cached_for_type('end_connects_to')
+            connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
@@ -269,6 +309,11 @@ class EdgePath:
                                 self.computed_end_point = ex + int(e_bottom / ratio) + i_shift, \
                                                           ey + e_bottom
                                 self.curve_dir_end = BOTTOM_SIDE
+            elif connection_style == CONNECT_TO_SIMILAR:
+                self.computed_end_point = ex + i_shift, ey
+                self.curve_dir_end = TOP_SIDE
+                self.abstract_end_point = ex, ey
+
         nsx, nsy = self.computed_start_point
         nex, ney = self.computed_end_point
         if osx != nsx or osy != nsy or oex != nex or oey != ney:

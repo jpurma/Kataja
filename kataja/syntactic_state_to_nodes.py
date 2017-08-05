@@ -47,6 +47,8 @@ def syntactic_state_to_nodes(forest, syn_state):
     if forest.syntax.display_modes:
         syntactic_state = forest.syntax.transform_trees_for_display(syntactic_state)
 
+    forest.semantics_manager.clear()
+
     node_keys_to_validate = set(forest.nodes.keys())
     edge_keys_to_validate = set(forest.edges.keys())
 
@@ -208,7 +210,15 @@ def syntactic_state_to_nodes(forest, syn_state):
                 if child:
                     connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
             if synobj.parts:
-                for feature in synobj.get_features():
+                features = list(synobj.get_features())
+                semantics = getattr(synobj, 'semantics', None)
+                if semantics:
+                    sem_label, sem_array_n = semantics
+                    forest.semantics_manager.add_to_array(node, sem_label, sem_array_n)
+                checked_features = getattr(synobj, 'checked_features', None)
+                if checked_features:
+                    features += list(checked_features)
+                for feature in features:
                     # Try to find where from this from this edge has been inherited.
                     # Connect this node to there.
                     nfeature = recursive_create_edges(feature)
@@ -222,6 +232,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                             nchild = recursive_create_edges(child)
                             connect_feature_if_necessary(node, nchild, nfeature)
                             break
+
             else:
                 for feature in synobj.get_features():
                     nfeature = recursive_create_edges(feature)

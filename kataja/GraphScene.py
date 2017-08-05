@@ -674,6 +674,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
+            f.semantics_manager.update_position()
             if (not self.manual_zoom) \
                     and (not ctrl.dragged_focus) \
                     and self.timer_counter % 20 == 0:

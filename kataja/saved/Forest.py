@@ -31,6 +31,7 @@ import kataja.globals as g
 from kataja.ChainManager import ChainManager
 from kataja.FreeDrawing import FreeDrawing
 from kataja.ProjectionManager import ProjectionManager
+from kataja.SemanticsManager import SemanticsManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.UndoManager import UndoManager
@@ -78,6 +79,7 @@ class Forest(SavedObject):
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
         self.free_drawing = FreeDrawing(self)
+        self.semantics_manager = SemanticsManager(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
         self.old_label_mode = 0
@@ -483,6 +485,8 @@ class Forest(SavedObject):
         for n in self.projection_manager.projections.values():
             if n.visual:
                 yield n.visual
+        for n in self.semantics_manager.all_items:
+            yield n
         for n in self.groups.values():
             yield n
         if self.gloss:

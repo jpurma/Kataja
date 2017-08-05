@@ -65,6 +65,7 @@ class BaseConstituent(SavedObject, IConstituent):
         self.label = label
         self.features = features or []
         self.parts = parts or []
+        self.checked_features = None
 
     def __str__(self):
         return str(self.label)
@@ -233,9 +234,15 @@ class BaseConstituent(SavedObject, IConstituent):
             new = part.copy()
             new_parts.append(new)
         new_features = self.features.copy()
+        if self.checked_features:
+            a, b = self.checked_features
+            cf = a.copy(), b.copy()
+        else:
+            cf = None
         nc = self.__class__(label=self.label,
                             parts=new_parts,
-                            features=new_features)
+                            features=new_features,
+                            checked_features=cf)
         return nc
 
 
@@ -249,4 +256,5 @@ class BaseConstituent(SavedObject, IConstituent):
     sourcestring = SavedField("sourcestring")
     label = SavedField("label")
     parts = SavedField("parts")
+    checked_features = SavedField("checked_features")
 

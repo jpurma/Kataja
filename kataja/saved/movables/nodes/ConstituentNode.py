@@ -21,7 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
@@ -683,6 +683,13 @@ class ConstituentNode(Node):
             return ', '.join(feature_strings)
         return ''
 
+    def is_merging_features(self):
+        if self.syntactic_object:
+            syn_feats = getattr(self.syntactic_object, 'checked_features', None)
+            if syn_feats:
+                gn = ctrl.forest.get_node
+                return [gn(f) for f in syn_feats]
+
     # ### Checks for callable actions ####
 
     def can_top_merge(self):
@@ -722,14 +729,66 @@ class ConstituentNode(Node):
         """
         pass
 
-    #
-    # def paint(self, painter, option, widget=None):
-    #     """ Painting is sensitive to mouse/selection issues, but usually with
-    #     :param painter:
-    #     :param option:
-    #     :param widget:
-    #     nodes it is the label of the node that needs complex painting """
-    #     super().paint(painter, option, widget=widget)
+
+
+    # ### Paint overrides
+
+    def paint_old(self, painter, option, widget=None):
+        super().paint(painter, option, widget=widget)
+        feats = self.is_merging_features()
+        if feats:
+            if False and self._cached_feats == feats:
+                gradient = self._cached_gradient
+            else:
+                color = ctrl.cm.get(feat_color)
+                other_color = ctrl.cm.paper()
+                gradient = QtGui.QRadialGradient()
+
+            feat_color = feats[0].get_color_id()
+            if not feat_color.endswith('tr'):
+                feat_color = feat_color + 'tr'
+            old_pen = painter.pen()
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setBrush(gradient)
+            b = QtCore.QRectF(self.inner_rect)
+            painter.drawEllipse(b)
+            painter.setPen(old_pen)
+
+    def paint(self, painter, option, widget=None):
+        super().paint(painter, option, widget=widget)
+        feats = self.is_merging_features()
+        if feats:
+            if False and self._cached_feats == feats:
+                gradient = self._cached_gradient
+            feat_color = feats[0].get_color_id()
+            paper = ctrl.cm.paper()
+            r = QtCore.QRectF(self.inner_rect)
+            w = r.width()
+            h = r.height()
+            if w > h:
+                s = h
+            else:
+                s = w
+            c = r.center()
+            r = QtCore.QRectF(0, 0, s, s)
+            r.moveCenter(c)
+
+            gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
+            if ctrl.cm.light_on_dark():
+                color = ctrl.cm.get(feat_color)
+                gradient.setColorAt(1, paper)
+                gradient.setColorAt(0, color)
+            else:
+                if not feat_color.endswith('tr'):
+                    feat_color = feat_color + 'tr'
+                color = ctrl.cm.get(feat_color)
+                gradient.setColorAt(0, paper)
+                gradient.setColorAt(1, color)
+            old_pen = painter.pen()
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setBrush(gradient)
+            painter.drawEllipse(r)
+            painter.setPen(old_pen)
 
     # ############## #
     #                #
