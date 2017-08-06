@@ -59,6 +59,9 @@ class EdgePath:
         self.arrowhead_end_path = None
         self.cached_cp_rect = None
         self.changed = False
+        self.cached_start_index = self.edge.edge_start_index()
+        self.cached_end_index = self.edge.edge_end_index()
+
 
     def shape(self) -> QtGui.QPainterPath:
         """ Use the fatter version for hit detection
@@ -199,7 +202,9 @@ class EdgePath:
                 found = False
                 for edge in start.edges_up:
                     if edge.extra == self.edge.extra:
-                        self.computed_start_point = edge.path.computed_end_point
+                        oi, oi_of = edge.path.cached_end_index
+                        others_i_shift = (oi - math.ceil(oi_of / 2)) * 2
+                        self.computed_start_point = sx + others_i_shift, sy
                         self.curve_dir_start = opposite(edge.path.curve_dir_end)
                         found = True
                         break
@@ -207,7 +212,7 @@ class EdgePath:
                     if self.edge.extra and self.edge.extra.syntactic_object:
                         ee = self.edge.extra.syntactic_object
                         for edge in start.edges_down:
-                            if edge == self.edge:
+                            if edge == self.edge or edge.end is self.edge.end:
                                 self.computed_start_point = sx + i_shift, sy
                                 self.curve_dir_start = BOTTOM_SIDE
                                 found = True

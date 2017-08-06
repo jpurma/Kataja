@@ -22,6 +22,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         self.color_id = color_id
         self.color_id_tr = color_id if color_id.endswith('tr') else color_id + 'tr'
         self.members = []
+        self.setZValue(2)
         self.setPos(x, y)
 
     def add_member(self, node):
@@ -79,11 +80,31 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                 pos = member.scenePos()
                 px = pos.x()
                 py = pos.y()
-                p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
-                p.lineTo((px - x) / 2, mid_height)
-                #p.lineTo(px - x, py - y)
-                p.quadTo(((px - x) / 4) * 3, mid_height, px - x, py - y)
-                painter.drawPath(p)
+                if True:
+                    painter.setPen(QtCore.Qt.NoPen)
+                    painter.setBrush(ctrl.cm.get(self.color_id_tr))
+                    # p.lineTo(px - x, py - y)
+                    if py < y:
+                        p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height + 2))
+                        p.lineTo((px - x) / 2, mid_height + 2)
+                        p.quadTo(((px - x) / 4) * 3, mid_height + 2, px - x - 1, py - y + 1)
+                        p.lineTo(px - x + 1, py - y - 1)
+                        p.quadTo(((px - x) / 4) * 3, mid_height - 2, (px - x) / 2, mid_height - 2)
+                        p.lineTo(0, mid_height - 2)
+                    else:
+                        p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height - 2))
+                        p.lineTo((px - x) / 2, mid_height - 2)
+                        p.quadTo(((px - x) / 4) * 3, mid_height - 2, px - x - 1, py - y - 1)
+                        p.lineTo(px - x + 1, py - y + 1)
+                        p.quadTo(((px - x) / 4) * 3, mid_height + 2, (px - x) / 2, mid_height + 2)
+                        p.lineTo(0, mid_height + 2)
+                    painter.drawPath(p)
+                else:
+                    p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
+                    p.lineTo((px - x) / 2, mid_height)
+                    #p.lineTo(px - x, py - y)
+                    p.quadTo(((px - x) / 4) * 3, mid_height, px - x, py - y)
+                    painter.drawPath(p)
             self.setBrush(ctrl.cm.paper())
             QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, *args, **kwargs)
         else:

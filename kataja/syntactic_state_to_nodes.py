@@ -192,7 +192,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         else:
             found_edges.add(edge.uid)
 
-
     def recursive_create_edges(synobj):
         """ All of the nodes exist already, now put the edges in place. Goes to the bottom and 
         then builds up. 
