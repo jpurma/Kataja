@@ -170,7 +170,7 @@ class SemanticsManager:
                 print('no suitable semantic array for ', label, array_id)
                 return
             if self.arrays_list:
-                last = self.arrays_list[-1]
+                last = self.arrays_list[0]
                 x = last.x
                 y = last.y + last.total_size()[1] + 8
             else:
@@ -190,7 +190,7 @@ class SemanticsManager:
 
     def update_position(self):
         x, y = self.find_good_position()
-        for array in self.arrays_list:
+        for array in reversed(self.arrays_list):
             array.move_to(x, y)
             y += array.total_size()[1] + 8
 
@@ -198,7 +198,11 @@ class SemanticsManager:
         x = 0
         y = 0
         for node in self.forest.nodes.values():
+            if node.locked_to_node:
+                continue
             nx, ny = node.current_position
+            cbr = node.future_children_bounding_rect()  # this is fast enough because it is cached
+            nx += cbr.width() / 2
             if nx > x:
                 x = nx
             if ny < y:
