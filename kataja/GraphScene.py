@@ -63,6 +63,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 0
         self._fade_steps_list = []
         self.manual_zoom = False
+        self.follow_optimal_size = False
         self._cached_visible_rect = None
         self.keep_updating_visible_area = False
         #self.focusItemChanged.connect(self.inspect_focus_change)
@@ -89,6 +90,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
         use_current_positions = len(ctrl.forest.nodes) < 10
         vr = self.visible_rect(current=use_current_positions) + margins
+        ctrl.forest.optimal_rect = vr
         if force or not self._cached_visible_rect:
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
@@ -697,12 +699,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
             for group in f.groups.values():
                 group.update_shape()
             f.semantics_manager.update_position()
-            if (not self.manual_zoom) \
+            if (not self.follow_optimal_size) \
+                    and (not self.manual_zoom) \
                     and (not ctrl.dragged_focus) \
                     and self.timer_counter % 20 == 0:
                 self.fit_to_window(zoom_in=False)
         elif not (frame_has_moved or background_fade):
-            if (not self.manual_zoom) and (not ctrl.dragged_focus):
+            if (not self.follow_optimal_size) \
+                    and (not self.manual_zoom) \
+                    and (not ctrl.dragged_focus):
                 self.fit_to_window()
             self.stop_animations()
             ctrl.items_moving = False

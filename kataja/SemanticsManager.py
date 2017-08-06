@@ -80,7 +80,9 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                 px = pos.x()
                 py = pos.y()
                 p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
-                p.quadTo((px - x) / 2, mid_height, px - x, py - y)
+                p.lineTo((px - x) / 2, mid_height)
+                #p.lineTo(px - x, py - y)
+                p.quadTo(((px - x) / 4) * 3, mid_height, px - x, py - y)
                 painter.drawPath(p)
             self.setBrush(ctrl.cm.paper())
             QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, *args, **kwargs)
@@ -163,10 +165,11 @@ class SemanticsManager:
         for item in array.array:
             if label == item.label:
                 item.add_member(node)
+        self.update_position()
 
     def update_position(self):
         x, y = self.find_good_position()
-        for array in reversed(self.arrays_list):
+        for array in self.arrays_list:
             array.move_to(x, y)
             y += array.total_size()[1] + 8
 

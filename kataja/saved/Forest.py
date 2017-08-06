@@ -25,7 +25,7 @@ import string
 import time
 from typing import Generator
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.ChainManager import ChainManager
@@ -97,6 +97,7 @@ class Forest(SavedObject):
         self.halt_drawing = False
         self.gloss_text = gloss_text
         self.comments = comments
+        self.optimal_rect = QtCore.QRectF()
 
         # Update request flags
         self._do_edge_visibility_check = False
@@ -568,6 +569,7 @@ class Forest(SavedObject):
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         assert self.is_parsed
+        ctrl.graph_scene.follow_optimal_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
         sc.stop_animations()
         #self.projection_manager.update_projections()
