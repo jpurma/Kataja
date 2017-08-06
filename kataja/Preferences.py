@@ -151,8 +151,8 @@ class Preferences(object):
                                       'If the visualization draws some edges as thicker, '
                                       'this defines how much thicker.'}
 
-        self.label_shape = 0
-        self._label_shape_ui = {'tab': 'Drawing',
+        self.node_shape = 0
+        self._node_shape_ui = {'tab': 'Drawing',
                                 'choices': [(0, 'Normal'),
                                             (1, 'Box'),
                                             (2, 'Bracketed'), (3, 'Card')],

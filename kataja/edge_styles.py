@@ -23,7 +23,7 @@ master_styles = {
             'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': SPECIAL,
-            'end_connects_to': SPECIAL, 'z_value': 110
+            'end_connects_to': SPECIAL, 'z_value': 5
         }, COMMENT_EDGE: {
             'shape_name': 'linear', 'color_id': '', 'pull': 0, 'visible': True,
             'arrowhead_at_start': True, 'arrowhead_at_end': False, 'labeled': False,
@@ -31,15 +31,15 @@ master_styles = {
         }, CONSTITUENT_EDGE: {
             'shape_name': 'shaped_cubic', 'color_id': '', 'pull': .24, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': MAGNETS, 'end_connects_to': MAGNETS, 'z_value': 100
+            'start_connects_to': MAGNETS, 'end_connects_to': MAGNETS, 'z_value': 4
         }, FEATURE_EDGE: {
             'shape_name': 'cubic', 'color_id': '', 'pull': .20, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
+            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 5
         }, GLOSS_EDGE: {
             'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
-            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 100
+            'start_connects_to': BORDER, 'end_connects_to': BORDER, 'z_value': 5
         }
     }, 'plain': {
         ARROW: {

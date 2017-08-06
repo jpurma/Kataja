@@ -96,6 +96,7 @@ class Controller:
         # (undo).
         self.watchers_disabled = False # flag to suppress watchers -- not
         # sure if it is *ever* a good idea
+        self.printing = False
         self.unassigned_objects = {}
         self.items_moving = False
         self.multiselection_delay = False

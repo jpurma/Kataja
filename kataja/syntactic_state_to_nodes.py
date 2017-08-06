@@ -308,7 +308,7 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     # ############# Labels & node shapes ###############################
 
-    forest.update_label_shapes()
+    forest.update_node_shapes()
 
     # ############# Groups #######################################
 

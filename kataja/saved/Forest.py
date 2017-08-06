@@ -624,16 +624,16 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    def update_label_shapes(self):
+    def update_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
         :return: 
         """
-        shape = ctrl.settings.get('label_shape')
+        shape = ctrl.settings.get('node_shape')
         ctrl.release_editor_focus()
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE:
-                node.label_object.label_shape = shape
+                node.label_object.node_shape = shape
                 node.update_label()
             if node.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(node)

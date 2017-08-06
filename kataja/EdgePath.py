@@ -209,12 +209,13 @@ class EdgePath:
                         for edge in start.edges_down:
                             if edge == self.edge:
                                 self.computed_start_point = sx + i_shift, sy
-                                self.curve_dir_start = LEFT_SIDE
+                                self.curve_dir_start = BOTTOM_SIDE
                                 found = True
                                 break
                             elif edge.extra and edge.extra.syntactic_object.name == ee.name:
                                 self.computed_start_point = edge.path.computed_start_point
-                                self.curve_dir_start = opposite(edge.path.curve_dir_start)
+                                self.curve_dir_start = BOTTOM_SIDE
+                                #self.curve_dir_start = opposite(edge.path.curve_dir_start)
                                 found = True
                                 break
                 if not found:

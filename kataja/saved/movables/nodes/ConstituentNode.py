@@ -124,7 +124,7 @@ class ConstituentNode(Node):
         :return: None
         """
         self.update_gloss()
-        self.update_label_shape()
+        self.update_node_shape()
         self.update_label()
         self.update_visibility()
         self.update_tooltip()
@@ -231,8 +231,8 @@ class ConstituentNode(Node):
         add_children(self)
         return sorted_constituents
 
-    def update_label_shape(self):
-        self.label_object.label_shape = ctrl.settings.get('label_shape')
+    def update_node_shape(self):
+        self.label_object.node_shape = ctrl.settings.get('node_shape')
 
     def should_show_gloss_in_label(self) -> bool:
         return ctrl.settings.get('lock_glosses_to_label') == 1
@@ -342,6 +342,7 @@ class ConstituentNode(Node):
         html = []
 
         label_text_mode = ctrl.settings.get('label_text_mode')
+        include_index = False
         l = ''
         if label_text_mode == g.NODE_LABELS:
             if self.label:
@@ -365,7 +366,8 @@ class ConstituentNode(Node):
         elif label_text_mode == g.XBAR_LABELS:
             l = self.get_autolabel()
         separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
-        l_html = as_html(l, omit_triangle=separate_triangle, include_index=self.index)
+        l_html = as_html(l, omit_triangle=separate_triangle, include_index=include_index
+        and self.index)
         if l_html:
             html.append(l_html)
 
@@ -553,7 +555,7 @@ class ConstituentNode(Node):
         """
 
         fpos = ctrl.settings.get('feature_positioning')
-        shape = ctrl.settings.get('label_shape')
+        shape = ctrl.settings.get('node_shape')
         children = self.get_children(visible=True, similar=False)
         if not children:
             return
@@ -587,7 +589,7 @@ class ConstituentNode(Node):
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
         elif fpos == g.TWO_COLUMNS:  # card layout, two columns
-            in_card = ctrl.settings.get('label_shape') == g.CARD
+            in_card = ctrl.settings.get('node_shape') == g.CARD
             cw, ch = self.label_object.card_size
             center_x = self.boundingRect().center().x()
             top_y = 22
@@ -733,35 +735,12 @@ class ConstituentNode(Node):
 
     # ### Paint overrides
 
-    def paint_old(self, painter, option, widget=None):
-        super().paint(painter, option, widget=widget)
-        feats = self.is_merging_features()
-        if feats:
-            if False and self._cached_feats == feats:
-                gradient = self._cached_gradient
-            else:
-                color = ctrl.cm.get(feat_color)
-                other_color = ctrl.cm.paper()
-                gradient = QtGui.QRadialGradient()
-
-            feat_color = feats[0].get_color_id()
-            if not feat_color.endswith('tr'):
-                feat_color = feat_color + 'tr'
-            old_pen = painter.pen()
-            painter.setPen(QtCore.Qt.NoPen)
-            painter.setBrush(gradient)
-            b = QtCore.QRectF(self.inner_rect)
-            painter.drawEllipse(b)
-            painter.setPen(old_pen)
-
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget=widget)
         feats = self.is_merging_features()
         if feats:
-            if False and self._cached_feats == feats:
-                gradient = self._cached_gradient
+            old_pen = painter.pen()
             feat_color = feats[0].get_color_id()
-            paper = ctrl.cm.paper()
             r = QtCore.QRectF(self.inner_rect)
             w = r.width()
             h = r.height()
@@ -772,23 +751,50 @@ class ConstituentNode(Node):
             c = r.center()
             r = QtCore.QRectF(0, 0, s, s)
             r.moveCenter(c)
-
-            gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
-            if ctrl.cm.light_on_dark():
-                color = ctrl.cm.get(feat_color)
-                gradient.setColorAt(1, paper)
-                gradient.setColorAt(0, color)
-            else:
+            if ctrl.printing:
                 if not feat_color.endswith('tr'):
                     feat_color = feat_color + 'tr'
                 color = ctrl.cm.get(feat_color)
-                gradient.setColorAt(0, paper)
-                gradient.setColorAt(1, color)
-            old_pen = painter.pen()
+                painter.setBrush(color)
+            else:
+                gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
+                if ctrl.cm.light_on_dark():
+                    color = ctrl.cm.get(feat_color)
+                    gradient.setColorAt(1, QtCore.Qt.transparent)
+                    gradient.setColorAt(0, color)
+                else:
+                    if not feat_color.endswith('tr'):
+                        feat_color = feat_color + 'tr'
+                    color = ctrl.cm.get(feat_color)
+                    gradient.setColorAt(0, QtCore.Qt.transparent)
+                    gradient.setColorAt(1, color)
+                painter.setBrush(gradient)
             painter.setPen(QtCore.Qt.NoPen)
-            painter.setBrush(gradient)
             painter.drawEllipse(r)
             painter.setPen(old_pen)
+        elif self.has_visible_label():
+            old_pen = painter.pen()
+            painter.setPen(QtCore.Qt.NoPen)
+            paper = ctrl.cm.paper()
+            r = self.inner_rect
+            w = r.width()
+            h = r.height()
+            if w > h:
+                radius = h / 2
+            else:
+                radius = w / 2
+
+            if ctrl.printing:
+                paper = QtGui.QColor(255, 255, 255, 128)
+                painter.setBrush(paper)
+            else:
+                gradient = QtGui.QRadialGradient(0, 0, radius)
+                gradient.setColorAt(0, paper)
+                gradient.setColorAt(1, QtCore.Qt.transparent)
+                painter.setBrush(gradient)
+            painter.drawEllipse(r)
+            painter.setPen(old_pen)
+
 
     # ############## #
     #                #

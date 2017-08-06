@@ -76,12 +76,12 @@ class BracketedLinearization(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes
         is triggered here. """
 
-        ls = ctrl.settings.get('label_shape')
+        ls = ctrl.settings.get('node_shape')
         if ls == g.BOX:
             ls = g.NORMAL
         else:
             ls += 1
-        ctrl.settings.set('label_shape', ls, level=g.FOREST)
+        ctrl.settings.set('node_shape', ls, level=g.FOREST)
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
@@ -95,7 +95,7 @@ class BracketedLinearization(BaseVisualization):
         draw themselves """
 
         width_map = self.forest.width_map
-        ls = ctrl.settings.get('label_shape')
+        ls = ctrl.settings.get('node_shape')
         if ls == g.BRACKETED or ls == g.NORMAL:
             y_shift = 0
         elif ls == g.CARD:

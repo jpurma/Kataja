@@ -233,7 +233,7 @@ class FeatureNode(Node):
         """
 
         if shape is None:
-            shape = ctrl.settings.get('label_shape')
+            shape = ctrl.settings.get('node_shape')
         if position is None:
             position = ctrl.settings.get('feature_positioning')
         if checking_mode is None:

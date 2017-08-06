@@ -82,7 +82,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._hovering = False
         self._start_node_moving = False
         self._end_node_moving = False
-        self.setZValue(100)
+        self.setZValue(5)
         self.crossed_out_flag = False
         self._use_labels = None
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
@@ -232,9 +232,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 if start and end:
                     if not (end.is_visible() and start.is_visible()):
                         lv = False
-                    elif end.locked_to_node is start and \
-                            ((not end.adjustment) or end.adjustment == (0, 0)):
+                    elif start.get_node_shape() == g.CARD and (
+                                (not end.adjustment) or end.adjustment == (0, 0)):
                         lv = False
+                    #elif end.locked_to_node is start and \
+                    #        ((not end.adjustment) or end.adjustment == (0, 0)):
+                    #    lv = False
                 else:
                     delete = True
             elif self.edge_type == g.CHECKING_EDGE:

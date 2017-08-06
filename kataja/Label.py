@@ -147,7 +147,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.x_offset = 0
         self.y_offset = 0
         self.text_align = CENTER_ALIGN
-        self.label_shape = NORMAL
+        self.node_shape = NORMAL
         self._font = None
         self.editable_html = ''
         self.lower_html = ''
@@ -226,17 +226,17 @@ class Label(QtWidgets.QGraphicsItem):
             print('problems ahead:')
             print(self._host, self._host.node_type, self._host.syntactic_object)
 
-        if self.label_shape == SCOPEBOX:
+        if self.node_shape == SCOPEBOX:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
-        elif self.label_shape == BRACKETED:
+        elif self.node_shape == BRACKETED:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
-        if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
+        if force_update or (self.node_shape, html, lower_html, is_card) != self._previous_values:
             if self.editable_html != html:
                 self.editable_doc.blockSignals(True)
                 if is_card:
@@ -248,7 +248,7 @@ class Label(QtWidgets.QGraphicsItem):
                 self.editable_doc.blockSignals(False)
 
             ctrl.qdocument_parser.process(self.editable_doc)
-            if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
+            if lower_html and self.node_shape not in [g.SCOPEBOX, g.BRACKETED]:
                 if not self.lower_part:
                     self.init_lower_part()
                 if lower_html != self.lower_html:
@@ -263,12 +263,12 @@ class Label(QtWidgets.QGraphicsItem):
                 self.lower_html = ''
                 if self.lower_part:
                     self.remove_lower_part()
-            self._previous_values = (self.label_shape, self.editable_html, self.lower_html, is_card)
+            self._previous_values = (self.node_shape, self.editable_html, self.lower_html, is_card)
 
         self.resize_label()
 
     def is_card(self):
-        if self.label_shape != CARD:
+        if self.node_shape != CARD:
             return False
         if inner_cards:
             return True
@@ -282,9 +282,9 @@ class Label(QtWidgets.QGraphicsItem):
         return self.width
 
     def right_bracket_width(self) -> int:
-        if self.label_shape == BRACKETED:
+        if self.node_shape == BRACKETED:
             return 6
-        elif self.label_shape == SCOPEBOX:
+        elif self.node_shape == SCOPEBOX:
             return 2
         else:
             return 0
@@ -421,7 +421,7 @@ class Label(QtWidgets.QGraphicsItem):
             label_text = ctrl.settings.get('label_text_mode')
             self.draw_triangle = (label_text == g.NODE_LABELS or
                                   label_text == g.NODE_LABELS_FOR_LEAVES) and \
-                self.label_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
+                self.node_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
         else:
             self.draw_triangle = False
 
@@ -484,7 +484,7 @@ class Label(QtWidgets.QGraphicsItem):
             else:
                 self.triangle_y = 0
             self.lower_part_y = self.triangle_y + self.triangle_height
-        elif self.label_shape == g.CARD:
+        elif self.node_shape == g.CARD:
             # no lower part, no triangle
             self.upper_part_y = 0
             self.triangle_y = 0

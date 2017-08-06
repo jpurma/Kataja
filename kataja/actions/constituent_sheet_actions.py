@@ -31,7 +31,7 @@ from kataja.KatajaAction import KatajaAction
 
 
 class SelectLabelShape(KatajaAction):
-    k_action_uid = 'select_label_shape'
+    k_action_uid = 'select_node_shape'
     k_command = 'Rotate between node shapes'
     k_shortcut = 'b'
     k_checkable = True
@@ -39,7 +39,7 @@ class SelectLabelShape(KatajaAction):
     def method(self):
         """ Brackets are visible always for non-leaves, never or for important parts
         """
-        bs = ctrl.settings.get('label_shape', level=ctrl.ui.active_scope)
+        bs = ctrl.settings.get('node_shape', level=ctrl.ui.active_scope)
         bs += 1
         if bs > 4:
             bs = 0
@@ -59,8 +59,8 @@ class SelectLabelShape(KatajaAction):
             m = 'Node shape: Cards'
             ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
 
-        ctrl.settings.set('label_shape', bs, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.settings.set('node_shape', bs, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
         return m
 
     def enabler(self):
@@ -76,12 +76,12 @@ class ActivateNoFrameNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.NORMAL, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.settings.set('node_shape', g.NORMAL, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.NORMAL
+        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.NORMAL
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -97,12 +97,12 @@ class ActivateScopeboxNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.SCOPEBOX, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.settings.set('node_shape', g.SCOPEBOX, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.SCOPEBOX
+        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.SCOPEBOX
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -118,12 +118,12 @@ class ActivateBracketedNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.BRACKETED, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.settings.set('node_shape', g.BRACKETED, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.BRACKETED
+        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.BRACKETED
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -139,12 +139,12 @@ class ActivateBoxShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.BOX, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.settings.set('node_shape', g.BOX, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.BOX
+        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.BOX
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -160,13 +160,13 @@ class ActivateCardNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.settings.set('label_shape', g.CARD, level=ctrl.ui.active_scope)
+        ctrl.settings.set('node_shape', g.CARD, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('label_shape', level=ctrl.ui.active_scope) == g.CARD
+        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.CARD
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -291,7 +291,7 @@ class SelectLabelTextMode(KatajaAction):
                 else:
                     ok = True
         ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'
 

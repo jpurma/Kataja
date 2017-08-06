@@ -38,7 +38,7 @@ class SetSynlabelsVisible(KatajaAction):
     def method(self):
         """ """
         ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.SYN_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -56,7 +56,7 @@ class SetNodeLabelsVisible(KatajaAction):
     def method(self):
         """ """
         ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.NODE_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 
@@ -77,7 +77,7 @@ class SetAutolabelsVisible(KatajaAction):
     def method(self):
         """ """
         ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(g.XBAR_LABELS, 'label_text_mode')
         return f'Set label text mode to: {mode_text}'
 

@@ -68,17 +68,20 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         if self.members:
             painter.setBrush(ctrl.cm.get(self.color_id))
             painter.drawRoundedRect(label_rect, 4, 4)
-            p = QtGui.QPen(ctrl.cm.get(self.color_id_tr), 2)
+            p = QtGui.QPen(ctrl.cm.get(self.color_id_tr), 3)
             painter.setPen(p)
             scene_pos = self.pos()
             x = scene_pos.x()
             y = scene_pos.y()
             mid_height = label_rect.height() / 2
+            painter.setBrush(QtCore.Qt.NoBrush)
             for member in self.members:
-                p = member.scenePos()
-                px = p.x()
-                py = p.y()
-                painter.drawLine(0, mid_height, px - x, py - y)
+                pos = member.scenePos()
+                px = pos.x()
+                py = pos.y()
+                p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
+                p.quadTo((px - x) / 2, mid_height, px - x, py - y)
+                painter.drawPath(p)
             self.setBrush(ctrl.cm.paper())
             QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, *args, **kwargs)
         else:

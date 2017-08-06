@@ -87,13 +87,13 @@ class BaseVisualization:
         pass
 
     def validate_node_shapes(self):
-        ls = ctrl.settings.get('label_shape')
+        ls = ctrl.settings.get('node_shape')
         if ls in self.banned_node_shapes:
             ls = 0
             while ls in self.banned_node_shapes:
                 ls += 1
-            ctrl.settings.set('label_shape', ls, level=g.FOREST)
-            self.forest.update_label_shapes()
+            ctrl.settings.set('node_shape', ls, level=g.FOREST)
+            self.forest.update_node_shapes()
 
     def reset_nodes(self):
         for node in self.forest.visible_nodes():

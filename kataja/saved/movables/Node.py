@@ -803,6 +803,13 @@ class Node(Movable):
         else:
             return 0
 
+    def get_node_shape(self):
+        """ Node shapes are based on settings-stack, but also cached in label.
+        Return this cached value.
+        :return:
+        """
+        return self.label_object.node_shape
+
     # ## Qt overrides
     # ######################################################################
     #@time_me
@@ -812,7 +819,7 @@ class Node(Movable):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        ls = self.label_object.label_shape
+        ls = self.label_object.node_shape
         if ls == g.CARD:
             xr = 4
             yr = 8
@@ -907,8 +914,8 @@ class Node(Movable):
             x_offset = l.x_offset
             y_offset = l.y_offset
         self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-        if self.label_object and self.label_object.label_shape == g.BRACKETED or \
-                        self.label_object.label_shape == g.SCOPEBOX:
+        if self.label_object and self.label_object.node_shape == g.BRACKETED or \
+                        self.label_object.node_shape == g.SCOPEBOX:
             box_width = ctrl.forest.width_map.get(self.uid, 0)
         self.width = max((lbw, my_class.width, user_width, box_width))
         self.height = max((lbh, my_class.height, user_height))
@@ -942,8 +949,10 @@ class Node(Movable):
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
-        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache) # self.inner_rect.size().toSize()
-
+        if ctrl.printing:
+            self.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+        else:
+            self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         return self.inner_rect
 
     def overlap_rect(self):
@@ -1668,7 +1677,7 @@ class Node(Movable):
             ctrl.forest.order_edge_visibility_check()
         return changed
 
-    def update_label_shape(self):
+    def update_node_shape(self):
         pass
 
     def is_quick_editing(self):

@@ -48,7 +48,7 @@ class SwitchFeatureCheckingMode(KatajaAction):
         else:
             current += 1
         ctrl.settings.set('feature_check_display', current, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(current, 'feature_check_display')
         return 'Feature checking mode: ' + mode_text
 
@@ -69,7 +69,7 @@ class SetFeaturesApart(KatajaAction):
         :return:
         """
         ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
@@ -91,7 +91,7 @@ class SetFeaturesLocked(KatajaAction):
         """
         ctrl.settings.set('feature_check_display', g.PUT_CHECKED_TOGETHER,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
@@ -113,7 +113,7 @@ class SetFeaturesConnected(KatajaAction):
         """
         ctrl.settings.set('feature_check_display', g.SHOW_CHECKING_EDGE,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
@@ -136,18 +136,18 @@ class SelectFeatureDisplayMode(KatajaAction):
         if f_mode == 4:
             f_mode = 0
         ctrl.settings.set('feature_positioning', f_mode, level=DOCUMENT)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(f_mode, 'feature_positioning')
         return 'Features arranged as: ' + mode_text
 
     def getter(self):
-        if ctrl.settings.get('label_shape') == g.CARD:
+        if ctrl.settings.get('node_shape') == g.CARD:
             return 3
         else:
             return ctrl.settings.get('feature_positioning')
 
     def enabler(self):
-        return ctrl.settings.get('label_shape') != g.CARD
+        return ctrl.settings.get('node_shape') != g.CARD
 
 
 class SetFeaturesAsRow(KatajaAction):
@@ -161,7 +161,7 @@ class SetFeaturesAsRow(KatajaAction):
         """
         ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
@@ -183,7 +183,7 @@ class SetFeaturesAsColumn(KatajaAction):
         """
         ctrl.settings.set('feature_positioning', g.VERTICAL_COLUMN,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
@@ -205,7 +205,7 @@ class SetFeaturesAsTwoColumns(KatajaAction):
         """
         ctrl.settings.set('feature_positioning', g.TWO_COLUMNS,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
@@ -227,7 +227,7 @@ class SetFeaturesHanging(KatajaAction):
         """
         ctrl.settings.set('feature_positioning', g.FREE_FLOATING,
                           level=ctrl.ui.active_scope)
-        ctrl.forest.update_label_shapes()
+        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):

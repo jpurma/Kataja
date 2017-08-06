@@ -558,6 +558,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         png = prefs.print_format == 'png'
         source = self.graph_scene.print_rect()
 
+        for node in ctrl.forest.nodes.values():
+            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+
         if png:
             full_path = find_path(path + filename, '.png', 0)
             scale = 4
@@ -568,6 +571,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             painter = QtGui.QPainter()
             painter.begin(writer)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+
             self.graph_scene.render(painter, target=target, source=source)
             painter.end()
             iwriter = QtGui.QImageWriter(full_path)
@@ -585,10 +590,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             writer.setResolution(dpi)
             writer.setPageSizeMM(target.size())
             writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
+            ctrl.printing = True
             painter = QtGui.QPainter()
             painter.begin(writer)
+            #painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            #painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             self.graph_scene.render(painter, target=target, source=source)
             painter.end()
+            ctrl.printing = False
             log.info("printed to %s as PDF with %s dpi." % (full_path, dpi))
 
         # Thank you!
