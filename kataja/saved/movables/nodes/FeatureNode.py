@@ -145,7 +145,6 @@ class FeatureNode(Node):
         # Allow custom syntactic objects to override this
         if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
-
         return str(self), ''
 
     def compose_html_for_editing(self):

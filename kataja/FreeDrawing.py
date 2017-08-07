@@ -487,7 +487,9 @@ class FreeDrawing:
                 if old_edge.edge_type == edge_type:
                     if old_edge.end == child and old_edge.start == parent and old_edge.extra == \
                             extra:
-                        raise ForestError('Identical edge exists already')
+                        #raise ForestError('Identical edge exists already')
+                        log.info('Identical edge exists already')
+                        return
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
 

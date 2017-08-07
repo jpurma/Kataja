@@ -99,6 +99,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         node = forest.get_node(me)
         if node:
             found_nodes.add(node.uid)
+            node.syntactic_object = me
             node.label = me.label
             node.update_label()
         else:
@@ -118,6 +119,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         node = forest.get_node(me)
         if node:
             found_nodes.add(node.uid)
+            node.syntactic_object = me
             node.name = getattr(me, 'name', '')
             node.value = getattr(me, 'value', '')
             node.family = getattr(me, 'family', '')
