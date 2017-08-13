@@ -42,7 +42,7 @@ class NavigationPanel(Panel):
 
         action = ctrl.ui.get_action('next_forest')
         self.next_tree = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.right_arrow,
-                                   parent=self, action=action)
+                                        parent=self, action=action)
         self.next_tree.setMinimumWidth(72)
         layout.addWidget(self.next_tree, 1, 1, 1, 1)
 
@@ -64,7 +64,7 @@ class NavigationPanel(Panel):
 
         action = ctrl.ui.get_action('next_derivation_step')
         self.next_der = TwoColorButton(text=action.k_shortcut, bitmaps=qt_prefs.right_arrow,
-                                       parent=self)
+                                       parent=self, action=action)
         self.next_der.setMaximumHeight(20)
         layout.addWidget(self.next_der, 3, 1, 1, 1)
         inner.setLayout(layout)

@@ -77,7 +77,8 @@ class FeatureSheet(QtWidgets.QWidget):
         hlayout.addWidget(label)
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
-                                            action='change_edge_shape',
+                                            action='change_edge_shape_for_features',
+                                            for_edge_type=g.FEATURE_EDGE
                                             ).to_layout(hlayout)
         self.edge_options = PanelButton(parent=self,
                                         pixmap=qt_prefs.settings_icon,

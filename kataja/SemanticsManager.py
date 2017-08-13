@@ -11,6 +11,9 @@ from kataja.singletons import ctrl, classes, qt_prefs
 from kataja.globals import CONSTITUENT_NODE, FEATURE_NODE, SMALL_FEATURE
 from kataja.utils import time_me
 
+FREE = 0
+SENTENCE = 1
+NOUN_PHRASE = 2
 
 class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
 
@@ -115,8 +118,9 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
 
 class SemanticsArray:
 
-    def __init__(self, array_id, model, x=0, y=0):
+    def __init__(self, array_id, model, array_type, x=0, y=0):
         self.array_id = array_id
+        self.array_type = array_type
         self.array = []
         self.x = x
         self.y = y
@@ -164,8 +168,10 @@ class SemanticsManager:
         if array_id not in self.arrays:
             if label in self.clause_model:
                 model = self.clause_model
+                model_type = SENTENCE
             elif label in self.dp_model:
                 model = self.dp_model
+                model_type = NOUN_PHRASE
             else:
                 print('no suitable semantic array for ', label, array_id)
                 return
@@ -175,7 +181,7 @@ class SemanticsManager:
                 y = last.y + last.total_size()[1] + 8
             else:
                 x, y = self.find_good_position()
-            array = SemanticsArray(array_id, model, x, y)
+            array = SemanticsArray(array_id, model, model_type, x, y)
             self.arrays[array_id] = array
             self.all_items += array.array
             self.arrays_list.append(array)
@@ -191,7 +197,11 @@ class SemanticsManager:
     def update_position(self):
         x, y = self.find_good_position()
         for array in reversed(self.arrays_list):
-            array.move_to(x, y)
+            if array.array_type == NOUN_PHRASE:
+                indent = 8
+            else:
+                indent = 0
+            array.move_to(x + indent, y)
             y += array.total_size()[1] + 8
 
     def find_good_position(self):

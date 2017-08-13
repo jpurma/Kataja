@@ -105,8 +105,8 @@ class EdgePath:
         else:
             return
         if start:
-            #connection_style = self.edge.cached_for_type('start_connects_to')
-            connection_style = CONNECT_TO_SIMILAR
+            connection_style = self.edge.cached_for_type('start_connects_to')
+            #connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
@@ -228,8 +228,8 @@ class EdgePath:
                     self.curve_dir_start = BOTTOM_SIDE
                 self.abstract_start_point = sx, sy
         if end:
-            #connection_style = self.edge.cached_for_type('end_connects_to')
-            connection_style = CONNECT_TO_SIMILAR
+            connection_style = self.edge.cached_for_type('end_connects_to')
+            # connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:

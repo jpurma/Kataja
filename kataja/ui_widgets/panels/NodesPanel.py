@@ -10,8 +10,6 @@ from kataja.ui_widgets.buttons.PanelButton import PanelButton
 __author__ = 'purma'
 
 
-
-
 class NodesPanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -24,7 +22,7 @@ class NodesPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded,
-                       scope_action='style_scope')
+                       scope_action='set_scope_for_node_style')
         outer = QtWidgets.QWidget(self)
         olayout = QtWidgets.QVBoxLayout()
         outer.setContentsMargins(0, 0, 0, 0)

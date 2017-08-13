@@ -142,8 +142,8 @@ class UIManager:
         self.moving_things = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
-        self.active_scope = g.FOREST
-        self._prev_active_scope = g.FOREST
+        self.active_scope = g.DOCUMENT
+        self._prev_active_scope = g.DOCUMENT
         self.scope_is_selection = False
         self.default_node_type = g.CONSTITUENT_NODE
         self.active_edge_type = g.CONSTITUENT_EDGE

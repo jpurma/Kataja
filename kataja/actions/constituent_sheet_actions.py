@@ -5,6 +5,7 @@ from kataja.globals import FOREST, DOCUMENT, PREFS
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
+from kataja.actions.line_options_panel_actions import ChangeEdgeShape
 
 
 # ==== Class variables for KatajaActions:
@@ -331,3 +332,29 @@ class SelectProjectionStyle(KatajaAction):
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
 
+
+class ChangeConstituentEdgeShape(ChangeEdgeShape):
+    k_action_uid = 'change_edge_shape_for_constituents'
+    k_command = 'Change shape of constituents edges'
+    k_tooltip = 'Change shapes of edges that connect constituents'
+    k_undoable = True
+
+    def prepare_parameters(self, args, kwargs):
+        sender = self.sender()
+        shape_name = sender.currentData()
+
+        if ctrl.ui.scope_is_selection:
+            level = g.SELECTION
+        else:
+            level = ctrl.ui.active_scope
+        return [shape_name], {'edge_type': g.CONSTITUENT_EDGE, 'level': level}
+
+    def enabler(self):
+        return ctrl.ui.has_edges_in_scope()
+
+    def getter(self):
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge) and edge.edge_type == g.CONSTITUENT_EDGE:
+                    return ctrl.settings.cached_edge('shape_name', edge)
+        return ctrl.settings.cached_edge_type('shape_name', g.CONSTITUENT_EDGE)

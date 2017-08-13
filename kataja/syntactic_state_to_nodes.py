@@ -194,7 +194,30 @@ def syntactic_state_to_nodes(forest, syn_state):
         else:
             found_edges.add(edge.uid)
 
-    def recursive_create_edges(synobj):
+    def recursive_create_edges_for_feature(synobj):
+        """ All of the nodes exist already, now put the edges in place. Goes to the bottom and
+        then builds up.
+        :param synobj:
+        :return:
+        """
+        fnode = forest.get_node(synobj)
+        assert(fnode)
+        if synobj.uid in done_nodes:
+            return fnode
+        done_nodes.add(synobj.uid)
+        if hasattr(synobj, 'parts'):
+            for part in iter_me(synobj.parts):
+                child = recursive_create_edges_for_feature(part)
+                if child and child.node_type == g.FEATURE_NODE:
+                    connect_if_necessary(fnode, child, g.CHECKING_EDGE)
+        if hasattr(synobj, 'checks'):
+            if synobj.checks:
+                checking_fnode = forest.get_node(synobj.checks)
+                if checking_fnode:
+                    connect_if_necessary(checking_fnode, fnode, g.CHECKING_EDGE)
+        return fnode
+
+    def recursive_create_edges_for_constituent(synobj):
         """ All of the nodes exist already, now put the edges in place. Goes to the bottom and 
         then builds up. 
         :param synobj: 
@@ -205,52 +228,39 @@ def syntactic_state_to_nodes(forest, syn_state):
         if synobj.uid in done_nodes:
             return node
         done_nodes.add(synobj.uid)
-        if node.node_type == g.CONSTITUENT_NODE:
-            for part in iter_me(synobj.parts):
-                child = recursive_create_edges(part)
-                if child:
-                    connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
-            if synobj.parts:
-                features = list(synobj.get_features())
-                semantics = getattr(synobj, 'semantics', None)
-                if semantics:
-                    sem_label, sem_array_n = semantics
-                    forest.semantics_manager.add_to_array(node, sem_label, sem_array_n)
-                checked_features = getattr(synobj, 'checked_features', None)
-                if checked_features:
-                    features += list(checked_features)
-                for feature in features:
-                    # Try to find where from this from this edge has been inherited.
-                    # Connect this node to there.
-                    nfeature = recursive_create_edges(feature)
-                    # fixme! hack, blocked_inheritance is specific to MyParser
-                    blocked = getattr(synobj, 'blocked_inheritance', None)
-                    for child in iter_me(synobj.parts):
-                        if blocked == child:
-                            print('skip, skip')
-                            continue
-                        if feature in child.get_features():
-                            nchild = recursive_create_edges(child)
-                            connect_feature_if_necessary(node, nchild, nfeature)
-                            break
+        for part in iter_me(synobj.parts):
+            child = recursive_create_edges_for_constituent(part)
+            if child:
+                connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
+        if synobj.parts:
+            features = list(synobj.get_features())
+            semantics = getattr(synobj, 'semantics', None)
+            if semantics:
+                sem_label, sem_array_n = semantics
+                forest.semantics_manager.add_to_array(node, sem_label, sem_array_n)
+            checked_features = getattr(synobj, 'checked_features', None)
+            if checked_features:
+                features += list(checked_features)
+            for feature in features:
+                # Try to find where from this from this edge has been inherited.
+                # Connect this node to there.
+                nfeature = recursive_create_edges_for_feature(feature)
+                # fixme! hack, blocked_inheritance is specific to MyParser
+                blocked = getattr(synobj, 'blocked_inheritance', None)
+                for child in iter_me(synobj.parts):
+                    if blocked == child:
+                        continue
+                    if feature in child.get_features():
+                        nchild = recursive_create_edges_for_feature(child)
+                        connect_feature_if_necessary(node, nchild, nfeature)
+                        break
 
-            else:
-                for feature in synobj.get_features():
-                    nfeature = recursive_create_edges(feature)
-                    if nfeature:
-                        connect_feature_if_necessary(node, nfeature, nfeature)
-            verify_edge_order_for_constituent_nodes(node)
-        elif node.node_type == g.FEATURE_NODE:
-            if hasattr(synobj, 'parts'):
-                for part in iter_me(synobj.parts):
-                    child = recursive_create_edges(part)
-                    if child and child.node_type == g.FEATURE_NODE:
-                        connect_if_necessary(node, child, g.CHECKING_EDGE)
-            if hasattr(synobj, 'checks'):
-                if synobj.checks:
-                    checking_node = forest.get_node(synobj.checks)
-                    if checking_node:
-                        connect_if_necessary(checking_node, node, g.CHECKING_EDGE)
+        else:
+            for feature in synobj.get_features():
+                nfeature = recursive_create_edges_for_feature(feature)
+                if nfeature:
+                    connect_feature_if_necessary(node, nfeature, nfeature)
+        verify_edge_order_for_constituent_nodes(node)
         return node
 
     def recursive_update_heads(node):
@@ -284,7 +294,7 @@ def syntactic_state_to_nodes(forest, syn_state):
     done_nodes = set()
     found_edges = set()
     for tree_root in syn_state.tree_roots:
-        recursive_create_edges(tree_root)
+        recursive_create_edges_for_constituent(tree_root)
     edge_keys_to_validate -= found_edges
 
     done_nodes = set()
@@ -423,7 +433,7 @@ def verify_edge_order_for_constituent_nodes(node):
 
     if isinstance(node.syntactic_object.parts, list):
         #  we assume that if parts use lists, then they are implicitly ordered.
-        correct_order = node.syntactic_object.parts
+        correct_order = node.syntactic_object.sorted_parts()
         current_order = [edge.end.syntactic_object for edge in node.edges_down if edge.end
                          and edge.edge_type == g.CONSTITUENT_EDGE]
         if correct_order != current_order:
@@ -432,7 +442,7 @@ def verify_edge_order_for_constituent_nodes(node):
             for edge in node.edges_down:
                 if edge.edge_type == g.CONSTITUENT_EDGE and edge.end and \
                         edge.end.syntactic_object in node.syntactic_object.parts:
-                    new_order.append((node.syntactic_object.parts.index(
+                    new_order.append((correct_order.index(
                         edge.end.syntactic_object), edge))
                 else:
                     passed.append(edge)

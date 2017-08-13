@@ -93,7 +93,7 @@ class PanelTitle(QtWidgets.QWidget):
                      (g.DOCUMENT, 'in this document'), (g.PREFS, 'in preferences')]
 
             self.scope_selector = SelectionBox(parent=self, data=items,
-                                               action='style_scope').to_layout(layout)
+                                               action='set_scope_for_node_style').to_layout(layout)
             self.scope_selector.setMaximumWidth(92)
 
 

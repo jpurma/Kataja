@@ -48,7 +48,7 @@ class LineOptionsPanel(Panel):
         spac = 8
         hlayout = box_row(layout)
 
-        self.scope_selector = SelectionBox(parent=self, data=[], action='style_scope',
+        self.scope_selector = SelectionBox(parent=self, data=[], action='set_scope_for_node_style',
                                            ).to_layout(hlayout, with_label='Style for')
         self.scope_selector.setMinimumWidth(96)
 

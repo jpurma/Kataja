@@ -38,7 +38,7 @@ class ChangeEdgeShape(KatajaAction):
     k_action_uid = 'change_edge_shape'
     k_command = 'Change edge shape'
     k_tooltip = 'Change shapes of lines between objects'
-    k_undoable = False
+    k_undoable = True
 
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()

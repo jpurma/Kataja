@@ -30,10 +30,11 @@ import random
 #
 
 
-class ChangeStyleScope(KatajaAction):
-    k_action_uid = 'style_scope'
-    k_command = 'Select the scope for style changes'
-    k_tooltip = 'Select the scope for style changes'
+class SetScopeForNodeStyle(KatajaAction):
+    k_action_uid = 'set_scope_for_node_style'
+    k_command = 'Set scope for style changes'
+    k_tooltip = 'Changes here affect only selected nodes, nodes in this tree, nodes in this ' \
+                'document or they are set as user defaults.'
     k_undoable = False
 
     def method(self):

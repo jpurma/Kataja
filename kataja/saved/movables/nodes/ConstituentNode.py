@@ -688,9 +688,13 @@ class ConstituentNode(Node):
     def is_merging_features(self):
         if self.syntactic_object:
             syn_feats = getattr(self.syntactic_object, 'checked_features', None)
+            nodes = []
             if syn_feats:
-                gn = ctrl.forest.get_node
-                return [gn(f) for f in syn_feats]
+                for f in syn_feats:
+                    n = ctrl.forest.get_node(f)
+                    if n:
+                        nodes.append(n)
+            return nodes
 
     # ### Checks for callable actions ####
 

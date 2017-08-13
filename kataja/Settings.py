@@ -241,9 +241,15 @@ class Settings:
                     return obj.settings[key]
             elif level == OBJECT:
                 return obj.settings.get(key, None)
-        if level <= FOREST and dictname in self.s_forest and subtype in self.s_forest[dictname] and key in self.s_forest[dictname][subtype]:
+        if level <= FOREST\
+                and dictname in self.s_forest\
+                and subtype in self.s_forest[dictname]\
+                and key in self.s_forest[dictname][subtype]:
                 return self.s_forest[dictname][subtype][key]
-        elif level <= DOCUMENT and dictname in self.s_document and subtype in self.s_document[dictname] and key in self.s_document[dictname][subtype]:
+        elif level <= DOCUMENT\
+                and dictname in self.s_document\
+                and subtype in self.s_document[dictname]\
+                and key in self.s_document[dictname][subtype]:
                 return self.s_document[dictname][subtype][key]
         elif level <= PREFS:
             d = getattr(self.prefs, dictname, None)
@@ -271,7 +277,7 @@ class Settings:
             self.document.poke('settings')
             if dictname not in self.s_document:
                 self.s_document[dictname] = {subtype: {key: value}}
-            elif subtype not in self.s_forest[dictname]:
+            elif subtype not in self.s_document[dictname]:
                 self.s_document[dictname][subtype] = {key: value}
             else:
                 self.s_document[dictname][subtype][key] = value
