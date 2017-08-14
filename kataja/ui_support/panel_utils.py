@@ -33,13 +33,6 @@ class KnobDial(QtWidgets.QWidget):
         layout.addWidget(self)
 
 
-def find_panel(parent):
-    if hasattr(parent, 'pin_to_dock'):
-        return parent
-    else:
-        return find_panel(parent.parent())
-
-
 def label(panel, layout, text='', x=-1, y=-1):
     """
 

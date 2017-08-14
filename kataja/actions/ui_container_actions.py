@@ -79,24 +79,6 @@ class ToggleFoldPanel(KatajaAction):
             panel.set_folded(folded)
 
 
-class PinPanel(KatajaAction):
-    k_action_uid = 'pin_panel'
-    k_command = 'Pin to dock'
-    k_undoable = False
-
-    def prepare_parameters(self, args, kwargs):
-        panel = self.get_ui_container()
-        key = panel.ui_type
-        return [key], kwargs
-
-    def method(self, panel_id: str):
-        """ Put panel back to panel dock area.
-        """
-        panel = ctrl.ui.get_panel(panel_id)
-        if panel:
-            panel.pin_to_dock()
-
-
 class CloseEmbed(KatajaAction):
     k_action_uid = 'close_embed'
     k_command = 'Close panel'

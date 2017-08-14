@@ -70,12 +70,6 @@ class PanelTitle(QtWidgets.QWidget):
         self.close_button.data = panel.ui_key
         self.close_button.show()
 
-        self.pin_button = PanelButton(parent=self,
-                                      pixmap=qt_prefs.pin_drop_icon,
-                                      tooltip='Dock this panel',
-                                      action='pin_panel',
-                                      size=12).to_layout(layout)
-        self.pin_button.setFixedWidth(16)
         self.fold_button = ModalIconButton(ui_key='fold_%s_panel' % panel.name,
                                            parent=self,
                                            pixmap0=qt_prefs.fold_pixmap,
@@ -107,9 +101,6 @@ class PanelTitle(QtWidgets.QWidget):
 
     def sizeHint(self):
         return self.preferred_size
-
-    def pin_to_dock(self):
-        self.panel.pin_to_dock()
 
 
 class Panel(UIWidget, QtWidgets.QDockWidget):
@@ -198,9 +189,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         # self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 
-    def pin_to_dock(self):
-        self.setFloating(False)
-
     def report_dock_location(self, area):
         """
 
@@ -216,11 +204,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         if floating:
             if hasattr(self, 'preferred_size'):
                 self.resize(self.preferred_size)
-            self.titleBarWidget().pin_button.show()
             if self.resize_grip:
                 self.resize_grip.show()
         else:
-            self.titleBarWidget().pin_button.hide()
             if self.resize_grip:
                 self.resize_grip.hide()
 
