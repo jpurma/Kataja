@@ -62,7 +62,6 @@ class NodesPanel(Panel):
                 self.sheets.append(sheet)
                 frame.sheet = sheet
             frame.set_folded(frame.folded)  # updates sheet visibility
-
         self.reset_button = PanelButton(parent=outer,
                                         text='reset',
                                         action='reset_settings',
@@ -72,6 +71,7 @@ class NodesPanel(Panel):
 
         self.setWidget(outer)
         self.finish_init()
+
 
     def get_font_dialog(self, node_type):
         """ If there are font dialogs open, they are attached to font_selectors in node frames.

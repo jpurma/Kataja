@@ -60,22 +60,22 @@ class PanelTitle(QtWidgets.QWidget):
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(0)
         layout.minimumSize = self.sizeHint
-        ui = self.panel.ui_manager
 
         self.close_button = PanelButton(parent=self,
                                         pixmap=qt_prefs.close_icon,
                                         tooltip='Close panel',
                                         action='toggle_panel',
                                         size=12).to_layout(layout)
-        self.close_button.setMaximumWidth(16)
+        self.close_button.setFixedWidth(16)
         self.close_button.data = panel.ui_key
+        self.close_button.show()
 
         self.pin_button = PanelButton(parent=self,
                                       pixmap=qt_prefs.pin_drop_icon,
                                       tooltip='Dock this panel',
                                       action='pin_panel',
                                       size=12).to_layout(layout)
-        self.pin_button.setMaximumWidth(16)
+        self.pin_button.setFixedWidth(16)
         self.fold_button = ModalIconButton(ui_key='fold_%s_panel' % panel.name,
                                            parent=self,
                                            pixmap0=qt_prefs.fold_pixmap,
@@ -96,7 +96,6 @@ class PanelTitle(QtWidgets.QWidget):
                                                action='set_scope_for_node_style').to_layout(layout)
             self.scope_selector.setMaximumWidth(92)
 
-
         self.setLayout(layout)
 
     def update_fold(self, folded):
@@ -104,6 +103,7 @@ class PanelTitle(QtWidgets.QWidget):
             self.fold_button.setChecked(True)
         else:
             self.fold_button.setChecked(False)
+        self.updateGeometry()
 
     def sizeHint(self):
         return self.preferred_size
@@ -128,7 +128,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         """
         UIWidget.__init__(self)
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
-        #self.ui_type = 'Panel'
         self.folded = folded
         self.name = name
         self._watched = False
@@ -151,8 +150,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
         self.setContentsMargins(0, 0, 0, 0)
-        title_widget = PanelTitle(name, self, scope_action=scope_action)
-        self.setTitleBarWidget(title_widget)
+        self.title_widget = PanelTitle(name, self, scope_action=scope_action)
+        self.setTitleBarWidget(self.title_widget)
         self.report_top_level(self.isFloating())
 
     def finish_init(self):
@@ -316,8 +315,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :param QShowEvent:
         """
         if self.isFloating():
-            #self.move(self.initial_position())
-            pass
+            self.move(self.initial_position())
         if not self._watched:
             for signal in self.watchlist:
                 ctrl.add_watcher(self, signal)

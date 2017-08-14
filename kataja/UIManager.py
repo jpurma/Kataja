@@ -478,7 +478,7 @@ class UIManager:
         ctrl.deselect_objects()
         for item in list(self._items.values()):
             if not item.permanent_ui:
-                self.remove_ui(item)
+                self.remove_ui(item, fade=False)
 
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when

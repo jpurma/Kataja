@@ -52,7 +52,6 @@ class ConstituentSheet(QtWidgets.QWidget):
         b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24,
                          action='set_card_node_shape').to_layout(hlayout)
         b5.setFixedWidth(w)
-        layout.addLayout(hlayout)
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge',
@@ -77,7 +76,6 @@ class ConstituentSheet(QtWidgets.QWidget):
                                            action='select_label_text_mode',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Labeling strategy')
-        hlayout.addWidget(self.label_selector)
         hlayout = box_row(layout)
         data = prefs.get_display_choices('projection_style')
         self.projection_selector = SelectionBox(parent=self,
@@ -85,7 +83,6 @@ class ConstituentSheet(QtWidgets.QWidget):
                                                 data=data).to_layout(hlayout,
                                                                      with_label='Projection style')
 
-        hlayout.addWidget(self.projection_selector)
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('linearization_mode')
@@ -93,7 +90,6 @@ class ConstituentSheet(QtWidgets.QWidget):
                                                action='select_linearization_mode',
                                                data=data).to_layout(hlayout,
                                                                     with_label='Linearization')
-        hlayout.addWidget(self.linearization_mode)
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('trace_strategy')
@@ -101,5 +97,3 @@ class ConstituentSheet(QtWidgets.QWidget):
                                            action='select_trace_strategy',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Trace strategy')
-        hlayout.addWidget(self.trace_selector)
-

@@ -9,6 +9,7 @@ class PanelButton(PushButtonBase):
         Currently this is not doing anything special that can't be done by
         setting TwoColorIconEngine for normal button, but let's keep this in case we
         need to deliver palette updates to icon engines."""
+    permanent_ui = True
 
     def __init__(self, pixmap=None, color_key='accent8', draw_method=None, **kwargs):
         PushButtonBase.__init__(self, **kwargs)
