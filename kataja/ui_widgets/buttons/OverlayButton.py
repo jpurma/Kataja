@@ -65,36 +65,11 @@ class OverlayButton(PanelButton):
         """
         c = ctrl.cm.get(self.color_key)
         if self.pixmap:
-            image = QtGui.QImage(self.base_image)
-            painter = QtGui.QPainter(image)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-            painter.fillRect(image.rect(), c)
-            painter.end()
-            image2 = QtGui.QImage(self.base_image)
-            painter = QtGui.QPainter(image2)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-            painter.fillRect(image2.rect(), c.lighter())
-            painter.end()
-
+            image = self.colored_image_from_base(c)
+            image2 = self.colored_image_from_base(c.lighter())
         elif self.draw_method:
-
-            image = QtGui.QImage(self.base_image)
-            image2 = QtGui.QImage(self.base_image)
-
-            painter = QtGui.QPainter(image)
-            #painter.setDevicePixelRatio(2.0)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setPen(c)
-            self.draw_method(painter, image.rect(), c)
-            painter.end()
-            painter = QtGui.QPainter(image2)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            cl = c.lighter()
-            painter.setPen(cl)
-            self.draw_method(painter, image2.rect(), cl)
-            painter.end()
+            image = self.colored_image_from_drawing(c)
+            image2 = self.colored_image_from_drawing(c.lighter())
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
@@ -387,13 +362,17 @@ class OverlayLabel(UIWidget, QtWidgets.QLabel):
     """ A floating label on top of main canvas. These are individual UI
     elements each.
     """
-    selection_independent = True
+    selection_independent = False
+    permanent_ui = False
 
     def __init__(self, host, parent=None, ui_key=None, tooltip='', **kwargs):
         UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host, **kwargs)
         text = host.label_object.edited_field + "→"
         QtWidgets.QLabel.__init__(self, text, parent)
         self.k_tooltip = tooltip
+
+    def update_edited_field(self):
+        self.setText(self.host.label_object.edited_field + "→")
 
     def update_position(self):
         """ """

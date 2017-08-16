@@ -237,7 +237,7 @@ class UIManager:
         :param show: by default, show it. Easy to forget otherwise.
         """
         if item.ui_key in self._items:
-            other = self._items[item.ui_key]
+            print('ui_key ', item.ui_key, ' already exists')
             raise KeyError
         self._items[item.ui_key] = item
         if item.host:
@@ -1151,13 +1151,11 @@ class UIManager:
         self.quick_edit_buttons.update_position()
         self.quick_edit_buttons.update_values()
 
-        qe_label = self.get_ui(ob.OverlayLabel)
-        if not qe_label:
-            qe_label = OverlayButtons.OverlayLabel(node, self.main.graph_view)
-            self.add_ui(qe_label)
-        qe_label.setText(node.label_object.edited_field + "→")
+        qe_label = OverlayButtons.OverlayLabel(node, self.main.graph_view)
+        self.add_ui(qe_label)
         qe_label.update_position()
-        qe_label.show()
+        if not qe_label.isVisible():
+            qe_label.show()
 
     def remove_quick_edit_buttons(self):
         self.quick_edit_buttons.hide()

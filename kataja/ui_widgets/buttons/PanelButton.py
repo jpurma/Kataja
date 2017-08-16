@@ -46,6 +46,25 @@ class PanelButton(PushButtonBase):
         else:
             return ctrl.cm.get(self.color_key)
 
+    def colored_image_from_base(self, color):
+        image = QtGui.QImage(self.base_image)
+        painter = QtGui.QPainter(image)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+        painter.fillRect(image.rect(), color)
+        painter.end()
+        return image
+
+    def colored_image_from_drawing(self, color):
+        image = QtGui.QImage(self.base_image)
+        painter = QtGui.QPainter(image)
+        # painter.setDevicePixelRatio(2.0)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(color)
+        self.draw_method(painter, image.rect(), color)
+        painter.end()
+        return image
+
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary
         to update the overlay color.
@@ -53,23 +72,9 @@ class PanelButton(PushButtonBase):
         """
         c = ctrl.cm.get(self.color_key)
         if self.pixmap:
-            image = QtGui.QImage(self.base_image)
-            painter = QtGui.QPainter(image)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-            painter.fillRect(image.rect(), c)
-            painter.end()
-
+            image = self.colored_image_from_base(c)
         elif self.draw_method:
-
-            image = QtGui.QImage(self.base_image)
-
-            painter = QtGui.QPainter(image)
-            #painter.setDevicePixelRatio(2.0)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            painter.setPen(c)
-            self.draw_method(painter, image.rect(), c)
-            painter.end()
+            image = self.colored_image_from_drawing(c)
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
