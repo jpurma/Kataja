@@ -13,6 +13,7 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
         to do all setup a typical text button will need. There will be classes above to deal with
         special buttons and buttons with icons.
     """
+    permanent_ui = True
 
     def __init__(self, parent=None, text=None, size=None, **kwargs):
         QtWidgets.QPushButton.__init__(self, parent=parent)

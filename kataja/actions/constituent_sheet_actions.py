@@ -2,7 +2,7 @@
 from PyQt5 import QtWidgets
 
 from kataja.globals import FOREST, DOCUMENT, PREFS
-from kataja.singletons import ctrl, prefs, log
+from kataja.singletons import ctrl, prefs, log, classes
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
 from kataja.actions.line_options_panel_actions import ChangeEdgeShape
@@ -355,6 +355,6 @@ class ChangeConstituentEdgeShape(ChangeEdgeShape):
     def getter(self):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
-                if isinstance(edge, Edge) and edge.edge_type == g.CONSTITUENT_EDGE:
+                if isinstance(edge, classes.get('Edge')) and edge.edge_type == g.CONSTITUENT_EDGE:
                     return ctrl.settings.cached_edge('shape_name', edge)
         return ctrl.settings.cached_edge_type('shape_name', g.CONSTITUENT_EDGE)

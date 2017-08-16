@@ -614,6 +614,8 @@ class QtPreferences:
         self.pin_drop_icon = icon('pin_drop24.png')
         self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
+        self.down_arrow = extract_bitmaps(iconpath + 'down_2c.gif')
+        self.up_arrow = extract_bitmaps(iconpath + 'up_2c.gif')
         self.add_icon = icon('add_box48.png')
         self.leaf_pixmap = pixmap('leaf.png')
         self.add_box_icon = icon('add_box24.png')
