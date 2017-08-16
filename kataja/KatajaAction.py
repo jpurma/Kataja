@@ -222,9 +222,14 @@ class KatajaAction(QtWidgets.QAction):
 
         if not did_feedback:
             # Print the command into console
+            m = super(self.__class__, self)
+            if m.method == self.method and m.k_action_uid:
+                action_name = m.k_action_uid
+            else:
+                action_name = self.k_action_uid
             arg_parts = [repr(a) for a in args]
             kwarg_parts = [f'{key}={repr(value)}' for key, value in kwargs.items()]
-            command_string = self.k_action_uid + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
+            command_string = action_name + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
             log.info('>>> ' + command_string)
             log.log_handler.add_to_command_backlog(command_string)
 

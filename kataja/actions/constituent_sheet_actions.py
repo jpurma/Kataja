@@ -253,8 +253,8 @@ class SelectLinearizationMode(KatajaAction):
         return ctrl.ui.active_scope != g.SELECTION
 
 
-class SelectLabelTextMode(KatajaAction):
-    k_action_uid = 'select_label_text_mode'
+class SetVisibleLabel(KatajaAction):
+    k_action_uid = 'set_visible_label'
     k_command = 'Select label text mode'
     k_undoable = True
     k_shortcut = 'l'
@@ -268,13 +268,20 @@ class SelectLabelTextMode(KatajaAction):
             label_mode = None
         return [], {'label_mode': label_mode}
 
-    def method(self, label_mode=None):
+    def method(self, label_mode=None, node_uid=None):
         """ """
+        if node_uid:
+            node = ctrl.forest.get_object_by_uid(node_uid)
+            level = g.OBJECT
+        else:
+            level = ctrl.ui.active_scope
+            node = None
         if label_mode is None:
-            label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
+            label_mode = ctrl.settings.get('label_text_mode', obj=node, level=level)
             syn_mode = ctrl.settings.get('syntactic_mode')
             support_secondary = ctrl.forest.syntax.supports_secondary_labels
-            # some labels are not allowed in syn mode.
+            # some labels are not allowed in syn mode. If called without arguments, rotate to
+            # next available mode.
             ok = False
             while not ok:
                 label_mode += 1
@@ -291,7 +298,7 @@ class SelectLabelTextMode(KatajaAction):
                     label_mode = -1
                 else:
                     ok = True
-        ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
+        ctrl.settings.set('label_text_mode', label_mode, obj=node, level=level)
         ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'

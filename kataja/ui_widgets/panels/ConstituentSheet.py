@@ -73,9 +73,9 @@ class ConstituentSheet(QtWidgets.QWidget):
         hlayout = box_row(layout)
         data = prefs.get_display_choices('label_text_mode')
         self.label_selector = SelectionBox(parent=self,
-                                           action='select_label_text_mode',
+                                           action='set_visible_label',
                                            data=data).to_layout(hlayout,
-                                                                with_label='Labeling strategy')
+                                                                with_label='Visible label')
         hlayout = box_row(layout)
         data = prefs.get_display_choices('projection_style')
         self.projection_selector = SelectionBox(parent=self,

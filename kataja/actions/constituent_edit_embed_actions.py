@@ -5,7 +5,7 @@ from kataja.globals import FOREST, DOCUMENT, PREFS
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
-
+from kataja.actions.constituent_sheet_actions import SetVisibleLabel
 
 # ==== Class variables for KatajaActions:
 #
@@ -29,58 +29,75 @@ from kataja.KatajaAction import KatajaAction
 #           when enabler returns True
 #
 
-class SetSynlabelsVisible(KatajaAction):
-    k_action_uid = 'set_synlabels_visible'
+class SetVisibleLabelsToSynlabels(SetVisibleLabel):
+    k_action_uid = 'set_visible_labels_to_synlabels'
     k_command = 'Nodes show syntactic labels'
     k_undoable = True
     k_tooltip = 'Set nodes to use syntactic node labels'
+    k_checkable = True
 
-    def method(self):
-        """ """
-        ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
-        mode_text = prefs.get_ui_text_for_choice(g.SYN_LABELS, 'label_text_mode')
-        return f'Set label text mode to: {mode_text}'
+    def prepare_parameters(self, args, kwargs):
+        node = ctrl.get_single_selected()
+        return [], {'label_mode': g.SYN_LABELS, 'node_uid': node.uid if node else ''}
 
     def getter(self):
-        m = ctrl.settings.get('label_text_mode')
+        m = None
+        if ctrl.ui.active_scope == g.SELECTION:
+            for item in ctrl.selected:
+                if 'label_text_mode' in item.settings:
+                    m = ctrl.settings.get('label_text_mode', obj=item)
+        if not m:
+            m = ctrl.settings.get('label_text_mode')
         return m == g.SYN_LABELS or m == g.SYN_LABELS_FOR_LEAVES
 
+    def enabler(self):
+        node = ctrl.get_single_selected()
+        return node and node.syntactic_object
 
-class SetNodeLabelsVisible(KatajaAction):
-    k_action_uid = 'set_node_labels_visible'
+
+class SetVisibleLabelsToNodelabels(SetVisibleLabel):
+    k_action_uid = 'set_visible_labels_to_nodelabels'
     k_command = 'Nodes show node labels'
     k_undoable = True
     k_tooltip = 'Set nodes to use user-provided node labels'
+    k_checkable = True
 
-    def method(self):
-        """ """
-        ctrl.settings.set('label_text_mode', g.NODE_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
-        mode_text = prefs.get_ui_text_for_choice(g.NODE_LABELS, 'label_text_mode')
-        return f'Set label text mode to: {mode_text}'
+    def prepare_parameters(self, args, kwargs):
+        node = ctrl.get_single_selected()
+        return [], {'label_mode': g.NODE_LABELS, 'node_uid': node.uid if node else ''}
 
     def getter(self):
-        m = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
+        m = None
+        if ctrl.ui.active_scope == g.SELECTION:
+            for item in ctrl.selected:
+                print(item.settings)
+                if 'label_text_mode' in item.settings:
+                    m = ctrl.settings.get('label_text_mode', obj=item)
+        if not m:
+            m = ctrl.settings.get('label_text_mode')
         return m == g.NODE_LABELS_FOR_LEAVES or m == g.NODE_LABELS
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and not ctrl.settings.get('syntactic_mode')
+        return not ctrl.settings.get('syntactic_mode')
 
 
-class SetAutolabelsVisible(KatajaAction):
-    k_action_uid = 'set_autolabels_visible'
+class SetVisibleLabelToAutolabel(SetVisibleLabel):
+    k_action_uid = 'set_visible_labels_to_autolabels'
     k_command = 'Nodes show generated labels'
     k_undoable = True
     k_tooltip = 'Set nodes to use labels generated from projected leaves'
+    k_checkable = True
 
-    def method(self):
-        """ """
-        ctrl.settings.set('label_text_mode', g.XBAR_LABELS, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
-        mode_text = prefs.get_ui_text_for_choice(g.XBAR_LABELS, 'label_text_mode')
-        return f'Set label text mode to: {mode_text}'
+    def prepare_parameters(self, args, kwargs):
+        node = ctrl.get_single_selected()
+        return [], {'label_mode': g.XBAR_LABELS, 'node_uid': node.uid if node else ''}
 
     def getter(self):
-        m = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
+        m = None
+        if ctrl.ui.active_scope == g.SELECTION:
+            for item in ctrl.selected:
+                if 'label_text_mode' in item.settings:
+                    m = ctrl.settings.get('label_text_mode', obj=item)
+        if not m:
+            m = ctrl.settings.get('label_text_mode')
         return m == g.XBAR_LABELS
