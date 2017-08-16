@@ -350,7 +350,7 @@ class ChangeConstituentEdgeShape(ChangeEdgeShape):
         return [shape_name], {'edge_type': g.CONSTITUENT_EDGE, 'level': level}
 
     def enabler(self):
-        return ctrl.ui.has_edges_in_scope()
+        return ctrl.ui.has_edges_in_scope(of_type=g.CONSTITUENT_EDGE)
 
     def getter(self):
         if ctrl.ui.scope_is_selection:

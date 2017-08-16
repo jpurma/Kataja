@@ -66,7 +66,7 @@ class ChangeEdgeShape(KatajaAction):
             level = ctrl.ui_active_scope
         if level == g.SELECTION:
             for edge in ctrl.selected:
-                if isinstance(edge, Edge):
+                if isinstance(edge, Edge) and edge.edge_type == edge_type:
                     edge.shape_name = shape_name
                     edge.update_shape()
         else:

@@ -56,8 +56,6 @@ class ShapeSelector(TableModelSelectionBox):
 
     def get_active_color(self):
         edge_type = self.for_edge_type or ctrl.ui.active_edge_type
-
-
         color_id = ctrl.settings.get_edge_setting('color_id', edge_type=edge_type,
                                                   level=ctrl.ui.get_active_scope())
         if not color_id:
@@ -68,8 +66,11 @@ class ShapeSelector(TableModelSelectionBox):
                              g.COMMENT_EDGE: g.COMMENT_NODE
             }
             node_type = node_type_map.get(edge_type, g.CONSTITUENT_NODE)
+            scope = ctrl.ui.get_active_scope()
+            if scope == g.SELECTION:
+                scope = g.HIGHEST
             color_id = ctrl.settings.get_node_setting('color_id', node_type=node_type,
-                                                      level=ctrl.ui.get_active_scope())
+                                                      level=scope)
         return ctrl.cm.get(color_id)
 
     def update_colors(self):

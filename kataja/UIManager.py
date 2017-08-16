@@ -449,10 +449,10 @@ class UIManager:
             return False
         return True  # all scope options allow defining node color
 
-    def has_edges_in_scope(self):
+    def has_edges_in_scope(self, of_type=None):
         if self.scope_is_selection:
             for item in ctrl.selected:
-                if isinstance(item, Edge):
+                if isinstance(item, Edge) and ((not of_type) or item.edge_type == of_type):
                     return True
             return False
         return True  # all scope options allow defining node color
