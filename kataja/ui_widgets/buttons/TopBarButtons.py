@@ -5,9 +5,8 @@ from kataja.ui_widgets.buttons.OverlayButton import TopRowButton, VisButton
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.buttons.ModalIconButton import ModalIconButton
-from kataja.ui_widgets.buttons.ModalTextButton import ModalTextButton
-
+from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
+from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 
 
 class TopBarButtons(QtWidgets.QFrame):
@@ -18,25 +17,25 @@ class TopBarButtons(QtWidgets.QFrame):
         self.show()
 
         # Left side
-        self.play_button = ModalIconButton(ui_key='play_button', parent=self,
-                                           pixmap0=qt_prefs.play_pixmap,
-                                           pixmap1=qt_prefs.pause_pixmap,
-                                           size=36,
-                                           action='play_or_pause',
-                                           ).to_layout(layout)
+        self.play_button = TwoStateIconButton(ui_key='play_button', parent=self,
+                                              pixmap0=qt_prefs.play_pixmap,
+                                              pixmap1=qt_prefs.pause_pixmap,
+                                              size=36,
+                                              action='play_or_pause',
+                                              ).to_layout(layout)
 
-        self.edit_mode_button = ModalTextButton(ui_key='edit_mode_label', parent=self,
-                                                text0='Free drawing',
-                                                text1='Visualisation',
-                                                action='switch_edit_mode').to_layout(layout)
+        self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label', parent=self,
+                                               text0='Free drawing',
+                                               text1='Visualisation',
+                                               action='switch_edit_mode').to_layout(layout)
         layout.addStretch(0)
 
         # Center side
-        self.view_mode_button = ModalTextButton(ui_key='view_mode_label', parent=self,
-                                                text0='Showing all layers',
-                                                text1='Showing only syntactic layer',
-                                                pixmap=qt_prefs.eye_pixmap,
-                                                action='switch_view_mode').to_layout(layout)
+        self.view_mode_button = TwoStateButton(ui_key='view_mode_label', parent=self,
+                                               text0='Showing all layers',
+                                               text1='Showing only syntactic layer',
+                                               pixmap0=qt_prefs.eye_pixmap,
+                                               action='switch_view_mode').to_layout(layout)
 
         layout.addStretch(0)
 
@@ -67,7 +66,7 @@ class TopBarButtons(QtWidgets.QFrame):
         redo = TopRowButton(ui_key='redo_button', parent=self, pixmap=qt_prefs.redo_icon,
                             action='redo').to_layout(layout)
 
-        pan_mode = TopRowButton(ui_key='pan_mode', parent=self, tooltip='Move mode', size=(24, 24),
+        pan_mode = TopRowButton(ui_key='pan_mode', parent=self, size=(24, 24),
                                 pixmap=qt_prefs.pan_icon,
                                 action='toggle_pan_mode').to_layout(layout)
         pan_mode.setCheckable(True)

@@ -66,6 +66,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.selected = False
         self._nodes_overlap = False
         self.k_tooltip = ''
+        self.k_action = None
         self._is_moving = False
 
         self.in_projections = []

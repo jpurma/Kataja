@@ -18,6 +18,8 @@ class PanelButton(PushButtonBase):
         self.base_image = None
         self.normal_icon = None
         self.hover_icon = None
+        self.tooltip0 = ''
+        self.tooltip1 = ''
         size = self.iconSize()
         if isinstance(pixmap, str):
             pixmap = getattr(qt_prefs, pixmap)
@@ -27,12 +29,13 @@ class PanelButton(PushButtonBase):
             self.pixmap = pixmap
         if self.pixmap:
             self.base_image = self.pixmap.toImage()
+            self.compose_icon()
         elif self.draw_method:
             isize = QtCore.QSize(size.width() * 2, size.height() * 2)
             self.base_image = QtGui.QImage(
                 isize, QtGui.QImage.Format_ARGB32_Premultiplied)
             self.base_image.fill(QtCore.Qt.transparent)
-        self.compose_icon()
+            self.compose_icon()
 
         self.w2 = self.iconSize().width() / 2
         self.h2 = self.iconSize().height() / 2
@@ -47,6 +50,7 @@ class PanelButton(PushButtonBase):
             return ctrl.cm.get(self.color_key)
 
     def colored_image_from_base(self, color):
+        assert(self.base_image)
         image = QtGui.QImage(self.base_image)
         painter = QtGui.QPainter(image)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)

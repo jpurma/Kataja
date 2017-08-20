@@ -293,7 +293,7 @@ class SetVisibleLabel(KatajaAction):
                     ok = False
                 elif label_mode == g.XBAR_LABELS and syn_mode:
                     ok = False
-                elif label_mode > g.SECONDARY_LABELS:
+                elif label_mode > g.NO_LABELS:
                     ok = False
                     label_mode = -1
                 else:

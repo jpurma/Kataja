@@ -416,6 +416,8 @@ class ConstituentNode(Node):
                 return 'syntactic label', as_html(self.syntactic_object.label)
             else:
                 return '', ''
+        else:
+            return '', ''
 
     def parse_edited_label(self, label_name, value):
         success = False

@@ -31,6 +31,7 @@ from kataja.ui_graphicsitems.TouchArea import TouchArea
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -179,8 +180,9 @@ class KatajaAction(QtWidgets.QAction):
             ag = ctrl.ui.get_action_group(self.k_viewgroup)
             self.setActionGroup(ag)
             ag.setExclusive(self.k_exclusive)
+        self.active_tooltip = self.tip0
         self.setCheckable(self.k_checkable)
-        self.setToolTip(self.tip0)
+        self.setToolTip(self.active_tooltip)
 
     def prepare_parameters(self, args, kwargs):
         return [], {}
@@ -196,6 +198,12 @@ class KatajaAction(QtWidgets.QAction):
 
     def manual_run_command(self, *args, **kwargs):
         return self.run_command(*args, has_params=True, did_feedback=True, **kwargs)
+
+    def set_active_tooltip(self, checked):
+        if checked and self.tip1:
+            self.active_tooltip = self.tip1
+        else:
+            self.active_tooltip = self.tip0
 
     def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
@@ -301,9 +309,8 @@ class KatajaAction(QtWidgets.QAction):
 
         :param element:
         """
+        element.k_action = self
         self.elements.add(element)
-        if self.tip0:
-            element.k_tooltip = self.tip0
 
         # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
@@ -379,13 +386,9 @@ class KatajaAction(QtWidgets.QAction):
         if self.isCheckable():
             for element in self.elements:
                 element.blockSignals(True)
-                if value != element.isChecked():
-                    element.setChecked(value)
-                    if value and self.tip1:
-                        element.k_tooltip = self.tip1
-                    elif (not value) and self.tip0:
-                        element.k_tooltip = self.tip0
+                element.setChecked(value)
                 element.blockSignals(False)
+            self.set_active_tooltip(value)
         else:
             for element in self.elements:
                 if isinstance(element, SelectionBox):

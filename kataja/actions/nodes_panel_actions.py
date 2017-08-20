@@ -80,12 +80,18 @@ class AddConstituentNode(AbstractAddNode):
     k_tooltip = 'Create a new constituent node'
     node_type = g.CONSTITUENT_NODE
 
+    def enabler(self):
+        return ctrl.free_drawing_mode
+
 
 class AddFeatureNode(AbstractAddNode):
     k_action_uid = 'add_feature_node'
     k_command = 'Add feature node'
     k_tooltip = 'Create a new feature node'
     node_type = g.FEATURE_NODE
+
+    def enabler(self):
+        return ctrl.free_drawing_mode
 
 
 class AddGlossNode(AbstractAddNode):

@@ -37,7 +37,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
         #close_button = QtWidgets.QPushButton("x")
-        close_button = PanelButton(pixmap=qt_prefs.close_icon, tooltip='Close', parent=self,
+        close_button = PanelButton(pixmap=qt_prefs.close_icon, parent=self,
                                    size=12, color_key='content1')
         close_button.setMaximumWidth(16)
         self.ui_manager.connect_element_to_action(close_button, 'close_embed')

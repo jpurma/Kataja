@@ -27,12 +27,15 @@ class UIItem:
             self.ui_key = self.__class__.__name__
         else:
             self.ui_key = next_available_ui_key()
+        self.k_action = None
         self.ui_type = self.__class__.__name__
         self.ui_manager = ctrl.ui
         self.role = role  # optional way to identify if cannot be distinguished w. class
         self.host = host
         self.watchlist = []
         self.priority = 10
+        if tooltip:
+            print('**** giving tooltip directly for UIItem: ', tooltip)
         self.k_tooltip = tooltip
         self.is_fading_in = False
         self.is_fading_out = False

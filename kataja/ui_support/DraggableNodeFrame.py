@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl, classes
-from kataja.ui_widgets.buttons.ModalIconButton import ModalIconButton
+from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
 from kataja.ui_widgets.selection_boxes.FontSelector import FontSelector
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
@@ -30,18 +30,17 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.folded = folded
         self.add_button = PanelButton(parent=self,
                                       pixmap=qt_prefs.add_icon,
-                                      tooltip='Add ' + node_type_name,
                                       action='add_%s_node' % node_type_name,
                                       size=24,
                                       color_key=color_key).to_layout(hlayout)
         self.add_button.data = key
 
-        self.fold_button = ModalIconButton(ui_key='fold_%s_sheet' % node_type_name,
-                                           parent=self,
-                                           pixmap0=qt_prefs.fold_pixmap,
-                                           pixmap1=qt_prefs.more_pixmap,
-                                           action='fold_node_sheet',
-                                           size=12).to_layout(hlayout)
+        self.fold_button = TwoStateIconButton(ui_key='fold_%s_sheet' % node_type_name,
+                                              parent=self,
+                                              pixmap0=qt_prefs.fold_pixmap,
+                                              pixmap1=qt_prefs.more_pixmap,
+                                              action='fold_node_sheet',
+                                              size=12).to_layout(hlayout)
         self.fold_button.data = key
 
         self.label = QtWidgets.QLabel(name, self)

@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 import itertools
 
 from collections import defaultdict
-from singletons import classes
+from kataja.singletons import classes
 
 from kataja.Projection import Projection
 from kataja.singletons import ctrl, classes, qt_prefs

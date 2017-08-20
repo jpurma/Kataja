@@ -92,6 +92,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         # alone or set of Movables. Tree has abstract position adjustment information.
 
         self.k_tooltip = ''
+        self.k_action = None
         # MOVE_TO -elements
         self.target_position = 0, 0
         self.adjustment = 0, 0

@@ -215,7 +215,9 @@ class Preferences(object):
                                             (NODE_LABELS, 'Node labels or syntactic labels'),
                                             (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
                                             (XBAR_LABELS, 'Attempt automatic X-bar labeling'),
-                                            (SECONDARY_LABELS, 'Secondary labels (if syntax supports)')],
+                                            (SECONDARY_LABELS, 'Secondary labels (if syntax '
+                                                               'supports)'),
+                                            (NO_LABELS, 'No labels for constituents')],
                                     'label': 'Node label text',
                                     'help': 'Should the tree show freely editable labels (node '
                                             'labels) or labels used in syntactic computation. ',

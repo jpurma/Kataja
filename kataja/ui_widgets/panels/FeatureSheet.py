@@ -82,7 +82,6 @@ class FeatureSheet(QtWidgets.QWidget):
                                             ).to_layout(hlayout)
         self.edge_options = PanelButton(parent=self,
                                         pixmap=qt_prefs.settings_icon,
-                                        tooltip='More edge options',
                                         action='open_line_options',
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_options.data = g.FEATURE_NODE

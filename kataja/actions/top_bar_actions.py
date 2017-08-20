@@ -63,9 +63,14 @@ class SwitchEditMode(KatajaAction):
     k_shortcut = 'Ctrl+Shift+Space'
     k_undoable = False
     k_checkable = True
-    k_tooltip = 'Trees can be created and edited in free editing mode.'
-    k_tooltip_alt = 'In visualisation mode structures are built by syntax algorithms (e.g. in ' \
-                    'plugins)  and only cosmetic changes are allowed.'
+    k_tooltip = '''<p><b>Visualisation:</b> Structures are created by algorithm (e.g. from 
+    plugin) and direct editing of structures is not allowed -- all changes are changes in 
+    visualisation of structure. Constituents and features are added through Lexicon panel or 
+    source files. 
+    </p>
+    <p><b>Free drawing</b> Constituents and features can be added freely, but changes are not 
+    reflected back to syntactic model.</p> 
+    '''
 
     def method(self, free_edit=None):
         """ Switch between visualisation mode and free edit mode

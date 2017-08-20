@@ -144,7 +144,6 @@ class CutFromStartButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Disconnect edge from the start',
                          pixmap=qt_prefs.cut_icon,
                          action='disconnect_edge_start')
         self.priority = 54
@@ -172,7 +171,6 @@ class CutFromEndButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Disconnect edge from the end',
                          pixmap=qt_prefs.cut_icon,
                          action='disconnect_edge_end')
         self.priority = 55
@@ -203,7 +201,6 @@ class CutEdgeButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Disconnect edge',
                          color_key='accent3',
                          pixmap=qt_prefs.cut_icon,
                          action='disconnect_edge')
@@ -233,7 +230,6 @@ class RemoveMergerButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Remove this non-merging node',
                          pixmap='delete_icon',
                          action='remove_merger')
         self.priority = 99
@@ -266,7 +262,6 @@ class RemoveNodeButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Remove node',
                          color_key='accent3',
                          pixmap='delete_icon',
                          action='remove_node')
@@ -300,7 +295,6 @@ class GroupOptionsButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Name this selection',
                          color_key=host.color_key,
                          pixmap=qt_prefs.info_icon,
                          action='toggle_group_options')
@@ -333,7 +327,6 @@ class NodeEditorButton(OverlayButton):
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16,
-                         tooltip='Edit this node',
                          color_key=host.get_color_id(),
                          pixmap=qt_prefs.info_icon,
                          action='start_editing_node')

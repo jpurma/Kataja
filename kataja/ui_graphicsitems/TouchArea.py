@@ -113,9 +113,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     def is_visible(self):
         return self._visible
 
-    def set_tip(self, tip):
-        self.k_tooltip = tip
-
     def contextual_color(self):
         if self._hovering:
             return ctrl.cm.hovering(ctrl.cm.ui())
@@ -363,7 +360,7 @@ class AddBelowTouchArea(AbstractBelowTouchArea):
 
     @classmethod
     def select_condition(cls, host):
-        return ctrl.free_drawing and host.is_top_node()
+        return ctrl.free_drawing_mode and host.is_top_node()
 
     @classmethod
     def drop_condition(cls, host):
@@ -923,12 +920,12 @@ class LeftAddTop(AbstractJointedTouchArea):
 
     @classmethod
     def select_condition(cls, host):
-        return ctrl.free_drawing and host.is_top_node()
+        return ctrl.free_drawing_mode and host.is_top_node()
 
     @classmethod
     def drop_condition(cls, host):
         return ctrl.ui.is_dragging_this_type(
-            g.CONSTITUENT_NODE) and ctrl.free_drawing and host.is_top_node()
+            g.CONSTITUENT_NODE) and ctrl.free_drawing_mode and host.is_top_node()
 
     def __init__(self, host):
         super().__init__(host, click_action='connect_node', click_kwargs={
@@ -969,12 +966,12 @@ class RightAddTop(AbstractJointedTouchArea):
 
     @classmethod
     def select_condition(cls, host):
-        return ctrl.free_drawing and host.is_top_node()
+        return ctrl.free_drawing_mode and host.is_top_node()
 
     @classmethod
     def drop_condition(cls, host):
         return ctrl.ui.is_dragging_this_type(
-            g.CONSTITUENT_NODE) and ctrl.free_drawing and host.is_top_node()
+            g.CONSTITUENT_NODE) and ctrl.free_drawing_mode and host.is_top_node()
 
     def __init__(self, host):
         super().__init__(host, click_action='connect_node', click_kwargs={

@@ -29,6 +29,7 @@ from kataja.actions.constituent_sheet_actions import SetVisibleLabel
 #           when enabler returns True
 #
 
+
 class SetVisibleLabelsToSynlabels(SetVisibleLabel):
     k_action_uid = 'set_visible_labels_to_synlabels'
     k_command = 'Nodes show syntactic labels'
@@ -37,8 +38,16 @@ class SetVisibleLabelsToSynlabels(SetVisibleLabel):
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
+        new_val = g.SYN_LABELS
+        node_uid = ''
         node = ctrl.get_single_selected()
-        return [], {'label_mode': g.SYN_LABELS, 'node_uid': node.uid if node else ''}
+        if node:
+            node_uid = node.uid
+            old_val = ctrl.settings.get('label_text_mode', obj=node)
+            if old_val == new_val or old_val == g.SYN_LABELS_FOR_LEAVES:
+                new_val = g.NO_LABELS
+                self.sender().setChecked(False)
+        return [], {'label_mode': new_val, 'node_uid': node_uid}
 
     def getter(self):
         m = None
@@ -63,14 +72,21 @@ class SetVisibleLabelsToNodelabels(SetVisibleLabel):
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
+        new_val = g.NODE_LABELS
+        node_uid = ''
         node = ctrl.get_single_selected()
-        return [], {'label_mode': g.NODE_LABELS, 'node_uid': node.uid if node else ''}
+        if node:
+            node_uid = node.uid
+            old_val = ctrl.settings.get('label_text_mode', obj=node)
+            if old_val == new_val or old_val == g.NODE_LABELS_FOR_LEAVES:
+                new_val = g.NO_LABELS
+                self.sender().setChecked(False)
+        return [], {'label_mode': new_val, 'node_uid': node_uid}
 
     def getter(self):
         m = None
         if ctrl.ui.active_scope == g.SELECTION:
             for item in ctrl.selected:
-                print(item.settings)
                 if 'label_text_mode' in item.settings:
                     m = ctrl.settings.get('label_text_mode', obj=item)
         if not m:
@@ -89,15 +105,20 @@ class SetVisibleLabelToAutolabel(SetVisibleLabel):
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
+        new_val = g.XBAR_LABELS
+        node_uid = ''
         node = ctrl.get_single_selected()
-        return [], {'label_mode': g.XBAR_LABELS, 'node_uid': node.uid if node else ''}
+        if node:
+            node_uid = node.uid
+            old_val = ctrl.settings.get('label_text_mode', obj=node)
+            if old_val == new_val:
+                new_val = g.NO_LABELS
+                self.sender().setChecked(False)
+        return [], {'label_mode': new_val, 'node_uid': node_uid}
 
     def getter(self):
-        m = None
-        if ctrl.ui.active_scope == g.SELECTION:
-            for item in ctrl.selected:
-                if 'label_text_mode' in item.settings:
-                    m = ctrl.settings.get('label_text_mode', obj=item)
-        if not m:
-            m = ctrl.settings.get('label_text_mode')
-        return m == g.XBAR_LABELS
+        node = ctrl.get_single_selected()
+        if not node:
+            return False
+        value = ctrl.settings.get('label_text_mode', obj=node, level=g.OBJECT)
+        return value == g.XBAR_LABELS

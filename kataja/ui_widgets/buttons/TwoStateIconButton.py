@@ -4,7 +4,7 @@ from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
-class ModalIconButton(PushButtonBase):
+class TwoStateIconButton(PushButtonBase):
 
     permanent_ui = True
 

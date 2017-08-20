@@ -29,7 +29,7 @@ import kataja.globals as g
 from kataja.ui_support.panel_utils import label
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.UIItem import UIWidget
-from kataja.ui_widgets.buttons.ModalIconButton import ModalIconButton
+from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 
@@ -63,19 +63,18 @@ class PanelTitle(QtWidgets.QWidget):
 
         self.close_button = PanelButton(parent=self,
                                         pixmap=qt_prefs.close_icon,
-                                        tooltip='Close panel',
                                         action='toggle_panel',
                                         size=12).to_layout(layout)
         self.close_button.setFixedWidth(16)
         self.close_button.data = panel.ui_key
         self.close_button.show()
 
-        self.fold_button = ModalIconButton(ui_key='fold_%s_panel' % panel.name,
-                                           parent=self,
-                                           pixmap0=qt_prefs.fold_pixmap,
-                                           pixmap1=qt_prefs.more_pixmap,
-                                           action='toggle_fold_panel',
-                                           size=12).to_layout(layout)
+        self.fold_button = TwoStateIconButton(ui_key='fold_%s_panel' % panel.name,
+                                              parent=self,
+                                              pixmap0=qt_prefs.fold_pixmap,
+                                              pixmap1=qt_prefs.more_pixmap,
+                                              action='toggle_fold_panel',
+                                              size=12).to_layout(layout)
         self.fold_button.data = panel.ui_key
         self.fold_button.setMaximumWidth(16)
 
