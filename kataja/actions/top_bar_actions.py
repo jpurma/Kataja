@@ -32,25 +32,30 @@ from kataja.singletons import ctrl, log
 
 
 class PlayOrPause(KatajaAction):
-    k_action_uid = 'play_or_pause'
-    k_command = 'Play animations'
-    k_command_alt = 'Pause animations'
+    k_action_uid = 'play_animations'
+    k_command = 'Play or pause animations'
     k_shortcut = 'Space'
     k_undoable = False
     k_tooltip = 'Let nodes to move to their computed places'
     k_tooltip_alt = 'Pause node movement and other animations'
     k_checkable = True
 
-    def method(self, value=None):
+    def prepare_parameters(self, args, kwargs):
+        sender = self.sender()
+        return [sender.isChecked()], {}
+
+    def method(self, value):
         """ Switch between visualisation mode and free edit mode
         :param value: None to toggle between modes, True for play,
         False for pause
         :return:
         """
-        if value is None:
-            ctrl.set_play(not ctrl.play)
+        if value:
+            ctrl.graph_scene.start_animations()
+            self.autoplay = True
         else:
-            ctrl.set_play(value)
+            ctrl.graph_scene.stop_animations()
+            self.autoplay = False
 
     def getter(self):
         return ctrl.play
@@ -58,8 +63,7 @@ class PlayOrPause(KatajaAction):
 
 class SwitchEditMode(KatajaAction):
     k_action_uid = 'switch_edit_mode'
-    k_command = 'Free editing mode'
-    k_command_alt = 'Visualisation mode'
+    k_command = 'Switch editing mode'
     k_shortcut = 'Ctrl+Shift+Space'
     k_undoable = False
     k_checkable = True
@@ -68,7 +72,7 @@ class SwitchEditMode(KatajaAction):
     visualisation of structure. Constituents and features are added through Lexicon panel or 
     source files. 
     </p>
-    <p><b>Free drawing</b> Constituents and features can be added freely, but changes are not 
+    <p><b>Free drawing:</b> Constituents and features can be added freely, but changes are not 
     reflected back to syntactic model.</p> 
     '''
 
@@ -85,8 +89,8 @@ class SwitchEditMode(KatajaAction):
             ctrl.free_drawing_mode = free_edit
         ctrl.ui.update_edit_mode()
         if ctrl.free_drawing_mode:
-            return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
-                   'history for the structure.'
+             return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
+                    'history for the structure.'
         else:
             return 'Derivation mode: you can edit the visualisation and browse the derivation ' \
                    'history, but the underlying structure cannot be changed.'
@@ -97,11 +101,14 @@ class SwitchEditMode(KatajaAction):
 
 class SwitchViewMode(KatajaAction):
     k_action_uid = 'switch_view_mode'
-    k_command = 'Show all objects and their data'
-    k_command_alt = 'Show only data available for syntactic computations.'
-    k_tooltip = 'Nodes show only information that has effect on syntactic computation.'
-    k_tooltip_alt = 'Nodes show a layer of additional information, because of linguistic ' \
-                    'convention, or otherwise to help understanding.'
+    k_command = 'Switch view mode'
+    k_tooltip = '''<p><b>Show all layers:</b> Show annotations and other information unnecessary for 
+    syntactic computation.</p> 
+
+    <p><b>Show only syntactic layers:</b> Nodes show only information that has effect
+     on syntactic computation.</p>
+    '''
+
     k_shortcut = 'Shift+b'
     k_checkable = True
     k_undoable = False

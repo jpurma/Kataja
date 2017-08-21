@@ -561,28 +561,24 @@ class Forest(SavedObject):
                 ctrl.remove_from_selection(item)
         ctrl.multiselection_end()
 
-    def draw(self):
+    def draw(self, start_animations=False):
         """ Update all trees in the forest according to current visualization
         """
         if self.halt_drawing:
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
-        assert self.is_parsed
         ctrl.graph_scene.follow_optimal_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
-        sc.stop_animations()
-        #self.projection_manager.update_projections()
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
             for tree_top in self.trees:
                 self.visualization.draw_tree(tree_top)
                 self.visualization.normalise_to_origo(tree_top)
-        #if not sc.manual_zoom:
-        #    sc.fit_to_window()
         self.chain_manager.after_draw_update()
-        sc.start_animations()
+        if start_animations:
+            sc.start_animations()
         ctrl.graph_view.repaint()
 
     def redraw_edges(self, edge_type=None):

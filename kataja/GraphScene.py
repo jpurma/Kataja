@@ -32,7 +32,7 @@ from PyQt5.QtCore import Qt
 
 import kataja.globals as g
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, open_symbol_data, time_me
+from kataja.utils import to_tuple, open_symbol_data, time_me, caller
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 

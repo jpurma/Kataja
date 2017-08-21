@@ -169,9 +169,9 @@ class Controller:
         return self.main.graph_view.zoom_timer.isActive()
 
     def set_play(self, value):
-        action = self.ui.get_action('play_or_pause')
-        action.setChecked(value)
         self.play = value
+        action = self.ui.get_action('play_animations')
+        action.update_ui_value()
 
     # ******* Selection *******
 

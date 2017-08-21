@@ -138,7 +138,6 @@ class KatajaAction(QtWidgets.QAction):
     k_exclusive = False
     k_checkable = False
     k_viewgroup = False
-    k_start_animations = False
 
     def __init__(self):
         super().__init__(ctrl.main)
@@ -151,6 +150,7 @@ class KatajaAction(QtWidgets.QAction):
         self.setData(self.key)
         self.transit_menus = []
         self.host_menu = None
+        self.autoplay = False
         self.undoable = self.k_undoable
         self.tip0 = self.k_tooltip or self.command
         self.tip1 = self.k_tooltip_alt or self.command_alt or self.tip0
@@ -217,7 +217,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        autoplay = self.k_start_animations or not ctrl.free_drawing_mode
+        self.autoplay = not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -254,7 +254,7 @@ class KatajaAction(QtWidgets.QAction):
         if not self.undoable:
             ctrl.resume_undo()
         if self.disable_undo_and_message:
-            ctrl.main.action_finished(undoable=False, play=autoplay)
+            ctrl.main.action_finished(undoable=False, play=self.autoplay)
         else:
             sc = self.shortcut()
             if sc:
@@ -264,7 +264,7 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 reply = message
             ctrl.main.action_finished(m=reply, undoable=self.undoable and not ctrl.undo_disabled,
-                                      error=error, play=autoplay)
+                                      error=error, play=self.autoplay)
 
     def update_action(self):
         """ If action is tied to some meter (e.g. number field that is used to show value and
@@ -385,39 +385,39 @@ class KatajaAction(QtWidgets.QAction):
         #print('setting displayed value for %s to %s' % (self.key, value))
         if self.isCheckable():
             for element in self.elements:
-                element.blockSignals(True)
+                #element.blockSignals(True)
                 element.setChecked(value)
-                element.blockSignals(False)
+                #element.blockSignals(False)
             self.set_active_tooltip(value)
         else:
             for element in self.elements:
                 if isinstance(element, SelectionBox):
-                    element.blockSignals(True)
+                    #element.blockSignals(True)
                     if element.uses_data:
                         element.select_by_data(value)
                     else:
                         element.select_by_text(value)
-                    element.blockSignals(False)
+                    #element.blockSignals(False)
                 elif hasattr(element, 'setValue'):
-                    element.blockSignals(True)
+                    #element.blockSignals(True)
                     element.setValue(value)
-                    element.blockSignals(False)
+                    #element.blockSignals(False)
                 elif isinstance(element, QtWidgets.QAbstractButton):
-                    element.blockSignals(True)
+                    #element.blockSignals(True)
                     if not isinstance(value, str):
                         e = 'Action "%s" is non-checkable, but tries to set boolean value for' \
                             ' UI element "%s".' % (self.__class__.__name__, element)
                         log.error(e)
                     else:
                         element.setText(str(value))
-                    element.blockSignals(False)
+                    #element.blockSignals(False)
             for menu in self.transit_menus:
-                menu.blockSignals(True)
+                #menu.blockSignals(True)
                 if menu.key == value:
                     menu.setChecked(True)
                 else:
                     menu.setChecked(False)
-                menu.blockSignals(False)
+                #menu.blockSignals(False)
 
     def get_ui_container(self):
         """ Traverse qt-objects until something governed by UIManager is

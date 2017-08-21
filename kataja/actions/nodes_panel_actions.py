@@ -77,34 +77,42 @@ class AbstractAddNode(KatajaAction):
 class AddConstituentNode(AbstractAddNode):
     k_action_uid = 'add_constituent_node'
     k_command = 'Add constituent node'
-    k_tooltip = 'Create a new constituent node'
+    k_tooltip = 'Create new constituent node'
     node_type = g.CONSTITUENT_NODE
 
     def enabler(self):
+        if ctrl.free_drawing_mode:
+            self.active_tooltip = self.tip0
+        else:
+            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
         return ctrl.free_drawing_mode
 
 
 class AddFeatureNode(AbstractAddNode):
     k_action_uid = 'add_feature_node'
     k_command = 'Add feature node'
-    k_tooltip = 'Create a new feature node'
+    k_tooltip = 'Create new feature node'
     node_type = g.FEATURE_NODE
 
     def enabler(self):
+        if ctrl.free_drawing_mode:
+            self.active_tooltip = self.tip0
+        else:
+            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
         return ctrl.free_drawing_mode
 
 
 class AddGlossNode(AbstractAddNode):
     k_action_uid = 'add_gloss_node'
     k_command = 'Add gloss node'
-    k_tooltip = 'Create a new gloss node'
+    k_tooltip = 'Create new gloss node'
     node_type = g.GLOSS_NODE
 
 
 class AddCommentNode(AbstractAddNode):
     k_action_uid = 'add_comment_node'
     k_command = 'Add comment node'
-    k_tooltip = 'Create a new comment node'
+    k_tooltip = 'Create new comment node'
     node_type = g.COMMENT_NODE
 
 

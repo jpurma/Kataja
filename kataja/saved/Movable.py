@@ -375,7 +375,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._move_counter = self._move_frames
         self._start_position = self.current_position
         # self.adjustment affects both elements in the previous subtraction, so it can be ignored
-        ctrl.graph_scene.item_moved()
+        #ctrl.graph_scene.item_moved()
 
     def stop_moving(self):
         """ Kill moving animation for this object.

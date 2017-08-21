@@ -21,7 +21,7 @@ class TopBarButtons(QtWidgets.QFrame):
                                               pixmap0=qt_prefs.play_pixmap,
                                               pixmap1=qt_prefs.pause_pixmap,
                                               size=36,
-                                              action='play_or_pause',
+                                              action='play_animations',
                                               ).to_layout(layout)
 
         self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label', parent=self,
@@ -32,8 +32,8 @@ class TopBarButtons(QtWidgets.QFrame):
 
         # Center side
         self.view_mode_button = TwoStateButton(ui_key='view_mode_label', parent=self,
-                                               text0='Showing all layers',
-                                               text1='Showing only syntactic layer',
+                                               text0='Show all layers',
+                                               text1='Show only syntactic layer',
                                                pixmap0=qt_prefs.eye_pixmap,
                                                action='switch_view_mode').to_layout(layout)
 
