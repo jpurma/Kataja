@@ -36,7 +36,6 @@ class Shape:
     fill = False
     outline = False
     thickness = 0.5
-    relative = True
     rel_dx = 0.2
     rel_dy = 0.4
     fixed_dx = 20
@@ -192,18 +191,17 @@ class ShapedCubicPath(Shape):
     fill = True
     outline = False
     thickness = 0.5
-    relative = True
     rel_dx = 0.2
     rel_dy = 0.4
-    fixed_dx = 20
-    fixed_dy = 15
+    fixed_dx = 0
+    fixed_dy = 0
     leaf_x = 0.8
     leaf_y = 2
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
-             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False, curve_dir_start=0,
+             rel_dx=0.2, rel_dy=0.4, fixed_dx=0,
+             fixed_dy=0, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False, curve_dir_start=0,
              curve_dir_end=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
@@ -211,13 +209,8 @@ class ShapedCubicPath(Shape):
         if thick > 0:
             leaf_x *= thick
             leaf_y *= thick
-
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dy = fixed_dy
-            dx = fixed_dx
+        dx = fixed_dx + abs(rel_dx * (ex - sx))
+        dy = fixed_dy + abs(rel_dy * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -276,26 +269,21 @@ class CubicPath(Shape):
     fill = False
     outline = True
     thickness = 1.0
-    relative = True
     rel_dx = 0.2
     rel_dy = 0.4
-    fixed_dx = 20
-    fixed_dy = 15
+    fixed_dx = 0
+    fixed_dy = 0
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15, curve_dir_start=0,
+             rel_dx=0.2, rel_dy=0.4, fixed_dx=0, fixed_dy=0, curve_dir_start=0,
              curve_dir_end=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
 
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = fixed_dx + abs(rel_dx * (ex - sx))
+        dy = fixed_dy + abs(rel_dy * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -347,7 +335,6 @@ class ShapedQuadraticPath(Shape):
     thickness = 0.5
     rel_dx = 0.2
     rel_dy = 0.4
-    relative = True
     fixed_dx = 20
     fixed_dy = 20
     leaf_x = 3
@@ -355,7 +342,7 @@ class ShapedQuadraticPath(Shape):
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=False, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20, leaf_x=1, leaf_y=2,
+             rel_dx=0.2, rel_dy=0.4, fixed_dx=10, fixed_dy=10, leaf_x=3, leaf_y=3,
              thick=1, inner_only=False, curve_dir_start=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
@@ -363,12 +350,8 @@ class ShapedQuadraticPath(Shape):
             leaf_x *= thick
             leaf_y *= thick
 
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = fixed_dx + abs(rel_dx * (ex - sx))
+        dy = fixed_dy + abs(rel_dy * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -416,21 +399,17 @@ class QuadraticPath(Shape):
     thickness = 1.0
     rel_dx = 0.2
     rel_dy = 0
-    fixed_dx = 20
+    fixed_dx = 0
     fixed_dy = 0
 
     @staticmethod
     def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20,
+             rel_dx=0.2, rel_dy=0, fixed_dx=0, fixed_dy=0,
              curve_dir_start=0, **kwargs):
         sx, sy = start_point
         ex, ey = end_point
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = fixed_dx + abs(rel_dx * (ex - sx))
+        dy = fixed_dy + abs(rel_dy * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -863,7 +842,6 @@ for od in available_shapes:
         fill=od.fill,
         outline=od.outline,
         thickness=od.thickness,
-        relative=od.relative,
         rel_dx=od.rel_dx,
         rel_dy=od.rel_dy,
         fixed_dx=od.fixed_dx,
@@ -871,3 +849,13 @@ for od in available_shapes:
         leaf_x=od.leaf_x,
         leaf_y=od.leaf_y,
     )
+
+low_arc = SHAPE_DICT['quad'].copy()
+low_arc['path_name'] = 'low_arc'
+low_arc['rel_dx'] = 1.0
+low_arc['rel_dy'] = 0.5
+low_arc['fixed_dx'] = 0
+low_arc['fixed_dy'] = 40
+print(low_arc)
+SHAPE_DICT['low_arc'] = low_arc
+SHAPE_PRESETS['low_arc'] = QuadraticPath

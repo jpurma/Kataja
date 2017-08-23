@@ -437,94 +437,6 @@ class EdgeThickness(KatajaAction):
         return ctrl.settings.active_edges('thickness')
 
 
-class EdgeCurvatureRelative(KatajaAction):
-    k_action_uid = 'edge_curvature_relative'
-    k_command = 'Change line curvature to be relative to edge dimensions'
-    k_checkable = True
-
-    def prepare_parameters(self, args, kwargs):
-        value = args[0]
-
-        if ctrl.ui.scope_is_selection:
-            level = g.SELECTION
-            edge_type = None
-        else:
-            level = ctrl.ui.active_scope
-            edge_type = ctrl.ui.active_edge_type
-        return [value], {'edge_type': edge_type, 'level': level}
-
-    def method(self, value: bool, edge_type=None, level=None):
-        """ Is edge curvature a fixed amount (False) or relative to edge length (True)
-        :param value: bool, True = relative, False = fixed
-        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
-        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
-          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
-        :return: None
-        """
-        if not edge_type:
-            edge_type = ctrl.active_edge_type
-        if not level:
-            level = ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.set_edge_curvature_relative(value)
-        else:
-            ctrl.settings.set_edge_setting('relative', value, edge_type=edge_type, level=level)
-
-    def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') is not None and \
-               ctrl.settings.active_edges('control_points')
-
-    def getter(self):
-        return ctrl.settings.active_edges('relative')
-
-
-class EdgeCurvatureFixed(KatajaAction):
-    k_action_uid = 'edge_curvature_fixed'
-    k_command = 'Change line curvature to be a pair of fixed values'
-    k_checkable = True
-
-    def prepare_parameters(self, args, kwargs):
-        value = args[0]
-
-        if ctrl.ui.scope_is_selection:
-            level = g.SELECTION
-            edge_type = None
-        else:
-            level = ctrl.ui.active_scope
-            edge_type = ctrl.ui.active_edge_type
-        return [value], {'edge_type': edge_type, 'level': level}
-
-    def method(self, value: bool, edge_type=None, level=None):
-        """ Is edge curvature a fixed amount (True) or relative to edge length (False)
-        :param value: bool, True = fixed, False = relative
-        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
-        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
-          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
-        :return: None
-        """
-        if not edge_type:
-            edge_type = ctrl.active_edge_type
-        if not level:
-            level = ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.set_edge_curvature_relative(not value)
-        else:
-            ctrl.settings.set_edge_setting('relative', not value, edge_type=edge_type, level=level)
-
-    def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') is not None and \
-               ctrl.settings.active_edges('control_points')
-
-    def getter(self):
-        return not ctrl.settings.active_edges('relative')
-
-
 class ChangeEdgeRelativeCurvatureX(KatajaAction):
     k_action_uid = 'change_edge_relative_curvature_x'
     k_command = 'Change horizontal curvature for edge'
@@ -562,7 +474,6 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') and \
                ctrl.settings.active_edges('control_points')
 
     def getter(self):
@@ -607,7 +518,6 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') and \
                ctrl.settings.active_edges('control_points')
 
     def getter(self):
@@ -651,7 +561,6 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') is False and \
                ctrl.settings.active_edges('control_points')
 
     def getter(self):
@@ -695,7 +604,6 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_edges('relative') is False and \
                ctrl.settings.active_edges('control_points')
 
     def getter(self):

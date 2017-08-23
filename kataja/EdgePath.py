@@ -2,8 +2,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
+from kataja.singletons import ctrl
 import math
-
+from collections import ChainMap
+from kataja.utils import time_me
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -61,6 +63,9 @@ class EdgePath:
         self.changed = False
         self.cached_start_index = self.edge.edge_start_index()
         self.cached_end_index = self.edge.edge_end_index()
+        self.shape_props = ChainMap({}, self.edge.settings, ctrl.settings._shape_cache[
+            self.edge.edge_type])
+
 
 
     def shape(self) -> QtGui.QPainterPath:
@@ -106,7 +111,7 @@ class EdgePath:
             return
         if start:
             connection_style = self.edge.cached_for_type('start_connects_to')
-            #connection_style = CONNECT_TO_SIMILAR
+            connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
@@ -210,7 +215,7 @@ class EdgePath:
                 self.abstract_start_point = sx, sy
         if end:
             connection_style = self.edge.cached_for_type('end_connects_to')
-            # connection_style = CONNECT_TO_SIMILAR
+            connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
@@ -287,11 +292,12 @@ class EdgePath:
         if osx != nsx or osy != nsy or oex != nex or oey != ney:
             self.changed = True
 
+    @time_me
     def make(self):
         """ Draws the shape as a path """
         self.update_end_points()
-        if (self.draw_path is not None) and not self.changed:
-            return
+        #if (self.draw_path is not None) and not self.changed:
+        #    return
         self.changed = False
         self.edge.prepareGeometryChange()
         sp = self.edge.start_point
@@ -307,13 +313,16 @@ class EdgePath:
                  curve_adjustment=self.edge.curve_adjustment, thick=thick,
                  start=self.edge.start, end=self.edge.end, inner_only=self.use_simple_path,
                  curve_dir_start=self.curve_dir_start, curve_dir_end=self.curve_dir_end)
-
         shape = SHAPE_PRESETS[self.edge.shape_name]
-
+        self.shape_props.maps[0] = c
+        #print(self.shape_props)
+        #print(self.edge.shape_name)
+        #print('path dict:', c)
+        #print('cache: ', ctrl.settings._shape_cache[self.edge.edge_type])
         (self.draw_path,
             self.true_path,
             self.control_points,
-            self.adjusted_control_points) = shape.path(**c)
+            self.adjusted_control_points) = shape.path(**self.shape_props)
         uses_pen = shape.thickness > 0
 
         if self.use_simple_path:

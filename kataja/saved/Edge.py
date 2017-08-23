@@ -877,6 +877,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # Shape helpers #############################
 
+
     def cached(self, key, missing=None):
         return ctrl.settings.cached_edge(key, self, missing)
 
@@ -918,16 +919,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         ctrl.settings.set_edge_setting('fixed_dy', value, edge=self)
         self.update_shape()
 
-    def set_edge_curvature_relative(self, value):
-        ctrl.settings.set_edge_setting('relative', value, edge=self)
-        self.update_shape()
-
     def reset_edge_curvature(self):
         ctrl.settings.del_shape_setting('rel_dx', edge=self)
         ctrl.settings.del_shape_setting('rel_dy', edge=self)
         ctrl.settings.del_shape_setting('fixed_dx', edge=self)
         ctrl.settings.del_shape_setting('fixed_dy', edge=self)
-        ctrl.settings.del_shape_setting('relative', edge=self)
         self.update_shape()
 
     def reset_thickness(self):

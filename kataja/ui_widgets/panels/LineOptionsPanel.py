@@ -96,12 +96,6 @@ class LineOptionsPanel(Panel):
         # Curvature
 
         hlayout = box_row(layout)
-        self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
-        self.relative_arc_button = KatajaRadioButton(parent=self,
-                                                     action='edge_curvature_relative',
-                                                     group=self.arc_reference_buttons
-                                                     ).to_layout(hlayout,
-                                                                 with_label='Relative curve')
         self.arc_rel_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_x',
                                                 suffix='%'
@@ -112,10 +106,6 @@ class LineOptionsPanel(Panel):
                                                 ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
-        self.fixed_arc_button = KatajaRadioButton(parent=self,
-                                                  action='edge_curvature_fixed',
-                                                  group=self.arc_reference_buttons
-                                                  ).to_layout(hlayout, with_label='Fixed curve')
         self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_x',
                                                   suffix=' px'
@@ -125,7 +115,6 @@ class LineOptionsPanel(Panel):
                                                   action='change_edge_fixed_curvature_y',
                                                   suffix=' px'
                                                   ).to_layout(hlayout, with_label='Y')
-
 
         # Leaf size
         hlayout = box_row(layout)
