@@ -374,7 +374,7 @@ class ShapedQuadraticPath(Shape):
         elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
-            cp1 = (sx + dx, sy)
+            cp1 = (sx - dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
             cp1 = (sx + dx, sy)
         else:
@@ -436,7 +436,7 @@ class QuadraticPath(Shape):
         elif curve_dir_start == TOP_SIDE:
             cp1 = (sx, sy - dy)
         elif curve_dir_start == LEFT_SIDE:
-            cp1 = (sx + dx, sy)
+            cp1 = (sx - dx, sy)
         elif curve_dir_start == RIGHT_SIDE:
             cp1 = (sx + dx, sy)
         else:

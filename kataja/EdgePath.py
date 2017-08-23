@@ -143,61 +143,42 @@ class EdgePath:
                 # Find the point in bounding rect that is on the line from center of start node to
                 # center of end node / end_point. It is simple, but the point can be in any of four
                 # sides of the rect.
-
                 dx = ex - sx
                 dy = ey - sy
                 sbr = start.boundingRect()
                 self.abstract_start_point = sx, sy
                 s_left, s_top, s_right, s_bottom = (int(x * .8) for x in sbr.getCoords())
+                if dx > 0:
+                    x = s_right
+                    x_side = RIGHT_SIDE
+                else:
+                    x = s_left
+                    x_side = LEFT_SIDE
+                if dy > 0:
+                    y = s_bottom
+                    y_side = BOTTOM_SIDE
+                else:
+                    y = s_top
+                    y_side = TOP_SIDE
+
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
-                    if dy > 0:
-                        self.computed_start_point = sx + i_shift, sy + s_bottom
-                        self.curve_dir_start = BOTTOM_SIDE
-                    else:
-                        self.computed_start_point = sx + i_shift, sy + s_top
-                        self.curve_dir_start = TOP_SIDE
+                    self.computed_start_point = sx + i_shift, sy + y
+                    self.curve_dir_start = y_side
                 elif dy == 0:
-                    if dx > 0:
-                        self.computed_start_point = sx + s_right, sy + i_shift
-                        self.curve_dir_start = RIGHT_SIDE
-                    else:
-                        self.computed_start_point = sx + s_left, sy + i_shift
-                        self.curve_dir_start = LEFT_SIDE
+                    self.computed_start_point = sx + x, sy + i_shift
+                    self.curve_dir_start = x_side
                 else:
+                    # cases where edge starts somewhere between
                     ratio = dy / dx
-                    if dx > 0:
-                        if dy > 0:
-                            if int(s_right * ratio) < s_bottom:
-                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio) + i_shift
-                                self.curve_dir_start = RIGHT_SIDE
-                            else:
-                                self.computed_start_point = sx + int(s_bottom / ratio) + i_shift, \
-                                                            sy + s_bottom
-                                self.curve_dir_start = BOTTOM_SIDE
-                        else:
-                            if int(s_right * ratio) > s_top:
-                                self.computed_start_point = sx + s_right, sy + int(s_right * ratio) + i_shift
-                                self.curve_dir_start = RIGHT_SIDE
-                            else:
-                                self.computed_start_point = sx + int(s_top / ratio) + i_shift, sy + s_top
-                                self.curve_dir_start = TOP_SIDE
+                    y_reach = int(x * ratio)
+                    if (y_reach < s_bottom and dy > 0) or (y_reach > s_top and dy < 0):
+                        self.computed_start_point = sx + x, sy + y_reach + i_shift
+                        self.curve_dir_start = x_side
                     else:
-                        if dy > 0:
-                            if int(s_left * ratio) < s_bottom:
-                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio) + i_shift
-                                self.curve_dir_start = LEFT_SIDE
-                            else:
-                                self.computed_start_point = sx + int(s_bottom / ratio) + i_shift, \
-                                                             sy + s_bottom
-                                self.curve_dir_start = BOTTOM_SIDE
-                        else:
-                            if int(s_left * ratio) > s_top:
-                                self.computed_start_point = sx + s_left, sy + int(s_left * ratio) + i_shift
-                                self.curve_dir_start = LEFT_SIDE
-                            else:
-                                self.computed_start_point = sx + int(s_top / ratio) + i_shift, sy + s_top
-                                self.curve_dir_start = TOP_SIDE
+                        self.computed_start_point = sx + int(y / ratio) + i_shift, sy + y
+                        self.curve_dir_start = y_side
+
             elif connection_style == CONNECT_TO_SIMILAR:
                 found = False
                 for edge in start.edges_up:
@@ -264,57 +245,38 @@ class EdgePath:
                 ebr = end.boundingRect()
                 self.abstract_end_point = ex, ey
                 e_left, e_top, e_right, e_bottom = (int(x * .8) for x in ebr.getCoords())
+
+                if dx > 0:
+                    x = e_left
+                    x_side = LEFT_SIDE
+                else:
+                    x = e_right
+                    x_side = RIGHT_SIDE
+                if dy > 0:
+                    y = e_top
+                    y_side = TOP_SIDE
+                else:
+                    y = e_bottom
+                    y_side = BOTTOM_SIDE
+
                 # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
-                    if dy > 0:
-                        self.computed_end_point = ex + i_shift, ey + e_top
-                        self.curve_dir_end = TOP_SIDE
-                    else:
-                        self.computed_end_point = ex + i_shift, ey + e_bottom
-                        self.curve_dir_end = BOTTOM_SIDE
+                    self.computed_end_point = ex + i_shift, ey + y
+                    self.curve_dir_end = y_side
                 elif dy == 0:
-                    if dx > 0:
-                        self.computed_end_point = ex + e_left, ey + i_shift
-                        self.curve_dir_end = LEFT_SIDE
-                    else:
-                        self.computed_end_point = ex + e_right, ey + i_shift
-                        self.curve_dir_end = RIGHT_SIDE
+                    self.computed_end_point = ex + x, ey + i_shift
+                    self.curve_dir_end = x_side
                 else:
+                    # cases where edge ends somewhere between
                     ratio = dy / dx
-                    if dx > 0:
-                        if dy > 0:
-                            if int(e_left * ratio) > e_top:
-                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio) + i_shift
-                                self.curve_dir_end = LEFT_SIDE
-                            else:
-                                self.computed_end_point = ex + int(e_top / ratio) + i_shift, ey + e_top
-                                self.curve_dir_end = TOP_SIDE
-                        else:
-                            if int(e_left * ratio) < e_bottom:
-                                self.computed_end_point = ex + e_left, ey + int(e_left * ratio) + i_shift
-                                self.curve_dir_end = LEFT_SIDE
-                            else:
-                                self.computed_end_point = ex + int(e_bottom / ratio) + i_shift, \
-                                                          ey + e_bottom
-                                self.curve_dir_end = BOTTOM_SIDE
+                    y_reach = int(x * ratio)
+                    if (dy > 0 and y_reach > e_top) or (dy < 0 and y_reach < e_bottom):
+                        self.computed_end_point = ex + x, ey + y_reach + i_shift
+                        self.curve_dir_end = x_side
                     else:
-                        if dy > 0:
-                            if int(e_right * ratio) > e_top:
-                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)\
-                                                          + i_shift
-                                self.curve_dir_end = RIGHT_SIDE
-                            else:
-                                self.computed_end_point = ex + int(e_top / ratio) + i_shift, ey + e_top
-                                self.curve_dir_end = TOP_SIDE
-                        else:
-                            if int(e_right * ratio) < e_bottom:
-                                self.computed_end_point = ex + e_right, ey + int(e_right * ratio)\
-                                                          + i_shift
-                                self.curve_dir_end = RIGHT_SIDE
-                            else:
-                                self.computed_end_point = ex + int(e_bottom / ratio) + i_shift, \
-                                                          ey + e_bottom
-                                self.curve_dir_end = BOTTOM_SIDE
+                        self.computed_end_point = ex + int(y / ratio) + i_shift, ey + y
+                        self.curve_dir_end = y_side
+
             elif connection_style == CONNECT_TO_SIMILAR:
                 self.computed_end_point = ex + i_shift, ey
                 self.curve_dir_end = TOP_SIDE
