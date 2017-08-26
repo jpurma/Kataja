@@ -598,8 +598,8 @@ class Label(QtWidgets.QGraphicsItem):
                 path, lpath, foo, bar = path_class.path(start_point=(center, top),
                                                         end_point=(right, bottom),
                                                         alignment=g.RIGHT)
-                fill = ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
-                if fill:
+                if path_class.fillable and \
+                   ctrl.settings.get_shape_setting('fill', edge_type=edge_type):
                     painter.fillPath(path, c)
                 else:
                     painter.drawPath(path)

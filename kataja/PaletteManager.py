@@ -164,8 +164,9 @@ class PaletteManager:
             color = c.fromRgbF(*rgba)
             if color:
                 self.d[key] = color
-        if 'custom_colors' in ctrl.settings.s_document:
-            for key, rgba in ctrl.settings.s_document['custom_colors'].items():
+        custom_colors = ctrl.settings.get('custom_colors', level=DOCUMENT)
+        if custom_colors:
+            for key, rgba in custom_colors.items():
                 color = c.fromRgbF(*rgba)
                 if color:
                     self.d[key] = color
@@ -174,7 +175,7 @@ class PaletteManager:
         self.custom_themes = OrderedDict()
         for key in sorted(list(prefs.custom_themes.keys())):
             self.custom_themes[key] = prefs.custom_themes[key]
-        sd = ctrl.settings.s_document.get('custom_themes', None)
+        sd = ctrl.settings.get('custom_themes', level=DOCUMENT)
         if sd:
             for key in sorted(list(sd.keys())):
                 self.custom_themes[key] = sd[key]
@@ -351,10 +352,9 @@ class PaletteManager:
                     else:
                         self.d['background2'] = adjust_lightness(color, 8)
             if key.startswith('custom') and can_save:
-                if 'custom_colors' in ctrl.settings.s_document:
-                    ctrl.settings.s_document['custom_colors'][key] = color.getRgbF()
-                else:
-                    ctrl.settings.s_document['custom_colors'] = {key: color.getRgbF()}
+                custom_colors = ctrl.settings.get('custom_colors', level=DOCUMENT) or {}
+                custom_colors[key] = color.getRgbF()
+                ctrl.settings.set('custom_colors', custom_colors, level=DOCUMENT)
                 prefs.custom_colors[key] = color.getRgbF()
             if self.theme_key in self.custom_themes:
                 # same theme_data object also lives in prefs, updating it once does them both

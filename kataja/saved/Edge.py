@@ -25,6 +25,7 @@
 
 import time
 from PyQt5 import QtCore, QtGui, QtWidgets
+from collections import ChainMap
 
 import kataja.globals as g
 from kataja.EdgeLabel import EdgeLabel
@@ -68,6 +69,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.k_tooltip = ''
         self.k_action = None
         self._is_moving = False
+        self.shape_settings_chain = None
 
         self.in_projections = []
 
@@ -108,7 +110,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         self.connect_end_points(self.start, self.end)
-        self.setZValue(self.cached('z_value'))
+        self.setZValue(self.get_edge_setting('z_value'))
         #self.update_end_points()
         self.update_visibility()
         self.announce_creation()
@@ -147,7 +149,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @property
     def color_id(self) -> str:
-        return self.cached('color_id')
+        return self.get_edge_setting('color_id')
 
     @color_id.setter
     def color_id(self, value):
@@ -156,7 +158,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @property
     def shape_name(self) -> str:
-        return self.cached('shape_name')
+        return self.get_edge_setting('shape_name')
 
     @shape_name.setter
     def shape_name(self, value):
@@ -165,7 +167,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @property
     def pull(self) -> float:
-        return self.cached('pull')
+        return self.get_edge_setting('pull')
 
     @pull.setter
     def pull(self, value):
@@ -339,10 +341,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     # Helper methods for derived properties
 
     def is_filled(self) -> bool:
-        return self.cached('fill') and self.cached('fillable')
+        return self.get_shape_property('fillable') and self.get_shape_setting('fill')
 
     def has_outline(self) -> int:
-        return self.cached('outline')
+        fillable = self.get_shape_property('fillable')
+        return (fillable and self.get_shape_setting('outline')) or not fillable
 
     def is_visible(self) -> bool:
         return self._visible_by_logic
@@ -450,7 +453,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
          textbox for adding label would be unwanted noise.
         :return: bool
         """
-        return self.cached('labeled')
+        return self.get_edge_setting('labeled')
 
     # ### Shape / pull / visibility
     # ###############################################################
@@ -689,7 +692,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
-            self.setZValue(self.cached('z_value'))
+            self.setZValue(self.get_edge_setting('z_value'))
             self.update()
 
     def hoverEnterEvent(self, event):
@@ -767,7 +770,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             dpath = self.path.draw_path
             if self.has_outline():
-                thickness = self.cached('thickness')
+                thickness = self.get_shape_setting('thickness')
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
@@ -877,11 +880,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # Shape helpers #############################
 
-    def cached(self, key, missing=None):
-        return ctrl.settings.cached_edge(key, self, missing)
+    def get_shape_setting(self, key, missing=None):
+        return ctrl.settings.get_shape_setting(key, edge=self) or missing
 
-    def cached_for_type(self, key):
-        return ctrl.settings.cached_edge_type(key, self.edge_type)
+    def get_shape_property(self, key, missing=None):
+        return getattr(self.path.my_shape, key)
+
+    def get_edge_setting(self, key):
+        return ctrl.settings.get_edge_setting(key, self.edge_type)
 
     def set_arrowhead_at_start(self, value):
         ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge=self)
@@ -918,16 +924,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         ctrl.settings.set_edge_setting('fixed_dy', value, edge=self)
         self.update_shape()
 
-    def set_edge_curvature_relative(self, value):
-        ctrl.settings.set_edge_setting('relative', value, edge=self)
-        self.update_shape()
-
     def reset_edge_curvature(self):
         ctrl.settings.del_shape_setting('rel_dx', edge=self)
         ctrl.settings.del_shape_setting('rel_dy', edge=self)
         ctrl.settings.del_shape_setting('fixed_dx', edge=self)
         ctrl.settings.del_shape_setting('fixed_dy', edge=self)
-        ctrl.settings.del_shape_setting('relative', edge=self)
         self.update_shape()
 
     def reset_thickness(self):
@@ -981,7 +982,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
 
-        n = self.cached('control_points')
+        n = self.get_shape_property('control_points_n')
         self.poke('curve_adjustment')
         self.curve_adjustment = [(0, 0)] * n
         self.make_path()
