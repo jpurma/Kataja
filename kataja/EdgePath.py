@@ -41,6 +41,7 @@ class EdgePath:
 
     def __init__(self, edge):
         self.edge = edge
+        self.my_shape = None
         self.computed_start_point = (0, 0)
         self.computed_end_point = (0, 0)
         self.curve_dir_start = 0
@@ -63,8 +64,6 @@ class EdgePath:
         self.changed = False
         self.cached_start_index = self.edge.edge_start_index()
         self.cached_end_index = self.edge.edge_end_index()
-        self.shape_props = ChainMap({}, self.edge.settings, ctrl.settings._shape_cache[
-            self.edge.edge_type])
 
 
 
@@ -110,7 +109,7 @@ class EdgePath:
         else:
             return
         if start:
-            connection_style = self.edge.cached_for_type('start_connects_to')
+            connection_style = self.edge.get_edge_setting('start_connects_to')
             connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
@@ -214,7 +213,7 @@ class EdgePath:
                     self.curve_dir_start = BOTTOM_SIDE
                 self.abstract_start_point = sx, sy
         if end:
-            connection_style = self.edge.cached_for_type('end_connects_to')
+            connection_style = self.edge.get_edge_setting('end_connects_to')
             connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
@@ -292,12 +291,12 @@ class EdgePath:
         if osx != nsx or osy != nsy or oex != nex or oey != ney:
             self.changed = True
 
-    @time_me
+    #@time_me
     def make(self):
         """ Draws the shape as a path """
         self.update_end_points()
-        #if (self.draw_path is not None) and not self.changed:
-        #    return
+        if (self.my_shape is not None) and not self.changed:
+            return
         self.changed = False
         self.edge.prepareGeometryChange()
         sp = self.edge.start_point
@@ -308,22 +307,33 @@ class EdgePath:
             ex += 0.001  # fix disappearing vertical paths
 
         thick = 1
-
-        c = dict(start_point=sp, end_point=(ex, ey),
-                 curve_adjustment=self.edge.curve_adjustment, thick=thick,
-                 start=self.edge.start, end=self.edge.end, inner_only=self.use_simple_path,
-                 curve_dir_start=self.curve_dir_start, curve_dir_end=self.curve_dir_end)
-        shape = SHAPE_PRESETS[self.edge.shape_name]
-        self.shape_props.maps[0] = c
-        #print(self.shape_props)
-        #print(self.edge.shape_name)
-        #print('path dict:', c)
-        #print('cache: ', ctrl.settings._shape_cache[self.edge.edge_type])
+        if not self.my_shape:
+            self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
+            if self.edge.shape_settings_chain is None:
+                self.edge.shape_settings_chain = ctrl.settings.shape_type_chains[
+                    self.edge.edge_type].new_child()
+            self.edge.shape_settings_chain.maps[-1] = self.my_shape.defaults
+        elif self.edge.shape_name != self.my_shape.shape_name:
+            ctrl.settings.remove_all_shape_settings(self.edge, self.my_shape.shape_name)
+            self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
+            self.edge.shape_settings_chain.maps[0] = {}
+            self.edge.shape_settings_chain.maps[-1] = self.my_shape.defaults
         (self.draw_path,
             self.true_path,
             self.control_points,
-            self.adjusted_control_points) = shape.path(**self.shape_props)
-        uses_pen = shape.thickness > 0
+            self.adjusted_control_points) = self.my_shape.path(sp,
+                                                               (ex, ey),
+                                                               self.edge.curve_adjustment,
+                                                               self.curve_dir_start,
+                                                               self.curve_dir_end,
+                                                               thick=thick,
+                                                               start=self.edge.start,
+                                                               end=self.edge.end,
+                                                               inner_only=self.use_simple_path,
+                                                               d=self.edge.shape_settings_chain)
+
+        uses_pen = (not self.my_shape.fillable) or \
+                   (self.my_shape.fillable and self.edge.get_shape_setting('outline'))
 
         if self.use_simple_path:
             self.draw_path = self.true_path
@@ -383,11 +393,11 @@ class EdgePath:
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.
         """
-        if not self.edge.cached('arrowhead_at_start'):
+        if not self.edge.get_edge_setting('arrowhead_at_start'):
             self.arrowhead_start_path = None
             return
         ad = 0.5
-        t = self.edge.cached('thickness')
+        t = self.edge.get_shape_setting('thickness')
         size = self.arrowhead_size_at_start
         if t:
             size *= t
@@ -418,11 +428,11 @@ class EdgePath:
     def make_arrowhead_at_end(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its end.
         """
-        if not self.edge.cached('arrowhead_at_end'):
+        if not self.edge.get_edge_setting('arrowhead_at_end'):
             self.arrowhead_end_path = None
             return
         ad = 0.5
-        t = self.edge.cached('thickness')
+        t = self.edge.get_shape_setting('thickness')
         size = self.arrowhead_size_at_end
         if t:
             size *= t

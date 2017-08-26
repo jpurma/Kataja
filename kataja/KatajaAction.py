@@ -273,9 +273,10 @@ class KatajaAction(QtWidgets.QAction):
         """
         on = self.enabler()
         self.set_enabled(on)
-        val = self.getter()
-        if val is not None:
-            self.set_displayed_value(val)
+        if on:
+            val = self.getter()
+            if val is not None:
+                self.set_displayed_value(val)
 
     def tips_with_shortcuts(self):
         sc = self.shortcut()

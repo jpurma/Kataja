@@ -262,5 +262,6 @@ class ChangeFeatureEdgeShape(ChangeEdgeShape):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, classes.get('Edge')) and edge.edge_type == g.FEATURE_EDGE:
-                    return ctrl.settings.cached_edge('shape_name', edge)
-        return ctrl.settings.cached_edge_type('shape_name', g.FEATURE_EDGE)
+                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
+        return ctrl.settings.get_edge_setting('shape_name', edge_type=g.FEATURE_EDGE,
+                                              level=ctrl.ui.active_scope)
