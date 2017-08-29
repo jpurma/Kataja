@@ -43,7 +43,7 @@ class SwitchFeatureCheckingMode(KatajaAction):
         """ Toggle between no 
         :return:
         """
-        current = ctrl.settings.get('feature_check_display', level=ctrl.ui.active_scope)
+        current = ctrl.settings.get_active_setting('feature_check_display')
         if current == 2:
             current = 0
         else:
@@ -54,7 +54,7 @@ class SwitchFeatureCheckingMode(KatajaAction):
         return 'Feature checking mode: ' + mode_text
 
     def getter(self):
-        return ctrl.settings.get('feature_check_display', ctrl.ui.active_scope)
+        return ctrl.settings.get_active_setting('feature_check_display')
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -74,8 +74,7 @@ class SetFeaturesApart(KatajaAction):
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_check_display', level=ctrl.ui.active_scope) == \
-               g.NO_CHECKING_EDGE
+        return ctrl.settings.get_active_setting('feature_check_display') == g.NO_CHECKING_EDGE
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -96,8 +95,7 @@ class SetFeaturesLocked(KatajaAction):
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_check_display', level=ctrl.ui.active_scope) == \
-               g.PUT_CHECKED_TOGETHER
+        return ctrl.settings.get_active_setting('feature_check_display') == g.PUT_CHECKED_TOGETHER
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -118,8 +116,7 @@ class SetFeaturesConnected(KatajaAction):
         return f'{self.k_command} ({SwitchFeatureCheckingMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_check_display', level=ctrl.ui.active_scope) == \
-               g.SHOW_CHECKING_EDGE
+        return ctrl.settings.get_active_setting('feature_check_display') == g.SHOW_CHECKING_EDGE
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -166,8 +163,7 @@ class SetFeaturesAsRow(KatajaAction):
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
-               g.HORIZONTAL_ROW
+        return ctrl.settings.get_active_setting('feature_positioning') == g.HORIZONTAL_ROW
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -188,8 +184,7 @@ class SetFeaturesAsColumn(KatajaAction):
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
-               g.VERTICAL_COLUMN
+        return ctrl.settings.get_active_setting('feature_positioning') == g.VERTICAL_COLUMN
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -210,8 +205,7 @@ class SetFeaturesAsTwoColumns(KatajaAction):
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
-               g.TWO_COLUMNS
+        return ctrl.settings.get_active_setting('feature_positioning') == g.TWO_COLUMNS
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -232,8 +226,7 @@ class SetFeaturesHanging(KatajaAction):
         return f'{self.k_command} ({SelectFeatureDisplayMode.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope) == \
-               g.FREE_FLOATING
+        return ctrl.settings.get_active_setting('feature_positioning') == g.FREE_FLOATING
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION

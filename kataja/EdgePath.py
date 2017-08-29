@@ -332,8 +332,7 @@ class EdgePath:
                                                                inner_only=self.use_simple_path,
                                                                d=self.edge.shape_settings_chain)
 
-        uses_pen = (not self.my_shape.fillable) or \
-                   (self.my_shape.fillable and self.edge.get_shape_setting('outline'))
+        uses_pen = self.edge.has_outline()
 
         if self.use_simple_path:
             self.draw_path = self.true_path

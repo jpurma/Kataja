@@ -109,7 +109,7 @@ class Node(Movable):
         Movable.__init__(self)
         self.syntactic_object = None
         self.label = ''
-
+        self.node_type_settings_chain = None
         self.selected = False
         self._label_visible = True
         self._label_qdocument = None
@@ -180,7 +180,7 @@ class Node(Movable):
         """
         self.in_scene = True
         print('making node settings chain from:', ctrl.settings.node_type_chains[self.node_type])
-        self.settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
+        self.node_type_settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
         self.update_label()
         self.update_visibility()
         self.announce_creation()

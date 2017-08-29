@@ -162,9 +162,15 @@ class AbstractSelectFont(KatajaAction):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
 
     def getter(self):
-        return ctrl.settings.active_nodes('font_id',
-                                          of_type=self.__class__.node_type,
-                                          level=ctrl.ui.active_scope)
+        my_type = self.__class__.node_type
+        if ctrl.ui.scope_is_selection:
+            for node in ctrl.selected:
+                if isinstance(node, Node) and node.node_type == my_type:
+                    if 'font_id' in node.settings:
+                        return node.settings['font_id']
+        return ctrl.settings.get_node_setting('font_id',
+                                              node_type=my_type,
+                                              level=ctrl.ui.active_scope)
 
 
 class SelectConstituentFont(AbstractSelectFont):
@@ -237,6 +243,7 @@ class AbstractChangeNodeColor(KatajaAction):
                     node.update_label()
         # ... or update color for all nodes of this type
         else:
+            print(color_key, self.__class__.node_type, ctrl.ui.active_scope)
             ctrl.settings.set_node_setting('color_id', color_key,
                                            node_type=self.__class__.node_type,
                                            level=ctrl.ui.active_scope)
@@ -252,9 +259,16 @@ class AbstractChangeNodeColor(KatajaAction):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
 
     def getter(self):
-        return ctrl.settings.active_nodes('color_id',
-                                          of_type=self.__class__.node_type,
-                                          level=ctrl.ui.active_scope)
+        my_type = self.__class__.node_type
+        if ctrl.ui.scope_is_selection:
+            for node in ctrl.selected:
+                if isinstance(node, Node) and node.node_type == my_type:
+                    if 'color_id' in node.settings:
+                        return node.settings['color_id']
+        return ctrl.settings.get_node_setting('color_id',
+                                              node_type=my_type,
+                                              level=ctrl.ui.active_scope)
+
 
 
 class ChangeConstituentColor(AbstractChangeNodeColor):

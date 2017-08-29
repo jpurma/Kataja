@@ -217,7 +217,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        self.autoplay = not ctrl.free_drawing_mode
+        self.autoplay = True # not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method

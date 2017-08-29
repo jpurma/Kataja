@@ -205,7 +205,7 @@ class UIManager:
         else:
             self.scope_is_selection = False
         self.active_scope = scope
-        self.active_shape_name = ctrl.settings.active_edge_setting('shape_name')
+        self.active_shape_name = ctrl.settings.get_active_edge_setting('shape_name')
         ctrl.call_watchers(self, 'scope_changed')
 
     def set_help_text(self, text, append=False, prepend=False):

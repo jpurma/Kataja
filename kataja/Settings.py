@@ -103,12 +103,12 @@ class Settings:
             self.edge_type_chains[key].maps[0] = edge_types.get(key, {})
 
     #@time_me
-    def get(self, key, level=HIGHEST, obj=None, only=False):
+    def get(self, key, level=HIGHEST, obj=None):
         if level == SELECTION:
             level = HIGHEST
         if obj and level <= HIGHEST:
-            #if not obj.settings_chain:
-            #    obj.settings_chain = self.forest_chain.new_child(obj.settings)
+            if obj.settings_chain is None:
+                obj.settings_chain = self.forest_chain.new_child(obj.settings)
             return obj.settings_chain[key]
         elif level <= FOREST:
             return self.forest_chain[key]
@@ -128,9 +128,6 @@ class Settings:
          DOCUMENT level, remove same value from FOREST and objects.
         :return:
         """
-        #print('set settings: key:%s, value:%s, level:%s, obj:%s' %
-        #      (key, value, level, obj))
-
         if level == OBJECT:
             if not obj:
                 raise ValueError
@@ -192,11 +189,8 @@ class Settings:
         else:
             level_dict = container.settings[dict_name]
         if subtype not in level_dict:
-            level_dict[subtype] = {
-                key: value
-            }
-        else:
-            level_dict[subtype][key] = value
+            level_dict[subtype] = chain[subtype].maps[chain_level[level]]
+        level_dict[subtype][key] = value
         chain[subtype].maps[chain_level[level]] = level_dict[subtype]
 
     @staticmethod
@@ -285,21 +279,23 @@ class Settings:
     def get_node_setting(self, key, node_type=None, node=None, level=HIGHEST):
         if node:
             node_type = node.node_type
+        if level == SELECTION:
+            level = HIGHEST
         if level == HIGHEST or level == OBJECT:
-            if node and node.settings_chain:
-                return node.settings_chain[key]
+            if node and node.node_type_settings_chain:
+                return node.node_type_settings_chain[key]
             else:
                 return self.node_type_chains[node_type][key]
         for my_map in self.node_type_chains[node_type].maps[chain_level[level]:]:
             if key in my_map:
                 return my_map[key]
 
-    def set_node_setting(self, key, value, node_type=None, obj=None, level=OBJECT):
-        if not (obj or node_type):
+    def set_node_setting(self, key, value, node_type=None, node=None, level=OBJECT):
+        if not (node or node_type):
             raise ValueError
-        if obj:
-            obj.poke('settings')
-            obj.settings[key] = value
+        if node:
+            node.poke('settings')
+            node.settings[key] = value
         elif level == FOREST:
             self.set_in_container(key, value, self.forest, 'nodes', node_type, level,
                                   self.node_type_chains)
@@ -370,7 +366,14 @@ class Settings:
     def get_flattened_shape_settings(self, edge):
         return dict(edge.shape_settings_chain)
 
-    def active_nodes(self, key, of_type, level):
+    def get_active_setting(self, key):
+        """ Shortcut for get(key, obj=None, level=ctrl.ui.active_scope)
+        :param key:
+        :return:
+        """
+        return self.get(key, obj=None, level=ctrl.ui.active_scope)
+
+    def get_active_node_setting(self, key, of_type):
         """ Return node setting either from selected items or from ui.active_node_type. If there
         are settings made in node level, return first of such occurence.
         :param key:
@@ -379,13 +382,21 @@ class Settings:
         :return:
         """
         if self.ui.scope_is_selection:
+            typical_node = None
             for node in ctrl.selected:
                 if isinstance(node, Node) and node.node_type == of_type:
-                    return node.settings[key]
+                    if key in node.settings:
+                        return node.settings[key]
+                    if not typical_node:
+                        typical_node = node
+            if typical_node:
+                return self.get_node_setting(key, node=typical_node)
             level = HIGHEST
+        else:
+            level = ctrl.ui.active_scope
         return self.get_node_setting(key, node_type=of_type, level=level)
 
-    def active_edge_setting(self, key):
+    def get_active_edge_setting(self, key):
         """ Return edge setting either from selected items or from ui.active_edge_type. If there
         are settings made in node level, return first of such occurence.
         :param key:
@@ -404,8 +415,7 @@ class Settings:
                 return self.get_edge_setting(key, edge=typical_edge)
         return self.get_edge_setting(key, edge_type=self.ui.active_edge_type)
 
-
-    def active_shape_property(self, key):
+    def get_active_shape_property(self, key):
         """ Return the class property of currently active edge shape.
         :param key:
         :return:
@@ -424,8 +434,7 @@ class Settings:
         shape_name = self.get_edge_setting('shape_name', edge_type=self.ui.active_edge_type)
         return getattr(SHAPE_PRESETS[shape_name], key)
 
-
-    def active_shape_setting(self, key):
+    def get_active_shape_setting(self, key):
         """ Return edge setting either from selected items or from ui.active_edge_type. If there
         are settings made in node level, return first of such occurence.
         :param key:

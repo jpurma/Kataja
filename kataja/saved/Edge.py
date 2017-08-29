@@ -340,13 +340,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # Helper methods for derived properties
 
-    def is_filled(self) -> bool:
-        return self.get_shape_property('fillable') and self.get_shape_setting('fill')
-
-    def has_outline(self) -> int:
-        fillable = self.get_shape_property('fillable')
-        return (fillable and self.get_shape_setting('outline')) or not fillable
-
     def is_visible(self) -> bool:
         return self._visible_by_logic
 
@@ -939,6 +932,17 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         ctrl.settings.set_edge_setting('thickness', value, edge=self)
         self.update_shape()
 
+
+    def is_filled(self) -> bool:
+        return self.get_shape_property('fillable') and self.get_shape_setting('fill')
+
+    def has_outline(self) -> int:
+        fillable = self.get_shape_property('fillable')
+        return (fillable and self.get_shape_setting('outline')) or not fillable
+
+    def is_fillable(self):
+        return self.get_shape_property('fillable')
+
     def set_fill(self, value):
         ctrl.settings.set_edge_setting('fill', value, edge=self)
         self.update_shape()
@@ -946,6 +950,33 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def set_outline(self, value):
         ctrl.settings.set_edge_setting('outline', value, edge=self)
         self.update_shape()
+
+
+    @staticmethod
+    def is_active_fillable():
+        return ctrl.settings.get_active_shape_property('fillable')
+
+    @staticmethod
+    def has_active_outline():
+        fillable = ctrl.settings.get_active_shape_property('fillable')
+        if fillable:
+            return ctrl.settings.get_active_shape_setting('outline')
+        return True
+
+    @staticmethod
+    def has_active_fill():
+        fillable = ctrl.settings.get_active_shape_property('fillable')
+        if fillable:
+            return ctrl.settings.get_active_shape_setting('fill')
+        return False
+
+    @staticmethod
+    def get_active_color():
+        fillable = ctrl.settings.get_active_shape_property('fillable')
+        if fillable:
+            return ctrl.settings.get_active_shape_setting('outline')
+        return True
+
 
     def prepare_adjust_array(self, index):
         """

@@ -72,10 +72,7 @@ class ChangeEdgeShape(KatajaAction):
         else:
             ctrl.settings.set_edge_setting('shape_name', shape_name,
                                            edge_type=edge_type, level=level)
-            for edge in ctrl.forest.edges.values():
-                if edge.edge_type == edge_type:
-                    edge._changed = True
-                    edge.update_shape()
+            ctrl.forest.redraw_edges()
         line_options = ctrl.ui.get_panel('LineOptionsPanel')
         if line_options:
             line_options.update_panel()
@@ -84,7 +81,7 @@ class ChangeEdgeShape(KatajaAction):
         return ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return ctrl.settings.active_edge_setting('shape_name')
+        return ctrl.settings.get_active_edge_setting('shape_name')
 
 
 class ChangeEdgeColor(KatajaAction):
@@ -134,7 +131,7 @@ class ChangeEdgeColor(KatajaAction):
         return ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return ctrl.settings.active_edge_setting('color_id')
+        return ctrl.settings.get_active_edge_setting('color_id')
 
 
 class EdgeArrowheadStart(KatajaAction):
@@ -177,7 +174,7 @@ class EdgeArrowheadStart(KatajaAction):
         return ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return ctrl.settings.active_edge_setting('arrowhead_at_start')
+        return ctrl.settings.get_active_edge_setting('arrowhead_at_start')
 
 
 class EdgeArrowheadEnd(KatajaAction):
@@ -221,7 +218,7 @@ class EdgeArrowheadEnd(KatajaAction):
         return ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return ctrl.settings.active_edge_setting('arrowhead_at_end')
+        return ctrl.settings.get_active_edge_setting('arrowhead_at_end')
 
 
 class ResetControlPoints(KatajaAction):
@@ -344,12 +341,10 @@ class LeafShapeX(KatajaAction):
             ctrl.settings.set_edge_setting('leaf_x', value, edge_type=edge_type, level=level)
 
     def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('fillable')
+        return ctrl.ui.has_edges_in_scope() and Edge.is_active_fillable()
 
     def getter(self):
-        print('is enabled: ', self.enabler())
-        return ctrl.settings.active_shape_setting('leaf_x')
+        return ctrl.settings.get_active_shape_setting('leaf_x')
 
 
 class LeafShapeY(KatajaAction):
@@ -388,11 +383,10 @@ class LeafShapeY(KatajaAction):
             ctrl.settings.set_edge_setting('leaf_y', value, edge_type=edge_type, level=level)
 
     def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('fillable')
+        return ctrl.ui.has_edges_in_scope() and Edge.is_active_fillable()
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('leaf_y')
+        return ctrl.settings.get_active_shape_setting('leaf_y')
 
 
 class EdgeThickness(KatajaAction):
@@ -431,13 +425,10 @@ class EdgeThickness(KatajaAction):
             ctrl.settings.set_edge_setting('thickness', value, edge_type=edge_type, level=level)
 
     def enabler(self):
-        fillable = ctrl.settings.active_shape_property('fillable')
-        return ctrl.ui.has_edges_in_scope() and \
-               (not fillable) or \
-               (fillable and ctrl.settings.active_shape_setting('outline'))
+        return ctrl.ui.has_edges_in_scope() and Edge.has_active_outline()
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('thickness')
+        return ctrl.settings.get_active_shape_setting('thickness')
 
 
 class ChangeEdgeRelativeCurvatureX(KatajaAction):
@@ -477,10 +468,10 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('control_points_n')
+               ctrl.settings.get_active_shape_property('control_points_n')
 
     def getter(self):
-        return round((ctrl.settings.active_shape_setting('rel_dx') or 0) * 100)
+        return round((ctrl.settings.get_active_shape_setting('rel_dx') or 0) * 100)
 
 
 class ChangeEdgeRelativeCurvatureY(KatajaAction):
@@ -521,10 +512,10 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('control_points_n')
+               ctrl.settings.get_active_shape_property('control_points_n')
 
     def getter(self):
-        return round((ctrl.settings.active_shape_setting('rel_dy') or 0) * 100)
+        return round((ctrl.settings.get_active_shape_setting('rel_dy') or 0) * 100)
 
 
 class ChangeEdgeFixedCurvatureX(KatajaAction):
@@ -564,10 +555,10 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('control_points_n')
+               ctrl.settings.get_active_shape_property('control_points_n')
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('fixed_dx')
+        return ctrl.settings.get_active_shape_setting('fixed_dx')
 
 
 class ChangeEdgeFixedCurvatureY(KatajaAction):
@@ -607,10 +598,10 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('control_points_n')
+               ctrl.settings.get_active_shape_property('control_points_n')
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('fixed_dy')
+        return ctrl.settings.get_active_shape_setting('fixed_dy')
 
 
 class EdgeShapeFill(KatajaAction):
@@ -649,12 +640,10 @@ class EdgeShapeFill(KatajaAction):
             ctrl.settings.set_edge_setting('fill', value, edge_type=edge_type, level=level)
 
     def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('fillable')
+        return ctrl.ui.has_edges_in_scope() and Edge.is_active_fillable()
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('fill') and \
-               ctrl.settings.active_shape_property('fillable')
+        return Edge.has_active_fill()
 
 
 class EdgeShapeLine(KatajaAction):
@@ -693,10 +682,9 @@ class EdgeShapeLine(KatajaAction):
             ctrl.settings.set_edge_setting('outline', value, edge_type=edge_type, level=level)
 
     def enabler(self):
-        return ctrl.ui.has_edges_in_scope() and \
-               ctrl.settings.active_shape_property('fillable')
+        return ctrl.ui.has_edges_in_scope() and Edge.is_active_fillable()
 
     def getter(self):
-        return ctrl.settings.active_shape_setting('outline')
+        return Edge.has_active_outline()
 
 

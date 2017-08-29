@@ -592,21 +592,29 @@ class Label(QtWidgets.QGraphicsItem):
                 triangle.lineTo(center, top)
                 painter.drawPath(triangle)
             else:
+                # This looks complicated, but it is necessary. We want node's edge type's shape
+                # class and its properties so that the triangle can be drawn in similar style.
                 edge_type = self._host.edge_type()
                 shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
                 path_class = SHAPE_PRESETS[shape_name]
-                path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                        end_point=(right, bottom),
-                                                        alignment=g.RIGHT)
-                if path_class.fillable and \
-                   ctrl.settings.get_shape_setting('fill', edge_type=edge_type):
+                path, lpath, foo, bar = path_class.path((center, top),
+                                                        (right, bottom),
+                                                        [],
+                                                        g.BOTTOM,
+                                                        g.TOP)
+                fill = path_class.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                               edge_type=edge_type)
+                if fill:
                     painter.fillPath(path, c)
                 else:
                     painter.drawPath(path)
                 painter.drawLine(left, bottom, right, bottom)
-                path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                        end_point=(left, bottom),
-                                                        alignment=g.LEFT)
+                path, lpath, foo, bar = path_class.path((center, top),
+                                                        (left, bottom),
+                                                        [],
+                                                        g.BOTTOM,
+                                                        g.TOP)
+
                 if fill:
                     painter.fillPath(path, c)
                 else:

@@ -63,7 +63,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 0
         self._fade_steps_list = []
         self.manual_zoom = False
-        self.follow_optimal_size = False
+        self.match_final_derivation_size = False
         self._cached_visible_rect = None
         self.keep_updating_visible_area = False
         #self.focusItemChanged.connect(self.inspect_focus_change)
@@ -699,13 +699,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             for group in f.groups.values():
                 group.update_shape()
             f.semantics_manager.update_position()
-            if (not self.follow_optimal_size) \
+            if (not self.match_final_derivation_size) \
                     and (not self.manual_zoom) \
                     and (not ctrl.dragged_focus) \
                     and self.timer_counter % 20 == 0:
                 self.fit_to_window(zoom_in=False)
         elif not (frame_has_moved or background_fade):
-            if (not self.follow_optimal_size) \
+            if (not self.match_final_derivation_size) \
                     and (not self.manual_zoom) \
                     and (not ctrl.dragged_focus):
                 self.fit_to_window()

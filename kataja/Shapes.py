@@ -197,6 +197,8 @@ class ShapedCubicPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = ShapedCubicPath.defaults
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
@@ -275,6 +277,8 @@ class CubicPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = CubicPath.defaults
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
@@ -343,8 +347,12 @@ class ShapedQuadraticPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = ShapedQuadraticPath.defaults
         sx, sy = start_point
         ex, ey = end_point
+        leaf_x = d['leaf_x']
+        leaf_y = d['leaf_y']
         if thick > 0:
             leaf_x *= thick
             leaf_y *= thick
@@ -395,8 +403,8 @@ class QuadraticPath(Shape):
     fillable = False
     defaults = {
         'thickness': 1.0,
-        'rel_dx': 0.2,
-        'rel_dy': 0,
+        'rel_dx': 0.4,
+        'rel_dy': 0.2,
         'fixed_dx': 0,
         'fixed_dy': 0
     }
@@ -405,6 +413,8 @@ class QuadraticPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = QuadraticPath.defaults
         sx, sy = start_point
         ex, ey = end_point
         dx = d['fixed_dx'] + abs(d['rel_dx'] * (ex - sx))
@@ -456,6 +466,8 @@ class ShapedLinearPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = ShapedLinearPath.defaults
         sx, sy = start_point
         dx, dy = end_point
         lx = d['leaf_x']
@@ -500,6 +512,8 @@ class LinearPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = LinearPath.defaults
         sx, sy = start_point
         dx, dy = end_point
         path = QtGui.QPainterPath(Pf(sx, sy))
@@ -532,6 +546,8 @@ class BlobPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = BlobPath.defaults
         if start:
             scx, scy = start.current_scene_position
         else:
@@ -557,17 +573,17 @@ class BlobPath(Shape):
         if start:
             sx1, sy1, sw, sh = start.boundingRect().getRect()
         else:
-            sx1 = -10
-            sy1 = -10
-            sw = 20
-            sh = 20
+            sx1 = -2
+            sy1 = -2
+            sw = 4
+            sh = 4
         if end:
             ex1, ey1, ew, eh = end.boundingRect().getRect()
         else:
-            ex1 = -10
-            ey1 = -10
-            ew = 20
-            eh = 20
+            ex1 = -2
+            ey1 = -2
+            ew = 4
+            eh = 4
 
         sx1 += scx
         sy1 += scy
@@ -646,6 +662,8 @@ class DirectionalBlobPath(Shape):
     def path(start_point, end_point, curve_adjustment, curve_dir_start,
              curve_dir_end, inner_only=False, thick=1, start=None, end=None,
              d=None):
+        if not d:
+            d = DirectionalBlobPath.defaults
         if start:
             scx, scy = start.current_scene_position
         else:
@@ -661,16 +679,16 @@ class DirectionalBlobPath(Shape):
         thickness = d['thickness']
         t2 = thickness * 2
         if thick > 1:
-            start_ball = start and start.has_visible_label()
+            start_ball = start # and start.has_visible_label()
             if start_ball:
                 sx1, sy1, sw, sh = start.boundingRect().getRect()
             else:
-                sx1, sy1, sw, sh = -5, -5, 10, 10
-            end_ball = end and end.has_visible_label()
+                sx1, sy1, sw, sh = 0, 0, 0, 0
+            end_ball = end # and end.has_visible_label()
             if end_ball:
                 ex1, ey1, ew, eh = end.boundingRect().getRect()
             else:
-                ex1, ey1, ew, eh = -5, -5, 10, 10
+                ex1, ey1, ew, eh = 0, 0, 0, 0
             sx1 += scx
             sy1 += scy
             ex1 += ecx
@@ -678,9 +696,11 @@ class DirectionalBlobPath(Shape):
             c1x = (scx + ecx) / 2
             c1y = (scy + ecy) / 2
             path1 = QtGui.QPainterPath()
-            path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
+            if start_ball:
+                path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
             path2 = QtGui.QPainterPath()
-            path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
+            if end_ball:
+                path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
             path3 = QtGui.QPainterPath()
             path3.moveTo(sx1, scy)
             path3.quadTo(c1x, c1y, ex1, ecy)
@@ -699,31 +719,34 @@ class DirectionalBlobPath(Shape):
         else:
             sx, sy = start_point
             if end:
+                balls = True
                 if end.has_visible_label():
                     ex1, ey1, ew, eh = end.boundingRect().getRect()
                 else:
                     ex1, ey1, ew, eh = -5, -5, 10, 10
             else:
-                ex1 = -10
-                ey1 = -10
-                ew = 20
-                eh = 20
+                balls = False
+                ex1 = -1
+                ey1 = -1
+                ew = 2
+                eh = 2
 
             ex1 += ecx
             ey1 += ecy
             c1x = (sx + ecx) / 2
             c1y = (sy + ecy) / 2
-            path1 = QtGui.QPainterPath()
-            path1.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
-            path1neg = QtGui.QPainterPath()
-            path1neg.addEllipse(ex1, ey1, ew, eh)
-            path2 = QtGui.QPainterPath()
-            path2.moveTo(sx, sy)
-            path2.quadTo(c1x, c1y, ex1, ecy)
-            path2.lineTo(ex1 + ew, ecy)
-            path2.quadTo(c1x, c1y, sx, sy)
-            path = path1.united(path2)
-            path = path.subtracted(path1neg)
+            path = QtGui.QPainterPath()
+            path.moveTo(sx, sy)
+            path.quadTo(c1x, c1y, ex1, ecy)
+            path.lineTo(ex1 + ew, ecy)
+            path.quadTo(c1x, c1y, sx, sy)
+            if balls:
+                path1 = QtGui.QPainterPath()
+                path1neg = QtGui.QPainterPath()
+                path1.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
+                path1neg.addEllipse(ex1, ey1, ew, eh)
+                path = path.united(path1)
+                path = path.subtracted(path1neg)
 
         return path.simplified(), inner_path, [], []
 
