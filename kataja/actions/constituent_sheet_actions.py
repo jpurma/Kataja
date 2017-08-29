@@ -40,7 +40,7 @@ class SelectLabelShape(KatajaAction):
     def method(self):
         """ Brackets are visible always for non-leaves, never or for important parts
         """
-        bs = ctrl.settings.get('node_shape', level=ctrl.ui.active_scope)
+        bs = ctrl.settings.get_active_setting('node_shape')
         bs += 1
         if bs > 4:
             bs = 0
@@ -82,7 +82,7 @@ class ActivateNoFrameNodeShape(KatajaAction):
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.NORMAL
+        return ctrl.settings.get_active_setting('node_shape') == g.NORMAL
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -103,7 +103,7 @@ class ActivateScopeboxNodeShape(KatajaAction):
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.SCOPEBOX
+        return ctrl.settings.get_active_setting('node_shape') == g.SCOPEBOX
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -124,7 +124,7 @@ class ActivateBracketedNodeShape(KatajaAction):
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.BRACKETED
+        return ctrl.settings.get_active_setting('node_shape') == g.BRACKETED
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -145,7 +145,7 @@ class ActivateBoxShape(KatajaAction):
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.BOX
+        return ctrl.settings.get_active_setting('node_shape') == g.BOX
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -167,7 +167,7 @@ class ActivateCardNodeShape(KatajaAction):
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.CARD
+        return ctrl.settings.get_active_setting('node_shape') == g.CARD
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
@@ -207,7 +207,7 @@ class SelectTraceMode(KatajaAction):
         return f'Set trace strategy to: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get('trace_strategy', level=ctrl.ui.active_scope)
+        return ctrl.settings.get_active_setting('trace_strategy')
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -247,7 +247,7 @@ class SelectLinearizationMode(KatajaAction):
         return f'Set linearization mode: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get('linearization_mode', level=ctrl.ui.active_scope)
+        return ctrl.settings.get_active_setting('linearization_mode')
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -324,7 +324,7 @@ class SelectProjectionStyle(KatajaAction):
     def method(self, projection_style=None):
         """ """
         if projection_style is None:
-            projection_style = ctrl.settings.get('projection_style', level=ctrl.ui.active_scope)
+            projection_style = ctrl.settings.get_active_setting('projection_style')
             projection_style += 1
             if projection_style == 3:
                 projection_style = 0
@@ -334,7 +334,7 @@ class SelectProjectionStyle(KatajaAction):
         return 'Projection style: ' + mode_text
 
     def getter(self):
-        return ctrl.settings.get('projection_style', level=ctrl.ui.active_scope)
+        return ctrl.settings.get_active_setting('projection_style')
 
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
@@ -363,5 +363,6 @@ class ChangeConstituentEdgeShape(ChangeEdgeShape):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, classes.get('Edge')) and edge.edge_type == g.CONSTITUENT_EDGE:
-                    return ctrl.settings.cached_edge('shape_name', edge)
-        return ctrl.settings.cached_edge_type('shape_name', g.CONSTITUENT_EDGE)
+                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
+        return ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE,
+                                              level=ctrl.ui.active_scope)

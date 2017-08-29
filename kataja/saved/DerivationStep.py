@@ -147,10 +147,11 @@ class DerivationStepManager(SavedObject):
         self.restore_derivation_step()
 
     def is_first(self):
-        return self.derivation_step_index == 0
+        return self.derivation_step_index == 0 or not self.derivation_steps
 
     def is_last(self):
-        return self.derivation_step_index == len(self.derivation_steps) - 1
+        return (not self.derivation_steps) or (self.derivation_step_index == len(
+            self.derivation_steps) - 1)
 
     # ############## #
     #                #

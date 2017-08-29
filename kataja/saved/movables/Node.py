@@ -109,7 +109,7 @@ class Node(Movable):
         Movable.__init__(self)
         self.syntactic_object = None
         self.label = ''
-
+        self.node_type_settings_chain = None
         self.selected = False
         self._label_visible = True
         self._label_qdocument = None
@@ -179,6 +179,8 @@ class Node(Movable):
         :return: None
         """
         self.in_scene = True
+        print('making node settings chain from:', ctrl.settings.node_type_chains[self.node_type])
+        self.node_type_settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
         self.update_label()
         self.update_visibility()
         self.announce_creation()
@@ -804,8 +806,8 @@ class Node(Movable):
             return 0
 
     def get_node_shape(self):
-        """ Node shapes are based on settings-stack, but also cached in label.
-        Return this cached value.
+        """ Node shapes are based on settings-stack, but also get_shape_setting in label.
+        Return this get_shape_setting value.
         :return:
         """
         return self.label_object.node_shape
@@ -998,7 +1000,7 @@ class Node(Movable):
     def boundingRect(self):
         """ BoundingRects are used often and cost of this method affects
         performance.
-        inner_rect is used as a cached bounding rect and returned fast if
+        inner_rect is used as a get_shape_setting bounding rect and returned fast if
         there is no explicit
         update asked. """
         if not self.inner_rect:

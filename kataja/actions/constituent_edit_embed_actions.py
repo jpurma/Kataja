@@ -50,13 +50,7 @@ class SetVisibleLabelsToSynlabels(SetVisibleLabel):
         return [], {'label_mode': new_val, 'node_uid': node_uid}
 
     def getter(self):
-        m = None
-        if ctrl.ui.active_scope == g.SELECTION:
-            for item in ctrl.selected:
-                if 'label_text_mode' in item.settings:
-                    m = ctrl.settings.get('label_text_mode', obj=item)
-        if not m:
-            m = ctrl.settings.get('label_text_mode')
+        m = ctrl.settings.get_active_setting('label_text_mode')
         return m == g.SYN_LABELS or m == g.SYN_LABELS_FOR_LEAVES
 
     def enabler(self):
@@ -84,13 +78,7 @@ class SetVisibleLabelsToNodelabels(SetVisibleLabel):
         return [], {'label_mode': new_val, 'node_uid': node_uid}
 
     def getter(self):
-        m = None
-        if ctrl.ui.active_scope == g.SELECTION:
-            for item in ctrl.selected:
-                if 'label_text_mode' in item.settings:
-                    m = ctrl.settings.get('label_text_mode', obj=item)
-        if not m:
-            m = ctrl.settings.get('label_text_mode')
+        m = ctrl.settings.get_active_setting('label_text_mode')
         return m == g.NODE_LABELS_FOR_LEAVES or m == g.NODE_LABELS
 
     def enabler(self):

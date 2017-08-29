@@ -25,36 +25,27 @@ BOTTOM_SIDE = 6
 BOTTOM_RIGHT_CORNER = 7
 
 
-
 class Shape:
     """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
     and may have their own special parameters.
     """
-    path_name = 'no_path'
+    shape_name = 'no_path'
     control_points = 0
     fillable = False
-    fill = False
-    outline = False
-    thickness = 0.5
-    relative = True
-    rel_dx = 0.2
-    rel_dy = 0.4
-    fixed_dx = 20
-    fixed_dy = 15
-    leaf_x = 0.8
-    leaf_y = 2
+    defaults = {}
 
     def __init__(self):
         pass
 
     @staticmethod
-    def path(**kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
         return QtGui.QPainterPath(), QtGui.QPainterPath(), [], ()
 
     @staticmethod
     def icon_path(painter, rect, color=None):
         pass
-
 
 
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
@@ -186,38 +177,38 @@ def to_pf(xy):
 
 class ShapedCubicPath(Shape):
     """ Two point leaf-shaped curve """
-    path_name = 'shaped_cubic'
-    control_points = 2
+    shape_name = 'shaped_cubic'
+    control_points_n = 2
     fillable = True
-    fill = True
-    outline = False
-    thickness = 0.5
-    relative = True
-    rel_dx = 0.2
-    rel_dy = 0.4
-    fixed_dx = 20
-    fixed_dy = 15
-    leaf_x = 0.8
-    leaf_y = 2
+
+    defaults = {
+        'fill': True,
+        'outline': False,
+        'thickness': 0.5,
+        'rel_dx': 0.2,
+        'rel_dy': 0.4,
+        'fixed_dx': 0,
+        'fixed_dy': 0,
+        'leaf_x': 0.8,
+        'leaf_y': 2
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20,
-             fixed_dy=15, leaf_x=0.8, leaf_y=2, thick=1, inner_only=False, curve_dir_start=0,
-             curve_dir_end=0, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = ShapedCubicPath.defaults
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
-        if thick > 0:
+        leaf_x = d['leaf_x']
+        leaf_y = d['leaf_y']
+        if thick > 1:
             leaf_x *= thick
             leaf_y *= thick
-
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dy = fixed_dy
-            dx = fixed_dx
+        dx = d['fixed_dx'] + abs(d['rel_dx'] * (ex - sx))
+        dy = d['fixed_dy'] + abs(d['rel_dy'] * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -270,32 +261,30 @@ class ShapedCubicPath(Shape):
 
 class CubicPath(Shape):
     """ Two point single stroke curve """
-    path_name = 'cubic'
-    control_points = 2
+    shape_name = 'cubic'
+    control_points_n = 2
     fillable = False
-    fill = False
-    outline = True
-    thickness = 1.0
-    relative = True
-    rel_dx = 0.2
-    rel_dy = 0.4
-    fixed_dx = 20
-    fixed_dy = 15
+
+    defaults = {
+        'thickness': 1.0,
+        'rel_dx': 0.2,
+        'rel_dy': 0.4,
+        'fixed_dx': 0,
+        'fixed_dy': 0,
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15, curve_dir_start=0,
-             curve_dir_end=0, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = CubicPath.defaults
         sx, sy = start_point
         ex, ey = end_point
         # edges that go to wrong direction have stronger curvature
 
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = d['fixed_dx'] + abs(d['rel_dx'] * (ex - sx))
+        dy = d['fixed_dy'] + abs(d['rel_dy'] * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -339,36 +328,37 @@ class CubicPath(Shape):
 
 class ShapedQuadraticPath(Shape):
     """ Leaf-shaped curve with one control point """
-    path_name = 'shaped_quad'
-    control_points = 1
+    shape_name = 'shaped_quad'
+    control_points_n = 1
     fillable = True
-    fill = True
-    outline = False
-    thickness = 0.5
-    rel_dx = 0.2
-    rel_dy = 0.4
-    relative = True
-    fixed_dx = 20
-    fixed_dy = 20
-    leaf_x = 3
-    leaf_y = 3
+    defaults = {
+        'fill': True,
+        'outline': False,
+        'thickness': 0.5,
+        'rel_dx': 0.2,
+        'rel_dy': 0.4,
+        'fixed_dx': 0,
+        'fixed_dy': 0,
+        'leaf_x': 3,
+        'leaf_y': 3
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=False, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20, leaf_x=1, leaf_y=2,
-             thick=1, inner_only=False, curve_dir_start=0, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = ShapedQuadraticPath.defaults
         sx, sy = start_point
         ex, ey = end_point
+        leaf_x = d['leaf_x']
+        leaf_y = d['leaf_y']
         if thick > 0:
             leaf_x *= thick
             leaf_y *= thick
 
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = d['fixed_dx'] + abs(d['rel_dx'] * (ex - sx))
+        dy = d['fixed_dy'] + abs(d['rel_dy'] * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -386,8 +376,8 @@ class ShapedQuadraticPath(Shape):
             path = None
         else:
             path = QtGui.QPainterPath(Pf(sx, sy))
-            path.quadTo(c1x - leaf_x, c1y - leaf_y, ex, ey)
-            path.quadTo(c1x + leaf_x, c1y + leaf_y, sx, sy)
+            path.quadTo(c1x - d['leaf_x'], c1y - d['leaf_y'], ex, ey)
+            path.quadTo(c1x + d['leaf_x'], c1y + d['leaf_y'], sx, sy)
         inner_path = QtGui.QPainterPath(Pf(sx, sy))
         inner_path.quadTo(c1x, c1y, ex, ey)
         return path, inner_path, control_points, c
@@ -408,29 +398,27 @@ class ShapedQuadraticPath(Shape):
 
 class QuadraticPath(Shape):
     """ Single stroke curve with one control point """
-    path_name = 'quad'
-    control_points = 1
+    shape_name = 'quad'
+    control_points_n = 1
     fillable = False
-    fill = False
-    outline = True
-    thickness = 1.0
-    rel_dx = 0.2
-    rel_dy = 0
-    fixed_dx = 20
-    fixed_dy = 0
+    defaults = {
+        'thickness': 1.0,
+        'rel_dx': 0.4,
+        'rel_dy': 0.2,
+        'fixed_dx': 0,
+        'fixed_dy': 0
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None,
-             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=20,
-             curve_dir_start=0, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = QuadraticPath.defaults
         sx, sy = start_point
         ex, ey = end_point
-        if relative:
-            dx = abs(rel_dx * (ex - sx))
-            dy = abs(rel_dy * (ey - sy))
-        else:
-            dx = fixed_dx
-            dy = fixed_dy
+        dx = d['fixed_dx'] + abs(d['rel_dx'] * (ex - sx))
+        dy = d['fixed_dy'] + abs(d['rel_dy'] * (ey - sy))
         if curve_dir_start == BOTTOM_SIDE:
             cp1 = (sx, sy + dy)
         elif curve_dir_start == TOP_SIDE:
@@ -463,23 +451,32 @@ class QuadraticPath(Shape):
 
 class ShapedLinearPath(Shape):
     """ A straight line with a slight leaf shape """
-    path_name = 'shaped_linear'
-    control_points = 0
+    shape_name = 'shaped_linear'
+    control_points_n = 0
     fillable = True
-    fill = True
-    outline = False
-    thickness = 0.5
+    defaults = {
+        'fill': True,
+        'outline': False,
+        'thickness': 0.5,
+        'leaf_x': 2,
+        'leaf_y': 1.5
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, leaf_x=2, leaf_y=2, thick=1, inner_only=False,
-             **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = ShapedLinearPath.defaults
         sx, sy = start_point
         dx, dy = end_point
+        lx = d['leaf_x']
+        ly = d['leaf_y']
         if thick > 0:
-            leaf_x *= thick
-            leaf_y *= thick
+            lx *= thick
+            ly *= thick
 
-        c = [(dx - leaf_x, dy - leaf_y), (dx + leaf_x, dy - leaf_y)]
+        c = [(dx - lx, dy - ly), (dx + lx, dy - ly)]
         if inner_only:
             path = None
         else:
@@ -504,15 +501,19 @@ class ShapedLinearPath(Shape):
 
 class LinearPath(Shape):
     """ A straight line """
-    path_name = 'linear'
-    control_points = 0
+    shape_name = 'linear'
+    control_points_n = 0
     fillable = False
-    fill = False
-    outline = True
-    thickness = 1.0
+    defaults = {
+        'thickness': 1.0,
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = LinearPath.defaults
         sx, sy = start_point
         dx, dy = end_point
         path = QtGui.QPainterPath(Pf(sx, sy))
@@ -532,16 +533,21 @@ class LinearPath(Shape):
 
 class BlobPath(Shape):
     """ A blob-like shape that stretches between the end points """
-    path_name = 'blob'
-    control_points = 0
+    shape_name = 'blob'
+    control_points_n = 0
     fillable = True
-    fill = True
-    outline = False
-    thickness = 0.5
+    defaults = {
+        'fill': True,
+        'outline': False,
+        'thickness': 0.5,
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=1,
-             start=None, end=None, inner_only=False, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = BlobPath.defaults
         if start:
             scx, scy = start.current_scene_position
         else:
@@ -550,6 +556,7 @@ class BlobPath(Shape):
             ecx, ecy = end.current_scene_position
         else:
             ecx, ecy = end_point
+        thickness = d['thickness']
         if thick > 0:
             thickness *= thick
         t2 = thickness * 2
@@ -566,17 +573,17 @@ class BlobPath(Shape):
         if start:
             sx1, sy1, sw, sh = start.boundingRect().getRect()
         else:
-            sx1 = -10
-            sy1 = -10
-            sw = 20
-            sh = 20
+            sx1 = -2
+            sy1 = -2
+            sw = 4
+            sh = 4
         if end:
             ex1, ey1, ew, eh = end.boundingRect().getRect()
         else:
-            ex1 = -10
-            ey1 = -10
-            ew = 20
-            eh = 20
+            ex1 = -2
+            ey1 = -2
+            ew = 4
+            eh = 4
 
         sx1 += scx
         sy1 += scy
@@ -642,16 +649,21 @@ class BlobPath(Shape):
 
 class DirectionalBlobPath(Shape):
     """ A blob-like shape that stretches between the end points """
-    path_name = 'directional_blob'
-    control_points = 0
+    shape_name = 'directional_blob'
+    control_points_n = 0
     fillable = True
-    fill = True
-    outline = False
-    thickness = 0.5
+    defaults = {
+        'fill': True,
+        'outline': False,
+        'thickness': 0.5,
+    }
 
     @staticmethod
-    def path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=1,
-             start=None, end=None, inner_only=False, **kwargs):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        if not d:
+            d = DirectionalBlobPath.defaults
         if start:
             scx, scy = start.current_scene_position
         else:
@@ -664,19 +676,19 @@ class DirectionalBlobPath(Shape):
         inner_path.lineTo(ecx, ecy)
         if inner_only:
             return None, inner_path, [], []
-
+        thickness = d['thickness']
         t2 = thickness * 2
         if thick > 1:
-            start_ball = start and start.has_visible_label()
+            start_ball = start # and start.has_visible_label()
             if start_ball:
                 sx1, sy1, sw, sh = start.boundingRect().getRect()
             else:
-                sx1, sy1, sw, sh = -5, -5, 10, 10
-            end_ball = end and end.has_visible_label()
+                sx1, sy1, sw, sh = 0, 0, 0, 0
+            end_ball = end # and end.has_visible_label()
             if end_ball:
                 ex1, ey1, ew, eh = end.boundingRect().getRect()
             else:
-                ex1, ey1, ew, eh = -5, -5, 10, 10
+                ex1, ey1, ew, eh = 0, 0, 0, 0
             sx1 += scx
             sy1 += scy
             ex1 += ecx
@@ -684,9 +696,11 @@ class DirectionalBlobPath(Shape):
             c1x = (scx + ecx) / 2
             c1y = (scy + ecy) / 2
             path1 = QtGui.QPainterPath()
-            path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
+            if start_ball:
+                path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
             path2 = QtGui.QPainterPath()
-            path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
+            if end_ball:
+                path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
             path3 = QtGui.QPainterPath()
             path3.moveTo(sx1, scy)
             path3.quadTo(c1x, c1y, ex1, ecy)
@@ -705,31 +719,34 @@ class DirectionalBlobPath(Shape):
         else:
             sx, sy = start_point
             if end:
+                balls = True
                 if end.has_visible_label():
                     ex1, ey1, ew, eh = end.boundingRect().getRect()
                 else:
                     ex1, ey1, ew, eh = -5, -5, 10, 10
             else:
-                ex1 = -10
-                ey1 = -10
-                ew = 20
-                eh = 20
+                balls = False
+                ex1 = -1
+                ey1 = -1
+                ew = 2
+                eh = 2
 
             ex1 += ecx
             ey1 += ecy
             c1x = (sx + ecx) / 2
             c1y = (sy + ecy) / 2
-            path1 = QtGui.QPainterPath()
-            path1.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
-            path1neg = QtGui.QPainterPath()
-            path1neg.addEllipse(ex1, ey1, ew, eh)
-            path2 = QtGui.QPainterPath()
-            path2.moveTo(sx, sy)
-            path2.quadTo(c1x, c1y, ex1, ecy)
-            path2.lineTo(ex1 + ew, ecy)
-            path2.quadTo(c1x, c1y, sx, sy)
-            path = path1.united(path2)
-            path = path.subtracted(path1neg)
+            path = QtGui.QPainterPath()
+            path.moveTo(sx, sy)
+            path.quadTo(c1x, c1y, ex1, ecy)
+            path.lineTo(ex1 + ew, ecy)
+            path.quadTo(c1x, c1y, sx, sy)
+            if balls:
+                path1 = QtGui.QPainterPath()
+                path1neg = QtGui.QPainterPath()
+                path1.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
+                path1neg.addEllipse(ex1, ey1, ew, eh)
+                path = path.united(path1)
+                path = path.subtracted(path1neg)
 
         return path.simplified(), inner_path, [], []
 
@@ -853,21 +870,17 @@ def draw_triangle(painter, x, y, w=10):
     painter.drawPath(path)
 
 
-SHAPE_PRESETS = OrderedDict([(od.path_name, od) for od in available_shapes])
-SHAPE_DICT = {}
+SHAPE_PRESETS = OrderedDict([(od.shape_name, od) for od in available_shapes])
+SHAPE_DEFAULTS = {}
 for od in available_shapes:
-    SHAPE_DICT[od.path_name] = dict(
-        path_name=od.path_name,
-        control_points=od.control_points,
-        fillable=od.fillable,
-        fill=od.fill,
-        outline=od.outline,
-        thickness=od.thickness,
-        relative=od.relative,
-        rel_dx=od.rel_dx,
-        rel_dy=od.rel_dy,
-        fixed_dx=od.fixed_dx,
-        fixed_dy=od.fixed_dy,
-        leaf_x=od.leaf_x,
-        leaf_y=od.leaf_y,
-    )
+    SHAPE_DEFAULTS[od.shape_name] = od.defaults
+
+low_arc = SHAPE_DEFAULTS['quad'].copy()
+low_arc['shape_name'] = 'low_arc'
+low_arc['rel_dx'] = 1.0
+low_arc['rel_dy'] = 0.5
+low_arc['fixed_dx'] = 0
+low_arc['fixed_dy'] = 40
+print(low_arc)
+SHAPE_DEFAULTS['low_arc'] = low_arc
+SHAPE_PRESETS['low_arc'] = QuadraticPath

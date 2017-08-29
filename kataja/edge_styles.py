@@ -20,7 +20,7 @@ master_styles = {
             'labeled': True, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER, 'z_value': 120
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
+            'shape_name': 'low_arc', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': SPECIAL,
             'end_connects_to': SPECIAL, 'z_value': 5
@@ -52,7 +52,7 @@ master_styles = {
             'labeled': True, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': '', 'pull': .40, 'visible': True,
+            'shape_name': 'low_arc', 'color_id': '', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed', 'start_connects_to': BORDER,
             'end_connects_to': BORDER

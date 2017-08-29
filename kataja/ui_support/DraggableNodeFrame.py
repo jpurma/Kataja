@@ -56,7 +56,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
                                                  ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
 
         self.setLayout(hlayout)
-        f = ctrl.settings.active_nodes('font_id', of_type=key, level=ctrl.ui.active_scope)
+        f = ctrl.settings.get_node_setting('font_id', node_type=key)
         self.update_font(f)
 
     def update_colors(self):

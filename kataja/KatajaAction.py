@@ -217,7 +217,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        self.autoplay = not ctrl.free_drawing_mode
+        self.autoplay = True # not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -273,9 +273,10 @@ class KatajaAction(QtWidgets.QAction):
         """
         on = self.enabler()
         self.set_enabled(on)
-        val = self.getter()
-        if val is not None:
-            self.set_displayed_value(val)
+        if on:
+            val = self.getter()
+            if val is not None:
+                self.set_displayed_value(val)
 
     def tips_with_shortcuts(self):
         sc = self.shortcut()

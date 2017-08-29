@@ -193,23 +193,7 @@ class FeatureNode(Node):
         """
         return bool(self.triangle_stack)
 
-    def in_checking_relation_with(self, other):
-        """ 
-        :param other: Node
-        :return: 
-        """
-        if not other:
-            return False
-        if other.node_type != g.FEATURE_NODE:
-            return False
-        return self.is_checking() == other or self.is_checked_by() == other
-
-    def is_checking(self):
-        for edge in self.edges_down:
-            if edge.edge_type == g.CHECKING_EDGE:
-                return edge.end
-
-    def is_checked_by(self):
+    def my_checking_feature(self):
         for edge in self.edges_up:
             if edge.edge_type == g.CHECKING_EDGE:
                 return edge.start
@@ -237,7 +221,7 @@ class FeatureNode(Node):
             position = ctrl.settings.get('feature_positioning')
         if checking_mode is None:
             checking_mode = ctrl.settings.get('feature_check_display')
-        checked_by = self.is_checked_by()
+        checked_by = self.my_checking_feature()
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
         if checked_by and self.is_visible():

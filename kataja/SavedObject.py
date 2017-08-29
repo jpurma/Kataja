@@ -47,6 +47,7 @@ class SavedObject(object):
         self._history = {}
         self.uid = uid
         self.settings = {}
+        self.settings_chain = None
         self.class_name = getattr(self.__class__, 'role', self.__class__.__name__)
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True

@@ -341,7 +341,10 @@ class ConstituentNode(Node):
 
         html = []
 
-        label_text_mode = ctrl.settings.get('label_text_mode', obj=self)
+        if 'label_text_mode' in self.settings:
+            label_text_mode = self.settings['label_text_mode']
+        else:
+            label_text_mode = ctrl.settings.get('label_text_mode')
         include_index = False
         l = ''
         if label_text_mode == g.NODE_LABELS:
