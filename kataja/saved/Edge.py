@@ -951,33 +951,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         ctrl.settings.set_edge_setting('outline', value, edge=self)
         self.update_shape()
 
-
-    @staticmethod
-    def is_active_fillable():
-        return ctrl.settings.get_active_shape_property('fillable')
-
-    @staticmethod
-    def has_active_outline():
-        fillable = ctrl.settings.get_active_shape_property('fillable')
-        if fillable:
-            return ctrl.settings.get_active_shape_setting('outline')
-        return True
-
-    @staticmethod
-    def has_active_fill():
-        fillable = ctrl.settings.get_active_shape_property('fillable')
-        if fillable:
-            return ctrl.settings.get_active_shape_setting('fill')
-        return False
-
-    @staticmethod
-    def get_active_color():
-        fillable = ctrl.settings.get_active_shape_property('fillable')
-        if fillable:
-            return ctrl.settings.get_active_shape_setting('outline')
-        return True
-
-
     def prepare_adjust_array(self, index):
         """
 

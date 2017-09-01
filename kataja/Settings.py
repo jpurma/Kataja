@@ -374,7 +374,7 @@ class Settings:
         return self.get(key, obj=None, level=ctrl.ui.active_scope)
 
     def get_active_node_setting(self, key, of_type):
-        """ Return node setting either from selected items or from ui.active_node_type. If there
+        """ Return node setting either from selected items or from ui.active_scope. If there
         are settings made in node level, return first of such occurence.
         :param key:
         :param of_type:
@@ -383,73 +383,14 @@ class Settings:
         """
         if self.ui.scope_is_selection:
             typical_node = None
-            for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == of_type:
-                    if key in node.settings:
-                        return node.settings[key]
-                    if not typical_node:
-                        typical_node = node
+            for node in ctrl.get_selected_nodes(of_type=of_type):
+                if key in node.settings:
+                    return node.settings[key]
+                if not typical_node:
+                    typical_node = node
             if typical_node:
                 return self.get_node_setting(key, node=typical_node)
             level = HIGHEST
         else:
             level = ctrl.ui.active_scope
         return self.get_node_setting(key, node_type=of_type, level=level)
-
-    def get_active_edge_setting(self, key):
-        """ Return edge setting either from selected items or from ui.active_edge_type. If there
-        are settings made in node level, return first of such occurence.
-        :param key:
-        :return:
-        """
-        if self.ui.scope_is_selection:
-            typical_edge = None
-
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    if key in edge.settings:
-                        return edge.settings[key]
-                    if not typical_edge:
-                        typical_edge = edge
-            if typical_edge:
-                return self.get_edge_setting(key, edge=typical_edge)
-        return self.get_edge_setting(key, edge_type=self.ui.active_edge_type)
-
-    def get_active_shape_property(self, key):
-        """ Return the class property of currently active edge shape.
-        :param key:
-        :return:
-        """
-        if self.ui.scope_is_selection:
-            typical_edge = None
-
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    if key in edge.settings:
-                        return edge.settings[key]
-                    if not typical_edge:
-                        typical_edge = edge
-            if typical_edge:
-                return getattr(typical_edge.path.my_shape, key)
-        shape_name = self.get_edge_setting('shape_name', edge_type=self.ui.active_edge_type)
-        return getattr(SHAPE_PRESETS[shape_name], key)
-
-    def get_active_shape_setting(self, key):
-        """ Return edge setting either from selected items or from ui.active_edge_type. If there
-        are settings made in node level, return first of such occurence.
-        :param key:
-        :return:
-        """
-        if self.ui.scope_is_selection:
-            typical_edge = None
-
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    if key in edge.settings:
-                        return edge.settings[key]
-                    if not typical_edge:
-                        typical_edge = edge
-            if typical_edge:
-                return self.get_shape_setting(key, edge=typical_edge)
-        return self.get_shape_setting(key, edge_type=self.ui.active_edge_type)
-

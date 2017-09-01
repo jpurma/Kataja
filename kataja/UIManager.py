@@ -146,8 +146,6 @@ class UIManager:
         self._prev_active_scope = g.DOCUMENT
         self.scope_is_selection = False
         self.default_node_type = g.CONSTITUENT_NODE
-        self.active_edge_type = g.CONSTITUENT_EDGE
-        self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
         self.preferences_dialog = None
         self.qe_label = None
@@ -205,7 +203,6 @@ class UIManager:
         else:
             self.scope_is_selection = False
         self.active_scope = scope
-        self.active_shape_name = ctrl.settings.get_active_edge_setting('shape_name')
         ctrl.call_watchers(self, 'scope_changed')
 
     def set_help_text(self, text, append=False, prepend=False):
@@ -408,10 +405,9 @@ class UIManager:
                     if group_member not in ctrl.selected:
                         self.selection_group.remove_node(group_member)
                 # check if any selection contains any objects that should be added to group
-                for node in ctrl.selected:
-                    if isinstance(node, Node) and node.can_be_in_groups:
-                        if node not in self.selection_group:
-                            self.selection_group.add_node(node)
+                for node in ctrl.get_selected_nodes():
+                    if node.can_be_in_groups and node not in self.selection_group:
+                        self.selection_group.add_node(node)
                 self.add_buttons_for_group(self.selection_group)
             # draw a selection group around selected nodes
             elif ctrl.area_selection:

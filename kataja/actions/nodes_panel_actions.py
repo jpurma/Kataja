@@ -139,10 +139,9 @@ class AbstractSelectFont(KatajaAction):
         """
         node_type = self.__class__.node_type
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == node_type:
-                    ctrl.settings.set_node_setting('font_id', font_id, node=node)
-                    node.update_label()
+            for node in ctrl.get_selected_nodes(of_type=node_type):
+                ctrl.settings.set_node_setting('font_id', font_id, node=node)
+                node.update_label()
         else:
             ctrl.settings.set_node_setting('font_id', font_id,
                                            node_type=node_type,
@@ -164,10 +163,9 @@ class AbstractSelectFont(KatajaAction):
     def getter(self):
         my_type = self.__class__.node_type
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == my_type:
-                    if 'font_id' in node.settings:
-                        return node.settings['font_id']
+            for node in ctrl.get_selected_nodes(of_type=my_type):
+                if 'font_id' in node.settings:
+                    return node.settings['font_id']
         return ctrl.settings.get_node_setting('font_id',
                                               node_type=my_type,
                                               level=ctrl.ui.active_scope)
@@ -236,11 +234,10 @@ class AbstractChangeNodeColor(KatajaAction):
 
         # Update color for selected nodes
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == self.__class__.node_type:
-                    ctrl.settings.set_node_setting('color_id', color_key, node=node)
-                    node.color_id = color_key
-                    node.update_label()
+            for node in ctrl.get_selected_nodes(of_type=self.__class__node_type):
+                ctrl.settings.set_node_setting('color_id', color_key, node=node)
+                node.color_id = color_key
+                node.update_label()
         # ... or update color for all nodes of this type
         else:
             print(color_key, self.__class__.node_type, ctrl.ui.active_scope)
@@ -261,10 +258,9 @@ class AbstractChangeNodeColor(KatajaAction):
     def getter(self):
         my_type = self.__class__.node_type
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node) and node.node_type == my_type:
-                    if 'color_id' in node.settings:
-                        return node.settings['color_id']
+            for node in ctrl.get_selected_nodes(of_type=my_type):
+                if 'color_id' in node.settings:
+                    return node.settings['color_id']
         return ctrl.settings.get_node_setting('color_id',
                                               node_type=my_type,
                                               level=ctrl.ui.active_scope)
@@ -328,6 +324,7 @@ class OpenLineOptions(KatajaAction):
     k_action_uid = 'open_line_options'
     k_command = 'Open more options'
     k_tooltip = 'Show more edge drawing options'
+    k_undoable = False
 
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()
@@ -340,6 +337,8 @@ class OpenLineOptions(KatajaAction):
         :param fold: bool, fold if True, unfold if False.
         """
         ctrl.ui.show_panel('LineOptionsPanel')
+        panel = ctrl.ui.get_panel('LineOptionsPanel')
+        panel.active_node_type = node_type
 
 
 class ResetSettings(KatajaAction):

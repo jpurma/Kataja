@@ -141,6 +141,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         x, y, w, h = (50, 50, 1152, 720)
         self.setMinimumSize(w, h)
         self.app = kataja_app
+        self.classes = classes
         self.save_prefs = not no_prefs
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
@@ -612,7 +613,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param kw:
         :return:
         """
-        for node in ctrl.selected:
+        for node in ctrl.get_selected_nodes():
             node.release()
         self.action_finished()
         return True

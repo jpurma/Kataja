@@ -127,9 +127,8 @@ class FontSelector(TableModelSelectionBox):
         qt_prefs.fonts[self.selected_font] = font
         self.update_font_selector()
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node):
-                    node.update_label()
+            for node in ctrl.get_selected_nodes():
+                node.update_label()
         else:
             for node in ctrl.forest.nodes.values():
                 node.update_label()

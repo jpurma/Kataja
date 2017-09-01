@@ -184,6 +184,9 @@ class KatajaAction(QtWidgets.QAction):
         self.setCheckable(self.k_checkable)
         self.setToolTip(self.active_tooltip)
 
+    def on_connect(self, ui_item):
+        pass
+
     def prepare_parameters(self, args, kwargs):
         return [], {}
 
@@ -355,6 +358,7 @@ class KatajaAction(QtWidgets.QAction):
             element.sliderReleased.connect(self.run_command)
         elif isinstance(element, TouchArea):
             element.clicked.connect(self.run_command)
+        self.on_connect(element)
 
     def disconnect_element(self, element):
         if element in self.elements:
