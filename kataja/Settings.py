@@ -224,6 +224,7 @@ class Settings:
                 return my_map[key]
 
     def set_edge_setting(self, key, value, edge_type=None, obj=None, level=OBJECT):
+        print('set_edge_setting ', key, value, edge_type, obj, level)
         if not (obj or edge_type):
             raise ValueError
         if obj:
@@ -338,6 +339,11 @@ class Settings:
             self.reset_in_container(self.document, 'nodes', node_type, level, self.node_type_chains)
 
     def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
+        print('get_shape_setting ', key, edge_type, edge, level)
+        if self.shape_type_chains:
+            assert(self.shape_type_chains[0] is self.edge_type_chains[0])
+            assert(self.shape_type_chains[1] is self.edge_type_chains[1])
+            assert(self.shape_type_chains[2] is not self.edge_type_chains[2])
         if edge:
             edge_type = edge.edge_type
         if level == HIGHEST or level == OBJECT:

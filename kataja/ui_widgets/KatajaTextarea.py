@@ -5,7 +5,7 @@ from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
 
 
-class EmbeddedTextarea(QtWidgets.QPlainTextEdit, UIWidget):
+class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
     """
 
     :param parent:

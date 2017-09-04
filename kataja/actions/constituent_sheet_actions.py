@@ -356,8 +356,7 @@ class ChangeConstituentEdgeShape(ChangeEdgeShape):
 
     def getter(self):
         if ctrl.ui.scope_is_selection:
-            for edge in ctrl.get_selecte:
-                if isinstance(edge, classes.get('Edge')) and edge.edge_type == g.CONSTITUENT_EDGE:
-                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
+            for edge in ctrl.get_selected_edges(of_type=g.CONSTITUENT_EDGE):
+                return ctrl.settings.get_edge_setting('shape_name', edge=edge)
         return ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE,
                                               level=ctrl.ui.active_scope)

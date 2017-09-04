@@ -8,9 +8,8 @@ from kataja.ui_widgets.selection_boxes.PluginSelector import PluginSelector
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
-    """
-
-    """
+    continuous_action_slot = 'valueChanged'
+    action_slot = 'sliderReleased'
 
     def __init__(self, field_name, parent, decimals=True):
         QtWidgets.QHBoxLayout.__init__(self)

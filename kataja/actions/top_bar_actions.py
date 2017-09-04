@@ -2,6 +2,7 @@
 from PyQt5 import QtWidgets, QtGui
 
 from kataja.KatajaAction import KatajaAction, TransmitAction
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.globals import DOCUMENT, PREFS
 from kataja.singletons import ctrl, log
 
@@ -227,7 +228,7 @@ class ChangeVisualisation(KatajaAction):
             return [str(sender.currentData())], kwargs
         elif isinstance(sender, TransmitAction):
             return [sender.key], kwargs
-        elif isinstance(sender, QtWidgets.QButtonGroup):
+        elif isinstance(sender, KatajaButtonGroup):
             button = args[0]
             return [button.sub_type], kwargs
         else:

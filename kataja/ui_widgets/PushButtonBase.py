@@ -14,6 +14,7 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
         special buttons and buttons with icons.
     """
     permanent_ui = True
+    action_slot = 'clicked'
 
     def __init__(self, parent=None, text=None, size=None, **kwargs):
         QtWidgets.QPushButton.__init__(self, parent=parent)
@@ -33,6 +34,9 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
             size = QtCore.QSize(width, height)
             self.setIconSize(size)
         ctrl.ui.add_ui(self)
+
+    def set_displayed_value(self, value):
+        self.setChecked(value)
 
     def enterEvent(self, event):
         UIWidget.enterEvent(self, event)

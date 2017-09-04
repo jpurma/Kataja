@@ -79,7 +79,6 @@ sub sub {font-size: 8pt; vertical-align: sub}
 sup sub {font-size: 8pt; vertical-align: sub}
 sub sup {font-size: 8pt; vertical-align: sup}
 sup sup {font-size: 8pt; vertical-align: sup}
-EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
 QComboBox, TwoColorButton {background-color: %(paper)s;}
 UnicodeIconButton {background-color: %(paper)s; font-family: "%(main_font)s"; 
                    font-size: %(main_font_size)spx;}

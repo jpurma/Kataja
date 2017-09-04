@@ -7,6 +7,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
 
 class TopBarButtons(QtWidgets.QFrame):
@@ -43,7 +44,7 @@ class TopBarButtons(QtWidgets.QFrame):
         layout.addWidget(view_label)
 
         default_vis = ctrl.settings.get('visualization', level=g.PREFS)
-        self.vis_buttons = QtWidgets.QButtonGroup(parent=self)
+        self.vis_buttons = KatajaButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut
             if shortcut:

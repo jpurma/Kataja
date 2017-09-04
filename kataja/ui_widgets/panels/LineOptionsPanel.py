@@ -262,6 +262,17 @@ class LineOptionsPanel(Panel):
                 return ctrl.settings.get_edge_setting(key, edge=edges[0])
         return ctrl.settings.get_edge_setting(key, edge_type=self.active_edge_type)
 
+    def get_active_node_setting(self, key):
+        if ctrl.ui.scope_is_selection:
+            nodes = ctrl.get_selected_edges()
+            if nodes:
+                for node in nodes:
+                    if key in node.settings:
+                        return node.settings[key]
+                return ctrl.settings.get_node_setting(key, node=nodes[0])
+        return ctrl.settings.get_node_setting(key, node_type=self.active_node_type)
+
+
     def get_active_shape_setting(self, key):
         """ Return edge setting either from selected items or from ui.active_edge_type. If there
         are settings made in node level, return first of such occurence.
@@ -296,8 +307,10 @@ class LineOptionsPanel(Panel):
         return self.get_active_shape_property('fillable')
 
     def has_active_outline(self):
+        print('has_active_outline, fillable: ', self.get_active_shape_property('fillable'))
         fillable = self.get_active_shape_property('fillable')
         if fillable:
+            print('has outline: ', self.get_active_shape_setting('outline'))
             return self.get_active_shape_setting('outline')
         return True
 

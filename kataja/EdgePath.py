@@ -407,7 +407,7 @@ class EdgePath:
         else:
             p0 = self.edge.end_point
         p0x, p0y = p0
-        sx, sy = self.start_point
+        sx, sy = self.edge.start_point
         dx, dy = sx - p0x, sy - p0y
         a = math.atan2(dy, dx)
         p = QtGui.QPainterPath()

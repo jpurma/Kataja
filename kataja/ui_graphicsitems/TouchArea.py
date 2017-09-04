@@ -50,6 +50,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     __qt_type_id__ = next_available_type_id()
     clicked = QtCore.pyqtSignal()
     align_left = False
+    action_slot = 'clicked'
 
     @classmethod
     def hosts_for_node(cls, node):

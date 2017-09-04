@@ -135,6 +135,7 @@ class ColorSelector(TableModelSelectionBox):
         """
         :param data:
         """
+        #print('select by data: ', self, data)
         super().select_by_data(data)
         self.selected_color = data
 

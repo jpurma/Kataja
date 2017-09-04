@@ -2,8 +2,8 @@ from PyQt5 import QtWidgets, QtGui
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs
-from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_widgets.UIEmbed import UIEmbed
+from ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 __author__ = 'purma'
 
@@ -27,7 +27,7 @@ class EdgeLabelEmbed(UIEmbed):
         tt = 'Label for arrow'
         f = QtGui.QFont(qt_prefs.get_font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
-        self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
+        self.input_line_edit = KatajaLineEdit(self, tip=tt, font=f, prefill='label')
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.input_line_edit)
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;

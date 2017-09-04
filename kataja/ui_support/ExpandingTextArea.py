@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.utils import open_symbol_data, caller
 from kataja.parser.INodes import ITextNode, as_html, as_text, as_editable_latex, as_editable_html
 import kataja.globals as g
@@ -29,7 +30,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.parsing_mode = 1
         layout = QtWidgets.QVBoxLayout()
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        self.input_parsing_modes = QtWidgets.QButtonGroup()
+        self.input_parsing_modes = KatajaButtonGroup()
         self.tex_radio = QtWidgets.QRadioButton("TeX", self)
         self.html_radio = QtWidgets.QRadioButton("HTML", self)
         self.input_parsing_modes.addButton(self.tex_radio, 1)

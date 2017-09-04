@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
-
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
 class ProjectionButton(PushButtonBase):
 
@@ -34,17 +34,17 @@ class ProjectionButtons(QtWidgets.QWidget):
     :param tip:
     :param options:
     """
+    action_slot = 'bgroup.buttonToggled'
 
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
         self.empty = True
-        self.bgroup = QtWidgets.QButtonGroup(self)
+        self.bgroup = KatajaButtonGroup(self)
         self.bgroup.setExclusive(False)
         self.my_layout = QtWidgets.QHBoxLayout()
         self.setLayout(self.my_layout)
         self.update_selections()
         self.my_layout.setContentsMargins(0, 0, 0, 0)
-        self.connect_slot = self.bgroup.buttonToggled
 
     def update_selections(self):
         """ Redraw all buttons

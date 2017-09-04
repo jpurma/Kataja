@@ -67,6 +67,7 @@ from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelS
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_support.FloatingTip import FloatingTip
 import kataja.ui_widgets.buttons.OverlayButton as ob
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -318,6 +319,7 @@ class UIManager:
         """
         self.update_positions()
 
+    @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         for action in self.actions.values():
