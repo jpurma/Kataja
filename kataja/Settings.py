@@ -89,8 +89,10 @@ class Settings:
         for key, node in self.node_type_chains.items():
             self.node_type_chains[key].maps[1] = node_types.get(key, {})
         edge_types = document.settings.get('edges', {})
-        for key, edge in self.edge_type_chains.items():
-            self.edge_type_chains[key].maps[1] = edge_types.get(key, {})
+        for key in self.edge_type_chains.keys():
+            document_edge_settings = edge_types.get(key, {})
+            self.edge_type_chains[key].maps[1] = document_edge_settings
+            self.shape_type_chains[key].maps[1] = document_edge_settings
 
     def set_forest(self, forest):
         self.forest = forest
@@ -99,8 +101,11 @@ class Settings:
         for key, node in self.node_type_chains.items():
             self.node_type_chains[key].maps[0] = node_types.get(key, {})
         edge_types = forest.settings.get('edges', {})
-        for key, edge in self.edge_type_chains.items():
-            self.edge_type_chains[key].maps[0] = edge_types.get(key, {})
+        for key in self.edge_type_chains.keys():
+            forest_edge_settings = edge_types.get(key, {})
+            self.edge_type_chains[key].maps[0] = forest_edge_settings
+            self.shape_type_chains[key].maps[0] = forest_edge_settings
+
 
     #@time_me
     def get(self, key, level=HIGHEST, obj=None):
@@ -224,7 +229,7 @@ class Settings:
                 return my_map[key]
 
     def set_edge_setting(self, key, value, edge_type=None, obj=None, level=OBJECT):
-        print('set_edge_setting ', key, value, edge_type, obj, level)
+        #print('set_edge_setting ', key, value, edge_type, obj, level)
         if not (obj or edge_type):
             raise ValueError
         if obj:
@@ -237,7 +242,6 @@ class Settings:
             self.set_in_container(key, value, self.document, 'edges', edge_type, level,
                                   self.edge_type_chains)
         elif level == PREFS:
-            self.prefs.poke('edges')
             if subtype not in self.prefs.edges:
                 self.prefs.edges[edge_type] = {key: value}
             else:
@@ -258,7 +262,6 @@ class Settings:
         else:
             if edge_type in self.prefs.edges and \
                     key in self.prefs.edges[edge_type]:
-                self.prefs.poke('edges')
                 del self.prefs.edges[edge_type][key]
 
     def reset_edge_setting(self, edge_type=None, obj=None, level=OBJECT):
@@ -304,7 +307,6 @@ class Settings:
             self.set_in_container(key, value, self.document, 'nodes', node_type, level,
                                   self.node_type_chains)
         elif level == PREFS:
-            self.prefs.poke('edges')
             if subtype not in self.prefs.nodes:
                 self.prefs.nodes[node_type] = {key: value}
             else:
@@ -324,7 +326,6 @@ class Settings:
         else:
             if node_type in self.prefs.nodes and \
                     key in self.prefs.nodes[node_type]:
-                self.prefs.poke('nodes')
                 del self.prefs.nodes[node_type][key]
 
     def reset_node_setting(self, node_type=None, obj=None, level=OBJECT):
@@ -339,11 +340,7 @@ class Settings:
             self.reset_in_container(self.document, 'nodes', node_type, level, self.node_type_chains)
 
     def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
-        print('get_shape_setting ', key, edge_type, edge, level)
-        if self.shape_type_chains:
-            assert(self.shape_type_chains[0] is self.edge_type_chains[0])
-            assert(self.shape_type_chains[1] is self.edge_type_chains[1])
-            assert(self.shape_type_chains[2] is not self.edge_type_chains[2])
+        #print('get_shape_setting ', key, edge_type, edge, level)
         if edge:
             edge_type = edge.edge_type
         if level == HIGHEST or level == OBJECT:

@@ -326,18 +326,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self.poke('label_data')
             self.label_data['text'] = value
 
-    # ## Signal handling ####
-
-    def receive_signal(self, signal, *args):
-        """
-
-        :param signal:
-        :param args:
-        """
-        if signal is g.EDGE_SHAPES_CHANGED:
-            if (args and args[0] == self.edge_type) or not args:
-                self.update_shape()
-
     # Helper methods for derived properties
 
     def is_visible(self) -> bool:
@@ -937,8 +925,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         return self.get_shape_property('fillable') and self.get_shape_setting('fill')
 
     def has_outline(self) -> int:
-        fillable = self.get_shape_property('fillable')
-        return (fillable and self.get_shape_setting('outline')) or not fillable
+        return self.get_shape_setting('outline')
 
     def is_fillable(self):
         return self.get_shape_property('fillable')

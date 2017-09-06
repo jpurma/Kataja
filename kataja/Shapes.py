@@ -25,29 +25,6 @@ BOTTOM_SIDE = 6
 BOTTOM_RIGHT_CORNER = 7
 
 
-class Shape:
-    """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
-    and may have their own special parameters.
-    """
-    shape_name = 'no_path'
-    control_points = 0
-    fillable = False
-    defaults = {}
-
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
-        return QtGui.QPainterPath(), QtGui.QPainterPath(), [], ()
-
-    @staticmethod
-    def icon_path(painter, rect, color=None):
-        pass
-
-
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
     """ List where control points and their adjustments are added up
     :param sx: start_point x
@@ -175,6 +152,29 @@ def to_pf(xy):
     return Pf(xy[0], xy[1])
 
 
+class Shape:
+    """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
+    and may have their own special parameters.
+    """
+    shape_name = 'no_path'
+    control_points_n = 0
+    fillable = False
+    defaults = {'outline': False}
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def path(start_point, end_point, curve_adjustment, curve_dir_start,
+             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
+             d=None):
+        return QtGui.QPainterPath(), QtGui.QPainterPath(), [], ()
+
+    @staticmethod
+    def icon_path(painter, rect, color=None):
+        pass
+
+
 class ShapedCubicPath(Shape):
     """ Two point leaf-shaped curve """
     shape_name = 'shaped_cubic'
@@ -266,6 +266,7 @@ class CubicPath(Shape):
     fillable = False
 
     defaults = {
+        'outline': True,
         'thickness': 1.0,
         'rel_dx': 0.2,
         'rel_dy': 0.4,
@@ -402,6 +403,7 @@ class QuadraticPath(Shape):
     control_points_n = 1
     fillable = False
     defaults = {
+        'outline': True,
         'thickness': 1.0,
         'rel_dx': 0.4,
         'rel_dy': 0.2,
@@ -505,6 +507,7 @@ class LinearPath(Shape):
     control_points_n = 0
     fillable = False
     defaults = {
+        'outline': True,
         'thickness': 1.0,
     }
 
@@ -881,6 +884,5 @@ low_arc['rel_dx'] = 1.0
 low_arc['rel_dy'] = 0.5
 low_arc['fixed_dx'] = 0
 low_arc['fixed_dy'] = 40
-print(low_arc)
 SHAPE_DEFAULTS['low_arc'] = low_arc
 SHAPE_PRESETS['low_arc'] = QuadraticPath
