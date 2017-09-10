@@ -7,7 +7,6 @@ from kataja.saved.movables.Node import Node
 
 
 class ResizeHandle(QtWidgets.QSizeGrip):
-
     def __init__(self, parent, target):
         """ ResizeHandle has separate parent widget and target widget. They can be same,
         of course, but this allows more freedom in placement of resizehandles.
@@ -47,7 +46,7 @@ class ResizeHandle(QtWidgets.QSizeGrip):
         pw = self.parentWidget()
         if hasattr(pw, 'update_size'):
             pw.update_size()
-        #self.resizable.resize(size.width() - size_diff.x(), size.height() - size_diff.y())
+            # self.resizable.resize(size.width() - size_diff.x(), size.height() - size_diff.y())
 
     def eventFilter(self, obj, event):
         """ Remove check for hiding size grip on full screen --
@@ -60,7 +59,6 @@ class ResizeHandle(QtWidgets.QSizeGrip):
 
 
 class GraphicsResizeHandle(UIWidget, QtWidgets.QSizeGrip):
-
     def __init__(self, view, host):
         UIWidget.__init__(self, host=host)
         QtWidgets.QSizeGrip.__init__(self, view)

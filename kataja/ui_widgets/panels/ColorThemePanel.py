@@ -19,9 +19,9 @@ def color_theme_fragment(panel, layout):
     panel.selector_items = ctrl.cm.list_available_themes()
     panel.selector.add_items(panel.selector_items)
 
-    panel.randomise = UnicodeIconButton(parent=panel, text='', size=(40, 20),
-                                        action='randomise_palette'
-                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+    panel.randomise = RandomiseButton(parent=panel, text='', size=(40, 20),
+                                      action='randomise_palette'
+                                      ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
 
     panel.remove_theme = TwoColorButton(parent=panel, text='Remove', action='remove_color_theme',
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
@@ -42,6 +42,13 @@ class UnicodeIconButton(PushButtonBase):
     that there exists a separate class for styling, but otherwise it is just a button base class.
     """
     pass
+
+
+class RandomiseButton(UnicodeIconButton):
+
+    def set_displayed_value(self, value):
+        """ Instead of changing value, reflect value in button text."""
+        self.setText(value)
 
 
 class ColorPanel(Panel):

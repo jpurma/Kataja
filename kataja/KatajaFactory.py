@@ -35,6 +35,10 @@ class KatajaFactory:
         self.node_info = {}
         self.node_types_order = []
         self.edge_class = None
+        self.base_node_class = None
+
+        self.node_type_to_edge_type = {}
+        self.edge_type_to_node_type = {}
 
     def late_init(self):
         """ Import and set available all of the default classes """
@@ -43,6 +47,7 @@ class KatajaFactory:
         from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
         from kataja.saved.movables.nodes.FeatureNode import FeatureNode
         from kataja.saved.movables.nodes.GlossNode import GlossNode
+        from kataja.saved.movables.Node import Node
         from kataja.saved.Group import Group
         from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
         from kataja.saved.Edge import Edge
@@ -63,6 +68,9 @@ class KatajaFactory:
         # g.ABSTRACT_NODE: Node,
 
         self.default_edge_class = Edge
+        self.base_node_class = Node
+        self.node_type_to_edge_type = {}
+        self.edge_type_to_node_type = {}
 
         self.classes = {}
         for class_object in self.default_models:
@@ -103,13 +111,17 @@ class KatajaFactory:
     def update_node_info(self):
         self.node_info = {}
         self.node_types_order = []
-        for key, nodeclass in self.nodes.items():
-            self.node_info[key] = {'name': nodeclass.display_name[0],
-                                   'name_pl': nodeclass.display_name[1],
-                                   'display': nodeclass.display,
-                                   'ui_sheet': nodeclass.ui_sheet}
+        self.node_type_to_edge_type = {}
+        self.edge_type_to_node_type = {}
+        for node_type, nodeclass in self.nodes.items():
+            self.node_info[node_type] = {'name': nodeclass.display_name[0],
+                                         'name_pl': nodeclass.display_name[1],
+                                         'display': nodeclass.display,
+                                         'ui_sheet': nodeclass.ui_sheet}
             if nodeclass.display:
-                self.node_types_order.append(key)
+                self.node_types_order.append(node_type)
+            self.node_type_to_edge_type[node_type] = nodeclass.default_edge
+            self.edge_type_to_node_type[nodeclass.default_edge] = node_type
         self.node_types_order.sort()
 
     def get(self, class_name):

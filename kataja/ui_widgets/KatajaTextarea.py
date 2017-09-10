@@ -5,7 +5,7 @@ from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
 
 
-class EmbeddedTextarea(QtWidgets.QPlainTextEdit, UIWidget):
+class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
     """
 
     :param parent:
@@ -25,15 +25,13 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit, UIWidget):
         self.textChanged.connect(self.flag_as_changed)
         if not font:
             font = qt_prefs.get_font(g.CONSOLE_FONT)
-        self.setStyleSheet(
-            'font-family: "%s"; font-size: %spx; background-color: %s' % (font.family(),
-                                                                          font.pointSize(),
-                                                                          ctrl.cm.paper().name()))
+        self.setStyleSheet('font-family: "%s"; font-size: %spx; background-color: %s' % (
+            font.family(), font.pointSize(), ctrl.cm.paper().name()))
 
         if on_edit:
             self.textChanged.connect(on_edit)
-        #self.setFixedSize(200, 100)
-        #self.text_area.textChanged.connect(self.text_area_check_for_resize)
+        # self.setFixedSize(200, 100)
+        # self.text_area.textChanged.connect(self.text_area_check_for_resize)
         self.updateGeometry()
 
     def dragEnterEvent(self, event):
@@ -60,7 +58,6 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit, UIWidget):
                 event.acceptProposedAction()
         else:
             return QtWidgets.QPlainTextEdit.dropEvent(self, event)
-
 
     def text(self):
         return self.toPlainText()

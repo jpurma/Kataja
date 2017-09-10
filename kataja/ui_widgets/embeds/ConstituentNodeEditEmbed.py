@@ -3,12 +3,13 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import kataja.globals as g
 from kataja.parser.INodes import as_editable_html
 from kataja.singletons import qt_prefs, ctrl
-from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -116,7 +117,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        self.view_buttons = QtWidgets.QButtonGroup(self)
+        self.view_buttons = KatajaButtonGroup(self)
         self.view_buttons.setExclusive(False)
 
         self.synframebutton = EyeButton('synlabels', g.SYN_LABELS,
@@ -131,10 +132,10 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = 'Label used in syntactic computations, plain string. Visible in <i>syntactic mode</i> ' \
              'or if <i>Displayed label</i> is empty.'
         title = 'Syntactic label'
-        self.synlabel = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='label',
-                                         on_edit=self.synlabel_edited,
-                                         on_finish=self.synlabel_finished,
-                                         on_return=self.synlabel_finished)
+        self.synlabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='label',
+                                       on_edit=self.synlabel_edited,
+                                       on_finish=self.synlabel_finished,
+                                       on_return=self.synlabel_finished)
         make_label(title, self, vlayout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         vlayout.addWidget(self.synlabel)
@@ -169,7 +170,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "These are either XBar or Bare phrase structure labels that are updated " \
              "automatically based on projections."
         title = 'Generated label'
-        self.autolabel = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel')
+        self.autolabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel')
         self.autolabel.setReadOnly(True)
         make_label(title, self, vlayout, tt, self.autolabel)
         vlayout.addWidget(self.autolabel)
@@ -177,8 +178,8 @@ class ConstituentNodeEditEmbed(UIEmbed):
         vlayout = QtWidgets.QVBoxLayout()
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
-        self.index = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill='i',
-                                      on_finish=self.index_finished)
+        self.index = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='i',
+                                    on_finish=self.index_finished)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
         make_label(title, self, vlayout, tt, self.index)
@@ -201,8 +202,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         hlayout.addLayout(vlayout)
         layout.addLayout(hlayout)
         self.ui_manager.connect_element_to_action(self.projections,
-                                                  'set_projecting_node',
-                                                  connect_slot=self.projections.connect_slot)
+                                                  'set_projecting_node')
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
             layout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)

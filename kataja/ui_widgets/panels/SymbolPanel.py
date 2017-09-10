@@ -14,14 +14,31 @@ table_names = ['common', 'greek', 'arrows', 'more arrows', 'latin', 'combining',
                'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl',
                'mathtt']
 
-table_dict = {'common': 'common', 'greek': 'greek alphabet', 'latin': 'extended latin',
-              'combining': 'combining diacritics', 'arrows': 'arrows',
-              'more arrows': 'more arrows etc.', 'rest': 'miscallenous symbols',
-              'cyrchar': 'cyrillic', 'ding': 'dingbats', 'ElsevierGlyph': 'Elsevier Glyphs',
-              'mathbb': 'mathbb', 'mathbf': 'mathbf', 'mathbit': 'mathbit', 'mathfrak': 'mathfrak',
-              'mathmit': 'mathmit', 'mathscr': 'mathscr', 'mathsfbfsl': 'mathsfbfsl',
-              'mathsfbf': 'mathsfbf', 'mathsfsl': 'mathsfsl', 'mathsf': 'mathsf',
-              'mathslbb': 'mathslbb', 'mathsl': 'mathsl', 'mathtt': 'mathtt'}
+table_dict = {
+    'common': 'common',
+    'greek': 'greek alphabet',
+    'latin': 'extended latin',
+    'combining': 'combining diacritics',
+    'arrows': 'arrows',
+    'more arrows': 'more arrows etc.',
+    'rest': 'miscallenous symbols',
+    'cyrchar': 'cyrillic',
+    'ding': 'dingbats',
+    'ElsevierGlyph': 'Elsevier Glyphs',
+    'mathbb': 'mathbb',
+    'mathbf': 'mathbf',
+    'mathbit': 'mathbit',
+    'mathfrak': 'mathfrak',
+    'mathmit': 'mathmit',
+    'mathscr': 'mathscr',
+    'mathsfbfsl': 'mathsfbfsl',
+    'mathsfbf': 'mathsfbf',
+    'mathsfsl': 'mathsfsl',
+    'mathsf': 'mathsf',
+    'mathslbb': 'mathslbb',
+    'mathsl': 'mathsl',
+    'mathtt': 'mathtt'
+}
 
 common = ['alpha', 'beta', 'gamma', 'phi', 'theta', 'lambda', 'tau', 'leftarrow', 'rightarrow',
           'prec', 'preccurlyeq', 'succ', 'succcurlyeq', 'oplus', 'surd', 'subset', 'subseteq',
@@ -107,7 +124,7 @@ class SymbolPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
-        #inner.preferred_size = QtCore.QSize(220, 130)
+        # inner.preferred_size = QtCore.QSize(220, 130)
         inner.setMinimumSize(160, 130)
         inner.setMaximumSize(220, 400)
         inner.setMinimumWidth(160)
@@ -119,15 +136,14 @@ class SymbolPanel(Panel):
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
         layout.addWidget(self.selector)
         self.symlist = QtWidgets.QListWidget()
-        self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-         QtWidgets.QSizePolicy.Expanding)
+        self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.symlist.setSpacing(8)
         self.symlist.setMouseTracking(True)
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
         self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
         f = qt_prefs.get_font(g.MAIN_FONT)
-        self.symlist.setStyleSheet('font-family: "%s"; font-size: %spx;' % (
-            f.family(), int(f.pointSize() * 1.5)))
+        self.symlist.setStyleSheet(
+            'font-family: "%s"; font-size: %spx;' % (f.family(), int(f.pointSize() * 1.5)))
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
         layout.addWidget(self.symlist)
@@ -164,7 +180,11 @@ class SymbolPanel(Panel):
             command = '\\' + key
             item = QtWidgets.QListWidgetItem(char)
             item.k_tooltip = command
-            item.setData(55, {'char': char, 'description': description, 'command': command})
+            item.setData(55, {
+                'char': char,
+                'description': description,
+                'command': command
+            })
             self.symlist.addItem(item)
             # pp = pprint.PrettyPrinter(indent=4)
             # pp.pprint(list(debug_dict.keys()))

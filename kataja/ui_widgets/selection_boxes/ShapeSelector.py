@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui
 
 from kataja.Shapes import SHAPE_PRESETS
 import kataja.globals as g
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
 
@@ -37,7 +37,7 @@ class ShapeSelector(TableModelSelectionBox):
         self.setIconSize(QtCore.QSize(64, 16))
         items = []
         self.icons = []
-        color = self.get_active_color()
+        color = ctrl.cm.drawing()
 
         for lt in SHAPE_PRESETS.keys():
             icon = LineStyleIcon(lt, self.iconSize(), color=color)
@@ -56,27 +56,15 @@ class ShapeSelector(TableModelSelectionBox):
 
     def get_active_color(self):
         scope = ctrl.ui.get_active_scope()
-        if self.for_edge_type:
-            color_id = ctrl.settings.get_edge_setting('color_id', edge_type=self.for_edge_type,
-                                                      level=scope)
-            edge_type = self.for_edge_type
-        else:
-            color_id = ctrl.settings.active_edge_setting('color_id')
-            edge_type = ctrl.ui.active_edge_type
-        if not color_id:
-            node_type_map = {g.CONSTITUENT_EDGE: g.CONSTITUENT_NODE,
-                             g.FEATURE_EDGE: g.FEATURE_NODE,
-                             g.CHECKING_EDGE: g.FEATURE_NODE,
-                             g.GLOSS_EDGE: g.GLOSS_NODE,
-                             g.COMMENT_EDGE: g.COMMENT_NODE
-            }
-            node_type = node_type_map.get(edge_type, g.CONSTITUENT_NODE)
+        c_id = ctrl.settings.get_edge_setting('color_id', edge_type=self.for_edge_type,
+                                              level=scope if scope != g.SELECTION else g.HIGHEST)
+        if not c_id:
+            node_type = classes.node_type_to_edge_type.get(self.for_edge_type, g.CONSTITUENT_NODE)
             scope = ctrl.ui.get_active_scope()
             if scope == g.SELECTION:
                 scope = g.HIGHEST
-            color_id = ctrl.settings.get_node_setting('color_id', node_type=node_type,
-                                                      level=scope)
-        return ctrl.cm.get(color_id)
+            c_id = ctrl.settings.get_node_setting('color_id', node_type=node_type, level=scope)
+        return ctrl.cm.get(c_id)
 
     def update_colors(self):
         m = self.model()

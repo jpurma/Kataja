@@ -31,8 +31,9 @@ from kataja.singletons import ctrl, log
 class EditEdgeLabelEnterText(KatajaAction):
     k_action_uid = 'edit_edge_label_enter_text'
     k_command = 'Enter'
-    #k_shortcut = 'Return'
-    #k_shortcut_context = 'parent_and_children'
+
+    # k_shortcut = 'Return'
+    # k_shortcut_context = 'parent_and_children'
 
     def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
@@ -147,8 +148,9 @@ class DisconnectEdgeEnd(KatajaAction):
 class NewArrow(KatajaAction):
     k_action_uid = 'new_arrow'
     k_command = 'New arrow'
+
     # k_shortcut = 'a'
-    #k_shortcut_context = 'parent_and_children'
+    # k_shortcut_context = 'parent_and_children'
 
     def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
@@ -169,6 +171,7 @@ class NewArrow(KatajaAction):
 class StartArrowFromNode(KatajaAction):
     k_action_uid = 'start_arrow_from_node'
     k_command = 'Add arrow from here to...'
+
     # k_shortcut = 'a'
     # k_shortcut_context = 'parent_and_children'
 
@@ -217,7 +220,6 @@ class DeleteArrow(KatajaAction):
         ctrl.ui.update_selections()
         ctrl.forest.forest_edited()
 
-
 # class NewDivider(KatajaAction):
 #     k_action_uid = 'new_divider'
 #     k_command = 'New divider'
@@ -232,6 +234,3 @@ class DeleteArrow(KatajaAction):
 #         ctrl.ui.close_active_embed()
 #         # fixme: finish this!
 #         ctrl.forest.forest_edited()
-
-
-

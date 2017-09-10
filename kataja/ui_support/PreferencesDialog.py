@@ -74,7 +74,9 @@ class PreferencesDialog(QtWidgets.QDialog):
             order = d.get('order', 999)
             d['value'] = value
             if tab not in paged:
-                paged[tab] = {'ordered':[]}
+                paged[tab] = {
+                    'ordered': []
+                }
             paged[tab][key] = d
             ordered = paged[tab]['ordered']
             ordered.append((order, key))

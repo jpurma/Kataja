@@ -32,8 +32,7 @@ class PanelButton(PushButtonBase):
             self.compose_icon()
         elif self.draw_method:
             isize = QtCore.QSize(size.width() * 2, size.height() * 2)
-            self.base_image = QtGui.QImage(
-                isize, QtGui.QImage.Format_ARGB32_Premultiplied)
+            self.base_image = QtGui.QImage(isize, QtGui.QImage.Format_ARGB32_Premultiplied)
             self.base_image.fill(QtCore.Qt.transparent)
             self.compose_icon()
 
@@ -50,7 +49,7 @@ class PanelButton(PushButtonBase):
             return ctrl.cm.get(self.color_key)
 
     def colored_image_from_base(self, color):
-        assert(self.base_image)
+        assert self.base_image
         image = QtGui.QImage(self.base_image)
         painter = QtGui.QPainter(image)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -87,5 +86,5 @@ class PanelButton(PushButtonBase):
     def update_colors(self, color_key=None):
         if color_key:
             self.color_key = color_key
-        #self.update_style_sheet()
+        # self.update_style_sheet()
         self.compose_icon()

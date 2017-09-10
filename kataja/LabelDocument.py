@@ -4,7 +4,8 @@ from PyQt5 import QtGui, QtCore
 
 
 class LabelDocument(QtGui.QTextDocument):
-    """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into
+    """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them
+    into
     QTextDocuments RTF presentation """
 
     def __init__(self):
@@ -37,17 +38,15 @@ class LabelDocument(QtGui.QTextDocument):
         count = 0
         while b:
             cf = b.charFormat()
-            dat = [b.blockFormat().alignment(), cf.fontCapitalization(),
-                   cf.fontFamily(), cf.fontItalic(), cf.fontOverline(),
-                   cf.fontStrikeOut(), cf.fontWeight(),
+            dat = [b.blockFormat().alignment(), cf.fontCapitalization(), cf.fontFamily(),
+                   cf.fontItalic(), cf.fontOverline(), cf.fontStrikeOut(), cf.fontWeight(),
                    cf.fontUnderline(), cf.verticalAlignment()]
-            #print(dat)
-            #print(int(dat[0]))
+            # print(dat)
+            # print(int(dat[0]))
             for frange in b.textFormats():
                 cf = frange.format
-                ndat = [b.blockFormat().alignment(), cf.fontCapitalization(),
-                        cf.fontFamily(), cf.fontItalic(), cf.fontOverline(),
-                        cf.fontStrikeOut(), cf.fontWeight(),
+                ndat = [b.blockFormat().alignment(), cf.fontCapitalization(), cf.fontFamily(),
+                        cf.fontItalic(), cf.fontOverline(), cf.fontStrikeOut(), cf.fontWeight(),
                         cf.fontUnderline(), cf.verticalAlignment()]
                 # if ndat != dat:
                 #     print('---- block %s ----' % count)
@@ -72,8 +71,8 @@ class LabelDocument(QtGui.QTextDocument):
                 #     if ndat[8] != dat[8]:
                 #         print('vertical align: ', cf.verticalAlignment())
                 dat = ndat
-            #print(b.charFormat())
-            #print(b.textFormats())
+            # print(b.charFormat())
+            # print(b.textFormats())
 
             if b == self.end():
                 b = None
@@ -81,8 +80,7 @@ class LabelDocument(QtGui.QTextDocument):
                 b = b.next()
             count += 1
 
-        #bc = self.blockCount()
-        #for b_i in range(0, bc):
-        #    print(b_i)
-        #    b = self.findBlockByNumber(b_i)
-
+            # bc = self.blockCount()
+            # for b_i in range(0, bc):
+            #    print(b_i)
+            #    b = self.findBlockByNumber(b_i)

@@ -22,11 +22,10 @@ class NewElementEmbed(UIEmbed):
         layout.addLayout(self.top_row_layout)
         hlayout = box_row(layout)
         ui = self.ui_manager
-        self.new_arrow_button = OverlayButton(parent=self,
-                                              text=" &Arrow", action= 'new_arrow',
+        self.new_arrow_button = OverlayButton(parent=self, text=" &Arrow", action='new_arrow',
                                               size=QtCore.QSize(48, 20),
                                               draw_method=arrow).to_layout(hlayout)
-        #self.divider_button = icon_text_button(ui, hlayout, self, '', '',
+        # self.divider_button = icon_text_button(ui, hlayout, self, '', '',
         #                                       " &Divider", 'new_divider',
         #                                       size=QtCore.QSize(48, 20), draw_method=divider)
         self.new_arrow_button.setFlat(False)
@@ -37,11 +36,8 @@ class NewElementEmbed(UIEmbed):
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        self.input_line_edit = ExpandingLineEdit(self,
-                                                 tip=tt,
-                                                 big_font=big_font,
-                                                 smaller_font=smaller_font,
-                                                 prefill='label',
+        self.input_line_edit = ExpandingLineEdit(self, tip=tt, big_font=big_font,
+                                                 smaller_font=smaller_font, prefill='label',
                                                  on_edit=self.guess_type_for_input)
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
@@ -51,13 +47,13 @@ class NewElementEmbed(UIEmbed):
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
             # we have dedicated buttons for arrows and dividers
-            #if key not in (g.ARROW, g.DIVIDER):
+            # if key not in (g.ARROW, g.DIVIDER):
             node_class = classes.nodes.get(key, None)
             if (not node_class) or node_class.is_syntactic and not ctrl.free_drawing_mode:
                 continue
             self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
         self.node_types.append((g.ARROW, 'New arrow'))
-        #self.node_types.append(('New divider', g.DIVIDER))
+        # self.node_types.append(('New divider', g.DIVIDER))
         self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
         hlayout.addStretch(0)

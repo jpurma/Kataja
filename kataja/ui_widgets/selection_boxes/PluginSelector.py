@@ -1,6 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtGui
 from kataja.singletons import prefs, running_environment, ctrl
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
 class PluginSelector(QtWidgets.QWidget):
@@ -21,9 +22,8 @@ class PluginSelector(QtWidgets.QWidget):
         layout.addWidget(self.scroll_area)
         layout.addStretch(10)
         hlayout = QtWidgets.QHBoxLayout()
-        self.plugin_path = QtWidgets.QLabel('Plugin path: %s' % (prefs.plugins_path or
-                                            running_environment.plugins_path),
-                                            self)
+        self.plugin_path = QtWidgets.QLabel(
+            'Plugin path: %s' % (prefs.plugins_path or running_environment.plugins_path), self)
         self.plugin_path.setMaximumWidth(self.preferred_width - 80)
         self.plugin_path.setWordWrap(True)
         self.plugin_path.setMinimumHeight(self.plugin_path.sizeHint().height() + 20)
@@ -81,7 +81,7 @@ class PluginSelector(QtWidgets.QWidget):
             vlayout.addWidget(info)
             hlayout.addLayout(vlayout)
             vlayout = QtWidgets.QVBoxLayout()
-            enabled = QtWidgets.QPushButton('enable', plugin_frame)
+            enabled = PushButtonBase(parent=plugin_frame, text='enable').to_layout(vlayout)
             if activated:
                 enabled.setText('enabled')
             enabled.setCheckable(True)
@@ -89,7 +89,6 @@ class PluginSelector(QtWidgets.QWidget):
             enabled.setChecked(activated)
             enabled.plugin_key = key
             ctrl.ui.connect_element_to_action(enabled, 'toggle_plugin')
-            vlayout.addWidget(enabled)
             hlayout.addLayout(vlayout)
             plugin_frame.setLayout(hlayout)
             height_sum += plugin_frame.sizeHint().height()

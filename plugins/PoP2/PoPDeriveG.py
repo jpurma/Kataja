@@ -1082,7 +1082,7 @@ class Generate:
                 print(item.label, item.get_head_features())
                 if item not in temp_stack:
                     print('marked stacked, but not there.')
-                    assert(False)
+                    assert False
 
             if item in temp_stack:
                 for otter in temp_stack:
@@ -1244,7 +1244,7 @@ class Generate:
                             label = stack_top.part1.label
                             new_label = label + "-wa"
                             stack_top.replace_within(label, new_label, label=True)
-                            assert(False)
+                            assert False
                             print('attempting to replace label in many constituents')
                             x.replace_within(old_top_f, new_top_f)
                             y.replace_within(old_top_f, new_top_f)

@@ -90,8 +90,7 @@ class OverlayButton(PanelButton):
             if item.priority < self.priority:
                 if isinstance(item, QtWidgets.QGraphicsItem):
                     br = item.sceneBoundingRect()
-                    ge = ctrl.graph_view.mapFromScene(
-                        br).boundingRect()
+                    ge = ctrl.graph_view.mapFromScene(br).boundingRect()
                 elif isinstance(item, QtWidgets.QWidget):
                     ge = item.geometry()
                 else:
@@ -103,17 +102,16 @@ class OverlayButton(PanelButton):
 
 
 class TopRowButton(OverlayButton):
-
     permanent_ui = True
 
     def __init__(self, size=24, **kwargs):
         super().__init__(size=size, **kwargs)
         if isinstance(size, tuple):
-            self.setMinimumSize(size[0]+2, size[1])
-            self.setMaximumSize(size[0]+2, size[1])
+            self.setMinimumSize(size[0] + 2, size[1])
+            self.setMaximumSize(size[0] + 2, size[1])
         else:
-            self.setMinimumSize(size+2, size)
-            self.setMaximumSize(size+2, size)
+            self.setMinimumSize(size + 2, size)
+            self.setMaximumSize(size + 2, size)
 
 
 class VisButton(OverlayButton):
@@ -141,19 +139,15 @@ class VisButton(OverlayButton):
 
 
 class CutFromStartButton(OverlayButton):
-
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         pixmap=qt_prefs.cut_icon,
+        super().__init__(host=host, parent=parent, size=16, pixmap=qt_prefs.cut_icon,
                          action='disconnect_edge_start')
         self.priority = 54
 
     @classmethod
     def condition(cls, edge):
-        return edge.start \
-            and (not edge.end) \
-            and (ctrl.free_drawing_mode
-                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
+        return edge.start and (not edge.end) and (
+            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -168,19 +162,15 @@ class CutFromStartButton(OverlayButton):
 
 
 class CutFromEndButton(OverlayButton):
-
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         pixmap=qt_prefs.cut_icon,
+        super().__init__(host=host, parent=parent, size=16, pixmap=qt_prefs.cut_icon,
                          action='disconnect_edge_end')
         self.priority = 55
 
     @classmethod
     def condition(cls, edge):
-        return edge.end \
-            and (not edge.start) \
-            and (ctrl.free_drawing_mode
-                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
+        return edge.end and (not edge.start) and (
+            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -198,19 +188,15 @@ class CutFromEndButton(OverlayButton):
 
 
 class CutEdgeButton(OverlayButton):
-
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         color_key='accent3',
-                         pixmap=qt_prefs.cut_icon,
-                         action='disconnect_edge')
+        super().__init__(host=host, parent=parent, size=16, color_key='accent3',
+                         pixmap=qt_prefs.cut_icon, action='disconnect_edge')
         self.priority = 50
 
     @classmethod
     def condition(cls, edge):
-        return edge.start and edge.end \
-            and (ctrl.free_drawing_mode
-                 or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
+        return edge.start and edge.end and (
+            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -229,21 +215,20 @@ class RemoveMergerButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         pixmap='delete_icon',
+        super().__init__(host=host, parent=parent, size=16, pixmap='delete_icon',
                          action='remove_merger')
         self.priority = 99
 
     @classmethod
     def condition(cls, host):
         return ctrl.free_drawing_mode and host.node_type == g.CONSTITUENT_NODE and \
-                host.is_unnecessary_merger()
+               host.is_unnecessary_merger()
 
     def update_position(self):
         """ """
         x, y = self.host.centered_scene_position
-        p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
-                                                             y - self.host.height / 2))
+        p = ctrl.main.graph_view.mapFromScene(
+            QtCore.QPointF(x + self.host.width / 2, y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
         p = self.avoid_overlaps(p, 16, 0)
         self.move(p)
@@ -261,23 +246,22 @@ class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         color_key='accent3',
-                         pixmap='delete_icon',
-                         action='remove_node')
+        super().__init__(host=host, parent=parent, size=16, color_key='accent3',
+                         pixmap='delete_icon', action='remove_node')
         self.priority = 100
 
     @classmethod
     def condition(cls, host):
-        return ctrl.free_drawing_mode and (host.node_type == g.CONSTITUENT_NODE and \
-                not host.is_unnecessary_merger()) or host.node_type != g.CONSTITUENT_NODE
+        return ctrl.free_drawing_mode and (
+            host.node_type == g.CONSTITUENT_NODE and not host.is_unnecessary_merger()) or \
+               host.node_type != g.CONSTITUENT_NODE
 
     def update_position(self):
         """ """
 
         x, y = self.host.centered_scene_position
-        p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
-                                                             y - self.host.height / 2))
+        p = ctrl.main.graph_view.mapFromScene(
+            QtCore.QPointF(x + self.host.width / 2, y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
         p = self.avoid_overlaps(p, 16, 0)
         self.move(p)
@@ -292,12 +276,9 @@ class RemoveNodeButton(OverlayButton):
 
 
 class GroupOptionsButton(OverlayButton):
-
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         color_key=host.color_key,
-                         pixmap=qt_prefs.info_icon,
-                         action='toggle_group_options')
+        super().__init__(host=host, parent=parent, size=16, color_key=host.color_key,
+                         pixmap=qt_prefs.info_icon, action='toggle_group_options')
         self.priority = 25
 
     def update_position(self):
@@ -305,8 +286,10 @@ class GroupOptionsButton(OverlayButton):
         candidates = self.host.clockwise_path_points(8)
         if not candidates:
             return
-        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2, self.height() / 2) - \
-                     ctrl.main.graph_view.mapToScene(0, 0)
+        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2,
+                                                     self.height() / 2) - \
+                     ctrl.main.graph_view.mapToScene(
+            0, 0)
         w2 = scene_size.x()
         h2 = scene_size.y()
         for x, y in candidates:
@@ -324,12 +307,9 @@ class GroupOptionsButton(OverlayButton):
 
 
 class NodeEditorButton(OverlayButton):
-
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16,
-                         color_key=host.get_color_id(),
-                         pixmap=qt_prefs.info_icon,
-                         action='start_editing_node')
+        super().__init__(host=host, parent=parent, size=16, color_key=host.get_color_id(),
+                         pixmap=qt_prefs.info_icon, action='start_editing_node')
         self.priority = 25
 
     def update_position(self):

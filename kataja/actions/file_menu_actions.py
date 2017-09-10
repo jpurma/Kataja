@@ -16,7 +16,6 @@ from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
-
 # ==== Class variables for KatajaActions:
 #
 # k_action_uid : unique id for calling this action. required, other are optional
@@ -42,9 +41,16 @@ from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 # ### File ######
 
-file_extensions = {'pickle': '.kataja', 'pickle.zipped': '.zkataja',
-                   'dict': '.dict', 'dict.zipped': '.zdict', 'json': '.json',
-                   'json.zipped': '.zjson', }
+file_extensions = {
+    'pickle': '.kataja',
+    'pickle.zipped': '.zkataja',
+    'dict': '.dict',
+    'dict.zipped': '.zdict',
+    'json': '.json',
+    'json.zipped': '.zjson',
+}
+
+
 # Not sure if we need a separate set for
 # windows, if they still use three-letter extensions
 
@@ -103,10 +109,9 @@ class Open(KatajaAction):
         # off:
         # noinspection PyTypeChecker,PyCallByClass
         if not filename:
-            filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main,
-                                                                        "Open "
-                                                                        "KatajaMain "
-                                                                        "trees", "",
+            filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main, "Open "
+                                                                                   "KatajaMain "
+                                                                                   "trees", "",
                                                                         file_help)
         if not filename:
             return
@@ -173,10 +178,8 @@ class Save(KatajaAction):
     Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
     JSON dumps (*.json);; Packed JSON (*.zjson)
     """
-        filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main,
-                                                                    "Save Kataja trees",
-                                                                    "",
-                                                                    file_help)
+        filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main, "Save Kataja trees",
+                                                                    "", file_help)
         if filename:
             ctrl.main.forest_keeper.filename = filename
             self.save(filename)
@@ -286,12 +289,12 @@ class PrintToFile(KatajaAction):
         # hide unwanted components
         no_brush = QtGui.QBrush(Qt.NoBrush)
         sc.setBackgroundBrush(no_brush)
-        sc.photo_frame = sc.addRect(sc.print_rect().adjusted(-1, -1, 2, 2),
-                                    ctrl.cm.selection())
+        sc.photo_frame = sc.addRect(sc.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
         sc.update()
         ctrl.graph_view.repaint()
         ctrl.main.print_started = True  # to avoid a bug where other timers end up triggering main's
         ctrl.main.startTimer(50)
+
 
 #
 # class RenderInBlender(KatajaAction):

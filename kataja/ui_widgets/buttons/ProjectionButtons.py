@@ -2,10 +2,10 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
 
 class ProjectionButton(PushButtonBase):
-
     def __init__(self, value, **kwargs):
         PushButtonBase.__init__(self, **kwargs)
         self.setCheckable(True)
@@ -34,17 +34,17 @@ class ProjectionButtons(QtWidgets.QWidget):
     :param tip:
     :param options:
     """
+    action_slot = 'bgroup.buttonToggled'
 
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
         self.empty = True
-        self.bgroup = QtWidgets.QButtonGroup(self)
+        self.bgroup = KatajaButtonGroup(self)
         self.bgroup.setExclusive(False)
         self.my_layout = QtWidgets.QHBoxLayout()
         self.setLayout(self.my_layout)
         self.update_selections()
         self.my_layout.setContentsMargins(0, 0, 0, 0)
-        self.connect_slot = self.bgroup.buttonToggled
 
     def update_selections(self):
         """ Redraw all buttons
@@ -66,8 +66,8 @@ class ProjectionButtons(QtWidgets.QWidget):
                 continue
             text = ', '.join([x.short_str() for x in child_heads])
             tt = f'project from {child_heads}'
-            checked = current_heads and (child_heads == current_heads or child_heads in
-                      current_heads)
+            checked = current_heads and (
+                child_heads == current_heads or child_heads in current_heads)
             button = ProjectionButton(child.uid, text=text, tooltip=tt)
             button.setChecked(checked)
             button.setEnabled(bool(child_heads))
@@ -75,4 +75,3 @@ class ProjectionButtons(QtWidgets.QWidget):
             self.my_layout.addWidget(button)
             self.empty = False
             button.setMinimumHeight(40)
-

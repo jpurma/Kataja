@@ -568,7 +568,8 @@ class Forest(SavedObject):
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
-        ctrl.graph_scene.follow_optimal_size = not self.derivation_steps.is_last()
+        print('redrawing forest, start_animations: ', start_animations)
+        ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
         self.update_forest_gloss()
         if self.visualization:
@@ -586,9 +587,18 @@ class Forest(SavedObject):
             for edge in self.edges.values():
                 if edge.edge_type == edge_type:
                     edge.update_shape()
+            if edge_type == g.CONSTITUENT_EDGE:
+                for node in self.nodes.values():
+                    if node.triangle_stack:
+                        node.label_object.update_label(force_update=True)
         else:
             for edge in self.edges.values():
+                edge.path.changed = True
                 edge.update_shape()
+            for node in self.nodes.values():
+                if node.triangle_stack:
+                    node.label_object.update_label(force_update=True)
+
 
     def simple_parse(self, text):
         return self.parser.simple_parse(text)

@@ -36,9 +36,9 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.moved_by_hand = False
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        #close_button = QtWidgets.QPushButton("x")
-        close_button = PanelButton(pixmap=qt_prefs.close_icon, parent=self,
-                                   size=12, color_key='content1')
+        # close_button = QtWidgets.QPushButton("x")
+        close_button = PanelButton(pixmap=qt_prefs.close_icon, parent=self, size=12,
+                                   color_key='content1')
         close_button.setMaximumWidth(16)
         self.ui_manager.connect_element_to_action(close_button, 'close_embed')
         self.top_row_layout.addWidget(close_button)
@@ -150,8 +150,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
                 x = node_rect.left() - w - 50
             else:
                 x = 4
-        if ncy - h / 2 > 25 and \
-            ncy + h / 2 < view_rect.height():
+        if ncy - h / 2 > 25 and ncy + h / 2 < view_rect.height():
             y = ncy - h / 2
         else:
             y = h / 2 - node_rect.height() / 2

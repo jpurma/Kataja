@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtGui
 
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl, classes
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
@@ -43,14 +44,27 @@ class LineOptionsPanel(Panel):
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
         self.setMaximumWidth(220)
         self.setMaximumHeight(160)
+        self.active_node_type = g.CONSTITUENT_NODE
+        self.shape_selector = None
+
         self.watchlist = ['scope_changed', 'selection_changed']
 
         spac = 8
         hlayout = box_row(layout)
 
-        self.scope_selector = SelectionBox(parent=self, data=[], action='set_scope_for_node_style',
+        self.edge_type_selector = SelectionBox(parent=self, data=[],
+                                               action='set_edge_type_for_editing'
                                            ).to_layout(hlayout, with_label='Style for')
-        self.scope_selector.setMinimumWidth(96)
+        self.edge_type_selector.setFixedWidth(148)
+
+        hlayout = box_row(layout)
+        items = [(g.SELECTION, 'this selection'), (g.FOREST, 'this forest'),
+                 (g.DOCUMENT, 'this document'), (g.PREFS, 'preferences')]
+
+        self.scope_selector = SelectionBox(parent=self, data=items,
+                                           action='set_scope_for_node_style'
+                                           ).to_layout(hlayout, with_label='in ')
+        self.scope_selector.setFixedWidth(192)
 
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
@@ -59,6 +73,7 @@ class LineOptionsPanel(Panel):
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape',
                                             ).to_layout(hlayout, with_label='Shape')
+        self.shape_selector.for_edge_type = self.active_edge_type
 
         self.edge_color_selector = ColorSelector(parent=self,
                                                  action='change_edge_color',
@@ -148,6 +163,18 @@ class LineOptionsPanel(Panel):
         self.setWidget(inner)
         self.finish_init()
 
+    @property
+    def active_edge_type(self):
+        if self.active_node_type:
+            return classes.node_type_to_edge_type[self.active_node_type]
+        else:
+            return g.CONSTITUENT_EDGE
+
+    @property
+    def active_shape_name(self):
+        if self.active_node_type:
+            return ctrl.settings.get_edge_setting('edge_shape', edge_type=self.active_edge_type)
+
     def finish_init(self):
         Panel.finish_init(self)
         self.update_panel()
@@ -160,14 +187,16 @@ class LineOptionsPanel(Panel):
         if not ctrl.forest:
             return
         self.update_scope_selector_options()
+        if self.shape_selector:
+            self.shape_selector.for_edge_type = self.active_edge_type
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
-        items = [(g.SELECTION, 'Edges in current selection')]
         edge_types = []
+        items = []
         for node_type in classes.node_types_order:
             default_edge = classes.nodes[node_type].default_edge
             if default_edge not in edge_types:
@@ -177,11 +206,16 @@ class LineOptionsPanel(Panel):
                 else:
                     edge_name_plural = default_edge
                 items.append((node_type, edge_name_plural))
-        self.scope_selector.add_items(items)
+        self.edge_type_selector.add_items(items)
 
     def update_selection(self):
         self.update_scope_selector_options()
-        self.scope_selector.select_by_data(ctrl.ui.active_scope)
+        #if ctrl.ui.scope_is_selection:
+        #    self.edge_type_selector.setEnabled(False)
+        #else:
+        #    self.edge_type_selector.setEnabled(False)
+        #    self.edge_type_selector.select_by_data(self.active_node_type)
+        #self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
 
     def initial_position(self, next_to=''):
@@ -213,6 +247,75 @@ class LineOptionsPanel(Panel):
         self.update_panel()
         super().showEvent(event)
 
+    def get_active_edge_setting(self, key):
+        """ Return edge setting either from selected items or from ui.active_edge_type. If there
+        are settings made in node level, return first of such occurence.
+        :param key:
+        :return:
+        """
+        if ctrl.ui.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if key in edge.settings:
+                        return edge.settings[key]
+                return ctrl.settings.get_edge_setting(key, edge=edges[0])
+        return ctrl.settings.get_edge_setting(key, edge_type=self.active_edge_type,
+                                              level=ctrl.ui.active_scope)
+
+    def get_active_node_setting(self, key):
+        if ctrl.ui.scope_is_selection:
+            nodes = ctrl.get_selected_edges()
+            if nodes:
+                for node in nodes:
+                    if key in node.settings:
+                        return node.settings[key]
+                return ctrl.settings.get_node_setting(key, node=nodes[0])
+        return ctrl.settings.get_node_setting(key, node_type=self.active_node_type,
+                                              level=ctrl.ui.active_scope)
+
+    def get_active_shape_setting(self, key):
+        """ Return edge setting either from selected items or from ui.active_edge_type. If there
+        are settings made in node level, return first of such occurence.
+        :param key:
+        :return:
+        """
+        if ctrl.ui.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if key in edge.settings:
+                        return edge.settings[key]
+                return edges[0].flattened_settings[key]
+        return ctrl.settings.get_shape_setting(key, edge_type=self.active_edge_type,
+                                               level=ctrl.ui.active_scope)
+
+    def get_active_shape_property(self, key):
+        """ Return the class property of currently active edge shape.
+        :param key:
+        :return:
+        """
+        if ctrl.ui.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if key in edge.settings:
+                        return edge.settings[key]
+                return getattr(edges[0].path.my_shape, key)
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=self.active_edge_type)
+        return getattr(SHAPE_PRESETS[shape_name], key)
+
+    def is_active_fillable(self):
+        return self.get_active_shape_property('fillable')
+
+    def has_active_outline(self):
+        return self.get_active_shape_setting('outline')
+
+    def has_active_fill(self):
+        fillable = self.get_active_shape_property('fillable')
+        if fillable:
+            return self.get_active_shape_setting('fill')
+        return False
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

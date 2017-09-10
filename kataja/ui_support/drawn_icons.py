@@ -11,10 +11,10 @@ def fit_to_screen(painter, rect, color=None):
         pen.setColor(color)
     pen.setWidth(2)
     painter.setPen(pen)
-    #painter.drawRoundedRect(rect, 12, 12)
+    # painter.drawRoundedRect(rect, 12, 12)
     pen.setStyle(QtCore.Qt.DotLine)
     painter.setPen(pen)
-    painter.drawRect(QtCore.QRect(6, 6, w-12, h-12))
+    painter.drawRect(QtCore.QRect(6, 6, w - 12, h - 12))
 
     pen.setStyle(QtCore.Qt.SolidLine)
 
@@ -23,17 +23,18 @@ def fit_to_screen(painter, rect, color=None):
     painter.drawLine(10, 10, 14, 10)
     painter.drawLine(10, 10, 10, 14)
 
-    painter.drawLine(w-10, 10, w-20, 20)
-    painter.drawLine(w-10, 10, w-14, 10)
-    painter.drawLine(w-10, 10, w-10, 14)
+    painter.drawLine(w - 10, 10, w - 20, 20)
+    painter.drawLine(w - 10, 10, w - 14, 10)
+    painter.drawLine(w - 10, 10, w - 10, 14)
 
-    painter.drawLine(10, h-10, 20, h-20)
-    painter.drawLine(10, h-10, 14, h-10)
-    painter.drawLine(10, h-10, 10, h-14)
+    painter.drawLine(10, h - 10, 20, h - 20)
+    painter.drawLine(10, h - 10, 14, h - 10)
+    painter.drawLine(10, h - 10, 10, h - 14)
 
-    painter.drawLine(w-10, h-10, w-20, h-20)
-    painter.drawLine(w-10, h-10, w-14, h-10)
-    painter.drawLine(w-10, h-10, w-10, h-14)
+    painter.drawLine(w - 10, h - 10, w - 20, h - 20)
+    painter.drawLine(w - 10, h - 10, w - 14, h - 10)
+    painter.drawLine(w - 10, h - 10, w - 10, h - 14)
+
 
 def pan_around(painter, rect, color=None, paper=None):
     w = rect.width()
@@ -49,7 +50,7 @@ def pan_around(painter, rect, color=None, paper=None):
     painter.setPen(pen)
     pen.setStyle(QtCore.Qt.DotLine)
     painter.setPen(pen)
-    painter.drawRect(QtCore.QRect(6, 6, w-12, h-12))
+    painter.drawRect(QtCore.QRect(6, 6, w - 12, h - 12))
 
     pen.setStyle(QtCore.Qt.SolidLine)
 
@@ -70,6 +71,7 @@ def pan_around(painter, rect, color=None, paper=None):
     painter.drawLine(right - 4, cy - 4, right, cy)
     painter.drawLine(right - 4, cy + 4, right, cy)
 
+
 def select_mode(painter, rect, color=None, paper=None):
     w = rect.width()
     h = rect.height()
@@ -82,16 +84,15 @@ def select_mode(painter, rect, color=None, paper=None):
     painter.setPen(pen)
     pen.setStyle(QtCore.Qt.DotLine)
     painter.setPen(pen)
-    painter.drawRect(QtCore.QRect(6, 6, w-12, h-12))
+    painter.drawRect(QtCore.QRect(6, 6, w - 12, h - 12))
 
-    painter.drawRect(QtCore.QRect(10, 10, w-30, h-30))
+    painter.drawRect(QtCore.QRect(10, 10, w - 30, h - 30))
     pen.setStyle(QtCore.Qt.SolidLine)
     painter.setPen(pen)
     cx = 10 + w - 30
     cy = 10 + h - 30
     painter.drawLine(cx, cy - 6, cx, cy + 6)
     painter.drawLine(cx - 6, cy, cx + 6, cy)
-
 
 
 def arrow(painter, rect, color=None):
@@ -123,4 +124,3 @@ def divider(painter, rect, color=None):
     p.setStyle(QtCore.Qt.DashLine)
     painter.setPen(p)
     painter.drawPath(path)
-

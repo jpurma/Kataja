@@ -2,8 +2,6 @@
 
 
 class AdgerConstituent(BaseConstituent):
-
-
     def __init__(self, cat_feature=None, sel_feature=None, **kw):
         """ This is a constituent that
          """

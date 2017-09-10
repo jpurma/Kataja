@@ -34,7 +34,6 @@ from kataja.uniqueness_generator import next_available_type_id
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
-
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, text, parent=None, placeholder=False):
@@ -173,8 +172,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def magnet_positions(self):
         w = self._size.width() / 2.0
         h = self._size.height() / 2.0
-        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h),
-                (w, h + h), (w + w, h + h)]
+        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h), (w, h + h),
+                (w + w, h + h)]
 
     def drag(self, event):
         """
@@ -214,7 +213,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             ctrl.release(self)
             if self.being_dragged():
                 self.kill_dragging()
-            else: # This is regular click on 'pressed' object
+            else:  # This is regular click on 'pressed' object
                 self.click(event)
                 self.update()
             return None  # this mouseRelease is now consumed
@@ -372,7 +371,4 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             QPainter.setPen(p)
             QPainter.drawRect(self.boundingRect())
         self.setDefaultTextColor(self.parentItem().color)
-        QtWidgets.QGraphicsTextItem.paint(self, QPainter,
-                                          QStyleOptionGraphicsItem, QWidget)
-
-
+        QtWidgets.QGraphicsTextItem.paint(self, QPainter, QStyleOptionGraphicsItem, QWidget)

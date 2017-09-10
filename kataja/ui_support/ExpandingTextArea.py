@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.utils import open_symbol_data, caller
 from kataja.parser.INodes import ITextNode, as_html, as_text, as_editable_latex, as_editable_html
 import kataja.globals as g
@@ -8,7 +9,6 @@ import html
 
 
 class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
-
     def __init__(self, parent, on_focus_out=None):
         super().__init__(parent)
         self.on_focus_out = on_focus_out
@@ -18,8 +18,8 @@ class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
             self.on_focus_out()
         super().focusOutEvent(event)
 
-class ExpandingTextArea(QtWidgets.QWidget):
 
+class ExpandingTextArea(QtWidgets.QWidget):
     def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None, label=None,
                  on_focus_out=None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -29,7 +29,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.parsing_mode = 1
         layout = QtWidgets.QVBoxLayout()
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        self.input_parsing_modes = QtWidgets.QButtonGroup()
+        self.input_parsing_modes = KatajaButtonGroup()
         self.tex_radio = QtWidgets.QRadioButton("TeX", self)
         self.html_radio = QtWidgets.QRadioButton("HTML", self)
         self.input_parsing_modes.addButton(self.tex_radio, 1)
@@ -50,10 +50,8 @@ class ExpandingTextArea(QtWidgets.QWidget):
                            QtWidgets.QSizePolicy.MinimumExpanding)
         if not font:
             font = qt_prefs.get_font(g.CONSOLE_FONT)
-        self.text_area.setStyleSheet(
-            'font-family: "%s"; font-size: %spx; background-color: %s' % (font.family(),
-                                                                          font.pointSize(),
-                                                                          ctrl.cm.paper().name()))
+        self.text_area.setStyleSheet('font-family: "%s"; font-size: %spx; background-color: %s' % (
+            font.family(), font.pointSize(), ctrl.cm.paper().name()))
 
         self.text_area.setEnabled(True)
         self.cut_point = 24
@@ -97,7 +95,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
             self.text_area.setPlainText(self.parsed_latex)
         elif self.parsing_mode == 2:
             self.text_area.setPlainText(self.parsed_html)
-        #self.text_area.setAlignment(QtCore.Qt.AlignCenter)
+            # self.text_area.setAlignment(QtCore.Qt.AlignCenter)
 
     def setFocus(self, *args):
         self.text_area.setFocus(*args)
@@ -188,7 +186,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
 
 
 class PreviewLabel(QtWidgets.QLabel):
-
     def __init__(self, parent, tip='', font=None):
         QtWidgets.QLabel.__init__(self, parent)
         if font:

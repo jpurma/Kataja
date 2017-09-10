@@ -78,7 +78,6 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     def get_label_data(self, key):
         self._host.label_data.get(key, None)
 
-
     @property
     def label_text(self):
         return self._host.get_label_text()
@@ -214,7 +213,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
             ctrl.release(self)
             if self.being_dragged():
                 self.kill_dragging()
-            else: # This is regular click on 'pressed' object
+            else:  # This is regular click on 'pressed' object
                 self.click(event)
                 self.update()
             return None  # this mouseRelease is now consumed
@@ -336,7 +335,4 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
             p.setWidthF(0.5)
             QPainter.setPen(p)
             QPainter.drawRect(self.boundingRect())
-        QtWidgets.QGraphicsTextItem.paint(self, QPainter,
-                                          QStyleOptionGraphicsItem, QWidget)
-
-
+        QtWidgets.QGraphicsTextItem.paint(self, QPainter, QStyleOptionGraphicsItem, QWidget)

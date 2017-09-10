@@ -79,7 +79,6 @@ sub sub {font-size: 8pt; vertical-align: sub}
 sup sub {font-size: 8pt; vertical-align: sub}
 sub sup {font-size: 8pt; vertical-align: sup}
 sup sup {font-size: 8pt; vertical-align: sup}
-EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
 QComboBox, TwoColorButton {background-color: %(paper)s;}
 UnicodeIconButton {background-color: %(paper)s; font-family: "%(main_font)s"; 
                    font-size: %(main_font_size)spx;}
@@ -110,7 +109,9 @@ TwoStateIconButton, TwoStateIconButton:checked {border: 1px solid transparent;
 TwoStateIconButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;}
 TwoStateIconButton:hover {border: 1px solid %(ui)s; background-color: %(paper)s; border-radius: 3}
 """
-#ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
+
+
+# ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 
 
 class KatajaMain(SavedObject, QtWidgets.QMainWindow):
@@ -136,11 +137,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomRightCorner,
-                       QtCore.Qt.RightDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
         x, y, w, h = (50, 50, 1152, 720)
         self.setMinimumSize(w, h)
         self.app = kataja_app
+        self.classes = classes
         self.save_prefs = not no_prefs
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
@@ -149,7 +150,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest_keepers = []
         self.forest_keeper = None
         ctrl.late_init(self)
-        #capture_stdout(log, self.log_stdout_as_debug, ctrl)
+        # capture_stdout(log, self.log_stdout_as_debug, ctrl)
 
         classes.late_init()
         prefs.import_node_classes(classes)
@@ -184,17 +185,17 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.raise_()
         kataja_app.processEvents()
         self.activateWindow()
-        #self.status_bar = self.statusBar()
+        # self.status_bar = self.statusBar()
         self.install_plugins()
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
-        #ctrl.call_watchers(self.forest_keeper, 'forest_changed')
+        # ctrl.call_watchers(self.forest_keeper, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
         gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
-        #for gesture in gestures:
+        # for gesture in gestures:
         #    self.grabGesture(gesture)
         self.action_finished(undoable=False, play=True)
         self.forest.undo_manager.flush_pile()
@@ -204,14 +205,19 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ui = ctrl.cm.ui()
         f = qt_prefs.get_font(g.UI_FONT)
         fm = qt_prefs.get_font(g.MAIN_FONT)
-        self.setStyleSheet(stylesheet % {'draw': c.name(), 'lighter': c.lighter().name(),
-                                         'paper': ctrl.cm.paper().name(),
-                                         'ui': ui.name(), 'ui_lighter': ui.lighter().name(),
-                                         'ui_font': f.family(), 'ui_font_size': f.pointSize(),
-                                         'ui_font_larger': int(f.pointSize() * 1.2),
-                                         'ui_darker': ui.darker().name(),
-                                         'main_font': fm.family(),
-                                         'main_font_size': fm.pointSize()})
+        self.setStyleSheet(stylesheet % {
+            'draw': c.name(),
+            'lighter': c.lighter().name(),
+            'paper': ctrl.cm.paper().name(),
+            'ui': ui.name(),
+            'ui_lighter': ui.lighter().name(),
+            'ui_font': f.family(),
+            'ui_font_size': f.pointSize(),
+            'ui_font_larger': int(f.pointSize() * 1.2),
+            'ui_darker': ui.darker().name(),
+            'main_font': fm.family(),
+            'main_font_size': fm.pointSize()
+        })
 
     def leaveEvent(self, event):
         ctrl.ui.force_hide_help()
@@ -230,8 +236,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         base_ends = len(plugins_path.split('/'))
         for root, dirs, files in os.walk(plugins_path):
             path_parts = root.split('/')
-            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith('__') \
-                    and 'plugin.json' in files:
+            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
+                    '__') and 'plugin.json' in files:
                 success = False
                 try:
                     plugin_file = open(root + '/plugin.json', 'r')
@@ -323,7 +329,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     e = sys.exc_info()
                     error_dialog = ErrorDialog(self)
                     error_dialog.set_error('%s, line %s\n%s: %s' % (
-                    plugin_module + ".setup.py", e[2].tb_lineno, e[0].__name__, e[1]))
+                        plugin_module + ".setup.py", e[2].tb_lineno, e[0].__name__, e[1]))
                     error_dialog.set_traceback(traceback.format_exc())
                     retry = error_dialog.exec_()
                     setup = None
@@ -350,7 +356,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
         self.ui_manager.preferences_dialog.open()
         self.ui_manager.preferences_dialog.trigger_all_updates()
-
 
     def init_forest_keepers(self):
         """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
@@ -418,7 +423,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 print('no derivation steps')
         self.forest.prepare_for_drawing()
         ctrl.resume_undo()
-        #if self.forest.undo_manager.
+        # if self.forest.undo_manager.
 
     def redraw(self):
         """ Call for forest redraw
@@ -438,20 +443,21 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         self.app.log_handler.set_widget(browserwidget)
 
-    #    def mousePressEvent(self, event):
-#        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
-#        :param event:
-#        them downwards. This is for debugging. """
-#        QtWidgets.QMainWindow.mousePressEvent(self, event)
+        #    def mousePressEvent(self, event):
 
-#    def keyPressEvent(self, event):
-#        # if not self.key_manager.receive_key_press(event):
-#        """
-#
-#        :param event:
-#        :return:
-#        """
-#        return QtWidgets.QMainWindow.keyPressEvent(self, event)
+    #        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
+    #        :param event:
+    #        them downwards. This is for debugging. """
+    #        QtWidgets.QMainWindow.mousePressEvent(self, event)
+
+    #    def keyPressEvent(self, event):
+    #        # if not self.key_manager.receive_key_press(event):
+    #        """
+    #
+    #        :param event:
+    #        :return:
+    #        """
+    #        return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
     # ## Menu management #######################################################
 
@@ -520,6 +526,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
+
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah
@@ -541,13 +548,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.killTimer(event.timerId())
         # Prepare file and path
         path = prefs.print_file_path or prefs.userspace_path or \
-            running_environment.default_userspace_path
+               running_environment.default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
-            print(
-                "bad path for printing (print_file_path in preferences) , "
-                "using '.' instead.")
+            print("bad path for printing (print_file_path in preferences) , "
+                  "using '.' instead.")
             path = './'
         filename = prefs.print_file_name
         if filename.endswith(('.pdf', '.png')):
@@ -566,8 +572,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             full_path = find_path(path + filename, '.png', 0)
             scale = 4
             target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
-            writer = QtGui.QImage(target.size().toSize(),
-                                  QtGui.QImage.Format_ARGB32_Premultiplied)
+            writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
             writer.fill(QtCore.Qt.transparent)
             painter = QtGui.QPainter()
             painter.begin(writer)
@@ -579,13 +584,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             iwriter = QtGui.QImageWriter(full_path)
             iwriter.write(writer)
             log.info("printed to %s as PNG (%spx x %spx, %sx size)." % (
-                     full_path, int(target.width()), int(target.height()), scale))
+                full_path, int(target.width()), int(target.height()), scale))
 
         else:
             dpi = 25.4
             full_path = find_path(path + filename, '.pdf', 0)
-            target = QtCore.QRectF(0, 0, source.width() / 2.0,
-                                   source.height() / 2.0)
+            target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
 
             writer = QtGui.QPdfWriter(full_path)
             writer.setResolution(dpi)
@@ -594,8 +598,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             ctrl.printing = True
             painter = QtGui.QPainter()
             painter.begin(writer)
-            #painter.setRenderHint(QtGui.QPainter.Antialiasing)
-            #painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+            # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            # painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             self.graph_scene.render(painter, target=target, source=source)
             painter.end()
             ctrl.printing = False
@@ -612,7 +616,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param kw:
         :return:
         """
-        for node in ctrl.selected:
+        for node in ctrl.get_selected_nodes():
             node.release()
         self.action_finished()
         return True
@@ -623,10 +627,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.forest.retire_from_drawing()
         self.forest_keeper = None
         # Garbage collection doesn't mix well with animations that are still running
-        #print('garbage stats:', gc.get_count())
-        #gc.collect()
-        #print('after collection:', gc.get_count())
-        #if gc.garbage:
+        # print('garbage stats:', gc.get_count())
+        # gc.collect()
+        # print('after collection:', gc.get_count())
+        # if gc.garbage:
         #    print('garbage:', gc.garbage)
         self.forest_keepers.append(classes.KatajaDocument(clear=True))
         self.forest_keeper = self.forest_keepers[-1]
@@ -668,16 +672,15 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         c = 0
         while open_references and c < max_rounds:
             c += 1
-            #print(len(savedata))
-            #print('---------------------------')
+            # print(len(savedata))
+            # print('---------------------------')
             for obj in list(open_references.values()):
                 if hasattr(obj, 'uid'):
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
-        assert(c < max_rounds)
-        print('total savedata: %s chars in %s items.' % (
-        len(str(savedata)), len(savedata)))
+        assert (c < max_rounds)
+        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
         # print(savedata)
         return savedata
 

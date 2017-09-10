@@ -38,14 +38,15 @@ from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me, create_blur_effect
 from kataja.parser.INodes import as_html
-import kataja.ui_widgets.buttons.OverlayButton as ob
+import kataja.ui_widgets.buttons.OverlayButton as Buttons
 
 call_counter = [0]
+
 
 class DragData:
     """ Helper object to contain drag-related data for duration of dragging """
 
-    def __init__(self, node:'Node', is_host, mousedown_scene_pos):
+    def __init__(self, node: 'Node', is_host, mousedown_scene_pos):
         self.is_host = is_host
         self.position_before_dragging = node.current_position
         self.adjustment_before_dragging = node.adjustment
@@ -72,6 +73,7 @@ class DragData:
 qbytes_scale = QtCore.QByteArray()
 qbytes_scale.append("scale")
 
+
 # ctrl = Controller object, gives accessa to other modules
 
 
@@ -93,13 +95,19 @@ class Node(Movable):
     ui_sheet = None
     allowed_child_types = []
 
-    default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
-                     'card_width': 0, 'card_height': 0}
+    default_style = {
+        'color_id': 'content1',
+        'font_id': g.MAIN_FONT,
+        'font-size': 10,
+        'card': False,
+        'card_width': 0,
+        'card_height': 0
+    }
 
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
-    buttons_when_selected = [ob.NodeEditorButton, ob.RemoveNodeButton]
+    buttons_when_selected = [Buttons.NodeEditorButton, Buttons.RemoveNodeButton]
 
     def __init__(self):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -109,7 +117,7 @@ class Node(Movable):
         Movable.__init__(self)
         self.syntactic_object = None
         self.label = ''
-
+        self.node_type_settings_chain = None
         self.selected = False
         self._label_visible = True
         self._label_qdocument = None
@@ -149,11 +157,11 @@ class Node(Movable):
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
-        #self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(self.z_value)
-        #self.fade_in()
+        # self.fade_in()
         self.update_visibility()
 
     def set_syntactic_object(self, synobj):
@@ -179,8 +187,7 @@ class Node(Movable):
         :return: None
         """
         self.in_scene = True
-        print('making node settings chain from:', ctrl.settings.node_type_chains[self.node_type])
-        self.settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
+        self.node_type_settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
         self.update_label()
         self.update_visibility()
         self.announce_creation()
@@ -305,7 +312,6 @@ class Node(Movable):
                 return True
         return False
 
-
     def cut(self, others):
         """
         :param others: other items targeted for cutting, to help decide which relations to maintain
@@ -326,13 +332,12 @@ class Node(Movable):
     #     else:
     #         synobj = None
 
-    def get_editing_template(self, refresh=False):
+    def get_editing_template(self):
         """ Create or fetch a dictionary template to help building an editing
         UI for Node.
         The template is based on 'editable'-class variable and combines
         templates from Node
         and its subclasses and its syntactic object's templates.
-        :param refresh: force recalculation of template
         :return: dict
         """
         return self.label_object.editable
@@ -349,6 +354,7 @@ class Node(Movable):
 
     # Non-model-based properties ########################################
 
+    # noinspection PyMethodMayBeStatic
     def get_triangle_text(self):
         """ Label with triangled elements concatenated into it
         :return:
@@ -381,7 +387,6 @@ class Node(Movable):
     #             edge.fade_in(s=s)
     #
     #     super().fade_in(s=s)
-
 
     def copy_position(self, other):
         """ Helper method for newly created items. Takes other item and copies movement related
@@ -420,7 +425,7 @@ class Node(Movable):
         :return: iterator of Nodes
         """
         if reverse:
-            edges_down = reversed(self.edges_down) # edges_down has to be list where order makes
+            edges_down = reversed(self.edges_down)  # edges_down has to be list where order makes
             # some syntactic sense.
         else:
             edges_down = self.edges_down
@@ -437,15 +442,13 @@ class Node(Movable):
         else:
             if similar:
                 et = self.edge_type()
-                return [edge.end for edge in edges_down if
-                        edge.edge_type == et and edge.end]
+                return [edge.end for edge in edges_down if edge.edge_type == et and edge.end]
             elif of_type:
-                return [edge.end for edge in edges_down if
-                        edge.edge_type == of_type and edge.end]
+                return [edge.end for edge in edges_down if edge.edge_type == of_type and edge.end]
             else:
                 return [edge.end for edge in edges_down if edge.end]
 
-    def get_parents(self, similar=True, visible=False, of_type=None) ->list:
+    def get_parents(self, similar=True, visible=False, of_type=None) -> list:
         """
         Get parent nodes of this node.
         :param similar: boolean, only return nodes of same type (eg.
@@ -517,32 +520,32 @@ class Node(Movable):
         """
         return not self.get_parents(similar=only_similar, visible=only_visible)
 
-    def get_edge_to(self, other, edge_type='', extra=None) -> QtWidgets.QGraphicsItem:
+    def get_edge_to(self, other, edge_type='', extra=None) -> QtWidgets.QGraphicsItem or None:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
         of certain type between two elements.
         :param other:
         :param edge_type:
+        :param extra: extra identifier stored with edge, to distinguish between otherwise
+        similar edges
         """
         if edge_type:
             for edge in self.edges_down:
-                if (extra is edge.extra or not extra) and \
-                        edge.end is other and \
-                        edge_type == edge.edge_type:
+                if (
+                                extra is edge.extra or not extra) and edge.end is other and \
+                                edge_type == edge.edge_type:
                     return edge
             for edge in self.edges_up:
-                if (extra is edge.extra or not extra) and \
-                        edge.start is other and \
-                        edge_type == edge.edge_type:
+                if (
+                                extra is edge.extra or not extra) and edge.start is other and \
+                                edge_type == edge.edge_type:
                     return edge
         else:
             for edge in self.edges_down:
-                if (extra is edge.extra or not extra) and \
-                        edge.end is other:
+                if (extra is edge.extra or not extra) and edge.end is other:
                     return edge
             for edge in self.edges_up:
-                if (extra is edge.extra or not extra) and \
-                        edge.start is other:
+                if (extra is edge.extra or not extra) and edge.start is other:
                     return edge
         return None
 
@@ -594,8 +597,8 @@ class Node(Movable):
         pass
 
     def get_locked_in_nodes(self):
-        return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
-                self]
+        return [x for x in self.get_children(visible=True, similar=False) if
+                x.locked_to_node is self]
 
     def can_have_as_child(self, other=None):
         """ Check, usually when dragging objects, if parent -- child relationship is possible in
@@ -613,8 +616,8 @@ class Node(Movable):
                 other_type = ctrl.dragged_text
         else:
             other_type = other.node_type
-        if (not ctrl.free_drawing_mode) and \
-                (other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
+        if (not ctrl.free_drawing_mode) and (
+                        other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
             return False
         elif other_type in self.allowed_child_types:
             if other:
@@ -664,15 +667,11 @@ class Node(Movable):
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         pass
 
-    def reset_style(self):
-        ctrl.settings.reset_node_style(node=self)
-        self.update_label()
-
-    def has_local_style_settings(self):
-        return bool(self.font_id or self.color_id)
-
     def get_style(self):
-        return {'font_id': self.get_font_id(), 'color_id': self.get_color_id()}
+        return {
+            'font_id': self.get_font_id(),
+            'color_id': self.get_color_id()
+        }
 
     # ## Font
     # #####################################################################
@@ -729,7 +728,7 @@ class Node(Movable):
         if self.drag_data:
             return ctrl.cm.lighter(ctrl.cm.selection())
         elif ctrl.pressed is self:
-            return ctrl.cm.selection() # ctrl.cm.active(ctrl.cm.selection())
+            return ctrl.cm.selection()  # ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             # return ctrl.cm.hover()
             return self.color
@@ -763,8 +762,8 @@ class Node(Movable):
         if not self.label_object:
             self.update_label()
         self._label_visible = self.label_object.has_content() or \
-                              self.label_object.is_quick_editing() or \
-                              self.label_object.is_card()
+            self.label_object.is_quick_editing() or \
+            self.label_object.is_card()
         self.label_object.setVisible(self._label_visible)
 
     def update_tooltip(self):
@@ -814,7 +813,7 @@ class Node(Movable):
 
     # ## Qt overrides
     # ######################################################################
-    #@time_me
+    # @time_me
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
@@ -839,7 +838,7 @@ class Node(Movable):
         #     painter.drawRect(self.label_rect)
         #     painter.drawRect(self.inner_rect)
         if ls == g.SCOPEBOX or ls == g.BOX:
-            pen.setWidth(0.5)
+            pen.setWidthF(0.5)
             brush = ctrl.cm.paper2()
             rect = True
         elif self.label_object.is_card():
@@ -858,7 +857,7 @@ class Node(Movable):
             if not hasattr(self, 'halo'):
                 rect = True
 
-        #elif self.has_empty_label() and self.node_alone():
+        # elif self.has_empty_label() and self.node_alone():
         #    pen.setStyle(QtCore.Qt.DotLine)
         #    rect = True
         painter.setPen(pen)
@@ -868,18 +867,17 @@ class Node(Movable):
         if ls == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
-        #painter.drawRect(-2, -2, 4, 4)
-        if False : #False and not self.static:
+        # painter.drawRect(-2, -2, 4, 4)
+        if False:  # False and not self.static:
             painter.setBrush(ctrl.cm.get('accent4tr'))
             b = QtCore.QRectF(self.future_children_bounding_rect())
-            #if b.width() < b.height():
+            # if b.width() < b.height():
             #    b.setWidth(b.height())
-            #elif b.height() < b.width():
+            # elif b.height() < b.width():
             #    b.setHeight(b.width())
             painter.drawEllipse(b)
 
-        #painter.drawRect(self.inner_rect)
-
+            # painter.drawRect(self.inner_rect)
 
     def has_visible_label(self):
         """
@@ -907,17 +905,17 @@ class Node(Movable):
         box_width = 0
 
         if self._label_visible and self.label_object:
-            l = self.label_object
-            lbr = l.boundingRect()
+            label = self.label_object
+            lbr = label.boundingRect()
             lbw = lbr.width()
             lbh = lbr.height()
-            lbx = l.x()
-            lby = l.y()
-            x_offset = l.x_offset
-            y_offset = l.y_offset
+            lbx = label.x()
+            lby = label.y()
+            x_offset = label.x_offset
+            y_offset = label.y_offset
         self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-        if self.label_object and self.label_object.node_shape == g.BRACKETED or \
-                        self.label_object.node_shape == g.SCOPEBOX:
+        if self.label_object and self.label_object.node_shape == g.BRACKETED \
+                or self.label_object.node_shape == g.SCOPEBOX:
             box_width = ctrl.forest.width_map.get(self.uid, 0)
         self.width = max((lbw, my_class.width, user_width, box_width))
         self.height = max((lbh, my_class.height, user_height))
@@ -934,8 +932,7 @@ class Node(Movable):
         y_max = y + self.height - 4
         x_max = x + self.width
         self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
-                         (x, y + h2), (x_max, y + h2),
-                         (x, y_max), (x + w4, y_max), (x + w2, y_max),
+                         (x, y + h2), (x_max, y + h2), (x, y_max), (x + w4, y_max), (x + w2, y_max),
                          (x + w2 + w4, y_max), (x_max, y_max)]
 
         expanding_rect = self.inner_rect
@@ -1076,7 +1073,6 @@ class Node(Movable):
                 edges += item.get_edges_up_with_children()
         return edges
 
-
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
     # action is done in Forest
@@ -1096,8 +1092,8 @@ class Node(Movable):
         should be hidden. 
         :return: 
         """
-        return self.triangle_stack and self.triangle_stack[-1] is not self and \
-            not self.is_leaf(only_similar=True, only_visible=False)
+        return self.triangle_stack and self.triangle_stack[-1] is not self and not self.is_leaf(
+            only_similar=True, only_visible=False)
 
     def fold_into_me(self, nodes):
         to_do = []
@@ -1159,6 +1155,8 @@ class Node(Movable):
         separate starting point. For binary branching, use the default three points.
         :param i: index in list of sibling
         :param size: size of list of siblings
+        :param scene_pos: current position can be given as parameter, otherwise uses
+        current_scene_position
         :return:
         """
         magnets = ctrl.settings.get('use_magnets')
@@ -1172,12 +1170,12 @@ class Node(Movable):
             return scene_pos
         elif not self._magnets:
             self.update_bounding_rect()
-        if size == 2: # and False:
+        if size == 2:  # and False:
             if i == 0:
                 return self.magnet(8, scene_pos)
             elif i == 1:
                 return self.magnet(10, scene_pos)
-        elif size == 3: # and False:
+        elif size == 3:  # and False:
             if i == 0:
                 return self.magnet(8, scene_pos)
             elif i == 1:
@@ -1220,6 +1218,8 @@ class Node(Movable):
         5               6
         7   8   9   10  11
 
+        :param scene_pos: current position can be given as parameter, otherwise uses
+        current_scene_position
         :return:
         """
         magnets = ctrl.settings.get('use_magnets')
@@ -1267,18 +1267,6 @@ class Node(Movable):
         :return: None
         """
         ctrl.ui.start_editing_node(self)
-
-    def double_click(self, event=None):
-        """ Scene has decided that this node has been clicked
-        :param event:
-        """
-        # double-click is reserved for selecting words when quick-editing.
-        if self.label_object and self.label_object.is_quick_editing():
-            pass
-        else:
-            self.hovering = False
-            self.select(adding=False, select_area=False)
-            self.open_embed()
 
     def select(self, adding=False, select_area=False):
         """ Scene has decided that this node has been clicked
@@ -1395,12 +1383,12 @@ class Node(Movable):
         parent = self.parentItem()
         if parent:
             parent.setZValue(500)
-        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        # self.anim.setEasingCurve(QtCore.QEasingCurve.Linear)
-        # self.anim.setDuration(600)
-        # self.anim.setStartValue(self.scale())
-        # self.anim.setEndValue(1.5)
-        # self.anim.start()
+            # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
+            # self.anim.setEasingCurve(QtCore.QEasingCurve.Linear)
+            # self.anim.setDuration(600)
+            # self.anim.setStartValue(self.scale())
+            # self.anim.setEndValue(1.5)
+            # self.anim.start()
 
     def drag(self, event):
         """ Drag also elements that are counted to be involved: features,
@@ -1528,7 +1516,7 @@ class Node(Movable):
          dragging started.
         :return:
         """
-        #was_locked = self.locked or self.use_adjustment
+        # was_locked = self.locked or self.use_adjustment
         super().lock()
         # if not was_locked:
         if self.is_visible():
@@ -1586,8 +1574,8 @@ class Node(Movable):
         """ Dragging a foreign object (could be from ui_support) over a node, entering.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
-                event.mimeData().hasFormat("text/plain"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
+                or event.mimeData().hasFormat("text/plain"):
             self.label_object.dragEnterEvent(event)
             self.hovering = True
         else:
@@ -1597,16 +1585,16 @@ class Node(Movable):
         """ Dragging a foreign object (could be from ui_support) over a node, leaving.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
-                event.mimeData().hasFormat("text/plain"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
+                or event.mimeData().hasFormat("text/plain"):
             event.acceptProposedAction()
             self.hovering = False
         else:
             QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
     def dropEvent(self, event: 'QGraphicsSceneDragDropEvent'):
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") or \
-                event.mimeData().hasFormat("text/plain"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
+                or event.mimeData().hasFormat("text/plain"):
             self.label_object.dropEvent(event)
 
     def start_moving(self):
@@ -1644,15 +1632,6 @@ class Node(Movable):
         if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
             ctrl.ui.update_position_for(self)
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
-
-    @staticmethod
-    def free_drawing_mode(*args, **kwargs):
-        """ Utility method for checking conditions for editing operations
-        :param args: ignored
-        :param kwargs: ignored
-        :return:
-        """
-        return ctrl.free_drawing_mode
 
     def update_visibility(self, fade_in=True, fade_out=True, skip_label=False) -> bool:
         """ see Movable.update_visibility
@@ -1715,14 +1694,15 @@ class Node(Movable):
             else:
                 effect.setBlurRadius(2)
             self.halo_item.setGraphicsEffect(effect)
-            #self.halo_item.show()
+            # self.halo_item.show()
         if (not value) and self.halo_item:
             if prefs.glow_effect:
                 self.halo = True
-                self.update_halo()
+                self.update_halo(color=ctrl.cm.selection())
             else:
                 self.halo = False
-                #self.halo_item.hide()
+                # self.halo_item.hide()
+                # noinspection PyTypeChecker
                 self.halo_item.setParentItem(None)
                 scene = self.halo_item.scene()
                 if scene:
@@ -1773,8 +1753,6 @@ class Node(Movable):
                     return cmethod()
             raise NotImplementedError(cond)
 
-
-
     # ############## #
     #                #
     #  Save support  #
@@ -1788,4 +1766,3 @@ class Node(Movable):
     edges_down = SavedField("edges_down")
     user_size = SavedField("user_size")
     triangle_stack = SavedField("triangle_stack")
-

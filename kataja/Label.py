@@ -47,8 +47,8 @@ sup sup {font-size: 8pt; vertical-align: sup}
 
 inner_cards = False
 
-class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
 
+class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
     def __init__(self, parent, host):
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
         self._host = host
@@ -59,7 +59,6 @@ class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
 
 
 class QuickEditTextItem(QtWidgets.QGraphicsTextItem):
-
     def mousePressEvent(self, event):
         # something in mousePressEvent causes it to ignore further mouse events.
         p = self.parent()
@@ -130,7 +129,7 @@ class Label(QtWidgets.QGraphicsItem):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsItem.__init__(self, parent)
         self.editable_part = MyGraphicsTextItem(self, parent)
-        self.lower_part = None # QtWidgets.QGraphicsTextItem(self)
+        self.lower_part = None  # QtWidgets.QGraphicsTextItem(self)
         self._host = parent
         self.has_been_initialized = False
         self.top_y = 0
@@ -162,7 +161,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.lower_doc = None
         self._fresh_focus = False
         self.editable_part.setDocument(self.editable_doc)
-        self.setZValue(20) # ZValue amongst the childItems of Node
+        self.setZValue(20)  # ZValue amongst the childItems of Node
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
@@ -179,10 +178,9 @@ class Label(QtWidgets.QGraphicsItem):
         return self.__qt_type_id__
 
     def hoverMoveEvent(self, event):
-        #print('L sending hoverMoveEvent')
+        # print('L sending hoverMoveEvent')
         ctrl.ui.move_help(event)
         QtWidgets.QGraphicsItem.hoverMoveEvent(self, event)
-
 
     def __str__(self):
         return 'Label:' + self.editable_html + self.lower_html
@@ -347,8 +345,7 @@ class Label(QtWidgets.QGraphicsItem):
                 self.editable_doc.setTextWidth(self.card_size[0])
             else:
                 self.editable_doc.setTextWidth(-1)
-            self.edited_field, self.editable_html = \
-                self._host.compose_html_for_editing()
+            self.edited_field, self.editable_html = self._host.compose_html_for_editing()
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
@@ -374,12 +371,12 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable_part.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.editable_part.clearFocus()
             self._fresh_focus = False
-            #if len(fields) == 0:
+            # if len(fields) == 0:
             #    ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
             #                              undoable=False)
-            #elif len(fields) == 1:
+            # elif len(fields) == 1:
             #    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
-            #else:
+            # else:
             #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
 
     def cursor_position_changed(self, cursor):
@@ -419,9 +416,10 @@ class Label(QtWidgets.QGraphicsItem):
         triangle_host = self._host.is_triangle_host()
         if triangle_host:
             label_text = ctrl.settings.get('label_text_mode')
-            self.draw_triangle = (label_text == g.NODE_LABELS or
-                                  label_text == g.NODE_LABELS_FOR_LEAVES) and \
-                self.node_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
+            self.draw_triangle = (
+                                     label_text == g.NODE_LABELS or label_text ==
+                                     g.NODE_LABELS_FOR_LEAVES) and self.node_shape not in [
+                g.SCOPEBOX, g.CARD, g.BRACKETED]
         else:
             self.draw_triangle = False
 
@@ -436,7 +434,7 @@ class Label(QtWidgets.QGraphicsItem):
                 ideal_width = max((self.editable_doc.idealWidth(), self.lower_doc.idealWidth()))
             elif triangle_host:
                 self.editable_part.setTextWidth(-1)
-                ideal_width = max((self.editable_doc.idealWidth(),  self.triangle_width))
+                ideal_width = max((self.editable_doc.idealWidth(), self.triangle_width))
             else:
                 self.editable_part.setTextWidth(-1)
                 ideal_width = self.editable_doc.idealWidth()
@@ -498,8 +496,9 @@ class Label(QtWidgets.QGraphicsItem):
                 else:
                     fsize = font.pixelSize()
                 attempts = 0
-                while fsize > 5 and attempts < 10 and self.lower_part_y + \
-                        self.lower_doc.size().height() > total_height:
+                while fsize > 5 and attempts < 10 and self.lower_part_y + self.lower_doc.size(
+
+                ).height() > total_height:
                     fsize -= 1
                     if use_point_size:
                         font.setPointSize(fsize)
@@ -592,25 +591,24 @@ class Label(QtWidgets.QGraphicsItem):
                 triangle.lineTo(center, top)
                 painter.drawPath(triangle)
             else:
+                # This looks complicated, but it is necessary. We want node's edge type's shape
+                # class and its properties so that the triangle can be drawn in similar style.
                 edge_type = self._host.edge_type()
                 shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
                 path_class = SHAPE_PRESETS[shape_name]
-                path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                        end_point=(right, bottom),
-                                                        alignment=g.RIGHT)
-                if path_class.fillable and \
-                   ctrl.settings.get_shape_setting('fill', edge_type=edge_type):
-                    painter.fillPath(path, c)
-                else:
-                    painter.drawPath(path)
-                painter.drawLine(left, bottom, right, bottom)
-                path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                        end_point=(left, bottom),
-                                                        alignment=g.LEFT)
+                path, lpath, foo, bar = path_class.path((center, top), (right, bottom), [],
+                                                        g.BOTTOM, g.TOP)
+                fill = path_class.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                               edge_type=edge_type)
                 if fill:
                     painter.fillPath(path, c)
                 else:
                     painter.drawPath(path)
+                painter.drawLine(left, bottom, right, bottom)
+                path, lpath, foo, bar = path_class.path((center, top), (left, bottom), [], g.BOTTOM,
+                                                        g.TOP)
 
-
-
+                if fill:
+                    painter.fillPath(path, c)
+                else:
+                    painter.drawPath(path)

@@ -63,15 +63,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 0
         self._fade_steps_list = []
         self.manual_zoom = False
-        self.follow_optimal_size = False
+        self.match_final_derivation_size = False
         self._cached_visible_rect = None
         self.keep_updating_visible_area = False
-        #self.focusItemChanged.connect(self.inspect_focus_change)
+        # self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
 
-#    def inspect_focus_change(self, new, old, reason):
-#        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
-#                                                                    self.sender()))
+    #    def inspect_focus_change(self, new, old, reason):
+    #        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
+    #                                                                    self.sender()))
 
     def late_init(self):
         """ Initialization that can be done only when ctrl has all the pieces in place
@@ -97,8 +97,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
         if vr == self._cached_visible_rect:
             return
-        zooming_out = vr.width() > self._cached_visible_rect.width() or \
-                      vr.height() > self._cached_visible_rect.height()
+        zooming_out = vr.width() > self._cached_visible_rect.width() or vr.height() > \
+                                                                        self._cached_visible_rect.height()
         if zooming_out or (zoom_in and (self.keep_updating_visible_area or prefs.auto_zoom)):
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
@@ -241,12 +241,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if not self._timer_id:
-            #self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
-            #self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
+            # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
+            # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
             self.timer_counter = 0
             ctrl.set_play(True)
-
 
     start_animations = item_moved
 
@@ -257,8 +256,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         self.killTimer(self._timer_id)
         self._timer_id = 0
-        #self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
-        #self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
+        # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
+        # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
         ctrl.set_play(False)
 
     def export_3d(self, path, forest):
@@ -280,7 +279,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if node in all_siblings:
                 i = all_siblings.index(node)
                 if i:
-                    return all_siblings[i-1]
+                    return all_siblings[i - 1]
             return node
         if direction == 'right':
             all_siblings = []
@@ -290,7 +289,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if node in all_siblings:
                 i = all_siblings.index(node)
                 if i < len(all_siblings) - 1:
-                    return all_siblings[i+1]
+                    return all_siblings[i + 1]
             return node
         if direction == 'up':
             all_parents = node.get_parents(similar=False, visible=True)
@@ -313,7 +312,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 all_siblings.append(child_edge)
             i = all_siblings.index(edge)
             if i:
-                return all_siblings[i-1]
+                return all_siblings[i - 1]
             else:
                 return edge
         if direction == 'right':
@@ -322,7 +321,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 all_siblings.append(child_edge)
             i = all_siblings.index(edge)
             if i < len(all_siblings) - 1:
-                return all_siblings[i+1]
+                return all_siblings[i + 1]
             else:
                 return edge
         if direction == 'up':
@@ -340,6 +339,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Move selection to best candidate
         :param direction:
         """
+
         def edge_of_set(my_selectables):
             if direction == 'left':
                 sortable = [(po[0], po[1], it) for it, po in my_selectables]
@@ -566,7 +566,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             data = event.mimeData()
             event.accept()
             if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
-                "text/plain"):
+                    "text/plain"):
                 event.acceptProposedAction()
             elif data.hasUrls():
                 images = True
@@ -629,13 +629,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
-    #@time_me
+    # @time_me
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes
         and tells them to update their position
         :param event: timer event? sent by Qt
         """
-        #t = time.time()
+        # t = time.time()
         # Uncomment to check what is the actual framerate:
         # n_time = time.time()
         # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
@@ -689,8 +689,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 avg_x = x_sum / len(to_normalize)
                 avg_y = y_sum / len(to_normalize)
                 for node in to_normalize:
-                    node.current_position = node.current_position[0] - avg_x, \
-                                            node.current_position[1] - avg_y
+                    node.current_position = node.current_position[0] - avg_x, node.current_position[
+                        1] - avg_y
         if items_moving or self.timer_counter < 20:
             for e in f.edges.values():
                 e.make_path()
@@ -699,15 +699,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
             for group in f.groups.values():
                 group.update_shape()
             f.semantics_manager.update_position()
-            if (not self.follow_optimal_size) \
-                    and (not self.manual_zoom) \
-                    and (not ctrl.dragged_focus) \
-                    and self.timer_counter % 20 == 0:
+            if (not self.match_final_derivation_size) and (not self.manual_zoom) and (
+                    not ctrl.dragged_focus) and self.timer_counter % 20 == 0:
                 self.fit_to_window(zoom_in=False)
         elif not (frame_has_moved or background_fade):
-            if (not self.follow_optimal_size) \
-                    and (not self.manual_zoom) \
-                    and (not ctrl.dragged_focus):
+            if (not self.match_final_derivation_size) and (not self.manual_zoom) and (
+                    not ctrl.dragged_focus):
                 self.fit_to_window()
             self.stop_animations()
             ctrl.items_moving = False

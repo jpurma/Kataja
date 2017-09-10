@@ -50,6 +50,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     __qt_type_id__ = next_available_type_id()
     clicked = QtCore.pyqtSignal()
     align_left = False
+    action_slot = 'clicked'
 
     @classmethod
     def hosts_for_node(cls, node):
@@ -232,7 +233,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             return False
 
     def accepts_drops(self, dragged):
-        return self.drop_action #and self.calculate_if_can_merge(dragged, None, None)
+        return self.drop_action  # and self.calculate_if_can_merge(dragged, None, None)
 
     @property
     def hovering(self):
@@ -285,16 +286,17 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         """
         :param dropped_node:
         """
+        drop_args = {}
         if isinstance(node_or_string, str) and node_or_string.startswith('kataja:'):
             foo, command, ntype = node_or_string.split(':')
             ntype = int(ntype)
-            self.drop_args['new_type'] = ntype
+            drop_args['new_type'] = ntype
         else:
-            self.drop_args['node_uid'] = getattr(node_or_string, 'uid')
+            drop_args['node_uid'] = getattr(node_or_string, 'uid')
 
         da = ctrl.ui.get_action(self.drop_action)
         if da:
-            da.run_command(self.host, **self.drop_args)
+            da.run_command(self.host, **drop_args)
         ctrl.deselect_objects()
 
 
@@ -831,15 +833,15 @@ class AbstractJointedTouchArea(TouchArea):
         if not self.end_point:
             self.update_end_points()
             assert self.end_point
-        return self._path.controlPointRect()\
-            .united(LEAF_BR)\
-            .united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+        return self._path.controlPointRect().united(LEAF_BR).\
+            united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+
 
     def shape(self):
         """ Shape is used for collisions and it shouldn't go over the originating node. So use
-        only the last half, starting from the "knee" of the shape.
-        :return:
-        """
+            only the last half, starting from the "knee" of the shape.
+            :return:
+            """
         path = QtGui.QPainterPath()
         # Bounding rect that includes the tail and end spot ellipse
         sx, sy = self.start_point
@@ -866,6 +868,7 @@ class AbstractJointedTouchArea(TouchArea):
         path.addRect(r)
         return path
 
+
     def drag(self, event):
         self._dragging = True
         self.update_end_points(end_point=to_tuple(event.scenePos()))
@@ -873,10 +876,12 @@ class AbstractJointedTouchArea(TouchArea):
     def update_end_points(self, end_point=None):
         """
 
-        :param end_point: End point can be given or it can be calculated.
-        """
+            :param end_point: End point can be given or it can be calculated.
+            """
         shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
-        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        shape = SHAPE_PRESETS[shape_name]
+        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                             edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(2)
         self.start_point = sx, sy
         h2 = self.host.__class__.height / 2
@@ -897,19 +902,14 @@ class AbstractJointedTouchArea(TouchArea):
         ex, ey = 0, 0
         line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
         adjust = []
-        shape = SHAPE_PRESETS[shape_name]
         if self._align_left:
-            path1 = shape.path(start_point=line_middle_point, end_point=(sx, sy),
-                               alignment=g.RIGHT, curve_adjustment=adjust)[0]
+            path1 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
             path1.moveTo(sx, sy)
-            path2 = shape.path(start_point=line_middle_point, end_point=(ex, ey),
-                               alignment=g.LEFT, curve_adjustment=adjust)[0]
+            path2 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
         else:
-            path1 = shape.path(start_point=line_middle_point, end_point=(ex, ey),
-                               alignment=g.RIGHT, curve_adjustment=adjust)[0]
+            path1 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
             path1.moveTo(ex, ey)
-            path2 = shape.path(start_point=line_middle_point, end_point=(sx, sy),
-                               alignment=g.LEFT, curve_adjustment=adjust)[0]
+            path2 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
         self._path = path1 | path2
 
 
@@ -1042,7 +1042,9 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
-        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        shape = SHAPE_PRESETS[shape_name]
+        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                             edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(7)
         self.start_point = sx, sy
         if end_point:
@@ -1056,9 +1058,7 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         sx -= ex
         sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(start_point=(sx, sy), end_point=(0, 0),
-                                                    alignment=g.LEFT,
-                                                    curve_adjustment=adjust)[0]
+        self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -1143,7 +1143,9 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
-        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        shape = SHAPE_PRESETS[shape_name]
+        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                             edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(11)
         self.start_point = sx, sy
         if end_point:
@@ -1158,9 +1160,7 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         sx -= ex
         sy -= ey
         adjust = []
-        self._path = SHAPE_PRESETS[shape_name].path(start_point=(sx, sy), end_point=(0, 0),
-                                                    alignment=g.RIGHT,
-                                                    curve_adjustment=adjust)[0]
+        self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
     def paint(self, painter, option, widget):
         """
