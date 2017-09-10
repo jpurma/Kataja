@@ -61,7 +61,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             if forest.gloss.uid in node_keys_to_validate:
                 node_keys_to_validate.remove(forest.gloss.uid)
 
-    #if numeration:
+    # if numeration:
     #    num_tree = forest.get_numeration()
 
     scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
@@ -201,7 +201,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         :return:
         """
         fnode = forest.get_node(synobj)
-        assert(fnode)
+        assert fnode
         if synobj.uid in done_nodes:
             return fnode
         done_nodes.add(synobj.uid)
@@ -224,7 +224,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         :return: 
         """
         node = forest.get_node(synobj)
-        assert(node)
+        assert node
         if synobj.uid in done_nodes:
             return node
         done_nodes.add(synobj.uid)
@@ -330,8 +330,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         return result_set
 
     # Update or create groups of transferred items
-    old_groups = [gr for gr in forest.groups.values() if gr.get_label_text().startswith(
-        'Transfer')]
+    old_groups = [gr for gr in forest.groups.values() if gr.get_label_text().startswith('Transfer')]
     all_new_items = set()
     all_old_items = set()
     if old_groups:
@@ -351,8 +350,8 @@ def syntactic_state_to_nodes(forest, syn_state):
                 for selection in new_groups:
                     new_g = free_drawing.create_group()
                     new_g.set_label_text('Transfer')
-                    #new_g.fill = False
-                    #new_g.outline = True
+                    # new_g.fill = False
+                    # new_g.outline = True
                     new_g.update_colors('accent5')
                     new_g.update_selection(selection)
             else:
@@ -371,8 +370,8 @@ def syntactic_state_to_nodes(forest, syn_state):
                     else:
                         new_g = free_drawing.create_group()
                         new_g.set_label_text('Transfer')
-                        #new_g.fill = False
-                        #new_g.outline = True
+                        # new_g.fill = False
+                        # new_g.outline = True
                         new_g.update_colors('accent5')
                         new_g.update_selection(selection)
 
@@ -417,7 +416,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         forest.gloss_text = syn_state.msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
-    #ctrl.graph_scene.fit_to_window(force=True)
+    # ctrl.graph_scene.fit_to_window(force=True)
 
 
 def verify_edge_order_for_constituent_nodes(node):
@@ -425,25 +424,24 @@ def verify_edge_order_for_constituent_nodes(node):
     depends on how syntax supports ordering.
     :return:
     """
+
     def strict_index(flist, feat):
         for i, fitem in enumerate(flist):
             if feat is fitem:
                 return i
 
-
     if isinstance(node.syntactic_object.parts, list):
         #  we assume that if parts use lists, then they are implicitly ordered.
         correct_order = node.syntactic_object.sorted_parts()
-        current_order = [edge.end.syntactic_object for edge in node.edges_down if edge.end
-                         and edge.edge_type == g.CONSTITUENT_EDGE]
+        current_order = [edge.end.syntactic_object for edge in node.edges_down if
+                         edge.end and edge.edge_type == g.CONSTITUENT_EDGE]
         if correct_order != current_order:
             new_order = []
             passed = []
             for edge in node.edges_down:
                 if edge.edge_type == g.CONSTITUENT_EDGE and edge.end and \
-                        edge.end.syntactic_object in node.syntactic_object.parts:
-                    new_order.append((correct_order.index(
-                        edge.end.syntactic_object), edge))
+                                edge.end.syntactic_object in node.syntactic_object.parts:
+                    new_order.append((correct_order.index(edge.end.syntactic_object), edge))
                 else:
                     passed.append(edge)
             new_order = [edge for i, edge in sorted(new_order)]
@@ -451,8 +449,8 @@ def verify_edge_order_for_constituent_nodes(node):
     if node.syntactic_object.features and isinstance(node.syntactic_object.features, list):
         #  we assume that if features are in lists, then they are implicitly ordered.
         correct_order = node.syntactic_object.features
-        current_order = [edge.end.syntactic_object for edge in node.edges_down if edge.end
-                         and edge.edge_type == g.FEATURE_EDGE]
+        current_order = [edge.end.syntactic_object for edge in node.edges_down if
+                         edge.end and edge.edge_type == g.FEATURE_EDGE]
         if correct_order != current_order:
             new_order = []
             passed = []
@@ -467,5 +465,3 @@ def verify_edge_order_for_constituent_nodes(node):
                     passed.append(edge)
             new_order = [edge for i, edge in sorted(new_order)]
             node.edges_down = passed + new_order
-
-

@@ -7,17 +7,16 @@ from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 
 
 class QuickEditButton(OverlayButton):
-
     permanent_ui = True
 
     def __init__(self, size=24, color_key='accent3', **kwargs):
         super().__init__(color_key=color_key, **kwargs)
         if isinstance(size, tuple):
-            self.setMinimumSize(size[0]+2, size[1])
-            self.setMaximumSize(size[0]+2, size[1])
+            self.setMinimumSize(size[0] + 2, size[1])
+            self.setMaximumSize(size[0] + 2, size[1])
         else:
-            self.setMinimumSize(size+2, size)
-            self.setMaximumSize(size+2, size)
+            self.setMinimumSize(size + 2, size)
+            self.setMaximumSize(size + 2, size)
 
 
 class QuickEditButtons(UIWidget, QtWidgets.QFrame):
@@ -37,16 +36,16 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons = []
 
         # Left align
-        #self.italic_icon = icon('italic24.png')
-        #self.bold_icon = icon('bold24.png')
-        #self.strikethrough_icon = icon('strikethrough24.png')
-        #self.underline_icon = icon('underline24.png')
-        #self.subscript_icon = icon('align_bottom24.png')
-        #self.superscript_icon = icon('align_top24.png')
-        #self.left_align_icon = icon('align_left24.png')
-        #self.center_align_icon = icon('align_center24.png')
-        #self.right_align_icon = icon('align_right24.png')
-        #self.remove_styles_icon = icon('no_format24.png')
+        # self.italic_icon = icon('italic24.png')
+        # self.bold_icon = icon('bold24.png')
+        # self.strikethrough_icon = icon('strikethrough24.png')
+        # self.underline_icon = icon('underline24.png')
+        # self.subscript_icon = icon('align_bottom24.png')
+        # self.superscript_icon = icon('align_top24.png')
+        # self.left_align_icon = icon('align_left24.png')
+        # self.center_align_icon = icon('align_center24.png')
+        # self.right_align_icon = icon('align_right24.png')
+        # self.remove_styles_icon = icon('no_format24.png')
 
         self.italic = QuickEditButton(action='toggle_italic', parent=self,
                                       pixmap=qt_prefs.italic_icon)
@@ -55,8 +54,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.italic)
         layout.addWidget(self.italic)
 
-        self.bold = QuickEditButton(action='toggle_bold', parent=self,
-                                    pixmap=qt_prefs.bold_icon)
+        self.bold = QuickEditButton(action='toggle_bold', parent=self, pixmap=qt_prefs.bold_icon)
         ui.add_button(self.bold, action='toggle_bold')
         self.bold.setCheckable(True)
         self._left_buttons.append(self.bold)
@@ -103,7 +101,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         for item in self._left_buttons:
             min_width += item.width()
         self.setMinimumWidth(min_width)
-        #self.update_position()
+        # self.update_position()
 
     def connect_to(self, node, doc):
         self.host_node = node
@@ -119,7 +117,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
             scene_pos = self.host_node.scenePos()
             view_pos = self.parentWidget().mapFromScene(scene_pos)
             self.move(view_pos.x() - sh.width() / 2, 36)
-        #self.move(ctrl.ui.top_bar_buttons.left_edge_of_right_buttons() - sh.width() - 8, 36)
+            # self.move(ctrl.ui.top_bar_buttons.left_edge_of_right_buttons() - sh.width() - 8, 36)
 
     def update_formats(self, char_format):
         if char_format != self.current_format:

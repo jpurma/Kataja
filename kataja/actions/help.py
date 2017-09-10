@@ -44,8 +44,8 @@ class Help(KatajaAction):
             found = False
             for cls in inspect.getmro(command.__self__.__class__):
                 if cls.__dict__.get('method', None):
-                    #print('----------------------------')
-                    print('<b>' + cls.k_action_uid + str(inspect.signature(cls.method))+'</b>')
+                    # print('----------------------------')
+                    print('<b>' + cls.k_action_uid + str(inspect.signature(cls.method)) + '</b>')
                     print(f'<i>""" {cls.method.__doc__.replace("    ", " ")} """</i>')
                     found = True
                     break
@@ -66,4 +66,3 @@ class Help(KatajaAction):
                 print(f'<b>{key + sig:.<60}</b> : {command}')
             print('---------------------------------------')
             print('<b>help(method_name)</b> for more information.')
-

@@ -41,7 +41,7 @@ def figure_out_syntactic_label(cn):
         return ''
 
 
-#@time_me
+# @time_me
 def nodes_to_synobjs(forest, syntax, roots: list):
     """ Rebuild syntactic objects based on information in nodes. Understand that this means that
     syntactic objects cannot have data directly set to them -- it will be overwritten or ignored
@@ -55,9 +55,9 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     :return:
     """
 
-    #print('*********************************')
-    #print('**** Nodes to synobjs called ****')
-    #print('*********************************')
+    # print('*********************************')
+    # print('**** Nodes to synobjs called ****')
+    # print('*********************************')
 
     if roots is None:
         roots = []
@@ -164,5 +164,5 @@ def nodes_to_synobjs(forest, syntax, roots: list):
         for checker, checked in checking_features:
             checker.syntactic_object.checks = checked.syntactic_object
 
-    print('visited %s nodes, converted %s nodes to synobjs' % (len(visited_nodes), len(
-        converted_nodes)))
+    print('visited %s nodes, converted %s nodes to synobjs' % (
+        len(visited_nodes), len(converted_nodes)))

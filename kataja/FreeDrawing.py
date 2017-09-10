@@ -30,7 +30,7 @@ from kataja.errors import ForestError
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
-from kataja.saved.movables.Presentation import Image
+from kataja.saved.movables.Image import Image
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
@@ -231,7 +231,6 @@ class FreeDrawing:
         ctrl.select(edge)
         return edge
 
-
     # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
     # here when something is removed from scene, it is made sure that it is
@@ -283,7 +282,7 @@ class FreeDrawing:
             if node.syntactic_object.uid in self.f.nodes_from_synobs:
                 del self.f.nodes_from_synobs[node.syntactic_object.uid]
 
-        assert(node.uid not in self.f.nodes)
+        assert (node.uid not in self.f.nodes)
         # -- check if it is last of its type --
         found = False
         my_type = node.node_type
@@ -452,8 +451,8 @@ class FreeDrawing:
     # These manipulations should be low level operations only called from
     # by forest's higher level methods.
     #
-    def connect_node(self, parent=None, child=None, direction='', edge_type=None,
-                     fade_in=False, extra=None):
+    def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False,
+                     extra=None):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -469,7 +468,7 @@ class FreeDrawing:
         :param fade_in:
         """
 
-        #print('--- connecting node %s to %s ' % (child, parent))
+        # print('--- connecting node %s to %s ' % (child, parent))
         # Check for arguments:
         if parent == child:
             raise ForestError('Connecting to self')
@@ -487,17 +486,14 @@ class FreeDrawing:
                 if old_edge.edge_type == edge_type:
                     if old_edge.end == child and old_edge.start == parent and old_edge.extra == \
                             extra:
-                        #raise ForestError('Identical edge exists already')
+                        # raise ForestError('Identical edge exists already')
                         log.info('Identical edge exists already')
                         return
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
 
         # Create edge and make connections
-        new_edge = self.create_edge(start=parent,
-                                    end=child,
-                                    edge_type=edge_type,
-                                    fade=fade_in,
+        new_edge = self.create_edge(start=parent, end=child, edge_type=edge_type, fade=fade_in,
                                     extra=extra)
         child.poke('edges_up')
         parent.poke('edges_down')
@@ -817,6 +813,7 @@ class FreeDrawing:
 
         :param node:
         """
+
         def wrap_in_qroof(ilines):
             if len(ilines) > 1:
                 parts = []
@@ -838,7 +835,7 @@ class FreeDrawing:
         fold_scope = self.f.list_nodes_once(root)[1:]
         folded = []
         bad_mothers = set()
-        if not fold_scope: # triangle is just visual addition to label
+        if not fold_scope:  # triangle is just visual addition to label
             # some parts in the visual label have to be marked with qroof-tag
             lines = root.label.splitlines()
             if len(lines) < 2:
@@ -868,15 +865,17 @@ class FreeDrawing:
                     folded.append(node)
             else:
                 folded.append(node)
+
         # remember that the branch that couldn't be folded won't allow
         # any of its children to be
         # folded either.
 
-        def _remove_children(bad_mother:Node):
+        def _remove_children(bad_mother: Node):
             for child in bad_mother.get_children(similar=False, visible=False):
                 if child in folded:
                     folded.remove(child)
                     _remove_children(child)
+
         for bm in bad_mothers:
             _remove_children(bm)
 
@@ -937,7 +936,7 @@ class FreeDrawing:
         color_keys = set()
         for group in self.groups.values():
             color_keys.add(group.color_key)
-        for i in range(1,8):
+        for i in range(1, 8):
             if 'accent%s' % i not in color_keys:
                 return 'accent%s' % i
 
@@ -953,8 +952,8 @@ class FreeDrawing:
             parts = [x.strip() for x in deffy.split(',')]
             node = leaves[key]
             for part in parts:
-                if (part.startswith("'") and part.endswith("'")) or \
-                        (part.startswith('"') and part.endswith('"')):
+                if (part.startswith("'") and part.endswith("'")) or (
+                            part.startswith('"') and part.endswith('"')):
                     # gloss node
                     label = part[1:-1]
                     gloss = self.create_gloss_node(label=label, host=node)

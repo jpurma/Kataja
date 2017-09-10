@@ -30,6 +30,7 @@ from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.singletons import ctrl, prefs
 
+
 class GlossNode(Node):
     """
     Node to display translation of a constituent
@@ -42,11 +43,22 @@ class GlossNode(Node):
     display = True
     is_syntactic = False
 
-    editable = {'label': dict(name='Gloss', prefill='gloss',
-                              tooltip='translation (optional)')}
+    editable = {
+        'label': dict(name='Gloss', prefill='gloss', tooltip='translation (optional)')
+    }
 
-    default_style = {'fancy': {'color_id': 'accent5', 'font_id': g.ITALIC_FONT, 'font-size': 10},
-                     'plain': {'color_id': 'accent5', 'font_id': g.ITALIC_FONT, 'font-size': 10}}
+    default_style = {
+        'fancy': {
+            'color_id': 'accent5',
+            'font_id': g.ITALIC_FONT,
+            'font-size': 10
+        },
+        'plain': {
+            'color_id': 'accent5',
+            'font_id': g.ITALIC_FONT,
+            'font-size': 10
+        }
+    }
 
     default_edge = g.GLOSS_EDGE
 

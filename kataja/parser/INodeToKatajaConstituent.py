@@ -1,4 +1,3 @@
-
 __author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.INodes import IParserNode, ITextNode
@@ -43,8 +42,7 @@ class INodeToKatajaConstituent:
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
         self.parser = SuperParser(string)
-        result = [self.inode_to_constituentnode(inode) for inode in
-                  self.parser.nodes]
+        result = [self.inode_to_constituentnode(inode) for inode in self.parser.nodes]
         if len(result) > 1:
             right = result.pop()
             while result:
@@ -128,5 +126,5 @@ class INodeToKatajaConstituent:
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
         # disabled because derivation steps work on constituents, not nodes
-        #f.derivation_steps.save_and_create_derivation_step([cn])
+        # f.derivation_steps.save_and_create_derivation_step([cn])
         return cn

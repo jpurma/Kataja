@@ -48,7 +48,7 @@ class Cut(KatajaAction):
             return True
         elif ctrl.main.app:
             w = ctrl.main.app.focusWidget()
-            #if w:
+            # if w:
             #    print(w)
         return False
 
@@ -127,5 +127,3 @@ class Redo(KatajaAction):
 
     def enabler(self):
         return bool(ctrl.forest and ctrl.forest.undo_manager.can_redo())
-
-

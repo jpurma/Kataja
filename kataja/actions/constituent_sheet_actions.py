@@ -272,7 +272,7 @@ class SetVisibleLabel(KatajaAction):
         """ """
         if node_uid:
             node = ctrl.forest.get_object_by_uid(node_uid)
-            level = g.OBJECT
+            level = g.HIGHEST
         else:
             level = ctrl.ui.active_scope
             node = None

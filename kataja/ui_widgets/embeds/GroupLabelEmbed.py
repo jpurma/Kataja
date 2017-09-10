@@ -20,15 +20,11 @@ class GroupLabelEmbed(UIEmbed):
         smaller_font = qt_prefs.get_font(g.ITALIC_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        self.input_line_edit = ExpandingLineEdit(self,
-                                                 big_font=big_font,
-                                                 smaller_font=smaller_font,
+        self.input_line_edit = ExpandingLineEdit(self, big_font=big_font, smaller_font=smaller_font,
                                                  prefill='label')
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.input_line_edit)
-        label = make_label('Name for the group (optional)',
-                           parent=self,
-                           layout=hlayout,
+        label = make_label('Name for the group (optional)', parent=self, layout=hlayout,
                            tooltip='Group of nodes can be singled out and named, e.g. as phases',
                            buddy=self.input_line_edit)
         layout.addLayout(hlayout)
@@ -36,49 +32,34 @@ class GroupLabelEmbed(UIEmbed):
         self.color_select = ColorSelector(self)
         ui.connect_element_to_action(self.color_select, 'change_group_color')
         hlayout.addWidget(self.color_select, 1, QtCore.Qt.AlignRight)
-        label = make_label('Color',
-                           parent=self,
-                           layout=hlayout,
-                           tooltip='Select color for highlight',
-                           buddy=self.color_select,
+        label = make_label('Color', parent=self, layout=hlayout,
+                           tooltip='Select color for highlight', buddy=self.color_select,
                            align=QtCore.Qt.AlignLeft)
         self.fill_checkbox = QtWidgets.QCheckBox()
         ui.connect_element_to_action(self.fill_checkbox, 'change_group_fill')
         hlayout.addWidget(self.fill_checkbox, 1, QtCore.Qt.AlignRight)
-        label = make_label('Fill',
-                           parent=self,
-                           layout=hlayout,
+        label = make_label('Fill', parent=self, layout=hlayout,
                            tooltip="Group area is marked with translucent color",
-                           buddy=self.fill_checkbox,
-                           align=QtCore.Qt.AlignLeft)
+                           buddy=self.fill_checkbox, align=QtCore.Qt.AlignLeft)
         self.outline_checkbox = QtWidgets.QCheckBox()
         ui.connect_element_to_action(self.outline_checkbox, 'change_group_outline')
         hlayout.addWidget(self.outline_checkbox, 1, QtCore.Qt.AlignRight)
-        label = make_label('Outline',
-                           parent=self,
-                           layout=hlayout,
+        label = make_label('Outline', parent=self, layout=hlayout,
                            tooltip="Group is marked by line drawn around it",
-                           buddy=self.outline_checkbox,
-                           align=QtCore.Qt.AlignLeft)
+                           buddy=self.outline_checkbox, align=QtCore.Qt.AlignLeft)
 
         self.include_children_checkbox = QtWidgets.QCheckBox()
         ui.connect_element_to_action(self.include_children_checkbox, 'change_group_children')
         hlayout.addWidget(self.include_children_checkbox, 1, QtCore.Qt.AlignRight)
-        label = make_label('Include children',
-                           parent=self,
-                           layout=hlayout,
+        label = make_label('Include children', parent=self, layout=hlayout,
                            tooltip="Automatically add child nodes to group's scope",
-                           buddy=self.include_children_checkbox,
-                           align=QtCore.Qt.AlignLeft)
+                           buddy=self.include_children_checkbox, align=QtCore.Qt.AlignLeft)
         self.allow_overlap_checkbox = QtWidgets.QCheckBox()
         ui.connect_element_to_action(self.allow_overlap_checkbox, 'change_group_overlaps')
         hlayout.addWidget(self.allow_overlap_checkbox, 1, QtCore.Qt.AlignRight)
-        label = make_label('Allow groups to overlap',
-                           parent=self,
-                           layout=hlayout,
+        label = make_label('Allow groups to overlap', parent=self, layout=hlayout,
                            tooltip="Can group include members of other group. If not, lower group "
-                                   "has priority",
-                           buddy=self.allow_overlap_checkbox,
+                                   "has priority", buddy=self.allow_overlap_checkbox,
                            align=QtCore.Qt.AlignLeft)
 
         layout.addLayout(hlayout)
@@ -95,8 +76,8 @@ class GroupLabelEmbed(UIEmbed):
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)
         self.setLayout(layout)
-        #self.assumed_width = 200
-        #self.assumed_height = 37
+        # self.assumed_width = 200
+        # self.assumed_height = 37
         self.update_position()
         self.setEnabled(True)
 
@@ -129,4 +110,3 @@ class GroupLabelEmbed(UIEmbed):
 
     def update_position(self, focus_point=None):
         super().update_position(focus_point=focus_point)
-

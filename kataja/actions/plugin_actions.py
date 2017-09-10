@@ -70,8 +70,8 @@ class SwitchPlugin(KatajaAction):
         :param index:
         """
         pass
-        #project = ctrl.main.switch_project(index)
-        #log.info("Switched to project '%s'" % project.name)
+        # project = ctrl.main.switch_project(index)
+        # log.info("Switched to project '%s'" % project.name)
 
 
 class ReloadPlugin(KatajaAction):
@@ -131,4 +131,3 @@ class TogglePlugin(KatajaAction):
             if hasattr(parent, 'refresh_plugin_selection'):
                 parent.refresh_plugin_selection()
         return m
-

@@ -40,8 +40,9 @@ from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 class CreateNewNodeFromText(KatajaAction):
     k_action_uid = 'create_new_node_from_text'
     k_command = 'New node from text'
-    #k_shortcut = 'Return'
-    #k_shortcut_context = 'parent_and_children'
+
+    # k_shortcut = 'Return'
+    # k_shortcut_context = 'parent_and_children'
 
     def prepare_parameters(self, args, kwargs):
         embed = self.get_ui_container()
@@ -52,11 +53,13 @@ class CreateNewNodeFromText(KatajaAction):
         starting_point = int(starting_point.x()), int(starting_point.y())
         focus_point = int(focus_point.x()), int(focus_point.y())
         text = embed.input_line_edit.text()
-        return [focus_point, text], {'starting_point': starting_point, 'node_type': node_type,
-                                     'guess_mode': guess_mode}
+        return [focus_point, text], {
+            'starting_point': starting_point,
+            'node_type': node_type,
+            'guess_mode': guess_mode
+        }
 
-    def method(self, focus_point, text, starting_point=None, node_type=None,
-               guess_mode=True):
+    def method(self, focus_point, text, starting_point=None, node_type=None, guess_mode=True):
 
         """ Create new element according to elements in this embed. Can create
         constituentnodes,
@@ -175,8 +178,9 @@ class RemoveTriangle(KatajaAction):
 class FinishEditingNode(KatajaAction):
     k_action_uid = 'finish_editing_node'
     k_command = 'Save changes to node'
-    #k_shortcut = 'Return'
-    #k_shortcut_context = 'parent_and_children'
+
+    # k_shortcut = 'Return'
+    # k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ Set the new values and close the constituent editing embed.
@@ -275,11 +279,9 @@ class ConnectNode(KatajaAction):
         elif position == 'sibling_right':
             ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=False)
         elif position == 'child_left':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target,
-                                                                  add_left=True)
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target, add_left=True)
         elif position == 'child_right':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target,
-                                                                  add_left=False)
+            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target, add_left=False)
         ctrl.forest.forest_edited()
 
     def drop2(self, dropped_node):
@@ -294,14 +296,11 @@ class ConnectNode(KatajaAction):
         if not dropped_node:
             return
         # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start,
-                                        self.host.end,
-                                        self._align_left,
-                                        self.start_point)
+        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
+                                              self._align_left, self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.end.adjustment
-        message = 'moved node %s to sibling of %s' % (
-            dropped_node, self.host)
+        message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
         ctrl.forest.forest_edited()
         return message
 
@@ -309,6 +308,7 @@ class ConnectNode(KatajaAction):
 class MergeToTop(KatajaAction):
     k_action_uid = 'merge_to_top'
     k_command = 'Merge this node to left of topmost node'
+
     # fixme! also support drag to right
 
     def prepare_parameters(self, args, kwargs):
@@ -347,6 +347,7 @@ class ToggleNodeEditEmbed(KatajaAction):
         """
         node = ctrl.forest.nodes[node_uid]
         ctrl.ui.start_editing_node(node)
+
 
 # Actions resulting from drop events: there may be not UI element connected to them,
 # they are triggered directly in drop events. See TouchAreas
@@ -410,14 +411,11 @@ class InsertNodeBetween(KatajaAction):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
-        assert(self.host.start and self.host.end)
+        assert (self.host.start and self.host.end)
         adjustment = self.host.end.adjustment
         # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node,
-                                              self.host.start,
-                                              self.host.end,
-                                              self._align_left,
-                                              self.start_point)
+        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
+                                              self._align_left, self.start_point)
 
         for node in ctrl.dragged_set:
             node.adjustment = adjustment

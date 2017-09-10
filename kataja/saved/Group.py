@@ -15,7 +15,6 @@ points = 36
 
 
 class Group(SavedObject, QtWidgets.QGraphicsObject):
-
     __qt_type_id__ = next_available_type_id()
     permanent_ui = False
     unique = False
@@ -55,7 +54,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.include_children = False
         self.allow_overlap = True
         self._br = None
-        #self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         if selection:
             self.update_selection(selection)
@@ -193,7 +192,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             else:
                 ctrl.ui.remove_ui_for(self)
 
-
     def add_node(self, node):
         """ Manual addition of single node
         :param node:
@@ -213,15 +211,15 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                 other_selections = other_selections | set(group.selection_with_children)
 
         def recursive_add_children(i):
-            if isinstance(i, Node) and i not in swc and \
-                    (i in selection or i not in other_selections):
+            if isinstance(i, Node) and i not in swc and (
+                            i in selection or i not in other_selections):
                 swc.append(i)
                 for child in i.get_children(similar=False, visible=False):
                     recursive_add_children(child)
 
         if selection:
-            self.selection = [item for item in selection if isinstance(item, Node) and
-                              item.can_be_in_groups]
+            self.selection = [item for item in selection if
+                              isinstance(item, Node) and item.can_be_in_groups]
             if self.include_children:
                 for item in self.selection:
                     recursive_add_children(item)
@@ -236,12 +234,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
         def embellished_corners(item):
             x1, y1, x2, y2 = item.sceneBoundingRect().getCoords()
-            corners = [(x1 - 5, y1 - 5),
-                       (x2 + 5, y1 - 5),
-                       (x2 + 5, y2 + 5),
-                       (x1 - 5, y2 + 5)]
+            corners = [(x1 - 5, y1 - 5), (x2 + 5, y1 - 5), (x2 + 5, y2 + 5), (x1 - 5, y2 + 5)]
 
             return x1, y1, x2, y2, corners
+
         sel = [x for x in self.selection_with_children if x.isVisible()]
 
         if len(sel) == 0:
@@ -296,8 +292,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             deg = 0
             route = []
             for n in range(0, dots):
-                cpx = math.cos(deg)*r + cx
-                cpy = math.sin(deg)*r + cy
+                cpx = math.cos(deg) * r + cx
+                cpy = math.sin(deg) * r + cy
                 deg += step
                 closest = None
                 closest_d = 2000000
@@ -327,7 +323,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         # This is costly
         if True:
             for item in self.collidingItems():
-                if isinstance(item, Node) and item.node_type == g.CONSTITUENT_NODE and item not in \
+                if isinstance(item,
+                              Node) and item.node_type == g.CONSTITUENT_NODE and item not in \
                         self.selection_with_children:
                     x, y = item.current_scene_position
                     subshape = item.shape().translated(x, y)
@@ -365,8 +362,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         start_i = 0
         ppoints = []
         cx, cy = self.center_point
-        better_path = [] # lets have not only corners, but also points along the edges
-        last_element = self.path.elementAt(self.path.elementCount()-1)
+        better_path = []  # lets have not only corners, but also points along the edges
+        last_element = self.path.elementAt(self.path.elementCount() - 1)
         last_x = last_element.x
         last_y = last_element.y
         for i in range(0, self.path.elementCount()):
@@ -425,7 +422,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             if ctrl.dragged_set:
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
-            else: # This is regular click on 'pressed' object
+            else:  # This is regular click on 'pressed' object
                 self.select(event)
                 self.update()
             return None  # this mouseRelease is now consumed
@@ -476,7 +473,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             elif self.outline:
                 painter.setPen(self.color)
                 painter.drawPath(self.path)
-
 
     @staticmethod
     def interpolate_point_with_bezier_curves(points):

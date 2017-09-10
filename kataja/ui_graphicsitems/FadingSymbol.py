@@ -66,12 +66,8 @@ class FadingSymbol(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.ui_manager.remove_ui(self)
         self.is_fading_out = False
 
-
     def boundingRect(self):
         return self.inner.boundingRect()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         return
-
-
-

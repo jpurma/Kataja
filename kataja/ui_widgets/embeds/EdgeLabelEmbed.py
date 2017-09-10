@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtGui
 import kataja.globals as g
 from kataja.singletons import qt_prefs
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from ui_widgets.KatajaLineEdit import KatajaLineEdit
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 __author__ = 'purma'
 
@@ -51,7 +51,7 @@ class EdgeLabelEmbed(UIEmbed):
             self.input_line_edit.setPalette(p)
             f = QtGui.QFont(self.label.get_font())
             f.setPointSize(f.pointSize() * 2)
-            #self.input_line_edit.setFont(f)
+            # self.input_line_edit.setFont(f)
         super().update_embed()
 
     def update_fields(self):
@@ -60,4 +60,3 @@ class EdgeLabelEmbed(UIEmbed):
 
     def update_position(self, focus_point=None):
         super().update_position(focus_point=self.label.scenePos())
-

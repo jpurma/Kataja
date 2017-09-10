@@ -100,9 +100,15 @@ class ChangeEdgeShape(LinesPanelAction):
             for edge in ctrl.get_selected_edges(of_type=edge_type):
                 edge.shape_name = shape_name
                 edge.update_shape()
+                ctrl.settings.flatten_shape_settings_for_edge(edge)
         else:
             ctrl.settings.set_edge_setting('shape_name', shape_name,
                                            edge_type=edge_type, level=level)
+            flat = ctrl.settings.flatten_shape_settings(edge_type)
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.flattened_shape_settings = dict(flat)
+                    edge.flattened_shape_settings.update(edge.settings)
             ctrl.forest.redraw_edges()
         if self.panel:
             self.panel.update_panel()
@@ -155,9 +161,10 @@ class ChangeEdgeColor(LinesPanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        print('change edge color getter: ', self.panel.get_active_edge_setting('color_id') or self.panel.get_active_node_setting('color_id'))
+        print('change edge color getter: ', self.panel.get_active_edge_setting('color_id')
+              or self.panel.get_active_node_setting('color_id'))
         return self.panel.get_active_edge_setting('color_id') or \
-               self.panel.get_active_node_setting('color_id')
+            self.panel.get_active_node_setting('color_id')
 
 
 class EdgeArrowheadStart(LinesPanelAction):
@@ -333,9 +340,8 @@ class LeafShapeX(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.set_leaf_width(value)
         else:
-            ctrl.settings.set_edge_setting('leaf_x', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('leaf_x', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
-
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
@@ -371,7 +377,7 @@ class LeafShapeY(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.set_leaf_height(value)
         else:
-            ctrl.settings.set_edge_setting('leaf_y', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('leaf_y', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -407,7 +413,7 @@ class EdgeThickness(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.set_thickness(value)
         else:
-            ctrl.settings.set_edge_setting('thickness', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('thickness', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -443,7 +449,7 @@ class ChangeEdgeRelativeCurvatureX(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.change_edge_relative_curvature_x(value)
         else:
-            ctrl.settings.set_edge_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -480,8 +486,8 @@ class ChangeEdgeRelativeCurvatureY(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.change_edge_relative_curvature_y(value)
         else:
-            ctrl.settings.set_edge_setting('rel_dy', value * .01, edge_type=edge_type,
-                                           level=level)
+            ctrl.settings.set_shape_setting('rel_dy', value * .01, edge_type=edge_type,
+                                            level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -518,7 +524,7 @@ class ChangeEdgeFixedCurvatureX(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.change_edge_fixed_curvature_x(value)
         else:
-            ctrl.settings.set_edge_setting('fixed_dx', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('fixed_dx', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -555,7 +561,7 @@ class ChangeEdgeFixedCurvatureY(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.change_edge_fixed_curvature_y(value)
         else:
-            ctrl.settings.set_edge_setting('fixed_dy', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('fixed_dy', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -592,9 +598,8 @@ class EdgeShapeFill(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.set_fill(value)
         else:
-            ctrl.settings.set_edge_setting('fill', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('fill', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
-
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
@@ -629,7 +634,7 @@ class EdgeShapeLine(LinesPanelAction):
             for edge in ctrl.get_selected_edges():
                 edge.set_outline(value)
         else:
-            ctrl.settings.set_edge_setting('outline', value, edge_type=edge_type, level=level)
+            ctrl.settings.set_shape_setting('outline', value, edge_type=edge_type, level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):

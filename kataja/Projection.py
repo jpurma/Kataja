@@ -27,7 +27,7 @@ class Projection:
         super().__init__()
         self.color_id, self.color_tr_id = rotating_colors[rotator]
         self.style = g.NO_PROJECTIONS
-        self.head = head # head in a projection is head node, not syntactic object
+        self.head = head  # head in a projection is head node, not syntactic object
         self.chains = chains or []
         self.visual = None
         self._changes = False
@@ -105,7 +105,7 @@ class Projection:
                     if i == last:
                         node.autolabel = self.base_label + 'P'
                     elif i == 0:
-                        node.autolabel = node.label # self.base_label
+                        node.autolabel = node.label  # self.base_label
 
                     else:
                         node.autolabel = self.base_label + '´'

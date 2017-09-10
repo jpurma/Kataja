@@ -8,7 +8,7 @@ from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
-from ui_widgets.KatajaLineEdit import KatajaLineEdit
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -58,7 +58,7 @@ class NodeEditEmbed(UIEmbed):
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
             d = ed.get(field_name, {})
-            #if d.get('hidden', False) or not self.host.check_conditions(d):
+            # if d.get('hidden', False) or not self.host.check_conditions(d):
             #    continue
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
@@ -89,10 +89,8 @@ class NodeEditEmbed(UIEmbed):
                 field.setFixedWidth(min(w, max_w))
                 self.resize_target = field
             elif itype == 'expandingtext':
-                field = ExpandingTextArea(self,
-                                          tip=tt,
-                                          font=smaller_font,
-                                          prefill=prefill, on_edit=on_edit)
+                field = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill=prefill,
+                                          on_edit=on_edit)
                 template_width = d.get('width', 0)
                 if template_width:
                     field.setFixedWidth(template_width)
@@ -180,7 +178,7 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, field_name, '')
             if 'enabler' in d:
                 enabled = getattr(self.host, d['enabler'])()
-                field.setEnabled(bool(enabled) )
+                field.setEnabled(bool(enabled))
             itype = d.get('input_type', 'text')
             if itype == 'expandingtext':
                 value = as_html(value)

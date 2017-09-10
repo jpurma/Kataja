@@ -63,9 +63,8 @@ class ShapeSelector(TableModelSelectionBox):
             scope = ctrl.ui.get_active_scope()
             if scope == g.SELECTION:
                 scope = g.HIGHEST
-            color_id = ctrl.settings.get_node_setting('color_id', node_type=node_type,
-                                                      level=scope)
-        return ctrl.cm.get(color_id)
+            c_id = ctrl.settings.get_node_setting('color_id', node_type=node_type, level=scope)
+        return ctrl.cm.get(c_id)
 
     def update_colors(self):
         m = self.model()

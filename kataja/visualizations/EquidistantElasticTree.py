@@ -68,8 +68,8 @@ class EquidistantElasticTree(BaseVisualization):
         :param other_nodes:
         :return:
         """
-        assert(not node.locked_to_node)
-        assert(node.is_visible() and node.isVisible())
+        assert (not node.locked_to_node)
+        assert (node.is_visible() and node.isVisible())
 
         xvel = 0.0
         yvel = 0.0
@@ -139,7 +139,3 @@ class EquidistantElasticTree(BaseVisualization):
             xvel += node_x * -0.02
             yvel += node_y * -0.02
         return round(xvel), round(yvel)
-
-
-
-

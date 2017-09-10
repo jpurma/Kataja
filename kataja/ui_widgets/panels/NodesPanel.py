@@ -62,16 +62,14 @@ class NodesPanel(Panel):
                 self.sheets.append(sheet)
                 frame.sheet = sheet
             frame.set_folded(frame.folded)  # updates sheet visibility
-        self.reset_button = PanelButton(parent=outer,
-                                        text='reset',
-                                        action='reset_settings',
-                                        ).to_layout(olayout, align=QtCore.Qt.AlignRight)
+        self.reset_button = PanelButton(parent=outer, text='reset',
+                                        action='reset_settings', ).to_layout(olayout,
+                                                                             align=QtCore.Qt.AlignRight)
         self.reset_button.setMinimumHeight(14)
         self.reset_button.setMaximumHeight(14)
 
         self.setWidget(outer)
         self.finish_init()
-
 
     def get_font_dialog(self, node_type):
         """ If there are font dialogs open, they are attached to font_selectors in node frames.
@@ -93,13 +91,12 @@ class NodesPanel(Panel):
             if sheet.key == node_type:
                 return sheet
 
-
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use
         selection as scope
         :return:
         """
-        #self.frame.update_frame()
+        # self.frame.update_frame()
 
     def update_colors(self):
         for frame in self.frames:

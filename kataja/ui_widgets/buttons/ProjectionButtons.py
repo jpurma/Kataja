@@ -4,8 +4,8 @@ from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
-class ProjectionButton(PushButtonBase):
 
+class ProjectionButton(PushButtonBase):
     def __init__(self, value, **kwargs):
         PushButtonBase.__init__(self, **kwargs)
         self.setCheckable(True)
@@ -66,8 +66,8 @@ class ProjectionButtons(QtWidgets.QWidget):
                 continue
             text = ', '.join([x.short_str() for x in child_heads])
             tt = f'project from {child_heads}'
-            checked = current_heads and (child_heads == current_heads or child_heads in
-                      current_heads)
+            checked = current_heads and (
+                child_heads == current_heads or child_heads in current_heads)
             button = ProjectionButton(child.uid, text=text, tooltip=tt)
             button.setChecked(checked)
             button.setEnabled(bool(child_heads))
@@ -75,4 +75,3 @@ class ProjectionButtons(QtWidgets.QWidget):
             self.my_layout.addWidget(button)
             self.empty = False
             button.setMinimumHeight(40)
-

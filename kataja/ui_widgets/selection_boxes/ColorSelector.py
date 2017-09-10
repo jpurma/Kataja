@@ -47,7 +47,6 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         self.grad.setColorAt(0.75, QtGui.QColor.fromHsv(90, 255, 255))
         self.grad.setColorAt(1.0, QtGui.QColor.fromHsv(0, 255, 255))
 
-
     # @caller
     def paint(self, painter, rect, mode, state):
         """
@@ -80,8 +79,8 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
             painter.drawRoundedRect(rect, 2, 2)
             painter.setBrush(ctrl.cm.paper2())
             painter.setPen(QtCore.Qt.NoPen)
-            painter.drawEllipse(rect.left() + 2, rect.top() + 2, rect.width() - 4, rect.height()
-                                - 4)
+            painter.drawEllipse(rect.left() + 2, rect.top() + 2, rect.width() - 4,
+                                rect.height() - 4)
 
 
 class LineColorIcon(QtGui.QIcon):
@@ -96,13 +95,15 @@ class LineColorIcon(QtGui.QIcon):
 
 
 class ColorSelector(TableModelSelectionBox):
-
     def __init__(self, **kwargs):
         TableModelSelectionBox.__init__(self, **kwargs)
         self.setIconSize(QSize(16, 16))
         self.setMinimumWidth(24)
         self.setMaximumWidth(24)
-        self.setStyleSheet(stylesheet % {'current': 'transparent', 'lighter': 'transparent'})
+        self.setStyleSheet(stylesheet % {
+            'current': 'transparent',
+            'lighter': 'transparent'
+        })
         self.color_items = []
         model = self.model()
         for c in color_keys:
@@ -112,10 +113,8 @@ class ColorSelector(TableModelSelectionBox):
             item.k_tooltip = c
             self.color_items.append(item)
         view = QtWidgets.QTableView()
-        self.table = [self.color_items[0:5] + self.color_items[21:24],
-                      self.color_items[5:13],
-                      self.color_items[13:21],
-                      self.color_items[24:31]]  # + [add_item]
+        self.table = [self.color_items[0:5] + self.color_items[21:24], self.color_items[5:13],
+                      self.color_items[13:21], self.color_items[24:31]]  # + [add_item]
         model.clear()
         self.selected_color = 'content1'
         self.default_color = 'content1'
@@ -135,7 +134,7 @@ class ColorSelector(TableModelSelectionBox):
         """
         :param data:
         """
-        #print('select by data: ', self, data)
+        # print('select by data: ', self, data)
         super().select_by_data(data)
         self.selected_color = data
 
@@ -157,8 +156,10 @@ class ColorSelector(TableModelSelectionBox):
             if (not wheel) or not wheel.isVisible():
                 ctrl.ui.toggle_panel('ColorWheelPanel')
         self.update_color_dialog()
-        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name(),
-                           'lighter': ctrl.cm.get(color_key).lighter().name()})
+        self.setStyleSheet(stylesheet % {
+            'current': ctrl.cm.get(color_key).name(),
+            'lighter': ctrl.cm.get(color_key).lighter().name()
+        })
         return color_key
 
     def update_color_dialog(self):
@@ -169,8 +170,10 @@ class ColorSelector(TableModelSelectionBox):
             wheel.raise_()
 
     def set_color(self, color_key):
-        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name(),
-                           'lighter': ctrl.cm.get(color_key).lighter().name()})
+        self.setStyleSheet(stylesheet % {
+            'current': ctrl.cm.get(color_key).name(),
+            'lighter': ctrl.cm.get(color_key).lighter().name()
+        })
         self.select_by_data(color_key)
 
     def showEvent(self, event):

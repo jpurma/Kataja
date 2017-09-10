@@ -1,15 +1,20 @@
 from kataja.singletons import ctrl
 import copy
 
-from kataja.Shapes import SHAPE_PRESETS, SHAPE_DEFAULTS
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.utils import time_me
 from kataja.saved.movables.Node import Node
 from kataja.saved.Edge import Edge
 from kataja.globals import HIGHEST, FOREST, DOCUMENT, PREFS, OBJECT, SELECTION
 from collections import ChainMap
 
+chain_level = {
+    FOREST: 0,
+    DOCUMENT: 1,
+    PREFS: 2
+}
 
-chain_level = {FOREST: 0, DOCUMENT: 1, PREFS: 2}
+
 
 class Settings:
     """ Settings is a class that gathers user preferences, document settings and forest settings in
@@ -53,7 +58,7 @@ class Settings:
         self.document_chain = ChainMap({}, {})
         self.forest_chain = self.document_chain.new_child()
         # These are dicts that hold the property chains for subtypes of nodes, edges and shapes
-        self.shape_type_chains = {}
+        self.flat_shape_settings = {}
         self.node_type_chains = {}
         self.edge_type_chains = {}
 
@@ -72,10 +77,7 @@ class Settings:
             else:
                 self.edge_type_chains[key].maps[-1] = edge_settings
             shape_name = edge_settings['shape_name']
-            if key not in self.shape_type_chains:
-                self.shape_type_chains[key] = ChainMap({}, {}, SHAPE_PRESETS[shape_name].defaults)
-            else:
-                self.shape_type_chains[key].maps[-1] = SHAPE_PRESETS[shape_name].defaults
+            self.flat_shape_settings[key] = dict(SHAPE_PRESETS[shape_name].defaults)
 
     def set_ui_manager(self, ui_manager):
         self.ui = ui_manager
@@ -92,7 +94,12 @@ class Settings:
         for key in self.edge_type_chains.keys():
             document_edge_settings = edge_types.get(key, {})
             self.edge_type_chains[key].maps[1] = document_edge_settings
-            self.shape_type_chains[key].maps[1] = document_edge_settings
+            shape_name = self.get_edge_setting('shape_name', edge_type=key, level=DOCUMENT)
+            shape = SHAPE_PRESETS[shape_name]
+            chain_parts = self.edge_type_chains[key].maps
+            flat = dict(shape.defaults)
+            flat.update(chain_parts[1])
+            self.flat_shape_settings[key] = flat
 
     def set_forest(self, forest):
         self.forest = forest
@@ -104,10 +111,17 @@ class Settings:
         for key in self.edge_type_chains.keys():
             forest_edge_settings = edge_types.get(key, {})
             self.edge_type_chains[key].maps[0] = forest_edge_settings
-            self.shape_type_chains[key].maps[0] = forest_edge_settings
+            shape_name = self.get_edge_setting('shape_name', edge_type=key, level=FOREST)
+            shape = SHAPE_PRESETS[shape_name]
+            chain_parts = self.edge_type_chains[key].maps
+            flat = dict(shape.defaults)
+            flat.update(chain_parts[1])
+            flat.update(chain_parts[0])
+            self.flat_shape_settings[key] = flat
+        for edge in forest.edges.values():
+            self.flatten_shape_settings_for_edge(edge)
 
-
-    #@time_me
+    # @time_me
     def get(self, key, level=HIGHEST, obj=None):
         if level == SELECTION:
             level = HIGHEST
@@ -129,8 +143,6 @@ class Settings:
         :param value:
         :param level:
         :param obj:
-        :param override: if true, delete value from layers above this. e.g. if you set value in
-         DOCUMENT level, remove same value from FOREST and objects.
         :return:
         """
         if level == OBJECT:
@@ -155,7 +167,6 @@ class Settings:
 
         Deleting a value in a level causes one to use one from the next level.
         :param key:
-        :param value:
         :param level:
         :param obj:
         :return:
@@ -183,7 +194,7 @@ class Settings:
     # dict remains the same: we shouldn't have missing dicts for certain edge types in
     # intermediate levels.
 
-    #@time_me
+    # @time_me
 
     @staticmethod
     def set_in_container(key, value, container, dict_name, subtype, level, chain):
@@ -199,10 +210,9 @@ class Settings:
         chain[subtype].maps[chain_level[level]] = level_dict[subtype]
 
     @staticmethod
-    def del_in_container(key, container, dict_name, subtype, level):
-        if dict_name in container.settings and \
-                        subtype in container.settings[dict_name] and \
-                        key in container.settings[dict_name][subtype]:
+    def del_in_container(key, container, dict_name, subtype):
+        if dict_name in container.settings and subtype in container.settings[dict_name] and key in \
+                container.settings[dict_name][subtype]:
             container.poke('settings')
             del container.settings[dict_name][subtype][key]
 
@@ -228,13 +238,13 @@ class Settings:
             if key in my_map:
                 return my_map[key]
 
-    def set_edge_setting(self, key, value, edge_type=None, obj=None, level=OBJECT):
-        #print('set_edge_setting ', key, value, edge_type, obj, level)
-        if not (obj or edge_type):
+    def set_edge_setting(self, key, value, edge_type=None, edge=None, level=OBJECT):
+        # print('set_edge_setting ', key, value, edge_type, obj, level)
+        if not (edge or edge_type):
             raise ValueError
-        if obj:
-            obj.poke('settings')
-            obj.settings[key] = value
+        if edge:
+            edge.poke('settings')
+            edge.settings[key] = value
         elif level == FOREST:
             self.set_in_container(key, value, self.forest, 'edges', edge_type, level,
                                   self.edge_type_chains)
@@ -243,11 +253,12 @@ class Settings:
                                   self.edge_type_chains)
         elif level == PREFS:
             if subtype not in self.prefs.edges:
-                self.prefs.edges[edge_type] = {key: value}
+                self.prefs.edges[edge_type] = {
+                    key: value
+                }
             else:
                 self.prefs.edges[edge_type][key] = value
             self.edge_type_chains[edge_type].maps[2] = self.prefs.edges[edge_type]
-
 
     def del_edge_setting(self, key, edge_type=None, obj=None, level=OBJECT):
         if not (obj or edge_type):
@@ -256,29 +267,24 @@ class Settings:
             obj.poke('settings')
             del obj.settings[key]
         elif level == FOREST:
-            self.del_in_container(value, self.forest, 'edges', edge_type, level)
+            self.del_in_container(value, self.forest, 'edges', edge_type)
         elif level == DOCUMENT:
-            self.del_in_container(value, self.document, 'edges', edge_type, level)
+            self.del_in_container(value, self.document, 'edges', edge_type)
         else:
-            if edge_type in self.prefs.edges and \
-                    key in self.prefs.edges[edge_type]:
+            if edge_type in self.prefs.edges and key in self.prefs.edges[edge_type]:
                 del self.prefs.edges[edge_type][key]
 
     def reset_edge_setting(self, edge_type=None, obj=None, level=OBJECT):
         if not (obj or edge_type):
             raise ValueError
-        if obj and obj.settings: # Note that this removes *all* object-level settings.
+        if obj and obj.settings:  # Note that this removes *all* object-level settings.
             obj.poke('settings')
             obj.settings = {}
         elif level == FOREST:
             self.reset_in_container(self.forest, 'edges', edge_type, level, self.edge_type_chains)
         elif level == DOCUMENT:
             self.reset_in_container(self.document, 'edges', edge_type, level, self.edge_type_chains)
-
-
-   # Node settings are stored directly in Node.settings, but in settings['nodes'][node_type]
-    # in layers below.
-
+            # Node settings are stored in Node.settings, at settings['nodes'][node_type]
 
     def get_node_setting(self, key, node_type=None, node=None, level=HIGHEST):
         if node:
@@ -308,7 +314,9 @@ class Settings:
                                   self.node_type_chains)
         elif level == PREFS:
             if subtype not in self.prefs.nodes:
-                self.prefs.nodes[node_type] = {key: value}
+                self.prefs.nodes[node_type] = {
+                    key: value
+                }
             else:
                 self.prefs.nodes[node_type][key] = value
             self.node_type_chains[node_type].maps[2] = self.prefs.nodes[node_type]
@@ -320,18 +328,17 @@ class Settings:
             obj.poke('settings')
             del obj.settings[key]
         elif level == FOREST:
-            self.del_in_container(value, self.forest, 'nodes', node_type, level)
+            self.del_in_container(value, self.forest, 'nodes', node_type)
         elif level == DOCUMENT:
-            self.del_in_container(value, self.document, 'nodes', node_type, level)
+            self.del_in_container(value, self.document, 'nodes', node_type)
         else:
-            if node_type in self.prefs.nodes and \
-                    key in self.prefs.nodes[node_type]:
+            if node_type in self.prefs.nodes and key in self.prefs.nodes[node_type]:
                 del self.prefs.nodes[node_type][key]
 
     def reset_node_setting(self, node_type=None, obj=None, level=OBJECT):
         if not (obj or node_type):
             raise ValueError
-        if obj and obj.settings: # Note that this removes *all* object-level settings.
+        if obj and obj.settings:  # Note that this removes *all* object-level settings.
             obj.poke('settings')
             obj.settings = {}
         elif level == FOREST:
@@ -340,34 +347,78 @@ class Settings:
             self.reset_in_container(self.document, 'nodes', node_type, level, self.node_type_chains)
 
     def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
-        #print('get_shape_setting ', key, edge_type, edge, level)
+        # print('get_shape_setting ', key, edge_type, edge, level)
+        if level == HIGHEST and edge:
+            return edge.get_shape_setting(key)
         if edge:
             edge_type = edge.edge_type
-        if level == HIGHEST or level == OBJECT:
-            if edge:
-                return edge.shape_settings_chain[key]
-            elif self.shape_type_chains:
-                return self.shape_type_chains[edge_type][key]
-        for my_map in self.shape_type_chains[edge_type].maps[chain_level[level]:]:
-            if key in my_map:
-                return my_map[key]
+        if level == HIGHEST or level == FOREST:
 
-    def remove_all_shape_settings(self, edge, shape_name):
-        keys = SHAPE_PRESETS[shape_name].defaults.keys()
-        chain = self.shape_type_chains[edge.edge_type]
-        for key in keys:
-            if key in edge.settings:
-                edge.poke('settings')
-                del edge.settings[key]
-            if key in chain.maps[0]:
-                self.forest.poke('settings')
-                del chain.maps[0][key]
-            if key in chain.maps[1]:
-                self.document.poke('settings')
-                del chain.maps[1][key]
+            return self.flat_shape_settings[edge_type][key]
+        elif level == DOCUMENT:
+            if key in self.edge_type_chains[edge_type].maps[chain_level[DOCUMENT]]:
+                return self.edge_type_chains[edge_type].maps[chain_level[DOCUMENT]][key]
+        shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=level)
+        return SHAPE_PRESETS[shape_name].defaults[key]
 
-    def get_flattened_shape_settings(self, edge):
-        return dict(edge.shape_settings_chain)
+    @time_me
+    def set_shape_setting(self, key, value, edge_type=None, edge=None, level=HIGHEST):
+        if level != PREFS:
+            self.set_edge_setting(key, value, edge_type=edge_type, edge=edge, level=level)
+        else:
+            pass
+        flat = self.flatten_shape_settings(edge_type)
+        for edge in ctrl.forest.edges.values():
+            if edge.edge_type == edge_type:
+                edge.flattened_shape_settings = dict(flat)
+                edge.flattened_shape_settings.update(edge.settings)
+
+    def flatten_shape_settings_for_edge(self, edge):
+        shape_settings = dict(self.flat_shape_settings[edge.edge_type])
+        shape_settings.update(edge.settings)
+        edge.flattened_shape_settings = shape_settings
+        return shape_settings
+
+    @time_me
+    def flatten_shape_settings(self, edge_type):
+        shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=HIGHEST)
+        shape = SHAPE_PRESETS[shape_name]
+        chain_parts = self.edge_type_chains[edge_type].maps
+        flattened = dict(shape.defaults)
+        flattened.update(chain_parts[1])
+        flattened.update(chain_parts[0])
+        self.flat_shape_settings[edge_type] = flattened
+        print(flattened)
+        return flattened
+
+    @time_me
+    def o_flatten_shape_settings(self, edge_type):
+        shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=level)
+        shape = SHAPE_PRESETS[shape_name]
+        chain_parts = self.edge_type_chains[edge_type].maps
+        return dict(ChainMap(chain_parts[0], chain_parts[1], shape.defaults))
+
+# def remove_all_shape_settings(self, edge=None, edge_type=None):
+    #     if edge:
+    #         edge_type = edge.edge_type
+    #         shape_name = edge.shape_name
+    #         edges = [edge]
+    #     elif edge_type:
+    #         shape_name = self.get_edge_setting('shape_name')
+    #         edges = [e for e in ctrl.forest.edges.values() if e.edge_type == edge_type]
+    #     keys = SHAPE_PRESETS[shape_name].defaults.keys()
+    #     chain = self.shape_type_chains[edge_type]
+    #     for key in keys:
+    #         for ed in edges:
+    #             if key in ed.settings:
+    #                 ed.poke('settings')
+    #                 del ed.settings[key]
+    #         if key in chain.maps[0]:
+    #             self.forest.poke('settings')
+    #             del chain.maps[0][key]
+    #         if key in chain.maps[1]:
+    #             self.document.poke('settings')
+    #             del chain.maps[1][key]
 
     def get_active_setting(self, key):
         """ Shortcut for get(key, obj=None, level=ctrl.ui.active_scope)
@@ -381,7 +432,6 @@ class Settings:
         are settings made in node level, return first of such occurence.
         :param key:
         :param of_type:
-        :param level:
         :return:
         """
         if self.ui.scope_is_selection:

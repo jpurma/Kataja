@@ -4,8 +4,8 @@ from syntax.SyntaxConnection import SyntaxConnection
 from mgtdbpE.Parser import load_grammar, Parser
 from mgtdbpE.OutputTrees import StateTree, BareTree, TracelessXBarTree
 
-
 DERIVATION_TREE, STATE_TREE, BARE_TREE, XBAR_TREE = 0, 1, 2, 3
+
 
 class KSyntaxConnection(SyntaxConnection):
     role = "SyntaxConnection"

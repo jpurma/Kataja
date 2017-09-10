@@ -67,6 +67,7 @@ class LI:
     def __eq__(self, other):
         return self.sem == other.sem and self.syn == other.syn and self.phon == other.phon
 
+
 class Lexicon:
     def __init__(self, lexicon=None):
         """ Definition 3: A lexicon is a finite set of lexical items
@@ -120,8 +121,8 @@ class LexicalArray:
 def is_syntactic_object(x):
     """Definition 7: X is a syntactic object iff (i) X is a lexical item token, or (ii) X is a
     set of syntactic objects """
-    return isinstance(x, LIToken) or (isinstance(x, set) and
-                                      all([isinstance(y, LIToken) for y in x]))
+    return isinstance(x, LIToken) or (
+        isinstance(x, set) and all([isinstance(y, LIToken) for y in x]))
 
 
 def immediately_contains(a, b):
@@ -149,6 +150,7 @@ def contains(a, b):
                 return True
     return False
 
+
 def position(a, in_b):
     """ Definition 16: The position of SO_n in SO_1 is a path, a sequence of syntactic objects (
     SO_1, SO_2, ...., SO_n) where for all 0 < i < n, SO_i+1 \in SO_i.
@@ -158,6 +160,7 @@ def position(a, in_b):
     :param in_b:
     :return:
     """
+
     def add_path(item):
         if a == item:
             return True
@@ -171,7 +174,8 @@ def position(a, in_b):
 
     path = []
     add_path(in_b)
-    #return path
+
+    # return path
 
     def check_path(item):
         if a == item:
@@ -185,7 +189,6 @@ def position(a, in_b):
                     pass
 
         return False
-
 
     path = []
     check_path(in_b)
@@ -290,6 +293,3 @@ class Derivation:
                     return False
             prev_stage = stage
         return True
-
-
-

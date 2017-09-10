@@ -23,7 +23,9 @@ def as_html(item, omit_triangle=False, include_index='') -> str:
     elif isinstance(item, ITextNode):
         h = item.as_html(omit_triangle=omit_triangle)
     else:
-        h = html.escape(item).replace('\n', '<br/>\n').replace('\r', '<br/>\r').\
+        h = html.escape(item).\
+            replace('\n', '<br/>\n').\
+            replace('\r', '<br/>\r').\
             replace('  ', ' &nbsp;')
     if include_index:
         index_html = f'<sub>{include_index}</sub>'
@@ -115,8 +117,6 @@ def remove_triangle(item):
                 break
             else:
                 remove_triangle(part)
-
-
 
 
 def join_lines(lines):
@@ -499,7 +499,7 @@ class ICommandNode(ITextNode):
 
     def _as_latex(self, s, after_math=False, inside_math=False):
         command = self.command
-        if command: # in command_to_latex:
+        if command:  # in command_to_latex:
             in_math = False
             if self.requires_math_mode():
                 if not (after_math or inside_math):
@@ -526,7 +526,7 @@ class ICommandNode(ITextNode):
 
     def _as_editable_latex(self, s):
         command = self.command
-        if command: # in command_to_latex:
+        if command:  # in command_to_latex:
             if command in command_to_latex:
                 command = command_to_latex[command]
             if command and self.parts:
@@ -648,6 +648,7 @@ class IParserNode(ITextNode):
         """ Tries to find value for index from within this parsernode. Saves it to self.index
         :return:
         """
+
         def find_index(part):
             if isinstance(part, ICommandNode) and part.command == 'sub':
                 return as_text(part, omit_outmost=True)
@@ -673,10 +674,10 @@ class IParserNode(ITextNode):
         :param keep_node:
         :return:
         """
-        #print('tidying parsernode')
-        #t = ITextNode.tidy(self, keep_node=True)
-        #print(repr(t.label_rows))
-        #return t
+        # print('tidying parsernode')
+        # t = ITextNode.tidy(self, keep_node=True)
+        # print(repr(t.label_rows))
+        # return t
         return ITextNode.tidy(self, keep_node=True)
 
     def is_plain_string(self):
@@ -688,4 +689,3 @@ class IParserNode(ITextNode):
     def __repr__(self):
         return f'IParserNode(parts={self.parts}, label_rows={self.label_rows}, ' \
                f'index={repr(self.index)})'
-

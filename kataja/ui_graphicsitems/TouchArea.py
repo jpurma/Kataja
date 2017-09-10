@@ -233,7 +233,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             return False
 
     def accepts_drops(self, dragged):
-        return self.drop_action #and self.calculate_if_can_merge(dragged, None, None)
+        return self.drop_action  # and self.calculate_if_can_merge(dragged, None, None)
 
     @property
     def hovering(self):
@@ -833,83 +833,85 @@ class AbstractJointedTouchArea(TouchArea):
         if not self.end_point:
             self.update_end_points()
             assert self.end_point
-        return self._path.controlPointRect()\
-            .united(LEAF_BR)\
-            .united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+        return self._path.controlPointRect().united(LEAF_BR).\
+            united(PLUS_BR.translated(1.2 * symbol_radius, 0))
 
-    def shape(self):
-        """ Shape is used for collisions and it shouldn't go over the originating node. So use
+
+def shape(self):
+    """ Shape is used for collisions and it shouldn't go over the originating node. So use
         only the last half, starting from the "knee" of the shape.
         :return:
         """
-        path = QtGui.QPainterPath()
-        # Bounding rect that includes the tail and end spot ellipse
-        sx, sy = self.start_point
-        ex, ey = self.end_point
+    path = QtGui.QPainterPath()
+    # Bounding rect that includes the tail and end spot ellipse
+    sx, sy = self.start_point
+    ex, ey = self.end_point
 
-        sx -= ex
-        sy -= ey
-        sx /= 2.0
-        ex, ey = 0, 0
-        e2 = symbol_radius_sqr * 2
-        if sx < ex:
-            w = max((ex - sx + symbol_radius_sqr, e2))
-            x = min((sx, ex - symbol_radius_sqr))
-        else:
-            w = max((sx - ex + symbol_radius_sqr, e2))
-            x = ex - symbol_radius_sqr
-        if sy < ey:
-            h = max((ey - sy + symbol_radius_sqr, e2))
-            y = min((sy, ey - symbol_radius_sqr))
-        else:
-            h = max((sy - ey + symbol_radius_sqr, e2))
-            y = ey - symbol_radius_sqr
-        r = QtCore.QRectF(x, y, w, h)
-        path.addRect(r)
-        return path
+    sx -= ex
+    sy -= ey
+    sx /= 2.0
+    ex, ey = 0, 0
+    e2 = symbol_radius_sqr * 2
+    if sx < ex:
+        w = max((ex - sx + symbol_radius_sqr, e2))
+        x = min((sx, ex - symbol_radius_sqr))
+    else:
+        w = max((sx - ex + symbol_radius_sqr, e2))
+        x = ex - symbol_radius_sqr
+    if sy < ey:
+        h = max((ey - sy + symbol_radius_sqr, e2))
+        y = min((sy, ey - symbol_radius_sqr))
+    else:
+        h = max((sy - ey + symbol_radius_sqr, e2))
+        y = ey - symbol_radius_sqr
+    r = QtCore.QRectF(x, y, w, h)
+    path.addRect(r)
+    return path
 
-    def drag(self, event):
-        self._dragging = True
-        self.update_end_points(end_point=to_tuple(event.scenePos()))
 
-    def update_end_points(self, end_point=None):
-        """
+def drag(self, event):
+    self._dragging = True
+    self.update_end_points(end_point=to_tuple(event.scenePos()))
+
+
+def update_end_points(self, end_point=None):
+    """
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
-        shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and \
-                          ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
-        sx, sy = self.host.magnet(2)
-        self.start_point = sx, sy
-        h2 = self.host.__class__.height / 2
-        cw = self.host.__class__.width
-        hw_ratio = float(prefs.edge_height - h2) / (prefs.edge_width or 1)
-        if not end_point:
-            good_width = max((prefs.edge_width * 2, self.host.width / 2 + cw))
-            if self._align_left:
-                self.end_point = sx - good_width, sy
-            else:
-                self.end_point = sx + good_width, sy
-        self.setPos(self.end_point[0], self.end_point[1])
-
-        sx, sy = self.start_point
-        ex, ey = self.end_point
-        sx -= ex
-        sy -= ey
-        ex, ey = 0, 0
-        line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
-        adjust = []
+    shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+    shape = SHAPE_PRESETS[shape_name]
+    self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                         edge_type=g.CONSTITUENT_EDGE)
+    sx, sy = self.host.magnet(2)
+    self.start_point = sx, sy
+    h2 = self.host.__class__.height / 2
+    cw = self.host.__class__.width
+    hw_ratio = float(prefs.edge_height - h2) / (prefs.edge_width or 1)
+    if not end_point:
+        good_width = max((prefs.edge_width * 2, self.host.width / 2 + cw))
         if self._align_left:
-            path1 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
-            path1.moveTo(sx, sy)
-            path2 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
+            self.end_point = sx - good_width, sy
         else:
-            path1 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
-            path1.moveTo(ex, ey)
-            path2 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
-        self._path = path1 | path2
+            self.end_point = sx + good_width, sy
+    self.setPos(self.end_point[0], self.end_point[1])
+
+    sx, sy = self.start_point
+    ex, ey = self.end_point
+    sx -= ex
+    sy -= ey
+    ex, ey = 0, 0
+    line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
+    adjust = []
+    if self._align_left:
+        path1 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
+        path1.moveTo(sx, sy)
+        path2 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
+    else:
+        path1 = shape.path(line_middle_point, (ex, ey), adjust, g.BOTTOM, g.TOP)[0]
+        path1.moveTo(ex, ey)
+        path2 = shape.path(line_middle_point, (sx, sy), adjust, g.BOTTOM, g.TOP)[0]
+    self._path = path1 | path2
 
 
 class LeftAddTop(AbstractJointedTouchArea):
@@ -1042,8 +1044,8 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         """
         shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and \
-                          ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                             edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(7)
         self.start_point = sx, sy
         if end_point:
@@ -1143,8 +1145,8 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         """
         shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and \
-                          ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
+                                                                             edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(11)
         self.start_point = sx, sy
         if end_point:

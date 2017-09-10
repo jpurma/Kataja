@@ -356,9 +356,6 @@ class Grid:
     def __iter__(self):
         return self.rows.__iter__()
 
-    def __len__(self):
-        return len(self.rows)
-
 # def _closestDistance(nodeA, nodeB,Ax,Ay):
 # nodeAx=Ax or nodeA.pos_tuple[0]
 # nodeAy=Ay or nodeA.pos_tuple[1]

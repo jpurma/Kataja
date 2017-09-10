@@ -7,6 +7,7 @@ from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 
+
 class DraggableMergeFrame(QtWidgets.QFrame):
     def __init__(self, parent=None):
         QtWidgets.QFrame.__init__(self, parent)
@@ -18,12 +19,9 @@ class DraggableMergeFrame(QtWidgets.QFrame):
         self.setMinimumHeight(24)
         color_key = ctrl.settings.get_node_setting('color_id', node_type=g.CONSTITUENT_NODE,
                                                    level=ctrl.ui.active_scope)
-        self.add_button = PanelButton(parent=self,
-                                      icon=qt_prefs.add_icon,
-                                      text='Add merge',
-                                      action='add_merge',
-                                      size=24,
-                                      color_key=color_key).to_layout(hlayout)
+        self.add_button = PanelButton(parent=self, icon=qt_prefs.add_icon, text='Add merge',
+                                      action='add_merge', size=24, color_key=color_key).to_layout(
+            hlayout)
         self.label = QtWidgets.QLabel('Merge -----------')
         hlayout.addWidget(self.label)
         self.setLayout(hlayout)
@@ -51,7 +49,7 @@ class DraggableMergeFrame(QtWidgets.QFrame):
             drag = QtGui.QDrag(self)
             drag.setPixmap(qt_prefs.leaf_pixmap)
             drag.setHotSpot(QtCore.QPoint(int(qt_prefs.leaf_pixmap.width() / 2),
-                            int(qt_prefs.leaf_pixmap.height() / 2)))
+                                          int(qt_prefs.leaf_pixmap.height() / 2)))
             drag.setMimeData(data)
             drag.exec_(QtCore.Qt.CopyAction)
             self.add_button.setDown(False)
@@ -64,7 +62,6 @@ class DraggableMergeFrame(QtWidgets.QFrame):
             ctrl.deselect_objects()
             ctrl.call_watchers(self, 'scope_changed')
         QtWidgets.QFrame.mouseReleaseEvent(self, event)
-
 
 
 class MergePanel(Panel):
@@ -96,11 +93,10 @@ class MergePanel(Panel):
         selection as scope
         :return:
         """
-        #self.frame.update_frame()
+        # self.frame.update_frame()
 
     def update_colors(self):
         self.frame.update_colors()
-
 
     # @time_me
     def update_scope_selector_options(self):

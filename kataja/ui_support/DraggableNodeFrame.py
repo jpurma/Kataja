@@ -11,7 +11,6 @@ __author__ = 'purma'
 ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
 
 
-
 class DraggableNodeFrame(QtWidgets.QFrame):
     def __init__(self, key, name, parent=None, folded=False):
         QtWidgets.QFrame.__init__(self, parent)
@@ -28,19 +27,15 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
         self.key = key
         self.folded = folded
-        self.add_button = PanelButton(parent=self,
-                                      pixmap=qt_prefs.add_icon,
-                                      action='add_%s_node' % node_type_name,
-                                      size=24,
+        self.add_button = PanelButton(parent=self, pixmap=qt_prefs.add_icon,
+                                      action='add_%s_node' % node_type_name, size=24,
                                       color_key=color_key).to_layout(hlayout)
         self.add_button.data = key
 
-        self.fold_button = TwoStateIconButton(ui_key='fold_%s_sheet' % node_type_name,
-                                              parent=self,
+        self.fold_button = TwoStateIconButton(ui_key='fold_%s_sheet' % node_type_name, parent=self,
                                               pixmap0=qt_prefs.fold_pixmap,
                                               pixmap1=qt_prefs.more_pixmap,
-                                              action='fold_node_sheet',
-                                              size=12).to_layout(hlayout)
+                                              action='fold_node_sheet', size=12).to_layout(hlayout)
         self.fold_button.data = key
 
         self.label = QtWidgets.QLabel(name, self)
@@ -48,12 +43,13 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         hlayout.addStretch(8)
 
         self.font_selector = FontSelector(parent=self,
-                                          action='select_%s_font' % node_type_name,
-                                          ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                          action='select_%s_font' % node_type_name, ).to_layout(
+            hlayout, align=QtCore.Qt.AlignRight)
 
         self.node_color_selector = ColorSelector(parent=self,
                                                  action='change_%s_color' % node_type_name,
-                                                 ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                                 ).to_layout(
+            hlayout, align=QtCore.Qt.AlignRight)
 
         self.setLayout(hlayout)
         f = ctrl.settings.get_node_setting('font_id', node_type=key)
@@ -79,7 +75,10 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
     def update_font(self, font_key):
         f = qt_prefs.get_font(font_key)
-        self.label.setStyleSheet(ss % {'font_size': f.pointSize(), 'font': f.family()})
+        self.label.setStyleSheet(ss % {
+            'font_size': f.pointSize(),
+            'font': f.family()
+        })
 
     def set_folded(self, value):
         self.folded = value
@@ -97,7 +96,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
             drag = QtGui.QDrag(self)
             drag.setPixmap(qt_prefs.leaf_pixmap)
             drag.setHotSpot(QtCore.QPoint(int(qt_prefs.leaf_pixmap.width() / 2),
-                            int(qt_prefs.leaf_pixmap.height() / 2)))
+                                          int(qt_prefs.leaf_pixmap.height() / 2)))
             drag.setMimeData(data)
             drag.exec_(QtCore.Qt.CopyAction)
             self.add_button.setDown(False)

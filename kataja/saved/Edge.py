@@ -69,7 +69,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.k_tooltip = ''
         self.k_action = None
         self._is_moving = False
-        self.shape_settings_chain = None
+        self.flattened_shape_settings = {}
 
         self.in_projections = []
 
@@ -111,7 +111,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         self.connect_end_points(self.start, self.end)
         self.setZValue(self.get_edge_setting('z_value'))
-        #self.update_end_points()
+        # self.update_end_points()
         self.update_visibility()
         self.announce_creation()
 
@@ -130,7 +130,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return
         self.connect_end_points(self.start, self.end)
         self.update_visibility()
-        #self.update_end_points()
+        # self.update_end_points()
 
     def cut(self, others=None):
         """ If edge ends are not included, set them to None, otherwise cut the edge as it is.
@@ -224,7 +224,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 if end and not end.is_visible():
                     lv = False
                 elif start and ctrl.forest.visualization and not \
-                        ctrl.forest.visualization.show_edges_for(start):
+                        ctrl.forest.visualization.show_edges_for(
+                    start):
                     lv = False
                 elif not (start and end):
                     ctrl.free_drawing.delete_edge(self)
@@ -238,9 +239,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     elif start.get_node_shape() == g.CARD and (
                                 (not end.adjustment) or end.adjustment == (0, 0)):
                         lv = False
-                    #elif end.locked_to_node is start and \
-                    #        ((not end.adjustment) or end.adjustment == (0, 0)):
-                    #    lv = False
+                        # elif end.locked_to_node is start and \
+                        #        ((not end.adjustment) or end.adjustment == (0, 0)):
+                        #    lv = False
                 else:
                     delete = True
             elif self.edge_type == g.CHECKING_EDGE:
@@ -623,7 +624,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     self.label_item = None
         self.update()
 
-
     # ### Mouse - Qt events ##################################################
 
     def mousePressEvent(self, event):
@@ -687,7 +687,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.hovering = True
         ctrl.ui.show_help(self, event)
         event.accept()
-        #QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
+        # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverMoveEvent(self, event):
         if self._is_moving:
@@ -704,7 +704,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self.hovering = False
             ctrl.ui.hide_help(self, event)
             QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
-
 
     # ## Scene-managed call
 
@@ -751,7 +750,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             dpath = self.path.draw_path
             if self.has_outline():
-                thickness = self.get_shape_setting('thickness')
+                thickness = self.flattened_shape_settings['thickness']
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
@@ -823,7 +822,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         self._is_moving = True
-        #if prefs.move_effect:
+        # if prefs.move_effect:
         #    self._use_simple_path = True
 
     def start_node_stopped_moving(self):
@@ -848,7 +847,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         self._is_moving = False
         self.path.make_fat_path = True
-        #if prefs.move_effect:
+        # if prefs.move_effect:
         #    self._use_simple_path = False
 
     def free_drawing_mode(self, *args, **kwargs):
@@ -862,7 +861,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     # Shape helpers #############################
 
     def get_shape_setting(self, key, missing=None):
-        return ctrl.settings.get_shape_setting(key, edge=self) or missing
+        return self.flattened_shape_settings.get(key, missing)
 
     def get_shape_property(self, key, missing=None):
         return getattr(self.path.my_shape, key)
@@ -917,9 +916,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update_shape()
 
     def set_thickness(self, value):
-        ctrl.settings.set_edge_setting('thickness', value, edge=self)
+        ctrl.settings.set_shape_setting('thickness', value, edge=self)
         self.update_shape()
-
 
     def is_filled(self) -> bool:
         return self.get_shape_property('fillable') and self.get_shape_setting('fill')
@@ -931,11 +929,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         return self.get_shape_property('fillable')
 
     def set_fill(self, value):
-        ctrl.settings.set_edge_setting('fill', value, edge=self)
+        ctrl.settings.set_shape_setting('fill', value, edge=self)
         self.update_shape()
 
     def set_outline(self, value):
-        ctrl.settings.set_edge_setting('outline', value, edge=self)
+        ctrl.settings.set_shape_setting('outline', value, edge=self)
         self.update_shape()
 
     def prepare_adjust_array(self, index):

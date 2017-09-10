@@ -6,6 +6,7 @@ from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 
 from kataja.singletons import ctrl, log
 
+
 # ==== Class variables for KatajaActions:
 #
 # k_action_uid : unique id for calling this action. required, other are optional
@@ -75,7 +76,7 @@ class ChangeGroupColor(KatajaAction):
             if color_key:
                 group.update_colors(color_key)
                 # use watcher + signal instead
-                #if embed and hasattr(embed, 'update_colors'):
+                # if embed and hasattr(embed, 'update_colors'):
                 #    embed.update_colors()
                 log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
@@ -170,8 +171,9 @@ class DeleteGroup(KatajaAction):
 class SaveGroupChanges(KatajaAction):
     k_action_uid = 'save_group_changes'
     k_command = 'Save this group'
-    #k_shortcut = 'Return'
-    #k_shortcut_context = 'parent_and_children'
+
+    # k_shortcut = 'Return'
+    # k_shortcut_context = 'parent_and_children'
 
     def method(self):
         """ """

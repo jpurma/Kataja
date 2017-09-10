@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtGui
 from kataja.singletons import prefs, running_environment, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
+
 class PluginSelector(QtWidgets.QWidget):
     """ Enable and disable plugins, assumed to be used in preferences panel. Actions are
     hardcoded, not using KatajaActions at this point. """
@@ -21,9 +22,8 @@ class PluginSelector(QtWidgets.QWidget):
         layout.addWidget(self.scroll_area)
         layout.addStretch(10)
         hlayout = QtWidgets.QHBoxLayout()
-        self.plugin_path = QtWidgets.QLabel('Plugin path: %s' % (prefs.plugins_path or
-                                            running_environment.plugins_path),
-                                            self)
+        self.plugin_path = QtWidgets.QLabel(
+            'Plugin path: %s' % (prefs.plugins_path or running_environment.plugins_path), self)
         self.plugin_path.setMaximumWidth(self.preferred_width - 80)
         self.plugin_path.setWordWrap(True)
         self.plugin_path.setMinimumHeight(self.plugin_path.sizeHint().height() + 20)

@@ -139,7 +139,7 @@ class SavedObject(object):
         2=DELETED)
         """
         transitions = {}
-        #print('item %s history: %s' % (self.uid, self._history))
+        # print('item %s history: %s' % (self.uid, self._history))
         for key, old_value in self._history.items():
             new_value = self._saved[key]
             if old_value != new_value:
@@ -168,7 +168,7 @@ class SavedObject(object):
         new) -pairs
         :return: None
         """
-        #print('--- restore to earlier for ', self, ' ----------')
+        # print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
             old, new = value
             if isinstance(old, Iterable):
@@ -177,7 +177,6 @@ class SavedObject(object):
                 setattr(self, key, old)
         transition_type = -transition_type  # revert transition
         self.after_model_update(transitions.keys(), transition_type)
-
 
     def move_to_later(self, transitions, transition_type):
         """ Move to later version with a given changes -dict
@@ -273,8 +272,7 @@ class SavedObject(object):
             elif isinstance(data, QPoint):
                 return 'QPoint', to_tuple(QPoint)
             elif isinstance(data, QtGui.QColor):
-                return 'QColor', data.red(), data.green(), data.blue(), \
-                       data.alpha()
+                return 'QColor', data.red(), data.green(), data.blue(), data.alpha()
             elif isinstance(data, QtGui.QPen):
                 pass
             elif isinstance(data, QtCore.QRectF):
@@ -291,8 +289,7 @@ class SavedObject(object):
                     open_refs[k] = data
                 return '|'.join(('*r*', str(k)))
             else:
-                raise SaveError("simplifying unknown data type:", data,
-                                type(data))
+                raise SaveError("simplifying unknown data type:", data, type(data))
 
         if self.uid in saved_objs:
             return
@@ -306,7 +303,8 @@ class SavedObject(object):
         if self.uid in open_refs:
             del open_refs[self.uid]
 
-#    @time_me
+        #    @time_me
+
     def load_objects(self, data, kataja_main):
         """ Load and restore objects starting from given obj (probably Forest
         or KatajaMain instance)
@@ -466,6 +464,6 @@ class SavedObject(object):
         if root:
             for item in restored.values():
                 if hasattr(item, 'after_init'):
-                    #print('restoring item, calling after_init for ', type(item), item)
+                    # print('restoring item, calling after_init for ', type(item), item)
                     item.after_init()
         return obj

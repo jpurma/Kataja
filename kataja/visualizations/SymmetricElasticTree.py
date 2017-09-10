@@ -83,11 +83,9 @@ class SymmetricElasticTree(BaseVisualization):
         node_x, node_y = centered_node_position(node, cbr)
 
         # Push nodes away
-        push_x, push_y = self.elliptic_repulsion(node, node_x, node_y,
-                                                              other_nodes,
-                                                              inner_repulsion,
-                                                              outer_repulsion)
-        #print('node push: ', push_x, push_y)
+        push_x, push_y = self.elliptic_repulsion(node, node_x, node_y, other_nodes, inner_repulsion,
+                                                 outer_repulsion)
+        # print('node push: ', push_x, push_y)
 
         # Pull them to preferred distance
         pull_x = 0
@@ -98,19 +96,15 @@ class SymmetricElasticTree(BaseVisualization):
             while other.locked_to_node:
                 other = other.locked_to_node
             if other is not node:
-                connected.add((e.path.abstract_end_point,
-                               e.path.abstract_start_point,
-                               target_distance * (similar_edges_up(e) + 1),
-                               e.pull))
+                connected.add((e.path.abstract_end_point, e.path.abstract_start_point,
+                               target_distance * (similar_edges_up(e) + 1), e.pull))
         for e in node.get_edges_down_with_children():
             other = e.end
             while other.locked_to_node:
                 other = other.locked_to_node
             if other is not node:
-                connected.add((e.path.abstract_start_point,
-                               e.path.abstract_end_point,
-                               target_distance * (similar_edges_up(e) + 1),
-                               e.pull))
+                connected.add((e.path.abstract_start_point, e.path.abstract_end_point,
+                               target_distance * (similar_edges_up(e) + 1), e.pull))
 
         for (sx, sy), (ex, ey), preferred_dist, weight in connected:
             dist_x, dist_y = int(sx - ex), int(sy - ey)
@@ -124,10 +118,9 @@ class SymmetricElasticTree(BaseVisualization):
             pull_x -= x_component * pulling_force * pull * weight
             pull_y -= y_component * pulling_force * pull * weight
 
-        #print('node pull: ', pull_x, pull_y)
+        # print('node pull: ', pull_x, pull_y)
 
-        return push_x + pull_x, push_y + pull_y #round(xvel), round(yvel)
-
+        return push_x + pull_x, push_y + pull_y  # round(xvel), round(yvel)
 
     def calculate_movement_good(self, node, other_nodes):
         """
@@ -277,7 +270,7 @@ class SymmetricElasticTree(BaseVisualization):
             yvel -= y_component * pulling_force
 
         # pull to center (0, 0)
-        #if not node.edges_up:
+        # if not node.edges_up:
         #    xvel += node_x * -0.006
         #    yvel += node_y * -0.006
 

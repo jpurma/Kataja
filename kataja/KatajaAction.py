@@ -33,6 +33,7 @@ from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 from kataja.UIItem import UIWidget
 
+
 class ShortcutSolver(QtCore.QObject):
     """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
     panels when the relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts,
@@ -101,6 +102,7 @@ class ShortcutSolver(QtCore.QObject):
 
 class ButtonShortcutFilter(QtCore.QObject):
     """ For some reason button shortcut sometimes focuses instead of clicks. """
+
     def eventFilter(self, button, event):
         if event.type() == QtCore.QEvent.Shortcut:
             button.animateClick()
@@ -208,7 +210,8 @@ class KatajaAction(QtWidgets.QAction):
             self.active_tooltip = self.tip0
 
     def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
-        """ Trigger action with parameters received from action data object and designated UI element
+        """ Trigger action with parameters received from action data object and designated UI
+        element
         :return: None
         """
 
@@ -219,7 +222,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        self.autoplay = True # not ctrl.free_drawing_mode
+        self.autoplay = True  # not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -328,7 +331,7 @@ class KatajaAction(QtWidgets.QAction):
             ctrl.ui.manage_shortcut(shortcut, element, self)
             # shortcuts (or actions in total were disabled before this connection to avoid
             # accidental firings)
-            #self.setEnabled(True)
+            # self.setEnabled(True)
         if isinstance(element, QtWidgets.QWidget):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         if not connect_slot:
@@ -370,7 +373,7 @@ class KatajaAction(QtWidgets.QAction):
         :param value:
         :return:
         """
-        #print('setting displayed value for %s to %s' % (self.key, value))
+        # print('setting displayed value for %s to %s' % (self.key, value))
         if isinstance(value, bool):
             self.set_active_tooltip(value)
         for element in self.elements:
@@ -423,7 +426,6 @@ class KatajaAction(QtWidgets.QAction):
 
 
 class TransmitAction(QtWidgets.QAction):
-
     def __init__(self, text='', target=None, key=''):
         QtWidgets.QAction.__init__(self, text)
         self.key = key
@@ -431,4 +433,3 @@ class TransmitAction(QtWidgets.QAction):
         self.triggered.connect(target.trigger)
         self.setCheckable(True)
         target.transit_menus.append(self)
-

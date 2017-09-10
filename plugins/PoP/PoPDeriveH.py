@@ -1054,7 +1054,7 @@ class Generate:
                 print(item.label, item.get_head_features())
                 if item not in temp_stack:
                     print('marked stacked, but not there.')
-                    assert(False)
+                    assert False
 
             if item in temp_stack:
                 for otter in temp_stack:

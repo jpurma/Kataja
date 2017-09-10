@@ -7,6 +7,7 @@ from kataja.singletons import ctrl, prefs, log, qt_prefs, classes
 from kataja.saved.movables.Node import Node
 import random
 
+
 # ==== Class variables for KatajaActions:
 #
 # k_action_uid : unique id for calling this action. required, other are optional
@@ -65,8 +66,7 @@ class AbstractAddNode(KatajaAction):
         :return: None
         """
         ntype = self.__class__.node_type
-        pos = QtCore.QPoint(random.random() * 60 - 25,
-                            random.random() * 60 - 25)
+        pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
         label = ctrl.free_drawing.next_free_label()
         node = ctrl.free_drawing.create_node(label=label, pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
@@ -143,8 +143,7 @@ class AbstractSelectFont(KatajaAction):
                 ctrl.settings.set_node_setting('font_id', font_id, node=node)
                 node.update_label()
         else:
-            ctrl.settings.set_node_setting('font_id', font_id,
-                                           node_type=node_type,
+            ctrl.settings.set_node_setting('font_id', font_id, node_type=node_type,
                                            level=ctrl.ui.active_scope)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
@@ -166,8 +165,7 @@ class AbstractSelectFont(KatajaAction):
             for node in ctrl.get_selected_nodes(of_type=my_type):
                 if 'font_id' in node.settings:
                     return node.settings['font_id']
-        return ctrl.settings.get_node_setting('font_id',
-                                              node_type=my_type,
+        return ctrl.settings.get_node_setting('font_id', node_type=my_type,
                                               level=ctrl.ui.active_scope)
 
 
@@ -261,10 +259,8 @@ class AbstractChangeNodeColor(KatajaAction):
             for node in ctrl.get_selected_nodes(of_type=my_type):
                 if 'color_id' in node.settings:
                     return node.settings['color_id']
-        return ctrl.settings.get_node_setting('color_id',
-                                              node_type=my_type,
+        return ctrl.settings.get_node_setting('color_id', node_type=my_type,
                                               level=ctrl.ui.active_scope)
-
 
 
 class ChangeConstituentColor(AbstractChangeNodeColor):
@@ -355,4 +351,3 @@ class ResetSettings(KatajaAction):
         :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
         """
         log.warning('not implemented: reset_settings')
-

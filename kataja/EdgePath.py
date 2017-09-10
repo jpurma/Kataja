@@ -1,4 +1,3 @@
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
@@ -65,8 +64,6 @@ class EdgePath:
         self.cached_start_index = self.edge.edge_start_index()
         self.cached_end_index = self.edge.edge_end_index()
 
-
-
     def shape(self) -> QtGui.QPainterPath:
         """ Use the fatter version for hit detection
         :return: QGraphicsPath
@@ -115,9 +112,12 @@ class EdgePath:
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
             if connection_style == SPECIAL:
-                self.computed_start_point, self.curve_dir_start = \
-                    start.special_connection_point(sx, sy, ex, ey, start=True,
-                                                   edge_type=self.edge.edge_type)
+                self.computed_start_point, self.curve_dir_start = start.special_connection_point(sx,
+                                                                                                 sy,
+                                                                                                 ex,
+                                                                                                 ey,
+                                                                                                 start=True,
+                                                                                                 edge_type=self.edge.edge_type)
                 self.abstract_start_point = self.computed_start_point
             elif connection_style == CONNECT_TO_CENTER:
                 self.computed_start_point = sx, sy
@@ -205,7 +205,7 @@ class EdgePath:
                             elif edge.extra and edge.extra.syntactic_object.name == ee.name:
                                 self.computed_start_point = edge.path.computed_start_point
                                 self.curve_dir_start = BOTTOM_SIDE
-                                #self.curve_dir_start = opposite(edge.path.curve_dir_start)
+                                # self.curve_dir_start = opposite(edge.path.curve_dir_start)
                                 found = True
                                 break
                 if not found:
@@ -218,8 +218,10 @@ class EdgePath:
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
-                self.computed_end_point, self.curve_dir_end = end.special_connection_point(
-                    sx, sy, ex, ey, start=False, edge_type=self.edge.edge_type)
+                self.computed_end_point, self.curve_dir_end = end.special_connection_point(sx, sy,
+                                                                                           ex, ey,
+                                                                                           start=False,
+                                                                                           edge_type=self.edge.edge_type)
                 self.abstract_end_point = self.computed_end_point
             elif connection_style == CONNECT_TO_CENTER:
                 self.computed_end_point = ex, ey
@@ -291,7 +293,7 @@ class EdgePath:
         if osx != nsx or osy != nsy or oex != nex or oey != ney:
             self.changed = True
 
-    #@time_me
+    # @time_me
     def make(self):
         """ Draws the shape as a path """
         self.update_end_points()
@@ -309,28 +311,19 @@ class EdgePath:
         thick = 1
         if not self.my_shape:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            if self.edge.shape_settings_chain is None:
-                self.edge.shape_settings_chain = ctrl.settings.shape_type_chains[
-                    self.edge.edge_type].new_child()
-            self.edge.shape_settings_chain.maps[-1] = self.my_shape.defaults
+            ctrl.settings.flatten_shape_settings_for_edge(self.edge)
         elif self.edge.shape_name != self.my_shape.shape_name:
-            ctrl.settings.remove_all_shape_settings(self.edge, self.my_shape.shape_name)
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            self.edge.shape_settings_chain.maps[0] = {}
-            self.edge.shape_settings_chain.maps[-1] = self.my_shape.defaults
-        (self.draw_path,
-            self.true_path,
-            self.control_points,
-            self.adjusted_control_points) = self.my_shape.path(sp,
-                                                               (ex, ey),
-                                                               self.edge.curve_adjustment,
-                                                               self.curve_dir_start,
-                                                               self.curve_dir_end,
-                                                               thick=thick,
-                                                               start=self.edge.start,
-                                                               end=self.edge.end,
-                                                               inner_only=self.use_simple_path,
-                                                               d=self.edge.shape_settings_chain)
+            ctrl.settings.flatten_shape_settings_for_edge(self.edge)
+        (self.draw_path, self.true_path, self.control_points,
+         self.adjusted_control_points) = self.my_shape.path(sp, (ex, ey),
+                                                            self.edge.curve_adjustment,
+                                                            self.curve_dir_start,
+                                                            self.curve_dir_end, thick=thick,
+                                                            start=self.edge.start,
+                                                            end=self.edge.end,
+                                                            inner_only=self.use_simple_path,
+                                                            d=self.edge.flattened_shape_settings)
 
         uses_pen = self.edge.has_outline()
 
@@ -396,7 +389,7 @@ class EdgePath:
             self.arrowhead_start_path = None
             return
         ad = 0.5
-        t = self.edge.get_shape_setting('thickness')
+        t = self.edge.flattened_shape_settings['thickness']
         size = self.arrowhead_size_at_start
         if t:
             size *= t
@@ -431,7 +424,7 @@ class EdgePath:
             self.arrowhead_end_path = None
             return
         ad = 0.5
-        t = self.edge.get_shape_setting('thickness')
+        t = self.edge.flattened_shape_settings['thickness']
         size = self.arrowhead_size_at_end
         if t:
             size *= t

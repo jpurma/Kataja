@@ -534,8 +534,7 @@ class FeatureNode(Node):
             return str(self.syntactic_object)
         s = []
         signs = ('+', '-', '=', 'u', '✓')
-        if self.value and (len(self.value) == 1 and self.value in signs or \
-           len(self.value) == 2 and self.value[1] in signs):
+        if self.value and (len(self.value) == 1 and self.value in signs or len(self.value) == 2 and self.value[1] in signs):
             s.append(self.value + str(self.name))
         elif self.value or self.family:
             s.append(str(self.name))

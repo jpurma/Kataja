@@ -35,6 +35,7 @@ class DynamicWidthTree(DivideAndConquerTree):
 
     """
     name = 'Dynamic width trees'
+
     def __init__(self):
         super().__init__()
         self.use_gravity = False
@@ -76,8 +77,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             if dist == 0:
                 node_x += 5
                 continue
-            safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() +
-                            cbr_h) / 2
+            safe_zone = max(other_cbr.width() + cbr_w, other_cbr.height() + cbr_h) / 2
             safe_zone += 10
             if dist == safe_zone:
                 pushing_force = 0.1
@@ -112,8 +112,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             other_x, other_y = centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            radius = max(other_cbr.width() + cbr_w, other_cbr.height() +
-                      cbr_h)
+            radius = max(other_cbr.width() + cbr_w, other_cbr.height() + cbr_h)
             if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge_pull * alpha) / dist
                 x_vel -= dist_x * pulling_force
@@ -125,8 +124,6 @@ class DynamicWidthTree(DivideAndConquerTree):
             x_vel += node_x * -0.009
 
         return round(x_vel), 0
-
-
 
     def calculate_movement_old(self, node, other_nodes):
         """
@@ -229,4 +226,3 @@ class DynamicWidthTree(DivideAndConquerTree):
         else:
             xvel = 0
         return xvel, 0
-

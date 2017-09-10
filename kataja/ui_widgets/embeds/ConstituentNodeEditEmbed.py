@@ -9,7 +9,7 @@ from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
-from ui_widgets.KatajaLineEdit import KatajaLineEdit
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
