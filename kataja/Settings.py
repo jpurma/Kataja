@@ -119,7 +119,7 @@ class Settings:
             flat.update(chain_parts[0])
             self.flat_shape_settings[key] = flat
         for edge in forest.edges.values():
-            self.flatten_shape_settings_for_edge(edge)
+            edge.flatten_settings()
 
     # @time_me
     def get(self, key, level=HIGHEST, obj=None):
@@ -218,13 +218,14 @@ class Settings:
 
     @staticmethod
     def reset_in_container(container, dict_name, subtype, level, chain):
-        if dictname in container.settings:
+        settings = container.settings
+        if dict_name in settings:
             container.poke('settings')
-            if dict_name in container and subtype in container[dict_name]:
-                del d[subtype]
+            if dict_name in settings and subtype in settings[dict_name]:
+                del settings[dict_name][subtype]
                 chain[subtype].maps[chain_level[level]] = {}
-                if not container[dict_name]:
-                    del container.settings[dict_name]
+                if not settings[dict_name]:
+                    del settings[dict_name]
 
     def get_edge_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
         if edge:
@@ -245,6 +246,8 @@ class Settings:
         if edge:
             edge.poke('settings')
             edge.settings[key] = value
+            edge.flatten_settings()
+            return
         elif level == FOREST:
             self.set_in_container(key, value, self.forest, 'edges', edge_type, level,
                                   self.edge_type_chains)
@@ -259,6 +262,9 @@ class Settings:
             else:
                 self.prefs.edges[edge_type][key] = value
             self.edge_type_chains[edge_type].maps[2] = self.prefs.edges[edge_type]
+        for edge in ctrl.forest.edges.values():
+            if edge.edge_type == edge_type:
+                edge.flatten_settings()
 
     def del_edge_setting(self, key, edge_type=None, obj=None, level=OBJECT):
         if not (obj or edge_type):
@@ -274,17 +280,19 @@ class Settings:
             if edge_type in self.prefs.edges and key in self.prefs.edges[edge_type]:
                 del self.prefs.edges[edge_type][key]
 
-    def reset_edge_setting(self, edge_type=None, obj=None, level=OBJECT):
-        if not (obj or edge_type):
-            raise ValueError
-        if obj and obj.settings:  # Note that this removes *all* object-level settings.
-            obj.poke('settings')
-            obj.settings = {}
-        elif level == FOREST:
+    def reset_edge_settings(self, edge_type, level=HIGHEST):
+        print('reset edge settings called')
+        if level == HIGHEST:
+            level = FOREST
+        if level == FOREST:
             self.reset_in_container(self.forest, 'edges', edge_type, level, self.edge_type_chains)
         elif level == DOCUMENT:
             self.reset_in_container(self.document, 'edges', edge_type, level, self.edge_type_chains)
             # Node settings are stored in Node.settings, at settings['nodes'][node_type]
+        self.flatten_shape_settings(edge_type)
+        for edge in ctrl.forest.edges.values():
+            if edge.edge_type == edge_type:
+                edge.reset_settings()
 
     def get_node_setting(self, key, node_type=None, node=None, level=HIGHEST):
         if node:
@@ -346,14 +354,9 @@ class Settings:
         elif level == DOCUMENT:
             self.reset_in_container(self.document, 'nodes', node_type, level, self.node_type_chains)
 
-    def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
+    def get_shape_setting(self, key, edge_type=None, level=HIGHEST):
         # print('get_shape_setting ', key, edge_type, edge, level)
-        if level == HIGHEST and edge:
-            return edge.get_shape_setting(key)
-        if edge:
-            edge_type = edge.edge_type
         if level == HIGHEST or level == FOREST:
-
             return self.flat_shape_settings[edge_type][key]
         elif level == DOCUMENT:
             if key in self.edge_type_chains[edge_type].maps[chain_level[DOCUMENT]]:
@@ -367,19 +370,11 @@ class Settings:
             self.set_edge_setting(key, value, edge_type=edge_type, edge=edge, level=level)
         else:
             pass
-        flat = self.flatten_shape_settings(edge_type)
+        self.flatten_shape_settings(edge_type)
         for edge in ctrl.forest.edges.values():
             if edge.edge_type == edge_type:
-                edge.flattened_shape_settings = dict(flat)
-                edge.flattened_shape_settings.update(edge.settings)
+                edge.flatten_settings()
 
-    def flatten_shape_settings_for_edge(self, edge):
-        shape_settings = dict(self.flat_shape_settings[edge.edge_type])
-        shape_settings.update(edge.settings)
-        edge.flattened_shape_settings = shape_settings
-        return shape_settings
-
-    @time_me
     def flatten_shape_settings(self, edge_type):
         shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=HIGHEST)
         shape = SHAPE_PRESETS[shape_name]
@@ -388,15 +383,7 @@ class Settings:
         flattened.update(chain_parts[1])
         flattened.update(chain_parts[0])
         self.flat_shape_settings[edge_type] = flattened
-        print(flattened)
         return flattened
-
-    @time_me
-    def o_flatten_shape_settings(self, edge_type):
-        shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=level)
-        shape = SHAPE_PRESETS[shape_name]
-        chain_parts = self.edge_type_chains[edge_type].maps
-        return dict(ChainMap(chain_parts[0], chain_parts[1], shape.defaults))
 
 # def remove_all_shape_settings(self, edge=None, edge_type=None):
     #     if edge:

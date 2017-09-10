@@ -5,6 +5,7 @@ from kataja.singletons import ctrl
 import math
 from collections import ChainMap
 from kataja.utils import time_me
+import kataja.globals as g
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -106,8 +107,8 @@ class EdgePath:
         else:
             return
         if start:
-            connection_style = self.edge.get_edge_setting('start_connects_to')
-            connection_style = CONNECT_TO_SIMILAR
+            connection_style = self.edge.flattened_settings['start_connects_to']
+            #connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
@@ -213,8 +214,8 @@ class EdgePath:
                     self.curve_dir_start = BOTTOM_SIDE
                 self.abstract_start_point = sx, sy
         if end:
-            connection_style = self.edge.get_edge_setting('end_connects_to')
-            connection_style = CONNECT_TO_SIMILAR
+            connection_style = self.edge.flattened_settings['end_connects_to']
+            #connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
@@ -311,10 +312,10 @@ class EdgePath:
         thick = 1
         if not self.my_shape:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            ctrl.settings.flatten_shape_settings_for_edge(self.edge)
+            self.edge.flatten_settings()
         elif self.edge.shape_name != self.my_shape.shape_name:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            ctrl.settings.flatten_shape_settings_for_edge(self.edge)
+            self.edge.flatten_settings()
         (self.draw_path, self.true_path, self.control_points,
          self.adjusted_control_points) = self.my_shape.path(sp, (ex, ey),
                                                             self.edge.curve_adjustment,
@@ -323,13 +324,12 @@ class EdgePath:
                                                             start=self.edge.start,
                                                             end=self.edge.end,
                                                             inner_only=self.use_simple_path,
-                                                            d=self.edge.flattened_shape_settings)
+                                                            d=self.edge.flattened_settings)
 
         uses_pen = self.edge.has_outline()
 
         if self.use_simple_path:
             self.draw_path = self.true_path
-
         self.make_arrowhead_at_start(uses_pen)
         self.make_arrowhead_at_end(uses_pen)
 
@@ -385,11 +385,12 @@ class EdgePath:
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.
         """
-        if not self.edge.get_edge_setting('arrowhead_at_start'):
+        arrowheads = self.edge.flattened_settings['arrowheads']
+        if not (arrowheads == g.AT_START or arrowheads == g.AT_BOTH):
             self.arrowhead_start_path = None
             return
         ad = 0.5
-        t = self.edge.flattened_shape_settings['thickness']
+        t = self.edge.flattened_settings['thickness']
         size = self.arrowhead_size_at_start
         if t:
             size *= t
@@ -420,11 +421,12 @@ class EdgePath:
     def make_arrowhead_at_end(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its end.
         """
-        if not self.edge.get_edge_setting('arrowhead_at_end'):
+        arrowheads = self.edge.flattened_settings['arrowheads']
+        if not (arrowheads == g.AT_END or arrowheads == g.AT_BOTH):
             self.arrowhead_end_path = None
             return
         ad = 0.5
-        t = self.edge.flattened_shape_settings['thickness']
+        t = self.edge.flattened_settings['thickness']
         size = self.arrowhead_size_at_end
         if t:
             size *= t

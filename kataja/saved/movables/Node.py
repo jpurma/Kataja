@@ -667,13 +667,6 @@ class Node(Movable):
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         pass
 
-    def reset_style(self):
-        ctrl.settings.reset_node_style(node=self)
-        self.update_label()
-
-    def has_local_style_settings(self):
-        return bool(self.font_id or self.color_id)
-
     def get_style(self):
         return {
             'font_id': self.get_font_id(),

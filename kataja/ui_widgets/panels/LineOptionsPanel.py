@@ -286,7 +286,7 @@ class LineOptionsPanel(Panel):
                 for edge in edges:
                     if key in edge.settings:
                         return edge.settings[key]
-                return ctrl.settings.get_shape_setting(key, edge=edges[0])
+                return edges[0].flattened_settings[key]
         return ctrl.settings.get_shape_setting(key, edge_type=self.active_edge_type,
                                                level=ctrl.ui.active_scope)
 

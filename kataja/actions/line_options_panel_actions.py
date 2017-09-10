@@ -100,15 +100,14 @@ class ChangeEdgeShape(LinesPanelAction):
             for edge in ctrl.get_selected_edges(of_type=edge_type):
                 edge.shape_name = shape_name
                 edge.update_shape()
-                ctrl.settings.flatten_shape_settings_for_edge(edge)
+                edge.flatten_settings()
         else:
             ctrl.settings.set_edge_setting('shape_name', shape_name,
                                            edge_type=edge_type, level=level)
-            flat = ctrl.settings.flatten_shape_settings(edge_type)
+            ctrl.settings.flatten_shape_settings(edge_type)
             for edge in ctrl.forest.edges.values():
                 if edge.edge_type == edge_type:
-                    edge.flattened_shape_settings = dict(flat)
-                    edge.flattened_shape_settings.update(edge.settings)
+                    edge.flatten_settings()
             ctrl.forest.redraw_edges()
         if self.panel:
             self.panel.update_panel()
@@ -189,11 +188,22 @@ class EdgeArrowheadStart(LinesPanelAction):
         :return: None
         """
         level = level or ctrl.ui_active_scope
+        old_value = ctrl.settings.get_edge_setting('arrowheads', edge_type=edge_type, level=level)
+        if old_value == g.AT_END and value:
+            new_value = g.AT_BOTH
+        elif old_value == g.AT_BOTH and not value:
+            new_value = g.AT_END
+        elif old_value == g.AT_START and not value:
+            new_value = 0
+        elif (not old_value) and value:
+            new_value = g.AT_START
+        else:
+            return
         if level == g.SELECTION:
             for edge in ctrl.get_selected_edges():
-                edge.set_arrowhead_at_start(value)
+                ctrl.settings.set_edge_setting('arrowheads', new_value, edge=edge)
         else:
-            ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge_type=edge_type,
+            ctrl.settings.set_edge_setting('arrowheads', new_value, edge_type=edge_type,
                                            level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
@@ -201,7 +211,9 @@ class EdgeArrowheadStart(LinesPanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return self.panel.get_active_edge_setting('arrowhead_at_start')
+        if self.panel:
+            arrowheads = self.panel.get_active_edge_setting('arrowheads')
+            return arrowheads == g.AT_START or arrowheads == g.AT_BOTH
 
 
 class EdgeArrowheadEnd(LinesPanelAction):
@@ -226,11 +238,22 @@ class EdgeArrowheadEnd(LinesPanelAction):
         :return: None
         """
         level = level or ctrl.ui_active_scope
+        old_value = ctrl.settings.get_edge_setting('arrowheads', edge_type=edge_type, level=level)
+        if old_value == g.AT_START and value:
+            new_value = g.AT_BOTH
+        elif old_value == g.AT_BOTH and not value:
+            new_value = g.AT_START
+        elif old_value == g.AT_END and not value:
+            new_value = 0
+        elif (not old_value) and value:
+            new_value = g.AT_END
+        else:
+            return
         if level == g.SELECTION:
             for edge in ctrl.get_selected_edges():
-                edge.set_arrowhead_at_end(value)
+                ctrl.settings.set_edge_setting('arrowheads', new_value, edge=edge)
         else:
-            ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge_type=edge_type,
+            ctrl.settings.set_edge_setting('arrowheads', new_value, edge_type=edge_type,
                                            level=level)
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
@@ -238,7 +261,9 @@ class EdgeArrowheadEnd(LinesPanelAction):
         return ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return self.panel and self.panel.get_active_edge_setting('arrowhead_at_end')
+        if self.panel:
+            arrowheads = self.panel.get_active_edge_setting('arrowheads')
+            return arrowheads == g.AT_END or arrowheads == g.AT_BOTH
 
 
 class ResetControlPoints(LinesPanelAction):
@@ -295,18 +320,13 @@ class ResetEdgeSettings(LinesPanelAction):
         level = level or ctrl.ui_active_scope
         if level == g.SELECTION:
             for edge in ctrl.get_selected_edges():
-                edge.reset_shape()
-                ctrl.settings.del_edge_setting('arrowhead_at_start', edge=edge)
-                ctrl.settings.del_edge_setting('arrowhead_at_end', edge=edge)
+                edge.reset_settings()
             ctrl.forest.redraw_edges()
         else:
-            ctrl.settings.reset_shape_settings(level=level, edge_type=edge_type)
-            ctrl.settings.del_edge_setting('arrowhead_at_start', edge_type=edge_type)
-            ctrl.settings.del_edge_setting('arrowhead_at_end', edge_type=edge_type)
-
+            ctrl.settings.reset_edge_settings(level=level, edge_type=edge_type)
             for edge in ctrl.forest.edges.values():
                 if edge.edge_type == edge_type:
-                    edge.reset_shape()
+                    edge.reset_settings()
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):

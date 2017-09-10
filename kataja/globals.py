@@ -107,6 +107,11 @@ DOCUMENT = 3
 PREFS = 4
 CONFLICT = 666666
 
+# Arrowheads
+AT_START = 1
+AT_END = 2
+AT_BOTH = 3
+
 # Trace strategies
 USE_MULTIDOMINATION = 0
 USE_TRACES = 1
