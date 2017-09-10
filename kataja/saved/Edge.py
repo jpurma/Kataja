@@ -476,24 +476,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         if not self.end:
             self.fixed_end_point = start_x + ex - sx, start_y + ey - sy
 
-    # # Not used. What is this for?
-    # def compute_pos_from_adjust(self, point_index) -> tuple:
-    #     """ Works with 1 or 2 control points.
-    #     :param point_index:
-    #     :return:
-    #     """
-    #     cx, cy = self.control_points[point_index]
-    #     rdist, rrad = self.curve_adjustment[point_index]
-    #     sx, sy = self.start_point if point_index == 0 else self.end_point
-    #     sx_to_cx = cx - sx
-    #     sy_to_cy = cy - sy
-    #     line_rad = math.atan2(sy_to_cy, sx_to_cx)
-    #     line_dist = math.hypot(sx_to_cx, sy_to_cy)
-    #     new_dist = rdist * line_dist
-    #     new_x = cx + (new_dist * math.cos(rrad + line_rad))
-    #     new_y = cy + (new_dist * math.sin(rrad + line_rad))
-    #     return new_x, new_y
-
     # ### Derivative features ############################################
 
     def make_path(self):
@@ -535,15 +517,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.settings = {}
         self.path.my_shape = SHAPE_PRESETS[self.shape_name]()
         self.flatten_settings()
-        self.curve_adjustment = [(0, 0)] * len(self.control_points)
+        self.curve_adjustment = [(0, 0)] * len(self.path.control_points)
         self.update_shape()
 
     def update_shape(self):
         """ Reload shape and shape settings """
         cpl = len(self.path.control_points)
         self.make_path()
-        # while len(self.curve_adjustment) < len(self.control_points):
-        # self.curve_adjustment.append((0, 0, 0))
         if cpl != len(self.path.control_points):
             ctrl.ui.update_control_points()
         self.update()
