@@ -35,14 +35,14 @@ class NavigationPanel(Panel):
         self.treeset_counter = treeset_counter
 
         action = ctrl.ui.get_action('previous_forest')
-        self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow,
-                                        parent=self, action=action)
+        self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=self,
+                                        action=action)
         self.prev_tree.setMinimumWidth(72)
         layout.addWidget(self.prev_tree, 1, 0, 1, 1)
 
         action = ctrl.ui.get_action('next_forest')
-        self.next_tree = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow,
-                                        parent=self, action=action)
+        self.next_tree = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow, parent=self,
+                                        action=action)
         self.next_tree.setMinimumWidth(72)
         layout.addWidget(self.next_tree, 1, 1, 1, 1)
 
@@ -57,18 +57,18 @@ class NavigationPanel(Panel):
         self.derivation_counter = derivation_counter
 
         action = ctrl.ui.get_action('prev_derivation_step')
-        self.prev_der = TwoColorButton(text='Previous', bitmaps=qt_prefs.down_arrow,
-                                       parent=self, action=action)
+        self.prev_der = TwoColorButton(text='Previous', bitmaps=qt_prefs.down_arrow, parent=self,
+                                       action=action)
         self.prev_der.setMaximumHeight(20)
         layout.addWidget(self.prev_der, 3, 0, 1, 1)
 
         action = ctrl.ui.get_action('next_derivation_step')
-        self.next_der = TwoColorButton(text='Next', bitmaps=qt_prefs.up_arrow,
-                                       parent=self, action=action)
+        self.next_der = TwoColorButton(text='Next', bitmaps=qt_prefs.up_arrow, parent=self,
+                                       action=action)
         self.next_der.setMaximumHeight(20)
         layout.addWidget(self.next_der, 3, 1, 1, 1)
         inner.setLayout(layout)
-        if False: #ctrl.forest.supports_derivation:
+        if False:  # ctrl.forest.supports_derivation:
             self.der_label.hide()
             self.derivation_counter.hide()
             self.next_der.hide()

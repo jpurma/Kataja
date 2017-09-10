@@ -29,6 +29,7 @@ QComboBox::down-arrow {
 
 """
 
+
 class FontDialogForSelector(QtWidgets.QFontDialog):
     """
 
@@ -55,14 +56,16 @@ class FontSelector(TableModelSelectionBox):
         TableModelSelectionBox.__init__(self, **kwargs)
         self.setMaximumWidth(20)
         self.setMinimumWidth(20)
-        #self.setIconSize(QSize(92, 16))
+        # self.setIconSize(QSize(92, 16))
         self.font_dialog = None
         # self.shape_selector.setView(view)
         self.selected_font = 'main_font'
         self.old_index = 0
         self.old_text = ''
-        #self.setAutoFillBackground(False)
-        self.setStyleSheet(stylesheet % {'current': 'transparent'})
+        # self.setAutoFillBackground(False)
+        self.setStyleSheet(stylesheet % {
+            'current': 'transparent'
+        })
         font = qt_prefs.fonts[self.selected_font]
         self.setFont(font)
         items = []
@@ -72,14 +75,13 @@ class FontSelector(TableModelSelectionBox):
             item.setData(key)
             item.setFont(font)
             item.setBackground(ctrl.cm.paper())
-            item.setSizeHint(QSize(64, 16)) # →
+            item.setSizeHint(QSize(64, 16))  # →
             font_button = QtGui.QStandardItem(': %s, %spt' % (font.family(), font.pointSize()))
             font_button.setData('font_picker::' + key)
             if ctrl.main.use_tooltips:
                 item.setToolTip('Use font associated with this role')
-                font_button.setToolTip("Replace '%s, %spt' for '%s'" % (font.family(),
-                                                                        font.pointSize(),
-                                                                        role))
+                font_button.setToolTip(
+                    "Replace '%s, %spt' for '%s'" % (font.family(), font.pointSize(), role))
             font_button.setFont(font)
             font_button.setSizeHint(QSize(112, 16))
             items.append((item, font_button))
@@ -118,18 +120,16 @@ class FontSelector(TableModelSelectionBox):
             font_item.setFont(font)
             if ctrl.main.use_tooltips:
                 item.setToolTip('Use font associated with this role')
-                font_item.setToolTip("Replace '%s, %spt' for '%s'" % (font.family(),
-                                                                      font.pointSize(),
-                                                                      item.text()))
+                font_item.setToolTip(
+                    "Replace '%s, %spt' for '%s'" % (font.family(), font.pointSize(), item.text()))
         self.select_by_data(self.selected_font)
 
     def receive_font_from_dialog(self, font):
         qt_prefs.fonts[self.selected_font] = font
         self.update_font_selector()
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node):
-                    node.update_label()
+            for node in ctrl.get_selected_nodes():
+                node.update_label()
         else:
             for node in ctrl.forest.nodes.values():
                 node.update_label()
@@ -144,7 +144,9 @@ class FontSelector(TableModelSelectionBox):
         self.font_dialog.show()
 
     def set_color(self, color_key):
-        self.setStyleSheet(stylesheet % {'current': ctrl.cm.get(color_key).name()})
+        self.setStyleSheet(stylesheet % {
+            'current': ctrl.cm.get(color_key).name()
+        })
 
     def select_by_data(self, data):
         """ Override TableModelSelectionBox to include setFont and avoiding selecting font_dialog
@@ -166,7 +168,3 @@ class FontSelector(TableModelSelectionBox):
                 self.setToolTip(f"{item.text()}: {font.family()}, {font.pointSize()}pt")
         else:
             print("couldn't find data %s from selector model" % data)
-
-
-
-

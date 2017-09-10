@@ -54,45 +54,36 @@ class ConstituentSheet(QtWidgets.QWidget):
         b5.setFixedWidth(w)
 
         hlayout = box_row(layout)
-        label = KatajaInfoLabel('Edge',
-                                tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
+        label = KatajaInfoLabel('Edge', tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
                                 parent=self)
         hlayout.addWidget(label)
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_constituents',
-                                            for_edge_type=g.CONSTITUENT_EDGE
-                                            ).to_layout(hlayout)
-        self.edge_options = PanelButton(parent=self,
-                                        pixmap=qt_prefs.settings_icon,
-                                        action='open_line_options',
-                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                            for_edge_type=g.CONSTITUENT_EDGE).to_layout(hlayout)
+        self.edge_options = PanelButton(parent=self, pixmap=qt_prefs.settings_icon,
+                                        action='open_line_options', ).to_layout(hlayout,
+                                                                                align=QtCore.Qt.AlignRight)
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('label_text_mode')
-        self.label_selector = SelectionBox(parent=self,
-                                           action='set_visible_label',
-                                           data=data).to_layout(hlayout,
-                                                                with_label='Visible label')
+        self.label_selector = SelectionBox(parent=self, action='set_visible_label',
+                                           data=data).to_layout(hlayout, with_label='Visible label')
         hlayout = box_row(layout)
         data = prefs.get_display_choices('projection_style')
-        self.projection_selector = SelectionBox(parent=self,
-                                                action='select_projection_style',
+        self.projection_selector = SelectionBox(parent=self, action='select_projection_style',
                                                 data=data).to_layout(hlayout,
                                                                      with_label='Projection style')
 
-
         hlayout = box_row(layout)
         data = prefs.get_display_choices('linearization_mode')
-        self.linearization_mode = SelectionBox(parent=self,
-                                               action='select_linearization_mode',
+        self.linearization_mode = SelectionBox(parent=self, action='select_linearization_mode',
                                                data=data).to_layout(hlayout,
                                                                     with_label='Linearization')
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('trace_strategy')
-        self.trace_selector = SelectionBox(parent=self,
-                                           action='select_trace_strategy',
+        self.trace_selector = SelectionBox(parent=self, action='select_trace_strategy',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Trace strategy')

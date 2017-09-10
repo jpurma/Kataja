@@ -2,6 +2,7 @@
 from PyQt5 import QtWidgets, QtGui
 
 from kataja.KatajaAction import KatajaAction, TransmitAction
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.globals import DOCUMENT, PREFS
 from kataja.singletons import ctrl, log
 
@@ -89,8 +90,8 @@ class SwitchEditMode(KatajaAction):
             ctrl.free_drawing_mode = free_edit
         ctrl.ui.update_edit_mode()
         if ctrl.free_drawing_mode:
-             return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
-                    'history for the structure.'
+            return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
+                   'history for the structure.'
         else:
             return 'Derivation mode: you can edit the visualisation and browse the derivation ' \
                    'history, but the underlying structure cannot be changed.'
@@ -102,7 +103,8 @@ class SwitchEditMode(KatajaAction):
 class SwitchViewMode(KatajaAction):
     k_action_uid = 'switch_view_mode'
     k_command = 'Switch view mode'
-    k_tooltip = '''<p><b>Show all layers:</b> Show annotations and other information unnecessary for 
+    k_tooltip = '''<p><b>Show all layers:</b> Show annotations and other information unnecessary 
+    for 
     syntactic computation.</p> 
 
     <p><b>Show only syntactic layers:</b> Nodes show only information that has effect
@@ -227,7 +229,7 @@ class ChangeVisualisation(KatajaAction):
             return [str(sender.currentData())], kwargs
         elif isinstance(sender, TransmitAction):
             return [sender.key], kwargs
-        elif isinstance(sender, QtWidgets.QButtonGroup):
+        elif isinstance(sender, KatajaButtonGroup):
             button = args[0]
             return [button.sub_type], kwargs
         else:
@@ -266,4 +268,3 @@ class ToggleFullScreen(KatajaAction):
             ctrl.main.showFullScreen()
             log.info('(Cmd+f) fullscreen')
         ctrl.graph_scene.fit_to_window(force=True)
-

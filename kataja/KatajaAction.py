@@ -28,10 +28,10 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, log, running_environment
 from kataja.ui_graphicsitems.TouchArea import TouchArea
-from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
+from kataja.UIItem import UIWidget
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -102,6 +102,7 @@ class ShortcutSolver(QtCore.QObject):
 
 class ButtonShortcutFilter(QtCore.QObject):
     """ For some reason button shortcut sometimes focuses instead of clicks. """
+
     def eventFilter(self, button, event):
         if event.type() == QtCore.QEvent.Shortcut:
             button.animateClick()
@@ -184,6 +185,9 @@ class KatajaAction(QtWidgets.QAction):
         self.setCheckable(self.k_checkable)
         self.setToolTip(self.active_tooltip)
 
+    def on_connect(self, ui_item):
+        pass
+
     def prepare_parameters(self, args, kwargs):
         return [], {}
 
@@ -206,7 +210,8 @@ class KatajaAction(QtWidgets.QAction):
             self.active_tooltip = self.tip0
 
     def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
-        """ Trigger action with parameters received from action data object and designated UI element
+        """ Trigger action with parameters received from action data object and designated UI
+        element
         :return: None
         """
 
@@ -217,7 +222,7 @@ class KatajaAction(QtWidgets.QAction):
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
-        self.autoplay = True # not ctrl.free_drawing_mode
+        self.autoplay = True  # not ctrl.free_drawing_mode
 
         # manually given commands have their parameters, and the command prompt has taken
         # care for logging them. Commands run by UI triggers use a helper method
@@ -326,35 +331,20 @@ class KatajaAction(QtWidgets.QAction):
             ctrl.ui.manage_shortcut(shortcut, element, self)
             # shortcuts (or actions in total were disabled before this connection to avoid
             # accidental firings)
-            #self.setEnabled(True)
+            # self.setEnabled(True)
         if isinstance(element, QtWidgets.QWidget):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
-
+        if not connect_slot:
+            slot_name = getattr(element, 'action_slot', '')
+            if slot_name:
+                connect_slot = getattr(element, slot_name)
         if connect_slot:
             connect_slot.connect(self.run_command)
-        elif isinstance(element, PanelButton):
-            element.clicked.connect(self.run_command)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, EmbeddedRadiobutton):
-            element.bgroup.buttonToggled.connect(self.run_command)
-        elif isinstance(element, QtWidgets.QCheckBox):
-            element.stateChanged.connect(self.run_command)
-        elif isinstance(element, QtWidgets.QAbstractButton):
-            element.clicked.connect(self.run_command)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, QtWidgets.QButtonGroup):
-            element.buttonClicked.connect(self.run_command)
-        elif isinstance(element, QtWidgets.QComboBox):
-            element.activated.connect(self.run_command)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, QtWidgets.QAbstractSpinBox):
-            element.valueChanged.connect(self.trigger_but_suppress_undo)
-            element.editingFinished.connect(self.run_command)
-        elif isinstance(element, QtWidgets.QAbstractSlider):
-            element.sliderMoved.connect(self.trigger_but_suppress_undo)
-            element.sliderReleased.connect(self.run_command)
-        elif isinstance(element, TouchArea):
-            element.clicked.connect(self.run_command)
+        continuous_action_slot_name = getattr(element, 'continuous_action_slot', '')
+        if continuous_action_slot_name:
+            continuous_action_slot = getattr(element, continuous_action_slot_name)
+            continuous_action_slot.connect(self.trigger_but_suppress_undo)
+        self.on_connect(element)
 
     def disconnect_element(self, element):
         if element in self.elements:
@@ -383,42 +373,18 @@ class KatajaAction(QtWidgets.QAction):
         :param value:
         :return:
         """
-        #print('setting displayed value for %s to %s' % (self.key, value))
-        if self.isCheckable():
-            for element in self.elements:
-                #element.blockSignals(True)
-                element.setChecked(value)
-                #element.blockSignals(False)
+        # print('setting displayed value for %s to %s' % (self.key, value))
+        if isinstance(value, bool):
             self.set_active_tooltip(value)
-        else:
-            for element in self.elements:
-                if isinstance(element, SelectionBox):
-                    #element.blockSignals(True)
-                    if element.uses_data:
-                        element.select_by_data(value)
-                    else:
-                        element.select_by_text(value)
-                    #element.blockSignals(False)
-                elif hasattr(element, 'setValue'):
-                    #element.blockSignals(True)
-                    element.setValue(value)
-                    #element.blockSignals(False)
-                elif isinstance(element, QtWidgets.QAbstractButton):
-                    #element.blockSignals(True)
-                    if not isinstance(value, str):
-                        e = 'Action "%s" is non-checkable, but tries to set boolean value for' \
-                            ' UI element "%s".' % (self.__class__.__name__, element)
-                        log.error(e)
-                    else:
-                        element.setText(str(value))
-                    #element.blockSignals(False)
-            for menu in self.transit_menus:
-                #menu.blockSignals(True)
-                if menu.key == value:
-                    menu.setChecked(True)
-                else:
-                    menu.setChecked(False)
-                #menu.blockSignals(False)
+        for element in self.elements:
+            element.blockSignals(True)
+            element.set_displayed_value(value)
+            element.blockSignals(False)
+        for menu in self.transit_menus:
+            if menu.key == value:
+                menu.setChecked(True)
+            else:
+                menu.setChecked(False)
 
     def get_ui_container(self):
         """ Traverse qt-objects until something governed by UIManager is
@@ -460,7 +426,6 @@ class KatajaAction(QtWidgets.QAction):
 
 
 class TransmitAction(QtWidgets.QAction):
-
     def __init__(self, text='', target=None, key=''):
         QtWidgets.QAction.__init__(self, text)
         self.key = key
@@ -468,4 +433,3 @@ class TransmitAction(QtWidgets.QAction):
         self.triggered.connect(target.trigger)
         self.setCheckable(True)
         target.transit_menus.append(self)
-

@@ -1,4 +1,3 @@
-
 from PyQt5 import QtCore, QtWidgets
 
 from kataja.PaletteManager import color_themes
@@ -8,9 +7,8 @@ from kataja.ui_widgets.selection_boxes.PluginSelector import PluginSelector
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
-    """
-
-    """
+    continuous_action_slot = 'valueChanged'
+    action_slot = 'sliderReleased'
 
     def __init__(self, field_name, parent, decimals=True):
         QtWidgets.QHBoxLayout.__init__(self)
@@ -118,7 +116,6 @@ class CheckBox(QtWidgets.QHBoxLayout):
 
 
 class Selector(QtWidgets.QComboBox):
-
     def __init__(self, field_name, parent, choices):
         QtWidgets.QComboBox.__init__(self, parent)
         self.field_name = field_name
@@ -144,9 +141,7 @@ class Selector(QtWidgets.QComboBox):
             self.on_change_method()
 
 
-
 class FileChooser(QtWidgets.QHBoxLayout):
-
     def __init__(self, field_name, parent=None, folders_only=False):
         QtWidgets.QHBoxLayout.__init__(self)
         self.parent_widget = parent
@@ -181,7 +176,6 @@ class FileChooser(QtWidgets.QHBoxLayout):
 
 
 class TextInput(QtWidgets.QLineEdit):
-
     def __init__(self, field_name, parent=None, folders_only=False):
         QtWidgets.QLineEdit.__init__(self, parent)
         self.field_name = field_name
@@ -200,7 +194,6 @@ class TextInput(QtWidgets.QLineEdit):
 
 
 class HelpLabel(QtWidgets.QLabel):
-
     def __init__(self, text, parent=None, buddy=None):
         QtWidgets.QLabel.__init__(self, text, parent)
         self.setIndent(10)

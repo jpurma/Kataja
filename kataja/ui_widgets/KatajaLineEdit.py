@@ -5,7 +5,7 @@ from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
 
 
-class EmbeddedLineEdit(QtWidgets.QLineEdit, UIWidget):
+class KatajaLineEdit(QtWidgets.QLineEdit, UIWidget):
     """
 
     :param parent:
@@ -46,15 +46,6 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit, UIWidget):
         :return:
         """
         self.original = text
-
-    def renterEvent(self, event):
-        QtWidgets.QLineEdit.enterEvent(self, event)
-        UIWidget.enterEvent(self, event)
-
-    def rleaveEvent(self, event):
-        UIWidget.leaveEvent(self, event)
-        QtWidgets.QLineEdit.leaveEvent(self, event)
-
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters

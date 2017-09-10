@@ -1,4 +1,3 @@
-
 import itertools
 
 from collections import defaultdict
@@ -10,7 +9,6 @@ from kataja.utils import time_me
 
 
 class ProjectionManager:
-
     def __init__(self, forest):
         self.forest = forest
         self.projections = {}
@@ -97,6 +95,7 @@ class ProjectionManager:
 
         for head in new_heads:
             ordered_chains = []
+
             # there are many possible 'routes' that a chain can take
             # for each we know the starting point and we start building upwards.
             # if there is a branch, a new chain makes a copy of existing and starts another

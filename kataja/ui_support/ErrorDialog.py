@@ -24,9 +24,9 @@ class ErrorDialog(QtWidgets.QDialog):
         hlayout.addWidget(self.message_widget)
         hlayout.addWidget(self.traceback_widget)
         mlayout = QtWidgets.QVBoxLayout()
-        #self.message_header_label = QtWidgets.QLabel('', self.message_widget)
+        # self.message_header_label = QtWidgets.QLabel('', self.message_widget)
         self.message_error_label = QtWidgets.QLabel(self.error_text, self.message_widget)
-        #mlayout.addWidget(self.message_header_label)
+        # mlayout.addWidget(self.message_header_label)
         mlayout.addWidget(self.message_error_label)
         self.message_widget.setLayout(mlayout)
         layout.addLayout(hlayout)
@@ -48,9 +48,8 @@ class ErrorDialog(QtWidgets.QDialog):
     def set_traceback(self, text):
         self.traceback_widget.setText(text)
 
-#    def set_message(self, text):
-#        self.message_header_label.setText(text)
+    #    def set_message(self, text):
+    #        self.message_header_label.setText(text)
 
     def set_error(self, text):
         self.message_error_label.setText(text)
-

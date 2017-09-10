@@ -7,10 +7,10 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
 
 class TopBarButtons(QtWidgets.QFrame):
-
     def __init__(self, parent, ui):
         QtWidgets.QFrame.__init__(self, parent=parent)
         layout = QtWidgets.QHBoxLayout()
@@ -19,14 +19,11 @@ class TopBarButtons(QtWidgets.QFrame):
         # Left side
         self.play_button = TwoStateIconButton(ui_key='play_button', parent=self,
                                               pixmap0=qt_prefs.play_pixmap,
-                                              pixmap1=qt_prefs.pause_pixmap,
-                                              size=36,
-                                              action='play_animations',
-                                              ).to_layout(layout)
+                                              pixmap1=qt_prefs.pause_pixmap, size=36,
+                                              action='play_animations', ).to_layout(layout)
 
         self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label', parent=self,
-                                               text0='Free drawing',
-                                               text1='Visualisation',
+                                               text0='Free drawing', text1='Visualisation',
                                                action='switch_edit_mode').to_layout(layout)
         layout.addStretch(0)
 
@@ -43,7 +40,7 @@ class TopBarButtons(QtWidgets.QFrame):
         layout.addWidget(view_label)
 
         default_vis = ctrl.settings.get('visualization', level=g.PREFS)
-        self.vis_buttons = QtWidgets.QButtonGroup(parent=self)
+        self.vis_buttons = KatajaButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut
             if shortcut:
@@ -67,8 +64,8 @@ class TopBarButtons(QtWidgets.QFrame):
                             action='redo').to_layout(layout)
 
         pan_mode = TopRowButton(ui_key='pan_mode', parent=self, size=(24, 24),
-                                pixmap=qt_prefs.pan_icon,
-                                action='toggle_pan_mode').to_layout(layout)
+                                pixmap=qt_prefs.pan_icon, action='toggle_pan_mode').to_layout(
+            layout)
         pan_mode.setCheckable(True)
 
         select_mode = TopRowButton(ui_key='select_mode', parent=self, pixmap=qt_prefs.cursor_icon,
@@ -76,13 +73,13 @@ class TopBarButtons(QtWidgets.QFrame):
         select_mode.setCheckable(True)
 
         fit_to_screen = TopRowButton(ui_key='fit_to_screen', parent=self, size=(24, 24),
-                                     pixmap=qt_prefs.center_focus_icon, action='zoom_to_fit',
-                                     ).to_layout(layout)
+                                     pixmap=qt_prefs.center_focus_icon,
+                                     action='zoom_to_fit', ).to_layout(layout)
         # draw_method=drawn_icons.fit_to_screen)
 
         full_screen = TopRowButton(ui_key='full_screen', parent=self, size=(24, 24),
-                                   pixmap=qt_prefs.full_icon, action='fullscreen_mode',
-                                   ).to_layout(layout)
+                                   pixmap=qt_prefs.full_icon, action='fullscreen_mode', ).to_layout(
+            layout)
         # draw_method=drawn_icons.fit_to_screen)
 
         layout.setContentsMargins(2, 0, 2, 0)
@@ -91,7 +88,7 @@ class TopBarButtons(QtWidgets.QFrame):
         self.update_position()
 
     def sizeHint(self):
-        return QtCore.QSize(self.parentWidget().width()-4, 28)
+        return QtCore.QSize(self.parentWidget().width() - 4, 28)
 
     def update_position(self):
         """ Make sure that float buttons are on graph view's top right corner
@@ -99,7 +96,7 @@ class TopBarButtons(QtWidgets.QFrame):
         """
         self.resize(self.sizeHint())
         self.move(4, 2)
-        #self.show()
+        # self.show()
 
     def left_edge_of_right_buttons(self):
         return self.camera.x()

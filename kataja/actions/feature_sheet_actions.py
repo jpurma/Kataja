@@ -241,20 +241,15 @@ class ChangeFeatureEdgeShape(ChangeEdgeShape):
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         shape_name = sender.currentData()
-
-        if ctrl.ui.scope_is_selection:
-            level = g.SELECTION
-        else:
-            level = ctrl.ui.active_scope
-        return [shape_name], {'edge_type': g.FEATURE_EDGE, 'level': level}
+        return [shape_name, ctrl.ui.active_scope], {'edge_type': g.FEATURE_EDGE}
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope(of_type=g.FEATURE_EDGE)
 
     def getter(self):
         if ctrl.ui.scope_is_selection:
-            for edge in ctrl.selected:
-                if isinstance(edge, classes.get('Edge')) and edge.edge_type == g.FEATURE_EDGE:
-                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
+            feat_edges = ctrl.get_selected_edges(of_type=g.FEATURE_EDGE)
+            if feat_edges:
+                return ctrl.settings.get_edge_setting('shape_name', edge=feat_edges[0])
         return ctrl.settings.get_edge_setting('shape_name', edge_type=g.FEATURE_EDGE,
                                               level=ctrl.ui.active_scope)

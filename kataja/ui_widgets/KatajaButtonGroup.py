@@ -2,12 +2,12 @@ from PyQt5 import QtWidgets
 from kataja.UIItem import UIWidget
 
 
-class KatajaCheckBox(QtWidgets.QCheckBox, UIWidget):
-    action_slot = 'stateChanged'
+class KatajaButtonGroup(QtWidgets.QButtonGroup, UIWidget):
+    action_slot = 'buttonClicked'
 
     def __init__(self, parent=None, **kwargs):
-        QtWidgets.QCheckBox.__init__(self, parent=parent)
+        QtWidgets.QButtonGroup.__init__(self, parent=parent)
         UIWidget.__init__(self, **kwargs)
 
     def set_displayed_value(self, value):
-        self.setChecked(value)
+        pass

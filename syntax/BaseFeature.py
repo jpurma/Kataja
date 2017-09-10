@@ -71,8 +71,9 @@ class BaseFeature(SavedObject):
         return self.value == 'u' or self.value == '=' or self.value == '-' or self.value == '✓='
 
     def satisfies(self, feature):
-        return isinstance(feature, BaseFeature) and feature.is_needy() and feature.name == \
-                self.name and self.can_satisfy()
+        return isinstance(feature,
+                          BaseFeature) and feature.is_needy() and feature.name == self.name and \
+               self.can_satisfy()
 
     def check(self, other):
         self.checks = other
@@ -90,8 +91,8 @@ class BaseFeature(SavedObject):
     def __str__(self):
         s = []
         signs = ('+', '-', '=', 'u', '✓')
-        if self.value and (len(self.value) == 1 and self.value in signs or \
-           len(self.value) == 2 and self.value[1] in signs):
+        if self.value and (len(self.value) == 1 and self.value in signs or len(self.value) == 2 and
+                self.value[1] in signs):
             s.append(self.value + str(self.name))
         elif self.value or self.family:
             s.append(str(self.name))

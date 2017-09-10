@@ -27,7 +27,6 @@ from collections import abc
 
 from kataja.utils import caller
 
-
 # gc.set_debug(gc.DEBUG_LEAK)
 
 # flags = (gc.DEBUG_COLLECTABLE |
@@ -94,7 +93,7 @@ class Controller:
         self.undo_disabled = 0  # stacking flag that affects if pickle.load assumes
         # an empty workspace (loading new) or if it tries to compare changes
         # (undo).
-        self.watchers_disabled = False # flag to suppress watchers -- not
+        self.watchers_disabled = False  # flag to suppress watchers -- not
         # sure if it is *ever* a good idea
         self.printing = False
         self.unassigned_objects = {}
@@ -136,7 +135,7 @@ class Controller:
         """
         :return: UIManager
         """
-        return self.main.ui_manager #getattr(self.main, 'ui_manager', None)
+        return self.main.ui_manager  # getattr(self.main, 'ui_manager', None)
 
     @property
     def cm(self):
@@ -286,6 +285,22 @@ class Controller:
                 obj.update_selection_status(False)
         self.call_watchers(self, 'selection_changed', value=self.selected)
 
+    def get_selected_nodes(self, of_type=None):
+        nclass = self.main.classes.base_node_class
+        if of_type:
+            return [node for node in self.selected if
+                    isinstance(node, nclass) and node.node_type == of_type]
+        else:
+            return [node for node in self.selected if isinstance(node, nclass)]
+
+    def get_selected_edges(self, of_type=None):
+        eclass = self.main.classes.default_edge_class
+        if of_type:
+            return [edge for edge in self.selected if
+                    isinstance(edge, eclass) and edge.edge_type == of_type]
+        else:
+            return [edge for edge in self.selected if isinstance(edge, eclass)]
+
     def press(self, obj):
         """ Mark object to be the last pressed object.
         :param obj:
@@ -301,7 +316,6 @@ class Controller:
         self.graph_view.toggle_suppress_drag(False)
         if self.pressed is obj:
             self.pressed = None
-
 
     def set_drag_hovering(self, item):
         """ Drag is hovering over one item that can receive drop.

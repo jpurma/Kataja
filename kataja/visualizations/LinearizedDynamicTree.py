@@ -45,8 +45,8 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """
         self.forest = forest
         if reset:
-            max_height_steps = max([len(tree_top.get_sorted_nodes()) / 2 for tree_top in
-                                        self.forest])
+            max_height_steps = max(
+                [len(tree_top.get_sorted_nodes()) / 2 for tree_top in self.forest])
             self.set_data('max_height_steps', max_height_steps)
             self.set_data('height_steps', max_height_steps / 2)
             self.reset_nodes()

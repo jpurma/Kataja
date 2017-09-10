@@ -139,11 +139,7 @@ class AsymmetricElasticTree(BaseVisualization):
         outer_repulsion = 1
 
         # Push nodes away
-        push_x, push_y = self.elliptic_repulsion(node,
-                                                 node_x,
-                                                 node_y,
-                                                 other_nodes,
-                                                 inner_repulsion,
+        push_x, push_y = self.elliptic_repulsion(node, node_x, node_y, other_nodes, inner_repulsion,
                                                  outer_repulsion)
         xvel += push_x
         yvel += push_y
@@ -152,7 +148,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            elif edge.end.locked_to_node: #is node:
+            elif edge.end.locked_to_node:  # is node:
                 continue
             edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
@@ -167,7 +163,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            elif node.locked_to_node: # is edge.end:
+            elif node.locked_to_node:  # is edge.end:
                 continue
             edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
@@ -185,8 +181,6 @@ class AsymmetricElasticTree(BaseVisualization):
             yvel += node_y * -0.02
 
         return xvel, yvel
-
-
 
     def calculate_movement_good(self, node, other_nodes):
         """ The idea here is that each node has their preferred position below their parent node. 
@@ -215,8 +209,7 @@ class AsymmetricElasticTree(BaseVisualization):
             other_x, other_y = centered_node_position(other, other_cbr)
 
             d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
-                                                 other_cbr.width() / 2,
-                                                 other_cbr.height() / 2)
+                                                 other_cbr.width() / 2, other_cbr.height() / 2)
             if d == 0:
                 continue
             l = -9.0 / (d * d)
@@ -226,7 +219,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            elif edge.end.locked_to_node: #is node:
+            elif edge.end.locked_to_node:  # is node:
                 continue
             edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
@@ -241,7 +234,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            elif node.locked_to_node: # is edge.end:
+            elif node.locked_to_node:  # is edge.end:
                 continue
             edge_n, edge_count = edge.path.cached_edge_start_index
             start_x, start_y = edge.start_point  # @UnusedVariable
@@ -258,8 +251,6 @@ class AsymmetricElasticTree(BaseVisualization):
             xvel += node_x * -0.02
             yvel += node_y * -0.02
         return xvel, yvel
-
-
 
     def reset_node(self, node):
         """

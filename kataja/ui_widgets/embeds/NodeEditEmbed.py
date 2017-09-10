@@ -3,13 +3,12 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import kataja.globals as g
 from kataja.parser.INodes import as_html
 from kataja.singletons import qt_prefs, ctrl
-from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
-from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
-from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
+from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -59,7 +58,7 @@ class NodeEditEmbed(UIEmbed):
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
             d = ed.get(field_name, {})
-            #if d.get('hidden', False) or not self.host.check_conditions(d):
+            # if d.get('hidden', False) or not self.host.check_conditions(d):
             #    continue
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
@@ -72,14 +71,14 @@ class NodeEditEmbed(UIEmbed):
             field = None
             if itype == 'text':
                 width = d.get('width', 140)
-                field = EmbeddedLineEdit(self, tooltip=tt, font=big_font, prefill=prefill,
-                                         on_edit=on_edit)
+                field = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill=prefill,
+                                       on_edit=on_edit)
                 field.setMaximumWidth(width)
             elif itype == 'textarea':
                 self._disable_effect = True
                 template_width = d.get('width', 0)
-                field = EmbeddedTextarea(self, tooltip=tt, font=smaller_font, prefill=prefill,
-                                         on_edit=on_edit)
+                field = KatajaTextarea(self, tooltip=tt, font=smaller_font, prefill=prefill,
+                                       on_edit=on_edit)
                 max_w = 200
                 if node.user_size:
                     w = node.user_size[0]
@@ -90,10 +89,8 @@ class NodeEditEmbed(UIEmbed):
                 field.setFixedWidth(min(w, max_w))
                 self.resize_target = field
             elif itype == 'expandingtext':
-                field = ExpandingTextArea(self,
-                                          tip=tt,
-                                          font=smaller_font,
-                                          prefill=prefill, on_edit=on_edit)
+                field = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill=prefill,
+                                          on_edit=on_edit)
                 template_width = d.get('width', 0)
                 if template_width:
                     field.setFixedWidth(template_width)
@@ -104,14 +101,6 @@ class NodeEditEmbed(UIEmbed):
                 field.setMaximumWidth(width)
             elif itype == 'checkbox':
                 field = QtWidgets.QCheckBox(self)
-            elif itype == 'radiobutton':
-                width = d.get('width', 200)
-                op_func = d.get('option_function')
-                op_func = getattr(self.host, op_func, None) or \
-                          getattr(self.syntactic_object, op_func, None)
-                field = EmbeddedRadiobutton(self, options=op_func())
-                field.setMaximumWidth(width)
-                field_first = False
             elif itype == 'preview':
                 field = PreviewLabel(self, tip=tt, font=smaller_font)
             elif itype == 'spinbox':
@@ -124,9 +113,7 @@ class NodeEditEmbed(UIEmbed):
             if field:
                 action = d.get('select_action')
                 if action:
-                    connect_slot = getattr(field, 'connect_slot', None)
-                    self.ui_manager.connect_element_to_action(field, action,
-                                                              connect_slot=connect_slot)
+                    self.ui_manager.connect_element_to_action(field, action)
                 if syntactic:
                     field.setPalette(ui_s)
                 else:
@@ -191,7 +178,7 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, field_name, '')
             if 'enabler' in d:
                 enabled = getattr(self.host, d['enabler'])()
-                field.setEnabled(bool(enabled) )
+                field.setEnabled(bool(enabled))
             itype = d.get('input_type', 'text')
             if itype == 'expandingtext':
                 value = as_html(value)

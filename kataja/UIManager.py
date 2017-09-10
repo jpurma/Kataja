@@ -67,6 +67,7 @@ from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelS
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_support.FloatingTip import FloatingTip
 import kataja.ui_widgets.buttons.OverlayButton as ob
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -81,7 +82,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
           {'class': ColorWheelPanel, 'name': 'Color picker', 'position': 'float',
            'closed': True},
-          {'class': LineOptionsPanel, 'name': 'More edge options', 'position': 'float',
+          {'class': LineOptionsPanel, 'name': 'Edge drawing', 'position': 'float',
            'closed': True},
           {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right', 'folded': True},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
@@ -146,8 +147,6 @@ class UIManager:
         self._prev_active_scope = g.DOCUMENT
         self.scope_is_selection = False
         self.default_node_type = g.CONSTITUENT_NODE
-        self.active_edge_type = g.CONSTITUENT_EDGE
-        self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
         self.preferences_dialog = None
         self.qe_label = None
@@ -205,7 +204,6 @@ class UIManager:
         else:
             self.scope_is_selection = False
         self.active_scope = scope
-        self.active_shape_name = ctrl.settings.get_active_edge_setting('shape_name')
         ctrl.call_watchers(self, 'scope_changed')
 
     def set_help_text(self, text, append=False, prepend=False):
@@ -321,6 +319,7 @@ class UIManager:
         """
         self.update_positions()
 
+    @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         for action in self.actions.values():
@@ -408,10 +407,9 @@ class UIManager:
                     if group_member not in ctrl.selected:
                         self.selection_group.remove_node(group_member)
                 # check if any selection contains any objects that should be added to group
-                for node in ctrl.selected:
-                    if isinstance(node, Node) and node.can_be_in_groups:
-                        if node not in self.selection_group:
-                            self.selection_group.add_node(node)
+                for node in ctrl.get_selected_nodes():
+                    if node.can_be_in_groups and node not in self.selection_group:
+                        self.selection_group.add_node(node)
                 self.add_buttons_for_group(self.selection_group)
             # draw a selection group around selected nodes
             elif ctrl.area_selection:

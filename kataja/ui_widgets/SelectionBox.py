@@ -5,6 +5,7 @@ from kataja.singletons import ctrl
 
 
 class SelectionBox(QtWidgets.QComboBox, UIWidget):
+    action_slot = 'activated'
 
     def __init__(self, parent=None, data=None, action='', mini=False, **kwargs):
         QtWidgets.QComboBox.__init__(self, parent)
@@ -47,6 +48,12 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
                 self.uses_data = False
                 self.addItem(value)
 
+    def set_displayed_value(self, value):
+        if self.uses_data:
+            self.select_by_data(value)
+        else:
+            self.select_by_text(value)
+
     def select_by_text(self, text):
         self.setCurrentText(text)
 
@@ -55,5 +62,5 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
         :param data:
         """
         index = self.find_list_item(data)
-        #print('selecting data, data %s got index %s' % (data, index))
+        # print('selecting data, data %s got index %s' % (data, index))
         self.setCurrentIndex(index)

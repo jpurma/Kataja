@@ -25,29 +25,6 @@ BOTTOM_SIDE = 6
 BOTTOM_RIGHT_CORNER = 7
 
 
-class Shape:
-    """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
-    and may have their own special parameters.
-    """
-    shape_name = 'no_path'
-    control_points = 0
-    fillable = False
-    defaults = {}
-
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
-        return QtGui.QPainterPath(), QtGui.QPainterPath(), [], ()
-
-    @staticmethod
-    def icon_path(painter, rect, color=None):
-        pass
-
-
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
     """ List where control points and their adjustments are added up
     :param sx: start_point x
@@ -103,7 +80,7 @@ def draw_arrow_shape(self, painter):
     # Draw the arrows if there's enough room.
     ll = l.length()
     if ll >= 1 and ll + back > 0:
-        angle = acos(l.dx() / ll) # acos has to be <= 1.0
+        angle = acos(l.dx() / ll)  # acos has to be <= 1.0
     else:
         return
     prop = back / ll
@@ -175,6 +152,30 @@ def to_pf(xy):
     return Pf(xy[0], xy[1])
 
 
+class Shape:
+    """ Baseclass for complex parametrized paths used to draw edges. Each implements path -method
+    and may have their own special parameters.
+    """
+    shape_name = 'no_path'
+    control_points_n = 0
+    fillable = False
+    defaults = {
+        'outline': False
+    }
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
+        return QtGui.QPainterPath(), QtGui.QPainterPath(), [], ()
+
+    @staticmethod
+    def icon_path(painter, rect, color=None):
+        pass
+
+
 class ShapedCubicPath(Shape):
     """ Two point leaf-shaped curve """
     shape_name = 'shaped_cubic'
@@ -194,9 +195,8 @@ class ShapedCubicPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = ShapedCubicPath.defaults
         sx, sy = start_point
@@ -245,8 +245,7 @@ class ShapedCubicPath(Shape):
         return path, inner_path, control_points, c
 
     @staticmethod
-    def icon_path(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8,
-                  leaf_x=1, leaf_y=3):
+    def icon_path(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=1, leaf_y=3):
         sx, sy = 0, 4
         w = rect.width()
         h = rect.height()
@@ -266,6 +265,7 @@ class CubicPath(Shape):
     fillable = False
 
     defaults = {
+        'outline': True,
         'thickness': 1.0,
         'rel_dx': 0.2,
         'rel_dy': 0.4,
@@ -274,9 +274,8 @@ class CubicPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = CubicPath.defaults
         sx, sy = start_point
@@ -344,9 +343,8 @@ class ShapedQuadraticPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = ShapedQuadraticPath.defaults
         sx, sy = start_point
@@ -402,6 +400,7 @@ class QuadraticPath(Shape):
     control_points_n = 1
     fillable = False
     defaults = {
+        'outline': True,
         'thickness': 1.0,
         'rel_dx': 0.4,
         'rel_dy': 0.2,
@@ -410,9 +409,8 @@ class QuadraticPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = QuadraticPath.defaults
         sx, sy = start_point
@@ -463,9 +461,8 @@ class ShapedLinearPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = ShapedLinearPath.defaults
         sx, sy = start_point
@@ -505,13 +502,13 @@ class LinearPath(Shape):
     control_points_n = 0
     fillable = False
     defaults = {
+        'outline': True,
         'thickness': 1.0,
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = LinearPath.defaults
         sx, sy = start_point
@@ -543,9 +540,8 @@ class BlobPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = BlobPath.defaults
         if start:
@@ -659,9 +655,8 @@ class DirectionalBlobPath(Shape):
     }
 
     @staticmethod
-    def path(start_point, end_point, curve_adjustment, curve_dir_start,
-             curve_dir_end, inner_only=False, thick=1, start=None, end=None,
-             d=None):
+    def path(start_point, end_point, curve_adjustment, curve_dir_start, curve_dir_end,
+             inner_only=False, thick=1, start=None, end=None, d=None):
         if not d:
             d = DirectionalBlobPath.defaults
         if start:
@@ -679,12 +674,12 @@ class DirectionalBlobPath(Shape):
         thickness = d['thickness']
         t2 = thickness * 2
         if thick > 1:
-            start_ball = start # and start.has_visible_label()
+            start_ball = start  # and start.has_visible_label()
             if start_ball:
                 sx1, sy1, sw, sh = start.boundingRect().getRect()
             else:
                 sx1, sy1, sw, sh = 0, 0, 0, 0
-            end_ball = end # and end.has_visible_label()
+            end_ball = end  # and end.has_visible_label()
             if end_ball:
                 ex1, ey1, ew, eh = end.boundingRect().getRect()
             else:
@@ -794,16 +789,13 @@ available_shapes = [ShapedCubicPath, CubicPath, ShapedQuadraticPath, QuadraticPa
 
 def draw_circle(painter, x, y, end_spot_size):
     painter.setBrush(ctrl.cm.paper())
-    painter.drawEllipse(x - end_spot_size + 1,
-                        y - end_spot_size + 1,
-                        2 * end_spot_size, 2 * end_spot_size)
+    painter.drawEllipse(x - end_spot_size + 1, y - end_spot_size + 1, 2 * end_spot_size,
+                        2 * end_spot_size)
 
 
 def draw_plus(painter, x, y):
-    painter.drawLine(x - 1, y + 1,
-                     x + 3, y + 1)
-    painter.drawLine(x + 1, y - 1,
-                     x + 1, y + 3)
+    painter.drawLine(x - 1, y + 1, x + 3, y + 1)
+    painter.drawLine(x + 1, y - 1, x + 1, y + 3)
 
 
 def draw_leaf(painter, x, y, radius):
@@ -812,21 +804,15 @@ def draw_leaf(painter, x, y, radius):
     path = QtGui.QPainterPath(QtCore.QPointF(x, y - radius))
 
     # leaf part
-    path.cubicTo(x + radius + minor_shift, y - radius,
-                 x, y,
-                 x + minor_shift, y + radius)
-    path.cubicTo(x - shift, y + radius,
-                 x - radius, y - radius,
-                 x, y - radius)
+    path.cubicTo(x + radius + minor_shift, y - radius, x, y, x + minor_shift, y + radius)
+    path.cubicTo(x - shift, y + radius, x - radius, y - radius, x, y - radius)
     painter.fillPath(path, painter.brush())
     painter.drawPath(path)
     # leaf stem
     path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
-    path.cubicTo(x, y - radius,
-                 x - minor_shift, y,
-                 x + minor_shift, y + radius)
+    path.cubicTo(x, y - radius, x - minor_shift, y, x + minor_shift, y + radius)
     painter.setBrush(QtCore.Qt.NoBrush)
-    #path.addRect(x - radius, y - radius, radius * 2, radius * 2) # for debugging
+    # path.addRect(x - radius, y - radius, radius * 2, radius * 2) # for debugging
     painter.drawPath(path)
 
 
@@ -837,28 +823,20 @@ def draw_tailed_leaf(painter, x, y, radius):
     # leaf part
     path = QtGui.QPainterPath(QtCore.QPointF(x, leaf_top))
 
-    path.cubicTo(x + radius + minor_shift, leaf_top ,
-                 x, y,
-                 x + minor_shift, y + radius)
-    path.cubicTo(x - shift, y + radius,
-                 x - radius, leaf_top,
-                 x, leaf_top)
+    path.cubicTo(x + radius + minor_shift, leaf_top, x, y, x + minor_shift, y + radius)
+    path.cubicTo(x - shift, y + radius, x - radius, leaf_top, x, leaf_top)
     painter.fillPath(path, painter.brush())
     painter.drawPath(path)
     # stem part
     path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
-    path.cubicTo(x, y - radius,
-                 x - minor_shift, y + shift,
-                 x + minor_shift, y + radius)
+    path.cubicTo(x, y - radius, x - minor_shift, y + shift, x + minor_shift, y + radius)
     painter.setBrush(QtCore.Qt.NoBrush)
     painter.drawPath(path)
 
 
 def draw_x(painter, x, y, end_spot_size):
-    painter.drawLine(x - end_spot_size, y - end_spot_size,
-                     x + end_spot_size, y + end_spot_size)
-    painter.drawLine(x - end_spot_size, y + end_spot_size,
-                     x + end_spot_size, y - end_spot_size)
+    painter.drawLine(x - end_spot_size, y - end_spot_size, x + end_spot_size, y + end_spot_size)
+    painter.drawLine(x - end_spot_size, y + end_spot_size, x + end_spot_size, y - end_spot_size)
 
 
 def draw_triangle(painter, x, y, w=10):
@@ -871,16 +849,11 @@ def draw_triangle(painter, x, y, w=10):
 
 
 SHAPE_PRESETS = OrderedDict([(od.shape_name, od) for od in available_shapes])
-SHAPE_DEFAULTS = {}
-for od in available_shapes:
-    SHAPE_DEFAULTS[od.shape_name] = od.defaults
 
-low_arc = SHAPE_DEFAULTS['quad'].copy()
+low_arc = QuadraticPath.defaults.copy()
 low_arc['shape_name'] = 'low_arc'
 low_arc['rel_dx'] = 1.0
 low_arc['rel_dy'] = 0.5
 low_arc['fixed_dx'] = 0
 low_arc['fixed_dy'] = 40
-print(low_arc)
-SHAPE_DEFAULTS['low_arc'] = low_arc
 SHAPE_PRESETS['low_arc'] = QuadraticPath

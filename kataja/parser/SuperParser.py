@@ -1,4 +1,3 @@
-
 import ast
 import time
 
@@ -7,8 +6,8 @@ from kataja.parser.LatexToINode import LatexToINode
 from kataja.parser.INodes import IParserNode, ITextNode, ICommandNode
 from kataja.utils import time_me
 
-class SuperParser:
 
+class SuperParser:
     def __init__(self, string, bracket='', html=None, latex=None, dot_label=None):
         """ SuperParser attempts to use some (really) rough heuristics to guess how the input is
         formatted: does it use parenthesis, brackets, curly braces etc to express embedding,
@@ -30,7 +29,7 @@ class SuperParser:
         except ValueError:
             parts_list = []
         ss = string.strip()
-        #print('stripped input:', ss)
+        # print('stripped input:', ss)
         if not bracket:
             if ss[0] in '[({':
                 bracket = ss[0]
@@ -49,7 +48,7 @@ class SuperParser:
             self.rbracket = '}'
         else:
             self.rbracket = ''
-        #print('assuming brackets to be ', self.lbracket, self.rbracket)
+        # print('assuming brackets to be ', self.lbracket, self.rbracket)
         self.latex = latex
         self.html = html
         if self.latex is None and self.html is None:
@@ -81,9 +80,9 @@ class SuperParser:
                 self.dot_label = False
         else:
             self.dot_label = dot_label
-        #print('assuming to be LaTeX: %s, HTML: %s, dot_label: %s ' % (self.latex, self.html,
+        # print('assuming to be LaTeX: %s, HTML: %s, dot_label: %s ' % (self.latex, self.html,
         #                                                              self.dot_label))
-        #print(ss)
+        # print(ss)
 
         if self.html:
             self.ltag = "<"
@@ -109,7 +108,7 @@ class SuperParser:
         if self.lbracket == '(' and not self.html and not self.latex:  # treebank format
             self.treebank = True
             self.dot_label = False
-            #print('** assuming treebank format **')
+            # print('** assuming treebank format **')
         else:
             self.treebank = False
 
@@ -205,9 +204,9 @@ class SuperParser:
                 open_tags -= 1
                 s += item
             elif isinstance(item, str):
-                if open_tags == 0 and (not open_bitag) \
-                        and ((self.divider == ' ' and item.isspace()) or item == self.divider) \
-                        and (max_splits == 0 or max_splits > splits):
+                if open_tags == 0 and (not open_bitag) and (
+                            (self.divider == ' ' and item.isspace()) or item == self.divider) and (
+                                max_splits == 0 or max_splits > splits):
                     splits += 1
                     s = s.strip()
                     if s:
@@ -233,6 +232,7 @@ class SuperParser:
             :param parts_list: list of strings or lists
             :tidy_up: tidy all contained inodes, do it once
         """
+
         def has_triangle(inode):
             if isinstance(inode, ICommandNode) and inode.command == 'qroof':
                 return inode

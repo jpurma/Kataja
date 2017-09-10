@@ -37,9 +37,11 @@ from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
 from kataja.globals import DOCUMENT, PREFS
 
-color_keys = [f'content{i}' for i in range(1, 4)] + [f'background{i}' for i in range(1, 3)] + \
-             [f'accent{i}' for i in range(1, 9)] + [f'accent{i}tr' for i in range(1, 9)] + \
-             [f'custom{i}' for i in range(1, 10)]
+color_keys = [f'content{i}' for i in range(1, 4)] + \
+             [f'background{j}' for j in range(1, 3)] + \
+             [f'accent{k}' for k in range(1, 9)] + \
+             [f'accent{l}tr' for l in range(1, 9)] + \
+             [f'custom{m}' for m in range(1, 10)]
 
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
 # We are going to have one theme built around these.
@@ -67,7 +69,6 @@ sol = [c(0, 43, 54), c(7, 54, 66), c(88, 110, 117), c(101, 123, 131), c(131, 148
        c(147, 161, 161), c(238, 232, 213), c(253, 246, 227)]
 accents = [c(181, 137, 0), c(203, 75, 22), c(220, 50, 47), c(211, 54, 130), c(108, 113, 196),
            c(38, 139, 210), c(42, 161, 152), c(133, 153, 0)]
-
 
 color_themes = OrderedDict([('solarized_dk', {
     'name': 'Solarized dark',
@@ -272,7 +273,7 @@ class PaletteManager:
         elif build == 'random':
             found = False
             if try_to_remember:
-                remembered = ctrl.settings.get('last_key_colors') # found from forest's settings
+                remembered = ctrl.settings.get('last_key_colors')  # found from forest's settings
                 if theme_key in remembered:
                     self.hsv = list(remembered[theme_key])
                     found = True
@@ -292,7 +293,9 @@ class PaletteManager:
                     if remembered:
                         remembered[theme_key] = self.hsv
                     else:
-                        remembered = {theme_key: self.hsv}
+                        remembered = {
+                            theme_key: self.hsv
+                        }
                     ctrl.settings.set('last_key_colors', remembered, level=FOREST)
         if colors:
             for key, (r, g, b, a) in colors.items():
@@ -532,10 +535,10 @@ class PaletteManager:
         else:
             return color.darker(160)
 
-    def lighter(self, color:QColor) -> QColor:
+    def lighter(self, color: QColor) -> QColor:
         return color.lighter(110)
 
-    def transparent(self, color:QColor, opacity=50) -> QColor:
+    def transparent(self, color: QColor, opacity=50) -> QColor:
         c = QColor(color)
         c.setAlpha(opacity)
         return c
@@ -645,7 +648,7 @@ class PaletteManager:
         bbase = QtGui.QBrush(base)
         pr, pg, pb, pa = self.paper().getRgb()
         br, bg, bb, ba = base.getRgb()
-        #base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
+        # base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
         base_melded = QtGui.QColor(self.paper2())
         base_melded.setAlphaF(0.9)
         bb_melded = QtGui.QBrush(base_melded)
@@ -756,7 +759,6 @@ class PaletteManager:
             ctrl.call_watchers(self, 'color_themes_changed')
 
 
-
 # HUSL colors and the code for creating them is from here:
 # https://github.com/husl-colors/husl-python
 # License for this portion of code:
@@ -812,7 +814,6 @@ def husl_to_rgb(h, s, l):
     elif bb > 1:
         bb = 1
     return br, bg, bb
-
 
 
 def rgb_to_husl(r, g, b):
@@ -884,16 +885,16 @@ def from_linear(c):
     if c <= 0.0031308:
         return 12.92 * c
     else:
-        return (1.055 * math.pow(c, 1.0 / 2.4) - 0.055)
+        return 1.055 * math.pow(c, 1.0 / 2.4) - 0.055
 
 
 def to_linear(c):
     a = 0.055
 
     if c > 0.04045:
-        return (math.pow((c + a) / (1.0 + a), 2.4))
+        return math.pow((c + a) / (1.0 + a), 2.4)
     else:
-        return (c / 12.92)
+        return c / 12.92
 
 
 def xyz_to_rgb(triple):

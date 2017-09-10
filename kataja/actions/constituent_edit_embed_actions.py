@@ -108,5 +108,5 @@ class SetVisibleLabelToAutolabel(SetVisibleLabel):
         node = ctrl.get_single_selected()
         if not node:
             return False
-        value = ctrl.settings.get('label_text_mode', obj=node, level=g.OBJECT)
+        value = ctrl.settings.get('label_text_mode', obj=node, level=g.HIGHEST)
         return value == g.XBAR_LABELS

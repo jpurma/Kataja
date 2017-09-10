@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
+
 __author__ = 'purma'
 
 rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in range(1, 9)]
@@ -16,7 +17,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         super().__init__()
         self.d = data
         self.color = ctrl.cm.get(self.d.color_tr_id)
-        #self.show()
+        # self.show()
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events

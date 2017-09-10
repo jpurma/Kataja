@@ -30,7 +30,7 @@ import json
 from .kataja.Controller import colors
 
 
-def export_visible_items(path = 'tempdata.json', scene = None, forest = None, prefs = None):
+def export_visible_items(path='tempdata.json', scene=None, forest=None, prefs=None):
     """
 
     :param path:
@@ -41,24 +41,22 @@ def export_visible_items(path = 'tempdata.json', scene = None, forest = None, pr
     """
     data = collections.OrderedDict()
     for n, node in enumerate(scene.visible_nodes()):
-        nobj = collections.OrderedDict([('Type', 'ConstituentNode'),
-        ('location', node.current_position),
-        ('label', node.label or node.syntactic_object.label),
-        ('parents', [x.key for x in node.get_parents(similar=False, visible=True)]),
-        ('children', [x.key for x in node.get_children(similar=False, visible=True)]),
-        ('edges', [x.key for x in node.relations_down])
-        ])
+        nobj = collections.OrderedDict(
+            [('Type', 'ConstituentNode'), ('location', node.current_position),
+             ('label', node.label or node.syntactic_object.label),
+             ('parents', [x.key for x in node.get_parents(similar=False, visible=True)]),
+             ('children', [x.key for x in node.get_children(similar=False, visible=True)]),
+             ('edges', [x.key for x in node.relations_down])])
         data[node.key] = nobj
     data['Preferences'] = {
-    'Type' : 'Preferences',
-    'color' : colors.drawing.getRgbF()[ :3],
-    'text_color' : colors.text.getRgbF()[ :3],
-    'background' : colors.paper.getRgbF()[ :3],
-    'background_lighter' : colors.paper.lighter().getRgbF()[ :3]
+        'Type': 'Preferences',
+        'color': colors.drawing.getRgbF()[:3],
+        'text_color': colors.text.getRgbF()[:3],
+        'background': colors.paper.getRgbF()[:3],
+        'background_lighter': colors.paper.lighter().getRgbF()[:3]
     }
     print('exporting to ', path)
     f = open(path, 'w')
-    f.write(json.dumps(data, indent = 4))
+    f.write(json.dumps(data, indent=4))
     f.close()
     return path
-

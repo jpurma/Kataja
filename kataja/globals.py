@@ -28,11 +28,6 @@ GUESS_FROM_INPUT = 99
 
 # ## Our custom signals
 
-EDGE_SHAPES_CHANGED = 101
-# EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
-
-# EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
-# print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
 
 
 # Alignment of edges
@@ -111,6 +106,11 @@ FOREST = 2
 DOCUMENT = 3
 PREFS = 4
 CONFLICT = 666666
+
+# Arrowheads
+AT_START = 1
+AT_END = 2
+AT_BOTH = 3
 
 # Trace strategies
 USE_MULTIDOMINATION = 0

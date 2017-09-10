@@ -1,4 +1,3 @@
-
 import logging
 import queue
 
@@ -49,9 +48,11 @@ def capture_stdout(logger, outputter, ctrl):
     logger.watcher_thread.started.connect(logger.my_receiver.run)
     logger.watcher_thread.start()
 
+
 def release_stdout(logger, ctrl):
     logger.watcher_thread.started.disconnect(logger.my_receiver.run)
     sys.stdout = ctrl.original_stdout
+
 
 class LogWidgetPusher(logging.Handler):
     """ This receives all logging messages and emits them to available widget (QTextBrowser).

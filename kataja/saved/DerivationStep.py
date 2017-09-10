@@ -29,6 +29,7 @@ from kataja.utils import time_me
 from kataja.syntactic_state_to_nodes import syntactic_state_to_nodes
 from syntax.SyntaxState import SyntaxState
 
+
 # Thinking about undo system. It should be a common class Undoable inherited
 # by everyone. It contains few methods: start_undoable_operation,
 # add_undoable_field, finish_undoable_operation.
@@ -50,8 +51,8 @@ class DerivationStep(SavedObject):
         self.marked = syn_state.marked if syn_state else []
 
     def __str__(self):
-        return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(self.other) \
-               + ", '" + str(self.msg) + "')"
+        return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(
+            self.other) + ", '" + str(self.msg) + "')"
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
@@ -96,20 +97,20 @@ class DerivationStepManager(SavedObject):
         open_references = {}
         d_step.save_object(savedata, open_references)
         c = 0
-        max_depth = 100 # constituent trees can be surprisingly deep, and we don't have any
+        max_depth = 100  # constituent trees can be surprisingly deep, and we don't have any
         # general dict about them.
         while open_references and c < max_depth:
             c += 1
             for obj in list(open_references.values()):
                 if hasattr(obj, 'uid'):
-                    #print('saving obj ', obj.uid)
+                    # print('saving obj ', obj.uid)
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
-        assert(c < max_depth) # please raise the max depth if this is reached
+        assert (c < max_depth)  # please raise the max depth if this is reached
         self.derivation_steps.append((d_step.uid, savedata, d_step.msg))
 
-#    @time_me
+    #    @time_me
     def restore_derivation_step(self):
         if self.derivation_steps:
             uid, frozen_data, msg = self.derivation_steps[self.derivation_step_index]
@@ -150,8 +151,8 @@ class DerivationStepManager(SavedObject):
         return self.derivation_step_index == 0 or not self.derivation_steps
 
     def is_last(self):
-        return (not self.derivation_steps) or (self.derivation_step_index == len(
-            self.derivation_steps) - 1)
+        return (not self.derivation_steps) or (
+            self.derivation_step_index == len(self.derivation_steps) - 1)
 
     # ############## #
     #                #

@@ -19,6 +19,7 @@ import shutil
 import sys
 from setuptools import setup
 from subprocess import call
+
 try:
     import postsetup
 except ImportError:
@@ -35,9 +36,9 @@ qt_mac = '~/Qt/5.8/clang_64/'
 
 SIGNED_FILES = []  # + frameworks + qt_plugins
 FINALLY_SIGN = ['Kataja.app/Contents/Frameworks/Python.framework',
-                'Kataja.app/Contents/MacOS/python',
-                'Kataja.app/Contents/MacOS/kataja',
+                'Kataja.app/Contents/MacOS/python', 'Kataja.app/Contents/MacOS/kataja',
                 'Kataja.app']
+
 
 def list_files(path, excluded, slash='\\'):
     found_files = []
@@ -81,31 +82,36 @@ setup_dir = setup_dir[:-len(filename)]
 print('setup_dir:', setup_dir)
 
 if sys.platform == 'darwin':
-    plist = {'CFBundleVersion': version_long,
-             'CFBundleShortVersionString': version_short,
-             'CFBundleIdentifier': 'fi.purma.Kataja',
-             'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
+    plist = {
+        'CFBundleVersion': version_long,
+        'CFBundleShortVersionString': version_short,
+        'CFBundleIdentifier': 'fi.purma.Kataja',
+        'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'
+    }
 
-    OPTIONS = {'py2app': {'argv_emulation': False,
-                          'iconfile': 'resources/icons/Kataja.icns',
-                          'plist': plist,
-                          'site_packages': False,
-                          'includes': ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui',
-                                       'PyQt5.QtMultimedia', 'PyQt5.QtNetwork',
-                                       'PyQt5.QtMultimediaWidgets', 'PyQt5.QtOpenGL',
-                                       'PyQt5.QtDBus', 'PyQt5.QtPrintSupport', 'PyQt5.QtSvg'],
-                          'excludes': ['PyQt5.uic']
-                         }
-              }
-    extra_options = {'setup_requires': ['py2app'],
-                     'app': [mainscript],
-                     'data_files': ['resources'],
-                     'options': OPTIONS}
+    OPTIONS = {
+        'py2app': {
+            'argv_emulation': False,
+            'iconfile': 'resources/icons/Kataja.icns',
+            'plist': plist,
+            'site_packages': False,
+            'includes': ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtMultimedia',
+                         'PyQt5.QtNetwork', 'PyQt5.QtMultimediaWidgets', 'PyQt5.QtOpenGL',
+                         'PyQt5.QtDBus', 'PyQt5.QtPrintSupport', 'PyQt5.QtSvg'],
+            'excludes': ['PyQt5.uic']
+        }
+    }
+    extra_options = {
+        'setup_requires': ['py2app'],
+        'app': [mainscript],
+        'data_files': ['resources'],
+        'options': OPTIONS
+    }
     # Check that Qt is available before trying to do anything more:
     if not os.access(os.path.expanduser(qt_mac), os.F_OK):
         raise EnvironmentError('Qt not found from given path ( "%s" => "%s" ). '
-                               'Edit qt_mac variable in setup.py to match your Qt directory.' %
-                               (qt_mac, os.path.expanduser(qt_mac)))
+                               'Edit qt_mac variable in setup.py to match your Qt directory.' % (
+                                   qt_mac, os.path.expanduser(qt_mac)))
     old_app_dir = setup_dir + 'dist/Kataja.app'
     if os.access(old_app_dir, os.F_OK):
         print('Deleting old version... ', old_app_dir)
@@ -116,31 +122,38 @@ elif sys.platform == 'win32':
     import py2exe
     from distutils.core import setup
 
-    OPTIONS = {'py2exe': {'includes': ['sip'],
-                          'bundle_files': 1,
-                          'compressed': 1}
+    OPTIONS = {
+        'py2exe': {
+            'includes': ['sip'],
+            'bundle_files': 1,
+            'compressed': 1
+        }
     }
     # bundle_files': 1,
-     # 'compressed':1
+    # 'compressed':1
 
     DATA_FILES = [("platforms",
-                   ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]),
-                  ("imageformats",
-                   ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
+                   ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]), (
+                      "imageformats",
+                      ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
     DATA_FILES += make_tuple([], "plugins", "plugins", [".pyc", "__pycache__"])
     DATA_FILES += make_tuple([], "resources", "resources", [".pyc", "temp"])
 
-    extra_options = {'setup_requires': ['py2exe'],
-                     'options': OPTIONS,
-                     'version': version_pep440,
-                     'windows': [{'script': mainscript}],
-                     'data_files': DATA_FILES}
+    extra_options = {
+        'setup_requires': ['py2exe'],
+        'options': OPTIONS,
+        'version': version_pep440,
+        'windows': [{
+            'script': mainscript
+        }],
+        'data_files': DATA_FILES
+    }
 else:
     extra_options = dict(  # Normally unix-like platforms will use "setup.py install"
-            # and install the main script as such
-            scripts=[mainscript], )
+        # and install the main script as such
+        scripts=[mainscript], )
 
-setup(name="Kataja", **extra_options)
+setup(name="Kataja", install_requires=['python-qt5'], **extra_options)
 ################################################################
 #                   Post-setup repairs                         #
 ################################################################
@@ -201,14 +214,12 @@ if sys.platform == 'darwin':
             print('Deleting path... ', path)
             shutil.rmtree(path)
 
-    qt_plugins = ['imageformats/libqgif.dylib',
-                  'mediaservice/libqavfcamera.dylib',
+    qt_plugins = ['imageformats/libqgif.dylib', 'mediaservice/libqavfcamera.dylib',
                   'imageformats/libqicns.dylib', 'imageformats/libqico.dylib',
                   'imageformats/libqjpeg.dylib', 'imageformats/libqsvg.dylib',
                   'imageformats/libqtga.dylib', 'imageformats/libqtiff.dylib',
                   'imageformats/libqwbmp.dylib', 'imageformats/libqwebp.dylib',
-                  'platforms/libqcocoa.dylib'
-                  ]
+                  'platforms/libqcocoa.dylib']
     # 'platforms/libqcocoa.dylib',
     qt_frameworks = qt_base + 'lib/%s.framework/Versions/5/%s'
     rpath_frameworks = '@rpath/%s.framework/Versions/5/%s'
@@ -242,8 +253,7 @@ if sys.platform == 'darwin':
     print('------- Adding plugins dir inside Kataja.app to enable editable plugins')
     if not os.access(app_contents + 'Resources/lib/plugins', os.F_OK):
         shutil.copytree(setup_dir + 'plugins', app_contents + 'Resources/lib/plugins')
-        print('copying ', setup_dir + 'plugins', ' to ',
-              app_contents + 'Resources/lib/plugins')
+        print('copying ', setup_dir + 'plugins', ' to ', app_contents + 'Resources/lib/plugins')
     cache_path = app_contents + 'Resources/lib/plugins/__pycache__'
     if os.access(cache_path, os.F_OK):
         shutil.rmtree(cache_path)
@@ -266,8 +276,7 @@ if sys.platform == 'darwin':
             for file_name in SIGNED_FILES + FINALLY_SIGN:
                 print('signing ', file_name)
                 call('codesign --entitlements %s/Kataja.entitlements -s "%s" -f %sdist/%s' % (
-                    setup_dir, cert_name, setup_dir, file_name),
-                     shell=True)
+                    setup_dir, cert_name, setup_dir, file_name), shell=True)
         else:
             print('failed to load certificate name from file, missing ', developer_cert_config)
 
@@ -287,5 +296,3 @@ if sys.platform == 'darwin':
             print('---- Done ----')
         else:
             print('   --- No post setup tasks found ---')
-
-

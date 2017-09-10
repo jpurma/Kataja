@@ -39,10 +39,10 @@ class KeyBackspace(KatajaAction):
         :return: None
         """
         print('key_backspace - action')
-        ctrl.multiselection_start() # don't update selections until all are removed
+        ctrl.multiselection_start()  # don't update selections until all are removed
         for item in list(ctrl.selected):
             ctrl.free_drawing.delete_item(item)
-        ctrl.multiselection_end() # ok go update
+        ctrl.multiselection_end()  # ok go update
         ctrl.forest.forest_edited()
 
 
@@ -77,7 +77,7 @@ class KeyUp(KatajaAction):
     def method(self):
         if not ctrl.ui_focus:
             ctrl.graph_scene.move_selection('up')
-        else: # This is stupid but I haven't found a better solution that works
+        else:  # This is stupid but I haven't found a better solution that works
             key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Up,
                                         QtCore.Qt.NoModifier)
             ctrl.ui_focus.keyPressEvent(key_event)
@@ -92,7 +92,7 @@ class KeyDown(KatajaAction):
     def method(self):
         if not ctrl.ui_focus:
             ctrl.graph_scene.move_selection('down')
-        else: # This is stupid but I haven't found a better solution that works
+        else:  # This is stupid but I haven't found a better solution that works
             key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Down,
                                         QtCore.Qt.NoModifier)
             ctrl.ui_focus.keyPressEvent(key_event)

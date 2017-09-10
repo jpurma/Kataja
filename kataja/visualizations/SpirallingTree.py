@@ -32,7 +32,6 @@ from kataja.utils import caller
 
 
 class Layer:
-
     def __init__(self, focus, parent, vis):
         self.vis = vis
         self.focus = focus
@@ -49,7 +48,7 @@ class Layer:
     def expand(self):
         if self.attempts > self.max_attempts:
             return False
-        if not self.has_room(self.rect): # don't push through a node
+        if not self.has_room(self.rect):  # don't push through a node
             return False
         self.attempts += 1
         self.size += 1

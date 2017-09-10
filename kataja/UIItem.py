@@ -181,6 +181,7 @@ class UIWidget(UIItem):
         """
         if with_label:
             labelw = KatajaBuddyLabel(text=with_label, buddy=self)
+            self.k_buddy = labelw
             layout.addWidget(labelw)
         if align:
             layout.addWidget(self, alignment=align)

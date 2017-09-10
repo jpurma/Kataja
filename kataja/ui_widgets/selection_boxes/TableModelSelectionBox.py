@@ -1,4 +1,3 @@
-
 from kataja.ui_widgets.SelectionBox import SelectionBox
 
 
@@ -31,10 +30,10 @@ class TableModelSelectionBox(SelectionBox):
             self.setCurrentIndex(item.row())
             self.setModelColumn(item.column())
         else:
-            print("couldn't find data %s from selector model" % data)
-            #raise hell
+            print("couldn't find data '%s' from selector model in %s" % (data, self))
+            # raise hell
 
-    def currentData(self,  **kwargs):
+    def currentData(self, **kwargs):
         """
 
         :param kwargs:

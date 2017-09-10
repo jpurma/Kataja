@@ -61,8 +61,18 @@ class ConstituentNode(Node):
     wraps = 'constituent'
     editable = {}  # Uses custom ConstituentNodeEmbed instead of template-based NodeEditEmbed
 
-    default_style = {'plain': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10},
-                     'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
+    default_style = {
+        'plain': {
+            'color_id': 'content1',
+            'font_id': g.MAIN_FONT,
+            'font-size': 10
+        },
+        'fancy': {
+            'color_id': 'content1',
+            'font_id': g.MAIN_FONT,
+            'font-size': 10
+        }
+    }
 
     default_edge = g.CONSTITUENT_EDGE
     ui_sheet = ('kataja.ui_widgets.panels.ConstituentSheet', 'ConstituentSheet')
@@ -80,19 +90,15 @@ class ConstituentNode(Node):
     # check if this is an appropriate toucharea to draw for given node or edge.
     # format.
 
-    touch_areas_when_dragging = [
-        ta.LeftAddTop, ta.LeftAddSibling, ta.RightAddSibling, ta.AddBelowTouchArea
-    ]
-    touch_areas_when_selected= [
-        ta.LeftAddTop, ta.RightAddTop, ta.MergeToTop, ta.LeftAddInnerSibling,
-        ta.RightAddInnerSibling, ta.LeftAddUnaryChild, ta.RightAddUnaryChild,
-        ta.LeftAddLeafSibling, ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
-        ta.RemoveTriangleTouchArea
-    ]
+    touch_areas_when_dragging = [ta.LeftAddTop, ta.LeftAddSibling, ta.RightAddSibling,
+                                 ta.AddBelowTouchArea]
+    touch_areas_when_selected = [ta.LeftAddTop, ta.RightAddTop, ta.MergeToTop,
+                                 ta.LeftAddInnerSibling, ta.RightAddInnerSibling,
+                                 ta.LeftAddUnaryChild, ta.RightAddUnaryChild, ta.LeftAddLeafSibling,
+                                 ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
+                                 ta.RemoveTriangleTouchArea]
 
-    buttons_when_selected = [
-        ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton
-    ]
+    buttons_when_selected = [ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton]
 
     def __init__(self, label=''):
         """ Most of the initiation is inherited from Node """
@@ -228,6 +234,7 @@ class ConstituentNode(Node):
                     sorted_constituents.append(node)
                     for child in node.get_children(similar=False, visible=False):
                         add_children(child)
+
         add_children(self)
         return sorted_constituents
 
@@ -254,16 +261,16 @@ class ConstituentNode(Node):
         if self.index:
             lines.append(f' Index: {repr(self.index)}')
 
-        heads = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h
-                 in self.heads]
+        heads = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h in
+                 self.heads]
         heads = '; '.join(heads)
         if len(self.heads) == 1:
             lines.append(f'head: {heads}')
         elif len(self.heads) > 1:
             lines.append(f'heads: {heads}')
 
-        #x, y = self.current_scene_position
-        #lines.append(f'pos: ({x:.1f},{y:.1f})')
+        # x, y = self.current_scene_position
+        # lines.append(f'pos: ({x:.1f},{y:.1f})')
 
         if self.use_adjustment:
             lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
@@ -369,8 +376,8 @@ class ConstituentNode(Node):
         elif label_text_mode == g.XBAR_LABELS:
             l = self.get_autolabel()
         separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
-        l_html = as_html(l, omit_triangle=separate_triangle, include_index=include_index
-        and self.index)
+        l_html = as_html(l, omit_triangle=separate_triangle,
+                         include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
 
@@ -406,8 +413,9 @@ class ConstituentNode(Node):
             if self.label:
                 if self.triangle_stack:
                     lower_part = extract_triangle(self.label)
-                    return 'node label', as_html(self.label, omit_triangle=True) + \
-                           '<br/>' + as_html(lower_part or '')
+                    return 'node label', as_html(self.label,
+                                                 omit_triangle=True) + '<br/>' + as_html(
+                        lower_part or '')
                 else:
                     return 'node label', as_html(self.label)
             elif self.syntactic_object:
@@ -443,8 +451,8 @@ class ConstituentNode(Node):
         if self.label:
             children = list(self.get_children(similar=True, visible=False))
             if children:
-                return '[.%s %s ]' % \
-                       (self.label, ' '.join((c.as_bracket_string() for c in children)))
+                return '[.%s %s ]' % (
+                    self.label, ' '.join((c.as_bracket_string() for c in children)))
             else:
                 return str(self.label)
         else:
@@ -465,7 +473,6 @@ class ConstituentNode(Node):
         :return:
         """
         return len(list(self.get_children(similar=True, visible=False))) == 1
-
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.
@@ -740,8 +747,6 @@ class ConstituentNode(Node):
         """
         pass
 
-
-
     # ### Paint overrides
 
     def paint(self, painter, option, widget=None):
@@ -804,7 +809,6 @@ class ConstituentNode(Node):
             painter.drawEllipse(r)
             painter.setPen(old_pen)
 
-
     # ############## #
     #                #
     #  Save support  #
@@ -815,4 +819,3 @@ class ConstituentNode(Node):
     index = SavedField("index")
     gloss = SavedField("gloss", if_changed=update_gloss)
     heads = SavedField("heads")
-

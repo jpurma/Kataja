@@ -88,8 +88,8 @@ class LeftFirstTree(BaseVisualization):
             return
         grid.set(x, y, node)
 
-        children = [x for x in node.get_children(similar=True, visible=True)
-                    if not x.locked_to_node]
+        children = [x for x in node.get_children(similar=True, visible=True) if
+                    not x.locked_to_node]
         if not children:
             return
         x_shift = (len(children) // 2) * -2
@@ -104,8 +104,8 @@ class LeftFirstTree(BaseVisualization):
 
         for child in children:
             blocked = True
-            grandchildren = [x for x in child.get_children(similar=True, visible=True)
-                             if not x.locked_to_node]
+            grandchildren = [x for x in child.get_children(similar=True, visible=True) if
+                             not x.locked_to_node]
             count = 0
             while blocked and count < 10:
                 # is the right node position available?
@@ -122,18 +122,14 @@ class LeftFirstTree(BaseVisualization):
                         # is there room for the left child of this node
                         if grandchildren:
                             if len(grandchildren) == 1:
-                                child_pos_x, child_pos_y = nx, \
-                                                           ny + y_step  #
-                                                           #  middle
+                                child_pos_x, child_pos_y = nx, ny + y_step  #
+                                #  middle
                             else:
-                                child_pos_x, child_pos_y = nx - x_step, \
-                                                           ny + y_step  #
-                                                           #  reach left
+                                child_pos_x, child_pos_y = nx - x_step, ny + y_step  #
+                                #  reach left
                             blocked = grid.get(child_pos_x, child_pos_y)
                             if not blocked:
-                                cpath = grid.pixelated_path(nx, ny,
-                                                            child_pos_x,
-                                                            child_pos_y)
+                                cpath = grid.pixelated_path(nx, ny, child_pos_x, child_pos_y)
                                 blocked = grid.is_path_blocked(cpath)
                 if blocked:
                     nx += x_step
@@ -172,7 +168,7 @@ class LeftFirstTree(BaseVisualization):
         # Actual drawing: set nodes to their places in scene
         extra_widths = [0] * merged_grid.width
         extra_heights = []
-        #merged_grid.ascii_dump()
+        # merged_grid.ascii_dump()
         # if node is extra wide, then move all columns to right from that point on
         # same for extra tall nodes. move everything down after that row
         for y_i, row in enumerate(merged_grid):
