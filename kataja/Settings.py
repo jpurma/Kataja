@@ -231,8 +231,8 @@ class Settings:
         if edge:
             edge_type = edge.edge_type
         if level == HIGHEST or level == OBJECT:
-            if edge and edge.settings_chain:
-                return edge.settings_chain[key]
+            if edge and edge.flattened_settings:
+                return edge.flattened_settings[key]
             else:
                 return self.edge_type_chains[edge_type][key]
         for my_map in self.edge_type_chains[edge_type].maps[chain_level[level]:]:

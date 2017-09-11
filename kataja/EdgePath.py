@@ -324,7 +324,6 @@ class EdgePath:
                                                             end=self.edge.end,
                                                             inner_only=self.use_simple_path,
                                                             d=self.edge.flattened_settings)
-
         uses_pen = self.edge.has_outline()
 
         if self.use_simple_path:

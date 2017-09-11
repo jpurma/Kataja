@@ -160,8 +160,6 @@ class ChangeEdgeColor(LinesPanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        print('change edge color getter: ', self.panel.get_active_edge_setting('color_id')
-              or self.panel.get_active_node_setting('color_id'))
         return self.panel.get_active_edge_setting('color_id') or \
             self.panel.get_active_node_setting('color_id')
 
@@ -172,7 +170,7 @@ class EdgeArrowheadStart(LinesPanelAction):
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
-        ah_at_start = args[0]
+        ah_at_start = bool(args[0])
         if ctrl.ui.scope_is_selection:
             kwargs = {'level': ctrl.ui.active_scope}
         else:
@@ -222,7 +220,7 @@ class EdgeArrowheadEnd(LinesPanelAction):
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
-        ah_at_end = args[0]
+        ah_at_end = bool(args[0])
         if ctrl.ui.scope_is_selection:
             kwargs = {'level': ctrl.ui.active_scope}
         else:
@@ -364,7 +362,7 @@ class LeafShapeX(LinesPanelAction):
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
+        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_x')
 
     def getter(self):
         return self.panel.get_active_shape_setting('leaf_x')
@@ -401,7 +399,7 @@ class LeafShapeY(LinesPanelAction):
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
+        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_y')
 
     def getter(self):
         return self.panel.get_active_shape_setting('leaf_y')
@@ -658,7 +656,7 @@ class EdgeShapeLine(LinesPanelAction):
             ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
+        return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
         return self.panel.has_active_outline()

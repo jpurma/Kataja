@@ -586,6 +586,7 @@ class Forest(SavedObject):
         if edge_type:
             for edge in self.edges.values():
                 if edge.edge_type == edge_type:
+                    edge.path.changed = True
                     edge.update_shape()
             if edge_type == g.CONSTITUENT_EDGE:
                 for node in self.nodes.values():

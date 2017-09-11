@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
@@ -109,8 +109,9 @@ class LineOptionsPanel(Panel):
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
         # Curvature
-
         hlayout = box_row(layout)
+        hlayout.addWidget(QtWidgets.QLabel('Curvature'))
+        hlayout.setAlignment(QtCore.Qt.AlignRight)
         self.arc_rel_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_x',
                                                 suffix='%'
@@ -121,6 +122,7 @@ class LineOptionsPanel(Panel):
                                                 ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
+        hlayout.setAlignment(QtCore.Qt.AlignRight)
         self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_x',
                                                   suffix=' px'
@@ -265,7 +267,7 @@ class LineOptionsPanel(Panel):
 
     def get_active_node_setting(self, key):
         if ctrl.ui.scope_is_selection:
-            nodes = ctrl.get_selected_edges()
+            nodes = ctrl.get_selected_nodes()
             if nodes:
                 for node in nodes:
                     if key in node.settings:
@@ -273,6 +275,18 @@ class LineOptionsPanel(Panel):
                 return ctrl.settings.get_node_setting(key, node=nodes[0])
         return ctrl.settings.get_node_setting(key, node_type=self.active_node_type,
                                               level=ctrl.ui.active_scope)
+
+    def active_edge_has_setting(self, key):
+        if ctrl.ui.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if key in edge.flattened_settings:
+                        return True
+            return False
+        shape_name = ctrl.settings.get_edge_setting('shape_name',
+            edge_type=self.active_edge_type, level=ctrl.ui.active_scope)
+        return key in SHAPE_PRESETS[shape_name].defaults
 
     def get_active_shape_setting(self, key):
         """ Return edge setting either from selected items or from ui.active_edge_type. If there

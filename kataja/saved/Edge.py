@@ -137,7 +137,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         if transition_type == g.CREATED:
             ctrl.forest.store(self)
             ctrl.forest.add_to_scene(self)
-            print(self.start, self.end)
         elif transition_type == g.DELETED:
             ctrl.free_drawing.delete_edge(self, fade=False)
             return
@@ -860,30 +859,38 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     def set_leaf_width(self, value):
         ctrl.settings.set_edge_setting('leaf_x', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def set_leaf_height(self, value):
         ctrl.settings.set_edge_setting('leaf_y', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def change_edge_relative_curvature_x(self, value):
+        print('change_edge_relative_curvature_x ', value, value * .01)
         ctrl.settings.set_edge_setting('rel_dx', value * .01, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def change_edge_relative_curvature_y(self, value):
         ctrl.settings.set_edge_setting('rel_dy', value * .01, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def change_edge_fixed_curvature_x(self, value):
         ctrl.settings.set_edge_setting('fixed_dx', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def change_edge_fixed_curvature_y(self, value):
         ctrl.settings.set_edge_setting('fixed_dy', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def set_thickness(self, value):
         ctrl.settings.set_shape_setting('thickness', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def is_filled(self) -> bool:
@@ -897,10 +904,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     def set_fill(self, value):
         ctrl.settings.set_shape_setting('fill', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def set_outline(self, value):
         ctrl.settings.set_shape_setting('outline', value, edge=self)
+        self.path.changed = True
         self.update_shape()
 
     def prepare_adjust_array(self, index):
