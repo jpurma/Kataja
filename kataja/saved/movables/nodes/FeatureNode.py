@@ -408,8 +408,8 @@ class FeatureNode(Node):
 
     @staticmethod
     def get_color_for(feature_name):
-        if feature_name in color_map:
-            return color_map[feature_name]
+        if feature_name in ctrl.forest.semantics_manager.colors:
+            return ctrl.forest.semantics_manager.colors[feature_name]
         else:
             return 'accent7'
 
@@ -420,8 +420,8 @@ class FeatureNode(Node):
         """
         if 'color_id' in self.settings:
             return self.settings['color_id']
-        elif self.name in color_map:
-            return color_map[self.name]
+        elif self.name in ctrl.forest.semantics_manager.colors:
+            return ctrl.forest.semantics_manager.colors[self.name]
         else:
             return ctrl.settings.get_node_setting('color_id', node=self)
 
@@ -432,8 +432,9 @@ class FeatureNode(Node):
         else:
             if 'color_id' in self.settings:
                 c = ctrl.cm.get(self.settings['color_id'])
-            elif self.name in color_map:
-                c = ctrl.cm.get(color_map[self.name])
+            elif self.name in ctrl.forest.semantics_manager.colors:
+                c = ctrl.cm.get(
+                    ctrl.forest.semantics_manager.colors[self.name])
             elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
@@ -452,8 +453,9 @@ class FeatureNode(Node):
         if self.fshape:
             if 'color_id' in self.settings:
                 c = ctrl.cm.get(self.settings['color_id'])
-            elif self.name in color_map:
-                c = ctrl.cm.get(color_map[self.name])
+            elif self.name in ctrl.forest.semantics_manager.colors:
+                c = ctrl.cm.get(
+                    ctrl.forest.semantics_manager.colors[self.name])
             elif self.is_needy():
                 c = ctrl.cm.get('accent1')
             else:
@@ -528,7 +530,6 @@ class FeatureNode(Node):
             else:
                 return (ex + left, ey), LEFT_SIDE
 
-
     def __str__(self):
         if self.syntactic_object:
             return str(self.syntactic_object)
@@ -544,6 +545,28 @@ class FeatureNode(Node):
         else:
             s.append(str(self.name))
         return ":".join(s)
+
+    def update_tooltip(self) -> None:
+        """ Hovering status tip """
+        tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
+        ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
+
+        lines = []
+        lines.append("<strong>Feature:</strong>")
+        lines.append(f" name: {self.name} value: {self.value} ")
+        if self.family:
+            lines.append(f"family: {self.family}")
+        lines.append("")
+        lines.append(f"<i>uid: {self.uid}</i>")
+        lines.append(f"synobj: {self.syntactic_object}")
+        lines.append("")
+        if self.selected:
+            lines.append(ui_style % 'Click to edit text, drag to move')
+        else:
+            lines.append(ui_style % 'Click to select, drag to move')
+
+        self.k_tooltip = '<br/>'.join(lines)
+
 
     # ############## #
     #                #

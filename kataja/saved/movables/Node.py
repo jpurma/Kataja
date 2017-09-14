@@ -312,6 +312,11 @@ class Node(Movable):
                 return True
         return False
 
+    def is_empty(self):
+        if self.label_object:
+            return self.label_object.is_empty()
+        return True
+
     def cut(self, others):
         """
         :param others: other items targeted for cutting, to help decide which relations to maintain

@@ -1261,10 +1261,11 @@ class UIManager:
         """
         if signal == 'selection_changed':
             self.update_selections()
-            self.update_actions()
+            #print('update actions because selection changed:')
+            #self.update_actions()
         elif signal == 'forest_changed':
             self.clear_items()
-            self.update_actions()
+            #self.update_actions()
         elif signal == 'viewport_changed':
             self.update_positions()
             if self.top_bar_buttons:

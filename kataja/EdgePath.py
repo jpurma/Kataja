@@ -107,8 +107,11 @@ class EdgePath:
         else:
             return
         if start:
+            empty = start.is_empty()
             connection_style = self.edge.flattened_settings['start_connects_to']
             #connection_style = CONNECT_TO_SIMILAR
+            if connection_style == CONNECT_TO_BORDER and empty:
+                connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_start_index
             i_shift = (i - math.ceil(i_of / 2)) * 2
 
@@ -214,7 +217,10 @@ class EdgePath:
                     self.curve_dir_start = BOTTOM_SIDE
                 self.abstract_start_point = sx, sy
         if end:
+            empty = end.is_empty()
             connection_style = self.edge.flattened_settings['end_connects_to']
+            if connection_style == CONNECT_TO_BORDER and empty:
+                connection_style = CONNECT_TO_SIMILAR
             #connection_style = CONNECT_TO_SIMILAR
             i, i_of = self.cached_end_index
             i_shift = (i - math.ceil(i_of / 2)) * 2

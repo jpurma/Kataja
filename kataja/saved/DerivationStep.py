@@ -49,6 +49,7 @@ class DerivationStep(SavedObject):
         self.gloss = syn_state.gloss if syn_state else ''
         self.transferred = syn_state.transferred if syn_state else []
         self.marked = syn_state.marked if syn_state else []
+        self.semantic_hierarchies = syn_state.semantic_hierarchies if syn_state else []
 
     def __str__(self):
         return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(
@@ -56,7 +57,8 @@ class DerivationStep(SavedObject):
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
-                           gloss=self.gloss, transferred=self.transferred, marked=self.marked)
+                           gloss=self.gloss, transferred=self.transferred, marked=self.marked,
+                           semantic_hierarchies=self.semantic_hierarchies)
 
     # ############## #
     #                #
@@ -70,6 +72,7 @@ class DerivationStep(SavedObject):
     gloss = SavedField("gloss")
     transferred = SavedField("transferred")
     marked = SavedField("marked")
+    semantic_hierarchies = SavedField("semantic_hierarchies")
 
 
 class DerivationStepManager(SavedObject):

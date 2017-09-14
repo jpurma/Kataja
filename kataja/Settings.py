@@ -255,7 +255,7 @@ class Settings:
             self.set_in_container(key, value, self.document, 'edges', edge_type, level,
                                   self.edge_type_chains)
         elif level == PREFS:
-            if subtype not in self.prefs.edges:
+            if edge_type not in self.prefs.edges:
                 self.prefs.edges[edge_type] = {
                     key: value
                 }
@@ -321,7 +321,7 @@ class Settings:
             self.set_in_container(key, value, self.document, 'nodes', node_type, level,
                                   self.node_type_chains)
         elif level == PREFS:
-            if subtype not in self.prefs.nodes:
+            if node_type not in self.prefs.nodes:
                 self.prefs.nodes[node_type] = {
                     key: value
                 }

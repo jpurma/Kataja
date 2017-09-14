@@ -45,9 +45,11 @@ def syntactic_state_to_nodes(forest, syn_state):
     free_drawing = forest.free_drawing
 
     if forest.syntax.display_modes:
-        syntactic_state = forest.syntax.transform_trees_for_display(syntactic_state)
+        syn_state = forest.syntax.transform_trees_for_display(syn_state)
 
     forest.semantics_manager.clear()
+    print('syn_state semantics:', syn_state.semantic_hierarchies)
+    forest.semantics_manager.prepare_semantics(syn_state)
 
     node_keys_to_validate = set(forest.nodes.keys())
     edge_keys_to_validate = set(forest.edges.keys())

@@ -43,8 +43,10 @@ class SyntaxConnection(SavedObject):
         self.lexicon = {}
         self.rules = {}
         self.sentence = ''
-        self.clause_hierarchy = ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C']
-        self.dp_hierarchy = ['N', 'n', 'Poss', 'Num', 'D', 'Q']
+        self.semantic_hierarchies = [
+            ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C'],
+            ['N', 'n', 'Poss', 'Num', 'D', 'Q']
+        ]
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
 
