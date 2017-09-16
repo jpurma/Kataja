@@ -81,11 +81,183 @@ class EdgePath:
             self.make()
         return self.cached_cp_rect
 
+    def _connect_start_to_center(self, sx, sy, ex, ey):
+        self.computed_start_point = sx, sy
+        if abs(sx - ex) < abs(sy - ey):
+            if sy < ey:
+                self.curve_dir_start = BOTTOM_SIDE
+            else:
+                self.curve_dir_start = TOP_SIDE
+        else:
+            if sx < ex:
+                self.curve_dir_start = RIGHT_SIDE
+            else:
+                self.curve_dir_start = LEFT_SIDE
+        self.abstract_start_point = self.computed_start_point
+
+    def _connect_end_to_center(self, sx, sy, ex, ey):
+        self.computed_end_point = ex, ey
+        if abs(sx - ex) < abs(sy - ey):
+            if sy > ey:
+                self.curve_dir_end = BOTTOM_SIDE
+            else:
+                self.curve_dir_end = TOP_SIDE
+        else:
+            if sx > ex:
+                self.curve_dir_end = RIGHT_SIDE
+            else:
+                self.curve_dir_end = LEFT_SIDE
+        self.abstract_end_point = self.computed_end_point
+
+    def _connect_start_to_bottom_center(self, sx, sy, start):
+        self.computed_start_point = start.bottom_center_magnet(scene_pos=(sx, sy))
+        self.curve_dir_start = BOTTOM_SIDE
+        self.abstract_start_point = self.computed_start_point
+
+    def _connect_end_to_bottom_center(self, ex, ey, end):
+        self.computed_end_point = end.top_center_magnet(scene_pos=(ex, ey))
+        self.curve_dir_end = TOP_SIDE
+        self.abstract_end_point = self.computed_end_point
+
+    def _connect_start_to_magnets(self, sx, sy, start):
+        e_n, e_count = self.edge.edge_start_index()
+        if not start.has_ordered_children():
+            e_n = e_count - e_n - 1
+        self.computed_start_point = start.bottom_magnet(e_n, e_count, scene_pos=(sx, sy))
+        self.curve_dir_start = BOTTOM_SIDE
+        self.abstract_start_point = self.computed_start_point
+
+    def _connect_start_to_border(self, sx, sy, ex, ey, start):
+        # Find the point in bounding rect that is on the line from center of start node to
+        # center of end node / end_point. It is simple, but the point can be in any of four
+        # sides of the rect.
+        i, i_of = self.cached_start_index
+        i_shift = (i - math.ceil(i_of / 2)) * 2
+        dx = ex - sx
+        dy = ey - sy
+        sbr = start.boundingRect()
+        self.abstract_start_point = sx, sy
+        s_left, s_top, s_right, s_bottom = (int(x * .8) for x in sbr.getCoords())
+        if dx > 0:
+            x = s_right
+            x_side = RIGHT_SIDE
+        else:
+            x = s_left
+            x_side = LEFT_SIDE
+        if dy > 0:
+            y = s_bottom
+            y_side = BOTTOM_SIDE
+        else:
+            y = s_top
+            y_side = TOP_SIDE
+
+        # orthogonal cases, handle separately to avoid division by zero
+        if dx == 0:
+            self.computed_start_point = sx + i_shift, sy + y
+            self.curve_dir_start = y_side
+        elif dy == 0:
+            self.computed_start_point = sx + x, sy + i_shift
+            self.curve_dir_start = x_side
+        else:
+            # cases where edge starts somewhere between
+            ratio = dy / dx
+            y_reach = int(x * ratio)
+            if (y_reach < s_bottom and dy > 0) or (y_reach > s_top and dy < 0):
+                self.computed_start_point = sx + x, sy + y_reach + i_shift
+                self.curve_dir_start = x_side
+            else:
+                self.computed_start_point = sx + int(y / ratio) + i_shift, sy + y
+                self.curve_dir_start = y_side
+
+    def _connect_end_to_border(self, sx, sy, ex, ey, end):
+        # Find the point in bounding rect that is on the line from center of end node to
+        # center of start node / start_point. It is simple, but the point can be in any of
+        # four sides of the rect.
+        i, i_of = self.cached_end_index
+        i_shift = (i - math.ceil(i_of / 2)) * 2
+        dx = ex - sx
+        dy = ey - sy
+        ebr = end.boundingRect()
+        self.abstract_end_point = ex, ey
+        e_left, e_top, e_right, e_bottom = (int(x * .8) for x in ebr.getCoords())
+
+        if dx > 0:
+            x = e_left
+            x_side = LEFT_SIDE
+        else:
+            x = e_right
+            x_side = RIGHT_SIDE
+        if dy > 0:
+            y = e_top
+            y_side = TOP_SIDE
+        else:
+            y = e_bottom
+            y_side = BOTTOM_SIDE
+
+        # orthogonal cases, handle separately to avoid division by zero
+        if dx == 0:
+            self.computed_end_point = ex + i_shift, ey + y
+            self.curve_dir_end = y_side
+        elif dy == 0:
+            self.computed_end_point = ex + x, ey + i_shift
+            self.curve_dir_end = x_side
+        else:
+            # cases where edge ends somewhere between
+            ratio = dy / dx
+            y_reach = int(x * ratio)
+            if (dy > 0 and y_reach > e_top) or (dy < 0 and y_reach < e_bottom):
+                self.computed_end_point = ex + x, ey + y_reach + i_shift
+                self.curve_dir_end = x_side
+            else:
+                self.computed_end_point = ex + int(y / ratio) + i_shift, ey + y
+                self.curve_dir_end = y_side
+
+    def _connect_start_to_similar(self, sx, sy, start):
+        i, i_of = self.cached_start_index
+        i_shift = (i - math.ceil(i_of / 2)) * 2
+
+        found = False
+        for edge in start.edges_up:
+            if edge.extra == self.edge.extra:
+                oi, oi_of = edge.path.cached_end_index
+                others_i_shift = (oi - math.ceil(oi_of / 2)) * 2
+                self.computed_start_point = sx + others_i_shift, sy
+                self.curve_dir_start = opposite(edge.path.curve_dir_end)
+                found = True
+                break
+        if not found:
+            if self.edge.extra and self.edge.extra.syntactic_object:
+                ee = self.edge.extra.syntactic_object
+                for edge in start.edges_down:
+                    if edge == self.edge or edge.end is self.edge.end:
+                        self.computed_start_point = sx + i_shift, sy
+                        self.curve_dir_start = BOTTOM_SIDE
+                        found = True
+                        break
+                    elif edge.extra and edge.extra.syntactic_object.name == ee.name:
+                        self.computed_start_point = edge.path.computed_start_point
+                        self.curve_dir_start = BOTTOM_SIDE
+                        # self.curve_dir_start = opposite(edge.path.curve_dir_start)
+                        found = True
+                        break
+        if not found:
+            self.computed_start_point = sx + i_shift, sy
+            self.curve_dir_start = BOTTOM_SIDE
+        self.abstract_start_point = sx, sy
+
+    def _connect_end_to_similar(self, ex, ey):
+        i, i_of = self.cached_end_index
+        i_shift = (i - math.ceil(i_of / 2)) * 2
+        self.computed_end_point = ex + i_shift, ey
+        self.curve_dir_end = TOP_SIDE
+        self.abstract_end_point = ex, ey
+
     def update_end_points(self):
         """
 
         :return:
         """
+
         osx, osy = self.computed_start_point
         oex, oey = self.computed_end_point
         start = self.edge.start
@@ -107,193 +279,43 @@ class EdgePath:
         else:
             return
         if start:
-            empty = start.is_empty()
             connection_style = self.edge.flattened_settings['start_connects_to']
-            #connection_style = CONNECT_TO_SIMILAR
-            if connection_style == CONNECT_TO_BORDER and empty:
+            if connection_style == CONNECT_TO_BORDER and start.is_empty():
                 connection_style = CONNECT_TO_SIMILAR
-            i, i_of = self.cached_start_index
-            i_shift = (i - math.ceil(i_of / 2)) * 2
 
             if connection_style == SPECIAL:
-                self.computed_start_point, self.curve_dir_start = start.special_connection_point(sx,
-                                                                                                 sy,
-                                                                                                 ex,
-                                                                                                 ey,
-                                                                                                 start=True,
-                                                                                                 edge_type=self.edge.edge_type)
+                csp = start.special_connection_point(sx, sy, ex, ey, start=True,
+                                                     edge_type=self.edge.edge_type)
+                self.computed_start_point, self.curve_dir_start = csp
                 self.abstract_start_point = self.computed_start_point
             elif connection_style == CONNECT_TO_CENTER:
-                self.computed_start_point = sx, sy
-                if abs(sx - ex) < abs(sy - ey):
-                    if sy < ey:
-                        self.curve_dir_start = BOTTOM_SIDE
-                    else:
-                        self.curve_dir_start = TOP_SIDE
-                else:
-                    if sx < ex:
-                        self.curve_dir_start = RIGHT_SIDE
-                    else:
-                        self.curve_dir_start = LEFT_SIDE
-                self.abstract_start_point = self.computed_start_point
+                self._connect_start_to_center(sx, sy, ex, ey)
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
-                self.computed_start_point = start.bottom_center_magnet(scene_pos=(sx, sy))
-                self.curve_dir_start = BOTTOM_SIDE
-                self.abstract_start_point = self.computed_start_point
+                self._connect_start_to_bottom_center(sx, sy, start)
             elif connection_style == CONNECT_TO_MAGNETS:
-                e_n, e_count = self.edge.edge_start_index()
-                if not start.has_ordered_children():
-                    e_n = e_count - e_n - 1
-                self.computed_start_point = start.bottom_magnet(e_n, e_count, scene_pos=(sx, sy))
-                self.curve_dir_start = BOTTOM_SIDE
-                self.abstract_start_point = self.computed_start_point
+                self._connect_start_to_magnets(sx, sy, start)
             elif connection_style == CONNECT_TO_BORDER:
-                # Find the point in bounding rect that is on the line from center of start node to
-                # center of end node / end_point. It is simple, but the point can be in any of four
-                # sides of the rect.
-                dx = ex - sx
-                dy = ey - sy
-                sbr = start.boundingRect()
-                self.abstract_start_point = sx, sy
-                s_left, s_top, s_right, s_bottom = (int(x * .8) for x in sbr.getCoords())
-                if dx > 0:
-                    x = s_right
-                    x_side = RIGHT_SIDE
-                else:
-                    x = s_left
-                    x_side = LEFT_SIDE
-                if dy > 0:
-                    y = s_bottom
-                    y_side = BOTTOM_SIDE
-                else:
-                    y = s_top
-                    y_side = TOP_SIDE
-
-                # orthogonal cases, handle separately to avoid division by zero
-                if dx == 0:
-                    self.computed_start_point = sx + i_shift, sy + y
-                    self.curve_dir_start = y_side
-                elif dy == 0:
-                    self.computed_start_point = sx + x, sy + i_shift
-                    self.curve_dir_start = x_side
-                else:
-                    # cases where edge starts somewhere between
-                    ratio = dy / dx
-                    y_reach = int(x * ratio)
-                    if (y_reach < s_bottom and dy > 0) or (y_reach > s_top and dy < 0):
-                        self.computed_start_point = sx + x, sy + y_reach + i_shift
-                        self.curve_dir_start = x_side
-                    else:
-                        self.computed_start_point = sx + int(y / ratio) + i_shift, sy + y
-                        self.curve_dir_start = y_side
-
+                self._connect_start_to_border(sx, sy, ex, ey, start)
             elif connection_style == CONNECT_TO_SIMILAR:
-                found = False
-                for edge in start.edges_up:
-                    if edge.extra == self.edge.extra:
-                        oi, oi_of = edge.path.cached_end_index
-                        others_i_shift = (oi - math.ceil(oi_of / 2)) * 2
-                        self.computed_start_point = sx + others_i_shift, sy
-                        self.curve_dir_start = opposite(edge.path.curve_dir_end)
-                        found = True
-                        break
-                if not found:
-                    if self.edge.extra and self.edge.extra.syntactic_object:
-                        ee = self.edge.extra.syntactic_object
-                        for edge in start.edges_down:
-                            if edge == self.edge or edge.end is self.edge.end:
-                                self.computed_start_point = sx + i_shift, sy
-                                self.curve_dir_start = BOTTOM_SIDE
-                                found = True
-                                break
-                            elif edge.extra and edge.extra.syntactic_object.name == ee.name:
-                                self.computed_start_point = edge.path.computed_start_point
-                                self.curve_dir_start = BOTTOM_SIDE
-                                # self.curve_dir_start = opposite(edge.path.curve_dir_start)
-                                found = True
-                                break
-                if not found:
-                    self.computed_start_point = sx + i_shift, sy
-                    self.curve_dir_start = BOTTOM_SIDE
-                self.abstract_start_point = sx, sy
+                self._connect_start_to_similar(sx, sy, start)
         if end:
-            empty = end.is_empty()
             connection_style = self.edge.flattened_settings['end_connects_to']
-            if connection_style == CONNECT_TO_BORDER and empty:
+            if connection_style == CONNECT_TO_BORDER and end.is_empty():
                 connection_style = CONNECT_TO_SIMILAR
-            #connection_style = CONNECT_TO_SIMILAR
-            i, i_of = self.cached_end_index
-            i_shift = (i - math.ceil(i_of / 2)) * 2
             if connection_style == SPECIAL:
-                self.computed_end_point, self.curve_dir_end = end.special_connection_point(sx, sy,
-                                                                                           ex, ey,
-                                                                                           start=False,
-                                                                                           edge_type=self.edge.edge_type)
+                cep = end.special_connection_point(sx, sy, ex, ey, start=False,
+                                                  edge_type=self.edge.edge_type)
+                self.computed_end_point, self.curve_dir_end = cep
                 self.abstract_end_point = self.computed_end_point
             elif connection_style == CONNECT_TO_CENTER:
-                self.computed_end_point = ex, ey
-                if abs(sx - ex) < abs(sy - ey):
-                    if sy > ey:
-                        self.curve_dir_end = BOTTOM_SIDE
-                    else:
-                        self.curve_dir_end = TOP_SIDE
-                else:
-                    if sx > ex:
-                        self.curve_dir_end = RIGHT_SIDE
-                    else:
-                        self.curve_dir_end = LEFT_SIDE
-                self.abstract_end_point = self.computed_end_point
+                self._connect_end_to_center(sx, sy, ex, ey)
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == \
                     CONNECT_TO_MAGNETS:
-                self.computed_end_point = end.top_center_magnet(scene_pos=(ex, ey))
-                self.curve_dir_end = TOP_SIDE
-                self.abstract_end_point = self.computed_end_point
-
+                self._connect_end_to_bottom_center(ex, ey, end)
             elif connection_style == CONNECT_TO_BORDER:
-                # Find the point in bounding rect that is on the line from center of end node to
-                # center of start node / start_point. It is simple, but the point can be in any of
-                # four sides of the rect.
-                dx = ex - sx
-                dy = ey - sy
-                ebr = end.boundingRect()
-                self.abstract_end_point = ex, ey
-                e_left, e_top, e_right, e_bottom = (int(x * .8) for x in ebr.getCoords())
-
-                if dx > 0:
-                    x = e_left
-                    x_side = LEFT_SIDE
-                else:
-                    x = e_right
-                    x_side = RIGHT_SIDE
-                if dy > 0:
-                    y = e_top
-                    y_side = TOP_SIDE
-                else:
-                    y = e_bottom
-                    y_side = BOTTOM_SIDE
-
-                # orthogonal cases, handle separately to avoid division by zero
-                if dx == 0:
-                    self.computed_end_point = ex + i_shift, ey + y
-                    self.curve_dir_end = y_side
-                elif dy == 0:
-                    self.computed_end_point = ex + x, ey + i_shift
-                    self.curve_dir_end = x_side
-                else:
-                    # cases where edge ends somewhere between
-                    ratio = dy / dx
-                    y_reach = int(x * ratio)
-                    if (dy > 0 and y_reach > e_top) or (dy < 0 and y_reach < e_bottom):
-                        self.computed_end_point = ex + x, ey + y_reach + i_shift
-                        self.curve_dir_end = x_side
-                    else:
-                        self.computed_end_point = ex + int(y / ratio) + i_shift, ey + y
-                        self.curve_dir_end = y_side
-
+                self._connect_end_to_border(sx, sy, ex, ey, end)
             elif connection_style == CONNECT_TO_SIMILAR:
-                self.computed_end_point = ex + i_shift, ey
-                self.curve_dir_end = TOP_SIDE
-                self.abstract_end_point = ex, ey
+                self._connect_end_to_similar(ex, ey)
 
         nsx, nsy = self.computed_start_point
         nex, ney = self.computed_end_point
