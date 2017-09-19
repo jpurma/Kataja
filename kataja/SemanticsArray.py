@@ -28,7 +28,7 @@ class SemanticsArray:
         return w, h
 
     def move_to(self, x, y):
-        for item in self.array:
+        for item in reversed(self.array):
             item.prepareGeometryChange()
             item.setPos(x, y)
             y += item.label_rect().height()

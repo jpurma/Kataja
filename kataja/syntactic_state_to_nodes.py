@@ -48,7 +48,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         syn_state = forest.syntax.transform_trees_for_display(syn_state)
 
     forest.semantics_manager.clear()
-    print('syn_state semantics:', syn_state.semantic_hierarchies)
     forest.semantics_manager.prepare_semantics(syn_state)
 
     node_keys_to_validate = set(forest.nodes.keys())
@@ -190,9 +189,9 @@ def syntactic_state_to_nodes(forest, syn_state):
             found_edges.add(edge.uid)
 
     def connect_feature_if_necessary(parent, child, feature):
-        edge = parent.get_edge_to(child, g.FEATURE_EDGE, extra=feature)
+        edge = parent.get_edge_to(child, g.FEATURE_EDGE, alpha=feature)
         if not edge:
-            free_drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, extra=feature)
+            free_drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, alpha=feature)
         else:
             found_edges.add(edge.uid)
 

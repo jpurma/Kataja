@@ -148,6 +148,7 @@ class Node(Movable):
         self.edges_up = []
         self.edges_down = []
         self.triangle_stack = []  # you can always unfold only the outermost triangle, so stack
+        self.cached_edge_ordering = {}
         self.color_id = None
 
         self._editing_template = {}
@@ -525,33 +526,45 @@ class Node(Movable):
         """
         return not self.get_parents(similar=only_similar, visible=only_visible)
 
-    def get_edge_to(self, other, edge_type='', extra=None) -> QtWidgets.QGraphicsItem or None:
+    def get_edge_to(self, other, edge_type='', alpha=None) -> QtWidgets.QGraphicsItem or None:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
         of certain type between two elements.
         :param other:
         :param edge_type:
-        :param extra: extra identifier stored with edge, to distinguish between otherwise
-        similar edges
+        :param alpha: extra identifier stored with edge, to distinguish between otherwise
+        similar edges. Usually points to the origin of many-parted edge
         """
-        if edge_type:
-            for edge in self.edges_down:
-                if (
-                                extra is edge.extra or not extra) and edge.end is other and \
-                                edge_type == edge.edge_type:
-                    return edge
-            for edge in self.edges_up:
-                if (
-                                extra is edge.extra or not extra) and edge.start is other and \
-                                edge_type == edge.edge_type:
-                    return edge
+        if alpha:
+            if edge_type:
+                for edge in self.edges_down:
+                    if alpha is edge.alpha and edge.end is other and edge_type == edge.edge_type:
+                        return edge
+                for edge in self.edges_up:
+                    if alpha is edge.alpha and edge.start is other and edge_type == edge.edge_type:
+                        return edge
+            else:
+                for edge in self.edges_down:
+                    if alpha is edge.alpha and edge.end is other:
+                        return edge
+                for edge in self.edges_up:
+                    if alpha is edge.alpha and edge.start is other:
+                        return edge
         else:
-            for edge in self.edges_down:
-                if (extra is edge.extra or not extra) and edge.end is other:
-                    return edge
-            for edge in self.edges_up:
-                if (extra is edge.extra or not extra) and edge.start is other:
-                    return edge
+            if edge_type:
+                for edge in self.edges_down:
+                    if edge.end is other and edge_type == edge.edge_type:
+                        return edge
+                for edge in self.edges_up:
+                    if edge.start is other and edge_type == edge.edge_type:
+                        return edge
+            else:
+                for edge in self.edges_down:
+                    if edge.end is other:
+                        return edge
+                for edge in self.edges_up:
+                    if edge.start is other:
+                        return edge
         return None
 
     def get_edges_up(self, similar=True, visible=False):

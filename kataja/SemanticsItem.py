@@ -4,6 +4,8 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.globals import SMALL_FEATURE
 from kataja.singletons import ctrl, qt_prefs
 
+import math
+
 FREE = 0
 SENTENCE = 1
 NOUN_PHRASE = 2
@@ -85,10 +87,17 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
             y = scene_pos.y()
             mid_height = label_rect.height() / 2
             painter.setBrush(QtCore.Qt.NoBrush)
+
             for member in self.members:
+                if member.cached_sorted_feature_edges:
+                    max_i = len(member.cached_sorted_feature_edges)
+                    i_shift = math.ceil((max_i - 1) / 2) * -3
+                else:
+                    i_shift = 0
                 pos = member.scenePos()
                 px = pos.x()
                 py = pos.y()
+                px += i_shift
                 if True:
                     painter.setPen(QtCore.Qt.NoPen)
                     grad = QtGui.QLinearGradient(0, 0, px - x, 0)

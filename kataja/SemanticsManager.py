@@ -11,17 +11,29 @@ class SemanticsManager:
         self.arrays = {}
         self.arrays_list = []
         self.total_height = 0
+        self.total_length = 0
 
     def prepare_semantics(self, syn_state):
         self.models = syn_state.semantic_hierarchies
         self.colors = {}
         c = 1
+        total_length = 0
         for model in self.models:
             for name in model:
                 self.colors[name] = 'accent%s' % c
                 c += 1
+                total_length += 1
                 if c > 8:
                     c = 1
+        self.total_length = total_length
+
+    def index_for_feature(self, fname):
+        past = 0
+        for model in self.models:
+            if fname in model:
+                return model.index(fname) + past, self.total_length
+            past += len(model)
+        return -1, self.total_length
 
     def add_to_array(self, node, label, array_id):
         """ Create new arrays when necessary

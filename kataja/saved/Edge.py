@@ -45,12 +45,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, start=None, end=None, edge_type='', extra=None):
+    def __init__(self, start=None, end=None, edge_type='', alpha=None):
         """
         :param Node start:
         :param Node end:
         :param string edge_type:
-        :param extra: optional data for e.g. referring to third object
+        :param alpha: optional data for e.g. referring to third object
         """
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
@@ -58,8 +58,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.label_item = None
         self.edge_type = edge_type
         self.start = start
+        self.start_links_to = None
+        self.end_links_to = None
         self.end = end
-        self.extra = extra
+        self.alpha = alpha
         self.fixed_start_point = (0, 0)
         self.fixed_end_point = (0, 0)
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
@@ -158,7 +160,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.connect_end_points(start, end)
         ctrl.forest.remove_from_scene(self)
         return self
-
 
     @property
     def color_id(self) -> str:
@@ -371,6 +372,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return False
         return not (self.start and self.end)
 
+    def __lt__(self, other):
+        return self.edge_start_index()[0] < other.edge_start_index()[0]
+
+    def __gt__(self, other):
+        return self.edge_start_index()[0] > other.edge_start_index()[0]
+
     def edge_start_index(self) -> tuple:
         """ Return tuple where first value is the order of this edge among similar type of edges
         for this parent (parent = edge.start) and the second is the total amount of siblings (
@@ -426,8 +433,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             base = ctrl.cm.get(self.in_projections[0].color_id)
         elif self.color_id:
             base = ctrl.cm.get(self.color_id)
-        elif self.extra and hasattr(self.extra, 'get_color_id'):
-            base = ctrl.cm.get(self.extra.get_color_id())
+        elif self.alpha and hasattr(self.alpha, 'get_color_id'):
+            base = ctrl.cm.get(self.alpha.get_color_id())
         elif self.end:
             base = ctrl.cm.get(self.end.get_color_id())
         else:
@@ -966,6 +973,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
     start = SavedField("start")
     end = SavedField("end")
-    extra = SavedField("extra")
+    alpha = SavedField("alpha")
     forest = SavedField("forest")
     label_data = SavedField("label_data")

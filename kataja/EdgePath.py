@@ -62,8 +62,6 @@ class EdgePath:
         self.arrowhead_end_path = None
         self.cached_cp_rect = None
         self.changed = False
-        self.cached_start_index = self.edge.edge_start_index()
-        self.cached_end_index = self.edge.edge_end_index()
 
     def shape(self) -> QtGui.QPainterPath:
         """ Use the fatter version for hit detection
@@ -80,6 +78,22 @@ class EdgePath:
         if not self.draw_path:
             self.make()
         return self.cached_cp_rect
+
+    def get_shift_for_start(self):
+        cn = self.edge.start
+        if cn and cn.node_type == g.CONSTITUENT_NODE:
+            if self.edge in cn.cached_sorted_feature_edges:
+                i = cn.cached_sorted_feature_edges.index(self.edge)
+                max_i = len(cn.cached_sorted_feature_edges)
+                return (i - math.ceil((max_i - 1) / 2)) * 3
+        return 0
+
+    def get_shift_for_end(self):
+
+        if self.edge.end_links_to:
+            return self.edge.end_links_to.path.get_shift_for_start()
+        else:
+            return 0
 
     def _connect_start_to_center(self, sx, sy, ex, ey):
         self.computed_start_point = sx, sy
@@ -131,8 +145,7 @@ class EdgePath:
         # Find the point in bounding rect that is on the line from center of start node to
         # center of end node / end_point. It is simple, but the point can be in any of four
         # sides of the rect.
-        i, i_of = self.cached_start_index
-        i_shift = (i - math.ceil(i_of / 2)) * 2
+        i_shift = self.get_shift_for_start()
         dx = ex - sx
         dy = ey - sy
         sbr = start.boundingRect()
@@ -173,8 +186,7 @@ class EdgePath:
         # Find the point in bounding rect that is on the line from center of end node to
         # center of start node / start_point. It is simple, but the point can be in any of
         # four sides of the rect.
-        i, i_of = self.cached_end_index
-        i_shift = (i - math.ceil(i_of / 2)) * 2
+        i_shift = self.get_shift_for_end()
         dx = ex - sx
         dy = ey - sy
         ebr = end.boundingRect()
@@ -213,12 +225,28 @@ class EdgePath:
                 self.curve_dir_end = y_side
 
     def _connect_start_to_similar(self, sx, sy, start):
-        i, i_of = self.cached_start_index
+        i_shift = self.get_shift_for_start()
+        upper = self.edge.start_links_to
+        direction = 0
+        if upper:
+            if upper.start_point[0] < upper.end_point[0]:
+                direction = -1
+            elif upper.start_point[0] > upper.end_point[0]:
+                direction = 1
+        self.computed_start_point = sx + i_shift, sy + (i_shift * direction)
+        self.curve_dir_start = BOTTOM_SIDE
+        self.abstract_start_point = sx, sy
+
+
+    def old_connect_start_to_similar(self, sx, sy, start):
+        #i, i_of = self.cached_start_index
+        i, i_of = self.edge.end.order_among_siblings
         i_shift = (i - math.ceil(i_of / 2)) * 2
 
         found = False
         for edge in start.edges_up:
-            if edge.extra == self.edge.extra:
+            if edge.alpha == self.edge.alpha:
+                #oi, oi_of = edge.path.cached_end_index
                 oi, oi_of = edge.path.cached_end_index
                 others_i_shift = (oi - math.ceil(oi_of / 2)) * 2
                 self.computed_start_point = sx + others_i_shift, sy
@@ -226,15 +254,15 @@ class EdgePath:
                 found = True
                 break
         if not found:
-            if self.edge.extra and self.edge.extra.syntactic_object:
-                ee = self.edge.extra.syntactic_object
+            if self.edge.alpha and self.edge.alpha.syntactic_object:
+                ee = self.edge.alpha.syntactic_object
                 for edge in start.edges_down:
                     if edge == self.edge or edge.end is self.edge.end:
                         self.computed_start_point = sx + i_shift, sy
                         self.curve_dir_start = BOTTOM_SIDE
                         found = True
                         break
-                    elif edge.extra and edge.extra.syntactic_object.name == ee.name:
+                    elif edge.alpha and edge.alpha.syntactic_object.name == ee.name:
                         self.computed_start_point = edge.path.computed_start_point
                         self.curve_dir_start = BOTTOM_SIDE
                         # self.curve_dir_start = opposite(edge.path.curve_dir_start)
@@ -246,9 +274,16 @@ class EdgePath:
         self.abstract_start_point = sx, sy
 
     def _connect_end_to_similar(self, ex, ey):
-        i, i_of = self.cached_end_index
-        i_shift = (i - math.ceil(i_of / 2)) * 2
-        self.computed_end_point = ex + i_shift, ey
+        i_shift = self.get_shift_for_end()
+        lower = self.edge.end_links_to
+        direction = 0
+        if lower:
+            if self.edge.start_point[0] < self.edge.end_point[0]:
+                direction = -1
+            elif self.edge.start_point[0] > self.edge.end_point[0]:
+                direction = 1
+
+        self.computed_end_point = ex + i_shift, ey + (i_shift * direction)
         self.curve_dir_end = TOP_SIDE
         self.abstract_end_point = ex, ey
 
@@ -280,8 +315,11 @@ class EdgePath:
             return
         if start:
             connection_style = self.edge.flattened_settings['start_connects_to']
-            if connection_style == CONNECT_TO_BORDER and start.is_empty():
+            if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
+
+            #if connection_style == CONNECT_TO_BORDER and start.is_empty():
+            #    connection_style = CONNECT_TO_SIMILAR
 
             if connection_style == SPECIAL:
                 csp = start.special_connection_point(sx, sy, ex, ey, start=True,
@@ -300,8 +338,13 @@ class EdgePath:
                 self._connect_start_to_similar(sx, sy, start)
         if end:
             connection_style = self.edge.flattened_settings['end_connects_to']
-            if connection_style == CONNECT_TO_BORDER and end.is_empty():
+            #if connection_style == CONNECT_TO_BORDER and end.is_empty():
+            #    connection_style = CONNECT_TO_SIMILAR
+
+            connection_style = self.edge.flattened_settings['start_connects_to']
+            if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
+
             if connection_style == SPECIAL:
                 cep = end.special_connection_point(sx, sy, ex, ey, start=False,
                                                   edge_type=self.edge.edge_type)

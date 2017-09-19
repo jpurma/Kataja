@@ -161,16 +161,17 @@ class FreeDrawing:
             cn.set_image_path(pixmap_path)
         return cn
 
-    def create_edge(self, start=None, end=None, edge_type='', fade=False, extra=None):
+    def create_edge(self, start=None, end=None, edge_type='', fade=False, alpha=None):
         """
 
         :param start:
         :param end:
         :param edge_type:
         :param fade:
+        :param alpha:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type, extra=extra)
+        rel = Edge(start=start, end=end, edge_type=edge_type, alpha=alpha)
         rel.after_init()
         self.f.store(rel)
         self.f.add_to_scene(rel)
@@ -452,7 +453,7 @@ class FreeDrawing:
     # by forest's higher level methods.
     #
     def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False,
-                     extra=None):
+                     alpha=None):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -466,6 +467,7 @@ class FreeDrawing:
         :param direction:
         :param edge_type: optional, force edge to be of given type
         :param fade_in:
+        :param alpha:
         """
 
         # print('--- connecting node %s to %s ' % (child, parent))
@@ -484,8 +486,8 @@ class FreeDrawing:
             # With arrows identical or circular edges are not a problem
             for old_edge in child.edges_up:
                 if old_edge.edge_type == edge_type:
-                    if old_edge.end == child and old_edge.start == parent and old_edge.extra == \
-                            extra:
+                    if old_edge.end == child and old_edge.start == parent \
+                            and old_edge.alpha == alpha:
                         # raise ForestError('Identical edge exists already')
                         log.info('Identical edge exists already')
                         return
@@ -494,7 +496,18 @@ class FreeDrawing:
 
         # Create edge and make connections
         new_edge = self.create_edge(start=parent, end=child, edge_type=edge_type, fade=fade_in,
-                                    extra=extra)
+                                    alpha=alpha)
+
+        for edge_up in parent.edges_up:
+            if edge_up.alpha == new_edge.alpha:
+                edge_up.end_links_to = new_edge
+                new_edge.start_links_to = edge_up
+
+        for edge_down in child.edges_down:
+            if edge_down.alpha == new_edge.alpha:
+                edge_down.start_links_to = new_edge
+                new_edge.end_links_to = edge_down
+
         child.poke('edges_up')
         parent.poke('edges_down')
         if direction == g.LEFT:

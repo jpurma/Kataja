@@ -571,6 +571,7 @@ class Forest(SavedObject):
         print('redrawing forest, start_animations: ', start_animations)
         ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
+        self.update_feature_ordering()
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
@@ -691,6 +692,41 @@ class Forest(SavedObject):
         elif self.gloss:
             self.remove_from_scene(self.gloss)
             self.gloss = None
+
+    def update_feature_ordering(self):
+
+        def distance(edge):
+            d = 0
+            while edge.end_links_to:
+                d += 1
+                edge = edge.end_links_to
+            return d
+        local_i = {}
+
+        for feat in self.nodes.values():
+            if feat.node_type == g.FEATURE_NODE:
+                for edge in feat.edges_up:
+                    if edge.edge_type == g.FEATURE_EDGE and edge.start.node_type == \
+                            g.CONSTITUENT_NODE:
+                        local_i[feat.uid] = edge.edge_start_index()[0]
+        for cn in self.nodes.values():
+            if cn.node_type == g.CONSTITUENT_NODE:
+                sortables = []
+                parents = len([x for x in cn.edges_up if x.edge_type ==
+                               g.CONSTITUENT_EDGE])
+                checked_features = getattr(cn.syntactic_object, 'checked_features', None)
+                p = 1 / (parents or 1)
+                for e in cn.edges_down:
+                    if e.edge_type == g.FEATURE_EDGE and e.alpha:
+                        if checked_features and e.alpha.syntactic_object in checked_features:
+                            check = -1
+                        else:
+                            check = 0
+                        dist = distance(e)
+                        i = local_i[e.alpha.uid]
+                        sortables.append((check, dist, i, p, e))
+                sortables.sort()
+                cn.cached_sorted_feature_edges = [e[-1] for e in sortables]
 
     def compute_traces_to_draw(self, rotator) -> int:
         """ This is complicated, but returns a dictionary that tells for each index key

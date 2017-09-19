@@ -118,6 +118,7 @@ class ConstituentNode(Node):
         self.merge_order = 0
         self.select_order = 0
         self.in_projections = []
+        self.cached_sorted_feature_edges = []
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -752,7 +753,7 @@ class ConstituentNode(Node):
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget=widget)
         feats = self.is_merging_features()
-        if feats:
+        if feats and False:
             old_pen = painter.pen()
             feat_color = feats[0].get_color_id()
             r = QtCore.QRectF(self.inner_rect)

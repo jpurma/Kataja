@@ -413,7 +413,6 @@ class FeatureNode(Node):
         else:
             return 'accent7'
 
-
     def get_color_id(self):
         """
         :return:
@@ -567,6 +566,9 @@ class FeatureNode(Node):
 
         self.k_tooltip = '<br/>'.join(lines)
 
+    def get_host(self):
+        for parent in self.get_parents(of_type=g.CONSTITUENT_NODE):
+            return parent
 
     # ############## #
     #                #
