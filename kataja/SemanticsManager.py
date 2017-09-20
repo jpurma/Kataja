@@ -13,6 +13,14 @@ class SemanticsManager:
         self.total_height = 0
         self.total_length = 0
 
+    def hide(self):
+        for item in self.all_items:
+            item.hide()
+
+    def show(self):
+        for item in self.all_items:
+            item.show()
+
     def prepare_semantics(self, syn_state):
         self.models = syn_state.semantic_hierarchies
         self.colors = {}

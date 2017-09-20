@@ -251,11 +251,12 @@ def syntactic_state_to_nodes(forest, syn_state):
                 for child in iter_me(synobj.parts):
                     if blocked == child:
                         continue
-                    if feature in child.get_features():
-                        nchild = recursive_create_edges_for_feature(child)
-                        connect_feature_if_necessary(node, nchild, nfeature)
-                        break
-
+                    child_features = child.get_features()
+                    if feature in child_features:
+                        if feature is child_features[child_features.index(feature)]:
+                            nchild = recursive_create_edges_for_feature(child)
+                            connect_feature_if_necessary(node, nchild, nfeature)
+                            break
         else:
             for feature in synobj.get_features():
                 nfeature = recursive_create_edges_for_feature(feature)
