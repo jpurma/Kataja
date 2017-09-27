@@ -757,6 +757,9 @@ class Node(Movable):
         else:
             return self.color
 
+    def get_edge_start_symbol(self):
+        return 0
+
     # ### Labels and identity
     # ###############################################################
 

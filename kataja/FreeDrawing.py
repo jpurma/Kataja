@@ -331,6 +331,17 @@ class FreeDrawing:
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
+        # -- remove links to other edges
+        if start_node:
+            for edge_up in start_node.edges_up:
+                if edge_up.end_links_to == edge:
+                    edge_up.end_links_to = None
+
+        if end_node:
+            for edge_down in end_node.edges_down:
+                if edge_down.start_links_to == edge:
+                    edge_down.start_links_to = None
+                    edge_down.update_start_symbol()
         # -- selections --
         ctrl.remove_from_selection(edge)
         if touch_nodes:
@@ -507,6 +518,9 @@ class FreeDrawing:
             if edge_down.alpha == new_edge.alpha:
                 edge_down.start_links_to = new_edge
                 new_edge.end_links_to = edge_down
+                edge_down.update_start_symbol()
+
+        new_edge.update_start_symbol()
 
         child.poke('edges_up')
         parent.poke('edges_down')
@@ -565,8 +579,10 @@ class FreeDrawing:
             child = edge.end
         if not edge:
             edge = parent.get_edge_to(child, edge_type)
+
         if edge:
             self.disconnect_edge(edge)
+
         if hasattr(child, 'on_disconnect'):
             child.on_disconnect(parent)
 

@@ -264,11 +264,17 @@ class Preferences(object):
                                    'order': 29}
         self.last_key_colors = {}
 
+        self.show_semantics = True
+        self._show_semantics_ui = {'tab': 'Syntax',
+                                   'label': 'Show semantics',
+                                   'help': '(If the plugin supports them)',
+                                   'order': 3}
+
         self.use_xbar_aliases = True
 
         self.single_click_editing = False
         self._single_click_editing_ui = {'tab': 'General', 'label': 'Single click editing',
-                                  'help': 'Selecting a node triggers editing its label'}
+                                         'help': 'Selecting a node triggers editing its label'}
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',

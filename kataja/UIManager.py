@@ -59,6 +59,7 @@ from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.SemanticsPanel import SemanticsPanel
 from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
@@ -76,6 +77,7 @@ POINTING = 3
 
 PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
+          {'class': SemanticsPanel, 'name': 'Semantics', 'position': 'right'},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
           #{'class': MergePanel, 'name': 'Merge', 'position': 'right'},
           {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
@@ -106,7 +108,8 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                              'select_trace_strategy',
                                                              'select_feature_display_mode',
                                                              'switch_syntax_view_mode',
-                                                             'switch_view_mode'])),
+                                                             'switch_view_mode',
+                                                             'toggle_semantics_view'])),
                               ('view_menu', ('&View', ['zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
                               ('windows_menu', ('&Windows', ['$toggle_panel', '---',

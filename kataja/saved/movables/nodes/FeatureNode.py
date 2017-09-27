@@ -545,6 +545,12 @@ class FeatureNode(Node):
             s.append(str(self.name))
         return ":".join(s)
 
+    def get_edge_start_symbol(self):
+        if '=' in self.value:
+            return 2
+        else:
+            return 0
+
     def update_tooltip(self) -> None:
         """ Hovering status tip """
         tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'

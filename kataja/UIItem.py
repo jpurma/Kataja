@@ -34,8 +34,6 @@ class UIItem:
         self.host = host
         self.watchlist = []
         self.priority = 10
-        if tooltip:
-            print('**** giving tooltip directly for UIItem: ', tooltip)
         self.k_tooltip = tooltip
         self.is_fading_in = False
         self.is_fading_out = False
@@ -171,22 +169,28 @@ class UIWidget(UIItem):
         if action:
             ctrl.ui.connect_element_to_action(self, action)
 
-    def to_layout(self, layout, align=None, with_label=None):
+    def to_layout(self, layout, align=None, with_label=None, label_first=True):
         """ Because widgets cannot be reliably put to layout in their __init__-methods,
         to ease the layout process, we can use javascript-style (constructor).to_layout(...)
         combination.
         :param layout:
         :param align:
+        :param with_label: str, create a label from given string
+        :param label_first: by default label is put first, but sometimes it is better after widget
         :return: self, so that this can be used with constructors
         """
+        labelw = None
         if with_label:
             labelw = KatajaBuddyLabel(text=with_label, buddy=self)
             self.k_buddy = labelw
-            layout.addWidget(labelw)
+            if label_first:
+                layout.addWidget(labelw)
         if align:
             layout.addWidget(self, alignment=align)
         else:
             layout.addWidget(self)
+        if with_label and not label_first:
+            layout.addWidget(labelw)
         return self
 
     def prepare_opacity_effect(self):

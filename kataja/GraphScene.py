@@ -152,16 +152,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y_min = miny
             if maxy > y_max:
                 y_max = maxy
-        for item in ctrl.forest.semantics_manager.all_items:
-            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
+        sm = ctrl.forest.semantics_manager
+        if sm.visible:
+            for item in sm.all_items:
+                minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
+                if minx < x_min:
+                    x_min = minx
+                if maxx > x_max:
+                    x_max = maxx
+                if miny < y_min:
+                    y_min = miny
+                if maxy > y_max:
+                    y_max = maxy
 
         if empty:
             return QtCore.QRectF(0, 0, 320, 240)
@@ -218,17 +220,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y_min = miny
             if maxy > y_max:
                 y_max = maxy
-        for item in f.semantics_manager.all_items:
-            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
-
+        if f.semantics_manager.visible:
+            for item in f.semantics_manager.all_items:
+                minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
+                if minx < x_min:
+                    x_min = minx
+                if maxx > x_max:
+                    x_max = maxx
+                if miny < y_min:
+                    y_min = miny
+                if maxy > y_max:
+                    y_max = maxy
         if empty:
             r = QtCore.QRectF(0, 0, 320, 240)
         else:

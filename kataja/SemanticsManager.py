@@ -1,4 +1,5 @@
 from kataja.SemanticsArray import SemanticsArray
+from kataja.singletons import ctrl
 
 
 class SemanticsManager:
@@ -12,16 +13,21 @@ class SemanticsManager:
         self.arrays_list = []
         self.total_height = 0
         self.total_length = 0
+        self.visible = ctrl.settings.get('show_semantics')
 
     def hide(self):
+        self.visible = False
         for item in self.all_items:
             item.hide()
 
     def show(self):
+        self.visible = True
+        self.update_position()
         for item in self.all_items:
             item.show()
 
     def prepare_semantics(self, syn_state):
+        self.visible = ctrl.settings.get('show_semantics')
         self.models = syn_state.semantic_hierarchies
         self.colors = {}
         c = 1
@@ -68,25 +74,28 @@ class SemanticsManager:
             self.arrays[array_id] = array
             self.all_items += array.array
             self.arrays_list.append(array)
-            for item in array.array:
-                self.forest.add_to_scene(item)
+            if self.visible:
+                for item in array.array:
+                    self.forest.add_to_scene(item)
         else:
             array = self.arrays[array_id]
         for item in array.array:
             if label == item.label:
                 item.add_member(node)
             item.update_text()
-        self.update_position()
+        if self.visible:
+            self.update_position()
 
     def update_position(self):
-        x, y = self.find_good_starting_position()
-        self.total_height = 0
-        for array in self.arrays_list:
-            indent = array.array_type * 8
-            height = array.total_size()[1] + 8
-            y -= height
-            array.move_to(x + indent, y)
-            self.total_height += height
+        if self.visible:
+            x, y = self.find_good_starting_position()
+            self.total_height = 0
+            for array in self.arrays_list:
+                indent = array.array_type * 8
+                height = array.total_size()[1] + 8
+                y -= height
+                array.move_to(x + indent, y)
+                self.total_height += height
 
     def find_good_starting_position(self):
         x = 0

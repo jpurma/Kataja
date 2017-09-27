@@ -13,7 +13,7 @@ NOUN_PHRASE = 2
 
 class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
 
-    def __init__(self, label, array_id, color_id, x=0, y=0):
+    def __init__(self, sm, label, array_id, color_id, x=0, y=0):
         QtWidgets.QGraphicsSimpleTextItem.__init__(self, label)
         self.label = label
         self.setFont(qt_prefs.get_font(SMALL_FEATURE))
@@ -23,6 +23,8 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         self.members = []
         self.setZValue(2)
         self.setPos(x, y)
+        if not sm.visible:
+            self.hide()
 
     def add_member(self, node):
         if node not in self.members:
@@ -34,10 +36,14 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
             if node.syntactic_object:
                 checked_features = getattr(node.syntactic_object, 'checked_features', None)
                 if checked_features and isinstance(checked_features, tuple):
-                    valuing_feat = checked_features[1]
+                    checked_feat, valuing_feat = checked_features
+                    feat_node = ctrl.forest.get_node(checked_feat)
+                    parents = feat_node.get_parents()
+                    words.append('(' + ' '.join([x.get_syn_label() for x in parents]) + ')')
                     feat_node = ctrl.forest.get_node(valuing_feat)
                     parents = feat_node.get_parents()
                     words.append(' '.join([x.get_syn_label() for x in parents]))
+
         self.setText(' '.join(words))
 
     def boundingRect(self):

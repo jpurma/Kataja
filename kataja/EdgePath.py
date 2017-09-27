@@ -237,42 +237,6 @@ class EdgePath:
         self.curve_dir_start = BOTTOM_SIDE
         self.abstract_start_point = sx, sy
 
-
-    def old_connect_start_to_similar(self, sx, sy, start):
-        #i, i_of = self.cached_start_index
-        i, i_of = self.edge.end.order_among_siblings
-        i_shift = (i - math.ceil(i_of / 2)) * 2
-
-        found = False
-        for edge in start.edges_up:
-            if edge.alpha == self.edge.alpha:
-                #oi, oi_of = edge.path.cached_end_index
-                oi, oi_of = edge.path.cached_end_index
-                others_i_shift = (oi - math.ceil(oi_of / 2)) * 2
-                self.computed_start_point = sx + others_i_shift, sy
-                self.curve_dir_start = opposite(edge.path.curve_dir_end)
-                found = True
-                break
-        if not found:
-            if self.edge.alpha and self.edge.alpha.syntactic_object:
-                ee = self.edge.alpha.syntactic_object
-                for edge in start.edges_down:
-                    if edge == self.edge or edge.end is self.edge.end:
-                        self.computed_start_point = sx + i_shift, sy
-                        self.curve_dir_start = BOTTOM_SIDE
-                        found = True
-                        break
-                    elif edge.alpha and edge.alpha.syntactic_object.name == ee.name:
-                        self.computed_start_point = edge.path.computed_start_point
-                        self.curve_dir_start = BOTTOM_SIDE
-                        # self.curve_dir_start = opposite(edge.path.curve_dir_start)
-                        found = True
-                        break
-        if not found:
-            self.computed_start_point = sx + i_shift, sy
-            self.curve_dir_start = BOTTOM_SIDE
-        self.abstract_start_point = sx, sy
-
     def _connect_end_to_similar(self, ex, ey):
         i_shift = self.get_shift_for_end()
         lower = self.edge.end_links_to

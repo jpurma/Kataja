@@ -336,8 +336,11 @@ class KatajaAction(QtWidgets.QAction):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         if not connect_slot:
             slot_name = getattr(element, 'action_slot', '')
-            if slot_name:
-                connect_slot = getattr(element, slot_name)
+            connect_slot = element
+            for sname in slot_name.split('.'):
+                connect_slot = getattr(connect_slot, sname)
+            if connect_slot is element:
+                connect_slot = None
         if connect_slot:
             connect_slot.connect(self.run_command)
         continuous_action_slot_name = getattr(element, 'continuous_action_slot', '')

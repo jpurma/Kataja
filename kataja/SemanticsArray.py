@@ -6,16 +6,18 @@ from kataja.SemanticsItem import SemanticsItem
 class SemanticsArray:
 
     def __init__(self, sm, array_id, model, array_type, x=0, y=0):
-        print(f'creating new array: array_id: {array_id}, model:{model}, array_type:{array_type}')
+        self.manager = sm
         self.array_id = array_id
         self.array_type = array_type
         self.array = []
         self.x = x
         self.y = y
         for label in model:
-            item = SemanticsItem(label, array_id, sm.colors[label], x, y)
+            item = SemanticsItem(sm, label, array_id, sm.colors[label], x, y)
             self.array.append(item)
             y += item.label_rect().height()
+            if not sm.visible:
+                sm.hide()
 
     def total_size(self):
         h = 0

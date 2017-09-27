@@ -94,9 +94,9 @@ TwoStateButton:checked:hover {border-color: %(ui_lighter)s; background-color: %(
 VisButton {font-size: %(ui_font_larger)spx; color: %(ui)s;}
 PanelButton {border: 1px transparent none;}
 PanelButton:hover {border: 1px solid %(ui)s; border-radius: 3}
-PanelButton:pressed {border: 2px solid %(ui_lighter)s; background-color: %(paper)s;
+PanelButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}
-PanelButton:checked {border: 2px solid %(ui)s; border-radius: 3}
+PanelButton:checked {border: 1px solid %(ui)s; border-radius: 3}
 PanelButton:checked:disabled {border-color: %(draw)s}
 EyeButton {border: 1px solid %(ui_darker)s;}
 EyeButton:hover {border: 1px solid %(ui)s; border-radius: 3}

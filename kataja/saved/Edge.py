@@ -62,6 +62,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.end_links_to = None
         self.end = end
         self.alpha = alpha
+        self.start_symbol = 0
         self.fixed_start_point = (0, 0)
         self.fixed_end_point = (0, 0)
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
@@ -214,6 +215,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             super().show()
         else:
             print('unnecessary show in edge')
+
+    def update_start_symbol(self):
+        if self.start_links_to:
+            self.start_symbol = 0
+        elif self.alpha:
+            self.start_symbol = self.alpha.get_edge_start_symbol()
+        else:
+            self.start_symbol = 0
 
     def update_visibility(self, fade_in=True, fade_out=True) -> bool:
         """ Hide or show according to various factors, which allow edge
@@ -788,6 +797,20 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 painter.fillPath(self.path.arrowhead_start_path, c)
             if self.path.arrowhead_end_path:
                 painter.fillPath(self.path.arrowhead_end_path, c)
+            if self.start_symbol == 1:
+                x, y = self.path.computed_start_point
+                poly = QtGui.QPolygon([QtCore.QPoint(x, y - 1),
+                                       QtCore.QPoint(x + 1, y),
+                                       QtCore.QPoint(x, y + 1),
+                                       QtCore.QPoint(x - 1, y),
+                                       QtCore.QPoint(x, y - 1)])
+                painter.drawPolygon(poly)
+            elif self.start_symbol == 2:
+                x, y = self.path.computed_start_point
+                poly = QtGui.QPolygon([QtCore.QPoint(x + 2, y - 2),
+                                       QtCore.QPoint(x, y),
+                                       QtCore.QPoint(x - 2, y - 2)])
+                painter.drawPolyline(poly)
 
         if self.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())
