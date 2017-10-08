@@ -91,7 +91,6 @@ class FeatureNode(Node):
     default_edge = g.FEATURE_EDGE
     ui_sheet = ('kataja.ui_widgets.panels.FeatureSheet', 'FeatureSheet')
 
-
     def __init__(self, label='', value='', family=''):
         Node.__init__(self)
         self.name = label
@@ -278,6 +277,18 @@ class FeatureNode(Node):
         else:
             return self.value and self.value != 'u' and self.value != '=' and self.value != '-'
 
+    def is_satisfied(self):
+        if self.syntactic_object:
+            return self.syntactic_object.checked_by
+        else:
+            return ('u' in self.value or '=' in self.value) and '✓' in self.value
+
+    def satisfies(self):
+        if self.syntactic_object:
+            return self.syntactic_object.checks
+        else:
+            return '✓' in self.value and not ('u' in self.value or '=' in self.value)
+
     def update_bounding_rect(self):
         """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 
         need to be accounted in their bounding rect
@@ -353,7 +364,7 @@ class FeatureNode(Node):
             elif self.fshape > 1:  # square, triangular or round knob
                 base_shape = self.inner_rect.adjusted(4, 0, 0, 0)
                 knob_at_left = self.can_satisfy()
-                hole_at_right = self.is_needy()
+                hole_at_right = self.is_needy() or self.is_satisfied()
                 if not hole_at_right:
                     base_shape.adjust(0, 0, -4, 0)
 
@@ -421,6 +432,9 @@ class FeatureNode(Node):
             return self.settings['color_id']
         elif self.name in ctrl.forest.semantics_manager.colors:
             return ctrl.forest.semantics_manager.colors[self.name]
+        elif self.name:
+            c_id = ord(self.name[0]) % 8 + 1
+            return 'accent' + str(c_id)
         else:
             return ctrl.settings.get_node_setting('color_id', node=self)
 
@@ -434,11 +448,9 @@ class FeatureNode(Node):
             elif self.name in ctrl.forest.semantics_manager.colors:
                 c = ctrl.cm.get(
                     ctrl.forest.semantics_manager.colors[self.name])
-            elif self.is_needy():
-                c = ctrl.cm.get('accent1')
-            else:
-                #print('feature name "%s" missing default color' % self.name)
-                c = self.color
+            elif self.name:
+                c_id = ord(self.name[0]) % 8 + 1
+                c = ctrl.cm.get('accent' + str(c_id))
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
             elif self.drag_data or self._hovering:
@@ -455,11 +467,9 @@ class FeatureNode(Node):
             elif self.name in ctrl.forest.semantics_manager.colors:
                 c = ctrl.cm.get(
                     ctrl.forest.semantics_manager.colors[self.name])
-            elif self.is_needy():
-                c = ctrl.cm.get('accent1')
-            else:
-                #print('feature name "%s" missing default color' % self.name)
-                c = self.color
+            elif self.name:
+                c_id = ord(self.name[0]) % 8 + 1
+                c = ctrl.cm.get('accent' + str(c_id))
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
             elif self.drag_data or self._hovering:
@@ -546,8 +556,14 @@ class FeatureNode(Node):
         return ":".join(s)
 
     def get_edge_start_symbol(self):
-        if '=' in self.value:
+        if self.satisfies():
+            return 4
+        elif self.is_satisfied():
+            return 3
+        elif self.is_needy():
             return 2
+        elif self.can_satisfy():
+            return 5
         else:
             return 0
 

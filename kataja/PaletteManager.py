@@ -538,7 +538,7 @@ class PaletteManager:
     def lighter(self, color: QColor) -> QColor:
         return color.lighter(110)
 
-    def transparent(self, color: QColor, opacity=50) -> QColor:
+    def transparent(self, color: QColor, opacity=128) -> QColor:
         c = QColor(color)
         c.setAlpha(opacity)
         return c

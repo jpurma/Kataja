@@ -811,6 +811,20 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                                        QtCore.QPoint(x, y),
                                        QtCore.QPoint(x - 2, y - 2)])
                 painter.drawPolyline(poly)
+            elif self.start_symbol == 3:
+                x, y = self.path.computed_start_point
+                poly = QtGui.QPolygon([QtCore.QPoint(x + 2, y - 2),
+                                       QtCore.QPoint(x, y),
+                                       QtCore.QPoint(x + 2, y + 2)])
+                painter.drawPolyline(poly)
+            elif self.start_symbol == 4:
+                x, y = self.path.computed_start_point
+                painter.drawLine(x, y, x - 1, y)
+            elif self.start_symbol == 5:
+                x, y = self.path.computed_start_point
+                # ct = ctrl.cm.transparent(c, 160)
+                # painter.setPen(ct)
+                painter.drawLine(x, y, x, y - 4)
 
         if self.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())

@@ -715,13 +715,20 @@ class Forest(SavedObject):
                 parents = len([x for x in cn.edges_up if x.edge_type ==
                                g.CONSTITUENT_EDGE])
                 checked_features = getattr(cn.syntactic_object, 'checked_features', None)
+                if checked_features:
+                    probe, goal = checked_features
+                else:
+                    probe = None
+                    goal = None
                 p = 1 / (parents or 1)
                 for e in cn.edges_down:
                     if e.edge_type == g.FEATURE_EDGE and e.alpha:
-                        if checked_features and e.alpha.syntactic_object in checked_features:
-                            check = -1
-                        else:
+                        if e.alpha.syntactic_object == probe:
                             check = 0
+                        elif e.alpha.syntactic_object == goal:
+                            check = 1
+                        else:
+                            check = 2
                         dist = distance(e)
                         i = local_i[e.alpha.uid]
                         sortables.append((check, dist, i, p, e))

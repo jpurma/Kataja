@@ -50,7 +50,7 @@ class BaseFeature(SavedObject):
 
     def __init__(self, name='Feature', value=None, family='', checks=None, checked_by=None):
         super().__init__()
-        self.name = name
+        self.name = str(name)
         self.value = value
         self.family = family
         # this is not strictly necessary, but being able to inform feature who checked what helps
@@ -62,15 +62,15 @@ class BaseFeature(SavedObject):
         return self.value == prop
 
     def can_satisfy(self):
-        return not self.unvalued()
+        return not (self.unvalued() or self.checks or self.checked_by)
 
     def is_needy(self):
         return self.unvalued()
 
     def unvalued(self):
-        return self.value == 'u' or self.value == '=' or self.value == '-' or self.value == '✓='
+        return self.value == 'u' or self.value == '=' or self.value == '-'
 
-    def satisfies(self, feature):
+    def would_satisfy(self, feature):
         return isinstance(feature,
                           BaseFeature) and feature.is_needy() and feature.name == self.name and \
                self.can_satisfy()

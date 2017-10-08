@@ -114,19 +114,22 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                     painter.setBrush(grad)
                     #painter.setBrush(ctrl.cm.get(self.color_id_tr))
                     # p.lineTo(px - x, py - y)
+
                     if py < y:
                         p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height + 2))
                         p.lineTo((px - x) / 2, mid_height + 2)
-                        p.quadTo(((px - x) / 4) * 3, mid_height + 2, px - x - 0.5, py - y)
-                        p.lineTo(px - x + 3, py - y - 1)
-                        p.quadTo(((px - x) / 4) * 3, mid_height - 2, (px - x) / 2, mid_height - 2)
+                        p.quadTo(((px - x) / 4) * 3 - 2, mid_height + 2, px - x - 0.5, py - y - 1)
+                        p.lineTo(px - x + 3, py - y - 5)
+                        p.quadTo(((px - x) / 4) * 3 + 2, mid_height - 2, (px - x) / 2, mid_height
+                                 - 2)
                         p.lineTo(0, mid_height - 2)
                     else:
                         p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height - 2))
                         p.lineTo((px - x) / 2, mid_height - 2)
-                        p.quadTo(((px - x) / 4) * 3, mid_height - 2, px - x - 0.5, py - y)
-                        p.lineTo(px - x + 3, py - y + 1)
-                        p.quadTo(((px - x) / 4) * 3, mid_height + 2, (px - x) / 2, mid_height + 2)
+                        p.quadTo(((px - x) / 4) * 3 - 2, mid_height - 2, px - x - 0.5, py - y - 1)
+                        p.lineTo(px - x + 3, py - y - 5)
+                        p.quadTo(((px - x) / 4) * 3 + 2, mid_height + 2, (px - x) / 2, mid_height
+                                 + 2)
                         p.lineTo(0, mid_height + 2)
                     painter.drawPath(p)
                 else:

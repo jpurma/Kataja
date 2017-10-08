@@ -612,7 +612,7 @@ class ConstituentNode(Node):
             right_nods = []
             for fnode in children:
                 if fnode.locked_to_node is self:
-                    if fnode.is_needy():
+                    if fnode.is_needy() or fnode.is_satisfied():
                         right_nods.append(fnode)
                     else:
                         left_nods.append(fnode)

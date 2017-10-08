@@ -1733,7 +1733,7 @@ class Node(Movable):
 
     def update_halo(self, color):
         c = color.lighter(100 + (1 - ctrl.cm.background_lightness) * 120)
-        c = ctrl.cm.transparent(c, opacity=50)
+        c = ctrl.cm.transparent(c, opacity=128)
         self.halo_item.setZValue(2)
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)

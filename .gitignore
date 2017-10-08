@@ -248,3 +248,5 @@ profiler_results.log
 
 venv/
 
+### Pypy!
+pypy3/
