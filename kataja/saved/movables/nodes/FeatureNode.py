@@ -271,6 +271,12 @@ class FeatureNode(Node):
             # These are defaults
             return (not self.value) or self.value == 'u' or self.value == '=' or self.value == '-'
 
+    def valuing(self):
+        if self.syntactic_object:
+            return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
+        else:
+            return self.value != 'u' and self.value != '=' and self.value != '-'
+
     def can_satisfy(self):
         if self.syntactic_object:
             return self.syntactic_object.can_satisfy()
@@ -363,7 +369,7 @@ class FeatureNode(Node):
                 painter.drawRect(self.inner_rect)
             elif self.fshape > 1:  # square, triangular or round knob
                 base_shape = self.inner_rect.adjusted(4, 0, 0, 0)
-                knob_at_left = self.can_satisfy()
+                knob_at_left = self.valuing()
                 hole_at_right = self.is_needy() or self.is_satisfied()
                 if not hole_at_right:
                     base_shape.adjust(0, 0, -4, 0)

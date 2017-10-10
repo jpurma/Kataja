@@ -32,10 +32,10 @@ class LexiconPanel(Panel):
         layout.addWidget(self.sentence_text)
         self.semantics_text = QtWidgets.QLineEdit()
         layout.addWidget(self.semantics_text)
-        self.info = QtWidgets.QLabel('info text here')
+        #self.info = QtWidgets.QLabel('info text here')
         self.derive_button = PushButtonBase(parent=self, text='Derive again',
                                             action='derive_from_lexicon').to_layout(layout)
-        layout.addWidget(self.info)
+        #layout.addWidget(self.info)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)

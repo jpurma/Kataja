@@ -109,6 +109,10 @@ class SelectObject(KatajaAction):
             ctrl.select(objs)
         else:
             obj = ctrl.forest.get_object_by_uid(object_uid)
+            if hasattr(obj, 'zValue'):
+                print('z-value before: ', obj.zValue())
             ctrl.select(obj)
+            if hasattr(obj, 'zValue'):
+                print('z-value after: ', obj.zValue())
 
 

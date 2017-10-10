@@ -243,7 +243,7 @@ class RemoveMergerButton(OverlayButton):
 
 
 class RemoveNodeButton(OverlayButton):
-    """ Button to delete unnecessary node between grandparent and child"""
+    """ Button to delete node """
 
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16, color_key='accent3',
@@ -253,8 +253,9 @@ class RemoveNodeButton(OverlayButton):
     @classmethod
     def condition(cls, host):
         return ctrl.free_drawing_mode and (
-            host.node_type == g.CONSTITUENT_NODE and not host.is_unnecessary_merger()) or \
-               host.node_type != g.CONSTITUENT_NODE
+            (host.node_type == g.CONSTITUENT_NODE and not host.is_unnecessary_merger())
+            or host.node_type != g.CONSTITUENT_NODE
+        )
 
     def update_position(self):
         """ """

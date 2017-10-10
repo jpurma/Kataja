@@ -89,7 +89,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._hovering = False
         self._start_node_moving = False
         self._end_node_moving = False
-        self.setZValue(5)
+        self.setZValue(15)
         self.crossed_out_flag = False
         self._use_labels = None
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)

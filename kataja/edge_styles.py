@@ -45,7 +45,7 @@ master_styles = {
             'style': 'dashed',
             'start_connects_to': SPECIAL,
             'end_connects_to': SPECIAL,
-            'z_value': 5
+            'z_value': 15
         },
         COMMENT_EDGE: {
             'shape_name': 'linear',
@@ -67,7 +67,7 @@ master_styles = {
             'labeled': False,
             'start_connects_to': MAGNETS,
             'end_connects_to': MAGNETS,
-            'z_value': 4
+            'z_value': 14
         },
         FEATURE_EDGE: {
             'shape_name': 'cubic',
@@ -78,7 +78,7 @@ master_styles = {
             'labeled': False,
             'start_connects_to': BORDER,
             'end_connects_to': BORDER,
-            'z_value': 5
+            'z_value': 15
         },
         GLOSS_EDGE: {
             'shape_name': 'cubic',
