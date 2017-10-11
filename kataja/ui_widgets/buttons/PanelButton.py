@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
-
+from kataja.utils import colored_image, colored_image_from_drawing
 
 class PanelButton(PushButtonBase):
     """ Buttons that change their color according to widget where they are.
@@ -48,26 +48,6 @@ class PanelButton(PushButtonBase):
         else:
             return ctrl.cm.get(self.color_key)
 
-    def colored_image_from_base(self, color):
-        assert self.base_image
-        image = QtGui.QImage(self.base_image)
-        painter = QtGui.QPainter(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(image.rect(), color)
-        painter.end()
-        return image
-
-    def colored_image_from_drawing(self, color):
-        image = QtGui.QImage(self.base_image)
-        painter = QtGui.QPainter(image)
-        # painter.setDevicePixelRatio(2.0)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(color)
-        self.draw_method(painter, image.rect(), color)
-        painter.end()
-        return image
-
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary
         to update the overlay color.
@@ -75,9 +55,9 @@ class PanelButton(PushButtonBase):
         """
         c = ctrl.cm.get(self.color_key)
         if self.pixmap:
-            image = self.colored_image_from_base(c)
+            image = colored_image(c, self.base_image)
         elif self.draw_method:
-            image = self.colored_image_from_drawing(c)
+            image = colored_image_from_drawing(c, self.draw_method)
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))

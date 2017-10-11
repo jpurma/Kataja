@@ -51,12 +51,14 @@ class GlossNode(Node):
         'fancy': {
             'color_id': 'accent5',
             'font_id': g.ITALIC_FONT,
-            'font-size': 10
+            'font-size': 10,
+            'visible': True
         },
         'plain': {
             'color_id': 'accent5',
             'font_id': g.ITALIC_FONT,
-            'font-size': 10
+            'font-size': 10,
+            'visible': True
         }
     }
 

@@ -2,7 +2,7 @@
 from PyQt5 import QtGui
 from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
-
+from kataja.utils import colored_image
 
 class TwoStateIconButton(PushButtonBase):
 
@@ -47,17 +47,7 @@ class TwoStateIconButton(PushButtonBase):
         :return:
         """
         c = ctrl.cm.ui()
-        image = QtGui.QImage(self.pixmap0)
-        painter = QtGui.QPainter(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(image.rect(), c)
-        painter.end()
-        self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
-        image = QtGui.QImage(self.pixmap1)
-        painter = QtGui.QPainter(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(image.rect(), c)
-        painter.end()
-        self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        image0 = colored_image(c, self.pixmap0)
+        self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
+        image1 = colored_image(c, self.pixmap1)
+        self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))

@@ -116,6 +116,118 @@ class AddCommentNode(AbstractAddNode):
     node_type = g.COMMENT_NODE
 
 
+class AbstractToggleVisibility(KatajaAction):
+    k_action_uid = ''
+    node_type = 0
+
+    def prepare_parameters(self, args, kwargs):
+        button = self.sender()
+        if button:
+            return [button.isChecked()], kwargs
+        else:
+            return [False], kwargs
+
+    def method(self, checked):
+        """ Change font key for current node or node type.
+        :param font_id: str
+        :return: None
+        """
+        node_type = self.__class__.node_type
+        ctrl.settings.set_node_setting('visible', checked, node_type=node_type,
+                                       level=ctrl.ui.active_scope)
+
+    def enabler(self):
+        return not ctrl.ui.scope_is_selection
+
+    def getter(self):
+        node_type = self.__class__.node_type
+        return ctrl.settings.get_node_setting('visible', node_type=node_type)
+
+
+class ToggleConstituentNodeVisibility(AbstractToggleVisibility):
+    k_action_uid = 'toggle_constituent_visibility'
+    k_command = 'Show or hide constituent nodes'
+    k_tooltip = 'Show or hide constituent nodes'
+    node_type = g.CONSTITUENT_NODE
+
+
+class ToggleFeatureNodeVisibility(AbstractToggleVisibility):
+    k_action_uid = 'toggle_feature_visibility'
+    k_command = 'Show or hide feature nodes'
+    k_tooltip = 'Show or hide feature nodes'
+    node_type = g.FEATURE_NODE
+
+
+class ToggleGlossNodeVisibility(AbstractToggleVisibility):
+    k_action_uid = 'toggle_gloss_visibility'
+    k_command = 'Show or hide gloss nodes'
+    k_tooltip = 'Show or hide gloss nodes'
+    node_type = g.GLOSS_NODE
+
+
+class ToggleCommentNodeVisibility(AbstractToggleVisibility):
+    k_action_uid = 'toggle_comment_visibility'
+    k_command = 'Show or hide comment nodes'
+    k_tooltip = 'Show or hide comment nodes'
+    node_type = g.COMMENT_NODE
+
+
+class AbstractToggleEdgeVisibility(KatajaAction):
+    k_action_uid = ''
+    node_type = 0
+
+    def prepare_parameters(self, args, kwargs):
+        button = self.sender()
+        if button:
+            return [button.isChecked()], kwargs
+        else:
+            return [False], kwargs
+
+    def method(self, checked):
+        """ Change font key for current node or node type.
+        :param font_id: str
+        :return: None
+        """
+        edge_type = self.__class__.edge_type
+        ctrl.settings.set_edge_setting('visible', checked, edge_type=edge_type,
+                                       level=ctrl.ui.active_scope)
+
+    def enabler(self):
+        return not ctrl.ui.scope_is_selection
+
+    def getter(self):
+        edge_type = self.__class__.edge_type
+        return ctrl.settings.get_edge_setting('visible', edge_type=edge_type)
+
+
+class ToggleConstituentEdgeVisibility(AbstractToggleEdgeVisibility):
+    k_action_uid = 'toggle_constituent_edge_visibility'
+    k_command = 'Show or hide constituent edges'
+    k_tooltip = 'Show or hide constituent edges'
+    edge_type = g.CONSTITUENT_EDGE
+
+
+class ToggleFeatureEdgeVisibility(AbstractToggleEdgeVisibility):
+    k_action_uid = 'toggle_feature_edge_visibility'
+    k_command = 'Show or hide feature edges'
+    k_tooltip = 'Show or hide feature edges'
+    edge_type = g.FEATURE_EDGE
+
+
+class ToggleGlossEdgeVisibility(AbstractToggleEdgeVisibility):
+    k_action_uid = 'toggle_gloss_edge_visibility'
+    k_command = 'Show or hide gloss edges'
+    k_tooltip = 'Show or hide gloss edges'
+    edge_type = g.GLOSS_EDGE
+
+
+class ToggleCommentEdgeVisibility(AbstractToggleEdgeVisibility):
+    k_action_uid = 'toggle_comment_edge_visibility'
+    k_command = 'Show or hide comment edges'
+    k_tooltip = 'Show or hide comment edges'
+    edge_type = g.COMMENT_EDGE
+
+
 class AbstractSelectFont(KatajaAction):
     k_action_uid = ''
     node_type = 0
@@ -238,7 +350,6 @@ class AbstractChangeNodeColor(KatajaAction):
                 node.update_label()
         # ... or update color for all nodes of this type
         else:
-            print(color_key, self.__class__.node_type, ctrl.ui.active_scope)
             ctrl.settings.set_node_setting('color_id', color_key,
                                            node_type=self.__class__.node_type,
                                            level=ctrl.ui.active_scope)

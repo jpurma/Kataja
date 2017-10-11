@@ -29,11 +29,32 @@ import sys
 import time
 import traceback
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from PyQt5.QtCore import QPointF, QPoint
 
 import kataja.globals as g
+
+
+def colored_image(color, base_image):
+    image = QtGui.QImage(base_image)
+    painter = QtGui.QPainter(image)
+    painter.setRenderHint(QtGui.QPainter.Antialiasing)
+    painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+    painter.fillRect(image.rect(), color)
+    painter.end()
+    return image
+
+
+def colored_image_from_drawing(color, draw_method):
+    image = QtGui.QImage()
+    painter = QtGui.QPainter(image)
+    # painter.setDevicePixelRatio(2.0)
+    painter.setRenderHint(QtGui.QPainter.Antialiasing)
+    painter.setPen(color)
+    draw_method(self, painter, image.rect(), color)
+    painter.end()
+    return image
 
 
 def print_rect(rect):

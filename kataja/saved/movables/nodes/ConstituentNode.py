@@ -65,12 +65,15 @@ class ConstituentNode(Node):
         'plain': {
             'color_id': 'content1',
             'font_id': g.MAIN_FONT,
-            'font-size': 10
+            'font-size': 10,
+            'visible': True
         },
         'fancy': {
             'color_id': 'content1',
             'font_id': g.MAIN_FONT,
-            'font-size': 10
+            'font-size': 10,
+            'visible': True
+
         }
     }
 

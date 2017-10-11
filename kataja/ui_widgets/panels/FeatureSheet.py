@@ -6,6 +6,7 @@ from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
+from kataja.ui_widgets.buttons.EyeButton import EyeButton
 
 __author__ = 'purma'
 
@@ -26,7 +27,6 @@ class FeatureSheet(QtWidgets.QWidget):
         :param parent: self.main
         """
         QtWidgets.QWidget.__init__(self, parent=parent)
-        ui = ctrl.ui
         self.setMaximumWidth(220)
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
         layout = QtWidgets.QVBoxLayout()
@@ -75,11 +75,14 @@ class FeatureSheet(QtWidgets.QWidget):
                                 tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
                                 parent=self)
         hlayout.addWidget(label)
-        hlayout.addStretch(24)
+
+        #hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_features',
                                             for_edge_type=g.FEATURE_EDGE
                                             ).to_layout(hlayout)
+        self.edge_visible = EyeButton(action='toggle_feature_edge_visibility', height=22,
+                                      width=26).to_layout(hlayout)
         self.edge_options = PanelButton(parent=self,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options',

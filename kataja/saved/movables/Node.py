@@ -101,7 +101,8 @@ class Node(Movable):
         'font-size': 10,
         'card': False,
         'card_width': 0,
-        'card_height': 0
+        'card_height': 0,
+        'visible': True,
     }
 
     default_edge = g.ABSTRACT_EDGE

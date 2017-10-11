@@ -98,17 +98,20 @@ PanelButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper
                      border-radius: 3}
 PanelButton:checked {border: 1px solid %(ui)s; border-radius: 3}
 PanelButton:checked:disabled {border-color: %(draw)s}
-EyeButton {border: 1px solid %(ui_darker)s;}
+EyeButton {border: 1px transparent none;}
 EyeButton:hover {border: 1px solid %(ui)s; border-radius: 3}
 EyeButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}
-EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
+EyeButton:checked {border: 1px transparent none;}
+
 ColorSelector:hover {border: 1px solid %(ui)s; border-radius: 3}
 TwoStateIconButton, TwoStateIconButton:checked {border: 1px solid transparent; 
                                              background-color: transparent;}
 TwoStateIconButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;}
 TwoStateIconButton:hover {border: 1px solid %(ui)s; background-color: %(paper)s; border-radius: 3}
 """
+# EyeButton {border: 1px solid %(ui_darker)s;}
+# EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
 
 
 # ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}

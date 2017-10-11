@@ -5,6 +5,7 @@ from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
 from kataja.ui_widgets.selection_boxes.FontSelector import FontSelector
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.buttons.EyeButton import EyeButton
 
 __author__ = 'purma'
 
@@ -41,6 +42,9 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.label = QtWidgets.QLabel(name, self)
         hlayout.addWidget(self.label)
         hlayout.addStretch(8)
+
+        self.node_type_visible = EyeButton(action='toggle_%s_visibility' % node_type_name, height=22,
+                                           width=26).to_layout(hlayout)
 
         self.font_selector = FontSelector(parent=self,
                                           action='select_%s_font' % node_type_name, ).to_layout(

@@ -26,6 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.singletons import ctrl, qt_prefs
+from kataja.utils import colored_image
 
 
 class EyeButton(PanelButton):
@@ -34,13 +35,12 @@ class EyeButton(PanelButton):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, width=32, height=26, **kwargs):
         self.checked_icon = None
-        self.hover_icon = None
-        PanelButton.__init__(self, qt_prefs.eye_pixmap, size=24, **kwargs)
-        self.setFixedSize(QtCore.QSize(32, 26))
+        self.pixmap1 = qt_prefs.eye_pixmap
+        PanelButton.__init__(self, qt_prefs.closed_eye_pixmap, size=height - 2, **kwargs)
+        self.setFixedSize(QtCore.QSize(width, height))
         self.value = False
-        self._hover = False
         self.setCheckable(True)
 
     def compose_icon(self):
@@ -49,13 +49,10 @@ class EyeButton(PanelButton):
         :return:
         """
         c = ctrl.cm.get(self.color_key)
-        image = self.colored_image_from_base(c)
-        image2 = self.colored_image_from_base(c.darker())
-        pm1 = QtGui.QPixmap().fromImage(image)
-        pm2 = QtGui.QPixmap().fromImage(image2)
-        self.normal_icon = QtGui.QIcon(QtGui.QPixmap())
-        self.checked_icon = QtGui.QIcon(pm1)
-        self.hover_icon = QtGui.QIcon(pm2)
+        image = colored_image(c, self.base_image)
+        checked_image = colored_image(c, self.pixmap1)
+        self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        self.checked_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(checked_image))
         if self.isChecked():
             self.setIcon(self.checked_icon)
         else:
@@ -70,20 +67,4 @@ class EyeButton(PanelButton):
         self.update_icon_mode()
 
     def update_icon_mode(self):
-        checked = self.isChecked()
-        if self._hover:
-            self.setIcon(self.hover_icon)
-        elif checked:
-            self.setIcon(self.checked_icon)
-        else:
-            self.setIcon(self.normal_icon)
-
-    def enterEvent(self, e):
-        self._hover = True
-        self.update_icon_mode()
-        super().enterEvent(e)
-
-    def leaveEvent(self, e):
-        self._hover = False
-        self.update_icon_mode()
-        super().leaveEvent(e)
+        self.setIcon(self.checked_icon if self.isChecked() else self.normal_icon)

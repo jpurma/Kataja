@@ -28,7 +28,7 @@ from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_graphicsitems.TouchArea import TouchArea
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-
+from kataja.utils import colored_image_from_drawing, colored_image
 
 class OverlayButton(PanelButton):
     """ A floating button on top of main canvas. These are individual UI
@@ -65,11 +65,11 @@ class OverlayButton(PanelButton):
         """
         c = ctrl.cm.get(self.color_key)
         if self.pixmap:
-            image = self.colored_image_from_base(c)
-            image2 = self.colored_image_from_base(c.lighter())
+            image = colored_image(c, self.base_image)
+            image2 = colored_image(c.lighter(), self.base_image)
         elif self.draw_method:
-            image = self.colored_image_from_drawing(c)
-            image2 = self.colored_image_from_drawing(c.lighter())
+            image = colored_image_from_drawing(c, self.draw_method)
+            image2 = colored_image_from_drawing(c.lighter(), self.draw_method)
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))

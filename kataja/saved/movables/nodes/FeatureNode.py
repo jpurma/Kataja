@@ -85,8 +85,10 @@ class FeatureNode(Node):
                                syntactic=True)
                 }
 
-    default_style = {'fancy': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9},
-                     'plain': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9}}
+    default_style = {'fancy': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
+                               'visible': True},
+                     'plain': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
+                               'visible': True}}
 
     default_edge = g.FEATURE_EDGE
     ui_sheet = ('kataja.ui_widgets.panels.FeatureSheet', 'FeatureSheet')

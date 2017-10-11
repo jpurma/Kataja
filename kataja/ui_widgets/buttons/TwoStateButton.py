@@ -4,7 +4,7 @@ from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-
+from kataja.utils import colored_image
 
 class TwoStateButton(PanelButton):
 
@@ -56,13 +56,11 @@ class TwoStateButton(PanelButton):
         """
         if not self.pixmap0:
             return
-        self.base_image = self.image0
-        image0 = self.colored_image_from_base(ctrl.cm.ui())
+        image0 = colored_image(ctrl.cm.ui(), self.image0)
         if self.image1:
-            self.base_image = self.image1
-            image1 = self.colored_image_from_base(ctrl.cm.ui())
+            image1 = colored_image(ctrl.cm.ui(), self.image1)
         else:
-            image1 = self.colored_image_from_base(ctrl.cm.paper())
+            image1 = colored_image(ctrl.cm.paper(), self.image1)
         self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
         self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))
 

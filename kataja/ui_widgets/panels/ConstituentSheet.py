@@ -7,6 +7,7 @@ from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
+from kataja.ui_widgets.buttons.EyeButton import EyeButton
 
 __author__ = 'purma'
 
@@ -57,10 +58,12 @@ class ConstituentSheet(QtWidgets.QWidget):
         label = KatajaInfoLabel('Edge', tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
                                 parent=self)
         hlayout.addWidget(label)
-        hlayout.addStretch(24)
+        #hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_constituents',
                                             for_edge_type=g.CONSTITUENT_EDGE).to_layout(hlayout)
+        self.edge_visible = EyeButton(action='toggle_constituent_edge_visibility', height=22,
+                                      width=26).to_layout(hlayout)
         self.edge_options = PanelButton(parent=self, pixmap=qt_prefs.settings_icon,
                                         action='open_line_options', ).to_layout(hlayout,
                                                                                 align=QtCore.Qt.AlignRight)

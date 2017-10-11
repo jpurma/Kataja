@@ -51,10 +51,12 @@ class CommentNode(Node):
 
     default_style = {'fancy': {'color_id': 'accent4',
                                'font_id': g.MAIN_FONT,
-                               'font-size': 14},
+                               'font-size': 14,
+                               'visible': True},
                      'plain': {'color_id': 'accent4',
                                'font_id': g.MAIN_FONT,
-                               'font-size': 14}
+                               'font-size': 14,
+                               'visible': True}
                      }
 
     default_edge = g.COMMENT_EDGE
@@ -233,7 +235,7 @@ class CommentNode(Node):
         else:
             return super().move(other_nodes)
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         """
 
         :param recipient:
@@ -241,7 +243,7 @@ class CommentNode(Node):
         :param y:
         :return: action finished -message (str)
         """
-        super().drop_to(x, y, recipient=recipient)
+        super().drop_to(x, y, recipient=recipient, shift_down=shift_down)
         if self.preferred_host:
             x, y = self.preferred_host.current_scene_position
             mx, my = self.current_scene_position

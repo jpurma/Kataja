@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Disable these if necessary for debugging
-enable_loading_preferences = True
+enable_loading_preferences = False
 enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -544,6 +544,7 @@ class QtPreferences:
         self.camera_icon = None
         self.card_icon = None
         self.eye_pixmap = None
+        self.closed_eye_pixmap = None
         self.undo_icon = None
         self.redo_icon = None
         self.kataja_icon = None
@@ -643,6 +644,7 @@ class QtPreferences:
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.card_icon = icon('card48.png')
+        self.closed_eye_pixmap = pixmap('eye_shut48.png')
         self.eye_pixmap = pixmap('eye48.png')
         self.info_icon = icon('info48.png')
         self.undo_icon = icon('undo48.png')
