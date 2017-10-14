@@ -41,10 +41,10 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 
         self.label = QtWidgets.QLabel(name, self)
         hlayout.addWidget(self.label)
-        hlayout.addStretch(8)
+        hlayout.addStretch(36)
 
         self.node_type_visible = EyeButton(action='toggle_%s_visibility' % node_type_name, height=22,
-                                           width=26).to_layout(hlayout)
+                                           width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)
 
         self.font_selector = FontSelector(parent=self,
                                           action='select_%s_font' % node_type_name, ).to_layout(

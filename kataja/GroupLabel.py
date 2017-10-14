@@ -193,7 +193,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.automatic_position = False
         self._local_drag_handle_position = None
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         self.automatic_position = False
         self._local_drag_handle_position = None
 

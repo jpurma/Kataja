@@ -61,7 +61,7 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
             pi.set_dragged(True)
             pi.update_position(event.scenePos())
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         pass
 
 

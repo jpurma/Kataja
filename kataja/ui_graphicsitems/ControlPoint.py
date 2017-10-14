@@ -172,7 +172,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.host.update()
         self.being_dragged = True
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         """ Dragging ends, possibly by dropping over another object.
         :param x: scene x coordinate
         :param y: scene y coordinate
@@ -200,8 +200,9 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         if ctrl.pressed is self:
             ctrl.release(self)
             if self.being_dragged:
+                shift = event.modifiers() == QtCore.Qt.ShiftModifier
                 x, y = to_tuple(event.scenePos())
-                self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on)
+                self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
                 self.being_dragged = False
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances

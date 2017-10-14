@@ -99,7 +99,7 @@ PanelButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper
 PanelButton:checked {border: 1px solid %(ui)s; border-radius: 3}
 PanelButton:checked:disabled {border-color: %(draw)s}
 EyeButton {border: 1px transparent none;}
-EyeButton:hover {border: 1px solid %(ui)s; border-radius: 3}
+EyeButton:hover, EyeButton:checked:hover {border: 1px solid %(ui)s; border-radius: 3}
 EyeButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;
                      border-radius: 3}
 EyeButton:checked {border: 1px transparent none;}

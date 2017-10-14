@@ -194,7 +194,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def being_dragged(self):
         return self._local_drag_handle_position
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         self._local_drag_handle_position = None
 
     def mousePressEvent(self, event):

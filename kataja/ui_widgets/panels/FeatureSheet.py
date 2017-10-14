@@ -76,13 +76,13 @@ class FeatureSheet(QtWidgets.QWidget):
                                 parent=self)
         hlayout.addWidget(label)
 
-        #hlayout.addStretch(24)
+        hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_features',
                                             for_edge_type=g.FEATURE_EDGE
-                                            ).to_layout(hlayout)
+                                            ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_visible = EyeButton(action='toggle_feature_edge_visibility', height=22,
-                                      width=26).to_layout(hlayout)
+                                      width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_options = PanelButton(parent=self,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options',

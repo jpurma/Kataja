@@ -537,7 +537,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             return False
 
-    def drop_to(self, x, y, recipient=None):
+    def drop_to(self, x, y, recipient=None, shift_down=False):
         """
         This item is dropped to screen coordinates. Evaluate if there are
         sensitive objects (TouchAreas) there and if
@@ -546,7 +546,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param y: int or float
         :param recipient: Movable?
         """
-        print('movable drop to %s,%s , recipient=%s' % (x, y, recipient))
+        print('movable drop to %s,%s , recipient=%s, shift_down=%s' % (x, y, recipient, shift_down))
 
     def accepts_drops(self, dragged):
         """ Reimplement this to evaluate if this Movable should accept drops from dragged. Default returns False.
