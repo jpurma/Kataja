@@ -393,12 +393,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def __gt__(self, other):
         return self.edge_start_index()[0] > other.edge_start_index()[0]
 
-    def edge_start_index(self) -> tuple:
+    def edge_start_index(self, from_cache=True) -> tuple:
         """ Return tuple where first value is the order of this edge among similar type of edges
         for this parent (parent = edge.start) and the second is the total amount of siblings (
         edges of this type)
         :return:
         """
+        if from_cache:
+            return self.path.cached_edge_start_index
         if not self.start:
             return 0, 0
         count = 0
@@ -410,12 +412,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 count += 1
         return found, count
 
-    def edge_end_index(self) -> tuple:
+    def edge_end_index(self, from_cache=True) -> tuple:
         """ Return tuple where first value is the order of this edge among similar type of edges
         for this child (child = edge.end) and the second is the total amount of parents (
         edges of this type)
         :return:
         """
+        if from_cache:
+            return self.path.cached_edge_end_index
         if not self.end:
             return 0, 0
         count = 0
@@ -825,7 +829,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 painter.drawPolyline(poly)
             elif self.start_symbol == 4:
                 x, y = self.path.computed_start_point
-                painter.drawLine(x, y, x - 1, y)
+                painter.drawLine(x, y, x - 2, y)
             elif self.start_symbol == 5:
                 x, y = self.path.computed_start_point
                 # ct = ctrl.cm.transparent(c, 160)

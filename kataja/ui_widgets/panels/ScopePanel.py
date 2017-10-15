@@ -26,7 +26,7 @@ class ScopePanel(Panel):
                  (g.DOCUMENT, 'scope is document'), (g.PREFS, 'scope is preferences')]
 
         self.scope_selector = SelectionBox(data=items, action='set_scope_for_node_style')
-        self.scope_selector.setMaximumWidth(116)
+        self.scope_selector.setMaximumWidth(128)
         self.push_to_title(self.scope_selector)
         self.reset_button = PanelButton(text='reset', action='reset_settings')
         self.reset_button.setMinimumHeight(14)

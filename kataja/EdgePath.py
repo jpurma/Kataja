@@ -62,6 +62,8 @@ class EdgePath:
         self.arrowhead_end_path = None
         self.cached_cp_rect = None
         self.changed = False
+        self.cached_edge_start_index = (0, 1)
+        self.cached_edge_end_index = (0, 1)
 
     def shape(self) -> QtGui.QPainterPath:
         """ Use the fatter version for hit detection
@@ -85,7 +87,7 @@ class EdgePath:
             if self.edge in cn.cached_sorted_feature_edges:
                 i = cn.cached_sorted_feature_edges.index(self.edge)
                 max_i = len(cn.cached_sorted_feature_edges)
-                return (i - math.ceil((max_i - 1) / 2)) * 3
+                return (i - math.ceil((max_i - 1) / 2)) * 4
         return 0
 
     def get_shift_for_end(self):
@@ -261,8 +263,8 @@ class EdgePath:
         oex, oey = self.computed_end_point
         start = self.edge.start
         end = self.edge.end
-        self.cached_start_index = self.edge.edge_start_index()
-        self.cached_end_index = self.edge.edge_end_index()
+        self.cached_edge_start_index = self.edge.edge_start_index(from_cache=False)
+        self.cached_edge_end_index = self.edge.edge_end_index(from_cache=False)
 
         if start and end:
             sx, sy = start.current_scene_position

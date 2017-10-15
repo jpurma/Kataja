@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Disable these if necessary for debugging
-enable_loading_preferences = False
+enable_loading_preferences = True
 enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',

@@ -131,6 +131,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             if node.parentItem():
                 continue
+            if not node.isVisible():
+                continue
             empty = False
             if current:
                 minx, miny, maxx, maxy = (int(x) for x in node.sceneBoundingRect().getCoords())
