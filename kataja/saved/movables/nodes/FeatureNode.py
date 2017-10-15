@@ -91,7 +91,6 @@ class FeatureNode(Node):
                                'visible': True}}
 
     default_edge = g.FEATURE_EDGE
-    ui_sheet = ('kataja.ui_widgets.panels.FeatureSheet', 'FeatureSheet')
 
     def __init__(self, label='', value='', family=''):
         Node.__init__(self)

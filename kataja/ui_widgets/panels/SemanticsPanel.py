@@ -18,14 +18,15 @@ class SemanticsPanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded, foldable=False)
+        self.semantics_visible = EyeButton(action='toggle_semantics_view', width=26, height=20)
+        self.push_to_title(self.semantics_visible)
         inner = QtWidgets.QWidget()
         inner.setMaximumHeight(40)
         inner.setMinimumWidth(160)
         inner.setMaximumWidth(220)
         hlayout = QtWidgets.QHBoxLayout()
-        self.semantics_visible = EyeButton(action='toggle_semantics_view')\
-            .to_layout(hlayout, with_label='Show semantics', label_first=False)
+        #    .to_layout(hlayout, with_label='Show semantics', label_first=False)
         inner.setLayout(hlayout)
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)

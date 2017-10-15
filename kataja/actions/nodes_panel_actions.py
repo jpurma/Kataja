@@ -1,11 +1,12 @@
 # coding=utf-8
-from PyQt5 import QtCore
-import kataja.globals as g
-from kataja.globals import FOREST, DOCUMENT
-from kataja.KatajaAction import KatajaAction
-from kataja.singletons import ctrl, prefs, log, qt_prefs, classes
-from kataja.saved.movables.Node import Node
 import random
+
+from PyQt5 import QtCore
+
+import kataja.globals as g
+from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl, log, qt_prefs, classes
+from kataja.actions.line_options_panel_actions import LinesPanelAction
 
 
 # ==== Class variables for KatajaActions:
@@ -259,14 +260,10 @@ class AbstractSelectFont(KatajaAction):
                                            level=ctrl.ui.active_scope)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
-        font = qt_prefs.get_font(font_id)
-        font_dialog = ctrl.ui.get_font_dialog(node_type)
-        if font_dialog:
-            font_dialog.setCurrentFont(font)
-        panel = ctrl.ui.get_panel('NodesPanel')
-        if panel:
-            frame = panel.get_frame_for(node_type)
-            frame.update_font(font_id)
+        np = ctrl.ui.get_panel_by_node_type(node_type)
+        if np:
+            np.font_selector.setCurrentFont(qt_prefs.get_font(font_id))
+            np.update_title_font(font_id)
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
@@ -343,23 +340,22 @@ class AbstractChangeNodeColor(KatajaAction):
         """
 
         # Update color for selected nodes
+        node_type = self.__class__.node_type
         if ctrl.ui.scope_is_selection:
-            for node in ctrl.get_selected_nodes(of_type=self.__class__node_type):
+            for node in ctrl.get_selected_nodes(of_type=node_type):
                 ctrl.settings.set_node_setting('color_id', color_key, node=node)
                 node.color_id = color_key
                 node.update_label()
         # ... or update color for all nodes of this type
         else:
             ctrl.settings.set_node_setting('color_id', color_key,
-                                           node_type=self.__class__.node_type,
+                                           node_type=node_type,
                                            level=ctrl.ui.active_scope)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
-        panel = ctrl.ui.get_panel('NodesPanel')
+        panel = ctrl.ui.get_panel_by_node_type(node_type)
         if panel:
-            frame = panel.get_frame_for(self.__class__.node_type)
-            if frame:
-                frame.update_colors()
+            panel.update_colors()
 
     def enabler(self):
         return ctrl.ui.has_nodes_in_scope(self.__class__.node_type)
@@ -402,31 +398,6 @@ class ChangeCommentColor(AbstractChangeNodeColor):
     node_type = g.COMMENT_NODE
 
 
-class FoldNodeSheet(KatajaAction):
-    k_action_uid = 'fold_node_sheet'
-    k_command = 'Fold node sheet'
-    k_command_alt = 'Unfold node sheet'
-    k_tooltip = 'Hide option sheet'
-    k_tooltip_alt = 'Show option sheet'
-    k_checkable = True
-
-    def prepare_parameters(self, args, kwargs):
-        sender = self.sender()
-        fold = sender.isChecked()
-        node_type = sender.data
-        return [node_type, fold], kwargs
-
-    def method(self, node_type: str, fold: bool):
-        """ Fold or unfold UI sheet for this type of node.
-        :param node_type: str, node type identifier
-        :param fold: bool, fold if True, unfold if False.
-        """
-        panel = ctrl.ui.get_panel('NodesPanel')
-        frame = panel.get_frame_for(node_type)
-        frame.set_folded(fold)
-        panel.updateGeometry()
-
-
 class OpenLineOptions(KatajaAction):
     k_action_uid = 'open_line_options'
     k_command = 'Open more options'
@@ -439,9 +410,8 @@ class OpenLineOptions(KatajaAction):
         return [node_type], kwargs
 
     def method(self, node_type: str):
-        """ Fold or unfold UI sheet for this type of node.
+        """ Open or close panel for line options.
         :param node_type: str, node type identifier
-        :param fold: bool, fold if True, unfold if False.
         """
         ctrl.ui.show_panel('LineOptionsPanel')
         panel = ctrl.ui.get_panel('LineOptionsPanel')
@@ -462,3 +432,100 @@ class ResetSettings(KatajaAction):
         :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
         """
         log.warning('not implemented: reset_settings')
+
+
+class ChangeEdgeShape(LinesPanelAction):
+    k_action_uid = 'change_edge_shape'
+    k_command = 'Change edge shape'
+    k_tooltip = 'Change shapes of lines between objects'
+    k_undoable = True
+    edge_type = None
+
+    def prepare_parameters(self, args, kwargs):
+        sender = self.sender()
+        shape_name = sender.currentData()
+        if self.__class__.edge_type:
+            return [shape_name, ctrl.ui.active_scope], {
+                'edge_type': self.__class__.edge_type
+            }
+        elif ctrl.ui.scope_is_selection:
+            kwargs = {'level': ctrl.ui.active_scope}
+        else:
+            kwargs = {'level': ctrl.ui.active_scope, 'edge_type': self.panel.active_edge_type}
+        return [shape_name], kwargs
+
+    def method(self, shape_name, level, edge_type=None):
+        """ Change edge shape for selection or in currently active edge type.
+        :param shape_name: str, shape_name from available shapes.
+        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
+        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
+          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
+        :return: None
+        """
+        level = level or ctrl.ui_active_scope
+        if level == g.SELECTION:
+            for edge in ctrl.get_selected_edges(of_type=edge_type):
+                edge.shape_name = shape_name
+                edge.update_shape()
+                edge.flatten_settings()
+        else:
+            ctrl.settings.set_edge_setting('shape_name', shape_name,
+                                           edge_type=edge_type, level=level)
+            ctrl.settings.flatten_shape_settings(edge_type)
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.flatten_settings()
+            ctrl.forest.redraw_edges()
+        if self.panel:
+            self.panel.update_panel()
+
+    def enabler(self):
+        if self.__class__.edge_type:
+            return ctrl.ui.has_edges_in_scope(of_type=self.__class__.edge_type)
+        return self.panel and ctrl.ui.has_edges_in_scope()
+
+    def getter(self):
+        return self.panel.get_active_edge_setting('shape_name')
+
+    def getter(self):
+        if self.__class__.edge_type:
+            if ctrl.ui.scope_is_selection:
+                for edge in ctrl.get_selected_edges(of_type=self.__class__.edge_type):
+                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
+            return ctrl.settings.get_edge_setting('shape_name', edge_type=self.__class__.edge_type,
+                                                  level=ctrl.ui.active_scope)
+        else:
+            return self.panel.get_active_edge_setting('shape_name')
+
+
+class ChangeConstituentEdgeShape(ChangeEdgeShape):
+    k_action_uid = 'change_edge_shape_for_constituents'
+    k_command = 'Change shape of constituents edges'
+    k_tooltip = 'Change shapes of edges that connect constituents'
+    k_undoable = True
+    edge_type = g.CONSTITUENT_EDGE
+
+
+class ChangeFeatureEdgeShape(ChangeEdgeShape):
+    k_action_uid = 'change_edge_shape_for_features'
+    k_command = 'Change shape of feature edges'
+    k_tooltip = 'Change shapes of edges that connect features'
+    k_undoable = True
+    edge_type = g.FEATURE_EDGE
+
+
+class ChangeGlossEdgeShape(ChangeEdgeShape):
+    k_action_uid = 'change_edge_shape_for_glosses'
+    k_command = 'Change shape of gloss edges'
+    k_tooltip = 'Change shapes of edges that connect glosses'
+    k_undoable = True
+    edge_type = g.GLOSS_EDGE
+
+
+class ChangeCommentEdgeShape(ChangeEdgeShape):
+    k_action_uid = 'change_edge_shape_for_comments'
+    k_command = 'Change shape of comment edges'
+    k_tooltip = 'Change shapes of edges that connect comments'
+    k_undoable = True
+    edge_type = g.COMMENT_EDGE
+

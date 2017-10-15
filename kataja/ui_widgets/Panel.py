@@ -24,22 +24,21 @@
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from kataja.singletons import ctrl, qt_prefs
-import kataja.globals as g
-from kataja.ui_support.panel_utils import label
-from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.UIItem import UIWidget
-from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
+from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_support.panel_utils import label
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-
+from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 
 # Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
+
+ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
 
 
 class PanelTitle(QtWidgets.QWidget):
     """ Widget for displaying panel title and control buttons in a concise form """
 
-    def __init__(self, name, panel, scope_action=''):
+    def __init__(self, name, panel, foldable=True):
         """
 
         :param name:
@@ -57,7 +56,7 @@ class PanelTitle(QtWidgets.QWidget):
         self.setMinimumSize(self.preferred_size)
         self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QHBoxLayout()
-        layout.setContentsMargins(0, 2, 0, 2)
+        layout.setContentsMargins(0, 2, 8, 2)
         layout.setSpacing(0)
         layout.minimumSize = self.sizeHint
 
@@ -75,20 +74,13 @@ class PanelTitle(QtWidgets.QWidget):
                                               pixmap1=qt_prefs.more_pixmap,
                                               action='toggle_fold_panel',
                                               size=12).to_layout(layout)
+        self.fold_button.setEnabled(foldable)
+        self.fold_button.setVisible(foldable)
         self.fold_button.data = panel.ui_key
         self.fold_button.setMaximumWidth(16)
-
-        layout.addSpacing(8)
         self.title = label(self, layout, name)
-        layout.addStretch(8)
-        if scope_action:
-            items = [(g.SELECTION, 'in this selection'), (g.FOREST, 'in this forest'),
-                     (g.DOCUMENT, 'in this document'), (g.PREFS, 'in preferences')]
-
-            self.scope_selector = SelectionBox(parent=self, data=items,
-                                               action='set_scope_for_node_style').to_layout(layout)
-            self.scope_selector.setMaximumWidth(92)
-
+        self.label_index = layout.count() - 1
+        layout.addStretch(12)
         self.setLayout(layout)
 
     def update_fold(self, folded):
@@ -98,8 +90,23 @@ class PanelTitle(QtWidgets.QWidget):
             self.fold_button.setChecked(False)
         self.updateGeometry()
 
+    def push_to_layout(self, widget):
+        layout = self.layout()
+        layout.addWidget(widget, alignment=QtCore.Qt.AlignRight)
+
+    def add_before_label(self, widget):
+        self.layout().insertWidget(self.label_index, widget)
+        self.label_index += 1
+
     def sizeHint(self):
         return self.preferred_size
+
+    def update_font(self, font_key):
+        f = qt_prefs.get_font(font_key)
+        self.title.setStyleSheet(ss % {
+            'font_size': f.pointSize(),
+            'font': f.family()
+        })
 
 
 class Panel(UIWidget, QtWidgets.QDockWidget):
@@ -108,8 +115,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     permanent_ui = True
     unique = True
 
-    def __init__(self, name, default_position='bottom', parent=None, folded=False,
-                 scope_action=''):
+    def __init__(self, name, default_position='bottom', parent=None, folded=False, foldable=True):
         """
 
         :param name:
@@ -140,7 +146,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
         self.setContentsMargins(0, 0, 0, 0)
-        self.title_widget = PanelTitle(name, self, scope_action=scope_action)
+        self.title_widget = PanelTitle(name, self, foldable=foldable)
         self.setTitleBarWidget(self.title_widget)
         self.report_top_level(self.isFloating())
 
@@ -165,6 +171,12 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     # def topLevelChanged(self, floating):
     # print 'UIPanel %s floating: %s' % (self, floating)
 
+    def push_to_title(self, widget):
+        self.title_widget.push_to_layout(widget)
+
+    def prefix_for_title(self, widget):
+        self.title_widget.add_before_label(widget)
+
     def get_visibility_action(self):
         return self.ui_manager.actions['toggle_panel_%s' % self.ui_key]
 
@@ -180,10 +192,12 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     def set_folded(self, folded):
         self.folded = folded
         self.titleBarWidget().update_fold(folded)
-        if folded:
-            self.widget().hide()
-        else:
-            self.widget().show()
+        widget = self.widget()
+        if widget:
+            if folded:
+                widget.hide()
+            else:
+                widget.show()
         self.resize(self.sizeHint())
         # self.setFixedSize(self.sizeHint())
         self.updateGeometry()
@@ -219,12 +233,13 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         field.setText(value)
 
     def minimumSizeHint(self):
-        if self.folded:
+        if self.folded or not self.widget():
             return self.titleBarWidget().sizeHint()
         else:
             ws = self.widget().sizeHint()
             ts = self.titleBarWidget().sizeHint()
             return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
+
 
     def sizeHint(self):
         """

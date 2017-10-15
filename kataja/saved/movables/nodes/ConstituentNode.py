@@ -78,7 +78,6 @@ class ConstituentNode(Node):
     }
 
     default_edge = g.CONSTITUENT_EDGE
-    ui_sheet = ('kataja.ui_widgets.panels.ConstituentSheet', 'ConstituentSheet')
     allowed_child_types = [g.CONSTITUENT_NODE, g.FEATURE_NODE, g.GLOSS_NODE, g.COMMENT_NODE]
 
     # Touch areas are UI elements that scale with the trees: they can be

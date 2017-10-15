@@ -1,13 +1,9 @@
 # coding=utf-8
 
-import math
-from PyQt5 import QtCore
-from kataja.KatajaAction import KatajaAction
-from kataja.ui_widgets.Panel import Panel
-from kataja.saved.Edge import Edge
 import kataja.globals as g
-
-from kataja.singletons import ctrl, log
+from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl
+from kataja.ui_widgets.Panel import Panel
 
 
 # ==== Class variables for KatajaActions:
@@ -70,53 +66,6 @@ class SetEdgeType(LinesPanelAction):
 
     def enabler(self):
         return self.panel and not ctrl.ui.scope_is_selection
-
-
-class ChangeEdgeShape(LinesPanelAction):
-    k_action_uid = 'change_edge_shape'
-    k_command = 'Change edge shape'
-    k_tooltip = 'Change shapes of lines between objects'
-    k_undoable = True
-
-    def prepare_parameters(self, args, kwargs):
-        sender = self.sender()
-        shape_name = sender.currentData()
-        if ctrl.ui.scope_is_selection:
-            kwargs = {'level': ctrl.ui.active_scope}
-        else:
-            kwargs = {'level': ctrl.ui.active_scope, 'edge_type': self.panel.active_edge_type}
-        return [shape_name], kwargs
-
-    def method(self, shape_name, level, edge_type=None):
-        """ Change edge shape for selection or in currently active edge type.
-        :param shape_name: str, shape_name from available shapes.
-        :param edge_type: str, what kind of edges are affected. Ignored if level is g.SELECTION.
-        :param level: int or None, optional level where change takes effect: g.SELECTION (66),
-          g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
-        :return: None
-        """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges(of_type=edge_type):
-                edge.shape_name = shape_name
-                edge.update_shape()
-                edge.flatten_settings()
-        else:
-            ctrl.settings.set_edge_setting('shape_name', shape_name,
-                                           edge_type=edge_type, level=level)
-            ctrl.settings.flatten_shape_settings(edge_type)
-            for edge in ctrl.forest.edges.values():
-                if edge.edge_type == edge_type:
-                    edge.flatten_settings()
-            ctrl.forest.redraw_edges()
-        if self.panel:
-            self.panel.update_panel()
-
-    def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope()
-
-    def getter(self):
-        return self.panel.get_active_edge_setting('shape_name')
 
 
 class ChangeEdgeColor(LinesPanelAction):

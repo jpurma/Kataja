@@ -5,7 +5,6 @@ from kataja.globals import FOREST, DOCUMENT, PREFS
 from kataja.singletons import ctrl, prefs, log, classes
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
-from kataja.actions.line_options_panel_actions import ChangeEdgeShape
 
 
 # ==== Class variables for KatajaActions:
@@ -231,25 +230,3 @@ class SetFeaturesHanging(KatajaAction):
     def enabler(self):
         return ctrl.ui.active_scope != g.SELECTION
 
-
-class ChangeFeatureEdgeShape(ChangeEdgeShape):
-    k_action_uid = 'change_edge_shape_for_features'
-    k_command = 'Change shape of feature edges'
-    k_tooltip = 'Change shapes of edges that connect features'
-    k_undoable = True
-
-    def prepare_parameters(self, args, kwargs):
-        sender = self.sender()
-        shape_name = sender.currentData()
-        return [shape_name, ctrl.ui.active_scope], {'edge_type': g.FEATURE_EDGE}
-
-    def enabler(self):
-        return ctrl.ui.has_edges_in_scope(of_type=g.FEATURE_EDGE)
-
-    def getter(self):
-        if ctrl.ui.scope_is_selection:
-            feat_edges = ctrl.get_selected_edges(of_type=g.FEATURE_EDGE)
-            if feat_edges:
-                return ctrl.settings.get_edge_setting('shape_name', edge=feat_edges[0])
-        return ctrl.settings.get_edge_setting('shape_name', edge_type=g.FEATURE_EDGE,
-                                              level=ctrl.ui.active_scope)

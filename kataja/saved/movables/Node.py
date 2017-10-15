@@ -92,7 +92,6 @@ class Node(Movable):
     display = False
     can_be_in_groups = True
     editable = {}
-    ui_sheet = None
     allowed_child_types = []
 
     default_style = {

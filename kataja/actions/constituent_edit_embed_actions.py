@@ -5,7 +5,7 @@ from kataja.globals import FOREST, DOCUMENT, PREFS
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
-from kataja.actions.constituent_sheet_actions import SetVisibleLabel
+from kataja.actions.constituent_panel_actions import SetVisibleLabel
 
 # ==== Class variables for KatajaActions:
 #

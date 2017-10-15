@@ -33,6 +33,7 @@ import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.buttons.OverlayButton as OverlayButtons
+import kataja.ui_widgets.buttons.OverlayButton as ob
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
@@ -41,6 +42,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs, log
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
+from kataja.ui_support.FloatingTip import FloatingTip
 from kataja.ui_widgets.DragInfo import DragInfo
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
@@ -53,22 +55,24 @@ from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
+from kataja.ui_widgets.panels.CommentPanel import CommentPanel
+from kataja.ui_widgets.panels.ConstituentPanel import ConstituentPanel
 from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
+from kataja.ui_widgets.panels.FeaturePanel import FeaturePanel
+from kataja.ui_widgets.panels.GlossPanel import GlossPanel
 from kataja.ui_widgets.panels.HelpPanel import HelpPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.ScopePanel import ScopePanel
 from kataja.ui_widgets.panels.SemanticsPanel import SemanticsPanel
-from kataja.ui_widgets.panels.NodesPanel import NodesPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
-from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_support.FloatingTip import FloatingTip
-import kataja.ui_widgets.buttons.OverlayButton as ob
 from kataja.utils import time_me
+from kataja.visualizations.available import VISUALIZATIONS
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -77,10 +81,15 @@ POINTING = 3
 
 PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
-          {'class': SemanticsPanel, 'name': 'Semantics', 'position': 'right'},
+          {'class': SemanticsPanel, 'name': 'Semantics', 'position': 'right', 'folded': True},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
           #{'class': MergePanel, 'name': 'Merge', 'position': 'right'},
-          {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
+          {'class': ScopePanel, 'name': 'Settings', 'position': 'right', 'folded': True},
+          {'class': ConstituentPanel, 'name': 'Constituents', 'position': 'right'},
+          {'class': FeaturePanel, 'name': 'Features', 'position': 'right'},
+          {'class': GlossPanel, 'name': 'Glossa', 'position': 'right', 'folded': True},
+          {'class': CommentPanel, 'name': 'Comments', 'position': 'right', 'folded': True},
+          #{'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
           {'class': ColorWheelPanel, 'name': 'Color picker', 'position': 'float',
            'closed': True},
@@ -689,6 +698,11 @@ class UIManager:
         """
         return self._panels.get(panel_id, None)
 
+    def get_panel_by_node_type(self, node_type):
+        for panel in self._panels.values():
+            if getattr(panel, 'node_type', '') == node_type:
+                return panel
+
     def redraw_panels(self):
         for panel in self._panels.values():
             panel.update()
@@ -775,10 +789,6 @@ class UIManager:
             panel.close()
         else:
             self.show_panel(panel_id)
-
-    def get_font_dialog(self, node_type):
-        np = self.get_panel(NodesPanel.__name__)
-        np.get_font_dialog(node_type)
 
 
     # Panel scopes

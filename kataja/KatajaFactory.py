@@ -116,8 +116,7 @@ class KatajaFactory:
         for node_type, nodeclass in self.nodes.items():
             self.node_info[node_type] = {'name': nodeclass.display_name[0],
                                          'name_pl': nodeclass.display_name[1],
-                                         'display': nodeclass.display,
-                                         'ui_sheet': nodeclass.ui_sheet}
+                                         'display': nodeclass.display}
             if nodeclass.display:
                 self.node_types_order.append(node_type)
             self.node_type_to_edge_type[node_type] = nodeclass.default_edge

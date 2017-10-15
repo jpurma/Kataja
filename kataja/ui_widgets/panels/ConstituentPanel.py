@@ -1,25 +1,22 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_support.panel_utils import box_row
-from kataja.ui_widgets.SelectionBox import SelectionBox
-from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
+from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_widgets.panels.NodePanel import NodePanel
+from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 
 __author__ = 'purma'
 
 
-class ConstituentSheet(QtWidgets.QWidget):
-    """ Sheet for additional controls for this node type.
+class ConstituentPanel(NodePanel):
+    """ Panel for editing how constituent nodes and edges are drawn. """
 
-    Widgets inside sheet should update themselves through their KatajaActions. They are so deep
-    inside other widgets that I wouldn't like to have traversing updates from surface into them,
-     or hardcode direct updates to them. """
-
-    def __init__(self, parent=None):
+    def __init__(self, name, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the
         construction can be automated.
@@ -27,12 +24,11 @@ class ConstituentSheet(QtWidgets.QWidget):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        QtWidgets.QWidget.__init__(self, parent=parent)
-        self.setMaximumWidth(220)
-        self.setBackgroundRole(QtGui.QPalette.AlternateBase)
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(4, 0, 4, 8)
-        self.setLayout(layout)
+
+        NodePanel.__init__(self, name, g.CONSTITUENT_NODE, default_position, parent, folded,
+                           foldable=True)
+        widget = self.widget()
+        layout = widget.layout()
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed', parent=self)
@@ -94,3 +90,5 @@ class ConstituentSheet(QtWidgets.QWidget):
         self.trace_selector = SelectionBox(parent=self, action='select_trace_strategy',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Trace strategy')
+
+        self.finish_init()
