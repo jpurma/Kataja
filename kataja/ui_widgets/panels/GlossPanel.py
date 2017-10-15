@@ -36,7 +36,7 @@ class GlossPanel(NodePanel):
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_glosses',
-                                            for_edge_type=self.node_type
+                                            for_edge_type=g.GLOSS_EDGE
                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_visible = EyeButton(action='toggle_gloss_edge_visibility', height=22,
                                       width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)

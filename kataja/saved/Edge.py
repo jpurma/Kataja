@@ -239,6 +239,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             lv = False
         elif self.start and not self.start.is_visible():
             lv = False
+        elif self.end and not self.end.is_visible():
+            lv = False
+        elif self.alpha and not self.alpha.is_visible():
+            lv = False
+        elif not self.flattened_settings['visible']:
+            lv = False
         else:
             start = self.start
             end = self.end

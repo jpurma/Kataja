@@ -784,7 +784,7 @@ class DirectionalBlobPath(Shape):
 NoPath = Shape
 
 available_shapes = [ShapedCubicPath, CubicPath, ShapedQuadraticPath, QuadraticPath,
-                    ShapedLinearPath, LinearPath, BlobPath, DirectionalBlobPath, NoPath]
+                    ShapedLinearPath, LinearPath, BlobPath, DirectionalBlobPath]  # NoPath
 
 
 def draw_circle(painter, x, y, end_spot_size):

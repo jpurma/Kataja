@@ -138,8 +138,6 @@ class Node(Movable):
         self.anim = None
         self.magnet_mapper = None
         self.z_value = 10
-        # Visibility flags
-        self._node_type_visible = True
         self.halo = False
         self.halo_item = None
 
@@ -1666,12 +1664,13 @@ class Node(Movable):
         if not skip_label:
             self.update_label_visibility()
 
-        if ctrl.settings.get('syntactic_mode'):
-            self._node_type_visible = self.is_syntactic
+        if (not self.is_syntactic) and ctrl.settings.get('syntactic_mode'):
+            self._visible_by_logic = False
+        elif ctrl.settings.get_node_setting('visible', node=self) and not self.hidden_in_triangle():
+            self._visible_by_logic = True
         else:
-            self._node_type_visible = True
+            self._visible_by_logic = False
 
-        self._visible_by_logic = self._node_type_visible and not self.hidden_in_triangle()
         changed = super().update_visibility(fade_in=fade_in, fade_out=fade_out)
         if changed:
             # ## Edges -- these have to be delayed until all constituents etc nodes know if they are

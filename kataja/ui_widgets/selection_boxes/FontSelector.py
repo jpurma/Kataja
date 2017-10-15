@@ -148,6 +148,10 @@ class FontSelector(TableModelSelectionBox):
             'current': ctrl.cm.get(color_key).name()
         })
 
+    def set_dialog_font(self, font):
+        if self.font_dialog:
+            self.font_dialog.setCurrentFont(font)
+
     def select_by_data(self, data):
         """ Override TableModelSelectionBox to include setFont and avoiding selecting font_dialog
         triggers.

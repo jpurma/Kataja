@@ -36,7 +36,7 @@ class CommentPanel(NodePanel):
         hlayout.addStretch(24)
         self.shape_selector = ShapeSelector(parent=self,
                                             action='change_edge_shape_for_comments',
-                                            for_edge_type=self.node_type
+                                            for_edge_type=g.COMMENT_EDGE
                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_visible = EyeButton(action='toggle_comment_edge_visibility', height=22,
                                       width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)

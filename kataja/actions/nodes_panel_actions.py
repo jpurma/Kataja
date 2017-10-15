@@ -136,6 +136,8 @@ class AbstractToggleVisibility(KatajaAction):
         node_type = self.__class__.node_type
         ctrl.settings.set_node_setting('visible', checked, node_type=node_type,
                                        level=ctrl.ui.active_scope)
+        for node in ctrl.forest.nodes.values():
+            node.update_visibility()
 
     def enabler(self):
         return not ctrl.ui.scope_is_selection
@@ -262,7 +264,7 @@ class AbstractSelectFont(KatajaAction):
                 node.update_label()
         np = ctrl.ui.get_panel_by_node_type(node_type)
         if np:
-            np.font_selector.setCurrentFont(qt_prefs.get_font(font_id))
+            np.font_selector.set_dialog_font(qt_prefs.get_font(font_id))
             np.update_title_font(font_id)
 
     def enabler(self):
