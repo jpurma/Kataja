@@ -72,15 +72,17 @@ class TopBarButtons(QtWidgets.QFrame):
                                    size=(24, 24), action='toggle_select_mode').to_layout(layout)
         select_mode.setCheckable(True)
 
+        full_screen = TopRowButton(ui_key='full_screen', parent=self, size=(24, 24),
+                                   pixmap=qt_prefs.full_icon, action='fullscreen_mode',
+                                   ).to_layout(layout)
+
+        automatic_zoom = TopRowButton(ui_key='toggle_automatic_zoom', parent=self, size=(24, 24),
+                                      pixmap=qt_prefs.center_focus_icon,
+                                      action='toggle_automatic_zoom', ).to_layout(layout)
+
         fit_to_screen = TopRowButton(ui_key='fit_to_screen', parent=self, size=(24, 24),
                                      pixmap=qt_prefs.center_focus_icon,
                                      action='zoom_to_fit', ).to_layout(layout)
-        # draw_method=drawn_icons.fit_to_screen)
-
-        full_screen = TopRowButton(ui_key='full_screen', parent=self, size=(24, 24),
-                                   pixmap=qt_prefs.full_icon, action='fullscreen_mode', ).to_layout(
-            layout)
-        # draw_method=drawn_icons.fit_to_screen)
 
         layout.setContentsMargins(2, 0, 2, 0)
         self.setLayout(layout)

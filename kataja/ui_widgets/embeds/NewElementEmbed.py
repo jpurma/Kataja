@@ -9,6 +9,7 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.utils import guess_node_type
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 __author__ = 'purma'
 
@@ -57,10 +58,10 @@ class NewElementEmbed(UIEmbed):
         self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
         hlayout.addStretch(0)
-        self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
-        ui.connect_element_to_action(self.enter_button, 'create_new_node_from_text')
-
-        hlayout.addWidget(self.enter_button)
+        # U+21A9 &#8617;
+        self.enter_button = PushButtonBase("Create ↩",
+                                           action='create_new_node_from_text'
+                                           ).to_layout(hlayout)
         layout.addLayout(hlayout)
         self.setLayout(layout)
         self.assumed_width = 200

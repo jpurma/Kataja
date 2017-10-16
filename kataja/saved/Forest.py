@@ -645,6 +645,7 @@ class Forest(SavedObject):
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.node_shape = shape
                 node.update_label()
+                node.setZValue(node.preferred_z_value())
             if node.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(node)
         parents = []

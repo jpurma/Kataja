@@ -314,6 +314,7 @@ class KatajaAction(QtWidgets.QAction):
         """
 
         :param element:
+        :param connect_slot:
         """
         element.k_action = self
         self.elements.add(element)

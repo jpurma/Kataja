@@ -118,6 +118,8 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.is_fading_in = False
         self.is_fading_out = False
         self._hovering = False
+        self.setZValue(self.preferred_z_value())
+
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -146,6 +148,13 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     def use_physics(self):
         return (self.physics_x or self.physics_y) and not (self.locked_to_node or self.static)
+
+    def preferred_z_value(self):
+        """ Return z-value appropriate for this type of object. May be constant value or require
+        more complicated computation.
+        :return:
+        """
+        return 10
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -352,6 +361,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         self._is_moving = True
+        self.setAcceptHoverEvents(False)
         self._use_easing = True
         tx, ty = self.target_position
         x, y = self.current_position
@@ -381,6 +391,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Kill moving animation for this object.
         :return: None
         """
+        self.setAcceptHoverEvents(True)
         self._high_priority_move = False
         self.target_position = self.current_position
         self._move_counter = 0
@@ -483,7 +494,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         self._hovering = False
         #self.prepareGeometryChange()
-        self.setZValue(self.z_value)
+        self.setZValue(self.preferred_z_value())
         self.update()
 
     def update_tooltip(self):

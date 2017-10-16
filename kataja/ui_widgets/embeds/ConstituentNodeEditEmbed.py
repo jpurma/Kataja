@@ -5,12 +5,12 @@ from kataja.parser.INodes import as_editable_html
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
-from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
+from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
+
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
     label = QtWidgets.QLabel(text, parent=parent)
@@ -97,20 +97,18 @@ class ConstituentNodeEditEmbed(UIEmbed):
         tt = "These are either XBar or Bare phrase structure labels that are updated " \
              "automatically based on projections."
         title = 'Generated label'
-        self.autolabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel')
+        self.autolabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel'
+                                        ).to_layout(vlayout, with_label=title, label_first=True)
         self.autolabel.setReadOnly(True)
-        make_label(title, self, vlayout, tt, self.autolabel)
-        vlayout.addWidget(self.autolabel)
 
         vlayout = QtWidgets.QVBoxLayout()
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
         self.index = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='i',
-                                    on_finish=self.index_finished)
+                                    on_finish=self.index_finished
+                                    ).to_layout(vlayout, with_label=title, label_first=True)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
-        make_label(title, self, vlayout, tt, self.index)
-        vlayout.addWidget(self.index)
         hlayout.addLayout(vlayout)
         layout.addLayout(hlayout)
 
@@ -152,10 +150,8 @@ class ConstituentNodeEditEmbed(UIEmbed):
 
     def update_fields(self):
         """ Update field values on embed form based on template """
-        print('update fields called for ConstituentNodeEditEmbed')
         node = self.host
         self.label.setText(node.label)
-        print('label: ', repr(node.label))
         self.synlabel.setText(node.get_syntactic_label())
         self.autolabel.setText(as_editable_html(node.autolabel))
         self.index.setText(node.index or '')

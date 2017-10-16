@@ -99,9 +99,7 @@ class FeatureNode(Node):
         self.family = family
         self.repulsion = 0.25
         self._gravity = 3.0
-        self.z_value = 60
         self.fshape = 2
-        self.setZValue(self.z_value)
 
         # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -116,6 +114,9 @@ class FeatureNode(Node):
         obj = ctrl.syntax.Feature(name=label)
         obj.after_init()
         return obj
+
+    def preferred_z_value(self):
+        return 60
 
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features.

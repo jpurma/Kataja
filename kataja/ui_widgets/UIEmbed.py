@@ -76,6 +76,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             self.update_position(focus_point=focus_point)
 
     def update_size(self):
+
         self.setFixedSize(self.layout().minimumSize())
 
     def update_fields(self):
@@ -190,9 +191,6 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
     def mouseReleaseEvent(self, event):
         self._drag_diff = None
         super().mouseReleaseEvent(event)
-
-    def resizeEvent(self, event):
-        QtWidgets.QWidget.resizeEvent(self, event)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.PaletteChange:

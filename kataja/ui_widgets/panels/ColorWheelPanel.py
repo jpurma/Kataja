@@ -6,6 +6,7 @@ from kataja.singletons import ctrl
 from kataja.utils import to_tuple
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.panels.ColorThemePanel import color_theme_fragment
+from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 import random
 
 __author__ = 'purma'
@@ -90,7 +91,7 @@ class ColorWheelPanel(Panel):
         self.match_l = QtWidgets.QLabel("Auto-match palette:")
         self.match_l.setToolTip(match_help)
         self.match_l.setParent(self)
-        self.match_cb = QtWidgets.QCheckBox()
+        self.match_cb = KatajaCheckBox()
         self.match_cb.setToolTip(match_help)
         self.match_cb.setParent(self)
         self.match_cb.setChecked(self.try_to_match)

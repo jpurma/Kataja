@@ -6,7 +6,8 @@ from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import make_label
 from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
-
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 __author__ = 'purma'
 
 
@@ -35,27 +36,23 @@ class GroupLabelEmbed(UIEmbed):
         label = make_label('Color', parent=self, layout=hlayout,
                            tooltip='Select color for highlight', buddy=self.color_select,
                            align=QtCore.Qt.AlignLeft)
-        self.fill_checkbox = QtWidgets.QCheckBox()
-        ui.connect_element_to_action(self.fill_checkbox, 'change_group_fill')
+        self.fill_checkbox = KatajaCheckBox(action='change_group_fill')
         hlayout.addWidget(self.fill_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Fill', parent=self, layout=hlayout,
                            tooltip="Group area is marked with translucent color",
                            buddy=self.fill_checkbox, align=QtCore.Qt.AlignLeft)
-        self.outline_checkbox = QtWidgets.QCheckBox()
-        ui.connect_element_to_action(self.outline_checkbox, 'change_group_outline')
+        self.outline_checkbox = KatajaCheckBox(action='change_group_outline')
         hlayout.addWidget(self.outline_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Outline', parent=self, layout=hlayout,
                            tooltip="Group is marked by line drawn around it",
                            buddy=self.outline_checkbox, align=QtCore.Qt.AlignLeft)
 
-        self.include_children_checkbox = QtWidgets.QCheckBox()
-        ui.connect_element_to_action(self.include_children_checkbox, 'change_group_children')
+        self.include_children_checkbox = KatajaCheckBox(action='change_group_children')
         hlayout.addWidget(self.include_children_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Include children', parent=self, layout=hlayout,
                            tooltip="Automatically add child nodes to group's scope",
                            buddy=self.include_children_checkbox, align=QtCore.Qt.AlignLeft)
-        self.allow_overlap_checkbox = QtWidgets.QCheckBox()
-        ui.connect_element_to_action(self.allow_overlap_checkbox, 'change_group_overlaps')
+        self.allow_overlap_checkbox = KatajaCheckBox(action='change_group_overlaps')
         hlayout.addWidget(self.allow_overlap_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Allow groups to overlap', parent=self, layout=hlayout,
                            tooltip="Can group include members of other group. If not, lower group "
@@ -64,16 +61,14 @@ class GroupLabelEmbed(UIEmbed):
 
         layout.addLayout(hlayout)
         hlayout = QtWidgets.QHBoxLayout()
-        self.delete_button = QtWidgets.QPushButton("Delete")  # U+21A9 &#8617;
+        self.delete_button = PushButtonBase(self, text="Delete",
+                                            action='delete_group').to_layout(hlayout)
         self.delete_button.setMaximumWidth(60)
-        ui.connect_element_to_action(self.delete_button, 'delete_group')
-
-        hlayout.addWidget(self.delete_button)
-        self.enter_button = QtWidgets.QPushButton("Keep ↩")  # U+21A9 &#8617;
-        self.enter_button.setMaximumWidth(60)
-        ui.connect_element_to_action(self.enter_button, 'save_group_changes')
         hlayout.addStretch(0)
-        hlayout.addWidget(self.enter_button)
+        self.enter_button = PushButtonBase(self, text="Keep ↩",
+                                           action='save_group_changes').to_layout(hlayout)
+        # U+21A9 &#8617;
+        self.enter_button.setMaximumWidth(60)
         layout.addLayout(hlayout)
         self.setLayout(layout)
         # self.assumed_width = 200

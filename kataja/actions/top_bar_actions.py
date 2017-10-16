@@ -159,9 +159,23 @@ class SwitchSyntaxViewMode(KatajaAction):
 
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'
+    k_command = 'Zoom to fit'
+    k_shortcut = 'z'
+    k_undoable = False
+    k_tooltip = 'Zoom to fit all elements into display.'
+
+    def method(self):
+        """ Fit graph to current window. Usually happens automatically, but also
+        available as user action
+        """
+        ctrl.graph_scene.fit_to_window(force=True)
+
+
+class ToggleAutomaticZoom(KatajaAction):
+    k_action_uid = 'toggle_automatic_zoom'
     k_command = 'Enable automatic zoom'
     k_command_alt = 'Disable automatic zooming'
-    k_shortcut = 'z'
+    k_shortcut = 'Z'
     k_undoable = False
     k_checkable = True
     k_tooltip = 'Try to keep trees in the center of the view and wholly visible.'
@@ -173,11 +187,9 @@ class ZoomToFit(KatajaAction):
         """
         old_value = ctrl.settings.get('auto_zoom', level=PREFS)
         ctrl.settings.set('auto_zoom', not old_value, level=PREFS)
-        ctrl.graph_scene.fit_to_window(force=True)
-        self.set_displayed_value(not old_value)
 
     def getter(self):
-        return ctrl.settings.get('auto_zoom', level=PREFS)
+        return ctrl.settings.get('auto_zoom')
 
 
 class TogglePanMode(KatajaAction):

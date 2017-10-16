@@ -265,8 +265,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 if start and end:
                     if not (end.is_visible() and start.is_visible()):
                         lv = False
-                    elif start.get_node_shape() == g.CARD and (
-                                (not end.adjustment) or end.adjustment == (0, 0)):
+                    elif start.node_type == g.CONSTITUENT_NODE and \
+                            start.is_card() and \
+                            ((not end.adjustment) or end.adjustment == (0, 0)):
                         lv = False
                         # elif end.locked_to_node is start and \
                         #        ((not end.adjustment) or end.adjustment == (0, 0)):
@@ -514,7 +515,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self._nodes_overlap = False
         elif not ctrl.settings.get('hide_edges_if_nodes_overlap'):
             self._nodes_overlap = False
-        elif self.start and self.end:
+        elif self.start and self.end and False:
             if self.end.locked_to_node:
                 self._nodes_overlap = False
             elif self.start.is_visible() and self.end.is_visible():
@@ -702,16 +703,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
-        if self._is_moving:
-            return
         self.hovering = True
         ctrl.ui.show_help(self, event)
         event.accept()
         # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverMoveEvent(self, event):
-        if self._is_moving:
-            return
         ctrl.ui.move_help(event)
         QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
 
@@ -870,8 +867,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         self._is_moving = True
+        self.setAcceptHoverEvents(False)
         # if prefs.move_effect:
-        #    self._use_simple_path = True
+        self._use_simple_path = True
 
     def start_node_stopped_moving(self):
         """ Called if the end node has started moving.
@@ -895,6 +893,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         self._is_moving = False
         self.path.make_fat_path = True
+        self.setAcceptHoverEvents(True)
         # if prefs.move_effect:
         #    self._use_simple_path = False
 

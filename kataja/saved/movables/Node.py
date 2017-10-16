@@ -60,14 +60,11 @@ class DragData:
             bg = ctrl.cm.paper2().lighter(102)
             bg.setAlphaF(.65)
             self.background = bg
-        self.old_zvalue = node.zValue()
         parent = node.parentItem()
         if parent:
             self.parent = parent
-            self.parent_old_zvalue = parent.zValue()
         else:
             self.parent = None
-            self.parent_old_zvalue = 0
 
 
 qbytes_scale = QtCore.QByteArray()
@@ -114,6 +111,7 @@ class Node(Movable):
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
+        self.label_object = None
         Movable.__init__(self)
         self.syntactic_object = None
         self.label = ''
@@ -137,7 +135,6 @@ class Node(Movable):
         self._cached_child_rect = None
         self.anim = None
         self.magnet_mapper = None
-        self.z_value = 10
         self.halo = False
         self.halo_item = None
 
@@ -159,7 +156,6 @@ class Node(Movable):
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.setZValue(self.z_value)
         # self.fade_in()
         self.update_visibility()
 
@@ -262,6 +258,7 @@ class Node(Movable):
         cy = sy + oy + self.height / 2
         return cx, cy
 
+
     def compose_html_for_viewing(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
@@ -296,7 +293,7 @@ class Node(Movable):
         if hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
 
-        return 'node label', as_html(self.label)
+        return 'label', as_html(self.label)
 
     def parse_edited_label(self, label_name, value):
         success = False
@@ -828,7 +825,10 @@ class Node(Movable):
         Return this get_shape_setting value.
         :return:
         """
-        return self.label_object.node_shape
+        if self.label_object:
+            return self.label_object.node_shape
+        else:
+            return g.NORMAL
 
     # ## Qt overrides
     # ######################################################################
@@ -1273,7 +1273,7 @@ class Node(Movable):
                 if ctrl.settings.get('single_click_editing'):
                     self.label_object.set_quick_editing(True)
         else:
-            self.setZValue(self.z_value)
+            self.setZValue(self.preferred_z_value())
             self.label_object.set_quick_editing(False)
         self.update()
 
@@ -1502,10 +1502,7 @@ class Node(Movable):
             ctrl.dragged_focus = None
             ctrl.dragged_groups = set()
             ctrl.dragged_text = None
-        if self.drag_data:
-            self.setZValue(self.drag_data.old_zvalue)
-            if self.drag_data.parent:
-                self.drag_data.parent.setZValue(self.drag_data.parent_old_zvalue)
+        self.setZValue(self.preferred_z_value())
         self.drag_data = None
         ctrl.ui.remove_drag_info()
         # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
@@ -1527,6 +1524,7 @@ class Node(Movable):
             if d.is_host:
                 for node in ctrl.dragged_set:
                     node.cancel_dragging()
+            self.setZValue(self.preferred_z_value())
             self.drag_data = None
 
     def lock(self):

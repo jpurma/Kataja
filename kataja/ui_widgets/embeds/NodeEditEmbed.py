@@ -9,6 +9,7 @@ from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -141,10 +142,10 @@ class NodeEditEmbed(UIEmbed):
         if hlayout:
             layout.addLayout(hlayout)
         hlayout = QtWidgets.QHBoxLayout()
-        self.enter_button = QtWidgets.QPushButton("Keep ↩")  # U+21A9 &#8617;
-        self.enter_button.setParent(self)
-        self.ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         hlayout.addStretch(0)
+        # U+21A9 &#8617;
+        self.enter_button = PushButtonBase(parent=self, text="Keep ↩",
+                                           action='finish_editing_node')
         hlayout.addWidget(self.enter_button, 0, QtCore.Qt.AlignRight)
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
@@ -235,4 +236,5 @@ class NodeEditEmbed(UIEmbed):
                 return
         # default to field that gets edited in quickedit
         if self.fields:
+            print(self.fields)
             self.fields[self.host.compose_html_for_editing()[0]].setFocus()

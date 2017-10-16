@@ -154,6 +154,15 @@ class ConstituentNode(Node):
         c.after_init()
         return c
 
+    def is_card(self):
+        return self.label_object and self.label_object.is_card()
+
+    def preferred_z_value(self):
+        if self.is_card():
+            return 2
+        else:
+            return 20
+
     def load_values_from_parsernode(self, parsernode):
         """ Update constituentnode with values from parsernode
         :param parsernode:
