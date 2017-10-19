@@ -6,8 +6,7 @@ from PyQt5 import QtCore
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, log, qt_prefs, classes
-from kataja.actions.line_options_panel_actions import LinesPanelAction
-
+from kataja.ui_widgets.Panel import PanelAction
 
 # ==== Class variables for KatajaActions:
 #
@@ -30,30 +29,6 @@ from kataja.actions.line_options_panel_actions import LinesPanelAction
 # enabler : if enabler is defined, the action is active (also reflected into its UI elements) only
 #           when enabler returns True
 #
-
-
-class SetScopeForNodeStyle(KatajaAction):
-    k_action_uid = 'set_scope_for_node_style'
-    k_command = 'Set scope for style changes'
-    k_tooltip = 'Changes here affect only selected nodes, nodes in this tree, nodes in this ' \
-                'document or they are set as user defaults.'
-    k_undoable = False
-
-    def method(self):
-        """ Change drawing panel to work on selected nodes, constituent nodes or
-        other available
-        nodes
-        """
-        sender = self.sender()
-        if sender:
-            value = sender.currentData(256)
-            ctrl.ui.set_scope(value)
-
-    def enabler(self):
-        return ctrl.forest is not None
-
-    def getter(self):
-        return ctrl.ui.active_scope
 
 
 class AbstractAddNode(KatajaAction):
@@ -420,23 +395,7 @@ class OpenLineOptions(KatajaAction):
         panel.active_node_type = node_type
 
 
-class ResetSettings(KatajaAction):
-    k_action_uid = 'reset_settings'
-    k_command = 'Reset node settings'
-    k_tooltip = 'Reset settings in certain level and in all of the more specific levels'
-
-    def prepare_parameters(self, args, kwargs):
-        level = ctrl.ui.active_scope
-        return [level], kwargs
-
-    def method(self, level: int):
-        """ Reset node settings in given level and in more specific levels.
-        :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
-        """
-        log.warning('not implemented: reset_settings')
-
-
-class ChangeEdgeShape(LinesPanelAction):
+class ChangeEdgeShape(PanelAction):
     k_action_uid = 'change_edge_shape'
     k_command = 'Change edge shape'
     k_tooltip = 'Change shapes of lines between objects'

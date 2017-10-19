@@ -64,7 +64,7 @@ class SelectLabelShape(KatajaAction):
         return m
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class ActivateNoFrameNodeShape(KatajaAction):
@@ -84,7 +84,7 @@ class ActivateNoFrameNodeShape(KatajaAction):
         return ctrl.settings.get_active_setting('node_shape') == g.NORMAL
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
+        return self.not_selection() and ctrl.forest.visualization and \
                g.NORMAL not in ctrl.forest.visualization.banned_node_shapes
 
 
@@ -105,7 +105,7 @@ class ActivateScopeboxNodeShape(KatajaAction):
         return ctrl.settings.get_active_setting('node_shape') == g.SCOPEBOX
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
+        return self.not_selection() and ctrl.forest.visualization and \
                g.SCOPEBOX not in ctrl.forest.visualization.banned_node_shapes
 
 
@@ -126,7 +126,7 @@ class ActivateBracketedNodeShape(KatajaAction):
         return ctrl.settings.get_active_setting('node_shape') == g.BRACKETED
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
+        return self.not_selection() and ctrl.forest.visualization and \
                g.BRACKETED not in ctrl.forest.visualization.banned_node_shapes
 
 
@@ -147,7 +147,7 @@ class ActivateBoxShape(KatajaAction):
         return ctrl.settings.get_active_setting('node_shape') == g.BOX
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
+        return self.not_selection() and ctrl.forest.visualization and \
                g.BOX not in ctrl.forest.visualization.banned_node_shapes
 
 
@@ -169,7 +169,7 @@ class ActivateCardNodeShape(KatajaAction):
         return ctrl.settings.get_active_setting('node_shape') == g.CARD
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION and ctrl.forest.visualization and \
+        return self.not_selection() and ctrl.forest.visualization and \
                g.CARD not in ctrl.forest.visualization.banned_node_shapes
 
 
@@ -194,13 +194,12 @@ class SelectTraceMode(KatajaAction):
         :return: None
         """
 
-        level = ctrl.ui.active_scope
         if trace_mode is None:
-            trace_mode = ctrl.settings.get('trace_strategy', level=level)
+            trace_mode = ctrl.settings.get('trace_strategy', level=ctrl.ui.active_scope)
             trace_mode += 1
             if trace_mode == 3:
                 trace_mode = 0
-        ctrl.settings.set('trace_strategy', trace_mode, level=level)
+        ctrl.settings.set('trace_strategy', trace_mode, level=ctrl.ui.active_scope)
         ctrl.forest.forest_edited()
         mode_text = prefs.get_ui_text_for_choice(trace_mode, 'trace_strategy')
         return f'Set trace strategy to: {mode_text}'
@@ -209,7 +208,7 @@ class SelectTraceMode(KatajaAction):
         return ctrl.settings.get_active_setting('trace_strategy')
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SelectLinearizationMode(KatajaAction):
@@ -231,16 +230,12 @@ class SelectLinearizationMode(KatajaAction):
         next one if None is given.
         :return: None
         """
-
-        level = ctrl.ui.active_scope
-        if level == g.HIGHEST or level == g.OBJECT:
-            level = g.FOREST
         if linearization_mode is None:
-            linearization_mode = ctrl.settings.get('linearization_mode', level=level)
+            linearization_mode = ctrl.settings.get('linearization_mode', level=ctrl.ui.active_scope)
             linearization_mode += 1
             if linearization_mode == 3:
                 linearization_mode = 0
-        ctrl.settings.set('linearization_mode', linearization_mode, level=level)
+        ctrl.settings.set('linearization_mode', linearization_mode, level=ctrl.ui.active_scope)
         ctrl.forest.forest_edited()
         mode_text = prefs.get_ui_text_for_choice(linearization_mode, 'linearization_mode')
         return f'Set linearization mode: {mode_text}'
@@ -249,7 +244,7 @@ class SelectLinearizationMode(KatajaAction):
         return ctrl.settings.get_active_setting('linearization_mode')
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetVisibleLabel(KatajaAction):
@@ -267,16 +262,10 @@ class SetVisibleLabel(KatajaAction):
             label_mode = None
         return [], {'label_mode': label_mode}
 
-    def method(self, label_mode=None, node_uid=None):
+    def method(self, label_mode=None):
         """ """
-        if node_uid:
-            node = ctrl.forest.get_object_by_uid(node_uid)
-            level = g.HIGHEST
-        else:
-            level = ctrl.ui.active_scope
-            node = None
         if label_mode is None:
-            label_mode = ctrl.settings.get('label_text_mode', obj=node, level=level)
+            label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
             syn_mode = ctrl.settings.get('syntactic_mode')
             support_secondary = ctrl.forest.syntax.supports_secondary_labels
             # some labels are not allowed in syn mode. If called without arguments, rotate to
@@ -297,14 +286,16 @@ class SetVisibleLabel(KatajaAction):
                     label_mode = -1
                 else:
                     ok = True
-        ctrl.settings.set('label_text_mode', label_mode, obj=node, level=level)
+        ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
         ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get('label_text_mode')
+        return ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
 
+    def enabler(self):
+        return self.not_selection()
 
 class SelectProjectionStyle(KatajaAction):
     k_action_uid = 'select_projection_style'
@@ -336,5 +327,5 @@ class SelectProjectionStyle(KatajaAction):
         return ctrl.settings.get_active_setting('projection_style')
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 

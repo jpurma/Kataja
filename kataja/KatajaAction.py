@@ -32,7 +32,7 @@ from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 from kataja.UIItem import UIWidget
-
+from kataja.globals import SELECTION
 
 class ShortcutSolver(QtCore.QObject):
     """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
@@ -427,6 +427,13 @@ class KatajaAction(QtWidgets.QAction):
         for menu in self.transit_menus:
             if menu.key == menu_key:
                 menu.setChecked(value)
+
+    def not_selection(self):
+        """ Helper method that checks if we are not in selection scope, many actions are then
+        disabled.
+        :return:
+        """
+        return ctrl.ui.active_scope != SELECTION
 
 
 class TransmitAction(QtWidgets.QAction):

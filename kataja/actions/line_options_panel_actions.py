@@ -3,8 +3,7 @@
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl
-from kataja.ui_widgets.Panel import Panel
-
+from kataja.ui_widgets.Panel import PanelAction
 
 # ==== Class variables for KatajaActions:
 #
@@ -29,24 +28,7 @@ from kataja.ui_widgets.Panel import Panel
 #
 
 
-def find_panel_widget(panel):
-    if isinstance(panel, Panel):
-        return panel
-    elif panel:
-        return find_panel_widget(panel.parentWidget())
-
-
-class LinesPanelAction(KatajaAction):
-
-    def __init__(self):
-        super().__init__()
-        self.panel = None
-
-    def on_connect(self, ui_item):
-        self.panel = find_panel_widget(ui_item.parentWidget())
-
-
-class SetEdgeType(LinesPanelAction):
+class SetEdgeType(PanelAction):
     k_action_uid = 'set_edge_type_for_editing'
     k_command = 'Set edge type to be modified'
     k_tooltip = 'Set which kind of edges are changed by this panel'
@@ -68,7 +50,7 @@ class SetEdgeType(LinesPanelAction):
         return self.panel and not ctrl.ui.scope_is_selection
 
 
-class ChangeEdgeColor(LinesPanelAction):
+class ChangeEdgeColor(PanelAction):
     k_action_uid = 'change_edge_color'
     k_command = 'Change edge color'
     k_tooltip = 'Change drawing color for edges'
@@ -113,7 +95,7 @@ class ChangeEdgeColor(LinesPanelAction):
             self.panel.get_active_node_setting('color_id')
 
 
-class EdgeArrowheadStart(LinesPanelAction):
+class EdgeArrowheadStart(PanelAction):
     k_action_uid = 'edge_arrowhead_start'
     k_command = 'Draw arrowhead at line start'
     k_checkable = True
@@ -163,7 +145,7 @@ class EdgeArrowheadStart(LinesPanelAction):
             return arrowheads == g.AT_START or arrowheads == g.AT_BOTH
 
 
-class EdgeArrowheadEnd(LinesPanelAction):
+class EdgeArrowheadEnd(PanelAction):
     k_action_uid = 'edge_arrowhead_end'
     k_command = 'Draw arrowhead at line end'
     k_checkable = True
@@ -213,7 +195,7 @@ class EdgeArrowheadEnd(LinesPanelAction):
             return arrowheads == g.AT_END or arrowheads == g.AT_BOTH
 
 
-class ResetControlPoints(LinesPanelAction):
+class ResetControlPoints(PanelAction):
     k_action_uid = 'reset_control_points'
     k_command = 'Reset control point'
     k_tooltip = 'Remove adjustments for these curves'
@@ -245,7 +227,7 @@ class ResetControlPoints(LinesPanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
 
-class ResetEdgeSettings(LinesPanelAction):
+class ResetEdgeSettings(PanelAction):
     k_action_uid = 'reset_edge_settings'
     k_command = 'Reset edge settings'
     k_tooltip = 'Reset settings for this type of edges back to defaults'
@@ -280,7 +262,7 @@ class ResetEdgeSettings(LinesPanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
 
-class LeafShapeX(LinesPanelAction):
+class LeafShapeX(PanelAction):
     k_action_uid = 'leaf_shape_x'
     k_command = 'Edge shape width'
     k_tooltip = 'Adjust horizontal thickness of edges'
@@ -317,7 +299,7 @@ class LeafShapeX(LinesPanelAction):
         return self.panel.get_active_shape_setting('leaf_x')
 
 
-class LeafShapeY(LinesPanelAction):
+class LeafShapeY(PanelAction):
     k_action_uid = 'leaf_shape_y'
     k_command = 'Edge shape height'
     k_tooltip = 'Adjust vertical thickness of edges'
@@ -354,7 +336,7 @@ class LeafShapeY(LinesPanelAction):
         return self.panel.get_active_shape_setting('leaf_y')
 
 
-class EdgeThickness(LinesPanelAction):
+class EdgeThickness(PanelAction):
     k_action_uid = 'edge_thickness'
     k_command = 'Edge thickness'
     k_tooltip = 'Adjust fixed thickness for edges'
@@ -390,7 +372,7 @@ class EdgeThickness(LinesPanelAction):
         return self.panel.get_active_shape_setting('thickness')
 
 
-class ChangeEdgeRelativeCurvatureX(LinesPanelAction):
+class ChangeEdgeRelativeCurvatureX(PanelAction):
     k_action_uid = 'change_edge_relative_curvature_x'
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature value is relative to edge width'
@@ -427,7 +409,7 @@ class ChangeEdgeRelativeCurvatureX(LinesPanelAction):
         return round((self.panel.get_active_shape_setting('rel_dx') or 0) * 100)
 
 
-class ChangeEdgeRelativeCurvatureY(LinesPanelAction):
+class ChangeEdgeRelativeCurvatureY(PanelAction):
     k_action_uid = 'change_edge_relative_curvature_y'
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature value is relative to edge height'
@@ -465,7 +447,7 @@ class ChangeEdgeRelativeCurvatureY(LinesPanelAction):
         return round((self.panel.get_active_shape_setting('rel_dy') or 0) * 100)
 
 
-class ChangeEdgeFixedCurvatureX(LinesPanelAction):
+class ChangeEdgeFixedCurvatureX(PanelAction):
     k_action_uid = 'change_edge_fixed_curvature_x'
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
@@ -502,7 +484,7 @@ class ChangeEdgeFixedCurvatureX(LinesPanelAction):
         return self.panel.get_active_shape_setting('fixed_dx')
 
 
-class ChangeEdgeFixedCurvatureY(LinesPanelAction):
+class ChangeEdgeFixedCurvatureY(PanelAction):
     k_action_uid = 'change_edge_fixed_curvature_y'
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
@@ -539,7 +521,7 @@ class ChangeEdgeFixedCurvatureY(LinesPanelAction):
         return self.panel.get_active_shape_setting('fixed_dy')
 
 
-class EdgeShapeFill(LinesPanelAction):
+class EdgeShapeFill(PanelAction):
     k_action_uid = 'edge_shape_fill'
     k_command = 'Set edges to be drawn as filled'
     k_checkable = True
@@ -575,7 +557,7 @@ class EdgeShapeFill(LinesPanelAction):
         return self.panel.has_active_fill()
 
 
-class EdgeShapeLine(LinesPanelAction):
+class EdgeShapeLine(PanelAction):
     k_action_uid = 'edge_shape_line'
     k_command = 'Set edges to be drawn with outlines'
     k_checkable = True

@@ -56,7 +56,7 @@ class SwitchFeatureCheckingMode(KatajaAction):
         return ctrl.settings.get_active_setting('feature_check_display')
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesApart(KatajaAction):
@@ -76,7 +76,7 @@ class SetFeaturesApart(KatajaAction):
         return ctrl.settings.get_active_setting('feature_check_display') == g.NO_CHECKING_EDGE
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesLocked(KatajaAction):
@@ -97,7 +97,7 @@ class SetFeaturesLocked(KatajaAction):
         return ctrl.settings.get_active_setting('feature_check_display') == g.PUT_CHECKED_TOGETHER
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesConnected(KatajaAction):
@@ -118,7 +118,7 @@ class SetFeaturesConnected(KatajaAction):
         return ctrl.settings.get_active_setting('feature_check_display') == g.SHOW_CHECKING_EDGE
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SelectFeatureDisplayMode(KatajaAction):
@@ -128,23 +128,24 @@ class SelectFeatureDisplayMode(KatajaAction):
     k_shortcut = 'f'
 
     def method(self):
-        f_mode = ctrl.settings.get('feature_positioning')
+        f_mode = ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope)
         f_mode += 1
         if f_mode == 4:
             f_mode = 0
-        ctrl.settings.set('feature_positioning', f_mode, level=DOCUMENT)
+        ctrl.settings.set('feature_positioning', f_mode, level=ctrl.ui.active_scope)
         ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(f_mode, 'feature_positioning')
         return 'Features arranged as: ' + mode_text
 
     def getter(self):
-        if ctrl.settings.get('node_shape') == g.CARD:
+        if ctrl.settings.get('node_shape', level=ctrl.ui.active_scope) == g.CARD:
             return 3
         else:
-            return ctrl.settings.get('feature_positioning')
+            return ctrl.settings.get('feature_positioning', level=ctrl.ui.active_scope)
 
     def enabler(self):
-        return ctrl.settings.get('node_shape') != g.CARD
+        return self.not_selection() and ctrl.settings.get('node_shape',
+                                                          level=ctrl.ui.active_scope) != g.CARD
 
 
 class SetFeaturesAsRow(KatajaAction):
@@ -165,7 +166,7 @@ class SetFeaturesAsRow(KatajaAction):
         return ctrl.settings.get_active_setting('feature_positioning') == g.HORIZONTAL_ROW
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesAsColumn(KatajaAction):
@@ -186,7 +187,7 @@ class SetFeaturesAsColumn(KatajaAction):
         return ctrl.settings.get_active_setting('feature_positioning') == g.VERTICAL_COLUMN
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesAsTwoColumns(KatajaAction):
@@ -207,7 +208,7 @@ class SetFeaturesAsTwoColumns(KatajaAction):
         return ctrl.settings.get_active_setting('feature_positioning') == g.TWO_COLUMNS
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 
 
 class SetFeaturesHanging(KatajaAction):
@@ -228,5 +229,5 @@ class SetFeaturesHanging(KatajaAction):
         return ctrl.settings.get_active_setting('feature_positioning') == g.FREE_FLOATING
 
     def enabler(self):
-        return ctrl.ui.active_scope != g.SELECTION
+        return self.not_selection()
 

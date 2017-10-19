@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs, prefs
+from kataja.singletons import ctrl, qt_prefs, prefs, classes
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
 from kataja.ui_widgets.SelectionBox import SelectionBox
@@ -11,6 +11,13 @@ from kataja.ui_widgets.panels.NodePanel import NodePanel
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
 
 __author__ = 'purma'
+
+
+def banned_label_text_modes():
+    if ctrl.settings.get('syntactic_mode'):
+        return [g.NODE_LABELS, g.NODE_LABELS_FOR_LEAVES]
+    else:
+        return []
 
 
 class ConstituentPanel(NodePanel):
@@ -70,7 +77,11 @@ class ConstituentPanel(NodePanel):
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
+        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
         data = prefs.get_display_choices('label_text_mode')
+        data = [(choice, text) for (choice, text) in data if choice
+                in allowed]
+
         self.label_selector = SelectionBox(parent=self, action='set_visible_label',
                                            data=data).to_layout(hlayout, with_label='Visible label')
         hlayout = box_row(layout)
@@ -92,3 +103,17 @@ class ConstituentPanel(NodePanel):
                                                                 with_label='Trace strategy')
 
         self.finish_init()
+
+    def syntactic_mode_changed(self):
+        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
+        data = prefs.get_display_choices('label_text_mode')
+        data = [(choice, text) for (choice, text) in data if choice
+                in allowed]
+        self.label_selector.rebuild_choices(data)
+
+    def forest_changed(self):
+        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
+        data = prefs.get_display_choices('label_text_mode')
+        data = [(choice, text) for (choice, text) in data if choice
+                in allowed]
+        self.label_selector.rebuild_choices(data)

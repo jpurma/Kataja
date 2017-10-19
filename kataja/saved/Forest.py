@@ -851,20 +851,10 @@ class Forest(SavedObject):
         if new_nodes:
             self.free_drawing.replace_node(node, new_nodes[0])
 
+
     # View mode
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.DOCUMENT)
-        label_text_mode = ctrl.settings.get('label_text_mode')
-        if syntactic_mode:
-            self.old_label_mode = label_text_mode
-            if label_text_mode == g.NODE_LABELS:
-                ctrl.settings.set('label_text_mode', g.SYN_LABELS, level=g.FOREST)
-            elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-                ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.FOREST)
-        else:
-            if self.old_label_mode == g.NODE_LABELS or \
-                            self.old_label_mode == g.NODE_LABELS_FOR_LEAVES:
-                ctrl.settings.set('label_text_mode', self.old_label_mode, level=g.FOREST)
         nodes = list(self.nodes.values())
         for node in nodes:
             node.update_label()

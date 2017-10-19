@@ -18,11 +18,23 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
             self.setMinimumSize(QtCore.QSize(40, 20))
             self.setMaximumSize(QtCore.QSize(40, 20))
         ctrl.ui.connect_element_to_action(self, action)
+        #if data:
+        #    self.disable_choice(data[0])
+
+    def disable_choice(self, choice):
+        index = self.findData(choice)
+        m = self.model()
+        item = m.item(index, 0)
+        print(item)
+
+    def rebuild_choices(self, data):
+        current = self.currentData()
+        self.add_items(data)
+        self.select_by_data(current)
 
     def find_list_item(self, data):
         """ Helper method to check the index of data item in list
         :param data: data to match
-        :param selector: QComboBox instance
         :return: -1 if not found, index if found
         """
         return self.findData(data)
@@ -30,7 +42,6 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
     def remove_list_item(self, data):
         """ Helper method to remove items from combo boxes
         :param data: list item's data has to match this
-        :param selector: QComboBox instance
         """
         i = self.find_list_item(data)
         if i != -1:
@@ -62,5 +73,5 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
         :param data:
         """
         index = self.find_list_item(data)
-        # print('selecting data, data %s got index %s' % (data, index))
-        self.setCurrentIndex(index)
+        if index != -1:
+            self.setCurrentIndex(index)

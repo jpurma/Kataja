@@ -415,7 +415,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.prepareGeometryChange()
         triangle_host = self._host.is_triangle_host()
         if triangle_host:
-            label_text = ctrl.settings.get('label_text_mode')
+            label_text = self._host.allowed_label_text_mode()
             self.draw_triangle = (
                                      label_text == g.NODE_LABELS or label_text ==
                                      g.NODE_LABELS_FOR_LEAVES) and self.node_shape not in [

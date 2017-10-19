@@ -31,7 +31,7 @@ class ChainManager:
                     len(node.get_parents(similar=True, visible=False)) > 1:
                 node.index = self.next_free_index()
         # Then implement the rules
-        strat = ctrl.settings.get('trace_strategy', level=FOREST)
+        strat = ctrl.settings.get('trace_strategy')
         if strat == USE_MULTIDOMINATION:
             self.traces_to_multidomination()
         elif strat == USE_TRACES:
@@ -44,14 +44,14 @@ class ChainManager:
          to put nodes into their places.
         :return:
         """
-        if ctrl.settings.get('trace_strategy', level=FOREST) == TRACES_GROUPED_TOGETHER:
+        if ctrl.settings.get('trace_strategy') == TRACES_GROUPED_TOGETHER:
             self.group_traces_to_chain_head()
 
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains
         :return:
         """
-        return ctrl.settings.get('trace_strategy', level=FOREST) != USE_MULTIDOMINATION
+        return ctrl.settings.get('trace_strategy') != USE_MULTIDOMINATION
 
     def _get_heads_and_traces(self):
         heads = {}

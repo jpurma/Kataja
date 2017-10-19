@@ -29,10 +29,25 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_support.panel_utils import label
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
-
-# Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
+from kataja.KatajaAction import KatajaAction
 
 ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
+
+
+class PanelAction(KatajaAction):
+
+    def __init__(self):
+        super().__init__()
+        self.panel = None
+
+    def on_connect(self, ui_item):
+        def find_panel_widget(panel):
+            if isinstance(panel, Panel):
+                return panel
+            elif panel:
+                return find_panel_widget(panel.parentWidget())
+
+        self.panel = find_panel_widget(ui_item.parentWidget())
 
 
 class PanelTitle(QtWidgets.QWidget):

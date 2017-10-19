@@ -8,6 +8,9 @@ import kataja.globals as g
 
 __author__ = 'purma'
 
+choices_when_selection = [(g.SELECTION, 'is selection')]
+choices_when_not_selection = [(g.FOREST, 'is forest'), (g.DOCUMENT, 'is document')]
+
 
 class ScopePanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
@@ -22,10 +25,9 @@ class ScopePanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded,
                        foldable=False)
-        items = [(g.SELECTION, 'scope is selection'), (g.FOREST, 'scope is forest'),
-                 (g.DOCUMENT, 'scope is document'), (g.PREFS, 'scope is preferences')]
-
-        self.scope_selector = SelectionBox(data=items, action='set_scope_for_node_style')
+        self.scope_selector = SelectionBox(parent=self, data=choices_when_not_selection,
+                                           action='set_editing_scope')
+        self.was_selection = False
         self.scope_selector.setMaximumWidth(128)
         self.push_to_title(self.scope_selector)
         self.reset_button = PanelButton(text='reset', action='reset_settings')
@@ -41,3 +43,16 @@ class ScopePanel(Panel):
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.finish_init()
+
+    def prepare_selections(self):
+        selection = ctrl.ui.active_scope == g.SELECTION
+        if (selection and self.was_selection) or ((not selection) and (not self.was_selection)):
+            return
+        if selection:
+            self.scope_selector.rebuild_choices(choices_when_selection)
+            self.scope_selector.setEnabled(False)
+            self.was_selection = True
+        else:
+            self.scope_selector.rebuild_choices(choices_when_not_selection)
+            self.scope_selector.setEnabled(True)
+            self.was_selection = False

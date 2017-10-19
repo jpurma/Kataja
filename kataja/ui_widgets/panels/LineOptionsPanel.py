@@ -57,15 +57,6 @@ class LineOptionsPanel(Panel):
                                            ).to_layout(hlayout, with_label='Style for')
         self.edge_type_selector.setFixedWidth(148)
 
-        hlayout = box_row(layout)
-        items = [(g.SELECTION, 'this selection'), (g.FOREST, 'this forest'),
-                 (g.DOCUMENT, 'this document'), (g.PREFS, 'preferences')]
-
-        self.scope_selector = SelectionBox(parent=self, data=items,
-                                           action='set_scope_for_node_style'
-                                           ).to_layout(hlayout, with_label='in ')
-        self.scope_selector.setFixedWidth(192)
-
         layout.addWidget(hdivider())
         layout.addSpacing(spac)
 

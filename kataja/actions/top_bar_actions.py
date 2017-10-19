@@ -189,7 +189,7 @@ class ToggleAutomaticZoom(KatajaAction):
         ctrl.settings.set('auto_zoom', not old_value, level=PREFS)
 
     def getter(self):
-        return ctrl.settings.get('auto_zoom')
+        return ctrl.settings.get('auto_zoom', level=PREFS)
 
 
 class TogglePanMode(KatajaAction):

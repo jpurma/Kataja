@@ -227,7 +227,7 @@ class ConstituentNode(Node):
             return gs[0]
 
     def has_ordered_children(self):
-        mode = ctrl.settings.get('linearization_mode', level=g.FOREST)
+        mode = ctrl.settings.get('linearization_mode')
         if mode == g.NO_LINEARIZATION or mode == g.RANDOM_NO_LINEARIZATION:
             return False
         elif mode == g.USE_LINEARIZATION:
@@ -360,10 +360,7 @@ class ConstituentNode(Node):
 
         html = []
 
-        if 'label_text_mode' in self.settings:
-            label_text_mode = self.settings['label_text_mode']
-        else:
-            label_text_mode = ctrl.settings.get('label_text_mode')
+        label_text_mode = self.allowed_label_text_mode()
         include_index = False
         l = ''
         if label_text_mode == g.NODE_LABELS:
@@ -420,7 +417,7 @@ class ConstituentNode(Node):
         # Allow custom syntactic objects to override this
         if self.syntactic_object and hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
-        label_text_mode = ctrl.settings.get('label_text_mode')
+        label_text_mode = self.allowed_label_text_mode()
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
                 if self.triangle_stack:
@@ -820,6 +817,40 @@ class ConstituentNode(Node):
                 painter.setBrush(gradient)
             painter.drawEllipse(r)
             painter.setPen(old_pen)
+
+    @staticmethod
+    def allowed_label_text_mode():
+        mode = ctrl.settings.get('label_text_mode')
+        if mode == g.SECONDARY_LABELS and not ctrl.forest.syntax.supports_secondary_labels:
+            return g.SYN_LABELS
+        if not ctrl.settings.get('syntactic_mode'):
+            return mode
+        if mode == g.NODE_LABELS:
+            return g.SYN_LABELS
+        elif mode == g.NODE_LABELS_FOR_LEAVES:
+            return g.SYN_LABELS_FOR_LEAVES
+        elif mode == g.XBAR_LABELS:
+            return g.SYN_LABELS
+
+    @staticmethod
+    def allowed_label_text_modes():
+        """
+        SYN_LABELS = 0
+        SYN_LABELS_FOR_LEAVES = 1
+        NODE_LABELS = 2
+        NODE_LABELS_FOR_LEAVES = 3
+        XBAR_LABELS = 4
+        SECONDARY_LABELS = 5
+        NO_LABELS = 6
+        :return:
+        """
+        if ctrl.settings.get('syntactic_mode'):
+            allowed = [0, 1, 5, 6]
+        else:
+            allowed = [0, 1, 2, 3, 4, 5, 6]
+        if (not ctrl.forest) or (not ctrl.forest.syntax.supports_secondary_labels):
+            allowed.remove(5)
+        return allowed
 
     # ############## #
     #                #

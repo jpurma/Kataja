@@ -124,35 +124,25 @@ class Settings:
             edge.flatten_settings()
 
     # @time_me
-    def get(self, key, level=HIGHEST, obj=None):
+    def get(self, key, level=FOREST):
         if level == SELECTION:
-            level = HIGHEST
-        if obj and level <= HIGHEST:
-            if obj.settings_chain is None:
-                obj.settings_chain = self.forest_chain.new_child(obj.settings)
-            return obj.settings_chain[key]
-        elif level <= FOREST:
+            level = FOREST
+        if level <= FOREST:
             return self.forest_chain[key]
         elif level <= DOCUMENT:
             return self.document_chain[key]
         return getattr(self.prefs, key)
 
-    def set(self, key, value, level=OBJECT, obj=None):
+    def set(self, key, value, level=FOREST, purge=True):
         """ When writing a setting, you have to tell in which level to write on:
-        OBJECT, SELECTION, FOREST, DOCUMENT or PREFS. If you are writing to OBJECT,
-        you have to provide the object with obj-parameter.
+        FOREST, DOCUMENT or PREFS.
         :param key:
         :param value:
         :param level:
         :param obj:
         :return:
         """
-        if level == OBJECT:
-            if not obj:
-                raise ValueError
-            obj.poke('settings')
-            obj.settings[key] = value
-        elif level == FOREST:
+        if level == FOREST:
             if self.forest:
                 self.forest.poke('settings')
                 self.forest.settings[key] = value
@@ -162,10 +152,9 @@ class Settings:
         elif level == PREFS:
             setattr(self.prefs, key, value)
 
-    def delete(self, key, level=OBJECT, obj=None):
+    def delete(self, key, level=FOREST):
         """ When deleting a setting, you have to tell in which level to delete:
-        OBJECT, FOREST or DOCUMENT. If you are deleting in OBJECT,
-        you have to provide the object with obj-parameter. Value cannot be deleted from PREFS.
+        FOREST or DOCUMENT. Value cannot be deleted from PREFS.
 
         Deleting a value in a level causes one to use one from the next level.
         :param key:
@@ -173,12 +162,7 @@ class Settings:
         :param obj:
         :return:
         """
-        if level == OBJECT:
-            if not obj:
-                raise ValueError
-            if key in obj.settings:
-                del obj.settings[key]
-        elif level == FOREST:
+        if level == FOREST:
             if key in self.forest.settings:
                 del self.forest.settings[key]
         elif level == DOCUMENT:
@@ -370,10 +354,13 @@ class Settings:
             self.set_edge_setting(key, value, edge_type=edge_type, edge=edge, level=level)
         else:
             pass
-        self.flatten_shape_settings(edge_type)
-        for edge in ctrl.forest.edges.values():
-            if edge.edge_type == edge_type:
-                edge.flatten_settings()
+        if edge:
+            edge.flatten_settings()
+        elif edge_type:
+            self.flatten_shape_settings(edge_type)
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.flatten_settings()
 
     def flatten_shape_settings(self, edge_type):
         shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, level=HIGHEST)
@@ -412,7 +399,7 @@ class Settings:
         :param key:
         :return:
         """
-        return self.get(key, obj=None, level=ctrl.ui.active_scope)
+        return self.get(key, level=ctrl.ui.active_scope)
 
     def get_active_node_setting(self, key, of_type):
         """ Return node setting either from selected items or from ui.active_scope. If there

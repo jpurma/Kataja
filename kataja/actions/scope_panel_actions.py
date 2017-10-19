@@ -3,6 +3,7 @@
 from kataja.singletons import ctrl, prefs, running_environment
 from kataja.KatajaAction import KatajaAction
 from kataja.globals import DOCUMENT, SELECTION
+from kataja.ui_widgets.Panel import PanelAction
 
 # ==== Class variables for KatajaActions:
 #
@@ -27,27 +28,44 @@ from kataja.globals import DOCUMENT, SELECTION
 #
 
 
-class ToggleSemanticsView(KatajaAction):
-    k_action_uid = 'toggle_semantics_view'
-    k_command = 'Show or hide semantics'
+class SetScopeForNodeStyle(PanelAction):
+    k_action_uid = 'set_editing_scope'
+    k_command = 'Set scope for style changes'
+    k_tooltip = 'Changes here affect only selected nodes, nodes in this tree, nodes in this ' \
+                'document or they are set as user defaults.'
     k_undoable = False
-    k_tooltip = 'Show or hide semantics'
-    k_shortcut = 's'
-    k_checkable = True
+
+    def method(self):
+        """ Change drawing panel to work on selected nodes, constituent nodes or
+        other available
+        nodes
+        """
+        sender = self.sender()
+        if sender:
+            value = sender.currentData(256)
+            ctrl.ui.set_scope(value)
 
     def enabler(self):
-        return ctrl.forest.semantics_manager.models and self.not_selection()
+        return ctrl.forest
 
     def getter(self):
-        return ctrl.settings.get('show_semantics', level=ctrl.ui.active_scope)
+        if self.panel:
+            self.panel.prepare_selections()
+        return ctrl.ui.active_scope
+
+
+class ResetSettings(KatajaAction):
+    k_action_uid = 'reset_settings'
+    k_command = 'Reset node settings'
+    k_tooltip = 'Reset settings in certain level and in all of the more specific levels'
 
     def prepare_parameters(self, args, kwargs):
-        sender = self.sender()
-        return [sender.isChecked()], {}
+        level = ctrl.ui.active_scope
+        return [level], kwargs
 
-    def method(self, checked):
-        ctrl.settings.set('show_semantics', checked, level=ctrl.ui.active_scope)
-        if ctrl.settings.get('show_semantics'):
-            ctrl.forest.semantics_manager.show()
-        else:
-            ctrl.forest.semantics_manager.hide()
+    def method(self, level: int):
+        """ Reset node settings in given level and in more specific levels.
+        :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
+        """
+        log.warning('not implemented: reset_settings')
+
