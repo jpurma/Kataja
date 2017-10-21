@@ -85,7 +85,6 @@ class Controller:
         self.focus_point = None
         self.selection_tool = False
         self.move_tool = False
-        self.area_selection = False
         self.references_to_fix = []
         self.rebuild_dict = {}
         self.print_garbage = True

@@ -276,35 +276,43 @@ class RemoveNodeButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
-class GroupOptionsButton(OverlayButton):
+class GroupButton(OverlayButton):
+    """ Button that is positioned around a group selection. It relies on methods provided by the
+    group object to find its position. """
+
+    def update_position(self):
+        """ Tries to find an unoccupied position in the radius of the group """
+        if self not in self.host.buttons:
+            self.host.add_button(self)
+        p = ctrl.main.graph_view.mapFromScene(self.host.position_for_buttons())
+        i, total = self.host.index_for_button(self)
+        w = self.width()
+        spacing = 4
+        total_width = (total * w) + ((total - 1) * spacing)
+        if i > 0:
+            my_x = i * w + ((i - 1) * spacing)
+        else:
+            my_x = 0
+        my_x -= total_width / 2
+        self.move(p.x() + my_x, p.y())
+
+
+class GroupOptionsButton(GroupButton):
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16, color_key=host.color_key,
                          pixmap=qt_prefs.info_icon, action='toggle_group_options')
         self.priority = 25
 
-    def update_position(self):
-        """ Tries to find an unoccupied position in the radius of the group """
-        candidates = self.host.clockwise_path_points(8)
-        if not candidates:
-            return
-        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2,
-                                                     self.height() / 2) - \
-                     ctrl.main.graph_view.mapToScene(
-            0, 0)
-        w2 = scene_size.x()
-        h2 = scene_size.y()
-        for x, y in candidates:
-            overlap = False
-            items = ctrl.graph_scene.items(QtCore.QRectF(x - w2, y - h2, w2 + w2, h2 + h2))
-            for item in items:
-                if isinstance(item, TouchArea):
-                    overlap = True
-                    break
-            if not overlap:
-                break
-        # noinspection PyUnboundLocalVariable
-        p = ctrl.main.graph_view.mapFromScene(x - w2, y - h2)
-        self.move(p)
+
+class DeleteGroupButton(GroupButton):
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, color_key='accent3',
+                         pixmap=qt_prefs.delete_icon, action='delete_group_items')
+        self.priority = 24
+
+    @classmethod
+    def condition(cls, host):
+        return ctrl.free_drawing_mode
 
 
 class NodeEditorButton(OverlayButton):

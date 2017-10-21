@@ -255,7 +255,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
             ts = self.titleBarWidget().sizeHint()
             return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
 
-
     def sizeHint(self):
         """
 
@@ -329,8 +328,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
 
         :param QShowEvent:
         """
-        if self.isFloating():
-            self.move(self.initial_position())
         if not self._watched:
             for signal in self.watchlist:
                 ctrl.add_watcher(self, signal)

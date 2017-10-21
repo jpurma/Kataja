@@ -84,7 +84,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': SemanticsPanel, 'name': 'Semantics', 'position': 'right', 'folded': True},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
           #{'class': MergePanel, 'name': 'Merge', 'position': 'right'},
-          {'class': ScopePanel, 'name': 'Settings scope', 'position': 'right', 'folded': True},
+          {'class': ScopePanel, 'name': 'Scope', 'position': 'right', 'folded': True},
           {'class': ConstituentPanel, 'name': 'Constituents', 'position': 'right'},
           {'class': FeaturePanel, 'name': 'Features', 'position': 'right'},
           {'class': GlossPanel, 'name': 'Glossa', 'position': 'right', 'folded': True},
@@ -357,7 +357,6 @@ class UIManager:
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection groups has to be handled somewhere. """
-
         def groups_in_selection(selection):
             groups = []
             # check if _one_ of the groups was selected
@@ -426,7 +425,7 @@ class UIManager:
                         self.selection_group.add_node(node)
                 self.add_buttons_for_group(self.selection_group)
             # draw a selection group around selected nodes
-            elif ctrl.area_selection:
+            elif len(ctrl.selected) > 1:
                 # Verify that selection contains nodes that can be in group
                 groupable_nodes = [item for item in ctrl.selected if
                                    isinstance(item, Node) and item.can_be_in_groups]
@@ -1139,8 +1138,10 @@ class UIManager:
         :param group:
         :return:
         """
-        button = self.get_or_create_button(group, ob.GroupOptionsButton)
-        return button
+        for button_class in [ob.GroupOptionsButton, ob.DeleteGroupButton]:
+            if button_class.condition(group):
+                button = self.get_or_create_button(group, button_class)
+                group.add_button(button)
 
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node

@@ -833,7 +833,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 # painter.setPen(ct)
                 painter.drawLine(x, y, x, y - 4)
 
-        if self.selected:
+        if self.selected and not ctrl.multiple_selection():
             p = QtGui.QPen(ctrl.cm.ui_tr())
             self.path.draw_control_point_hints(painter, p, self.curve_adjustment)
         if self.crossed_out_flag:

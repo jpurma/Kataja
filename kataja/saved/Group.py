@@ -42,7 +42,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self._selected = False
         self.points = []
         self.center_point = None
-        self.outline = False
+        self.outline = True
         self.fill = True
         self.color_key = ''
         self.color = None
@@ -51,6 +51,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.path = None
         self.label_item = None
         self.label_data = {}
+        self.buttons = []
         self.include_children = False
         self.allow_overlap = True
         self._br = None
@@ -247,20 +248,15 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             return
         elif len(sel) == 1:
             x1, y1, x2, y2, route = embellished_corners(sel[0])
-            self._br = QtCore.QRectF(x1 - 5, y1 - 5, x2 - x1 + 10, y2 - y1 + 10)
             self.path = QtGui.QPainterPath(QtCore.QPointF(route[0][0], route[0][1]))
             for x, y in route[1:]:
                 self.path.lineTo(x, y)
             self.path.closeSubpath()
             center = self._br.center()
             self.center_point = center.x(), center.y()
-            cx, cy = self.center_point
-
         else:
             corners = []
             c = 0
-            x_sum = 0
-            y_sum = 0
             min_x = 50000
             max_x = -50000
             min_y = 50000
@@ -268,10 +264,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             for item in sel:
                 c += 2
                 x1, y1, x2, y2, icorners = embellished_corners(item)
-                x_sum += x1
-                x_sum += x2
-                y_sum += y1
-                y_sum += y2
                 if x1 < min_x:
                     min_x = x1
                 if x2 > max_x:
@@ -282,7 +274,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                     max_y = y2
                 corners += icorners
             self.prepareGeometryChange()
-            self._br = QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
             cx = (min_x + max_x) / 2
             cy = (min_y + max_y) / 2
             self.center_point = cx, cy
@@ -318,14 +309,21 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         curved_path = Group.interpolate_point_with_bezier_curves(route)
         sx, sy = route[0]
         self.path = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
+        xs = []
+        ys = []
         for fx, fy, sx, sy, ex, ey in curved_path:
+            xs += [fx, sx, ex]
+            ys += [fy, sy, ey]
             self.path.cubicTo(fx, fy, sx, sy, ex, ey)
+        min_x = min(xs)
+        min_y = min(ys)
+        self._br = QtCore.QRectF(min_x, min_y, max(xs) - min_x, max(ys) - min_y)
+
         # This is costly
         if True:
             for item in self.collidingItems():
-                if isinstance(item,
-                              Node) and item.node_type == g.CONSTITUENT_NODE and item not in \
-                        self.selection_with_children:
+                if (isinstance(item, Node) and item.node_type == g.CONSTITUENT_NODE and item not
+                in self.selection_with_children):
                     x, y = item.current_scene_position
                     subshape = item.shape().translated(x, y)
                     subshape_points = []
@@ -348,50 +346,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     def update_position(self):
         self.update_shape()
-
-    def clockwise_path_points(self, margin=2):
-        """ Return points along the path circling the group. A margin can be provided to make the
-        points be n points away from the path. Points start from the topmost, rightmost point.
-        :param margin:
-        :return:
-        """
-        if not self.path:
-            return QtCore.QPointF(0, 0)  # hope this group will be removed immediately
-        max_x = -30000
-        min_y = 30000
-        start_i = 0
-        ppoints = []
-        cx, cy = self.center_point
-        better_path = []  # lets have not only corners, but also points along the edges
-        last_element = self.path.elementAt(self.path.elementCount() - 1)
-        last_x = last_element.x
-        last_y = last_element.y
-        for i in range(0, self.path.elementCount()):
-            element = self.path.elementAt(i)
-            x = element.x
-            y = element.y
-            better_path.append(((last_x + x) / 2, (last_y + y) / 2))
-            better_path.append((x, y))
-            last_x = x
-            last_y = y
-
-        for i, (x, y) in enumerate(better_path):
-            if margin != 0:
-                dx = x - cx
-                dy = y - cy
-                d = math.hypot(dx, dy)
-                if d == 0:
-                    change = 0
-                else:
-                    change = (d + margin) / d  # should return values like 1.08
-                x = cx + (dx * change)
-                y = cy + (dy * change)
-            ppoints.append((x, y))
-            if y < min_y or (y == min_y and x > max_x):
-                min_y = y
-                max_x = x
-                start_i = i
-        return ppoints[start_i:] + ppoints[:start_i]
 
     def boundingRect(self):
         if not self._br:
@@ -473,6 +427,17 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             elif self.outline:
                 painter.setPen(self.color)
                 painter.drawPath(self.path)
+
+    def position_for_buttons(self):
+        scb = self.sceneBoundingRect()
+        return QtCore.QPointF(scb.center().x(), scb.top() - 8)
+
+    def add_button(self, button):
+        if button not in self.buttons:
+            self.buttons.append(button)
+
+    def index_for_button(self, button):
+        return self.buttons.index(button), len(self.buttons)
 
     @staticmethod
     def interpolate_point_with_bezier_curves(points):

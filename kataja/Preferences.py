@@ -264,7 +264,7 @@ class Preferences(object):
                                    'order': 29}
         self.last_key_colors = {}
 
-        self.show_semantics = True
+        self.show_semantics = False
         self._show_semantics_ui = {'tab': 'Syntax',
                                    'label': 'Show semantics',
                                    'help': '(If the plugin supports them)',
@@ -358,7 +358,7 @@ class Preferences(object):
         self.custom_themes = {}
         self.custom_colors = {}
 
-        self.gloss_strategy = 'message'
+        self.gloss_strategy = 'no'
         # 'message', 'no', 'linearize', 'manual'
         self._gloss_strategy_ui = {'tab': 'Drawing', 'choices':
                                 [('message', 'Message provided by parser'),

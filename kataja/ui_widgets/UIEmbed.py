@@ -76,8 +76,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
             self.update_position(focus_point=focus_point)
 
     def update_size(self):
-
-        self.setFixedSize(self.layout().minimumSize())
+        pass
 
     def update_fields(self):
         """ Subclasses implement this if there are elements to update

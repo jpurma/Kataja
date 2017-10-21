@@ -438,7 +438,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # No object was pressed -- either clicking on nothing or ending a selection drag
 
         if self.graph_view.selection_mode:
-            ctrl.area_selection = True
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges
@@ -454,7 +453,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             else:
                 select = ctrl.ui.get_action('select')
             select.run_command(sorted(list(selection)), has_params=True)
-            ctrl.area_selection = False
 
         # click on empty place means select nothing, unless we are shift+selecting
         elif event.modifiers() != Qt.ShiftModifier:

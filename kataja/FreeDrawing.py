@@ -138,6 +138,7 @@ class FreeDrawing:
             node.set_original_position(pos)
             # node.update_position(pos)
         self.f.add_to_scene(node)
+        node.update_visibility(fade_in=False, fade_out=False)
         return node
 
     def create_feature_node(self, label='feature', value='', family='', host=None):

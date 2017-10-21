@@ -856,7 +856,7 @@ class Node(Movable):
         #     painter.drawLine(0, 0, 0, 2)
         #     painter.drawRect(self.label_rect)
         #     painter.drawRect(self.inner_rect)
-        if ls == g.SCOPEBOX or ls == g.BOX:
+        if ls == g.SCOPEBOX or (ls == g.BOX and not self.is_empty()):
             pen.setWidthF(0.5)
             brush = ctrl.cm.paper2()
             rect = True
