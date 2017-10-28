@@ -46,17 +46,6 @@ def colored_image(color, base_image):
     return image
 
 
-def colored_image_from_drawing(color, draw_method):
-    image = QtGui.QImage()
-    painter = QtGui.QPainter(image)
-    # painter.setDevicePixelRatio(2.0)
-    painter.setRenderHint(QtGui.QPainter.Antialiasing)
-    painter.setPen(color)
-    draw_method(self, painter, image.rect(), color)
-    painter.end()
-    return image
-
-
 def print_rect(rect):
     """
 

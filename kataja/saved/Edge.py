@@ -28,7 +28,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from collections import ChainMap
 
 import kataja.globals as g
-from kataja.EdgeLabel import EdgeLabel
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl, prefs
@@ -37,11 +36,11 @@ from kataja.utils import to_tuple, add_xy, time_me
 from kataja.FadeInOut import FadeInOut
 from kataja.EdgePath import EdgePath
 from kataja.Shapes import SHAPE_PRESETS
+from kataja.edge_styles import names
 
 
 class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
-    """ Any connection between nodes: can be represented as curves, branches
-    or arrows """
+    """ Connections between 2 nodes """
 
     __qt_type_id__ = next_available_type_id()
 
@@ -55,7 +54,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
-        self.label_item = None
         self.edge_type = edge_type
         self.start = start
         self.start_links_to = None
@@ -63,11 +61,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.end = end
         self.alpha = alpha
         self.start_symbol = 0
-        self.fixed_start_point = (0, 0)
-        self.fixed_end_point = (0, 0)
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
         self.path = EdgePath(self)
-        self.label_data = {}
         self.selected = False
         self._nodes_overlap = False
         self.k_tooltip = ''
@@ -91,7 +86,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._end_node_moving = False
         self.setZValue(15)
         self.crossed_out_flag = False
-        self._use_labels = None
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -152,24 +146,19 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param others:
         :return:
         """
-        start = None
-        end = None
-        if self.start and self.start in others:
-            start = self.start
-        if self.end and self.end in others:
-            end = self.end
-        self.connect_end_points(start, end)
+        self.connect_end_points(self.start if self.start in others else None,
+                                self.end if self.end in others else None)
         ctrl.forest.remove_from_scene(self)
         return self
 
     @property
-    def color_id(self) -> str:
-        return self.flattened_settings['color_id']
+    def color_key(self) -> str:
+        return self.flattened_settings['color_key']
 
-    @color_id.setter
-    def color_id(self, value):
+    @color_key.setter
+    def color_key(self, value):
         self.path.changed = True
-        ctrl.settings.set_edge_setting('color_id', value, edge=self)
+        ctrl.settings.set_edge_setting('color_key', value, edge=self)
 
     @property
     def shape_name(self) -> str:
@@ -194,10 +183,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         starting point of the edge
         :return: tuple (x, y, z)
         """
-        if self.start:
-            return self.path.computed_start_point
-        else:
-            return self.fixed_start_point
+        return self.path.computed_start_point if self.path else (0, 0)
 
     @property
     def end_point(self) -> tuple:
@@ -205,10 +191,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         point of the edge
         :return: tuple (x, y, z)
         """
-        if self.end:
-            return self.path.computed_end_point
-        else:
-            return self.fixed_end_point
+        return self.path.computed_end_point if self.path else (0, 0)
 
     def show(self):
         if not self.isVisible():
@@ -234,58 +217,40 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         false for scene visibility.
         :return:
         """
+        start = self.start
+        end = self.end
+        if not (start and end):
+            ctrl.free_drawing.delete_edge(self)
+            return False
         lv = True
         if self._nodes_overlap:
             lv = False
-        elif self.start and not self.start.is_visible():
+        elif not start.is_visible():
             lv = False
-        elif self.end and not self.end.is_visible():
+        elif not end.is_visible():
             lv = False
         elif self.alpha and not self.alpha.is_visible():
             lv = False
         elif not self.flattened_settings['visible']:
             lv = False
         else:
-            start = self.start
-            end = self.end
-            delete = False
             if self.edge_type == g.CONSTITUENT_EDGE:
-                if end and not end.is_visible():
+                if end.locked_to_node:
                     lv = False
-                elif start and ctrl.forest.visualization and not \
-                        ctrl.forest.visualization.show_edges_for(
-                    start):
-                    lv = False
-                elif not (start and end):
-                    ctrl.free_drawing.delete_edge(self)
-                    return False
-                elif end.locked_to_node:
+                elif (ctrl.forest.visualization and
+                      not ctrl.forest.visualization.show_edges_for(start)):
                     lv = False
             elif self.edge_type == g.FEATURE_EDGE:
-                if start and end:
-                    if not (end.is_visible() and start.is_visible()):
-                        lv = False
-                    elif start.node_type == g.CONSTITUENT_NODE and \
-                            start.is_card() and \
-                            ((not end.adjustment) or end.adjustment == (0, 0)):
-                        lv = False
-                        # elif end.locked_to_node is start and \
-                        #        ((not end.adjustment) or end.adjustment == (0, 0)):
-                        #    lv = False
-                else:
-                    delete = True
+                if (start.node_type == g.CONSTITUENT_NODE and
+                   start.is_card() and
+                   ((not end.adjustment) or end.adjustment == (0, 0))):
+                    lv = False
+                    # elif end.locked_to_node is start and \
+                    #        ((not end.adjustment) or end.adjustment == (0, 0)):
+                    #    lv = False
             elif self.edge_type == g.CHECKING_EDGE:
-                if start and end:
-                    if not (end.is_visible() and start.is_visible()):
-                        lv = False
-                    elif ctrl.settings.get('feature_check_display') == 0:
-                        lv = False
-                else:
-                    delete = True
-
-            if delete:
-                ctrl.free_drawing.delete_edge(self)
-                return False
+                if ctrl.settings.get('feature_check_display') == 0:
+                    lv = False
 
         self._visible_by_logic = lv
         # Change visibility if necessary, with fade or instantly.
@@ -324,38 +289,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def color(self) -> QtGui.QColor:
         """ Color for drawing the edge -- both the fill and pen color.
         Returns QColor, but what is stored is Kataja
-        internal color_id.
+        internal color_key.
         :return: QColor
         """
-        return ctrl.cm.get(self.color_id)
+        return ctrl.cm.get(self.color_key)
 
-    def if_changed_color_id(self, value):
-        """ Set edge color, uses palette id strings as values.
-        :param value: string
-        """
-        if self.label_item:
-            self.label_item.setDefaultTextColor(ctrl.cm.get(value))
-
-    # ## Label data and its shortcut properties
-
-    def get_label_text(self) -> str:
-        """ Label text is actually stored in model.label_data, but this is a
-        shortcut for it.
-        :return:
-        """
-        return self.label_data.get('text', '')
-
-    def set_label_text(self, value):
-        if self.label_item:
-            old = self.get_label_text()
-            if old != value:
-                self.poke('label_data')
-                self.label_data['text'] = value
-                self.label_item.update_text(value)
-        else:
-            self.label_item = EdgeLabel(value, parent=self)
-            self.poke('label_data')
-            self.label_data['text'] = value
 
     # Helper methods for derived properties
 
@@ -377,16 +315,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         ctrl.free_drawing.set_edge_end(self, node)
         self.update_shape()
-
-    def is_broken(self) -> bool:
-        """ If this edge should be a connection between two nodes and either
-        node is missing, the edge
-        is broken and should be displayed differently.
-        :return: bool
-        """
-        if self.edge_type == g.ARROW:
-            return False
-        return not (self.start and self.end)
 
     def __lt__(self, other):
         return self.edge_start_index()[0] < other.edge_start_index()[0]
@@ -450,13 +378,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: QColor
         """
         if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-            base = ctrl.cm.get(self.in_projections[0].color_id)
-        elif self.color_id:
-            base = ctrl.cm.get(self.color_id)
-        elif self.alpha and hasattr(self.alpha, 'get_color_id'):
-            base = ctrl.cm.get(self.alpha.get_color_id())
+            base = ctrl.cm.get(self.in_projections[0].color_key)
+        elif self.color_key:
+            base = ctrl.cm.get(self.color_key)
+        elif self.alpha and hasattr(self.alpha, 'get_color_key'):
+            base = ctrl.cm.get(self.alpha.get_color_key())
         elif self.end:
-            base = ctrl.cm.get(self.end.get_color_id())
+            base = ctrl.cm.get(self.end.get_color_key())
         else:
             base = ctrl.cm.get('content1')
 
@@ -464,50 +392,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return ctrl.cm.active(base)
         elif self._hovering:
             return ctrl.cm.hovering(base)
-        elif self.is_broken():
-            return ctrl.cm.broken(base)
         else:
             return base
 
-    def uses_labels(self) -> bool:
-        """ Some edge types, e.g. arrows inherently suggest adding labels to
-        them. For others, having ui_support
-         textbox for adding label would be unwanted noise.
-        :return: bool
-        """
-        return self.flattened_settings['labeled']
-
-    # ### Shape / pull / visibility
-    # ###############################################################
-
-    def drag(self, event):
-        """ This is for dragging the whole edge in cases when edge is not
-        connected to nodes at any point
-        e.g. it is freely floating arrow or divider
-        :param event: Drag event?
-        """
-        # self.draggable = not (self.start or self.end)
-
-        scene_x, scene_y = to_tuple(event.scenePos())
-        ex, ey = self.end_point
-        sx, sy = self.start_point
-        if not self._local_drag_handle_position:
-            drag_x, drag_y = to_tuple(event.buttonDownScenePos(QtCore.Qt.LeftButton))
-            self._local_drag_handle_position = drag_x - sx, drag_y - sy
-        handle_x, handle_y = self._local_drag_handle_position
-        start_x = scene_x - handle_x
-        start_y = scene_y - handle_y
-        if not self.start:
-            self.fixed_start_point = start_x, start_y
-        if not self.end:
-            self.fixed_end_point = start_x + ex - sx, start_y + ey - sy
 
     # ### Derivative features ############################################
 
     def make_path(self):
         self.path.make()
-        if self.label_item:
-            self.label_item.update_position()
         if self.selected:
             ctrl.ui.update_position_for(self)
         # overlap detection is costly, so do checks for cases that make it unnecessary
@@ -560,16 +452,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param start:
         :param end:
         """
-        if start:
-            self.path.computed_start_point = start.current_scene_position
-            self.start = start
-        else:
-            self.start = None
-        if end:
-            self.path.computed_end_point = end.current_scene_position
-            self.end = end
-        else:
-            self.end = None
+        self.start = start
+        self.end = end
+        self.path.computed_start_point = start.current_scene_position if start else (0, 0)
+        self.path.computed_end_point = end.current_scene_position if end else (0, 0)
 
     def update_tooltip(self):
         """
@@ -588,42 +474,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
              to {tt_style % e_uid} (x:{int(ex)}, y:{int(ey)}) <br/> 
             uid:{tt_style % self.uid}"""
 
-    def description(self):
-        """
-
-        :return:
-        """
-        label = 'Arrow' if self.edge_type == g.ARROW else 'Edge'
-        if self.start:
-            s1 = f'"{self.start}"'
-        elif self.fixed_start_point:
-            s1 = f'({int(self.start_point[0])}, {int(self.start_point[1])})'
-        else:
-            s1 = 'undefined'
-        if self.end:
-            s2 = f'"{self.end}"'
-        elif self.fixed_end_point:
-            s2 = f'({int(self.end_point[0])}, {int(self.end_point[1])})'
-        else:
-            s2 = 'undefined'
-        return f'{label} from {s1} to {s2}'
-
     def __repr__(self):
-        return self.description()
-
-    def delete_on_disconnect(self):
-        """ Some edges are not real edges, but can have sensible existence without being
-        connected to nodes. Some are better to destroy at that point.
-        :return:
-        """
-        return self.allow_orphan_ends()
-
-    def allow_orphan_ends(self):
-        """
-
-        :return:
-        """
-        return self.edge_type is g.ARROW or self.edge_type is g.DIVIDER
+        return f'{names[self.edge_type][0]} from {self.start} to {self.end}'
 
     def update_selection_status(self, selected):
         """ Switch
@@ -631,18 +483,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param selected:
         """
         self.selected = selected
-        if selected:
-            if self.uses_labels():
-                if not self.label_item:
-                    self.label_item = EdgeLabel('', self, placeholder=True)
-                    self.label_item.update_position()
-        else:
-            if self.label_item:
-                if self.label_item.placeholder:
-                    scene = self.scene()
-                    if scene:
-                        scene.removeItem(self.label_item)
-                    self.label_item = None
         self.update()
 
     # ### Mouse - Qt events ##################################################
@@ -777,7 +617,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     left = sx > ex
                     for i, proj in enumerate(self.in_projections):
                         cp = QtGui.QPen(p)
-                        cp.setColor(ctrl.cm.get(proj.color_id))
+                        cp.setColor(ctrl.cm.get(proj.color_key))
                         painter.setPen(cp)
                         if left:
                             painter.drawPath(dpath.translated(i, i))
@@ -792,7 +632,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
                     left = sx > ex
                     for i, proj in enumerate(self.in_projections):
-                        cp = ctrl.cm.get(proj.color_id)
+                        cp = ctrl.cm.get(proj.color_key)
                         if left:
                             painter.fillPath(self._path.translated(i, i), cp)
                         else:
@@ -1013,12 +853,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     # ############## #
 
     # Saved properties
-    fixed_start_point = SavedField("fixed_start_point")
-    fixed_end_point = SavedField("fixed_end_point")
     edge_type = SavedField("edge_type")
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
     start = SavedField("start")
     end = SavedField("end")
     alpha = SavedField("alpha")
     forest = SavedField("forest")
-    label_data = SavedField("label_data")

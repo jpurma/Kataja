@@ -13,13 +13,13 @@ NOUN_PHRASE = 2
 
 class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
 
-    def __init__(self, sm, label, array_id, color_id, x=0, y=0):
+    def __init__(self, sm, label, array_id, color_key, x=0, y=0):
         QtWidgets.QGraphicsSimpleTextItem.__init__(self, label)
         self.label = label
         self.setFont(qt_prefs.get_font(SMALL_FEATURE))
         self.array_id = array_id
-        self.color_id = color_id
-        self.color_id_tr = color_id if color_id.endswith('tr') else color_id + 'tr'
+        self.color_key = color_key
+        self.color_key_tr = color_key if color_key.endswith('tr') else color_key + 'tr'
         self.members = []
         self.setZValue(2)
         self.setPos(x, y)
@@ -84,9 +84,9 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         painter.setPen(QtCore.Qt.NoPen)
         label_rect = self.label_rect()
         if self.members:
-            painter.setBrush(ctrl.cm.get(self.color_id))
+            painter.setBrush(ctrl.cm.get(self.color_key))
             painter.drawRoundedRect(label_rect, 4, 4)
-            p = QtGui.QPen(ctrl.cm.get(self.color_id_tr), 3)
+            p = QtGui.QPen(ctrl.cm.get(self.color_key_tr), 3)
             painter.setPen(p)
             scene_pos = self.pos()
             x = scene_pos.x()
@@ -107,12 +107,12 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                 if True:
                     painter.setPen(QtCore.Qt.NoPen)
                     grad = QtGui.QLinearGradient(0, 0, px - x, 0)
-                    grad.setColorAt(0, ctrl.cm.get(self.color_id))
-                    grad.setColorAt(0.1, ctrl.cm.get(self.color_id_tr))
-                    grad.setColorAt(0.6, ctrl.cm.get(self.color_id_tr))
-                    grad.setColorAt(1, ctrl.cm.get(self.color_id))
+                    grad.setColorAt(0, ctrl.cm.get(self.color_key))
+                    grad.setColorAt(0.1, ctrl.cm.get(self.color_key_tr))
+                    grad.setColorAt(0.6, ctrl.cm.get(self.color_key_tr))
+                    grad.setColorAt(1, ctrl.cm.get(self.color_key))
                     painter.setBrush(grad)
-                    #painter.setBrush(ctrl.cm.get(self.color_id_tr))
+                    #painter.setBrush(ctrl.cm.get(self.color_key_tr))
                     # p.lineTo(px - x, py - y)
 
                     if py < y:
@@ -140,5 +140,5 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
             self.setBrush(ctrl.cm.paper())
             QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, *args, **kwargs)
         else:
-            painter.setBrush(ctrl.cm.get(self.color_id_tr))
+            painter.setBrush(ctrl.cm.get(self.color_key_tr))
             painter.drawRoundedRect(label_rect, 4, 4)

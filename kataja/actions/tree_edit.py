@@ -10,6 +10,7 @@ from kataja.singletons import ctrl, classes, log
 from kataja.utils import guess_node_type
 from kataja.saved.Edge import Edge
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
+from kataja.ui_widgets.UIEmbed import EmbedAction
 
 
 # ==== Class variables for KatajaActions:
@@ -37,7 +38,7 @@ from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 # tree_edit has various tree editing and node editing actions
 
 
-class CreateNewNodeFromText(KatajaAction):
+class CreateNewNodeFromText(EmbedAction):
     k_action_uid = 'create_new_node_from_text'
     k_command = 'New node from text'
 
@@ -45,14 +46,13 @@ class CreateNewNodeFromText(KatajaAction):
     # k_shortcut_context = 'parent_and_children'
 
     def prepare_parameters(self, args, kwargs):
-        embed = self.get_ui_container()
-        ci = embed.node_type_selector.currentIndex()
-        node_type = embed.node_type_selector.itemData(ci)
-        guess_mode = embed.guess_mode
-        starting_point, focus_point = embed.get_marker_points()
+        ci = self.embed.node_type_selector.currentIndex()
+        node_type = self.embed.node_type_selector.itemData(ci)
+        guess_mode = self.embed.guess_mode
+        starting_point, focus_point = self.embed.get_marker_points()
         starting_point = int(starting_point.x()), int(starting_point.y())
         focus_point = int(focus_point.x()), int(focus_point.y())
-        text = embed.input_line_edit.text()
+        text = self.embed.input_line_edit.text()
         return [focus_point, text], {
             'starting_point': starting_point,
             'node_type': node_type,
@@ -73,12 +73,7 @@ class CreateNewNodeFromText(KatajaAction):
                 node_type = guess_node_type(text)
             else:
                 node_type = g.CONSTITUENT_NODE
-        if node_type == g.ARROW:
-            ctrl.free_drawing.create_arrow(focus_point, starting_point, text)
-        elif node_type == g.DIVIDER:
-            pass
-            # fixme: finish this!
-        elif node_type == g.TREE:
+        if node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
         else:
             node = ctrl.free_drawing.create_node(pos=focus_point, node_type=node_type, label=text)

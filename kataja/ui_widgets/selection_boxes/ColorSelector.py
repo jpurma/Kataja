@@ -86,12 +86,12 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
 class LineColorIcon(QtGui.QIcon):
     """
 
-    :param color_id:
+    :param color_key:
     :param model:
     """
 
-    def __init__(self, color_id, selector):
-        QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_id, selector))
+    def __init__(self, color_key, selector):
+        QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_key, selector))
 
 
 class ColorSelector(TableModelSelectionBox):
@@ -147,7 +147,7 @@ class ColorSelector(TableModelSelectionBox):
         if not color_key:
             return
         color = ctrl.cm.get(color_key, allow_none=True)
-        # launch a color dialog if color_id is unknown or clicking
+        # launch a color dialog if color_key is unknown or clicking
         # already selected color
         prev_color = self.selected_color
         self.selected_color = color_key

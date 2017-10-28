@@ -49,11 +49,11 @@ class CommentNode(Node):
                              tooltip='freeform text, invisible for processing',
                              input_type='expandingtext')}
 
-    default_style = {'fancy': {'color_id': 'accent4',
+    default_style = {'fancy': {'color_key': 'accent4',
                                'font_id': g.MAIN_FONT,
                                'font-size': 14,
                                'visible': True},
-                     'plain': {'color_id': 'accent4',
+                     'plain': {'color_key': 'accent4',
                                'font_id': g.MAIN_FONT,
                                'font-size': 14,
                                'visible': True}
@@ -61,8 +61,8 @@ class CommentNode(Node):
 
     default_edge = g.COMMENT_EDGE
 
-    touch_areas_when_dragging = [ta.DeleteArrowTouchArea]
-    touch_areas_when_selected = [ta.DeleteArrowTouchArea]
+    touch_areas_when_dragging = []
+    touch_areas_when_selected = []
 
     def __init__(self, label='comment'):
         self.image_object = None

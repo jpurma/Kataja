@@ -77,11 +77,11 @@ class ChangeEdgeColor(PanelAction):
         # Update color for selected edges
         if level == g.SELECTION:
             for edge in ctrl.get_selected_edges():
-                edge.color_id = color_key
+                edge.color_key = color_key
                 edge.update()
         # ... or update color for all edges of this type
         else:
-            ctrl.settings.set_edge_setting('color_id', color_key,
+            ctrl.settings.set_edge_setting('color_key', color_key,
                                            edge_type=edge_type, level=level)
             for edge in ctrl.forest.edges.values():
                 edge.update()
@@ -91,8 +91,8 @@ class ChangeEdgeColor(PanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return self.panel.get_active_edge_setting('color_id') or \
-            self.panel.get_active_node_setting('color_id')
+        return self.panel.get_active_edge_setting('color_key') or \
+            self.panel.get_active_node_setting('color_key')
 
 
 class EdgeArrowheadStart(PanelAction):

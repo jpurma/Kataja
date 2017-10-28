@@ -34,6 +34,7 @@ from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 from kataja.UIItem import UIWidget
 from kataja.globals import SELECTION
 
+
 class ShortcutSolver(QtCore.QObject):
     """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
     panels when the relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts,
@@ -60,7 +61,7 @@ class ShortcutSolver(QtCore.QObject):
         """
         if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
             key = event.key().toString()
-            print(key)
+            print('Shortcut solver called, ', event, key)
             if key in ['Left', 'Right', 'Up', 'Down']:
                 print('arrow key ambiguity: ', key)
                 print('none shall pass!')
@@ -390,35 +391,26 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 menu.setChecked(False)
 
-    def get_ui_container(self):
-        """ Traverse qt-objects until something governed by UIManager is
-        found. Return this.
+    def get_host(self):
+        """ Get the Kataja object that this action is about, the 'host' element.
         :return:
         """
         sender = self.sender()
 
-        def _ui_container(qt_object):
-            if getattr(qt_object, 'ui_key', None):
+        def _host(qt_object):
+            if getattr(qt_object, 'host', None):
                 return qt_object
             else:
                 p = qt_object.parent()
                 if p:
-                    return _ui_container(p)
+                    return _host(p)
                 else:
                     return None
 
         if not sender:
             print('couldnt receive sender!')
             return None
-        return _ui_container(sender)
-
-    def get_host(self):
-        """ Get the Kataja object that this action is about, the 'host' element.
-        :return:
-        """
-        container = self.get_ui_container()
-        if container:
-            return container.host
+        return _host(sender)
 
     def set_checked_for(self, menu_key, value):
         """ There may be several menu items representing one (parametrised) action.

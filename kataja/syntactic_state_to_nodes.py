@@ -57,10 +57,10 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     # Don't delete gloss node if we have message to show
     gloss_strat = ctrl.settings.get('gloss_strategy')
-    if gloss_strat != 'no':
-        if syn_state.msg and forest.gloss:
-            if forest.gloss.uid in node_keys_to_validate:
-                node_keys_to_validate.remove(forest.gloss.uid)
+    if gloss_strat != 'no' and syn_state.msg:
+        for gloss in forest.glossa:
+            if gloss.uid in node_keys_to_validate:
+                node_keys_to_validate.remove(gloss.uid)
 
     # if numeration:
     #    num_tree = forest.get_numeration()
@@ -70,7 +70,6 @@ def syntactic_state_to_nodes(forest, syn_state):
     sc_middle = scene_rect.center().y()
 
     # ################ Helpers ###################################
-
 
     def iter_once(listlike):
         if isinstance(listlike, dict):
@@ -354,7 +353,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     new_g.set_label_text('Transfer')
                     # new_g.fill = False
                     # new_g.outline = True
-                    new_g.update_colors('accent5')
+                    new_g.set_color_key('accent5')
                     new_g.update_selection(selection)
             else:
                 # find partially matching group
@@ -374,7 +373,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                         new_g.set_label_text('Transfer')
                         # new_g.fill = False
                         # new_g.outline = True
-                        new_g.update_colors('accent5')
+                        new_g.set_color_key('accent5')
                         new_g.update_selection(selection)
 
     if old_groups:

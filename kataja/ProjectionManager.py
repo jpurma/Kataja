@@ -14,6 +14,10 @@ class ProjectionManager:
         self.projections = {}
         self.projection_rotator = itertools.cycle(range(3, 8))
 
+    @property
+    def projection_visuals(self):
+        return (p.visual for p in self.projections.values() if p.visual)
+
     def guess_heads(self, root):
         """ Guess projecting heads for a structure parsed from bracket notation which doesn't
         have any markup for this task. This can be good enough, just to set some default values

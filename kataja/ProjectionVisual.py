@@ -16,7 +16,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
     def __init__(self, data):
         super().__init__()
         self.d = data
-        self.color = ctrl.cm.get(self.d.color_tr_id)
+        self.color = ctrl.cm.get(self.d.color_tr_key)
         # self.show()
 
     def type(self):

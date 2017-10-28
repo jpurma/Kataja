@@ -49,7 +49,7 @@ from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
 from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
-from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui_widgets.embeds.ArrowLabelEmbed import ArrowLabelEmbed
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
@@ -357,15 +357,6 @@ class UIManager:
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection groups has to be handled somewhere. """
-        def groups_in_selection(selection):
-            groups = []
-            # check if _one_ of the groups was selected
-            for item in selection:
-                if isinstance(item, Group):
-                    groups.append(item)
-            if len(groups) == 1:
-                return groups[0]
-            return None
 
         active_embed = self.active_embed
 
@@ -384,6 +375,9 @@ class UIManager:
         # if multiple selection, it gets confusing fast
         if len(ctrl.selected) == 1:
             item = ctrl.selected[0]
+            if self.selection_group:
+                self.remove_selection_group()
+
             if isinstance(item, Edge):
                 self.update_touch_areas_for_selected_edge(item)
                 self.add_control_points(item)
@@ -403,54 +397,84 @@ class UIManager:
                                 node.toggle_halo(True, small=True)
                 if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
                     self.start_editing_node(item, active_embed)
-
+            elif isinstance(item, Group):
+                self.selection_group = item
+                self.add_buttons_for_group(item)
 
         if ctrl.selected:
             # note UI panels that they should use scope 'selection' for their activities
             self.set_scope(g.SELECTION)
 
-            selected_group = groups_in_selection(ctrl.selected)
-            if selected_group:
-                if self.selection_group:
-                    self.remove_selection_group()
-                # select this group
-                self.selection_group = selected_group
-                # check if any items in this group's scope are _unselected_
-                for group_member in self.selection_group.selection:
-                    if group_member not in ctrl.selected:
-                        self.selection_group.remove_node(group_member)
-                # check if any selection contains any objects that should be added to group
-                for node in ctrl.get_selected_nodes():
-                    if node.can_be_in_groups and node not in self.selection_group:
+            if len(ctrl.selected) > 1:
+                nodes = []
+                groups = []
+                for item in ctrl.selected:
+                    if isinstance(item, Node) and item.can_be_in_groups:
+                        nodes.append(item)
+                    elif isinstance(item, Group):
+                        groups.append(item)
+                if len(groups) == 1 and groups[0] == self.selection_group and nodes:
+                    for node in nodes:
                         self.selection_group.add_node(node)
-                self.add_buttons_for_group(self.selection_group)
-            # draw a selection group around selected nodes
-            elif len(ctrl.selected) > 1:
-                # Verify that selection contains nodes that can be in group
-                groupable_nodes = [item for item in ctrl.selected if
-                                   isinstance(item, Node) and item.can_be_in_groups]
-                if groupable_nodes:
+                    self.add_buttons_for_group(self.selection_group)
+                elif nodes:
                     # Create new group for this selection
-                    if not self.selection_group:
-                        self.selection_group = Group(selection=groupable_nodes, persistent=False)
-                        self.selection_group.update_colors(
-                                color_key=ctrl.free_drawing.get_group_color_suggestion())
-                        self.add_ui(self.selection_group)
-                    # or update existing selection
-                    else:
-                        self.selection_group.update_selection(groupable_nodes)
-                        self.selection_group.update_shape()
+                    #if not selected_group:
+                    if self.selection_group and not self.selection_group.persistent:
+                        self.remove_selection_group()
+                    self.selection_group = Group(
+                        selection=nodes,
+                        persistent=False,
+                        color_key=ctrl.free_drawing.get_group_color_suggestion())
+                    self.add_ui(self.selection_group)
                     self.add_buttons_for_group(self.selection_group)
                 elif self.selection_group:
-                    # Selection had only items that don't fit inside group, there is one already
                     self.remove_selection_group()
-            elif self.selection_group:
-                # Selection was empty, but there is existing selection group visible
-                self.remove_selection_group()
+
+
+                #if self.selection_group: #and not selected_one_group:
+                #    self.remove_selection_group()
+
+                # Verify that selection contains nodes that can be in group
+                #groupable_nodes = [item for item in ctrl.selected if
+                #                   isinstance(item, Node) and item.can_be_in_groups]
+                #if groupable_nodes:
+                #    # Create new group for this selection
+                    #if not selected_group:
+                #    self.selection_group = Group(
+                #        selection=groupable_nodes,
+                #        persistent=False,
+                #        color_key=ctrl.free_drawing.get_group_color_suggestion())
+                    #self.add_ui(self.selection_group)
+                    # or update existing selection
+                    #else:
+                    #    self.selection_group.update_selection(groupable_nodes)
+                    #    self.selection_group.update_shape()
+                    #self.add_buttons_for_group(self.selection_group)
+                #elif self.selection_group:
+                #    # Selection had only items that don't fit inside group, there is one already
+                #    self.remove_selection_group()
+            #elif self.selection_group:
+            #    # Selection was empty, but there is existing selection group visible
+            #    self.remove_selection_group()
         else:
             self.set_scope(self._prev_active_scope)
             if self.selection_group:
                 self.remove_selection_group()
+        print('Group count: ', len(ctrl.forest.groups) if ctrl.forest.groups else 0)
+        print('Selection size: ', len(ctrl.selected))
+        hidden = 0
+        fading = 0
+        temp_groups = 0
+        for item in ctrl.graph_scene.items():
+            if not item.isVisible():
+                hidden += 1
+            elif getattr(item, 'is_fading_out', False):
+                fading += 1
+            if isinstance(item, Group) and not item.persistent:
+                temp_groups += 1
+        assert temp_groups < 2
+        print('Item count in scene: ', len(ctrl.graph_scene.items()) - fading - hidden)
 
     def has_nodes_in_scope(self, of_type):
         if self.scope_is_selection:
@@ -885,7 +909,7 @@ class UIManager:
         :param edge:
         """
         self.close_active_embed()
-        self.active_embed = EdgeLabelEmbed(self.main.graph_view, edge)
+        self.active_embed = ArrowLabelEmbed(self.main.graph_view, edge)
         self.add_ui(self.active_embed)
         self.active_embed.update_embed(focus_point=edge.label_item.pos())
         self.active_embed.wake_up()
@@ -1138,7 +1162,8 @@ class UIManager:
         :param group:
         :return:
         """
-        for button_class in [ob.GroupOptionsButton, ob.DeleteGroupButton]:
+        for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton,
+                             ob.DeleteGroupButton]:
             if button_class.condition(group):
                 button = self.get_or_create_button(group, button_class)
                 group.add_button(button)
@@ -1150,10 +1175,6 @@ class UIManager:
         """
         if ob.CutEdgeButton.condition(edge):
             self.get_or_create_button(edge, ob.CutEdgeButton)
-        elif ob.CutFromStartButton.condition(edge):
-            self.get_or_create_button(edge, ob.CutFromStartButton)
-        elif ob.CutFromEndButton.condition(edge):
-            self.get_or_create_button(edge, ob.CutFromEndButton)
 
     def add_quick_edit_buttons_for(self, node, doc):
         if not self.quick_edit_buttons:

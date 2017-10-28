@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
-from kataja.utils import colored_image, colored_image_from_drawing
+from kataja.utils import colored_image
 
 class PanelButton(PushButtonBase):
     """ Buttons that change their color according to widget where they are.
@@ -57,11 +57,22 @@ class PanelButton(PushButtonBase):
         if self.pixmap:
             image = colored_image(c, self.base_image)
         elif self.draw_method:
-            image = colored_image_from_drawing(c, self.draw_method)
+            image = self.colored_image_from_drawing(c)
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
         self.setIcon(self.normal_icon)
+
+    def colored_image_from_drawing(self, color):
+        image = QtGui.QImage()
+        painter = QtGui.QPainter(image)
+        # painter.setDevicePixelRatio(2.0)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(color)
+        self.draw_method(painter, image.rect(), color)
+        painter.end()
+        return image
+
 
     def update_colors(self, color_key=None):
         if color_key:

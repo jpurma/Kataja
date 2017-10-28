@@ -33,13 +33,13 @@ import kataja.globals as g
 from kataja.uniqueness_generator import next_available_type_id
 
 
-class EdgeLabel(QtWidgets.QGraphicsTextItem):
+class ArrowLabel(QtWidgets.QGraphicsTextItem):
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, text, parent=None, placeholder=False):
-        """ EdgeLabel takes care of (optional) label for the edge and related UI. All of the data
+        """ ArrowLabel takes care of (optional) label for the edge and related UI. All of the data
         required is stored at label_data -dict of host. This dict is saved with Edge,
-        but EdgeLabels are always created anew.
+        but ArrowLabels are always created anew.
 
         :param text:
         :param parent:

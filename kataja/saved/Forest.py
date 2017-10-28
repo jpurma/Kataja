@@ -23,6 +23,7 @@
 # ############################################################################
 import string
 import time
+import itertools
 from typing import Generator
 
 from PyQt5 import QtWidgets, QtCore
@@ -72,7 +73,7 @@ class Forest(SavedObject):
         # creating the managers.
         self.in_display = False
         self.visualization = None
-        self.gloss = None
+        self.glossa = []
         self.is_parsed = False
         self.syntax = syntax or classes.get('SyntaxConnection')()
         self.parser = INodeToKatajaConstituent(self)
@@ -86,16 +87,16 @@ class Forest(SavedObject):
         self.trees = []
         self.nodes = {}
         self.edges = {}
+        self.arrows = {}
         self.groups = {}
         self.others = {}
         self.vis_data = {}
         self.width_map = {}
         self.traces_to_draw = {}
         self.comments = []
-        self.gloss_text = ''
+        self.gloss_text = gloss_text
         self.ongoing_animations = set()
         self.halt_drawing = False
-        self.gloss_text = gloss_text
         self.comments = comments
         self.optimal_rect = QtCore.QRectF()
 
@@ -180,7 +181,6 @@ class Forest(SavedObject):
             for item in self.get_all_objects():
                 self.remove_from_scene(item, fade_out=False)
         self.nodes_from_synobs = {}
-        self.gloss = None
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -191,11 +191,13 @@ class Forest(SavedObject):
         self.nodes = {}
         self.edges = {}
         self.groups = {}
+        self.arrows = {}
         self.others = {}
         self.width_map = {}
         self.traces_to_draw = {}
         self.comments = []
         self.gloss_text = ''
+        self.glossa = []
 
     def forest_edited(self):
         """ Called after forest editing/free drawing actions that have changed the node graph.
@@ -415,6 +417,9 @@ class Forest(SavedObject):
             self.poke('edges')
             self.edges[item.uid] = item
             self.free_drawing.edge_types.add(item.edge_type)
+        elif isinstance(item, Arrow):
+            self.poke('arrows')
+            self.arrows[item.uid] = item
         else:
             key = getattr(item, 'uid', '') or getattr(item, 'key', '')
             if key and key not in self.others:
@@ -475,27 +480,20 @@ class Forest(SavedObject):
         """ Just return all objects governed by Forest -- not all scene objects 
         :return: iterator through objects
         """
-        for n in self.trees:
-            yield n
-        for n in self.nodes.values():
-            yield n
-        for n in self.edges.values():
-            yield n
-        for n in self.others.values():
-            yield n
-        for n in self.projection_manager.projections.values():
-            if n.visual:
-                yield n.visual
-        for n in self.semantics_manager.all_items:
-            yield n
-        for n in self.groups.values():
-            yield n
-        if self.gloss:
-            yield self.gloss
+        for item in itertools.chain(self.nodes.values(),
+                                    self.edges.values(),
+                                    self.arrows.values(),
+                                    self.others.values(),
+                                    self.projection_manager.projection_visuals,
+                                    self.semantics_manager.all_items,
+                                    self.groups.values(),
+                                    self.glossa):
+                yield item
 
     def get_object_by_uid(self, uid):
         return self.nodes.get(uid, None) or self.edges.get(uid, None) \
-               or self.groups.get(uid, None) or self.others.get(uid, None)
+               or self.groups.get(uid, None) or self.arrows.get(uid, None) or \
+               self.others.get(uid, None)
 
     def get_node(self, constituent):
         """
@@ -554,10 +552,9 @@ class Forest(SavedObject):
         :return:
         """
         # Selection and related UI
-        legits = list(self.get_all_objects())
         ctrl.multiselection_start()
         for item in ctrl.selected:
-            if item not in legits:
+            if not self.get_object_by_uid(item.uid):
                 ctrl.remove_from_selection(item)
         ctrl.multiselection_end()
 
@@ -601,7 +598,6 @@ class Forest(SavedObject):
                 if node.triangle_stack:
                     node.label_object.update_label(force_update=True)
 
-
     def simple_parse(self, text):
         return self.parser.simple_parse(text)
 
@@ -624,7 +620,7 @@ class Forest(SavedObject):
         """
         if not self._do_edge_visibility_check:
             return
-        for edge in set(self.edges.values()):
+        for edge in set(self.edges.values() | self.arrows.values()):
             changed = edge.update_visibility()
             if changed:
                 if edge.is_visible():
@@ -664,7 +660,7 @@ class Forest(SavedObject):
         if strat:
             if strat == 'linearisation':
                 gts = []
-                for tree in self.trees:
+                for tree_top in self.trees:
                     gt = ctrl.syntax.linearize(tree_top)
                     if gt:
                         gts.append(gt)
@@ -679,20 +675,23 @@ class Forest(SavedObject):
             self.gloss_text = ''
 
         if self.gloss_text and not ctrl.settings.get('syntactic_mode'):
-            if not self.gloss:
-                self.gloss = self.free_drawing.create_node(node_type=g.GLOSS_NODE)
-                self.gloss.static = True
-                self.gloss.label = self.gloss_text
-            elif self.gloss.text != self.gloss_text:
-                self.gloss.label = self.gloss_text
-            self.gloss.update_label()
-            self.gloss.physics_x = False
-            self.gloss.physics_y = False
-            self.gloss.put_to_top_of_trees()
+            if not self.glossa:
+                gloss = self.free_drawing.create_node(node_type=g.GLOSS_NODE)
+                self.glossa = [gloss]
+                gloss.static = True
+                gloss.label = self.gloss_text
+            gloss = self.glossa[0]
+            if gloss.text != self.gloss_text:
+                gloss.label = self.gloss_text
+            gloss.update_label()
+            gloss.physics_x = False
+            gloss.physics_y = False
+            gloss.put_to_top_of_trees()
             #self.gloss.show()
-        elif self.gloss:
-            self.remove_from_scene(self.gloss)
-            self.gloss = None
+        elif self.glossa:
+            for g in self.glossa:
+                self.remove_from_scene(g)
+            self.glossa = []
 
     def update_feature_ordering(self):
 
@@ -851,7 +850,6 @@ class Forest(SavedObject):
         if new_nodes:
             self.free_drawing.replace_node(node, new_nodes[0])
 
-
     # View mode
     def change_view_mode(self, syntactic_mode):
         ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.DOCUMENT)
@@ -869,8 +867,7 @@ class Forest(SavedObject):
             ctrl.settings.set('temp_color_theme', '', level=g.FOREST)
         ctrl.main.update_colors()
 
-    ### Watcher #########################
-
+    # ## Watcher #########################
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
         listen. These signals
@@ -889,17 +886,6 @@ class Forest(SavedObject):
             for other in self.others.values():
                 other.update_colors()
 
-    # ######## Utility functions ###############################
-
-    # def parse_features(self, string, node):
-    #     """
-    #
-    #     :param string:
-    #     :param node:
-    #     :return:
-    #     """
-    #     return self.parser.parse_definition(string, node)
-
     # ############## #
     #                #
     #  Save support  #
@@ -909,6 +895,7 @@ class Forest(SavedObject):
     trees = SavedField("trees")  # the current line of trees
     nodes = SavedField("nodes")
     edges = SavedField("edges")  #, if_changed=reserve_update_for_trees)
+    arrows = SavedField("arrows")
     groups = SavedField("groups")
     others = SavedField("others")
     vis_data = SavedField("vis_data", watcher="visualization")

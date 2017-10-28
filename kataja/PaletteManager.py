@@ -583,7 +583,6 @@ class PaletteManager:
                 return QtGui.QBrush(color.color().darker())
             else:
                 return color.darker()
-
         else:
             if isinstance(color, QtGui.QBrush):
                 return QtGui.QBrush(color.color().lighter())

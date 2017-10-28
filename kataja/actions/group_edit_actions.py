@@ -3,8 +3,8 @@
 from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
-
-from kataja.singletons import ctrl, log
+from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl, log, classes
 
 
 # ==== Class variables for KatajaActions:
@@ -42,12 +42,60 @@ class ToggleGroupOptions(KatajaAction):
         """ Open group editing embed.
         :type group_uid: object
         """
-        try:
+        if ctrl.ui.selection_group and ctrl.ui.selection_group.uid == group_uid:
+            group = ctrl.ui.selection_group
+        elif group_uid in ctrl.forest.groups:
             group = ctrl.forest.groups[group_uid]
-        except KeyError:
+        else:
             log.error(f'No such group: {group_uid}.')
             return
         ctrl.ui.toggle_group_label_editing(group)
+
+
+class MakeSelectionGroupPersistent(KatajaAction):
+    k_action_uid = 'make_selection_group_persistent'
+    k_command = 'Save this selection as a group'
+
+    def method(self):
+        """ Open group editing embed.
+        :type group_uid: object
+        """
+        new_group = ctrl.forest.free_drawing.turn_selection_group_to_group(ctrl.ui.selection_group)
+
+
+class ToggleGroupPersistence(KatajaAction):
+    k_action_uid = 'remove_group_persistence'
+    k_command = 'Remove this grouping'
+
+    def prepare_parameters(self, args, kwargs):
+        group_uid = self.get_host().uid
+        return [group_uid], kwargs
+
+    def method(self, group_uid: str):
+        """ Open group editing embed.
+        :type group_uid: object
+        """
+        if group_uid in ctrl.forest.groups:
+            group = ctrl.forest.groups[group_uid]
+            if group.persistent:
+                group.persistent = False
+
+
+class DeleteGroupItems(KatajaAction):
+    k_action_uid = 'delete_group_items'
+    k_command = 'Delete nodes in this selection'
+
+    def method(self):
+        """ Open group editing embed.
+        :type group_uid: object
+        """
+        for item in ctrl.selected:
+            if isinstance(item, Node):
+                ctrl.free_drawing.delete_node(item, touch_edges=True, fade=True)
+        ctrl.ui.remove_selection_group()
+
+    def enabler(self):
+        return ctrl.ui.selection_group and not ctrl.ui.selection_group.persistent
 
 
 class ChangeGroupColor(KatajaAction):
@@ -60,33 +108,19 @@ class ChangeGroupColor(KatajaAction):
         color_key = sender.currentData()
         return [group_uid, color_key], kwargs
 
-    def method(self, group_uid):
+    def method(self, group_uid, color_key):
         """ """
-        try:
+        if ctrl.ui.selection_group and ctrl.ui.selection_group.uid == group_uid:
+            group = ctrl.ui.selection_group
+        elif group_uid in ctrl.forest.groups:
             group = ctrl.forest.groups[group_uid]
-        except KeyError:
-            log.error(f'No such group: {group_uid}.')
-            return
-
-        sender = self.sender()
-        if sender:
-            group = self.get_host()
-            color_key = sender.currentData()
-            sender.model().selected_color = color_key  # hmmm
-            if color_key:
-                group.update_colors(color_key)
-                # use watcher + signal instead
-                # if embed and hasattr(embed, 'update_colors'):
-                #    embed.update_colors()
-                log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
-
-    def enabler(self):
-        return ctrl.ui.active_embed and isinstance(ctrl.ui.active_embed, GroupLabelEmbed)
+        group.set_color_key(color_key)
+        log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
     def getter(self):
         if ctrl.ui.active_embed and isinstance(ctrl.ui.active_embed, GroupLabelEmbed):
             group = ctrl.ui.active_embed.host
-            return group.get_color_id()
+            return group.get_color_key()
 
 
 class ChangeGroupFill(KatajaAction):
@@ -113,43 +147,6 @@ class ChangeGroupOutline(KatajaAction):
             group = self.get_host()
             group.outline = sender.isChecked()
             group.update()
-
-
-class ChangeGroupOverlaps(KatajaAction):
-    k_action_uid = 'change_group_overlaps'
-    k_command = 'Allow group to overlap other groups'
-
-    def method(self):
-        """ """
-        sender = self.sender()
-        if sender:
-            group = self.get_host()
-            group.allow_overlap = sender.isChecked()
-            group.update_selection(group.selection)
-            group.update_shape()
-            if group.allow_overlap:
-                log.info('Group can overlap with other groups')
-            else:
-                log.info('Group cannot overlap with other groups')
-
-
-class ChangeGroupChildren(KatajaAction):
-    k_action_uid = 'change_group_children'
-    k_command = 'Include children'
-    k_tooltip = 'Include children of the selected nodes in group'
-
-    def method(self):
-        """ """
-        sender = self.sender()
-        if sender:
-            group = self.get_host()
-            group.include_children = sender.isChecked()
-            group.update_selection(group.selection)
-            group.update_shape()
-            if group.include_children:
-                log.info('Group includes children of its orginal members')
-            else:
-                log.info('Group does not include children')
 
 
 class DeleteGroup(KatajaAction):

@@ -266,19 +266,8 @@ class EdgePath:
         self.cached_edge_start_index = self.edge.edge_start_index(from_cache=False)
         self.cached_edge_end_index = self.edge.edge_end_index(from_cache=False)
 
-        if start and end:
-            sx, sy = start.current_scene_position
-            ex, ey = end.current_scene_position
-        elif start:
-            ex, ey = self.edge.end_point
-            sx, sy = start.current_scene_position
-            self.computed_end_point = ex, ey
-        elif end:
-            sx, sy = self.edge.start_point
-            ex, ey = end.current_scene_position
-            self.computed_start_point = sx, sy
-        else:
-            return
+        sx, sy = start.current_scene_position if start else self.edge.start_point
+        ex, ey = end.current_scene_position if end else self.edge.end_point
         if start:
             connection_style = self.edge.flattened_settings['start_connects_to']
             if connection_style == CONNECT_TO_BORDER:
@@ -304,16 +293,12 @@ class EdgePath:
                 self._connect_start_to_similar(sx, sy, start)
         if end:
             connection_style = self.edge.flattened_settings['end_connects_to']
-            #if connection_style == CONNECT_TO_BORDER and end.is_empty():
-            #    connection_style = CONNECT_TO_SIMILAR
-
-            connection_style = self.edge.flattened_settings['start_connects_to']
             if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
 
             if connection_style == SPECIAL:
                 cep = end.special_connection_point(sx, sy, ex, ey, start=False,
-                                                  edge_type=self.edge.edge_type)
+                                                   edge_type=self.edge.edge_type)
                 self.computed_end_point, self.curve_dir_end = cep
                 self.abstract_end_point = self.computed_end_point
             elif connection_style == CONNECT_TO_CENTER:

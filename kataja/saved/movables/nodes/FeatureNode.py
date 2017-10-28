@@ -85,9 +85,9 @@ class FeatureNode(Node):
                                syntactic=True)
                 }
 
-    default_style = {'fancy': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
+    default_style = {'fancy': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
                                'visible': True},
-                     'plain': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
+                     'plain': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
                                'visible': True}}
 
     default_edge = g.FEATURE_EDGE
@@ -432,27 +432,27 @@ class FeatureNode(Node):
         else:
             return 'accent7'
 
-    def get_color_id(self):
+    def get_color_key(self):
         """
         :return:
         """
-        if 'color_id' in self.settings:
-            return self.settings['color_id']
+        if 'color_key' in self.settings:
+            return self.settings['color_key']
         elif self.name in ctrl.forest.semantics_manager.colors:
             return ctrl.forest.semantics_manager.colors[self.name]
         elif self.name:
             c_id = ord(self.name[0]) % 8 + 1
             return 'accent' + str(c_id)
         else:
-            return ctrl.settings.get_node_setting('color_id', node=self)
+            return ctrl.settings.get_node_setting('color_key', node=self)
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if self.fshape:
             return ctrl.cm.get('background1')
         else:
-            if 'color_id' in self.settings:
-                c = ctrl.cm.get(self.settings['color_id'])
+            if 'color_key' in self.settings:
+                c = ctrl.cm.get(self.settings['color_key'])
             elif self.name in ctrl.forest.semantics_manager.colors:
                 c = ctrl.cm.get(
                     ctrl.forest.semantics_manager.colors[self.name])
@@ -470,8 +470,8 @@ class FeatureNode(Node):
     def contextual_background(self):
         """ Background color that is sensitive to node's state """
         if self.fshape:
-            if 'color_id' in self.settings:
-                c = ctrl.cm.get(self.settings['color_id'])
+            if 'color_key' in self.settings:
+                c = ctrl.cm.get(self.settings['color_key'])
             elif self.name in ctrl.forest.semantics_manager.colors:
                 c = ctrl.cm.get(
                     ctrl.forest.semantics_manager.colors[self.name])

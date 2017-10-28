@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Disable these if necessary for debugging
-enable_loading_preferences = True
+enable_loading_preferences = False
 enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -537,6 +537,7 @@ class QtPreferences:
         self.triangle_close_icon = None
         self.font_icon = None
         self.info_icon = None
+        self.flag_icon = None
         self.v_refresh_icon = None
         self.v_refresh_small_icon = None
         self.h_refresh_icon = None
@@ -630,6 +631,7 @@ class QtPreferences:
         self.add_box_icon = icon('add_box24.png')
         self.settings_icon = icon('settings48.png')
         self.settings_pixmap = pixmap('settings48.png')
+        self.flag_icon = icon('flag24.png')
         self.triangle_icon = icon('triangle48.png')
         self.triangle_close_icon = icon('triangle_close48.png')
         self.font_icon = icon('text_format48.png')

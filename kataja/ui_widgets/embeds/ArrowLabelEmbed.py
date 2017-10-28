@@ -9,9 +9,9 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 __author__ = 'purma'
 
 
-class EdgeLabelEmbed(UIEmbed):
+class ArrowLabelEmbed(UIEmbed):
     def __init__(self, parent, edge):
-        """ EdgeLabelEmbed is for editing edge labels, but it takes Edge as its host,
+        """ ArrowLabelEmbed is for editing arrow labels, but it takes Arrow as its host,
         because there may be problems if the host item is not subclass of Saved. Use self.label
         to get access to edge.label_item.
         :param parent:

@@ -156,6 +156,22 @@ class SwitchSyntaxViewMode(KatajaAction):
     def enabler(self):
         return bool(ctrl.forest.syntax.display_modes)
 
+class DrawArrow(KatajaAction):
+    k_action_uid = 'draw_arrow'
+    k_command = 'Draw arrow'
+    k_shortcut = 'a'
+    k_undoable = True
+    k_checkable = True
+    k_tooltip = 'Draw a an arrow (syntactically inert, for commenting or annotating)'
+
+    def method(self):
+        if ctrl.ui.arrow_drawing_mode:
+            ctrl.ui.escape_arrow_drawing_mode()
+            return 'Arrow canceled'
+        else:
+            ctrl.ui.start_arrow_drawing_mode()
+            return 'Started arrow drawing, place the starting point (arrow FROM here).'
+
 
 class ZoomToFit(KatajaAction):
     k_action_uid = 'zoom_to_fit'

@@ -208,7 +208,7 @@ class FreeDrawing:
         trace.update_label()
         return trace
 
-    def create_arrow(self, p1: tuple, p2: tuple, text=None):
+    def create_arrow(self, start=None, end=None, text=None):
         """ Create an arrow (Edge) using the default arrow style
 
         :param p1: start point
@@ -216,22 +216,32 @@ class FreeDrawing:
         :param text: explanatory text associated with the arrow
         :return:
         """
-        edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
-        edge.fixed_start_point = p1
-        edge.fixed_end_point = p2
-        if text:
-            edge.set_label_text(text)
-        edge.show()
-        ctrl.select(edge)
-        return edge
-
-    def create_arrow_from_node_to_point(self, start_node, end_point):
-        edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
-        edge.connect_start_to(start_node)
-        edge.set_end_point(end_point)
-        edge.show()
-        ctrl.select(edge)
-        return edge
+        start_point = None
+        end_point = None
+        if isinstance(p1, Node):
+            start = p1
+        elif isinstance(p1, tuple):
+            start_point = p1
+            start = None
+        else:
+            start_point = random.randint(-50, 50), random.randint(-50, 50)
+            start = None
+        if isinstance(p2, Node):
+            end = p2
+        elif isinstance(p2, tuple):
+            end_point = p2
+            end = None
+        else:
+            end_point = random.randint(-50, 50), random.randint(-50, 50)
+            end = None
+        arrow = Arrow(start=start, end=end, start_point=start_point,
+                      end_point=end_point, text=text)
+        self.f.store(arrow)
+        self.f.add_to_scene(arrow)
+        if fade and self.f.in_display:
+            arrow.fade_in()
+        ctrl.select(arrow)
+        return arrow
 
     # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
@@ -494,17 +504,15 @@ class FreeDrawing:
             edge_type = child.edge_type()
 
         # Check for circularity:
-        if edge_type is not g.ARROW:
-            # With arrows identical or circular edges are not a problem
-            for old_edge in child.edges_up:
-                if old_edge.edge_type == edge_type:
-                    if old_edge.end == child and old_edge.start == parent \
-                            and old_edge.alpha == alpha:
-                        # raise ForestError('Identical edge exists already')
-                        log.info('Identical edge exists already')
-                        return
-                    elif old_edge.start == child and old_edge.end == parent:
-                        raise ForestError('Connection is circular')
+        for old_edge in child.edges_up:
+            if old_edge.edge_type == edge_type:
+                if old_edge.end == child and old_edge.start == parent \
+                        and old_edge.alpha == alpha:
+                    # raise ForestError('Identical edge exists already')
+                    log.info('Identical edge exists already')
+                    return
+                elif old_edge.start == child and old_edge.end == parent:
+                    raise ForestError('Connection is circular')
 
         # Create edge and make connections
         new_edge = self.create_edge(start=parent, end=child, edge_type=edge_type, fade=fade_in,
@@ -534,22 +542,6 @@ class FreeDrawing:
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
         return new_edge
-
-    def partial_disconnect(self, edge, start=True, end=True):
-        print('partial disconnect called, start: %s, end: %s' % (start, end))
-        if start and edge.start:
-            edge.start.poke('edges_down')
-            edge.start.edges_down.remove(edge)
-            bx, by = edge.start.bottom_center_magnet()
-            edge.start = None
-            edge.fixed_start_point = (bx, by + 10)
-        if end and edge.end:
-            edge.end.poke('edges_up')
-            bx, by = edge.end.top_center_magnet()
-            edge.end.edges_up.remove(edge)
-            edge.end = None
-            edge.fixed_end_point = (bx, by - 10)
-        edge.update_end_points()
 
     def disconnect_edge(self, edge):
         """ Does the local mechanics of edge removal
@@ -947,6 +939,7 @@ class FreeDrawing:
         group = self.create_group()
         selection_group.hide()
         group.copy_from(selection_group)
+        return group
 
     def create_group(self):
         group = Group(selection=[], persistent=True)

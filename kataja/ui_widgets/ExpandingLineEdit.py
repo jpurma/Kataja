@@ -2,13 +2,15 @@ from PyQt5 import QtWidgets, QtGui
 
 from kataja.singletons import ctrl
 from kataja.utils import open_symbol_data
+from kataja.UIItem import UIWidget
 
 
-class ExpandingLineEdit(QtWidgets.QWidget):
+class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
 
     def __init__(self, parent, tooltip='', big_font=None, smaller_font=None, prefill='',
                  on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
+        UIWidget.__init__(self, tooltip=tooltip)
         self.line_mode = True
         self.original_text = ''
         layout = QtWidgets.QVBoxLayout()

@@ -4,8 +4,25 @@ from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.KatajaAction import KatajaAction
 
 __author__ = 'purma'
+
+
+class EmbedAction(KatajaAction):
+
+    def __init__(self):
+        super().__init__()
+        self.embed = None
+
+    def on_connect(self, ui_item):
+        def find_embed_widget(widget):
+            if isinstance(widget, UIEmbed):
+                return widget
+            elif panel:
+                return find_embed_widget(widget.parentWidget())
+
+        self.embed = find_embed_widget(ui_item.parentWidget())
 
 
 class UIEmbed(UIWidget, QtWidgets.QWidget):
@@ -136,6 +153,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         # do nothing if we already have a good enough position. For user it is better if the
         # panel stays in place than if it jumps around.
         if view_rect.contains(my_rect, proper=True) and not node_rect.intersects(my_rect):
+            print('do nothing: ', my_rect, view_rect, node_rect)
             return
 
         ncy = node_rect.center().y()
@@ -155,6 +173,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         else:
             y = h / 2 - node_rect.height() / 2
 
+        print('updating embed position, ', x, y)
         self.move(x, y)
         self.updateGeometry()
 
@@ -163,8 +182,8 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
 
     def update_colors(self):
         key = None
-        if self.host and hasattr(self.host, 'get_color_id'):
-            key = self.host.get_color_id()
+        if self.host and hasattr(self.host, 'get_color_key'):
+            key = self.host.get_color_key()
         if key:
             self._palette = ctrl.cm.get_accent_palette(key)
             self.setPalette(self._palette)
@@ -183,6 +202,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
 
     def mouseMoveEvent(self, event):
         if self._drag_diff:
+            print(self.mapToParent(event.pos()) - self._drag_diff, self.geometry())
             self.move(self.mapToParent(event.pos()) - self._drag_diff)
             self.moved_by_hand = True
         QtWidgets.QWidget.mouseMoveEvent(self, event)

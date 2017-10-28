@@ -42,6 +42,9 @@ class TogglePanel(KatajaAction):
     k_exclusive = False
 
     def prepare_parameters(self, args, kwargs):
+        """ All panels use the same action, so it should check dynamically which panel triggered
+        it. Cannot use PanelAction's .panel for that.
+        """
         sender = self.sender()
         if isinstance(sender, TransmitAction):
             key = sender.key
@@ -66,6 +69,9 @@ class ToggleFoldPanel(KatajaAction):
     k_tooltip_alt = 'Reveal this panel'
 
     def prepare_parameters(self, args, kwargs):
+        """ All panels use the same action, so it should check dynamically which panel triggered
+        it. Cannot use PanelAction's .panel for that.
+        """
         sender = self.sender()
         panel_id = sender.data
         folded = sender.isChecked()

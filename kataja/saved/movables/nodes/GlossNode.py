@@ -49,13 +49,13 @@ class GlossNode(Node):
 
     default_style = {
         'fancy': {
-            'color_id': 'accent5',
+            'color_key': 'accent5',
             'font_id': g.ITALIC_FONT,
             'font-size': 10,
             'visible': True
         },
         'plain': {
-            'color_id': 'accent5',
+            'color_key': 'accent5',
             'font_id': g.ITALIC_FONT,
             'font-size': 10,
             'visible': True
@@ -104,15 +104,16 @@ class GlossNode(Node):
         Any node can prevent normalization altogether, as it is harmful in cases where there is 
         a good reason for many free moving feature nodes to flock into one direction.  
         """
-        if (not (self.locked or self._dragged)) and ctrl.forest.gloss is self and ctrl.forest.trees:
+        if (not (self.locked or self._dragged)) and self in ctrl.forest.glossa and \
+                ctrl.forest.trees:
             self.put_to_top_of_trees()
             return 0, 0, False, False
         else:
             return super().move(other_nodes)
 
     def on_delete(self):
-        if self is ctrl.forest.gloss:
-            ctrl.forest.gloss = None
+        if self in ctrl.forest.glossa:
+            ctrl.forest.glossa.remove(self)
             ctrl.settings.set('gloss_strategy', 'no', level=g.FOREST)
             # this is called just in case that somebody tries to clear ctrl.forest.gloss and we are
             # not there anymore.

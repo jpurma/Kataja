@@ -22,7 +22,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     scene_item = True
     is_widget = False
 
-    def __init__(self, selection=None, persistent=True):
+    def __init__(self, selection=None, persistent=True, color_key='accent1'):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # -- Fake as UIItem to make selection groups part of UI:
@@ -42,9 +42,9 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self._selected = False
         self.points = []
         self.center_point = None
-        self.outline = True
+        self.outline = False
         self.fill = True
-        self.color_key = ''
+        self.color_key = color_key
         self.color = None
         self.color_tr_tr = None
         self.purpose = None
@@ -52,8 +52,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.label_item = None
         self.label_data = {}
         self.buttons = []
-        self.include_children = False
-        self.allow_overlap = True
         self._br = None
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
@@ -112,8 +110,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         text = source.get_label_text()
         if text:
             self.set_label_text(text)
-        self.include_children = source.include_children
-        self.allow_overlap = source.allow_overlap
 
     def get_label_text(self):
         """ Label text is actually stored in model.label_data, but this is a
@@ -137,13 +133,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.label_item.position_at_bottom()
         else:
             self.label_item.update_position()
-
-    def if_changed_color_id(self, value):
-        """ Set group color, uses palette id strings as values.
-        :param value: string
-        """
-        if self.label_item:
-            self.label_item.setDefaultTextColor(ctrl.cm.get(value))
 
     def remove_node(self, node):
         """ Manual removal of single node, should be called e.g. when node is deleted.
@@ -205,28 +194,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
 
     def update_selection(self, selection):
-        swc = []
-        other_selections = set()
-        if not self.allow_overlap:
-            for group in ctrl.forest.groups.values():
-                other_selections = other_selections | set(group.selection_with_children)
-
-        def recursive_add_children(i):
-            if isinstance(i, Node) and i not in swc and (
-                            i in selection or i not in other_selections):
-                swc.append(i)
-                for child in i.get_children(similar=False, visible=False):
-                    recursive_add_children(child)
-
         if selection:
             self.selection = [item for item in selection if
                               isinstance(item, Node) and item.can_be_in_groups]
-            if self.include_children:
-                for item in self.selection:
-                    recursive_add_children(item)
-                self.selection_with_children = swc
-            else:
-                self.selection_with_children = self.selection
+            self.selection_with_children = self.selection
         else:
             self.selection = []
             self.selection_with_children = []
@@ -239,11 +210,12 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
             return x1, y1, x2, y2, corners
 
+        self.prepareGeometryChange()
         sel = [x for x in self.selection_with_children if x.isVisible()]
 
         if len(sel) == 0:
             self._br = QtCore.QRectF()
-            self.path = None
+            self.path = QtGui.QPainterPath()
             self.center_point = 0, 0
             return
         elif len(sel) == 1:
@@ -252,8 +224,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             for x, y in route[1:]:
                 self.path.lineTo(x, y)
             self.path.closeSubpath()
-            center = self._br.center()
-            self.center_point = center.x(), center.y()
         else:
             corners = []
             c = 0
@@ -276,7 +246,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.prepareGeometryChange()
             cx = (min_x + max_x) / 2
             cy = (min_y + max_y) / 2
-            self.center_point = cx, cy
             r = max(max_x - min_x, max_y - min_y) * 1.1
             dots = 32
             step = 2 * math.pi / dots
@@ -318,6 +287,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         min_x = min(xs)
         min_y = min(ys)
         self._br = QtCore.QRectF(min_x, min_y, max(xs) - min_x, max(ys) - min_y)
+        center = self._br.center()
+        self.center_point = center.x(), center.y()
 
         # This is costly
         if True:
@@ -339,7 +310,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                     self.path = self.path.subtracted(subshape)
 
     def shape(self):
-        if self.path:
+        if self.path is not None:
             return self.path
         else:
             return QtGui.QPainterPath()
@@ -348,18 +319,19 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.update_shape()
 
     def boundingRect(self):
-        if not self._br:
+        if self._br is None:
             self.update_shape()
         return self._br
 
-    def get_color_id(self):
+    def get_color_key(self):
         return self.color_key
 
-    def update_colors(self, color_key=''):
-        if not self.color_key:
-            self.color_key = color_key or "accent1"
-        elif color_key:
-            self.color_key = color_key
+    def set_color_key(self, color_key):
+        self.color_key = color_key or "accent1"
+        self.update_colors()
+
+    def update_colors(self):
+        self.color_key = self.color_key or "accent1"
         self.color = ctrl.cm.get(self.color_key)
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
@@ -389,24 +361,23 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         node can be included
         :returns: int or str, uid of node if node is selectable
         """
-        if not self.persistent:
-            return
         self.hovering = False
         # if we are selecting an area, select actions are not called here, but once for all
         # objects. In this case return only uid of this object.
         if select_area:
             return self.uid
-        items = [x.uid for x in self.selection]
-        items.append(self.uid)
+        #items = [x.uid for x in self.selection]
+        #items.append(self.uid)
         if adding:
             if ctrl.is_selected(self):
-                action = ctrl.ui.get_action('remove_from_selection')
+                print('selected group (adding=True), calling remove_from_selection for it')
+                ctrl.ui.get_action('remove_from_selection').run_command([self.uid], has_params=True)
             else:
-                action = ctrl.ui.get_action('add_to_selection')
-            action.run_command(items, has_params=True)
+                print('selected group (adding=True), calling add_to_selection for it')
+                ctrl.ui.get_action('add_to_selection').run_command([self.uid], has_params=True)
         else:
-            action = ctrl.ui.get_action('select')
-            action.run_command(items, has_params=True)
+            print('selected group, calling select for it')
+            ctrl.ui.get_action('select').run_command([self.uid], has_params=True)
         return self.uid
 
     def update_selection_status(self, value):
@@ -496,8 +467,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     color_key = SavedField("color_key")
     label_data = SavedField("label_data")
     purpose = SavedField("purpose")
-    include_children = SavedField("include_children")
-    allow_overlap = SavedField("allow_overlap")
     fill = SavedField("fill")
     outline = SavedField("outline")
     persistent = SavedField("persistent")

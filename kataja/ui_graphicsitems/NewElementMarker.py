@@ -3,7 +3,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.singletons import prefs, ctrl
 from kataja.UIItem import UIGraphicsItem
-from kataja.Shapes import draw_arrow_shape_from_points
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -58,7 +57,6 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
     def drag(self, event):
         pi = self.parentItem()
         if pi:
-            pi.set_dragged(True)
             pi.update_position(event.scenePos())
 
     def drop_to(self, x, y, recipient=None, shift_down=False):
@@ -86,7 +84,6 @@ class NewElementMarker(UIGraphicsItem, QtWidgets.QGraphicsItem):
         self.update_position(scene_pos=scene_pos)
         self.start_point_cp = MarkerStartPoint(self)
         self.start_point_cp.show()
-        self.dragged = False
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -100,22 +97,10 @@ class NewElementMarker(UIGraphicsItem, QtWidgets.QGraphicsItem):
         p = QtGui.QPen(b)
         p.setWidthF(0.5)
         painter.setPen(p)
-        if self.dragged:
-            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0,
-                                         b, arrow_size=10)
-        else:
-            painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
-        painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)
+        painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
 
     def boundingRect(self):
         return QtCore.QRectF(self.start_point, self.end_point)
-
-    def set_dragged(self, value):
-        if self.dragged and value:
-            return
-        elif value:
-            self.dragged = True
-            self.embed.marker_dragged()
 
     def update_position(self, scene_pos=None):
         self.prepareGeometryChange()

@@ -63,13 +63,13 @@ class ConstituentNode(Node):
 
     default_style = {
         'plain': {
-            'color_id': 'content1',
+            'color_key': 'content1',
             'font_id': g.MAIN_FONT,
             'font-size': 10,
             'visible': True
         },
         'fancy': {
-            'color_id': 'content1',
+            'color_key': 'content1',
             'font_id': g.MAIN_FONT,
             'font-size': 10,
             'visible': True
@@ -535,7 +535,7 @@ class ConstituentNode(Node):
         if self.selected:
             base = ctrl.cm.selection()
         elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-            base = ctrl.cm.get(self.in_projections[0].color_id)
+            base = ctrl.cm.get(self.in_projections[0].color_key)
         else:
             base = self.color
         if self.drag_data:
@@ -763,7 +763,7 @@ class ConstituentNode(Node):
         feats = self.is_merging_features()
         if feats and False:
             old_pen = painter.pen()
-            feat_color = feats[0].get_color_id()
+            feat_color = feats[0].get_color_key()
             r = QtCore.QRectF(self.inner_rect)
             w = r.width()
             h = r.height()

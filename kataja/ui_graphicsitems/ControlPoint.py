@@ -163,13 +163,11 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             rdist, rrad = self._compute_adjust_from_pos(scenepos)
             self.host.adjust_control_point(self._index, rdist, rrad)
         elif self.role == g.START_POINT:
-            self.host.fixed_start_point = scenepos.x(), scenepos.y()
-            self.host.make_path()
-            self.host.update()
+            self.host.set_start_point(scenepos.x(), scenepos.y())
         elif self.role == g.END_POINT:
-            self.host.fixed_end_point = scenepos.x(), scenepos.y()
-            self.host.make_path()
-            self.host.update()
+            self.host.set_end_point(scenepos.x(), scenepos.y())
+        elif self.role == g.MIDDLE_POINT:
+            self.host.set_middle_point(scenepos.x(), scenepos.y())
         self.being_dragged = True
 
     def drop_to(self, x, y, recipient=None, shift_down=False):

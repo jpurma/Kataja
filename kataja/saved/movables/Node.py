@@ -92,7 +92,7 @@ class Node(Movable):
     allowed_child_types = []
 
     default_style = {
-        'color_id': 'content1',
+        'color_key': 'content1',
         'font_id': g.MAIN_FONT,
         'font-size': 10,
         'card': False,
@@ -144,7 +144,7 @@ class Node(Movable):
         self.edges_down = []
         self.triangle_stack = []  # you can always unfold only the outermost triangle, so stack
         self.cached_edge_ordering = {}
-        self.color_id = None
+        self.color_key = None
 
         self._editing_template = {}
 
@@ -683,7 +683,7 @@ class Node(Movable):
     def get_style(self):
         return {
             'font_id': self.get_font_id(),
-            'color_id': self.get_color_id()
+            'color_key': self.get_color_key()
         }
 
     # ## Font
@@ -713,16 +713,16 @@ class Node(Movable):
         """ Helper property to directly get the inherited/local QColor
         :return:
         """
-        return ctrl.cm.get(self.get_color_id())
+        return ctrl.cm.get(self.get_color_key())
 
-    def get_color_id(self):
+    def get_color_key(self):
         """
         :return:
         """
-        return ctrl.settings.get_node_setting('color_id', node=self)
+        return ctrl.settings.get_node_setting('color_key', node=self)
 
-    def set_color_id(self, value):
-        ctrl.settings.set_node_setting('color_id', value, node=self)
+    def set_color_key(self, value):
+        ctrl.settings.set_node_setting('color_key', value, node=self)
 
     def palette(self):
         """

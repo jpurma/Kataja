@@ -2,14 +2,13 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl, classes
-from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
-from kataja.ui_support.drawn_icons import arrow
 from kataja.ui_support.panel_utils import box_row
-from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.utils import guess_node_type
-from kataja.ui_widgets.SelectionBox import SelectionBox
-from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.UIEmbed import UIEmbed
+from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
+from kataja.utils import guess_node_type
+from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
 
 __author__ = 'purma'
 
@@ -21,23 +20,11 @@ class NewElementEmbed(UIEmbed):
         self.guess_mode = True
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
-        hlayout = box_row(layout)
-        ui = self.ui_manager
-        self.new_arrow_button = OverlayButton(parent=self, text=" &Arrow", action='new_arrow',
-                                              size=QtCore.QSize(48, 20),
-                                              draw_method=arrow).to_layout(hlayout)
-        # self.divider_button = icon_text_button(ui, hlayout, self, '', '',
-        #                                       " &Divider", 'new_divider',
-        #                                       size=QtCore.QSize(48, 20), draw_method=divider)
-        self.new_arrow_button.setFlat(False)
-        self.divider_button.setFlat(False)
-        self.new_arrow_button.hide()
-        self.divider_button.hide()
         tt = 'Text for new node'
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        self.input_line_edit = ExpandingLineEdit(self, tip=tt, big_font=big_font,
+        self.input_line_edit = ExpandingLineEdit(self, tooltip=tt, big_font=big_font,
                                                  smaller_font=smaller_font, prefill='label',
                                                  on_edit=self.guess_type_for_input)
         layout.addWidget(self.input_line_edit)
@@ -47,19 +34,15 @@ class NewElementEmbed(UIEmbed):
 
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
-            # we have dedicated buttons for arrows and dividers
-            # if key not in (g.ARROW, g.DIVIDER):
             node_class = classes.nodes.get(key, None)
             if (not node_class) or node_class.is_syntactic and not ctrl.free_drawing_mode:
                 continue
             self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
-        self.node_types.append((g.ARROW, 'New arrow'))
-        # self.node_types.append(('New divider', g.DIVIDER))
         self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
         hlayout.addStretch(0)
         # U+21A9 &#8617;
-        self.enter_button = PushButtonBase("Create ↩",
+        self.enter_button = PushButtonBase(parent=self, text="Create ↩",
                                            action='create_new_node_from_text'
                                            ).to_layout(hlayout)
         layout.addLayout(hlayout)
@@ -72,10 +55,10 @@ class NewElementEmbed(UIEmbed):
         return self.marker
 
     def mouseMoveEvent(self, event):
-        self.move(self.mapToParent(event.pos()) - self._drag_diff)
-        if self.marker:
-            self.marker.update_position()
-            self.marker.set_dragged(True)
+        if self._drag_diff:
+            self.move(self.mapToParent(event.pos()) - self._drag_diff)
+            if self.marker:
+                self.marker.update_position()
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def guess_type_for_input(self, text):
@@ -97,11 +80,6 @@ class NewElementEmbed(UIEmbed):
 
     def focus_to_main(self):
         self.input_line_edit.setFocus(QtCore.Qt.PopupFocusReason)
-
-    def marker_dragged(self):
-        if self.guess_mode:
-            self.set_node_type(g.ARROW)
-            self.guess_mode = False
 
     def get_marker_points(self):
         p1 = self.marker.pos()

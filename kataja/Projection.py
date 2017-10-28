@@ -25,7 +25,7 @@ class Projection:
 
     def __init__(self, head, chains, rotator):
         super().__init__()
-        self.color_id, self.color_tr_id = rotating_colors[rotator]
+        self.color_key, self.color_tr_key = rotating_colors[rotator]
         self.style = g.NO_PROJECTIONS
         self.head = head  # head in a projection is head node, not syntactic object
         self.chains = chains or []
@@ -43,7 +43,7 @@ class Projection:
             code = sum([ord(c) for c in self.base_label])
         else:
             code = 0
-        self.color_id, self.color_tr_id = rotating_colors[code % 8]
+        self.color_key, self.color_tr_key = rotating_colors[code % 8]
 
     def add_visual(self):
         self.visual = ProjectionVisual(self)

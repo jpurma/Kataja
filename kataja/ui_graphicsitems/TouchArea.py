@@ -300,31 +300,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         ctrl.deselect_objects()
 
 
-class DeleteArrowTouchArea(TouchArea):
-    __qt_type_id__ = next_available_type_id()
-
-    @classmethod
-    def select_condition(cls, host):
-        return host.has_arrow()
-
-    @classmethod
-    def drop_condition(cls, host):
-        return host.dragging_my_arrow()
-
-    def __init__(self, host):
-        super().__init__(host, click_action='delete_arrow', drop_action='delete_arrow')
-
-    def paint(self, painter, option, widget):
-        """
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
-        if ctrl.pressed is self:
-            pass
-        painter.setPen(self.contextual_color())
-        draw_x(painter, 0, 0, symbol_radius)
 
 
 class AbstractBelowTouchArea(TouchArea):

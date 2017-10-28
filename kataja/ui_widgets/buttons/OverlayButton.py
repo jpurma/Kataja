@@ -28,7 +28,8 @@ from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_graphicsitems.TouchArea import TouchArea
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.utils import colored_image_from_drawing, colored_image
+from kataja.utils import colored_image
+
 
 class OverlayButton(PanelButton):
     """ A floating button on top of main canvas. These are individual UI
@@ -68,8 +69,8 @@ class OverlayButton(PanelButton):
             image = colored_image(c, self.base_image)
             image2 = colored_image(c.lighter(), self.base_image)
         elif self.draw_method:
-            image = colored_image_from_drawing(c, self.draw_method)
-            image2 = colored_image_from_drawing(c.lighter(), self.draw_method)
+            image = self.colored_image_from_drawing(c)
+            image2 = self.colored_image_from_drawing(c.lighter())
         else:
             return
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
@@ -138,54 +139,6 @@ class VisButton(OverlayButton):
         pass
 
 
-class CutFromStartButton(OverlayButton):
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, pixmap=qt_prefs.cut_icon,
-                         action='disconnect_edge_start')
-        self.priority = 54
-
-    @classmethod
-    def condition(cls, edge):
-        return edge.start and (not edge.end) and (
-            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
-
-    def update_position(self):
-        """ Put button left and below the starting point of edge.
-        """
-        if self.host and self.host.start:
-            x, y = self.host.start_point
-            x += self.w2
-            y -= self.h2
-            pos = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y))
-            pos = self.avoid_overlaps(pos, 8, -8)
-            self.move(pos)
-
-
-class CutFromEndButton(OverlayButton):
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, pixmap=qt_prefs.cut_icon,
-                         action='disconnect_edge_end')
-        self.priority = 55
-
-    @classmethod
-    def condition(cls, edge):
-        return edge.end and (not edge.start) and (
-            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
-
-    def update_position(self):
-        """ Put button left and below the starting point of edge.
-        """
-        if self.host and self.host.end:
-            x, y = self.host.end_point
-            if self.host.direction() == g.LEFT:
-                x += self.width()
-            else:
-                x -= self.width()
-            y -= self.h2
-            pos = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y))
-            pos = self.avoid_overlaps(pos, -8, 0)
-            self.move(pos)
-
 
 class CutEdgeButton(OverlayButton):
     def __init__(self, host, parent):
@@ -196,7 +149,7 @@ class CutEdgeButton(OverlayButton):
     @classmethod
     def condition(cls, edge):
         return edge.start and edge.end and (
-            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE, g.ARROW])
+            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE])
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -297,11 +250,37 @@ class GroupButton(OverlayButton):
         self.move(p.x() + my_x, p.y())
 
 
+class GroupPersistenceButton(GroupButton):
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, color_key=host.color_key,
+                         pixmap=qt_prefs.pin_drop_icon, action='make_selection_group_persistent')
+        self.priority = 26
+
+    @classmethod
+    def condition(cls, host):
+        return not host.persistent
+
+
+class RemoveGroupPersistenceButton(GroupButton):
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, color_key=host.color_key,
+                         pixmap=qt_prefs.close_icon, action='remove_group_persistence')
+        self.priority = 26
+
+    @classmethod
+    def condition(cls, host):
+        return host.persistent
+
+
 class GroupOptionsButton(GroupButton):
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16, color_key=host.color_key,
                          pixmap=qt_prefs.info_icon, action='toggle_group_options')
         self.priority = 25
+
+    @classmethod
+    def condition(cls, host):
+        return host.persistent
 
 
 class DeleteGroupButton(GroupButton):
@@ -317,7 +296,7 @@ class DeleteGroupButton(GroupButton):
 
 class NodeEditorButton(OverlayButton):
     def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, color_key=host.get_color_id(),
+        super().__init__(host=host, parent=parent, size=16, color_key=host.get_color_key(),
                          pixmap=qt_prefs.info_icon, action='start_editing_node')
         self.priority = 25
 
