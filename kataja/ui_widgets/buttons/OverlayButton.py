@@ -139,7 +139,6 @@ class VisButton(OverlayButton):
         pass
 
 
-
 class CutEdgeButton(OverlayButton):
     def __init__(self, host, parent):
         super().__init__(host=host, parent=parent, size=16, color_key='accent3',
@@ -150,6 +149,32 @@ class CutEdgeButton(OverlayButton):
     def condition(cls, edge):
         return edge.start and edge.end and (
             ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE])
+
+    def update_position(self):
+        """ Put button left and below the starting point of edge.
+        """
+        if self.host:
+            p = self.host.path.get_point_at(0.7)
+            if abs(self.host.start_point[0] - self.host.end_point[0]) < 10:
+                p.setX(p.x() + 15)
+            p.setY(p.y() - 30)
+            pos = ctrl.main.graph_view.mapFromScene(p)
+            self.avoid_overlaps(pos, 0, -8)
+            self.move(pos)
+
+
+class CutArrowButton(CutEdgeButton):
+
+    @classmethod
+    def condition(cls, edge):
+        return edge.start or edge.end
+
+
+class RemoveArrowButton(OverlayButton):
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, pixmap='delete_icon',
+                         action='remove_arrow')
+        self.priority = 50
 
     def update_position(self):
         """ Put button left and below the starting point of edge.

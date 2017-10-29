@@ -35,7 +35,7 @@ class NewElementEmbed(UIEmbed):
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
             node_class = classes.nodes.get(key, None)
-            if (not node_class) or node_class.is_syntactic and not ctrl.free_drawing_mode:
+            if (not node_class) or (node_class.is_syntactic and not ctrl.free_drawing_mode):
                 continue
             self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
         self.node_type_selector.add_items(self.node_types)
@@ -81,10 +81,9 @@ class NewElementEmbed(UIEmbed):
     def focus_to_main(self):
         self.input_line_edit.setFocus(QtCore.Qt.PopupFocusReason)
 
-    def get_marker_points(self):
-        p1 = self.marker.pos()
-        p2 = self.marker.mapToScene(self.marker.end_point)
-        return p1, p2
+    def get_marker_point(self):
+        p = self.marker.mapToScene(self.marker.end_point)
+        return int(p.x()), int(p.y())
 
     def set_node_type(self, value):
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))

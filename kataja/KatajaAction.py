@@ -399,7 +399,7 @@ class KatajaAction(QtWidgets.QAction):
 
         def _host(qt_object):
             if getattr(qt_object, 'host', None):
-                return qt_object
+                return qt_object.host
             else:
                 p = qt_object.parent()
                 if p:

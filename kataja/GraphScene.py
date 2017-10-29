@@ -440,15 +440,21 @@ class GraphScene(QtWidgets.QGraphicsScene):
             selection = set()
             for item in self.selectedItems():
                 if hasattr(item, 'select'):
-                    uid = item.select(select_area=True)
-                    if uid:
-                        selection.add(uid)
+                    selectable = item.select(select_area=True)
+                    if selectable:
+                        selection.add(selectable)
 
             if event.modifiers() == Qt.ShiftModifier:
                 select = ctrl.ui.get_action('add_to_selection')
             else:
                 select = ctrl.ui.get_action('select')
-            select.run_command(sorted(list(selection)), has_params=True)
+                nodes = set()
+                for item in selection:
+                    if isinstance(item, Node):
+                        nodes.add(item)
+                if nodes:
+                    selection = nodes
+            select.run_command(sorted([x.uid for x in selection]), has_params=True)
 
         # click on empty place means select nothing, unless we are shift+selecting
         elif event.modifiers() != Qt.ShiftModifier:

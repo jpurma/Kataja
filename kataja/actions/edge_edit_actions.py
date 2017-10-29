@@ -29,16 +29,18 @@ from kataja.singletons import ctrl, log
 #
 
 
-class DisconnectEdge(EmbedAction):
+class DisconnectEdge(KatajaAction):
     k_action_uid = 'disconnect_edge'
     k_command = 'Disconnect nodes'
     k_tooltip = 'Disconnect nodes and remove this edge.'
 
     def prepare_parameters(self, args, kwargs):
-        if self.embed:
-            edge_uid = self.embed.host.uid
+        host = self.get_host()
+        if host:
+            edge_uid = host.uid
         else:
             edge_uid = ''
+        print(host, host.uid)
         return [edge_uid], kwargs
 
     def method(self, edge_uid: str):

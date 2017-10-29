@@ -221,14 +221,14 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
 
     def click(self, event):
         if self._host and self._host.selected:
-            ctrl.ui.start_edge_label_editing(self._host)
+            ctrl.ui.start_arrow_label_editing(self._host)
         else:
             adding = event.modifiers() == Qt.ShiftModifier
             self._host.select(adding=adding, select_area=False)
 
     def select(self, adding=False, select_area=False):
         if self._host and self._host.selected:
-            ctrl.ui.start_edge_label_editing(self._host)
+            ctrl.ui.start_arrow_label_editing(self._host)
         else:
             return self._host.select(adding=adding, select_area=select_area)
 

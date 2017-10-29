@@ -19,7 +19,7 @@ class EmbedAction(KatajaAction):
         def find_embed_widget(widget):
             if isinstance(widget, UIEmbed):
                 return widget
-            elif panel:
+            elif widget:
                 return find_embed_widget(widget.parentWidget())
 
         self.embed = find_embed_widget(ui_item.parentWidget())

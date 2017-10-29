@@ -615,7 +615,7 @@ class QtPreferences:
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
         self.lock_icon = icon('lock48.png')
-        self.lock_pixmap = pixmap('lock48.png', 16)
+        self.lock_pixmap = pixmap('lock48.png', 24)
         self.cut_icon = icon('cut_icon48.png')
         self.delete_icon = icon('backspace48.png')
         self.close_icon = icon('close24.png')

@@ -569,13 +569,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param adding: bool, we are adding to selection instead of starting a new selection
         :param select_area: bool, we are dragging a selection box, method only informs that
          this edge can be included
-        :returns: int or str, uid of node if node is selectable
+        :returns: self if item is selectable
         """
         self.hovering = False
         # if we are selecting an area, select actions are not called here, but once for all
         # objects. In this case return only uid of this object.
         if select_area:
-            return self.uid
+            return self
         if adding:
             if self.selected:
                 action = ctrl.ui.get_action('remove_from_selection')
@@ -585,7 +585,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             action = ctrl.ui.get_action('select')
             action.run_command(self.uid, has_params=True)
-        return self.uid
+        return self
 
     # ## Qt paint method override
     def paint(self, painter, option, widget=None):

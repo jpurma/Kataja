@@ -42,24 +42,21 @@ class CreateNewNodeFromText(EmbedAction):
     k_action_uid = 'create_new_node_from_text'
     k_command = 'New node from text'
 
-    # k_shortcut = 'Return'
-    # k_shortcut_context = 'parent_and_children'
+    k_shortcut = 'Return'
+    k_shortcut_context = 'parent_and_children'
 
     def prepare_parameters(self, args, kwargs):
         ci = self.embed.node_type_selector.currentIndex()
         node_type = self.embed.node_type_selector.itemData(ci)
         guess_mode = self.embed.guess_mode
-        starting_point, focus_point = self.embed.get_marker_points()
-        starting_point = int(starting_point.x()), int(starting_point.y())
-        focus_point = int(focus_point.x()), int(focus_point.y())
+        focus_point = self.embed.get_marker_point()
         text = self.embed.input_line_edit.text()
         return [focus_point, text], {
-            'starting_point': starting_point,
             'node_type': node_type,
             'guess_mode': guess_mode
         }
 
-    def method(self, focus_point, text, starting_point=None, node_type=None, guess_mode=True):
+    def method(self, focus_point, text, node_type=None, guess_mode=True):
 
         """ Create new element according to elements in this embed. Can create
         constituentnodes,
@@ -67,7 +64,6 @@ class CreateNewNodeFromText(EmbedAction):
         :return: None
         """
         ctrl.focus_point = focus_point
-        node = None
         if (not node_type) or node_type == g.GUESS_FROM_INPUT:
             if guess_mode:
                 node_type = guess_node_type(text)

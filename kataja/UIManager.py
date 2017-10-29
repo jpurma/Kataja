@@ -373,11 +373,13 @@ class UIManager:
 
         # create ui_support pieces for selected elements. don't create touchareas and buttons
         # if multiple selection, it gets confusing fast
-        if len(ctrl.selected) == 1:
+        if not ctrl.selected:
+            self.remove_selection_group()
+            self.set_scope(self._prev_active_scope)
+        elif len(ctrl.selected) == 1:
+            self.remove_selection_group()
+            self.set_scope(g.SELECTION)
             item = ctrl.selected[0]
-            if self.selection_group:
-                self.remove_selection_group()
-
             if isinstance(item, Edge):
                 self.update_touch_areas_for_selected_edge(item)
                 self.add_control_points(item)
@@ -400,81 +402,32 @@ class UIManager:
             elif isinstance(item, Group):
                 self.selection_group = item
                 self.add_buttons_for_group(item)
+            elif isinstance(item, Arrow):
+                self.add_control_points_for_arrow(item)
+                self.selection_group = item
+                self.add_buttons_for_arrow(item)
 
-        if ctrl.selected:
-            # note UI panels that they should use scope 'selection' for their activities
-            self.set_scope(g.SELECTION)
-
-            if len(ctrl.selected) > 1:
-                nodes = []
-                groups = []
-                for item in ctrl.selected:
-                    if isinstance(item, Node) and item.can_be_in_groups:
-                        nodes.append(item)
-                    elif isinstance(item, Group):
-                        groups.append(item)
-                if len(groups) == 1 and groups[0] == self.selection_group and nodes:
-                    for node in nodes:
-                        self.selection_group.add_node(node)
-                    self.add_buttons_for_group(self.selection_group)
-                elif nodes:
-                    # Create new group for this selection
-                    #if not selected_group:
-                    if self.selection_group and not self.selection_group.persistent:
-                        self.remove_selection_group()
+        else:
+            nodes = []
+            groups = []
+            for item in ctrl.selected:
+                if isinstance(item, Node) and item.can_be_in_groups:
+                    nodes.append(item)
+                elif isinstance(item, Group):
+                    groups.append(item)
+            if nodes or groups:
+                if self.selection_group and not self.selection_group.persistent:
+                    self.selection_group.update_selection(ctrl.selected)
+                    self.selection_group.update_shape()
+                else:
                     self.selection_group = Group(
                         selection=nodes,
                         persistent=False,
                         color_key=ctrl.free_drawing.get_group_color_suggestion())
-                    self.add_ui(self.selection_group)
-                    self.add_buttons_for_group(self.selection_group)
-                elif self.selection_group:
-                    self.remove_selection_group()
-
-
-                #if self.selection_group: #and not selected_one_group:
-                #    self.remove_selection_group()
-
-                # Verify that selection contains nodes that can be in group
-                #groupable_nodes = [item for item in ctrl.selected if
-                #                   isinstance(item, Node) and item.can_be_in_groups]
-                #if groupable_nodes:
-                #    # Create new group for this selection
-                    #if not selected_group:
-                #    self.selection_group = Group(
-                #        selection=groupable_nodes,
-                #        persistent=False,
-                #        color_key=ctrl.free_drawing.get_group_color_suggestion())
-                    #self.add_ui(self.selection_group)
-                    # or update existing selection
-                    #else:
-                    #    self.selection_group.update_selection(groupable_nodes)
-                    #    self.selection_group.update_shape()
-                    #self.add_buttons_for_group(self.selection_group)
-                #elif self.selection_group:
-                #    # Selection had only items that don't fit inside group, there is one already
-                #    self.remove_selection_group()
-            #elif self.selection_group:
-            #    # Selection was empty, but there is existing selection group visible
-            #    self.remove_selection_group()
-        else:
-            self.set_scope(self._prev_active_scope)
-            if self.selection_group:
+                self.add_ui(self.selection_group)
+                self.add_buttons_for_group(self.selection_group)
+            else:
                 self.remove_selection_group()
-        print('Group count: ', len(ctrl.forest.groups) if ctrl.forest.groups else 0)
-        print('Selection size: ', len(ctrl.selected))
-        hidden = 0
-        fading = 0
-        temp_groups = 0
-        for item in ctrl.graph_scene.items():
-            if not item.isVisible():
-                hidden += 1
-            elif getattr(item, 'is_fading_out', False):
-                fading += 1
-            if isinstance(item, Group) and not item.persistent:
-                temp_groups += 1
-        assert temp_groups < 2
-        print('Item count in scene: ', len(ctrl.graph_scene.items()) - fading - hidden)
 
     def has_nodes_in_scope(self, of_type):
         if self.scope_is_selection:
@@ -493,10 +446,11 @@ class UIManager:
         return True  # all scope options allow defining node color
 
     def remove_selection_group(self):
-        self.remove_ui_for(self.selection_group)
-        if not self.selection_group.persistent:
-            self.remove_ui(self.selection_group)
-        self.selection_group = None
+        if self.selection_group:
+            self.remove_ui_for(self.selection_group)
+            if not self.selection_group.persistent:
+                self.remove_ui(self.selection_group)
+            self.selection_group = None
 
     # unused, but sane
     def focusable_elements(self):
@@ -903,15 +857,15 @@ class UIManager:
     # ### Label edge editing dialog
     # #########################################################
 
-    def start_edge_label_editing(self, edge):
+    def start_arrow_label_editing(self, arrow):
         """
 
         :param edge:
         """
         self.close_active_embed()
-        self.active_embed = ArrowLabelEmbed(self.main.graph_view, edge)
+        self.active_embed = ArrowLabelEmbed(self.main.graph_view, arrow)
         self.add_ui(self.active_embed)
-        self.active_embed.update_embed(focus_point=edge.label_item.pos())
+        self.active_embed.update_embed(focus_point=arrow.label_item.pos())
         self.active_embed.wake_up()
 
     def toggle_group_label_editing(self, group):
@@ -1168,6 +1122,14 @@ class UIManager:
                 button = self.get_or_create_button(group, button_class)
                 group.add_button(button)
 
+    def add_buttons_for_arrow(self, arrow):
+        """ Arrows need release button when they are connected to nodes and delete button
+        """
+        if ob.CutArrowButton.condition(arrow):
+            self.get_or_create_button(arrow, ob.CutEdgeButton)
+        if ob.RemoveArrowButton.condition(arrow):
+            self.get_or_create_button(arrow, ob.RemoveArrowButton)
+
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node
         in between.
@@ -1201,24 +1163,29 @@ class UIManager:
     # ### Control points
     # ####################################################################
 
+
+    def _add_cp(self, host, index, role):
+        cp = ControlPoint(host, index=index, role=role)
+        self.add_ui(cp)
+        cp.update_position()
+
     def add_control_points(self, edge):
         """ Display control points for this edge
         :param edge:
         """
-
-        def _add_cp(index, role):
-            cp = ControlPoint(edge, index=index, role=role)
-            self.add_ui(cp)
-            cp.update_position()
-
         for i, point in enumerate(edge.path.control_points):
-            _add_cp(i, g.CURVE_ADJUSTMENT)
-        if not edge.start:
-            _add_cp(-1, g.START_POINT)
-        if not edge.end:
-            _add_cp(-1, g.END_POINT)
-        if edge.label_item:
-            _add_cp(-1, g.LABEL_START)
+            self._add_cp(edge, i, g.CURVE_ADJUSTMENT)
+
+    def add_control_points_for_arrow(self, arrow):
+
+        self._add_cp(arrow, i, g.MIDDLE_POINT)
+        if not arrow.start:
+            self._add_cp(arrow, -1, g.START_POINT)
+        if not arrow.end:
+            self._add_cp(arrow, -1, g.END_POINT)
+        if arrow.label_item:
+            self._add_cp(arrow, -1, g.LABEL_START)
+
 
     def update_control_points(self):
         """ Create all necessary control points
@@ -1228,6 +1195,9 @@ class UIManager:
         for item in ctrl.selected:
             if isinstance(item, Edge):
                 self.add_control_points(item)
+            elif isinstance(item, Arrow):
+                self.add_control_points_for_arrow(item)
+
 
     def remove_control_points(self):
         """ Remove all control points

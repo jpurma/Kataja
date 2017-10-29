@@ -400,6 +400,13 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def _current_position_changed(self, value):
         self.setPos(value[0], value[1])
 
+    def _compute_adjustment_from_current_pos(self):
+        cpos_x, cpos_y = self.current_position
+        tpos_x, tpos_y = self.target_position
+        adj_x = tpos_x - cpos_x
+        adj_y = tpos_y - cpos_y
+        self.adjustment = adj_x, adj_y
+
     def update_position(self):
         """ Compute new current_position and target_position
         :return: None
@@ -423,6 +430,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         if self.use_physics():
             self.locked = True
         else:
+            self._compute_adjustment_from_current_pos()
             self.use_adjustment = True
 
     def is_visible(self):

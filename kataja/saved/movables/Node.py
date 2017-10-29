@@ -1292,13 +1292,13 @@ class Node(Movable):
         :param adding: bool, we are adding to selection instead of starting a new selection
         :param select_area: bool, we are dragging a selection box, method only informs that this
         node can be included
-        :returns: int or str, uid of node if node is selectable
+        :returns: self if node is selectable
         """
         self.hovering = False
         # if we are selecting an area, select actions are not called here, but once for all
         # objects. In this case return only uid of this object.
         if select_area:
-            return self.uid
+            return self
         if adding:
             if self.selected:
                 action = ctrl.ui.get_action('remove_from_selection')
@@ -1315,7 +1315,7 @@ class Node(Movable):
         else:
             action = ctrl.ui.get_action('select')
             action.run_command(self.uid, has_params=True)
-        return self.uid
+        return self
 
     # Drag flow:
 
@@ -1536,6 +1536,7 @@ class Node(Movable):
         # was_locked = self.locked or self.use_adjustment
         super().lock()
         # if not was_locked:
+        print('locking node to position')
         if self.is_visible():
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 

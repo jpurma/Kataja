@@ -228,7 +228,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
     def select(self, adding=False, select_area=False):
         if self._host and ctrl.is_selected(self._host):
-            ctrl.ui.start_edge_label_editing(self._host)
+            ctrl.ui.start_group_label_editing(self._host)
         else:
             return self._host.select(adding=adding, select_area=select_area)
 

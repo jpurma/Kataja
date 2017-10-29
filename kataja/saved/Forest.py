@@ -312,7 +312,6 @@ class Forest(SavedObject):
                         head = node
         return head, traces
 
-
     def set_visualization(self, name):
         """ Switches the active visualization to visualization with given key
         :param name: string
@@ -572,9 +571,14 @@ class Forest(SavedObject):
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
-            for tree_top in self.trees:
+            prev_trees = []
+            shift_x = 0
+            for i, tree_top in enumerate(self.trees):
                 self.visualization.draw_tree(tree_top)
-                self.visualization.normalise_to_origo(tree_top)
+                if prev_trees:
+                    shift_x = self.visualization.estimate_overlap(prev_trees, tree_top)
+                self.visualization.normalise_to_origo(tree_top, shift_x=shift_x)
+                prev_trees.append(tree_top)
         self.chain_manager.after_draw_update()
         if start_animations:
             sc.start_animations()
@@ -620,7 +624,7 @@ class Forest(SavedObject):
         """
         if not self._do_edge_visibility_check:
             return
-        for edge in set(self.edges.values() | self.arrows.values()):
+        for edge in set(self.edges.values()) | set(self.arrows.values()):
             changed = edge.update_visibility()
             if changed:
                 if edge.is_visible():

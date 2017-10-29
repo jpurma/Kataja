@@ -167,7 +167,47 @@ class BaseVisualization:
         """ Subclasses implement this """
         pass
 
-    def normalise_to_origo(self, tree_top):
+    def estimate_overlap(self, left_trees, right_tree):
+        right_edges = []
+        left_nodes = set()
+        for left_tree in left_trees:
+            for node in left_tree.get_sorted_nodes():
+                if node.locked_to_node:
+                    continue
+                elif node.physics_x and node.physics_y:
+                    continue
+                left_nodes.add(node)
+                br = node.boundingRect()
+                tx, ty = node.target_position
+                right = br.x() + br.width() + tx
+                top = br.y() + ty
+                right_edges.append((top, right, top + br.height()))
+
+        left_edges = []
+        for node in right_tree.get_sorted_nodes():
+            if node.locked_to_node:
+                continue
+            elif node.physics_x and node.physics_y:
+                continue
+            elif node in left_nodes:
+                continue
+            br = node.boundingRect()
+            tx, ty = node.target_position
+            left = br.x() + tx
+            top = br.y() + ty
+            left_edges.append((top, left, top + br.height()))
+
+        dist = 0
+        for lt, left, lb in left_edges:
+            for rt, right, rb in right_edges:
+                if rt > lb:
+                    break
+                if right > left + dist and ((rt < lt < rb) or (rt < lb < rb) or (lt < rt < lb) or
+                        (lt < rb < lb)):
+                    dist = right - left
+        return dist + 20
+
+    def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
         if tree_top not in self.forest.trees:
             return
         top_x, top_y = tree_top.target_position
@@ -176,8 +216,8 @@ class BaseVisualization:
                 continue
             elif node.physics_x and node.physics_y:
                 continue
-            pass
-            node.target_position = node.target_position[0] - top_x, node.target_position[1] - top_y
+            node.target_position = ((node.target_position[0] - top_x) + shift_x,
+                                    (node.target_position[1] - top_y) + shift_y)
             node.start_moving()  # restart moving since we shifted the end point
 
     def normalise_movers_to_top(self, tree_top):
