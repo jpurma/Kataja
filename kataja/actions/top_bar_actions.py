@@ -189,20 +189,25 @@ class ZoomToFit(KatajaAction):
 
 class ToggleAutomaticZoom(KatajaAction):
     k_action_uid = 'toggle_automatic_zoom'
-    k_command = 'Enable automatic zoom'
-    k_command_alt = 'Disable automatic zooming'
-    k_shortcut = 'Z'
+    k_command = 'Toggle automatic zooming'
+    k_shortcut = 'Shift+Z'
     k_undoable = False
     k_checkable = True
-    k_tooltip = 'Try to keep trees in the center of the view and wholly visible.'
-    k_tooltip_alt = "You have to manually pan and zoom, but there are no unexpected shifts in view."
+    k_tooltip = '''<p><b>Auto zoom:</b></p><p><b>True:</b> Try to keep all elements visible when 
+    structures change. 
+    </p>
+    <p><b>False:</b> Don't change visible area unless manually triggered.</p> 
+    '''
 
-    def method(self):
+    def prepare_parameters(self, args, kwargs):
+        sender = self.sender()
+        return [sender.isChecked()], {}
+
+    def method(self, value):
         """ Fit graph to current window. Usually happens automatically, but also
         available as user action
         """
-        old_value = ctrl.settings.get('auto_zoom', level=PREFS)
-        ctrl.settings.set('auto_zoom', not old_value, level=PREFS)
+        ctrl.settings.set('auto_zoom', value, level=PREFS)
 
     def getter(self):
         return ctrl.settings.get('auto_zoom', level=PREFS)

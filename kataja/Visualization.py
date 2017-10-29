@@ -167,7 +167,7 @@ class BaseVisualization:
         """ Subclasses implement this """
         pass
 
-    def estimate_overlap(self, left_trees, right_tree):
+    def estimate_overlap_and_shift_tree(self, left_trees, right_tree):
         right_edges = []
         left_nodes = set()
         for left_tree in left_trees:
@@ -184,6 +184,7 @@ class BaseVisualization:
                 right_edges.append((top, right, top + br.height()))
 
         left_edges = []
+        nodes_to_move = []
         for node in right_tree.get_sorted_nodes():
             if node.locked_to_node:
                 continue
@@ -196,6 +197,7 @@ class BaseVisualization:
             left = br.x() + tx
             top = br.y() + ty
             left_edges.append((top, left, top + br.height()))
+            nodes_to_move.append(node)
 
         dist = 0
         for lt, left, lb in left_edges:
@@ -205,7 +207,11 @@ class BaseVisualization:
                 if right > left + dist and ((rt < lt < rb) or (rt < lb < rb) or (lt < rt < lb) or
                         (lt < rb < lb)):
                     dist = right - left
-        return dist + 20
+
+        dist += 30
+        for node in nodes_to_move:
+            node.target_position = node.target_position[0] + dist, node.target_position[1]
+            node.start_moving()
 
     def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
         if tree_top not in self.forest.trees:

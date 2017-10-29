@@ -531,6 +531,7 @@ class QtPreferences:
         self.center_focus_icon = None
         self.cursor_icon = None
         self.full_icon = None
+        self.autozoom_icon = None
         self.settings_icon = None
         self.settings_pixmap = None
         self.triangle_icon = None
@@ -643,6 +644,7 @@ class QtPreferences:
         self.select_all_icon = icon('select_all48.png')
         self.cursor_icon = icon('cursor48.png')
         self.center_focus_icon = icon('center_focus48.png')
+        self.autozoom_icon = icon('autozoom48.png')
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.card_icon = icon('card48.png')

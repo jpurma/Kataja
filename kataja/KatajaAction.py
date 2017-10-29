@@ -218,8 +218,14 @@ class KatajaAction(QtWidgets.QAction):
 
         if not self.isEnabled():
             return
+        # Prepare to use alt_command in feedback if the action supports it
+        command = self.command
+        if self.isCheckable() and self.isChecked() and self.command_alt:
+            command = self.command_alt
+
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
+
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
@@ -266,7 +272,7 @@ class KatajaAction(QtWidgets.QAction):
             if sc:
                 sc = sc.toString()
                 sc = sc.replace('Ctrl', running_environment.cmd_or_ctrl)
-                reply = f'({sc}) {message or self.command}'
+                reply = f'({sc}) {message or command}'
             else:
                 reply = message
             ctrl.main.action_finished(m=reply, undoable=self.undoable and not ctrl.undo_disabled,
@@ -381,6 +387,8 @@ class KatajaAction(QtWidgets.QAction):
         # print('setting displayed value for %s to %s' % (self.key, value))
         if isinstance(value, bool):
             self.set_active_tooltip(value)
+            if self.isCheckable():
+                self.setChecked(value)
         for element in self.elements:
             element.blockSignals(True)
             element.set_displayed_value(value)

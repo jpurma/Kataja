@@ -42,7 +42,7 @@ from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl, classes, prefs
 from kataja.utils import time_me
 from syntax.SyntaxState import SyntaxState
 
@@ -565,19 +565,19 @@ class Forest(SavedObject):
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         print('redrawing forest, start_animations: ', start_animations)
-        ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
+        if not prefs.auto_zoom:
+            ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
         self.update_feature_ordering()
         self.update_forest_gloss()
         if self.visualization:
             self.visualization.prepare_draw()
             prev_trees = []
-            shift_x = 0
-            for i, tree_top in enumerate(self.trees):
+            for tree_top in self.trees:
                 self.visualization.draw_tree(tree_top)
+                self.visualization.normalise_to_origo(tree_top)
                 if prev_trees:
-                    shift_x = self.visualization.estimate_overlap(prev_trees, tree_top)
-                self.visualization.normalise_to_origo(tree_top, shift_x=shift_x)
+                    self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
                 prev_trees.append(tree_top)
         self.chain_manager.after_draw_update()
         if start_animations:

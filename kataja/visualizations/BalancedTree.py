@@ -73,6 +73,44 @@ class BalancedTree(BaseVisualization):
         new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
+    def estimate_overlap_and_shift_tree(self, left_trees, right_tree):
+        max_right = 0
+        left_nodes = set()
+        for left_tree in left_trees:
+            for node in left_tree.get_sorted_nodes():
+                if node.locked_to_node:
+                    continue
+                elif node.physics_x and node.physics_y:
+                    continue
+                left_nodes.add(node)
+                br = node.boundingRect()
+                tx, ty = node.target_position
+                right = br.x() + br.width() + tx
+                if right > max_right:
+                    max_right = right
+
+        min_left = 1000
+        nodes_to_move = []
+        for node in right_tree.get_sorted_nodes():
+            if node.locked_to_node:
+                continue
+            elif node.physics_x and node.physics_y:
+                continue
+            elif node in left_nodes:
+                continue
+            br = node.boundingRect()
+            tx, ty = node.target_position
+            left = br.x() + tx
+            if left < min_left:
+                min_left = left
+            nodes_to_move.append(node)
+
+        dist = (max_right - min_left) + 30
+        for node in nodes_to_move:
+            node.target_position = node.target_position[0] + dist, node.target_position[1]
+            node.start_moving()
+
+
     # @time_me
     def draw_tree(self, tree_top):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
