@@ -241,14 +241,31 @@ class ConstituentNode(Node):
 
         def add_children(node):
             if node not in used:
-                if node.node_type == g.CONSTITUENT_NODE:
-                    used.add(node)
+                used.add(node)
+                sorted_constituents.append(node)
+                for child in node.get_children(similar=True, visible=False):
+                    add_children(child)
+
+        add_children(self)
+        return sorted_constituents
+
+    def get_sorted_leaf_constituents(self):
+        sorted_constituents = []
+        used = set()
+
+        def add_children(node):
+            if node not in used:
+                used.add(node)
+                children = node.get_children(similar=True, visible=False)
+                if not children:
                     sorted_constituents.append(node)
-                    for child in node.get_children(similar=False, visible=False):
+                else:
+                    for child in children:
                         add_children(child)
 
         add_children(self)
         return sorted_constituents
+
 
     def update_node_shape(self):
         self.label_object.node_shape = ctrl.settings.get('node_shape')

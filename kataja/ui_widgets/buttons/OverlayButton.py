@@ -344,6 +344,32 @@ class NodeEditorButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
+class LockButton(OverlayButton):
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, color_key=host.get_color_key(),
+                         pixmap=qt_prefs.lock_icon, action='')
+        self.priority = 25
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(9, -8)
+        x, y = self.host.centered_scene_position
+        p = QtCore.QPointF(x + (self.host.width / 2), y + (self.host.height / 2))
+        p = (ctrl.main.graph_view.mapFromScene(p) + adjust).toPoint()
+        p = self.avoid_overlaps(p, 8, 0)
+        self.move(p)
+
+    def enterEvent(self, event):
+        self.host.hovering = True
+        OverlayButton.enterEvent(self, event)
+
+    def leaveEvent(self, event):
+        self.host.hovering = False
+        OverlayButton.leaveEvent(self, event)
+
+    def fade_out(self, s=600):
+        super().fade_out(s=s)
+
 class OverlayLabel(UIWidget, QtWidgets.QLabel):
     """ A floating label on top of main canvas. These are individual UI
     elements each.

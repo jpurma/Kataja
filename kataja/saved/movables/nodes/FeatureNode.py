@@ -97,6 +97,8 @@ class FeatureNode(Node):
         self.name = label
         self.value = value
         self.family = family
+        self.checks = None
+        self.checked_by = None
         self.repulsion = 0.25
         self._gravity = 3.0
         self.fshape = 2
@@ -270,32 +272,31 @@ class FeatureNode(Node):
         if self.syntactic_object:
             return self.syntactic_object.is_needy()
         else:
-            # These are defaults
-            return (not self.value) or self.value == 'u' or self.value == '=' or self.value == '-'
+            return self.value in ('u', '=', '-')
 
     def valuing(self):
         if self.syntactic_object:
             return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
         else:
-            return self.value != 'u' and self.value != '=' and self.value != '-'
+            return self.checks or self.value not in ('u', '=', '-')
 
     def can_satisfy(self):
         if self.syntactic_object:
             return self.syntactic_object.can_satisfy()
         else:
-            return self.value and self.value != 'u' and self.value != '=' and self.value != '-'
+            return self.value not in ('u', '=', '-')
 
     def is_satisfied(self):
         if self.syntactic_object:
             return self.syntactic_object.checked_by
         else:
-            return ('u' in self.value or '=' in self.value) and '✓' in self.value
+            return self.checked_by
 
     def satisfies(self):
         if self.syntactic_object:
             return self.syntactic_object.checks
         else:
-            return '✓' in self.value and not ('u' in self.value or '=' in self.value)
+            return self.checks
 
     def update_bounding_rect(self):
         """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 
@@ -550,18 +551,14 @@ class FeatureNode(Node):
     def __str__(self):
         if self.syntactic_object:
             return str(self.syntactic_object)
-        s = []
-        signs = ('+', '-', '=', 'u', '✓')
-        if self.value and (len(self.value) == 1 and self.value in signs or len(self.value) == 2 and self.value[1] in signs):
-            s.append(self.value + str(self.name))
-        elif self.value or self.family:
-            s.append(str(self.name))
-            s.append(str(self.value))
-            if self.family:
-                s.append(str(self.family))
-        else:
-            s.append(str(self.name))
-        return ":".join(s)
+        s = '✓' if self.checks or self.checked_by else ''
+        simple_signs = ('+', '-', '=', 'u')
+        if self.value and self.value in simple_signs:
+            return s + self.value + str(self.name)
+
+        fam = ':' + self.family if self.family else ''
+        val = ':' + self.value if self.value else ''
+        return s + str(self.name) + val + fam
 
     def get_edge_start_symbol(self):
         if self.satisfies():
@@ -609,3 +606,5 @@ class FeatureNode(Node):
     name = SavedField("name")
     value = SavedField("value")
     family = SavedField("family")
+    checks = SavedField("checks")
+    checked_by = SavedField("checked_by")

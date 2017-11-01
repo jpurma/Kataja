@@ -9,12 +9,12 @@ from PyQt5.QtCore import QPointF, QPoint
 from kataja.SavedField import SavedField
 from kataja.globals import CREATED, DELETED
 from kataja.parser.INodes import ITextNode
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl, classes, log
 from kataja.utils import to_tuple, time_me
 from kataja.uniqueness_generator import next_available_uid
 
 __author__ = 'purma'
-
+ALLOW_SETS = False
 
 class SaveError(Exception):
     """ for errors related to storing the model
@@ -254,9 +254,15 @@ class SavedObject(object):
                 result = tuple(result)
                 return result
             elif isinstance(data, set):
-                result = set()
-                for o in data:
-                    result.add(_simplify(o))
+                log.warn('attempting to simplify a set -- sets are not compatible with JSON:', data)
+                if ALLOW_SETS:
+                    result = set()
+                    for o in data:
+                        result.add(_simplify(o))
+                else:
+                    result = []
+                    for o in data:
+                        result.append(_simplify(o))
                 return result
             elif isinstance(data, types.FunctionType):
                 # if functions are stored in the dict, there should be some

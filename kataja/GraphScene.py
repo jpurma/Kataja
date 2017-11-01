@@ -704,7 +704,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 group.update_shape()
             f.semantics_manager.update_position()
             if (not self.match_final_derivation_size) and (not self.manual_zoom) and (
-                    not ctrl.dragged_focus) and self.timer_counter % 20 == 0:
+                    not ctrl.dragged_focus): #and self.timer_counter % 20 == 0:
                 self.fit_to_window(zoom_in=False)
         elif not (frame_has_moved or background_fade):
             if (not self.match_final_derivation_size) and (not self.manual_zoom) and (

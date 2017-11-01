@@ -17,7 +17,8 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
         if mini:
             self.setMinimumSize(QtCore.QSize(40, 20))
             self.setMaximumSize(QtCore.QSize(40, 20))
-        ctrl.ui.connect_element_to_action(self, action)
+        if action:
+            ctrl.ui.connect_element_to_action(self, action)
         #if data:
         #    self.disable_choice(data[0])
 

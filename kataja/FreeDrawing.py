@@ -597,10 +597,9 @@ class FreeDrawing:
         assert (old_node != new_node)  # if this can happen, we'll probably have
         # infinite loop somewhere
 
-        if not set(new_node.trees) & set(old_node.trees):
-            if old_node.pos():
-                new_node.copy_position(old_node)
-            new_node.update_visibility(fade_in=True)  # active=True,
+        if old_node.pos():
+            new_node.copy_position(old_node)
+        new_node.update_visibility(fade_in=True)  # active=True,
 
         # add new node to relevant groups
         # and remove old node from them

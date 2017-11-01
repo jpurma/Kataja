@@ -8,7 +8,7 @@ from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
-
+from kataja.utils import time_me
 
 class TopBarButtons(QtWidgets.QFrame):
     def __init__(self, parent, ui):

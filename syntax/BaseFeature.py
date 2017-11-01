@@ -89,22 +89,17 @@ class BaseFeature(SavedObject):
         return self.__class__(name=self.name, value=self.value, family=self.family)
 
     def __str__(self):
-        s = []
-        signs = ('+', '-', '=', 'u', '✓')
-        if self.value and (len(self.value) == 1 and self.value in signs or len(self.value) == 2 and
-                self.value[1] in signs):
-            s.append(self.value + str(self.name))
-        elif self.value or self.family:
-            s.append(str(self.name))
-            s.append(str(self.value))
-            if self.family:
-                s.append(str(self.family))
-        else:
-            s.append(str(self.name))
-        return ":".join(s)
+        s = '✓' if self.checks or self.checked_by else ''
+        simple_signs = ('+', '-', '=', 'u')
+        if self.value and self.value in simple_signs:
+            return s + self.value + str(self.name)
+
+        fam = ':' + self.family if self.family else ''
+        val = ':' + self.value if self.value else ''
+        return s + str(self.name) + val + fam
 
     def __repr__(self):
-        s = [str(self.name)]
+        s = ['✓' if self.checks or self.checked_by else '' + str(self.name)]
         if self.value or self.family:
             s.append(str(self.value))
         if self.family:

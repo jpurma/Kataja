@@ -182,6 +182,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
+        ctrl.call_watchers(self, 'viewport_changed')
         self.setWindowTitle(self.tr("Kataja"))
         self.print_started = False
         self.show()

@@ -60,7 +60,7 @@ class TwoStateButton(PanelButton):
         if self.image1:
             image1 = colored_image(ctrl.cm.ui(), self.image1)
         else:
-            image1 = colored_image(ctrl.cm.paper(), self.image1)
+            image1 = colored_image(ctrl.cm.paper(), self.image0)
         self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
         self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))
 

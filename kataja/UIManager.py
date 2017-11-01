@@ -40,7 +40,6 @@ from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, prefs, qt_prefs, log
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
-from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_support.FloatingTip import FloatingTip
 from kataja.ui_widgets.DragInfo import DragInfo
@@ -182,7 +181,8 @@ class UIManager:
         self.create_float_buttons()
         ctrl.add_watcher(self, 'selection_changed')
         ctrl.add_watcher(self, 'forest_changed')
-        ctrl.add_watcher(self, 'viewport_changed')
+        ctrl.add_watcher(self, 'viewport_moved')
+        ctrl.add_watcher(self, 'viewport_resized')
         ctrl.add_watcher(self, 'ui_font_changed')
 
     def disable_item(self, ui_key):
@@ -333,7 +333,6 @@ class UIManager:
         """
         self.update_positions()
 
-    @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         for action in self.actions.values():
@@ -424,7 +423,7 @@ class UIManager:
                         selection=nodes,
                         persistent=False,
                         color_key=ctrl.free_drawing.get_group_color_suggestion())
-                self.add_ui(self.selection_group)
+                    self.add_ui(self.selection_group)
                 self.add_buttons_for_group(self.selection_group)
             else:
                 self.remove_selection_group()
@@ -594,7 +593,7 @@ class UIManager:
             if a:
                 return a
             else:
-                log.critical(f'missing action: {key}')
+                log.critical(f'missing action: "{key}"')
         else:
             log.critical(f'get_action called with empty key')
 
@@ -790,8 +789,7 @@ class UIManager:
         if isinstance(action, str):
             kataja_action = self.get_action(action)
             if not kataja_action:
-                print('missing action:', action)
-                log.error(f'trying to connect non-existing action: {action}')
+                log.error(f'trying to connect non-existing action: "{action}"')
             else:
                 kataja_action.connect_element(element, connect_slot=connect_slot)
         elif isinstance(action, KatajaAction):
@@ -1036,13 +1034,8 @@ class UIManager:
 
         :param node:
         """
-        # assert (node.locked or node.use_adjustment)
-        anchor = self.get_ui_by_type(node, 'FadingSymbol')
-        if not anchor:
-            anchor = FadingSymbol(qt_prefs.lock_pixmap, node, place='bottom_right')
-            # print u"\U0001F512" , unichr(9875) # unichr(9875)
-            self.add_ui(anchor)
-            anchor.fade_out()
+        anchor = self.get_or_create_button(node, ob.LockButton)
+        anchor.fade_out()
 
 
     # ### Messages
@@ -1273,7 +1266,9 @@ class UIManager:
         elif signal == 'forest_changed':
             self.clear_items()
             #self.update_actions()
-        elif signal == 'viewport_changed':
+        elif signal == 'viewport_moved':
+            self.update_positions()
+        elif signal == 'viewport_resized':
             self.update_positions()
             if self.top_bar_buttons:
                 self.top_bar_buttons.update_position()

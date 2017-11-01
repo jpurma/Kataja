@@ -167,6 +167,7 @@ class Node(Movable):
                 ctrl.forest.nodes_from_synobs[synobj.uid] = self
             elif old and not synobj:
                 del ctrl.forest.nodes_from_synobs[old.uid]
+        self.update_label()
 
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
@@ -1054,6 +1055,8 @@ class Node(Movable):
             self.current_position = lp.x(), lp.y()
             self.stop_moving()
             self.update_bounding_rect()
+            if isinstance(was_locked, Node):
+                was_locked.update_bounding_rect()
 
     def lock_to_node(self, parent, move_to=None):
         previously = self.locked_to_node
@@ -1068,6 +1071,8 @@ class Node(Movable):
             if move_to:
                 self.move_to(*move_to)
             parent.update_bounding_rect()
+            if isinstance(previously, Node):
+                previously.update_bounding_rect()
         elif move_to:
             self.move_to(*move_to)
             parent.update_bounding_rect()

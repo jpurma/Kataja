@@ -361,23 +361,30 @@ class Forest(SavedObject):
         :param node: Node instance
         """
 
-        def _tree_as_text(tree_top, node, gap):
+        def _tree_as_text(tree_top, delimiter=' '):
+            """ Cheapo linearization algorithm for Node structures."""
+            sorted_cons = tree_top.get_sorted_leaf_constituents()
+            l = [str(n.syntactic_object) for n in sorted_cons]
+            return delimiter.join(l)
+
+        def _partial_tree_as_text(tree_top, node, delimiter=' '):
             """ Cheapo linearization algorithm for Node structures."""
             sorted_cons = tree_top.get_sorted_constituents()
             if node not in sorted_cons:
                 return ''
             i = sorted_cons.index(node)
             l = [str(n.syntactic_object) for n in sorted_cons[i:]]
-            return gap.join(l)
+            return delimiter.join(l)
+
 
         if tree_top:
-            return _tree_as_text(tree_top, tree_top, ' ')
+            return _tree_as_text(tree_top)
         elif node:
-            return _tree_as_text(node.get_highest(), node, ' ')
+            return _partial_tree_as_text(node.get_highest(), node)
         else:
             trees = []
             for tree_top in self.trees:
-                new_line = _tree_as_text(tree_top, tree_top, ' ')
+                new_line = _tree_as_text(tree_top)
                 if new_line:
                     trees.append(new_line)
             return '/ '.join(trees)

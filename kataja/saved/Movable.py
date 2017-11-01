@@ -88,8 +88,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
         self._dragged = False
-        self.trees = set() # each Movable belongs to some trees, either formed by Movable
-        # alone or set of Movables. Tree has abstract position adjustment information.
 
         self.k_tooltip = ''
         self.k_action = None
@@ -400,13 +398,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def _current_position_changed(self, value):
         self.setPos(value[0], value[1])
 
-    def _compute_adjustment_from_current_pos(self):
-        cpos_x, cpos_y = self.current_position
-        tpos_x, tpos_y = self.target_position
-        adj_x = tpos_x - cpos_x
-        adj_y = tpos_y - cpos_y
-        self.adjustment = adj_x, adj_y
-
     def update_position(self):
         """ Compute new current_position and target_position
         :return: None
@@ -430,7 +421,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         if self.use_physics():
             self.locked = True
         else:
-            self._compute_adjustment_from_current_pos()
             self.use_adjustment = True
 
     def is_visible(self):
@@ -638,5 +628,4 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
     static = SavedField("static")
-    trees = SavedField("trees")
     locked_to_node = SavedField("locked_to_node")

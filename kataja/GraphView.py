@@ -152,10 +152,10 @@ class GraphView(QtWidgets.QGraphicsView):
             self.setSceneRect(sr + QtCore.QMarginsF(500, 500, 0, 0))
         self.fitInView(target_rect, 1)
         self._fit_scale = self.transform().m11()
-        ctrl.call_watchers(self, 'viewport_changed')
+        ctrl.call_watchers(self, 'viewport_moved')
 
     def scrollContentsBy(self, x, y):
-        ctrl.call_watchers(self, 'viewport_changed')
+        ctrl.call_watchers(self, 'viewport_moved')
         QtWidgets.QGraphicsView.scrollContentsBy(self, x, y)
 
     def scale_view_by(self, delta):
@@ -175,7 +175,7 @@ class GraphView(QtWidgets.QGraphicsView):
             factor = 9.0
         self.resetTransform()
         self.scale(factor, factor)
-        ctrl.call_watchers(self, 'viewport_changed')
+        ctrl.call_watchers(self, 'viewport_moved')
         return factor
 
     # ## WINDOW ###
@@ -187,7 +187,7 @@ class GraphView(QtWidgets.QGraphicsView):
         """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
         # self._last_rect = self.mapToScene(self.rect()).boundingRect()
-        ctrl.call_watchers(self, 'viewport_changed')
+        ctrl.call_watchers(self, 'viewport_resized')
 
     # ######### MOUSE ##############
 
