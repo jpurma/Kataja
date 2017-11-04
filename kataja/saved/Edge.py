@@ -199,6 +199,18 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             print('unnecessary show in edge')
 
+    def final_start_node(self):
+        if not self.start_links_to:
+            return self.start
+        else:
+            return self.start_links_to.final_start_node()
+
+    def final_end_node(self):
+        if not self.end_links_to:
+            return self.end
+        else:
+            return self.end_links_to.final_end_node()
+
     def update_start_symbol(self):
         if self.start_links_to:
             self.start_symbol = 0
@@ -531,11 +543,15 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self._hovering = True
             self.prepareGeometryChange()
             self.update()
+            self.final_start_node().hovering = True
+            self.final_end_node().hovering = True
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.flattened_settings['z_value'])
             self.update()
+            self.final_start_node().hovering = False
+            self.final_end_node().hovering = False
 
     def hoverEnterEvent(self, event):
         """
