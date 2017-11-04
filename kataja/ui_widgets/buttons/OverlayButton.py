@@ -189,18 +189,7 @@ class RemoveArrowButton(OverlayButton):
             self.move(pos)
 
 
-class RemoveMergerButton(OverlayButton):
-    """ Button to delete unnecessary node between grandparent and child"""
-
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, pixmap='delete_icon',
-                         action='remove_merger')
-        self.priority = 99
-
-    @classmethod
-    def condition(cls, host):
-        return ctrl.free_drawing_mode and host.node_type == g.CONSTITUENT_NODE and \
-               host.is_unnecessary_merger()
+class NodeOverlayButton(OverlayButton):
 
     def update_position(self):
         """ """
@@ -220,7 +209,21 @@ class RemoveMergerButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
-class RemoveNodeButton(OverlayButton):
+class RemoveMergerButton(NodeOverlayButton):
+    """ Button to delete unnecessary node between grandparent and child"""
+
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, pixmap='delete_icon',
+                         action='remove_merger')
+        self.priority = 99
+
+    @classmethod
+    def condition(cls, host):
+        return ctrl.free_drawing_mode and host.node_type == g.CONSTITUENT_NODE and \
+               host.is_unnecessary_merger()
+
+
+class RemoveNodeButton(NodeOverlayButton):
     """ Button to delete node """
 
     def __init__(self, host, parent):
@@ -235,23 +238,17 @@ class RemoveNodeButton(OverlayButton):
             or host.node_type != g.CONSTITUENT_NODE
         )
 
-    def update_position(self):
-        """ """
 
-        x, y = self.host.centered_scene_position
-        p = ctrl.main.graph_view.mapFromScene(
-            QtCore.QPointF(x + self.host.width / 2, y - self.host.height / 2))
-        p += QtCore.QPoint(4, -self.height())
-        p = self.avoid_overlaps(p, 16, 0)
-        self.move(p)
+class NodeUnlockButton(NodeOverlayButton):
 
-    def enterEvent(self, event):
-        self.host.hovering = True
-        OverlayButton.enterEvent(self, event)
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16, color_key=host.get_color_key(),
+                         pixmap='unlock_icon', action='reset_adjustment')
+        self.priority = 101
 
-    def leaveEvent(self, event):
-        self.host.hovering = False
-        OverlayButton.leaveEvent(self, event)
+    @classmethod
+    def condition(cls, host):
+        return host.use_adjustment or host.locked
 
 
 class GroupButton(OverlayButton):

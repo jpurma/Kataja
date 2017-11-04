@@ -126,6 +126,24 @@ class RemoveNode(KatajaAction):
         ctrl.forest.forest_edited()
 
 
+class ResetAdjustment(KatajaAction):
+    k_action_uid = 'reset_adjustment'
+    k_command = 'Remove position adjustment'
+
+    def prepare_parameters(self, args, kwargs):
+        node = self.get_host()
+        return [node.uid], kwargs
+
+    def method(self, node_uid):
+        """ Remove given node
+        :param node_uid: int or string, node's unique identifier
+        :return:
+        """
+        node = ctrl.forest.nodes[node_uid]
+        node.release()
+        ctrl.ui.update_buttons_for_selected_node(node)
+
+
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
     k_command = 'Turn node and its children into triangle'

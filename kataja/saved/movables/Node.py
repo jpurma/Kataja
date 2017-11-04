@@ -104,7 +104,8 @@ class Node(Movable):
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
-    buttons_when_selected = [Buttons.NodeEditorButton, Buttons.RemoveNodeButton]
+    buttons_when_selected = [Buttons.NodeEditorButton, Buttons.RemoveNodeButton,
+                             Buttons.NodeUnlockButton]
 
     def __init__(self):
         """ Node is an abstract class that shouldn't be used by itself, though

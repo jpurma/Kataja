@@ -246,9 +246,10 @@ class Settings:
             else:
                 self.prefs.edges[edge_type][key] = value
             self.edge_type_chains[edge_type].maps[2] = self.prefs.edges[edge_type]
-        for edge in ctrl.forest.edges.values():
-            if edge.edge_type == edge_type:
-                edge.flatten_settings()
+        if ctrl.forest:
+            for edge in ctrl.forest.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.flatten_settings()
 
     def del_edge_setting(self, key, edge_type=None, obj=None, level=OBJECT):
         if not (obj or edge_type):

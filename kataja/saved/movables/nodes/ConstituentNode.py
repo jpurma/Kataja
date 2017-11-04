@@ -100,7 +100,8 @@ class ConstituentNode(Node):
                                  ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
                                  ta.RemoveTriangleTouchArea]
 
-    buttons_when_selected = [ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton]
+    buttons_when_selected = [ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton,
+                             ob.NodeUnlockButton]
 
     def __init__(self, label=''):
         """ Most of the initiation is inherited from Node """
@@ -643,13 +644,14 @@ class ConstituentNode(Node):
                         left_nods.append(fnode)
             y = top_y
             if in_card:
+                nup_width = 4
                 hspace = ch - top_y
                 if left_nods:
                     node_hspace = hspace / len(left_nods)
                     half_h = node_hspace / 2
                     for fnode in left_nods:
                         fbr = fnode.future_children_bounding_rect()
-                        fnode.move_to(left_margin - fbr.x(), y + half_h)
+                        fnode.move_to(left_margin - fbr.x() - nup_width, y + half_h)
                         y += node_hspace
                 if right_nods:
                     y = top_y
