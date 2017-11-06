@@ -70,6 +70,7 @@ from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_widgets.HeadingWidget import HeadingWidget
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
 
@@ -154,6 +155,7 @@ class UIManager:
         self._panel_positions = {}
         self.active_embed = None
         self.moving_things = set()
+        self.heading = None
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
         self.active_scope = g.DOCUMENT
@@ -1245,6 +1247,19 @@ class UIManager:
         if self.floating_tip:
             self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
+
+    def refresh_heading(self):
+        if not ctrl.forest:
+            return
+        heading = ctrl.forest.heading_text or ''
+        if not self.heading:
+            self.heading = HeadingWidget(ctrl.graph_view)
+            self.heading.move(50, 100)
+        self.heading.set_text(heading)
+
+    def toggle_heading(self):
+        self.heading.set_folded(not self.heading.folded)
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
         listen. These signals
@@ -1265,6 +1280,7 @@ class UIManager:
             #self.update_actions()
         elif signal == 'forest_changed':
             self.clear_items()
+            self.refresh_heading()
             #self.update_actions()
         elif signal == 'viewport_moved':
             self.update_positions()

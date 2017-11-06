@@ -59,6 +59,25 @@ class TogglePanel(KatajaAction):
         ctrl.ui.toggle_panel(panel_id)
 
 
+
+class ToggleHeading(KatajaAction):
+    k_action_uid = 'toggle_heading'
+    k_command = 'Fold heading'
+    k_command_alt = 'Unfold heading'
+    k_checkable = True
+    k_undoable = False
+    k_exclusive = False
+    k_tooltip = 'Hide or show heading'
+    k_tooltip_alt = 'Show this heading'
+
+    def method(self):
+        """ Show or hide panel depending if it is visible or not
+        :param panel_id: enum of panel identifiers (str)
+        """
+        ctrl.ui.toggle_heading()
+
+
+
 class ToggleFoldPanel(KatajaAction):
     k_action_uid = 'toggle_fold_panel'
     k_command = 'Fold panel'

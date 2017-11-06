@@ -460,6 +460,8 @@ class FeatureNode(Node):
             elif self.name:
                 c_id = ord(self.name[0]) % 8 + 1
                 c = ctrl.cm.get('accent' + str(c_id))
+            else:
+                c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
             elif self.drag_data or self._hovering:
@@ -479,6 +481,8 @@ class FeatureNode(Node):
             elif self.name:
                 c_id = ord(self.name[0]) % 8 + 1
                 c = ctrl.cm.get('accent' + str(c_id))
+            else:
+                c = self.color
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
             elif self.drag_data or self._hovering:

@@ -164,8 +164,8 @@ class KatajaDocument(SavedObject):
         buildstring = []
         # definitions includes given definitions for constituents of this trees
         definitions = {}
-        # gloss_text is the gloss for whole trees
-        gloss_text = ''
+        # heading_text is the explanation or gloss for whole trees
+        heading_text = ''
         # comments are internal notes about the trees, displayed as help text or something
         comments = []
         started_forest = False
@@ -191,13 +191,13 @@ class KatajaDocument(SavedObject):
                 if started_forest:
                     if line.endswith("'"):
                         line = line[:-1]
-                    gloss_text = line[1:]
+                    heading_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
                 syn = syntax_class()
                 syn.sentence = buildstring
                 syn.lexicon = definitions
-                forest = Forest(gloss_text=gloss_text,
+                forest = Forest(heading_text=heading_text,
                                 comments=comments,
                                 syntax=syn)
                 self.forests.append(forest)
@@ -207,7 +207,7 @@ class KatajaDocument(SavedObject):
                 started_forest = True
                 buildstring = line
                 definitions = {}
-                gloss_text = ''
+                heading_text = ''
                 comments = []
             # another trees definition, append to previous
             elif line:
@@ -216,13 +216,13 @@ class KatajaDocument(SavedObject):
             syn = syntax_class()
             syn.sentence = buildstring
             syn.lexicon = definitions
-            forest = Forest(gloss_text=gloss_text,
+            forest = Forest(heading_text=heading_text,
                             comments=comments,
                             syntax=syn)
             self.forests.append(forest)
         if not self.forests:
             syn = syntax_class()
-            forest = Forest(gloss_text='',
+            forest = Forest(heading_text='',
                             comments=[],
                             syntax=syn)
             self.forests.append(forest)

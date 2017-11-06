@@ -55,13 +55,6 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     animate = True
 
-    # Don't delete gloss node if we have message to show
-    gloss_strat = ctrl.settings.get('gloss_strategy')
-    if gloss_strat != 'no' and syn_state.msg:
-        for gloss in forest.glossa:
-            if gloss.uid in node_keys_to_validate:
-                node_keys_to_validate.remove(gloss.uid)
-
     # if numeration:
     #    num_tree = forest.get_numeration()
 
@@ -414,7 +407,7 @@ def syntactic_state_to_nodes(forest, syn_state):
     # ---------
     strat = ctrl.settings.get('gloss_strategy')
     if strat and strat == 'message':
-        forest.gloss_text = syn_state.msg
+        forest.heading_text = syn_state.msg
     forest.update_forest_gloss()
     forest.guessed_projections = False
     # ctrl.graph_scene.fit_to_window(force=True)

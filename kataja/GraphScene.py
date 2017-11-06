@@ -192,7 +192,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         x_max = -6000
         empty = True
         f = ctrl.forest
-        for item in chain(f.glossa, f.nodes.values(), f.groups.values()):
+        for item in chain(f.nodes.values(), f.groups.values()):
             if not item.isVisible():
                 continue
             empty = False

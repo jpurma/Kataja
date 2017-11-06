@@ -63,7 +63,7 @@ class Document(KatajaDocument):
             syn = classes.get('SyntaxConnection')()
             syn.sentence = sentence
             syn.lexicon = grammar
-            forest = Forest(gloss_text=sentence, syntax=syn)
+            forest = Forest(heading_text=sentence, syntax=syn)
             self.forests.append(forest)
         self.current_index = 0
         self.forest = self.forests[0]

@@ -109,6 +109,8 @@ TwoStateIconButton, TwoStateIconButton:checked {border: 1px solid transparent;
                                              background-color: transparent;}
 TwoStateIconButton:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s;}
 TwoStateIconButton:hover {border: 1px solid %(ui)s; background-color: %(paper)s; border-radius: 3}
+HeadingWidget QLabel {font-family: "%(main_font)s"; 
+               font-size: %(heading_font_size)spx;}
 """
 # EyeButton {border: 1px solid %(ui_darker)s;}
 # EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
@@ -220,7 +222,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             'ui_font_larger': int(f.pointSize() * 1.2),
             'ui_darker': ui.darker().name(),
             'main_font': fm.family(),
-            'main_font_size': fm.pointSize()
+            'main_font_size': fm.pointSize(),
+            'heading_font_size': fm.pointSize() * 2
         })
 
     def leaveEvent(self, event):

@@ -56,7 +56,7 @@ class Forest(SavedObject):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self, gloss_text='', comments=None, syntax=None):
+    def __init__(self, heading_text='', comments=None, syntax=None):
         """ Create an empty forest. Gloss_text and comments are metadata
         about trees that doesn't belong to syntax implementation, so its kept here. Syntax
         implementations may still use it.
@@ -73,7 +73,6 @@ class Forest(SavedObject):
         # creating the managers.
         self.in_display = False
         self.visualization = None
-        self.glossa = []
         self.is_parsed = False
         self.syntax = syntax or classes.get('SyntaxConnection')()
         self.parser = INodeToKatajaConstituent(self)
@@ -94,7 +93,7 @@ class Forest(SavedObject):
         self.width_map = {}
         self.traces_to_draw = {}
         self.comments = []
-        self.gloss_text = gloss_text
+        self.heading_text = heading_text
         self.ongoing_animations = set()
         self.halt_drawing = False
         self.comments = comments
@@ -196,8 +195,7 @@ class Forest(SavedObject):
         self.width_map = {}
         self.traces_to_draw = {}
         self.comments = []
-        self.gloss_text = ''
-        self.glossa = []
+        self.heading_text = ''
 
     def forest_edited(self):
         """ Called after forest editing/free drawing actions that have changed the node graph.
@@ -492,8 +490,7 @@ class Forest(SavedObject):
                                     self.others.values(),
                                     self.projection_manager.projection_visuals,
                                     self.semantics_manager.all_items,
-                                    self.groups.values(),
-                                    self.glossa):
+                                    self.groups.values()):
                 yield item
 
     def get_object_by_uid(self, uid):
@@ -675,34 +672,16 @@ class Forest(SavedObject):
                     gt = ctrl.syntax.linearize(tree_top)
                     if gt:
                         gts.append(gt)
-                self.gloss_text = ' '.join(gts)
+                self.heading_text = ' '.join(gts)
             elif strat == 'message':
                 pass
             elif strat == 'manual':
                 pass
             elif strat == 'no':
-                self.gloss_text = ''
+                self.heading_text = ''
         else:
-            self.gloss_text = ''
+            self.heading_text = ''
 
-        if self.gloss_text and not ctrl.settings.get('syntactic_mode'):
-            if not self.glossa:
-                gloss = self.free_drawing.create_node(node_type=g.GLOSS_NODE)
-                self.glossa = [gloss]
-                gloss.static = True
-                gloss.label = self.gloss_text
-            gloss = self.glossa[0]
-            if gloss.text != self.gloss_text:
-                gloss.label = self.gloss_text
-            gloss.update_label()
-            gloss.physics_x = False
-            gloss.physics_y = False
-            gloss.put_to_top_of_trees()
-            #self.gloss.show()
-        elif self.glossa:
-            for g in self.glossa:
-                self.remove_from_scene(g)
-            self.glossa = []
 
     def update_feature_ordering(self):
 
@@ -912,7 +891,7 @@ class Forest(SavedObject):
     vis_data = SavedField("vis_data", watcher="visualization")
     derivation_steps = SavedField("derivation_steps")
     comments = SavedField("comments")
-    gloss_text = SavedField("gloss_text")
+    heading_text = SavedField("heading_text")
     syntax = SavedField("syntax")
     is_parsed = SavedField("is_parsed")
     gloss = SavedField("gloss")

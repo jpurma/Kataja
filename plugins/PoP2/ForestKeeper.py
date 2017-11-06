@@ -87,7 +87,7 @@ class PoPDocument(KatajaDocument):
             ug.gloss = sentence
             target_example = ast.literal_eval(lbracket + target_str)
             ug.out(sentence_number, sentence, target_example)
-            forest = Forest(gloss_text=sentence)
+            forest = Forest(heading_text=sentence)
             self.forests.append(forest)
             so = ug.generate_derivation(target_example, forest=forest)
 
