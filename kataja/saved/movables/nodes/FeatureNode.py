@@ -36,27 +36,36 @@ from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.utils import to_tuple
 
-color_map = {'tense': 'accent7',
-             'order': 'accent1',
-             'person': 'accent2',
-             'number': 'accent4',
-             'case': 'accent6',
-             'unknown': 'accent3',
-             'N': 'accent1',
-             'D': 'accent2',
-             'V': 'accent3',
-             'T': 'accent4',
-             'F': 'accent5',
-             'C': 'accent7',
-             'wh': 'accent6',
-             'n': 'accent1',
-             'd': 'accent2',
-             'v': 'accent3',
-             't': 'accent4',
-             'p': 'accent5',
-             'q': 'accent6',
-             'c': 'accent7',
-}
+color_map = {
+    'tense': 'accent7',
+    'order': 'accent1',
+    'person': 'accent2',
+    'number': 'accent4',
+    'case': 'accent6',
+    'unknown': 'accent3',
+    'N': 'accent1',
+    'D': 'accent2',
+    'V': 'accent3',
+    'T': 'accent4',
+    'F': 'accent5',
+    'C': 'accent7',
+    'wh': 'accent6',
+    'n': 'accent1',
+    'd': 'accent2',
+    'v': 'accent3',
+    't': 'accent4',
+    'p': 'accent5',
+    'q': 'accent6',
+    'c': 'accent7',
+            }
+
+
+def get_host_for_synobj(synobj):
+    fnode = ctrl.forest.get_node(synobj)
+    if fnode:
+        for parent in fnode.get_parents():
+            if parent.node_type == g.CONSTITUENT_NODE:
+                return parent
 
 
 class FeatureNode(Node):
@@ -133,6 +142,22 @@ class FeatureNode(Node):
             x += random.uniform(-4, 4)
             y += random.uniform(-4, 4)
         self.set_original_position((x, y))
+
+    def get_checks_node(self):
+        if self.syntactic_object:
+            checks = self.syntactic_object.checks
+            if checks:
+                return ctrl.forest.get_node(checks)
+        else:
+            return self.checks
+
+    def get_checked_by_node(self):
+        if self.syntactic_object:
+            checked_by = self.syntactic_object.checked_by
+            if checked_by:
+                return ctrl.forest.get_node(checked_by)
+        else:
+            return self.checked_by
 
     def compose_html_for_viewing(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
@@ -578,17 +603,41 @@ class FeatureNode(Node):
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
+        synobj = self.syntactic_object
         tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
         ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
 
         lines = []
         lines.append("<strong>Feature:</strong>")
-        lines.append(f" name: {self.name} value: {self.value} ")
+        lines.append(f" name: '{self.name}' value: '{self.value}' ")
         if self.family:
-            lines.append(f"family: {self.family}")
+            lines.append(f"family: '{self.family}'")
+        host = self.get_host()
+        if host:
+            lines.append(f"belonging to: '{host}'")
+        if synobj:
+            if synobj.checks:
+                host = get_host_for_synobj(synobj.checks)
+                if host:
+                    lines.append(f"checks: '{synobj.checks}' of '{host}'")
+                else:
+                    lines.append(f"checks: '{synobj.checks}'")
+            if synobj.checked_by:
+                host = get_host_for_synobj(synobj.checked_by)
+                if host:
+                    lines.append(f"checked by: '{synobj.checked_by}' of '{host}'")
+                else:
+                    lines.append(f"checked by: '{synobj.checked_by}'")
+        else:
+            if self.checks:
+                lines.append(f"checks: '{self.checks}' of '{self.checks.get_host()}'")
+            if self.checked_by:
+                lines.append(f"checked by: '{self.checked_by}' of '{self.checked_by.get_host()}'")
         lines.append("")
-        lines.append(f"<i>uid: {self.uid}</i>")
-        lines.append(f"synobj: {self.syntactic_object}")
+        lines.append(f'uid: {tt_style % self.uid}')
+        if self.syntactic_object:
+            lines.append(f"synobj: '{self.syntactic_object}', "
+                         f"{tt_style % self.syntactic_object.uid}")
         lines.append("")
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
@@ -597,9 +646,28 @@ class FeatureNode(Node):
 
         self.k_tooltip = '<br/>'.join(lines)
 
+    def _start_hover(self):
+        super()._start_hover()
+        ch = self.get_checks_node()
+        if ch:
+            ch.hovering = True
+        ch_by = self.get_checked_by_node()
+        if ch_by:
+            ch_by.hovering = True
+
+    def _stop_hover(self):
+        super()._stop_hover()
+        ch = self.get_checks_node()
+        if ch:
+            ch.hovering = False
+        ch_by = self.get_checked_by_node()
+        if ch_by:
+            ch_by.hovering = False
+
     def get_host(self):
-        for parent in self.get_parents(of_type=g.CONSTITUENT_NODE):
-            return parent
+        for parent in self.get_parents():
+            if parent.node_type == g.CONSTITUENT_NODE:
+                return parent
 
     # ############## #
     #                #

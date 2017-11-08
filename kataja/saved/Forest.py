@@ -568,7 +568,6 @@ class Forest(SavedObject):
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
-        print('redrawing forest, start_animations: ', start_animations)
         if not prefs.auto_zoom:
             ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
         sc = ctrl.graph_scene
@@ -681,6 +680,7 @@ class Forest(SavedObject):
                 self.heading_text = ''
         else:
             self.heading_text = ''
+        ctrl.ui.refresh_heading()
 
 
     def update_feature_ordering(self):

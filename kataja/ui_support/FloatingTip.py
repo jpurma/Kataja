@@ -23,6 +23,7 @@ class FloatingTip(QtWidgets.QLabel):
         if item is not self.item:
             self.item = item
             self.setText(item.k_tooltip or item.k_action.active_tooltip)
+            self.adjustSize()
 
     ##def enterEvent(self, event):
     #    self.show()

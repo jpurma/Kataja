@@ -543,15 +543,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self._hovering = True
             self.prepareGeometryChange()
             self.update()
-            self.final_start_node().hovering = True
-            self.final_end_node().hovering = True
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.flattened_settings['z_value'])
             self.update()
-            self.final_start_node().hovering = False
-            self.final_end_node().hovering = False
 
     def hoverEnterEvent(self, event):
         """
@@ -559,7 +555,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
-        self.hovering = True
+        if not self._hovering:
+            self.hovering = True
+            self.final_start_node().hovering = True
+            self.final_end_node().hovering = True
+
         ctrl.ui.show_help(self, event)
         event.accept()
         # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
@@ -573,10 +573,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :param event:
         """
-        if self.hovering:
+        if self._hovering:
             self.hovering = False
             ctrl.ui.hide_help(self, event)
             QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+            self.final_start_node().hovering = False
+            self.final_end_node().hovering = False
 
     # ## Scene-managed call
 
