@@ -291,6 +291,8 @@ class PrintToFile(KatajaAction):
         sc.setBackgroundBrush(no_brush)
         sc.photo_frame = sc.addRect(sc.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
         sc.update()
+        for node in ctrl.forest.nodes.values():
+            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
         ctrl.graph_view.repaint()
         ctrl.main.print_started = True  # to avoid a bug where other timers end up triggering main's
         ctrl.main.startTimer(50)

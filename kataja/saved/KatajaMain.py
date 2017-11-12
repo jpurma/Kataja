@@ -614,6 +614,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         # Thank you!
         # Restore image
+        for node in ctrl.forest.nodes.values():
+            node.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
 
     # Not called from anywhere yet, but useful

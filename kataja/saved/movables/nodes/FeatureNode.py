@@ -328,7 +328,6 @@ class FeatureNode(Node):
         need to be accounted in their bounding rect
         :return:
         """
-        self.prepareGeometryChange()
         lbw = FeatureNode.width
         lbh = FeatureNode.height
         lbx = 0
@@ -368,13 +367,14 @@ class FeatureNode(Node):
         self.width = lbw
         self.height = lbh
 
-        expanding_rect = self.inner_rect
+        expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
             if isinstance(child, Node):
                 expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
         self._cached_child_rect = expanding_rect
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
+        self.prepareGeometryChange()
         return self.inner_rect
 
     def paint(self, painter, option, widget=None):

@@ -153,6 +153,7 @@ class Node(Movable):
         self.setFiltersChildEvents(False)
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
+        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
@@ -918,7 +919,7 @@ class Node(Movable):
         :return:
         """
         my_class = self.__class__
-        self.prepareGeometryChange()
+        obr = self.inner_rect
         if self.user_size is None:
             user_width, user_height = 0, 0
         else:
@@ -963,7 +964,7 @@ class Node(Movable):
                          (x, y + h2), (x_max, y + h2), (x, y_max), (x + w4, y_max), (x + w2, y_max),
                          (x + w2 + w4, y_max), (x_max, y_max)]
 
-        expanding_rect = self.inner_rect
+        expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
             if isinstance(child, Node):
                 expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
@@ -971,10 +972,8 @@ class Node(Movable):
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
-        if ctrl.printing:
-            self.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
-        else:
-            self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
+        if obr != self.inner_rect:
+            self.prepareGeometryChange()
         return self.inner_rect
 
     def overlap_rect(self):
