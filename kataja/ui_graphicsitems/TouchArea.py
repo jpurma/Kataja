@@ -474,7 +474,7 @@ class AbstractBranchingTouchArea(TouchArea):
         ex, ey = self.end_point
         br = QtCore.QRectF(0, 0, sx - ex, sy - ey)
         if self._hovering:
-            br = br.united(LEAF_BR).united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+            br |= LEAF_BR | PLUS_BR.translated(1.2 * symbol_radius, 0)
         return br
 
 
@@ -517,7 +517,7 @@ class MergeToTop(AbstractBranchingTouchArea):
         if self._hovering:
             tops = self.host.get_highest()
             if len(tops) != 1:
-                return QtCore.QRectF(-2, -2, dx + 4, dy + 4).united(LEAF_BR)
+                return QtCore.QRectF(-2, -2, dx + 4, dy + 4) | LEAF_BR
             else:
                 top = tops[0]
                 lmx, lmy = top.magnet(5)
@@ -808,8 +808,7 @@ class AbstractJointedTouchArea(TouchArea):
         if not self.end_point:
             self.update_end_points()
             assert self.end_point
-        return self._path.controlPointRect().united(LEAF_BR).\
-            united(PLUS_BR.translated(1.2 * symbol_radius, 0))
+        return self._path.controlPointRect() | LEAF_BR | PLUS_BR.translated(1.2 * symbol_radius, 0)
 
 
     def shape(self):
@@ -1000,7 +999,7 @@ class AbstractChildTouchArea(TouchArea):
         w = sx - ex
         h = sy - ey
         r = QtCore.QRectF(0, 0, w, h)
-        return r.united(LEAF_BR).united(PLUS_BR.translated(symbol_radius * 1.2, 0))
+        return r | LEAF_BR | PLUS_BR.translated(symbol_radius * 1.2, 0)
 
     def drag(self, event):
         self._dragging = True

@@ -601,8 +601,7 @@ class BlobPath(Shape):
         path3.quadTo(c1x, c1y, ex1, ecy)
         path3.lineTo(ex1 + ew, ecy)
         path3.quadTo(c1x, c1y, sx1 + sw, scy)
-        path = path1.united(path2)
-        path = path.united(path3)
+        path = path1 | path2 | path3
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
         return path.simplified(), inner_path, [], []
@@ -636,8 +635,7 @@ class BlobPath(Shape):
         path3.quadTo(c1x, c1y, el, eu)
         path3.lineTo(el + rw, eu + rh)
         path3.quadTo(c1x, c1y, rl + rw, ru + rh)
-        path = path1.united(path2)
-        path = path.united(path3)
+        path = path1 | path2 | path3
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
         painter.fillPath(path, color)
@@ -701,8 +699,7 @@ class DirectionalBlobPath(Shape):
             path3.quadTo(c1x, c1y, ex1, ecy)
             path3.lineTo(ex1 + ew, ecy)
             path3.quadTo(c1x, c1y, sx1 + sw, scy)
-            path = path1.united(path2)
-            path = path.united(path3)
+            path = path1 | path2 | path3
             if start_ball:
                 path1neg = QtGui.QPainterPath()
                 path1neg.addEllipse(sx1, sy1, sw, sh)
@@ -740,7 +737,7 @@ class DirectionalBlobPath(Shape):
                 path1neg = QtGui.QPainterPath()
                 path1.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
                 path1neg.addEllipse(ex1, ey1, ew, eh)
-                path = path.united(path1)
+                path |= path1
                 path = path.subtracted(path1neg)
 
         return path.simplified(), inner_path, [], []
@@ -774,8 +771,7 @@ class DirectionalBlobPath(Shape):
         path3.quadTo(c1x, c1y, el, eu)
         path3.lineTo(el + rw, eu + rh)
         path3.quadTo(c1x, c1y, rl + rw, ru + rh)
-        path = path1.united(path2)
-        path = path.united(path3)
+        path = path1 | path2 | path3
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
         painter.fillPath(path, color)

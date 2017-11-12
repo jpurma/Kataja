@@ -170,6 +170,12 @@ class Node(Movable):
                 del ctrl.forest.nodes_from_synobs[old.uid]
         self.update_label()
 
+    def __lt__(self, other):
+        return self.label < other.label
+
+    def __gt__(self, other):
+        return self.label > other.label
+
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
         return self.__class__.default_edge
@@ -891,14 +897,15 @@ class Node(Movable):
         # painter.drawRect(-2, -2, 4, 4)
         if False:  # False and not self.static:
             painter.setBrush(ctrl.cm.get('accent4tr'))
-            b = QtCore.QRectF(self.future_children_bounding_rect())
+            #b = QtCore.QRectF(self.future_children_bounding_rect())
             # if b.width() < b.height():
             #    b.setWidth(b.height())
             # elif b.height() < b.width():
             #    b.setHeight(b.width())
-            painter.drawEllipse(b)
+            #painter.drawEllipse(b)
 
-            # painter.drawRect(self.inner_rect)
+            painter.drawRect(self.future_children_bounding_rect())
+            #painter.drawRect(self.inner_rect)
 
     def has_visible_label(self):
         """
@@ -959,12 +966,7 @@ class Node(Movable):
         expanding_rect = self.inner_rect
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = QtCore.QRectF(child.future_children_bounding_rect())
-                ox = c_br.left()
-                oy = c_br.top()
-                x, y = child.target_position
-                c_br.moveTo(x + ox, y + oy)
-                expanding_rect = expanding_rect.united(c_br)
+                expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
         self._cached_child_rect = expanding_rect
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:

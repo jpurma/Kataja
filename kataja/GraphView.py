@@ -228,7 +228,7 @@ class GraphView(QtWidgets.QGraphicsView):
                     else:
                         br = QtCore.QRectF()
                         for item in ctrl.selected:
-                            br = br.united(item.sceneBoundingRect())
+                            br |= item.sceneBoundingRect()
                         self.centerOn(br.center())
                 else:
                     self.centerOn(view_center)

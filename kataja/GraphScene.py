@@ -104,6 +104,58 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._cached_visible_rect = vr
 
     @staticmethod
+    @time_me
+    def visible_rect(min_w=200, min_h=100, current=True):
+        """ Counts all visible items in scene and returns QRectF object
+         that contains all of them """
+        y_min = 6000
+        y_max = -6000
+        x_min = 6000
+        x_max = -6000
+        empty = True
+        # gl = ctrl.forest.gloss
+        # if gl and gl.isVisible():
+        #     minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
+        #     if minx < x_min:
+        #         x_min = minx
+        #     if maxx > x_max:
+        #         x_max = maxx
+        #     if miny < y_min:
+        #         y_min = miny
+        #     if maxy > y_max:
+        #         y_max = maxy
+        #     empty = False
+
+        # , ctrl.forest.groups.values())
+        total = QtCore.QRectF()
+        for node in ctrl.forest.nodes.values():
+            if not node:
+                continue
+            if node.parentItem():
+                continue
+            if not node.isVisible():
+                continue
+            empty = False
+            if current:
+                total |= node.sceneBoundingRect()
+            else:
+                if node._is_moving:
+                    scx, scy = node.target_position
+                else:
+                    scx, scy = node.current_position
+                total |= node.future_children_bounding_rect().translated(scx, scy)
+
+        sm = ctrl.forest.semantics_manager
+        if sm.visible:
+            for item in sm.all_items:
+                total |= item.sceneBoundingRect()
+
+        if empty:
+            return QtCore.QRectF(0, 0, 320, 240)
+        else:
+            return total
+
+    @staticmethod
     def visible_rect(min_w=200, min_h=100, current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
@@ -135,17 +187,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             empty = False
             if current:
-                minx, miny, maxx, maxy = (int(x) for x in node.sceneBoundingRect().getCoords())
+                minx, miny, maxx, maxy = node.sceneBoundingRect().getCoords()
             else:
-                r = node.future_children_bounding_rect()
                 if node._is_moving:
                     scx, scy = node.target_position
                 else:
                     scx, scy = node.current_position
-                minx = r.left() + scx
-                miny = r.top() + scy
-                maxx = r.right() + scx
-                maxy = r.bottom() + scy
+                minx, miny, maxx, maxy = node.future_children_bounding_rect().getCoords()
+                minx += scx
+                miny += scy
+                maxx += scx
+                maxy += scy
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:
@@ -186,55 +238,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
         realtime resizing, but when printing you don't want edges to be clipped.
         :return:
         """
-        y_min = 6000
-        y_max = -6000
-        x_min = 6000
-        x_max = -6000
-        empty = True
         f = ctrl.forest
-        for item in chain(f.nodes.values(), f.groups.values()):
+        total = QtCore.QRectF()
+        for item in chain(f.nodes.values(), f.groups.values(), f.edges.values(), f.semantics_manager.all_items):
             if not item.isVisible():
                 continue
-            empty = False
-            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
-        for item in f.edges.values():
-            if not item.isVisible():
-                continue
-            empty = False
-            minx, miny, maxx, maxy = item.boundingRect().getCoords()
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
-        if f.semantics_manager.visible:
-            for item in f.semantics_manager.all_items:
-                minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
-                if minx < x_min:
-                    x_min = minx
-                if maxx > x_max:
-                    x_max = maxx
-                if miny < y_min:
-                    y_min = miny
-                if maxy > y_max:
-                    y_max = maxy
-        if empty:
-            r = QtCore.QRectF(0, 0, 320, 240)
+            total |= item.sceneBoundingRect()
+        if not total:
+            total = QtCore.QRectF(0, 0, 320, 240)
         else:
-            r = QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
-            r.adjust(-5, -5, 15, 10)
-        return r
+            total.adjust(-5, -5, 15, 10)
+        return total
 
     def item_moved(self):
         """ Starts the animations unless they are running already

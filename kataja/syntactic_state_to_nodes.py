@@ -259,7 +259,7 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     def recursive_update_heads(node):
         if not node.syntactic_object:
-            print(f'node "{node}" doesnt have syntactic object')
+            #print(f'node "{node}" doesnt have syntactic object')
             return []
         my_label = node.syntactic_object.label
         my_label_parts = [x.strip('() ') for x in my_label.split(',')]

@@ -34,7 +34,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, time_me
 
 color_map = {
     'tense': 'accent7',
@@ -328,6 +328,7 @@ class FeatureNode(Node):
         need to be accounted in their bounding rect
         :return:
         """
+        self.prepareGeometryChange()
         lbw = FeatureNode.width
         lbh = FeatureNode.height
         lbx = 0
@@ -370,12 +371,7 @@ class FeatureNode(Node):
         expanding_rect = self.inner_rect
         for child in self.childItems():
             if isinstance(child, Node):
-                c_br = QtCore.QRectF(child.future_children_bounding_rect())
-                ox = c_br.left()
-                oy = c_br.top()
-                x, y = child.target_position
-                c_br.moveTo(x + ox, y + oy)
-                expanding_rect = expanding_rect.united(c_br)
+                expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
         self._cached_child_rect = expanding_rect
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()

@@ -162,6 +162,7 @@ class CommentNode(Node):
         :return:
         """
         if self.image_object:
+            self.prepareGeometryChange()
             my_class = self.__class__
             if self.user_size is None:
                 user_width, user_height = 0, 0
