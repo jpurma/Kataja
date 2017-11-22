@@ -240,7 +240,7 @@ kataja_print*.png
 
 postsetup.py
 
-plugins/myplugin
+plugins/myplugin*
 profile
 profiler_results.log
 

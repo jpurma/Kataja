@@ -226,30 +226,39 @@ class EdgePath:
                 self.computed_end_point = ex + int(y / ratio) + i_shift, ey + y
                 self.curve_dir_end = y_side
 
-    def _connect_start_to_similar(self, sx, sy, start):
+    def _connect_start_to_similar(self, sx, sy):
         i_shift = self.get_shift_for_start()
         upper = self.edge.start_links_to
-        direction = 0
+        d = 0
         if upper:
-            if upper.start_point[0] < upper.end_point[0]:
-                direction = -1
-            elif upper.start_point[0] > upper.end_point[0]:
-                direction = 1
-        self.computed_start_point = sx + i_shift, sy + (i_shift * direction)
+            dx = upper.start_point[0] - upper.end_point[0]
+            dy = upper.start_point[1] - upper.end_point[1]
+            if dy != 0:
+                d = dx / abs(dy)
+                d = max(-1.4, min(1.4, d))
+            elif dx > 0:
+                d = 1.4
+            elif dx < 0:
+                d = -1.4
+        self.computed_start_point = sx + i_shift, sy + (i_shift * d)
         self.curve_dir_start = BOTTOM_SIDE
         self.abstract_start_point = sx, sy
 
     def _connect_end_to_similar(self, ex, ey):
         i_shift = self.get_shift_for_end()
         lower = self.edge.end_links_to
-        direction = 0
+        d = 0
         if lower:
-            if self.edge.start_point[0] < self.edge.end_point[0]:
-                direction = -1
-            elif self.edge.start_point[0] > self.edge.end_point[0]:
-                direction = 1
-
-        self.computed_end_point = ex + i_shift, ey + (i_shift * direction)
+            dx = self.computed_start_point[0] - self.computed_end_point[0]
+            dy = self.computed_start_point[1] - self.computed_end_point[1]
+            if dy != 0:
+                d = dx / abs(dy)
+                d = max(-1.4, min(1.4, d))
+            elif dx > 0:
+                d = 1.4
+            elif dx < 0:
+                d = -1.4
+        self.computed_end_point = ex + i_shift, ey + (i_shift * d)
         self.curve_dir_end = TOP_SIDE
         self.abstract_end_point = ex, ey
 
@@ -290,7 +299,7 @@ class EdgePath:
             elif connection_style == CONNECT_TO_BORDER:
                 self._connect_start_to_border(sx, sy, ex, ey, start)
             elif connection_style == CONNECT_TO_SIMILAR:
-                self._connect_start_to_similar(sx, sy, start)
+                self._connect_start_to_similar(sx, sy)
         if end:
             connection_style = self.edge.flattened_settings['end_connects_to']
             if connection_style == CONNECT_TO_BORDER:

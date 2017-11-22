@@ -28,6 +28,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from collections import ChainMap
 
 import kataja.globals as g
+from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl, prefs
@@ -662,34 +663,30 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 painter.fillPath(self.path.arrowhead_start_path, c)
             if self.path.arrowhead_end_path:
                 painter.fillPath(self.path.arrowhead_end_path, c)
-            if self.start_symbol == 1:
+            if self.start_symbol:
                 x, y = self.path.computed_start_point
-                poly = QtGui.QPolygon([QtCore.QPoint(x, y - 1),
-                                       QtCore.QPoint(x + 1, y),
-                                       QtCore.QPoint(x, y + 1),
-                                       QtCore.QPoint(x - 1, y),
-                                       QtCore.QPoint(x, y - 1)])
-                painter.drawPolygon(poly)
-            elif self.start_symbol == 2:
-                x, y = self.path.computed_start_point
-                poly = QtGui.QPolygon([QtCore.QPoint(x + 2, y - 2),
-                                       QtCore.QPoint(x, y),
-                                       QtCore.QPoint(x - 2, y - 2)])
-                painter.drawPolyline(poly)
-            elif self.start_symbol == 3:
-                x, y = self.path.computed_start_point
-                poly = QtGui.QPolygon([QtCore.QPoint(x + 2, y - 2),
-                                       QtCore.QPoint(x, y),
-                                       QtCore.QPoint(x + 2, y + 2)])
-                painter.drawPolyline(poly)
-            elif self.start_symbol == 4:
-                x, y = self.path.computed_start_point
-                painter.drawLine(x, y, x - 2, y)
-            elif self.start_symbol == 5:
-                x, y = self.path.computed_start_point
-                # ct = ctrl.cm.transparent(c, 160)
-                # painter.setPen(ct)
-                painter.drawLine(x, y, x, y - 4)
+
+                if self.start_symbol == 1:
+                    poly = QtGui.QPolygonF([QtCore.QPointF(x, y - 1),
+                                           QtCore.QPointF(x + 1, y),
+                                           QtCore.QPointF(x, y + 1),
+                                           QtCore.QPointF(x - 1, y),
+                                           QtCore.QPointF(x, y - 1)])
+                    painter.drawPolygon(poly)
+                elif self.start_symbol == EDGE_OPEN:
+                    poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2),
+                                           QtCore.QPointF(x, y),
+                                           QtCore.QPointF(x - 2, y - 2)])
+                    painter.drawPolyline(poly)
+                elif self.start_symbol == EDGE_RECEIVING_NOW:
+                    poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2),
+                                           QtCore.QPointF(x, y),
+                                           QtCore.QPointF(x + 2, y + 2)])
+                    painter.drawPolyline(poly)
+                elif self.start_symbol == EDGE_PLUGGED_IN:
+                    painter.drawLine(QtCore.QLineF(x, y, x - 2, y))
+                elif self.start_symbol == EDGE_CAN_INSERT:
+                    painter.drawLine(QtCore.QLineF(x, y, x, y - 4))
 
         if self.selected and not ctrl.multiple_selection():
             p = QtGui.QPen(ctrl.cm.ui_tr())
@@ -699,8 +696,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             p = QtGui.QPen(ctrl.cm.ui())
             p.setWidthF(1.0)
             painter.setPen(p)
-            painter.drawLine(cx - 20, cy - 10, cx + 20, cy + 10)
-            painter.drawLine(cx - 20, cy + 10, cx + 20, cy - 10)
+            painter.drawLine(QtCore.QLineF(cx - 20, cy - 10, cx + 20, cy + 10))
+            painter.drawLine(QtCore.QLineF(cx - 20, cy + 10, cx + 20, cy - 10))
 
     def end_node_started_moving(self):
         """ Called if the end node has started moving.

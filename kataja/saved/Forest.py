@@ -720,7 +720,7 @@ class Forest(SavedObject):
                         else:
                             check = 2
                         dist = distance(e)
-                        i = local_i[e.alpha.uid]
+                        i = local_i.get(e.alpha.uid, 999)
                         sortables.append((check, dist, i, p, e))
                 sortables.sort()
                 cn.cached_sorted_feature_edges = [e[-1] for e in sortables]

@@ -29,7 +29,8 @@ from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.globals import FEATURE_NODE
+from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
+    EDGE_RECEIVING_NOW, CHECKING_EDGE
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
@@ -565,7 +566,7 @@ class FeatureNode(Node):
                 return (sx, sy), 0
             else:
                 return (ex, ey), 0
-        elif edge_type == g.CHECKING_EDGE:
+        elif edge_type == CHECKING_EDGE:
             br = self.boundingRect()
             left, top, right, bottom = (int(x * .8) for x in br.getCoords())
             if start:
@@ -587,13 +588,13 @@ class FeatureNode(Node):
 
     def get_edge_start_symbol(self):
         if self.satisfies():
-            return 4
+            return EDGE_PLUGGED_IN
         elif self.is_satisfied():
-            return 3
+            return EDGE_RECEIVING_NOW
         elif self.is_needy():
-            return 2
+            return EDGE_OPEN
         elif self.can_satisfy():
-            return 5
+            return EDGE_CAN_INSERT
         else:
             return 0
 
