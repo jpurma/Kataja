@@ -560,7 +560,7 @@ class ConstituentNode(Node):
             return ctrl.cm.lighter(base)
         elif ctrl.pressed is self:
             return ctrl.cm.active(base)
-        elif self._hovering:
+        elif self.hovering:
             return ctrl.cm.hovering(base)
         else:
             return base

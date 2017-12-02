@@ -115,7 +115,8 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._fade_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
-        self._hovering = False
+        self._direct_hovering = False
+        self._indirect_hovering = False
         self.setZValue(self.preferred_z_value())
 
 
@@ -158,7 +159,8 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Remove mode information, eg. hovering
         :return: None
         """
-        self._hovering = False
+        self._indirect_hovering = False
+        self._direct_hovering = False
 
     @property
     def current_position(self):
@@ -442,7 +444,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Hovering has some visual effects, usually handled in paint-method
         :param event:
         """
-        self.hovering = True
+        self.start_hovering()
         ctrl.ui.show_help(self, event)
         event.accept()
 
@@ -453,16 +455,28 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Object needs to be updated
         :param event:
         """
-        if self.hovering:
-            self.hovering = False
-            ctrl.ui.hide_help(self, event)
+        if self._direct_hovering:
+            self.stop_hovering()
+        ctrl.ui.hide_help(self, event)
+
+    def start_hovering(self):
+        if not self._direct_hovering:
+            self._start_direct_hover()
+        if not self._indirect_hovering:
+            self._start_indirect_hover()
+
+    def stop_hovering(self):
+        if self._direct_hovering:
+            self._stop_direct_hover()
+        if self._indirect_hovering:
+            self._stop_indirect_hover()
 
     @property
     def hovering(self):
         """ Public access to _hovering. Pretty useless.
         :return:
         """
-        return self._hovering
+        return self._indirect_hovering or self._direct_hovering
 
     @hovering.setter
     def hovering(self, value):
@@ -470,27 +484,38 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param value: bool
         :return:
         """
-        if value and not self._hovering:
-            self._start_hover()
-        elif self._hovering and not value:
-            self._stop_hover()
+        if value and not self._indirect_hovering:
+            self._start_indirect_hover()
+        elif self._indirect_hovering and not value:
+            self._stop_indirect_hover()
 
-    def _start_hover(self):
-        """ Start all hovering effects
+    def _start_direct_hover(self):
+        """  Start hovering effects for directly hovering over this item.
         :return:
         """
-        self._hovering = True
-        #self.prepareGeometryChange()
+        self._direct_hovering = True
+        self.update_tooltip()
+
+    def _start_indirect_hover(self):
+        """ Start hovering effects that are caused by hovering over this or some other item
+        :return:
+        """
+        self._indirect_hovering = True
         self.update()
         if self.zValue() < 150:
             self.setZValue(150)
-        self.update_tooltip()
 
-    def _stop_hover(self):
-        """ Stop all hovering effects
+    def _stop_direct_hover(self):
+        """ Stop hovering effects that were directly caused by hover over this item.
         :return:
         """
-        self._hovering = False
+        self._direct_hovering = False
+
+    def _stop_indirect_hover(self):
+        """ Stop hovering effects that were caused by hover over some other object or this item
+        :return:
+        """
+        self._indirect_hovering = False
         #self.prepareGeometryChange()
         self.setZValue(self.preferred_z_value())
         self.update()

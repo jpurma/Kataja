@@ -165,7 +165,7 @@ class Label(QtWidgets.QGraphicsItem):
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
-        self.setAcceptHoverEvents(True)
+        self.setAcceptHoverEvents(False)
         self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
         self.editable_part.setTextWidth(-1)
         self.set_font(self._host.get_font())
@@ -334,6 +334,7 @@ class Label(QtWidgets.QGraphicsItem):
         if value:
             if self._quick_editing:
                 return
+            self.setAcceptHoverEvents(True)
             self._quick_editing = True
             self._host.update_label_visibility()
             if ctrl.text_editor_focus:
@@ -362,6 +363,7 @@ class Label(QtWidgets.QGraphicsItem):
             if self.editable_doc.isModified():
                 self.parse_document_to_field()
                 self.editable_doc.setModified(False)
+            self.setAcceptHoverEvents(False)
             ctrl.text_editor_focus = None
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()

@@ -751,7 +751,7 @@ class Node(Movable):
             return ctrl.cm.lighter(ctrl.cm.selection())
         elif ctrl.pressed is self:
             return ctrl.cm.selection()  # ctrl.cm.active(ctrl.cm.selection())
-        elif self._hovering:
+        elif self.hovering:
             # return ctrl.cm.hover()
             return self.color
             # return ctrl.cm.hovering(ctrl.cm.selection())
@@ -875,7 +875,7 @@ class Node(Movable):
         if self.drag_data:
             rect = True
             brush = self.drag_data.background
-        elif self._hovering:
+        elif self.hovering:
             if rect:
                 brush = ctrl.cm.paper()
             rect = True

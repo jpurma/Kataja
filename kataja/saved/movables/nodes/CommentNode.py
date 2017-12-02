@@ -209,7 +209,7 @@ class CommentNode(Node):
             painter.setBrush(QtCore.Qt.NoBrush)
 
 
-        elif self._hovering:
+        elif self.hovering:
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
         elif ctrl.pressed is self or ctrl.is_selected(self):

@@ -113,7 +113,8 @@ class FeatureNode(Node):
         self._gravity = 3.0
         self.fshape = 2
 
-        # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
+        # implement color() to map one of the d['rainbow_%'] colors here.
+        # Or if bw mode is on, then something else.
 
     @staticmethod
     def create_synobj(label, forest):
@@ -324,6 +325,11 @@ class FeatureNode(Node):
         else:
             return self.checks
 
+    def get_edges_to_me(self):
+        for edge in self.edges_up:
+            if edge.alpha is self:
+                return edge.chain_up([edge])
+
     def update_bounding_rect(self):
         """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 
         need to be accounted in their bounding rect
@@ -460,33 +466,28 @@ class FeatureNode(Node):
         :return:
         """
         if 'color_key' in self.settings:
-            return self.settings['color_key']
+            ck = self.settings['color_key']
         elif self.name in ctrl.forest.semantics_manager.colors:
-            return ctrl.forest.semantics_manager.colors[self.name]
+            ck = ctrl.forest.semantics_manager.colors[self.name]
         elif self.name:
             c_id = ord(self.name[0]) % 8 + 1
-            return 'accent' + str(c_id)
+            ck = 'accent' + str(c_id)
         else:
-            return ctrl.settings.get_node_setting('color_key', node=self)
+            ck = ctrl.settings.get_node_setting('color_key', node=self)
+        if self.syntactic_object and self.syntactic_object.is_inactive():
+            ck += 'tr'
+        return ck
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if self.fshape:
             return ctrl.cm.get('background1')
         else:
-            if 'color_key' in self.settings:
-                c = ctrl.cm.get(self.settings['color_key'])
-            elif self.name in ctrl.forest.semantics_manager.colors:
-                c = ctrl.cm.get(
-                    ctrl.forest.semantics_manager.colors[self.name])
-            elif self.name:
-                c_id = ord(self.name[0]) % 8 + 1
-                c = ctrl.cm.get('accent' + str(c_id))
-            else:
-                c = self.color
+            ck = self.get_color_key()
+            c = ctrl.cm.get(ck)
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
-            elif self.drag_data or self._hovering:
+            elif self.drag_data or self.hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
                 return ctrl.cm.active(c)
@@ -495,19 +496,11 @@ class FeatureNode(Node):
     def contextual_background(self):
         """ Background color that is sensitive to node's state """
         if self.fshape:
-            if 'color_key' in self.settings:
-                c = ctrl.cm.get(self.settings['color_key'])
-            elif self.name in ctrl.forest.semantics_manager.colors:
-                c = ctrl.cm.get(
-                    ctrl.forest.semantics_manager.colors[self.name])
-            elif self.name:
-                c_id = ord(self.name[0]) % 8 + 1
-                c = ctrl.cm.get('accent' + str(c_id))
-            else:
-                c = self.color
+            ck = self.get_color_key()
+            c = ctrl.cm.get(ck)
             if ctrl.pressed == self:
                 return ctrl.cm.active(c)
-            elif self.drag_data or self._hovering:
+            elif self.drag_data or self.hovering:
                 return ctrl.cm.hovering(c)
             elif ctrl.is_selected(self):
                 return ctrl.cm.active(c)
@@ -516,7 +509,7 @@ class FeatureNode(Node):
         else:
             if ctrl.pressed == self:
                 return ctrl.cm.active(ctrl.cm.selection())
-            elif self.drag_data or self._hovering:
+            elif self.drag_data or self.hovering:
                 return ctrl.cm.hovering(ctrl.cm.selection())
             elif ctrl.is_selected(self):
                 return ctrl.cm.selection()
@@ -641,25 +634,64 @@ class FeatureNode(Node):
         else:
             lines.append(ui_style % 'Click to select, drag to move')
 
+        if self.syntactic_object and self.syntactic_object.is_inactive():
+            lines.append("Feature is inactive.")
+        else:
+            lines.append("Feature is active.")
+
         self.k_tooltip = '<br/>'.join(lines)
 
-    def _start_hover(self):
-        super()._start_hover()
+    def _start_direct_hover(self):
+        super()._start_direct_hover()
         ch = self.get_checks_node()
         if ch:
             ch.hovering = True
         ch_by = self.get_checked_by_node()
         if ch_by:
             ch_by.hovering = True
+        for edge in self.get_edges_to_me():
+            edge.hovering = True
 
-    def _stop_hover(self):
-        super()._stop_hover()
+    def _stop_direct_hover(self):
+        print('stop direct hover for feature ', self)
+        super()._stop_direct_hover()
         ch = self.get_checks_node()
         if ch:
             ch.hovering = False
         ch_by = self.get_checked_by_node()
         if ch_by:
             ch_by.hovering = False
+        for edge in self.get_edges_to_me():
+            edge.hovering = False
+
+    def hoverEnterEvent(self, event):
+        """ When features are joined into one object, deliver hover effects to child if necessary.
+        :param event:
+        """
+
+        event.ignore()
+        for child in self.childItems():
+            if isinstance(child, FeatureNode) and child.sceneBoundingRect().contains(
+                    event.scenePos()):
+                child.hoverEnterEvent(event)
+        if not event.isAccepted():
+            self.start_hovering()
+            ctrl.ui.show_help(self, event)
+            event.accept()
+
+    def hoverLeaveEvent(self, event):
+        """ Object needs to be updated
+        :param event:
+        """
+        event.ignore()
+        for child in self.childItems():
+            if isinstance(child, FeatureNode) and child.sceneBoundingRect().contains(
+                    event.scenePos()):
+                child.hoverLeaveEvent(event)
+        if not event.isAccepted():
+            self.stop_hovering()
+            ctrl.ui.hide_help(self, event)
+            event.accept()
 
     def get_host(self):
         for parent in self.get_parents():

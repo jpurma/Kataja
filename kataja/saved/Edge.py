@@ -82,7 +82,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         # self.center_point = (0, 0, 0)
 
         # ## Derivative elements
-        self._hovering = False
+        self._indirect_hovering = False
+        self._direct_hovering = False
         self._start_node_moving = False
         self._end_node_moving = False
         self.setZValue(15)
@@ -205,6 +206,19 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return self.start
         else:
             return self.start_links_to.final_start_node()
+
+    def chain_up(self, chain):
+        if self.start_links_to:
+            chain.append(self.start_links_to)
+            return self.start_links_to.chain_up(chain)
+        return chain
+
+    def chain_down(self, chain):
+        if self.end_links_to:
+            chain.append(self)
+            return self.end_links_to.chain_down(chain)
+        return chain
+
 
     def final_end_node(self):
         if not self.end_links_to:
@@ -403,7 +417,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         if ctrl.pressed == self:
             return ctrl.cm.active(base)
-        elif self._hovering:
+        elif self.hovering:
             return ctrl.cm.hovering(base)
         else:
             return base
@@ -525,6 +539,18 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return None  # this mouseRelease is now consumed
         super().mouseReleaseEvent(event)
 
+    def start_hovering(self):
+        self._direct_hovering = True
+        self.hovering = True
+        self.final_start_node().hovering = True
+        self.final_end_node().hovering = True
+
+    def stop_hovering(self):
+        self._direct_hovering = False
+        self.hovering = False
+        self.final_start_node().hovering = False
+        self.final_end_node().hovering = False
+
     @property
     def hovering(self):
         """
@@ -532,7 +558,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :return:
         """
-        return self._hovering
+        return self._indirect_hovering or self._direct_hovering
 
     @hovering.setter
     def hovering(self, value):
@@ -540,12 +566,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param value: bool
         :return:
         """
-        if value and not self._hovering:
-            self._hovering = True
+        if value and not self._indirect_hovering:
+            self._indirect_hovering = True
             self.prepareGeometryChange()
             self.update()
-        elif (not value) and self._hovering:
-            self._hovering = False
+        elif (not value) and self._indirect_hovering:
+            self._indirect_hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.flattened_settings['z_value'])
             self.update()
@@ -556,30 +582,26 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
-        if not self._hovering:
-            self.hovering = True
-            self.final_start_node().hovering = True
-            self.final_end_node().hovering = True
-
-        ctrl.ui.show_help(self, event)
+        if not self._direct_hovering:
+            self.start_hovering()
+            ctrl.ui.show_help(self, event)
         event.accept()
         # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverMoveEvent(self, event):
         ctrl.ui.move_help(event)
-        QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
+        #QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """
 
         :param event:
         """
-        if self._hovering:
-            self.hovering = False
+        if self._direct_hovering:
+            self.stop_hovering()
             ctrl.ui.hide_help(self, event)
-            QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
-            self.final_start_node().hovering = False
-            self.final_end_node().hovering = False
+            #QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+        self.hovering = False
 
     # ## Scene-managed call
 
