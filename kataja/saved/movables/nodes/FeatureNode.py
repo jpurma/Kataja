@@ -367,13 +367,26 @@ class FeatureNode(Node):
         h2 = (lbh - 2) / 2.0
         y_max = y + lbh - 4
         x_max = x + lbw
-        self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
-                         (x, y + h2), (x_max, y + h2),
-                         (x, y_max), (x + w4, y_max), (x + w2, y_max),
-                         (x + w2 + w4, y_max), (x_max, y_max)]
+        #  0--1--2--3--4
+        #  |           |
+        #  5           6
+        #  |           |
+        #  7--8--9-10-11
+        self._magnets = [
+            (x, y),
+            (x + w4, y),
+            (x + w2, y),
+            (x + w2 + w4, y),
+            (x_max, y),
+            (x, y + h2),
+            (x_max, y + h2),
+            (x, y_max),
+            (x + w4, y_max),
+            (x + w2, y_max),
+            (x + w2 + w4, y_max),
+            (x_max, y_max)]
         self.width = lbw
         self.height = lbh
-
         expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
             if isinstance(child, Node):
@@ -390,7 +403,6 @@ class FeatureNode(Node):
         :param option:
         :param widget:
         """
-
         if self.fshape:
             #painter.setPen(ctrl.cm.get('background1'))
             #b = self.contextual_background()
@@ -668,30 +680,27 @@ class FeatureNode(Node):
         """ When features are joined into one object, deliver hover effects to child if necessary.
         :param event:
         """
-
-        event.ignore()
-        for child in self.childItems():
-            if isinstance(child, FeatureNode) and child.sceneBoundingRect().contains(
-                    event.scenePos()):
-                child.hoverEnterEvent(event)
-        if not event.isAccepted():
-            self.start_hovering()
+        if self.locked_to_node and self.locked_to_node._direct_hovering:
+            self.locked_to_node.stop_hovering()
+        self.start_hovering()
+        if not ctrl.items_moving:
             ctrl.ui.show_help(self, event)
-            event.accept()
+        event.accept()
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
         :param event:
         """
-        event.ignore()
-        for child in self.childItems():
-            if isinstance(child, FeatureNode) and child.sceneBoundingRect().contains(
-                    event.scenePos()):
-                child.hoverLeaveEvent(event)
-        if not event.isAccepted():
+        if self._direct_hovering:
             self.stop_hovering()
-            ctrl.ui.hide_help(self, event)
-            event.accept()
+            if not ctrl.items_moving:
+                ctrl.ui.hide_help(self, event)
+        if self.locked_to_node and \
+                self.locked_to_node.sceneBoundingRect().contains(event.scenePos()):
+            self.locked_to_node.start_hovering()
+            if not ctrl.items_moving:
+                ctrl.ui.show_help(self.locked_to_node, event)
+        event.accept()
 
     def get_host(self):
         for parent in self.get_parents():

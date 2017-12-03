@@ -584,12 +584,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if not self._direct_hovering:
             self.start_hovering()
-            ctrl.ui.show_help(self, event)
+            if not ctrl.items_moving:
+                ctrl.ui.show_help(self, event)
         event.accept()
         # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverMoveEvent(self, event):
-        ctrl.ui.move_help(event)
+        if not ctrl.items_moving:
+            ctrl.ui.move_help(event)
         #QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -599,7 +601,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self._direct_hovering:
             self.stop_hovering()
-            ctrl.ui.hide_help(self, event)
+            if not ctrl.items_moving:
+                ctrl.ui.hide_help(self, event)
             #QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
         self.hovering = False
 

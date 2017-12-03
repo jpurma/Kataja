@@ -905,8 +905,8 @@ class Node(Movable):
             #    b.setHeight(b.width())
             #painter.drawEllipse(b)
 
-            painter.drawRect(self.future_children_bounding_rect())
-            #painter.drawRect(self.inner_rect)
+            #painter.drawRect(self.future_children_bounding_rect())
+            painter.drawRect(self.boundingRect())
 
     def has_visible_label(self):
         """
@@ -960,14 +960,35 @@ class Node(Movable):
         h2 = (self.height - 2) / 2.0
         y_max = y + self.height - 4
         x_max = x + self.width
-        self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
-                         (x, y + h2), (x_max, y + h2), (x, y_max), (x + w4, y_max), (x + w2, y_max),
-                         (x + w2 + w4, y_max), (x_max, y_max)]
+
+        #  0--1--2--3--4
+        #  |           |
+        #  5           6
+        #  |           |
+        #  7--8--9-10-11
+        self._magnets = [
+            (x, y),
+            (x + w4, y),
+            (x + w2, y),
+            (x + w2 + w4, y),
+            (x_max, y),
+            (x, y + h2),
+            (x_max, y + h2),
+            (x, y_max),
+            (x + w4, y_max),
+            (x + w2, y_max),
+            (x + w2 + w4, y_max),
+            (x_max, y_max)]
 
         expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
             if isinstance(child, Node):
-                expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
+                #cbr = child.future_children_bounding_rect()
+                #cbr_new = child.future_children_bounding_rect(update=True)
+                #if cbr != cbr_new:
+                #    print(cbr, cbr_new)
+                expanding_rect |= child.future_children_bounding_rect().translated(
+                    *child.target_position)
         self._cached_child_rect = expanding_rect
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
