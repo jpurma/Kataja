@@ -501,6 +501,20 @@ class ConstituentNode(Node):
         """
         return len(list(self.get_children(similar=True, visible=False))) == 1
 
+    def can_cascade_edges(self):
+        """ Cascading edges is a visual effect for nodes that try to display many similar edges
+        that go through this node. When cascaded, each edge has increasing/decreasing starting y
+        compared to others. It gets ugly if some edges are strongly cascaded while others are
+        flat, so node should make a decision if this should be applied at all.
+        :return:
+        :rtype:
+        """
+        for edge in self.edges_down:
+            if edge.edge_type == g.FEATURE_EDGE and not edge.start_links_to:
+                return False
+        return True
+
+
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.
     # Check their real usage with string search before removing these.

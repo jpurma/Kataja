@@ -230,7 +230,7 @@ class EdgePath:
         i_shift = self.get_shift_for_start()
         upper = self.edge.start_links_to
         d = 0
-        if upper:
+        if upper and self.edge.start.can_cascade_edges():
             dx = upper.start_point[0] - upper.end_point[0]
             dy = upper.start_point[1] - upper.end_point[1]
             if dy != 0:
@@ -248,7 +248,7 @@ class EdgePath:
         i_shift = self.get_shift_for_end()
         lower = self.edge.end_links_to
         d = 0
-        if lower:
+        if lower and self.edge.end.can_cascade_edges():
             dx = self.computed_start_point[0] - self.computed_end_point[0]
             dy = self.computed_start_point[1] - self.computed_end_point[1]
             if dy != 0:

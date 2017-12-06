@@ -914,6 +914,16 @@ class Node(Movable):
         """
         return self._label_visible
 
+    def can_cascade_edges(self):
+        """ Cascading edges is a visual effect for nodes that try to display many similar edges
+        that go through this node. When cascaded, each edge has increasing/decreasing starting y
+        compared to others. It gets ugly if some edges are strongly cascaded while others are
+        flat, so node should make a decision if this should be applied at all.
+        :return:
+        :rtype:
+        """
+        return False
+
     def update_bounding_rect(self):
         """ Do housekeeping for bounding rect and related measurements
         :return:
