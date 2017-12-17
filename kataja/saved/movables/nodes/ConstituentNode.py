@@ -122,6 +122,7 @@ class ConstituentNode(Node):
         self.select_order = 0
         self.in_projections = []
         self.cached_sorted_feature_edges = []
+        self._can_cascade_edges = None
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -266,6 +267,11 @@ class ConstituentNode(Node):
 
         add_children(self)
         return sorted_constituents
+
+    def reindex_edges(self):
+        self._can_cascade_edges = None
+        self.can_cascade_edges()
+        super().reindex_edges()
 
 
     def update_node_shape(self):
@@ -509,10 +515,15 @@ class ConstituentNode(Node):
         :return:
         :rtype:
         """
-        for edge in self.edges_down:
-            if edge.edge_type == g.FEATURE_EDGE and not edge.start_links_to:
-                return False
-        return True
+        if self._can_cascade_edges is not None:
+            return self._can_cascade_edges
+        else:
+            self._can_cascade_edges = True
+            for edge in self.edges_down:
+                if edge.edge_type == g.FEATURE_EDGE and not edge.start_links_to:
+                    self._can_cascade_edges = False
+                    break
+            return self._can_cascade_edges
 
 
     # Conditions ##########################

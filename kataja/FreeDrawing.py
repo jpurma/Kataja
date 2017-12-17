@@ -539,6 +539,8 @@ class FreeDrawing:
         else:
             child.edges_up.append(new_edge)
             parent.edges_down.append(new_edge)
+        parent.reindex_edges()
+        child.reindex_edges()
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
         return new_edge
@@ -575,6 +577,11 @@ class FreeDrawing:
 
         if edge:
             self.disconnect_edge(edge)
+
+        if parent:
+            parent.reindex_edges()
+        if child:
+            child.reindex_edges()
 
         if hasattr(child, 'on_disconnect'):
             child.on_disconnect(parent)

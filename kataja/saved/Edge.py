@@ -92,6 +92,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self._visible_by_logic = True
+        self.cached_edge_start_index = (0, 1)
+        self.cached_edge_end_index = (0, 1)
 
     def type(self) -> int:
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -356,7 +358,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
         if from_cache:
-            return self.path.cached_edge_start_index
+            return self.cached_edge_start_index
         if not self.start:
             return 0, 0
         count = 0
@@ -375,7 +377,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
         if from_cache:
-            return self.path.cached_edge_end_index
+            return self.cached_edge_end_index
         if not self.end:
             return 0, 0
         count = 0

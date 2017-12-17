@@ -665,7 +665,6 @@ class FeatureNode(Node):
             edge.hovering = True
 
     def _stop_direct_hover(self):
-        print('stop direct hover for feature ', self)
         super()._stop_direct_hover()
         ch = self.get_checks_node()
         if ch:
