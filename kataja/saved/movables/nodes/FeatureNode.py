@@ -31,7 +31,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
     EDGE_RECEIVING_NOW, CHECKING_EDGE
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
@@ -88,6 +88,9 @@ class FeatureNode(Node):
                               prefill='value',
                               tooltip='Value given to this feature',
                               syntactic=True),
+                'sign': dict(name='Sign',
+                             prefill='sign',
+                             tooltip='Sign of this feature, e.g. +, -, u, =...'),
                 'family': dict(name='Family', prefill='family',
                                tooltip='Several distinct features can be '
                                        'grouped under one family (e.g. '
@@ -102,9 +105,10 @@ class FeatureNode(Node):
 
     default_edge = g.FEATURE_EDGE
 
-    def __init__(self, label='', value='', family=''):
+    def __init__(self, label='', sign='', value='', family=''):
         Node.__init__(self)
         self.name = label
+        self.sign = sign
         self.value = value
         self.family = family
         self.checks = None
@@ -213,6 +217,9 @@ class FeatureNode(Node):
             name = parts[0]
         if len(name) > 1 and name.startswith('u') and name[1].isupper():
             name = name[1:]
+        if name and name[0] in classes.Feature.simple_signs:
+            self.sign = name[0]
+            name = name[1:]
         self.name = name
         self.value = value
         self.family = family
@@ -299,19 +306,19 @@ class FeatureNode(Node):
         if self.syntactic_object:
             return self.syntactic_object.is_needy()
         else:
-            return self.value in ('u', '=', '-')
+            return self.sign in ('u', '=', '-')
 
     def valuing(self):
         if self.syntactic_object:
             return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
         else:
-            return self.checks or self.value not in ('u', '=', '-')
+            return self.checks or self.sign not in ('u', '=', '-')
 
     def can_satisfy(self):
         if self.syntactic_object:
             return self.syntactic_object.can_satisfy()
         else:
-            return self.value not in ('u', '=', '-')
+            return self.sign not in ('u', '=', '-')
 
     def is_satisfied(self):
         if self.syntactic_object:
@@ -583,24 +590,26 @@ class FeatureNode(Node):
         if self.syntactic_object:
             return str(self.syntactic_object)
         s = '✓' if self.checks or self.checked_by else ''
-        simple_signs = ('+', '-', '=', 'u')
-        if self.value and self.value in simple_signs:
-            return s + self.value + str(self.name)
-
+        s += self.sign
         fam = ':' + self.family if self.family else ''
         val = ':' + self.value if self.value else ''
         return s + str(self.name) + val + fam
 
     def get_edge_start_symbol(self):
         if self.satisfies():
+            #print('feat %s satisfies.' % self)
             return EDGE_PLUGGED_IN
         elif self.is_satisfied():
+            #print('feat %s is satisfied.' % self)
             return EDGE_RECEIVING_NOW
-        elif self.is_needy():
+        elif self.is_needy() and not self.syntactic_object.is_inactive():
+            #print('feat %s is needy.' % self)
             return EDGE_OPEN
         elif self.can_satisfy():
+            #print('feat %s can satisfy.' % self)
             return EDGE_CAN_INSERT
         else:
+            print('feat %s is nothing much.' % self)
             return 0
 
     def update_tooltip(self) -> None:
@@ -611,7 +620,7 @@ class FeatureNode(Node):
 
         lines = []
         lines.append("<strong>Feature:</strong>")
-        lines.append(f" name: '{self.name}' value: '{self.value}' ")
+        lines.append(f" name: '{self.name}' sign: '{self.sign}' value: '{self.value}' ")
         if self.family:
             lines.append(f"family: '{self.family}'")
         host = self.get_host()
@@ -714,6 +723,7 @@ class FeatureNode(Node):
 
     name = SavedField("name")
     value = SavedField("value")
+    sign = SavedField("sign")
     family = SavedField("family")
     checks = SavedField("checks")
     checked_by = SavedField("checked_by")

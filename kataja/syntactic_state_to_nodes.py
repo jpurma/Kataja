@@ -33,7 +33,7 @@ from kataja.singletons import ctrl
 from kataja.utils import time_me
 
 
-@time_me
+#@time_me
 def syntactic_state_to_nodes(forest, syn_state):
     """ This is a big important function to ensure that Nodes on display are only those that
     are present in syntactic objects. Clean up the residue, create those nodes that are

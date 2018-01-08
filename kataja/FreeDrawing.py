@@ -141,8 +141,8 @@ class FreeDrawing:
         node.update_visibility(fade_in=False, fade_out=False)
         return node
 
-    def create_feature_node(self, label='feature', value='', family='', host=None):
-        gn = self.create_node(label=label, value=value, family=family, relative=host,
+    def create_feature_node(self, label='feature', sign='', value='', family='', host=None):
+        gn = self.create_node(label=label, sign=sign, value=value, family=family, relative=host,
                               node_type=g.FEATURE_NODE)
         if host:
             self.connect_node(host, child=gn)

@@ -6,6 +6,7 @@ import math
 from collections import ChainMap
 from kataja.utils import time_me
 import kataja.globals as g
+from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -359,6 +360,7 @@ class EdgePath:
 
         if self.use_simple_path:
             self.draw_path = self.true_path
+        self.make_feature_edge_endings(uses_pen)
         self.make_arrowhead_at_start(uses_pen)
         self.make_arrowhead_at_end(uses_pen)
 
@@ -410,6 +412,42 @@ class EdgePath:
                 min_i = i
                 min_pos = p2
         return min_i / 100.0, min_pos
+
+    def make_feature_edge_endings(self, uses_pen):
+        if not self.edge.start_symbol:
+            return
+        symbol = self.edge.start_symbol
+        x, y = self.computed_start_point
+        path = QtGui.QPainterPath(QtCore.QPointF(x, y))
+
+        if symbol == 1:
+            poly = QtGui.QPolygonF(
+                [QtCore.QPointF(x, y - 1), QtCore.QPointF(x + 1, y), QtCore.QPointF(x, y + 1),
+                 QtCore.QPointF(x - 1, y), QtCore.QPointF(x, y - 1)])
+            path.addPolygon(poly)
+        elif symbol == EDGE_OPEN:
+            poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2), QtCore.QPointF(x, y),
+                                    QtCore.QPointF(x - 2, y - 2)])
+            path.addPolygon(poly)
+        elif symbol == EDGE_RECEIVING_NOW:
+            poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2), QtCore.QPointF(x, y),
+                                    QtCore.QPointF(x - 2, y - 2)])
+            path.addPolygon(poly)
+        elif symbol == EDGE_PLUGGED_IN:
+            checks_node = self.edge.alpha.get_checks_node()
+            for edge in self.edge.start.edges_down:
+                if edge.alpha is checks_node:
+                    cx, cy = edge.path.computed_start_point
+                    xdist = abs(x - cx)
+                    if uses_pen:
+                        path.cubicTo(x, y - xdist, cx, cy - xdist, cx, cy)
+                    else:
+                        path.cubicTo(x, y - xdist, cx, cy - xdist, cx, cy)
+                        path.cubicTo(cx, cy - xdist - 3, x, y - xdist - 3, x, y)
+                    break
+        elif symbol == EDGE_CAN_INSERT:
+            path.lineTo(x, y - 4)
+        self.draw_path += path
 
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.

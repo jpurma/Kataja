@@ -683,47 +683,74 @@ class Forest(SavedObject):
         ctrl.ui.refresh_heading()
 
 
+    # def update_feature_ordering_old(self):
+    #
+    #     def distance(edge):
+    #         d = 0
+    #         while edge.end_links_to:
+    #             d += 1
+    #             edge = edge.end_links_to
+    #         return d
+    #     local_i = {}
+    #
+    #     for feat in self.nodes.values():
+    #         if feat.node_type == g.FEATURE_NODE:
+    #             for edge in feat.edges_up:
+    #                 if edge.edge_type == g.FEATURE_EDGE and edge.start.node_type == \
+    #                         g.CONSTITUENT_NODE:
+    #                     local_i[feat.uid] = edge.edge_start_index()[0]
+    #     for cn in self.nodes.values():
+    #         if cn.node_type == g.CONSTITUENT_NODE:
+    #             sortables = []
+    #             parents = len([x for x in cn.edges_up if x.edge_type ==
+    #                            g.CONSTITUENT_EDGE])
+    #             checked_features = getattr(cn.syntactic_object, 'checked_features', None)
+    #             if checked_features:
+    #                 probe, goal = checked_features
+    #             else:
+    #                 probe = None
+    #                 goal = None
+    #             p = 1 / (parents or 1)
+    #             for e in cn.edges_down:
+    #                 if e.edge_type == g.FEATURE_EDGE and e.alpha:
+    #                     if e.alpha.syntactic_object == probe:
+    #                         check = 0
+    #                     elif e.alpha.syntactic_object == goal:
+    #                         check = 1
+    #                     else:
+    #                         check = 2
+    #                     dist = distance(e)
+    #                     i = local_i.get(e.alpha.uid, 999)
+    #                     sortables.append((check, dist, i, p, e))
+    #             sortables.sort()
+    #             cn.cached_sorted_feature_edges = [e[-1] for e in sortables]
+
+    @time_me
     def update_feature_ordering(self):
 
-        def distance(edge):
-            d = 0
-            while edge.end_links_to:
-                d += 1
-                edge = edge.end_links_to
-            return d
-        local_i = {}
-
-        for feat in self.nodes.values():
-            if feat.node_type == g.FEATURE_NODE:
-                for edge in feat.edges_up:
-                    if edge.edge_type == g.FEATURE_EDGE and edge.start.node_type == \
-                            g.CONSTITUENT_NODE:
-                        local_i[feat.uid] = edge.edge_start_index()[0]
         for cn in self.nodes.values():
             if cn.node_type == g.CONSTITUENT_NODE:
-                sortables = []
-                parents = len([x for x in cn.edges_up if x.edge_type ==
-                               g.CONSTITUENT_EDGE])
-                checked_features = getattr(cn.syntactic_object, 'checked_features', None)
-                if checked_features:
-                    probe, goal = checked_features
-                else:
-                    probe = None
-                    goal = None
-                p = 1 / (parents or 1)
-                for e in cn.edges_down:
-                    if e.edge_type == g.FEATURE_EDGE and e.alpha:
-                        if e.alpha.syntactic_object == probe:
-                            check = 0
-                        elif e.alpha.syntactic_object == goal:
-                            check = 1
-                        else:
-                            check = 2
-                        dist = distance(e)
-                        i = local_i.get(e.alpha.uid, 999)
-                        sortables.append((check, dist, i, p, e))
-                sortables.sort()
-                cn.cached_sorted_feature_edges = [e[-1] for e in sortables]
+                syn_feats = cn.syntactic_object.inherited_features
+                if syn_feats is not None:
+                    feats = [self.get_node(syn_f) for syn_f, host in syn_feats]
+                    sorted_edges = []
+                    edges = set(cn.edges_down)
+                    for feat in feats:
+                        found = False
+                        for edge in edges:
+                            if edge.alpha is feat or edge.end is feat:
+                                edges.remove(edge)
+                                sorted_edges.append(edge)
+                                found = True
+                                break
+                        #assert found
+                    cn.cached_sorted_feature_edges = sorted_edges
+        for edge in self.edges.values():
+            edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)
+            edge.cached_edge_end_index = edge.edge_end_index(from_cache=False)
+            if edge.path:
+                edge.path.cached_shift_for_start = None
+                edge.path.cached_shift_for_end = None
 
     def compute_traces_to_draw(self, rotator) -> int:
         """ This is complicated, but returns a dictionary that tells for each index key

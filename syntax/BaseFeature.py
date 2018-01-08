@@ -48,15 +48,19 @@ class BaseFeature(SavedObject):
     editable = {}
     addable = {}
 
-    def __init__(self, name='Feature', value=None, family='', checks=None, checked_by=None):
+    def __init__(self, name='Feature', sign='', value=None, family='', checks=None,
+                 checked_by=None, strong=False):
         super().__init__()
         self.name = str(name)
         self.value = value
+        self.sign = sign
         self.family = family
         # this is not strictly necessary, but being able to inform feature who checked what helps
         # presentation
         self.checks = checks
         self.checked_by = checked_by
+        # feature strength was a concept in early minimalism, but I have repurposed it in my version
+        self.strong = strong
 
     def has_value(self, prop):
         return self.value == prop
@@ -68,7 +72,7 @@ class BaseFeature(SavedObject):
         return self.unvalued()
 
     def unvalued(self):
-        return self.value == 'u' or self.value == '=' or self.value == '-'
+        return self.sign == 'u' or self.sign == '=' or self.sign == '-'
 
     def would_satisfy(self, feature):
         return isinstance(feature,
@@ -81,25 +85,24 @@ class BaseFeature(SavedObject):
 
     def __eq__(self, other):
         if other and isinstance(other, BaseFeature):
-            return self.value == other.value and self.name == other.name and self.family == \
-                                                                             other.family
+            return self.value == other.value and self.sign == other.sign and \
+                   self.name == other.name and self.family == other.family
         return False
 
     def copy(self):
-        return self.__class__(name=self.name, value=self.value, family=self.family)
+        return self.__class__(name=self.name, sign=self.sign, value=self.value,
+                              family=self.family, strong=self.strong)
 
     def __str__(self):
-        s = '✓' if self.checks or self.checked_by else ''
-        simple_signs = ('+', '-', '=', 'u')
-        if self.value and self.value in simple_signs:
-            return s + self.value + str(self.name)
-
+        s = '✓' if self.checks or self.is_satisfied() else ''
+        s += self.sign
         fam = ':' + self.family if self.family else ''
         val = ':' + self.value if self.value else ''
         return s + str(self.name) + val + fam
 
     def __repr__(self):
-        s = ['✓' if self.checks or self.checked_by else '' + str(self.name)]
+        c = '✓' if self.checks or self.is_satisfied() else ''
+        s = [c + self.sign + str(self.name)]
         if self.value or self.family:
             s.append(str(self.value))
         if self.family:
@@ -117,6 +120,8 @@ class BaseFeature(SavedObject):
 
     name = SavedField("name")
     value = SavedField("value")
+    strong = SavedField("strong")
+    sign = SavedField("sign")
     family = SavedField("family")
     checks = SavedField("checks")
     checked_by = SavedField("checked_by")
@@ -125,11 +130,14 @@ class BaseFeature(SavedObject):
     def from_string(s):
         if not s:
             return
-        if s[0] in '-=+':
-            value = s[0]
+        if s[0] in simple_signs:
+            sign = s[0]
             name = s[1:]
         else:
-            value = ''
+            sign = ''
             name = s
-        name, foo, family = name.partition(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
-        return BaseFeature(name, value, family)
+        parts = name.split(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
+        name = parts[0]
+        value = parts[1] if len(parts) > 1 else ''
+        family = parts[2] if len(parts) > 2 else ''
+        return BaseFeature(name, sign, value, family)

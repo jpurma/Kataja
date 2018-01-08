@@ -228,6 +228,9 @@ class ConstituentNode(Node):
         if gs:
             return gs[0]
 
+    def is_edge(self):
+        return self.syntactic_object and getattr(self.syntactic_object, 'edge', False)
+
     def has_ordered_children(self):
         mode = ctrl.settings.get('linearization_mode')
         if mode == g.NO_LINEARIZATION or mode == g.RANDOM_NO_LINEARIZATION:
@@ -312,6 +315,9 @@ class ConstituentNode(Node):
             lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
         lines.append(f'uid: {tt_style % self.uid}')
 
+        if self.syntactic_object:
+            lines.append(f'Inherited features: '
+                         f'{[feat for feat, source in self.syntactic_object.inherited_features]}')
         lines.append('')
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
@@ -524,7 +530,6 @@ class ConstituentNode(Node):
                     self._can_cascade_edges = False
                     break
             return self._can_cascade_edges
-
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.
@@ -861,6 +866,12 @@ class ConstituentNode(Node):
                 painter.setBrush(gradient)
             painter.drawEllipse(r)
             painter.setPen(old_pen)
+        if self.is_edge():
+            r = self.inner_rect
+            p = QtGui.QPen(ctrl.cm.drawing())
+            p.setWidth(3)
+            painter.setPen(p)
+            painter.drawLine(r.topLeft().toPoint(), r.topRight().toPoint())
 
     @staticmethod
     def allowed_label_text_mode():

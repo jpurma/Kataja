@@ -1133,22 +1133,22 @@ class Node(Movable):
     def reindex_edges(self):
         down = defaultdict(list)
         up = defaultdict(list)
-        for edge in self.edges_down:
-            down[edge.edge_type].append(edge)
-        for edge in self.edges_up:
-            up[edge.edge_type].append(edge)
-        for edges in down.values():
-            down_size = len(down)
-            for i, edge in enumerate(edges):
-                edge.cached_edge_start_index = (i, down_size)
-                if edge.path:
-                    edge.cached_shift_for_start = None
-        for edges in up.values():
-            up_size = len(up)
-            for i, edge in enumerate(edges):
-                edge.cached_edge_end_index = (i, up_size)
-                if edge.path:
-                    edge.cached_shift_for_start = None
+        # for edge in self.edges_down:
+        #     down[edge.edge_type].append(edge)
+        # for edge in self.edges_up:
+        #     up[edge.edge_type].append(edge)
+        # for edges in down.values():
+        #     down_size = len(down)
+        #     for i, edge in enumerate(edges):
+        #         edge.cached_edge_start_index = (i, down_size)
+        #         if edge.path:
+        #             edge.path.cached_shift_for_start = None
+        # for edges in up.values():
+        #     up_size = len(up)
+        #     for i, edge in enumerate(edges):
+        #         edge.cached_edge_end_index = (i, up_size)
+        #         if edge.path:
+        #             edge.path.cached_shift_for_start = None
 
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
