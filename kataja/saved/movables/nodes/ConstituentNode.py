@@ -317,7 +317,7 @@ class ConstituentNode(Node):
 
         if self.syntactic_object:
             lines.append(f'Inherited features: '
-                         f'{[feat for feat, source in self.syntactic_object.inherited_features]}')
+                         f'{self.syntactic_object.inherited_features}')
         lines.append('')
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')

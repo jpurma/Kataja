@@ -65,6 +65,7 @@ class BaseConstituent(SavedObject, IConstituent):
         self.label = label
         self.features = features or []
         self.parts = parts or []
+        self.inherited_features = features or []
         self.checked_features = None
 
     def __str__(self):
@@ -257,4 +258,5 @@ class BaseConstituent(SavedObject, IConstituent):
     label = SavedField("label")
     parts = SavedField("parts")
     checked_features = SavedField("checked_features")
+    inherited_features = SavedField("inherited_features")
 

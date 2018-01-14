@@ -436,7 +436,8 @@ class EdgePath:
         elif symbol == EDGE_PLUGGED_IN:
             checks_node = self.edge.alpha.get_checks_node()
             for edge in self.edge.start.edges_down:
-                if edge.alpha is checks_node:
+                if edge.alpha is checks_node and edge.is_visible():
+                    edge.path.update_end_points()
                     cx, cy = edge.path.computed_start_point
                     xdist = abs(x - cx)
                     if uses_pen:

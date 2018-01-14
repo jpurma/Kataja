@@ -336,6 +336,7 @@ class FeatureNode(Node):
         for edge in self.edges_up:
             if edge.alpha is self:
                 return edge.chain_up([edge])
+        return []
 
     def update_bounding_rect(self):
         """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 

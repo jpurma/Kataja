@@ -28,18 +28,27 @@ from kataja.SavedField import SavedField
 
 
 class BaseFeature(SavedObject):
-    """ BaseFeatures are the simplest feature implementation.
-    BaseFeatures have name, which is used to identify and discriminate between features.
-    BaseFeatures can have simple comparable items as values, generally assumed to be booleans or
-    strings.
-
-    Feature checking and interactions between features are strictly not necessary to be 
+    """ BaseFeatures are a simple feature implementation.
+    BaseFeatures have name, which is used to distinguish between features.
+    What is generally understood as value of feature in literature is split into two:
+    sign and value.
+    Sign is used to signify if the feature should be treated as unvalued,
+    valued or as some other manner. Common signs are 'u', '=', or '-' to signify feature being
+    unvalued or '+' or '' for feature to have value. (I have parsers that
+    have >6 signs, e.g. to mark features that are unvalued, but won't get satisfied by one valued
+    feature, or unvalued, but whose host becomes head if satisfied etc.)
+    Value is used to express exclusive values that features give for their structures. Different
+    semantic cases in finnish are good examples of such values: different cases like 'nom',
+    'ill', 'ine', 'gen' are all values for
+    feature named 'case'.
+    Family -field can be used e.g. to additional classification of features, e.g.
+    phi-features, LF features etc.
+    Feature checking and interactions between features are not necessary to be
     represented in features themselves, but often it helps when inspecting or modifying a structure.
     When creating a syntax model, one can link features by assigning another feature to 'checks' 
     or 'checked_by' -fields.
-
-    Family -field can be used e.g. to additional classification of features, e.g. 
-    phi-features, LF features etc.
+    Feature strength is included into base feature properties, and a syntactic model can use it
+    if it is found necessary.
     """
 
     syntactic_object = True
@@ -65,8 +74,14 @@ class BaseFeature(SavedObject):
     def has_value(self, prop):
         return self.value == prop
 
+    def is_inactive(self):
+        return False
+
     def can_satisfy(self):
         return not (self.unvalued() or self.checks or self.checked_by)
+
+    def is_satisfied(self):
+        return self.unvalued() and self.checked_by
 
     def is_needy(self):
         return self.unvalued()
