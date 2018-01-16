@@ -45,6 +45,8 @@ Like any well-behaving Mac app, Kataja will on first run create a folder to `~/L
 
 e.g.
 
+It is recommended to run Kataja in virtualenv, so that its dependencies can be kept separated from user and system files.
+
     source venv/bin/activate
     pip install
     python Kataja.py
