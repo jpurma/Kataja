@@ -41,7 +41,14 @@ Like any well-behaving Mac app, Kataja will on first run create a folder to `~/L
 
 ## Option 2a: run as a Python3 script 
 
-(replace this with instructions on running with virtualenv and pip.)
+(replace this with instructions on running with virtualenv and pip.
+
+e.g.
+
+    source venv/bin/activate
+    pip install
+    python Kataja.py
+)
 
 This option means setting up development environment for Kataja. As Kataja is all python code, the development environment can be easily used for daily linguistic work, teaching or studying: there is no separate build phase for launching Kataja, Kataja can always be launched from terminal in Kataja directory with command `python3 Kataja.py`. It starts faster than Kataja.app-version.
 
