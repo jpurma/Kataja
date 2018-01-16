@@ -39,61 +39,57 @@ Both options can coexist on same system, though they may share user  preferences
 
 Like any well-behaving Mac app, Kataja will on first run create a folder to `~/Library/Application Support/Kataja` and a preferences file in `~/Preferences/fi.purma.Kataja.plist`. The Application Support folder will include folder `plugins`, which is the easiest way to extend Kataja. 
 
-## Option 2a: run as a Python3 script 
-
-(replace this with instructions on running with virtualenv and pip.
-
-e.g.
+## Option 2a: run with Python
 
 It is recommended to run Kataja in virtualenv, so that its dependencies can be kept separated from user and system files.
 
+First navigate to Kataja folder and create a folder for your virtual environment with virtualenv command:
+
+    virtualenv venv
+
+Then activate the virtualenv. While virtualenv is active, 'python' refers to virtualenv's own python and all the libraries and dependancies will be installed into venv-folder.
+
     source venv/bin/activate
-    pip install
+
+Install requirements defined here in ./requirements.txt:
+
+    pip installpip install -r requirements.txt
+
+Then you should be able to run Kataja:
+
     python Kataja.py
-)
 
-This option means setting up development environment for Kataja. As Kataja is all python code, the development environment can be easily used for daily linguistic work, teaching or studying: there is no separate build phase for launching Kataja, Kataja can always be launched from terminal in Kataja directory with command `python3 Kataja.py`. It starts faster than Kataja.app-version.
+When you want to deactivate virtualenv, use:
 
-Until stabilized, Kataja will be using the latest versions available from Qt and PyQt in order to benefit from performance improvements and bug fixes. If the Python Wheels-option doesn't work, refer to PyQt5's Reference Guide for installation instruction.    
+    venv/bin/deactivate
 
-Here are the preparations you need to do before Kataja can be run:
+You only have to create virtualenv and install requirements once. Subsequent Kataja runs only require that you have activated virtualenv.
 
-### Install Python3.5 ###
+## Option 2b -- Building Kataja.app from source for distribution
 
-You will need Python 3.5 or greater for easy install of Kataja's dependencies (PyQt5) with Python Wheels. Check your python3 version in Terminal with: 
-
-    python3 --version
-    
-If the version starts with 3.5, good, otherwise run the latest python 3.x installer from http://python.org 
+Building Kataja.app is only necessary if you want to distribute your own version of Kataja, and it is necessary to test if you are proposing changes to Kataja that may break the app building, e.g. require new qt dylibs. For normal develop & run -cycle this step is not necessary.
 
 ### Use Wheels to install Qt5.x, SIP and PyQt5 ###
 
-A new easy method to install necessary dependencies is made possible with Python 3.5 and Python Wheels. Try: 
+A new easy method to install necessary dependencies is made possible with Python 3.5 and Python Wheels. Try:
 
-    pip3 install pyqt5 
+    pip3 install pyqt5
 
 If it results in PermissionError: permission denied, try again with sudo:
 
-    sudo pip3 install pyqt5 
+    sudo pip3 install pyqt5
 
 This will install open source versions of Qt and PyQt, just what you needed.
 
 If you really want to use Python 3.4 or pip3-based install fails from other reasons, download PyQt5 and SIP from http://www.riverbankcomputing.com/ and follow instructions there (Software -> PyQt -> PyQt5 Reference Guide -> Building and Installing from Source)
 
-### Download Kataja source and run Kataja ###
-
 get your own copy of Kataja source files with either "Clone in Desktop" or "Download ZIP" in https://github.com/jpurma/Kataja .
- 
+
 Navigate to Kataja -folder with terminal, and in there:
 
     python3 Kataja.py
-    
- 
-## Option 2b -- Building Kataja.app from source for distribution
 
-Building Kataja.app is only necessary if you want to distribute your own version of Kataja, and it is necessary to test if you are proposing changes to Kataja that may break the app building, e.g. require new qt dylibs. For normal develop & run -cycle this step is not necessary.
-  
-You will need to have Kataja runnable from script (2a). The only new piece required for building Kataja.app is py2app, ( https://pythonhosted.org/py2app/ ). 
+You will need to have Kataja runnable from script. The only new piece required for building Kataja.app is py2app, ( https://pythonhosted.org/py2app/ ).
 
 The thing to note is that you want to install it for Python3, and the installers often default on Python2-series. Depending on what are the installers available for you, install py2app with either:
   
