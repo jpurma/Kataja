@@ -77,12 +77,9 @@ class KatajaDocument(SavedObject):
         if not self.forests:
             return None
         if self.current_index < len(self.forests) - 1:
-            self.current_index += 1
+            return self.jump_to_forest(self.current_index + 1)
         else:
-            self.current_index = 0
-        ctrl.undo_pile = set()
-        self.forest = self.forests[self.current_index]
-        return self.current_index, self.forest
+            return self.jump_to_forest(0)
 
     def prev_forest(self):
         """ Select the previous forest in the list of forests. The list loops at -1.
@@ -91,12 +88,25 @@ class KatajaDocument(SavedObject):
         if not self.forests:
             return None
         if self.current_index > 0:
-            self.current_index -= 1
+            return self.jump_to_forest(self.current_index - 1)
         else:
-            self.current_index = len(self.forests) - 1
+            return self.jump_to_forest(len(self.forests) - 1)
+
+    def jump_to_forest(self, i):
+        """ Jump to forest with given index,
+        :return: tuple (current_index (int), selected forest (Forest)
+        """
+        if not self.forests:
+            return 0, None
+        if i < 0:
+            i = 0
+        elif i >= len(self.forests):
+            i = len(self.forests) - 1
+        self.current_index = i
         ctrl.undo_pile = set()
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
+
 
     def build_lexicon_dict(self):
         self.constituents = OrderedDict()

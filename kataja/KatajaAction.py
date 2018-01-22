@@ -311,11 +311,12 @@ class KatajaAction(QtWidgets.QAction):
             self.set_displayed_value(val)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):
-        ctrl.disable_undo()
-        self.disable_undo_and_message = True
-        self.run_command(*args, **kwargs)
-        self.disable_undo_and_message = False
-        ctrl.resume_undo()
+        if ctrl.main.init_done:
+            ctrl.disable_undo()
+            self.disable_undo_and_message = True
+            self.run_command(*args, **kwargs)
+            self.disable_undo_and_message = False
+            ctrl.resume_undo()
 
     def connect_element(self, element, connect_slot=None):
         """

@@ -133,6 +133,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         """
         QtWidgets.QMainWindow.__init__(self)
+        self.init_done = False
         kataja_app.processEvents()
         SavedObject.__init__(self)
 
@@ -203,6 +204,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         # for gesture in gestures:
         #    self.grabGesture(gesture)
+        self.init_done = True
         self.action_finished(undoable=False, play=True)
         self.forest.undo_manager.flush_pile()
 
@@ -494,8 +496,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param kwargs: keyword parameters
         :return:
         """
-        action = self.ui_manager.actions[name]
-        action.run_command(*args, **kwargs)
+        if self.init_done:
+            action = self.ui_manager.actions[name]
+            action.run_command(*args, **kwargs)
 
     def trigger_but_suppress_undo(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)

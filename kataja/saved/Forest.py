@@ -683,7 +683,6 @@ class Forest(SavedObject):
             self.heading_text = ''
         ctrl.ui.refresh_heading()
 
-    @time_me
     def update_feature_ordering(self):
 
         for cn in self.nodes.values():
@@ -695,14 +694,11 @@ class Forest(SavedObject):
                         sorted_edges = []
                         edges = set(cn.edges_down)
                         for feat in feats:
-                            found = False
                             for edge in edges:
                                 if edge.alpha is feat or edge.end is feat:
                                     edges.remove(edge)
                                     sorted_edges.append(edge)
-                                    found = True
                                     break
-                            # assert found
                         cn.cached_sorted_feature_edges = sorted_edges
                 else:
                     cn.cached_sorted_feature_edges = [e for e in cn.edges_down if e.edge_type

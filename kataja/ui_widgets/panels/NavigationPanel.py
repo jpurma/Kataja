@@ -4,6 +4,7 @@ from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
+from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
 
 __author__ = 'purma'
 
@@ -29,10 +30,14 @@ class NavigationPanel(Panel):
 
         label = QtWidgets.QLabel('Tree set', self)
         layout.addWidget(label, 0, 0, 1, 1)
+        hlayout = QtWidgets.QHBoxLayout()
+        self.current_treeset = KatajaSpinbox(parent=self, range_min=1, range_max=5, wrapping=True,
+                                             action='jump_to_forest').to_layout(hlayout)
+        self.current_treeset.setKeyboardTracking(False)
+        self.treeset_counter = QtWidgets.QLabel('0', self)
+        hlayout.addWidget(self.treeset_counter)
 
-        treeset_counter = QtWidgets.QLabel('0/0', self)
-        layout.addWidget(treeset_counter, 0, 1, 1, 1)
-        self.treeset_counter = treeset_counter
+        layout.addLayout(hlayout, 0, 1, 1, 1)
 
         action = ctrl.ui.get_action('previous_forest')
         self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=self,
@@ -82,7 +87,8 @@ class NavigationPanel(Panel):
         if keeper is not None:
             display_index = keeper.current_index + 1  # indexes start at 0, we want to display 1
             max_index = len(keeper.forests)
-            self.treeset_counter.setText('%s/%s' % (display_index, max_index))
+            self.current_treeset.setMaximum(max_index)
+            self.treeset_counter.setText('/ %s' % max_index)
             dm = ctrl.forest.derivation_steps
             if dm:
                 max_der_step = len(dm.derivation_steps)

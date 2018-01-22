@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.UIItem import UIWidget
 
@@ -17,6 +17,7 @@ class KatajaSpinbox(QtWidgets.QSpinBox, UIWidget):
         self.setSuffix(suffix)
         self.setWrapping(wrapping)
         self.setFixedWidth(50)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         # slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
     def set_value(self, value):
@@ -25,6 +26,14 @@ class KatajaSpinbox(QtWidgets.QSpinBox, UIWidget):
             self.setValue(value)
             self._cached_value = value
         self.blockSignals(False)
+
+    def focusInEvent(self, e: QtGui.QFocusEvent):
+        self.grabKeyboard()
+        QtWidgets.QSpinBox.focusInEvent(self, e)
+
+    def focusOutEvent(self, e: QtGui.QFocusEvent):
+        self.releaseKeyboard()
+        QtWidgets.QSpinBox.focusOutEvent(self, e)
 
     def set_displayed_value(self, value):
         self.set_value(value)

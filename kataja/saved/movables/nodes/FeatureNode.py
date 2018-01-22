@@ -610,7 +610,6 @@ class FeatureNode(Node):
             #print('feat %s can satisfy.' % self)
             return EDGE_CAN_INSERT
         else:
-            print('feat %s is nothing much.' % self)
             return 0
 
     def update_tooltip(self) -> None:

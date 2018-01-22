@@ -58,7 +58,7 @@ class BaseFeature(SavedObject):
     addable = {}
 
     def __init__(self, name='Feature', sign='', value=None, family='', checks=None,
-                 checked_by=None, strong=False):
+                 checked_by=None, strong=False, **kwargs):
         super().__init__()
         self.name = str(name)
         self.value = value

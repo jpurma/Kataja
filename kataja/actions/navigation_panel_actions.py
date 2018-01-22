@@ -76,6 +76,34 @@ class PreviousForest(KatajaAction):
         return f'Previous forest: {i + 1}: {forest.textual_form()}'
 
 
+class JumpToForest(KatajaAction):
+    k_action_uid = 'jump_to_forest'
+    k_command = 'Jump to tree set'
+
+    def prepare_parameters(self, args, kwargs):
+        if not args:
+            args = [ctrl.main.forest_keeper.current_index + 1]
+        try:
+            i = int(args[0])
+            args = [i]
+        except ValueError:
+            args = [ctrl.main.forest_keeper.current_index + 1]
+        return args, kwargs
+
+    def method(self, n):
+        current = ctrl.main.forest_keeper.current_index
+        i, forest = ctrl.main.forest_keeper.jump_to_forest(n - 1)
+        if i != current:
+            ctrl.main.change_forest()
+            return f'Jump to tree set: {i + 1}: {forest.textual_form()}'
+
+    def getter(self):
+        return ctrl.main.forest_keeper.current_index + 1
+
+    def enabler(self):
+        return ctrl.main.forest_keeper
+
+
 class NextStep(KatajaAction):
     k_action_uid = 'next_derivation_step'
     k_command = 'Next derivation step'
