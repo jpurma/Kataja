@@ -75,13 +75,15 @@ class Forest(SavedObject):
         self.visualization = None
         self.is_parsed = False
         self.syntax = syntax or classes.get('SyntaxConnection')()
-        self.parser = INodeToKatajaConstituent(self)
-        self.undo_manager = UndoManager(self)
-        self.chain_manager = ChainManager(self)
-        self.free_drawing = FreeDrawing(self)
-        self.semantics_manager = SemanticsManager(self)
-        self.projection_manager = ProjectionManager(self)
-        self.derivation_steps = DerivationStepManager(self)
+
+        self.parser = None
+        self.undo_manager = None
+        self.chain_manager = None
+        self.free_drawing = None
+        self.semantics_manager = None
+        self.projection_manager = None
+        self.derivation_steps = None
+
         self.old_label_mode = 0
         self.trees = []
         self.nodes = {}
@@ -102,6 +104,15 @@ class Forest(SavedObject):
         # Update request flags
         self._do_edge_visibility_check = False
         #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
+
+    def init_factories(self):
+        self.parser = INodeToKatajaConstituent(self)
+        self.undo_manager = UndoManager(self)
+        self.chain_manager = ChainManager(self)
+        self.free_drawing = FreeDrawing(self)
+        self.semantics_manager = SemanticsManager(self)
+        self.projection_manager = ProjectionManager(self)
+        self.derivation_steps = DerivationStepManager(self)
 
     def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
@@ -149,6 +160,7 @@ class Forest(SavedObject):
         self.in_display = True
         ctrl.disable_undo()
         if not self.is_parsed:
+            self.init_factories()
             self.syntax.create_derivation(self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
@@ -170,8 +182,9 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
-        for item in self.get_all_objects():
-            self.remove_from_scene(item, fade_out=False)
+        if self.is_parsed:
+            for item in self.get_all_objects():
+                self.remove_from_scene(item, fade_out=False)
         ctrl.remove_from_watch(self)
         self.in_display = False
 

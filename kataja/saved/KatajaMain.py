@@ -266,6 +266,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 
         """
+        init_state = self.init_done
+        self.init_done = False
         self.active_plugin_setup = self.load_plugin(plugin_key)
         if not self.active_plugin_setup:
             return
@@ -302,6 +304,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.init_forest_keepers()
         ctrl.resume_undo()
         prefs.active_plugin_name = plugin_key
+        self.init_done = init_state
 
     def disable_current_plugin(self):
         """ Disable the current plugin and load the default trees instead.

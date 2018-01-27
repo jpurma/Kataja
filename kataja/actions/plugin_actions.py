@@ -87,9 +87,11 @@ class ReloadPlugin(KatajaAction):
 
         key = prefs.active_plugin_name
         if key:
+            ctrl.main.init_done = False
             ctrl.main.disable_current_plugin()
             ctrl.main.enable_plugin(key, reload=True)
             ctrl.main.load_initial_treeset()
+            ctrl.main.init_done = True
 
     def enabler(self):
         return prefs.active_plugin_name
