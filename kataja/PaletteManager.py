@@ -38,6 +38,7 @@ from kataja.singletons import ctrl, prefs, log
 from kataja.globals import DOCUMENT, PREFS
 
 color_keys = [f'content{i}' for i in range(1, 4)] + \
+             [f'content{n}tr' for n in range(1, 4)] + \
              [f'background{j}' for j in range(1, 3)] + \
              [f'accent{k}' for k in range(1, 9)] + \
              [f'accent{l}tr' for l in range(1, 9)] + \
@@ -345,8 +346,6 @@ class PaletteManager:
             if compute_companions:
                 if key == 'content1':
                     self.compute_palette(color.getHsvF()[:3], contrast=contrast)
-                    self.d['content2'] = adjust_lightness(color, 8)
-                    self.d['content3'] = adjust_lightness(color, -8)
                 elif key == 'background1':
                     r, g, b, a = self.drawing().getRgbF()
                     h, s, l = rgb_to_husl(r, g, b)
@@ -385,33 +384,43 @@ class PaletteManager:
         self.get_qt_palette_for_ui(cached=False)
         self.create_accent_palettes()
 
+
     def build_solarized(self, light=True):
         """
 
         :param light:
         """
+
+        def set_exact_base_colors(con1, con2, con3, back1, back2):
+            self.d['content1'] = con1
+            self.d['content2'] = con2
+            self.d['content3'] = con3
+            self.d['content1tr'] = shady(con1, 0.5)
+            self.d['content2tr'] = shady(con1, 0.5)
+            self.d['content3tr'] = shady(con1, 0.5)
+            self.d['background1'] = back1
+            self.d['background2'] = back2
+
         if light:
             # Solarized light
-            self.d['content1'] = sol[3]  # body text / primary content
+            # body text / primary content
             # base1     #93a1a1 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
-            self.d['content2'] = sol[5]  # comments / secondary content
+            # comments / secondary content
             # base01    #586e75 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
-            self.d['content3'] = sol[2]  # optional emphasized content
+            # optional emphasized content
             # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
-            self.d['background1'] = sol[7]  # background
+            # background
             # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
-            self.d['background2'] = sol[6]  # background highlights
+            # background highlights
             # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
+            set_exact_base_colors(sol[3], sol[5], sol[2], sol[7], sol[6])
         else:
             # Solarized dark
-            self.d['content1'] = sol[4]
-            self.d['content2'] = sol[2]
-            self.d['content3'] = sol[5]
-            self.d['background1'] = sol[0]
-            self.d['background2'] = sol[1]
+            set_exact_base_colors(sol[4], sol[2], sol[5], sol[0], sol[1])
         for i, accent in enumerate(accents):
             self.d['accent%s' % (i + 1)] = accent
             self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
+
         self.current_hex = self.d['content1'].name()
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background1'].lighter())
@@ -440,8 +449,14 @@ class PaletteManager:
         bg_rgb = husl_to_rgb(h, s, back_l)
         background1.setRgbF(*bg_rgb)
         self.d['content1'] = key
-        self.d['content2'] = adjust_lightness(key, 8)
-        self.d['content3'] = adjust_lightness(key, -8)
+        con2 = adjust_lightness(key, 8)
+        con3 = adjust_lightness(key, -8)
+        self.d['content2'] = con2
+        self.d['content3'] = con3
+        self.d['content1tr'] = shady(key, 0.5)
+        self.d['content2tr'] = shady(con2, 0.5)
+        self.d['content3tr'] = shady(con3, 0.5)
+
         for i, accent in enumerate(accents):
             # accent colors have the same luminence as key color
             adjusted_accent = c(accent)

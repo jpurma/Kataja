@@ -595,6 +595,11 @@ class Forest(SavedObject):
                 if prev_trees:
                     self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
                 prev_trees.append(tree_top)
+            # keep everything centered to minimise movement between steps
+            vr = ctrl.graph_scene.visible_rect(current=False)
+            cp = vr.center()
+            self.visualization.normalise_all(-cp.x(), -cp.y())
+
         self.chain_manager.after_draw_update()
         if start_animations:
             sc.start_animations()

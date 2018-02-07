@@ -668,6 +668,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
+        if (not f) or (not f.is_parsed):
+            return
         items_moving = 0
         self.timer_counter += 1
 

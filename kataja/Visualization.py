@@ -213,6 +213,15 @@ class BaseVisualization:
             node.target_position = node.target_position[0] + dist, node.target_position[1]
             node.start_moving()
 
+    def normalise_all(self, shift_x=0, shift_y=0):
+        for node in self.forest.nodes.values():
+            if node.locked_to_node or (node.physics_x and node.physics_y):
+                continue
+            node.target_position = (node.target_position[0] + shift_x,
+                                    node.target_position[1] + shift_y)
+            node.start_moving()  # restart moving since we shifted the end point
+
+
     def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
         if tree_top not in self.forest.trees:
             return

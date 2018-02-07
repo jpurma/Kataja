@@ -23,7 +23,7 @@
 # ############################################################################
 
 import random
-
+import string
 import itertools
 from PyQt5 import QtGui, QtCore
 
@@ -490,8 +490,12 @@ class FeatureNode(Node):
         elif self.name in ctrl.forest.semantics_manager.colors:
             ck = ctrl.forest.semantics_manager.colors[self.name]
         elif self.name:
-            c_id = ord(self.name[0]) % 8 + 1
-            ck = 'accent' + str(c_id)
+            if len(self.name) > 1 and self.name[0] == 'w' and self.name[1] in \
+                    string.ascii_uppercase:
+                ck = 'content2'
+            else:
+                c_id = ord(self.name[0]) % 8 + 1
+                ck = 'accent' + str(c_id)
         else:
             ck = ctrl.settings.get_node_setting('color_key', node=self)
         if self.syntactic_object and self.syntactic_object.is_inactive():
