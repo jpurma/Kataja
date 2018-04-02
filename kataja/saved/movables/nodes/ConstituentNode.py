@@ -229,7 +229,7 @@ class ConstituentNode(Node):
             return gs[0]
 
     def is_edge(self):
-        return self.syntactic_object and getattr(self.syntactic_object, 'edge', False)
+        return self.syntactic_object and getattr(self.syntactic_object, 'word_edge', False)
 
     def has_ordered_children(self):
         mode = ctrl.settings.get('linearization_mode')
@@ -318,11 +318,14 @@ class ConstituentNode(Node):
         if self.syntactic_object:
             lines.append(f'Inherited features: '
                          f'{self.syntactic_object.inherited_features}')
+        if self.syntactic_object and self.syntactic_object.word_edge:
+            lines.append('--Word edge--')
         lines.append('')
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
         else:
             lines.append(ui_style % 'Click to select, drag to move')
+
 
         self.k_tooltip = '<br/>'.join(lines)
 

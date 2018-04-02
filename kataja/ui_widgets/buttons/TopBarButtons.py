@@ -17,13 +17,17 @@ class TopBarButtons(QtWidgets.QFrame):
         self.show()
 
         # Left side
-        self.play_button = TwoStateIconButton(ui_key='play_button', parent=self,
-                                              pixmap0=qt_prefs.play_pixmap,
-                                              pixmap1=qt_prefs.pause_pixmap, size=36,
-                                              action='play_animations', ).to_layout(layout)
+        self.play_button = TwoStateIconButton(ui_key='play_button',
+                                              parent=self,
+                                              pixmap0=qt_prefs.pause_pixmap,
+                                              pixmap1=qt_prefs.play_pixmap,
+                                              size=36,
+                                              action='play_animations').to_layout(layout)
 
-        self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label', parent=self,
-                                               text0='Free drawing', text1='Visualisation',
+        self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label',
+                                               parent=self,
+                                               text0='Free drawing',
+                                               text1='Visualisation',
                                                action='switch_edit_mode').to_layout(layout)
         layout.addStretch(0)
 

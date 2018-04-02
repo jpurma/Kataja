@@ -43,13 +43,24 @@ class DerivationStep(SavedObject):
 
     def __init__(self, syn_state, uid=None):
         super().__init__(uid=uid)
-        self.tree_roots = syn_state.tree_roots if syn_state else []
-        self.numeration = syn_state.numeration if syn_state else []
-        self.msg = syn_state.msg if syn_state else ''
-        self.gloss = syn_state.gloss if syn_state else ''
-        self.transferred = syn_state.transferred if syn_state else []
-        self.marked = syn_state.marked if syn_state else []
-        self.semantic_hierarchies = syn_state.semantic_hierarchies if syn_state else []
+        if syn_state:
+            self.tree_roots = syn_state.tree_roots
+            self.numeration = syn_state.numeration
+            self.msg = syn_state.msg
+            self.gloss = syn_state.gloss
+            self.transferred = syn_state.transferred
+            self.marked = syn_state.marked
+            self.semantic_hierarchies = syn_state.semantic_hierarchies
+            self.iteration = syn_state.iteration
+        else:
+            self.tree_roots = []
+            self.numeration = []
+            self.msg = ''
+            self.gloss = ''
+            self.transferred = []
+            self.marked = []
+            self.semantic_hierarchies = []
+            self.iteration = 0
 
     def __str__(self):
         return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(
@@ -58,7 +69,8 @@ class DerivationStep(SavedObject):
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
                            gloss=self.gloss, transferred=self.transferred, marked=self.marked,
-                           semantic_hierarchies=self.semantic_hierarchies)
+                           semantic_hierarchies=self.semantic_hierarchies,
+                           iteration=self.iteration)
 
     # ############## #
     #                #
@@ -73,6 +85,7 @@ class DerivationStep(SavedObject):
     transferred = SavedField("transferred")
     marked = SavedField("marked")
     semantic_hierarchies = SavedField("semantic_hierarchies")
+    iteration = SavedField("iteration")
 
 
 class DerivationStepManager(SavedObject):
@@ -111,12 +124,24 @@ class DerivationStepManager(SavedObject):
                 else:
                     print('cannot save open reference object ', obj)
         assert (c < max_depth)  # please raise the max depth if this is reached
-        self.derivation_steps.append((d_step.uid, savedata, d_step.msg))
+        self.derivation_steps.append((d_step.uid, savedata, d_step.msg, d_step.iteration))
+
+    def remove_iterations(self, iterations):
+        """ There may be derivation steps that have been created during the parse but are
+        found redundant or not interesting and that they should be removed. They can be
+        removed by their iteration index
+        :param iterations: list of iterations, all of these will be removed if found.
+        :return:
+        """
+        print('removing iterations ', iterations)
+        self.derivation_steps = [(uid, data, msg, i) for uid, data, msg, i
+                                 in self.derivation_steps
+                                 if i not in iterations]
 
     #    @time_me
     def restore_derivation_step(self):
         if self.derivation_steps:
-            uid, frozen_data, msg = self.derivation_steps[self.derivation_step_index]
+            uid, frozen_data, msg, i = self.derivation_steps[self.derivation_step_index]
             d_step = DerivationStep(None, uid=uid)
             d_step.load_objects(frozen_data, ctrl.main)
             self.activated = True

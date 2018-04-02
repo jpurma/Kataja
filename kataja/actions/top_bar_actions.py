@@ -37,8 +37,11 @@ class PlayOrPause(KatajaAction):
     k_command = 'Play or pause animations'
     k_shortcut = 'Space'
     k_undoable = False
-    k_tooltip = 'Let nodes to move to their computed places'
-    k_tooltip_alt = 'Pause node movement and other animations'
+    k_tooltip = '''
+<p><b>Play:</b> Let nodes move into their computed places. Can be slow on large trees
+ and some force-based visualisation algorithms can get stuck in a loop. </p>
+<p><b>Pause:</b> Pause visualisation updates. </p>
+'''
     k_checkable = True
 
     def prepare_parameters(self, args, kwargs):
@@ -57,9 +60,10 @@ class PlayOrPause(KatajaAction):
         else:
             ctrl.graph_scene.stop_animations()
             self.autoplay = False
+        ctrl.forest.play_animations(value, from_button=True)
 
     def getter(self):
-        return ctrl.play
+        return ctrl.forest.play
 
 
 class SwitchEditMode(KatajaAction):

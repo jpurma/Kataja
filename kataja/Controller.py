@@ -70,7 +70,6 @@ class Controller:
         self.pointing_mode = False
         self.pointing_method = None
         self.pointing_data = {}
-        self.play = False
         self.pressed = None  # set() # prepare for multitouch
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.text_editor_focus = None
@@ -165,11 +164,6 @@ class Controller:
 
     def is_zooming(self):
         return self.main.graph_view.zoom_timer.isActive()
-
-    def set_play(self, value):
-        self.play = value
-        action = self.ui.get_action('play_animations')
-        action.update_ui_value()
 
     # ******* Selection *******
 

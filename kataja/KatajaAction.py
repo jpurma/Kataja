@@ -388,7 +388,7 @@ class KatajaAction(QtWidgets.QAction):
         # print('setting displayed value for %s to %s' % (self.key, value))
         if isinstance(value, bool):
             self.set_active_tooltip(value)
-            if self.isCheckable():
+            if self.isCheckable() and self.isChecked() != value:
                 self.setChecked(value)
         for element in self.elements:
             element.blockSignals(True)

@@ -156,9 +156,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     pos = child.scenePos()
                     break
         if not pos:
-            x = sc_center + random.randint(-100, 100)
-            y = sc_middle + random.randint(-100, 100)
-            pos = (x, y)
+            pos = (sc_center, sc_middle)
         node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
         node.set_syntactic_object(syn_bare)
         node.label = syn_bare.label

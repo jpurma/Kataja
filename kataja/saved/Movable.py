@@ -230,7 +230,11 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             # already moving there
             return
         self.target_position = x, y
-        self.start_moving()
+        if ctrl.forest.play:
+            self.start_moving()
+        else:
+            self.current_position = x, y
+            ctrl.forest.order_recalculation_of_positions_relative_to_nodes()
 
     def get_lower_part_y(self):
         """ Implement this if the movable has content where differentiating between bottom row

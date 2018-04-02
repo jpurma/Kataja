@@ -26,8 +26,12 @@ class TwoStateIconButton(PushButtonBase):
         self.toggled.connect(self.toggle_state)
         self.setIcon(self.icon0)
 
-    def toggle_state(self, value):
-        if value:
+    def setChecked(self, value):
+        super().setChecked(value)
+        self.toggle_state(value)
+
+    def toggle_state(self, state):
+        if state:
             self.setIcon(self.icon1)
             self.k_tooltip = self.tooltip1
         else:

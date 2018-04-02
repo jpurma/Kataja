@@ -59,6 +59,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
         self._timer_id = 0
+        self._fade_timer_id = 0
         self.timer_counter = 0
         self._fade_steps = 0
         self._fade_steps_list = []
@@ -102,6 +103,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if zooming_out or (zoom_in and (self.keep_updating_visible_area or prefs.auto_zoom)):
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
+
+    def fit_to_window_if_needed(self):
+        if not (self.match_final_derivation_size or
+                self.manual_zoom or
+                ctrl.dragged_focus):
+            self.fit_to_window()
 
     @staticmethod
     @time_me
@@ -254,17 +261,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Starts the animations unless they are running already
         :return: None
         """
-        if not self._timer_id:
+        if ctrl.forest.play and not self._timer_id:
             # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
             # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
             self.timer_counter = 0
-            ctrl.set_play(True)
 
     start_animations = item_moved
 
     def stop_animations(self):
-        """ Stops the move and fade animation timer
+        """ Stops the move animation timer
         :return: None
         """
 
@@ -272,7 +278,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._timer_id = 0
         # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
         # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
-        ctrl.set_play(False)
 
     def export_3d(self, path, forest):
         """ deprecated
@@ -614,8 +619,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param new_base_color: QColor
         """
         self._fade_steps = 7
-        if not self._timer_id:
-            self._timer_id = self.startTimer(prefs._fps_in_msec)
+        if not self._fade_timer_id:
+            self._fade_timer_id = self.startTimer(prefs._fps_in_msec)
 
         self._fade_steps_list = []
         oh, os, ov, oa = old_base_color.getHsvF()
@@ -653,80 +658,34 @@ class GraphScene(QtWidgets.QGraphicsScene):
         and tells them to update their position
         :param event: timer event? sent by Qt
         """
-        # t = time.time()
-        # Uncomment to check what is the actual framerate:
-        # n_time = time.time()
-        # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
-        # self.prev_time = n_time
-        frame_has_moved = False
-        background_fade = False
-        ctrl.items_moving = True
+        event_id = event.timerId()
+        if event_id == self._timer_id:
+            self.animation_tick()
+        elif event_id == self._fade_timer_id:
+            self.fade_tick()
+
+    def fade_tick(self):
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
-            if self._fade_steps:
-                background_fade = True
+        else:
+            self.killTimer(self._fade_timer_id)
+            self._fade_timer_id = 0
 
+    def animation_tick(self):
+        ctrl.items_moving = True
         f = self.main.forest
         if (not f) or (not f.is_parsed):
             return
-        items_moving = 0
-        self.timer_counter += 1
 
+        self.timer_counter += 1
         if ctrl.pressed:
             return
-        for tree_top in f.trees:
-            if not tree_top.isVisible():
-                continue
-            sorted_nodes = tree_top.get_sorted_nodes()
-            to_normalize = []
-            x_sum = 0
-            y_sum = 0
-            allow_normalization = True
-            other_nodes = [x for x in sorted_nodes if not x.locked_to_node]
 
-            for node in sorted_nodes:
-                if not node.isVisible():
-                    continue
-                # Computed movement
-                diff_x, diff_y, normalize, ban_normalization = node.move(other_nodes)
-                if normalize:  # We cannot rely on movement alone to tell if node should be
-                    # normalized. It is possible for node to remain still while other end of
-                    # graph is wiggling, and to not normalize such node causes more wiggling.
-                    to_normalize.append(node)
-                    x_sum += diff_x
-                    y_sum += diff_y
-                if ban_normalization:
-                    allow_normalization = False
-                if abs(diff_x) + abs(diff_y) > 0.5:
-                    node._is_moving = True
-                    items_moving += 1
-                else:
-                    node._is_moving = False
+        nodes_are_moving = f.move_nodes()
 
-            # normalize movement so that the trees won't glide away
-            if allow_normalization and to_normalize:
-                avg_x = x_sum / len(to_normalize)
-                avg_y = y_sum / len(to_normalize)
-                for node in to_normalize:
-                    node.current_position = node.current_position[0] - avg_x, node.current_position[
-                        1] - avg_y
-        if items_moving or self.timer_counter < 20:
-            for e in f.edges.values():
-                e.make_path()
-            # for area in f.touch_areas:
-            # area.update_position()
-            for group in f.groups.values():
-                group.update_shape()
-            f.semantics_manager.update_position()
-            if (not self.match_final_derivation_size) and (not self.manual_zoom) and (
-                    not ctrl.dragged_focus): #and self.timer_counter % 20 == 0:
-                self.fit_to_window(zoom_in=False)
-        elif not (frame_has_moved or background_fade):
-            if (not self.match_final_derivation_size) and (not self.manual_zoom) and (
-                    not ctrl.dragged_focus):
-                self.fit_to_window()
+        if not (nodes_are_moving or self.timer_counter > 20):
             self.stop_animations()
             ctrl.items_moving = False
             self.keep_updating_visible_area = False
-        f.edge_visibility_check()  # only does something if flagged
+        self.fit_to_window_if_needed()

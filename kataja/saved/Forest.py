@@ -100,9 +100,11 @@ class Forest(SavedObject):
         self.halt_drawing = False
         self.comments = comments
         self.optimal_rect = QtCore.QRectF()
+        self.play = True
 
         # Update request flags
         self._do_edge_visibility_check = False
+        self._do_recalculate_relative_positions = False
         #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
     def init_factories(self):
@@ -188,6 +190,13 @@ class Forest(SavedObject):
         ctrl.remove_from_watch(self)
         self.in_display = False
 
+    def play_animations(self, value, from_button=False):
+        self.play = value
+        if not from_button:
+            action = self.ui.get_action('play_animations')
+            action.update_ui_value()
+
+
     def clear(self):
         if self.in_display:
             for item in self.get_all_objects():
@@ -247,6 +256,13 @@ class Forest(SavedObject):
         :return:
         """
         self.derivation_steps.save_and_create_derivation_step(syn_state)
+
+    def remove_iterations(self, iterations):
+        """
+        :param iterations: list of iteration indices to remove from steps
+        :return:
+        """
+        self.derivation_steps.remove_iterations(iterations)
 
     @staticmethod
     def list_nodes(first):
@@ -601,10 +617,59 @@ class Forest(SavedObject):
             self.visualization.normalise_all(-cp.x(), -cp.y())
 
         self.chain_manager.after_draw_update()
+        self.recalculate_positions_relative_to_nodes()
         if start_animations:
             sc.start_animations()
         ctrl.graph_view.resetCachedContent()
         ctrl.graph_view.repaint()
+
+    def move_nodes(self) -> bool:
+        """ Animate nodes one tick toward their next position, or compute the next
+        position in dynamic visualisation. Update edges and other forest elements that
+         are drawn relative to node positions.
+        :return:
+        """
+        nodes_are_moving = False
+        for tree_top in self.trees:
+            if not tree_top.isVisible():
+                continue
+            sorted_nodes = tree_top.get_sorted_nodes()
+            to_normalize = []
+            x_sum = 0
+            y_sum = 0
+            allow_normalization = True
+            other_nodes = [x for x in sorted_nodes if not x.locked_to_node]
+
+            for node in sorted_nodes:
+                if not node.isVisible():
+                    continue
+                # Computed movement
+                diff_x, diff_y, normalize, ban_normalization = node.move(other_nodes)
+                if allow_normalization and normalize and not ban_normalization:
+                    # We cannot rely on movement alone to tell if node should be
+                    # normalized. It is possible for node to remain still while other end of
+                    # graph is wiggling, and to not normalize such node causes more wiggling.
+                    to_normalize.append(node)
+                    x_sum += diff_x
+                    y_sum += diff_y
+                if ban_normalization:
+                    allow_normalization = False
+                if abs(diff_x) + abs(diff_y) > 0.5:
+                    node._is_moving = True
+                    nodes_are_moving = True
+                else:
+                    node._is_moving = False
+
+            # normalize movement so that the trees won't glide away
+            if allow_normalization and to_normalize:
+                avg_x = x_sum / len(to_normalize)
+                avg_y = y_sum / len(to_normalize)
+                for node in to_normalize:
+                    node.current_position = (node.current_position[0] - avg_x,
+                                             node.current_position[1] - avg_y)
+        self.recalculate_positions_relative_to_nodes(forced=True)
+        self.edge_visibility_check()
+        return nodes_are_moving
 
     def redraw_edges(self, edge_type=None):
         if edge_type:
@@ -639,6 +704,20 @@ class Forest(SavedObject):
         times, but the visibility check is done only once.
         """
         self._do_edge_visibility_check = True
+
+    def order_recalculation_of_positions_relative_to_nodes(self):
+        self._do_recalculate_relative_positions = True
+
+    def recalculate_positions_relative_to_nodes(self, forced=False):
+        if self._do_recalculate_relative_positions or forced:
+            self._do_recalculate_relative_positions = False
+            for e in self.edges.values():
+                e.make_path()
+            # for area in f.touch_areas:
+            # area.update_position()
+            for group in self.groups.values():
+                group.update_shape()
+            self.semantics_manager.update_position()
 
     def edge_visibility_check(self):
         """ Perform check for each edge: hide them if their start/end is
