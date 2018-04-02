@@ -326,7 +326,6 @@ class ConstituentNode(Node):
         else:
             lines.append(ui_style % 'Click to select, drag to move')
 
-
         self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):

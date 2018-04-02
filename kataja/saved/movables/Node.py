@@ -1018,6 +1018,20 @@ class Node(Movable):
         if self.label_object:
             self.label_object.resize_label()
 
+    def scene_rect_coordinates(self, current=False):
+        if current:
+            return self.sceneBoundingRect().getCoords()
+        if self._is_moving:
+            scx, scy = self.target_position
+        else:
+            scx, scy = self.current_position
+        minx, miny, maxx, maxy = self.future_children_bounding_rect().getCoords()
+        minx += scx
+        miny += scy
+        maxx += scx
+        maxy += scy
+        return minx, miny, maxx, maxy
+
     def future_scene_bounding_rect(self):
         r = self.future_children_bounding_rect()
         p = self.parentItem()
@@ -1078,7 +1092,6 @@ class Node(Movable):
             self.locked_to_node = None
             scene_pos = self.scenePos()
             # following doesn't work reliably on undo:
-
             new_parent = self.parentItem().parentItem()
             if new_parent:
                 lp = new_parent.mapFromScene(scene_pos)
@@ -1107,6 +1120,7 @@ class Node(Movable):
             if isinstance(previously, Node):
                 previously.update_bounding_rect()
         elif move_to:
+            assert(self.parentItem() == self.locked_to_node)
             self.move_to(*move_to)
             parent.update_bounding_rect()
 

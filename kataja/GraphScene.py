@@ -111,30 +111,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.fit_to_window()
 
     @staticmethod
-    @time_me
-    def visible_rect(min_w=200, min_h=100, current=True):
+    def visible_rect(current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
-        y_min = 6000
-        y_max = -6000
-        x_min = 6000
-        x_max = -6000
+        min_width = 200
+        min_height = 100
+        rect_top = 6000
+        rect_bottom = -6000
+        rect_left = 6000
+        rect_right = -6000
         empty = True
-        # gl = ctrl.forest.gloss
-        # if gl and gl.isVisible():
-        #     minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
-        #     if minx < x_min:
-        #         x_min = minx
-        #     if maxx > x_max:
-        #         x_max = maxx
-        #     if miny < y_min:
-        #         y_min = miny
-        #     if maxy > y_max:
-        #         y_max = maxy
-        #     empty = False
-
-        # , ctrl.forest.groups.values())
-        total = QtCore.QRectF()
         for node in ctrl.forest.nodes.values():
             if not node:
                 continue
@@ -143,101 +129,30 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if not node.isVisible():
                 continue
             empty = False
-            if current:
-                total |= node.sceneBoundingRect()
-            else:
-                if node._is_moving:
-                    scx, scy = node.target_position
-                else:
-                    scx, scy = node.current_position
-                total |= node.future_children_bounding_rect().translated(scx, scy)
-
+            left, top, right, bottom = node.scene_rect_coordinates(current)
+            rect_left = left if left < rect_left else rect_left
+            rect_right = right if right > rect_right else rect_right
+            rect_top = top if top < rect_top else rect_top
+            rect_bottom = bottom if bottom > rect_bottom else rect_bottom
+        if empty:
+            return QtCore.QRectF(0, 0, 320, 240)
         sm = ctrl.forest.semantics_manager
         if sm.visible:
             for item in sm.all_items:
-                total |= item.sceneBoundingRect()
-
-        if empty:
-            return QtCore.QRectF(0, 0, 320, 240)
-        else:
-            return total
-
-    @staticmethod
-    def visible_rect(min_w=200, min_h=100, current=True):
-        """ Counts all visible items in scene and returns QRectF object
-         that contains all of them """
-        y_min = 6000
-        y_max = -6000
-        x_min = 6000
-        x_max = -6000
-        empty = True
-        # gl = ctrl.forest.gloss
-        # if gl and gl.isVisible():
-        #     minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
-        #     if minx < x_min:
-        #         x_min = minx
-        #     if maxx > x_max:
-        #         x_max = maxx
-        #     if miny < y_min:
-        #         y_min = miny
-        #     if maxy > y_max:
-        #         y_max = maxy
-        #     empty = False
-
-        # , ctrl.forest.groups.values())
-        for node in ctrl.forest.nodes.values():
-            if not node:
-                continue
-            if node.parentItem():
-                continue
-            if not node.isVisible():
-                continue
-            empty = False
-            if current:
-                minx, miny, maxx, maxy = node.sceneBoundingRect().getCoords()
-            else:
-                if node._is_moving:
-                    scx, scy = node.target_position
-                else:
-                    scx, scy = node.current_position
-                minx, miny, maxx, maxy = node.future_children_bounding_rect().getCoords()
-                minx += scx
-                miny += scy
-                maxx += scx
-                maxy += scy
-            if minx < x_min:
-                x_min = minx
-            if maxx > x_max:
-                x_max = maxx
-            if miny < y_min:
-                y_min = miny
-            if maxy > y_max:
-                y_max = maxy
-        sm = ctrl.forest.semantics_manager
-        if sm.visible:
-            for item in sm.all_items:
-                minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
-                if minx < x_min:
-                    x_min = minx
-                if maxx > x_max:
-                    x_max = maxx
-                if miny < y_min:
-                    y_min = miny
-                if maxy > y_max:
-                    y_max = maxy
-
-        if empty:
-            return QtCore.QRectF(0, 0, 320, 240)
-        else:
-            width = x_max - x_min
-            if width < min_w:
-                x_min -= (min_w - width) / 2
-                width = min_w
-            height = y_max - y_min
-            if height < min_h:
-                y_min -= (min_h - height) / 2
-                height = min_h
-            return QtCore.QRectF(x_min, y_min, width, height)
+                left, top, right, bottom = item.sceneBoundingRect().getCoords()
+                rect_left = left if left < rect_left else rect_left
+                rect_right = right if right > rect_right else rect_right
+                rect_top = top if top < rect_top else rect_top
+                rect_bottom = bottom if bottom > rect_bottom else rect_bottom
+        width = rect_right - rect_left
+        if width < min_width:
+            rect_right -= (min_width - width) / 2
+            width = min_width
+        height = rect_bottom - rect_top
+        if height < min_height:
+            rect_top -= (min_height - height) / 2
+            height = min_height
+        return QtCore.QRectF(rect_left, rect_top, width, height)
 
     @staticmethod
     def print_rect():
