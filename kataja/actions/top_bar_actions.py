@@ -60,10 +60,10 @@ class PlayOrPause(KatajaAction):
         else:
             ctrl.graph_scene.stop_animations()
             self.autoplay = False
-        ctrl.forest.play_animations(value, from_button=True)
+        ctrl.main.document.play_animations(value, from_button=True)
 
     def getter(self):
-        return ctrl.forest.play
+        return ctrl.play
 
 
 class SwitchEditMode(KatajaAction):

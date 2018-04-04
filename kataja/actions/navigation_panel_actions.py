@@ -39,7 +39,7 @@ class NewStructure(KatajaAction):
         """ Create new Forest, insert it after the current one and select it.
         :return: None
         """
-        i, forest = ctrl.main.forest_keeper.new_forest()
+        i, forest = ctrl.main.document.new_forest()
         ctrl.main.change_forest()
         log.info('(Cmd-n) New forest, n.%s' % (i + 1))
 
@@ -55,7 +55,7 @@ class NextForest(KatajaAction):
         """ Show the next 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
-        i, forest = ctrl.main.forest_keeper.next_forest()
+        i, forest = ctrl.main.document.next_forest()
         ctrl.main.change_forest()
         return f'Next forest: {i + 1}: {forest.textual_form()}'
 
@@ -71,7 +71,7 @@ class PreviousForest(KatajaAction):
         """ Show the previous 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
-        i, forest = ctrl.main.forest_keeper.prev_forest()
+        i, forest = ctrl.main.document.prev_forest()
         ctrl.main.change_forest()
         return f'Previous forest: {i + 1}: {forest.textual_form()}'
 
@@ -82,26 +82,26 @@ class JumpToForest(KatajaAction):
 
     def prepare_parameters(self, args, kwargs):
         if not args:
-            args = [ctrl.main.forest_keeper.current_index + 1]
+            args = [ctrl.main.document.current_index + 1]
         try:
             i = int(args[0])
             args = [i]
         except ValueError:
-            args = [ctrl.main.forest_keeper.current_index + 1]
+            args = [ctrl.main.document.current_index + 1]
         return args, kwargs
 
     def method(self, n):
-        current = ctrl.main.forest_keeper.current_index
-        i, forest = ctrl.main.forest_keeper.jump_to_forest(n - 1)
+        current = ctrl.main.document.current_index
+        i, forest = ctrl.main.document.jump_to_forest(n - 1)
         if i != current:
             ctrl.main.change_forest()
             return f'Jump to tree set: {i + 1}: {forest.textual_form()}'
 
     def getter(self):
-        return ctrl.main.forest_keeper.current_index + 1
+        return ctrl.main.document.current_index + 1
 
     def enabler(self):
-        return ctrl.main.forest_keeper
+        return ctrl.main.document
 
 
 class NextStep(KatajaAction):

@@ -160,7 +160,7 @@ class Open(KatajaAction):
         ctrl.disable_undo()
         m.load_objects(data, m)
         ctrl.resume_undo()
-        ctrl.call_watchers(self.forest_keeper, 'document_changed')
+        ctrl.call_watchers(self.document, 'document_changed')
         m.change_forest()
         log.info("Loaded '%s'." % filename)
 
@@ -181,7 +181,7 @@ class Save(KatajaAction):
         filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main, "Save Kataja trees",
                                                                     "", file_help)
         if filename:
-            ctrl.main.forest_keeper.filename = filename
+            ctrl.main.document.filename = filename
             self.save(filename)
 
     def save(self, filename):
@@ -235,7 +235,7 @@ class Save(KatajaAction):
         Format is deduced from the extension of filename.
         :return: None
         """
-        filename = filename or ctrl.main.forest_keeper.filename
+        filename = filename or ctrl.main.document.filename
         if filename:
             self.save(filename)
         else:

@@ -83,7 +83,7 @@ class NavigationPanel(Panel):
         self.finish_init()
 
     def update_tree_counter(self):
-        keeper = ctrl.main.forest_keeper
+        keeper = ctrl.main.document
         if keeper is not None:
             display_index = keeper.current_index + 1  # indexes start at 0, we want to display 1
             max_index = len(keeper.forests)

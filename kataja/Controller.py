@@ -165,6 +165,9 @@ class Controller:
     def is_zooming(self):
         return self.main.graph_view.zoom_timer.isActive()
 
+    @property
+    def play(self):
+        return self.main.document.play
     # ******* Selection *******
 
     # trees and edges can be selected.

@@ -53,6 +53,7 @@ class KatajaDocument(SavedObject):
         self.structures = OrderedDict()
         self.constituents = OrderedDict()
         self.features = OrderedDict()
+        self.play = True
 
     def new_forest(self):
         """ Add a new forest after the current one.
@@ -107,6 +108,11 @@ class KatajaDocument(SavedObject):
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
 
+    def play_animations(self, value, from_button=False):
+        self.play = value
+        if not from_button:
+            action = self.ui.get_action('play_animations')
+            action.update_ui_value()
 
     def build_lexicon_dict(self):
         self.constituents = OrderedDict()

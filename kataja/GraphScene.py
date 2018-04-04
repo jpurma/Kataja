@@ -176,7 +176,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Starts the animations unless they are running already
         :return: None
         """
-        if ctrl.forest.play and not self._timer_id:
+        if ctrl.play and not self._timer_id:
             # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
             # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)

@@ -230,7 +230,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             # already moving there
             return
         self.target_position = x, y
-        if ctrl.forest.play:
+        if ctrl.play:
             self.start_moving()
         else:
             self.current_position = x, y

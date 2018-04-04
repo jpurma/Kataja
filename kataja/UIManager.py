@@ -557,9 +557,9 @@ class UIManager:
     def prepare_project_menus(self):
         menu_items = []
         base_action = self.actions['switch_project']
-        for i, project in enumerate(ctrl.main.forest_keepers):
+        for i, project in enumerate(ctrl.main.documents):
             action = TransmitAction(text=project.name, target=base_action, key=i)
-            action.setChecked(project is ctrl.main.forest_keeper)
+            action.setChecked(project is ctrl.main.document)
             menu_items.append(action)
         return menu_items
 

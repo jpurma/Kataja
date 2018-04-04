@@ -153,8 +153,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
         self.settings_manager = Settings()
-        self.forest_keepers = []
-        self.forest_keeper = None
+        self.documents = []
+        self.document = None
         ctrl.late_init(self)
         # capture_stdout(log, self.log_stdout_as_debug, ctrl)
 
@@ -175,8 +175,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.init_forest_keepers()
-        self.settings_manager.set_document(self.forest_keeper)
+        self.init_documents()
+        self.settings_manager.set_document(self.document)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
         self.settings_manager.set_forest(self.forest)
@@ -196,7 +196,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.install_plugins()
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
-        # ctrl.call_watchers(self.forest_keeper, 'forest_changed')
+        # ctrl.call_watchers(self.document, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -301,7 +301,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
-        self.init_forest_keepers()
+        self.init_documents()
         ctrl.resume_undo()
         prefs.active_plugin_name = plugin_key
         self.init_done = init_state
@@ -324,7 +324,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #             print(f'removing {class_name}')
         #             classes.remove_class(class_name)
         classes.restore_default_classes()
-        self.init_forest_keepers()
+        self.init_documents()
         ctrl.resume_undo()
         prefs.active_plugin_name = ''
 
@@ -369,26 +369,26 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.preferences_dialog.open()
         self.ui_manager.preferences_dialog.trigger_all_updates()
 
-    def init_forest_keepers(self):
+    def init_documents(self):
         """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
         plugins have changed the classes that implement these.
         :return:
         """
-        self.forest_keepers = [classes.get('KatajaDocument')()]
-        self.forest_keeper = self.forest_keepers[0]
-        ctrl.call_watchers(self.forest_keeper, 'document_changed')
+        self.documents = [classes.get('KatajaDocument')()]
+        self.document = self.documents[0]
+        ctrl.call_watchers(self.document, 'document_changed')
 
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
 
-        self.forest_keeper.create_forests(clear=False)
+        self.document.create_forests(clear=False)
         self.change_forest()
         self.ui_manager.update_projects_menu()
 
     def create_new_project(self):
-        names = [fk.name for fk in self.forest_keepers]
+        names = [fk.name for fk in self.documents]
         name_base = 'New project'
         name = 'New project'
         c = 1
@@ -396,20 +396,20 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             name = '%s %s' % (name_base, c)
             c += 1
         self.forest.retire_from_drawing()
-        self.forest_keepers.append(classes.KatajaDocument(name=name))
-        self.forest_keeper = self.forest_keepers[-1]
-        ctrl.call_watchers(self.forest_keeper, 'document_changed')
+        self.documents.append(classes.KatajaDocument(name=name))
+        self.document = self.documents[-1]
+        ctrl.call_watchers(self.document, 'document_changed')
         self.change_forest()
         self.ui_manager.update_projects_menu()
-        return self.forest_keeper
+        return self.document
 
     def switch_project(self, i):
         self.forest.retire_from_drawing()
-        self.forest_keeper = self.forest_keepers[i]
-        ctrl.call_watchers(self.forest_keeper, 'document_changed')
+        self.document = self.documents[i]
+        ctrl.call_watchers(self.document, 'document_changed')
         self.change_forest()
         self.ui_manager.update_projects_menu()
-        return self.forest_keeper
+        return self.document
 
     # ### Visualization
     # #############################################################
@@ -421,9 +421,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ctrl.disable_undo()
         if self.forest:
             self.forest.retire_from_drawing()
-        if not self.forest_keeper.forest:
-            self.forest_keeper.create_forests(clear=True)
-        self.forest = self.forest_keeper.forest
+        if not self.document.forest:
+            self.document.create_forests(clear=True)
+        self.forest = self.document.forest
         self.settings_manager.set_forest(self.forest)
         if self.forest.is_parsed:
             if self.forest.derivation_steps:
@@ -640,16 +640,16 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Empty everything - maybe necessary before loading new data. """
         if self.forest:
             self.forest.retire_from_drawing()
-        self.forest_keeper = None
+        self.document = None
         # Garbage collection doesn't mix well with animations that are still running
         # print('garbage stats:', gc.get_count())
         # gc.collect()
         # print('after collection:', gc.get_count())
         # if gc.garbage:
         #    print('garbage:', gc.garbage)
-        self.forest_keepers.append(classes.KatajaDocument(clear=True))
-        self.forest_keeper = self.forest_keepers[-1]
-        self.settings_manager.set_document(self.forest_keeper)
+        self.documents.append(classes.KatajaDocument(clear=True))
+        self.document = self.documents[-1]
+        self.settings_manager.set_document(self.document)
         self.forest = None
 
     # ## Other window events
@@ -761,5 +761,5 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     #                #
     # ############## #
 
-    forest_keeper = SavedField("forest_keeper")
+    document = SavedField("document")
     forest = SavedField("forest")

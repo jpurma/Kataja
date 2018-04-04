@@ -64,7 +64,7 @@ class SyntaxPanel(Panel):
         :return:
         """
         if signal == 'forest_changed':
-            keeper = ctrl.main.forest_keeper
+            keeper = ctrl.main.document
             if keeper is not None:
                 display_index = keeper.current_index + 1
                 max_index = len(keeper.forests)

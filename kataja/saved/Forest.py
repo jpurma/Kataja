@@ -100,7 +100,6 @@ class Forest(SavedObject):
         self.halt_drawing = False
         self.comments = comments
         self.optimal_rect = QtCore.QRectF()
-        self.play = True
 
         # Update request flags
         self._do_edge_visibility_check = False
@@ -189,12 +188,6 @@ class Forest(SavedObject):
                 self.remove_from_scene(item, fade_out=False)
         ctrl.remove_from_watch(self)
         self.in_display = False
-
-    def play_animations(self, value, from_button=False):
-        self.play = value
-        if not from_button:
-            action = self.ui.get_action('play_animations')
-            action.update_ui_value()
 
 
     def clear(self):
