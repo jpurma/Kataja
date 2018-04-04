@@ -155,6 +155,10 @@ class Controller:
         return self.main.forest.free_drawing
 
     @property
+    def view_manager(self) -> 'kataja.ViewManager':
+        return self.main.view_manager
+
+    @property
     def graph_scene(self) -> 'kataja.GraphScene':
         return self.main.graph_scene
 

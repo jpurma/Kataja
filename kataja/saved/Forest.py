@@ -170,10 +170,10 @@ class Forest(SavedObject):
         ctrl.main.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
-        self.scene.keep_updating_visible_area = True
-        self.scene.manual_zoom = False
+        ctrl.view_manager.keep_updating = True
+        ctrl.view_manager.manual_zoom = False
         self.draw()  # do draw once to avoid having the first draw in undo stack.
-        ctrl.graph_scene.fit_to_window()
+        ctrl.view_manager.fit_to_window()
         ctrl.resume_undo()
         ctrl.graph_view.setFocus()
 
@@ -345,8 +345,8 @@ class Forest(SavedObject):
             self.visualization.prepare(self)
             ctrl.settings.set('hide_edges_if_nodes_overlap',
                               self.visualization.hide_edges_if_nodes_overlap, level=g.FOREST)
-            self.scene.keep_updating_visible_area = True
-        self.main.graph_scene.manual_zoom = False
+            ctrl.view_manager.keep_updating = True
+        ctrl.view_manager.manual_zoom = False
 
     def restore_visualization(self):
         name = self.vis_data.get('name', ctrl.settings.get('visualization'))
@@ -355,7 +355,7 @@ class Forest(SavedObject):
             if v:
                 self.visualization = v
                 v.prepare(self, reset=False)
-                self.main.graph_scene.manual_zoom = False
+                ctrl.view_manager.manual_zoom = False
 
     def update_visualization(self):
         """ Verify that the active visualization is the same as defined in
@@ -592,8 +592,7 @@ class Forest(SavedObject):
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         if not prefs.auto_zoom:
-            ctrl.graph_scene.match_final_derivation_size = not self.derivation_steps.is_last()
-        sc = ctrl.graph_scene
+            ctrl.view_manager.match_final_derivation_size = not self.derivation_steps.is_last()
         self.update_feature_ordering()
         self.update_forest_gloss()
         if self.visualization:
@@ -606,14 +605,14 @@ class Forest(SavedObject):
                     self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
                 prev_trees.append(tree_top)
             # keep everything centered to minimise movement between steps
-            vr = ctrl.graph_scene.visible_rect(current=False)
+            vr = ctrl.view_manager.visible_rect(current=False)
             cp = vr.center()
             self.visualization.normalise_all(-cp.x(), -cp.y())
 
         self.chain_manager.after_draw_update()
         self.recalculate_positions_relative_to_nodes()
         if start_animations:
-            sc.start_animations()
+            ctrl.graph_scene.start_animations()
         ctrl.graph_view.resetCachedContent()
         ctrl.graph_view.repaint()
 

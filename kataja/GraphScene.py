@@ -45,12 +45,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
     timerEvent) is the main loop for moving nodes and iterating force graph steps.
     """
 
-    def __init__(self, main=None, graph_view=None, graph_scene=None):
+    def __init__(self):
         """ GraphicsScene contains graph elements.
         It is associated with view-widget to display it. """
         QtWidgets.QGraphicsScene.__init__(self)
-        self.main = main
-        self.graph_view = graph_view
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
         self.setSceneRect(-300, -200, 600, 400)
@@ -63,10 +61,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.timer_counter = 0
         self._fade_steps = 0
         self._fade_steps_list = []
-        self.manual_zoom = False
-        self.match_final_derivation_size = False
-        self._cached_visible_rect = None
-        self.keep_updating_visible_area = False
         # self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
 
@@ -80,105 +74,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-    def fit_to_window(self, force=False, zoom_in=True):
-        """ Fit all visible items to view window. Resizing may be skipped if there are
-        :param force: force resize
-        :param zoom_in: do resize when it means that
-
-        """
-        mw = prefs.edge_width
-        mh = prefs.edge_height
-        margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
-        use_current_positions = len(ctrl.forest.nodes) < 10
-        vr = self.visible_rect(current=use_current_positions) + margins
-        ctrl.forest.optimal_rect = vr
-        if force or not self._cached_visible_rect:
-            self.graph_view.instant_fit_to_view(vr)
-            self._cached_visible_rect = vr
-            return
-        if vr == self._cached_visible_rect:
-            return
-        zooming_out = vr.width() > self._cached_visible_rect.width() or vr.height() > \
-                                                                        self._cached_visible_rect.height()
-        if zooming_out or (zoom_in and (self.keep_updating_visible_area or prefs.auto_zoom)):
-            self.graph_view.instant_fit_to_view(vr)
-            self._cached_visible_rect = vr
-
-    def fit_to_window_if_needed(self):
-        if not (self.match_final_derivation_size or
-                self.manual_zoom or
-                ctrl.dragged_focus):
-            self.fit_to_window()
-
-    @staticmethod
-    def visible_rect(current=True):
-        """ Counts all visible items in scene and returns QRectF object
-         that contains all of them """
-        min_width = 200
-        min_height = 100
-        rect_top = 6000
-        rect_bottom = -6000
-        rect_left = 6000
-        rect_right = -6000
-        empty = True
-        for node in ctrl.forest.nodes.values():
-            if not node:
-                continue
-            if node.parentItem():
-                continue
-            if not node.isVisible():
-                continue
-            empty = False
-            left, top, right, bottom = node.scene_rect_coordinates(current)
-            rect_left = left if left < rect_left else rect_left
-            rect_right = right if right > rect_right else rect_right
-            rect_top = top if top < rect_top else rect_top
-            rect_bottom = bottom if bottom > rect_bottom else rect_bottom
-        if empty:
-            return QtCore.QRectF(0, 0, 320, 240)
-        sm = ctrl.forest.semantics_manager
-        if sm.visible:
-            for item in sm.all_items:
-                left, top, right, bottom = item.sceneBoundingRect().getCoords()
-                rect_left = left if left < rect_left else rect_left
-                rect_right = right if right > rect_right else rect_right
-                rect_top = top if top < rect_top else rect_top
-                rect_bottom = bottom if bottom > rect_bottom else rect_bottom
-        width = rect_right - rect_left
-        if width < min_width:
-            rect_right -= (min_width - width) / 2
-            width = min_width
-        height = rect_bottom - rect_top
-        if height < min_height:
-            rect_top -= (min_height - height) / 2
-            height = min_height
-        return QtCore.QRectF(rect_left, rect_top, width, height)
-
-    @staticmethod
-    def print_rect():
-        """ A more expensive version of visible_rect, also includes curves of edges. Too slow for
-        realtime resizing, but when printing you don't want edges to be clipped.
-        :return:
-        """
-        f = ctrl.forest
-        total = QtCore.QRectF()
-        for item in chain(f.nodes.values(), f.groups.values(), f.edges.values(), f.semantics_manager.all_items):
-            if not item.isVisible():
-                continue
-            total |= item.sceneBoundingRect()
-        if not total:
-            total = QtCore.QRectF(0, 0, 320, 240)
-        else:
-            total.adjust(-5, -5, 15, 10)
-        return total
 
     def item_moved(self):
         """ Starts the animations unless they are running already
         :return: None
         """
         if ctrl.play and not self._timer_id:
-            # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=False)
-            # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=False)
             self._timer_id = self.startTimer(prefs._fps_in_msec)
             self.timer_counter = 0
 
@@ -191,8 +92,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         self.killTimer(self._timer_id)
         self._timer_id = 0
-        # self.graph_view.setRenderHint(QtGui.QPainter.Antialiasing, on=True)
-        # self.graph_view.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, on=True)
 
     def export_3d(self, path, forest):
         """ deprecated
@@ -291,14 +190,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 raise KeyError
             return item
 
-        # debugging plotter
-        # for item, pos in selectables:
-        # x,y = pos
-        # el = QtGui.QGraphicsEllipseItem(x-2, y-2, 4, 4)
-        # el.setBrush(colors.drawing)
-        # self.addItem(el)
-        #
-
         # ############### Absolute left/right/up/down ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
@@ -340,8 +231,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.dragged_text = None
         ctrl.press(None)
         ctrl.set_drag_hovering(None)
-        ctrl.main.ui_manager.update_touch_areas()
-        self.graph_view.toggle_suppress_drag(False)
+        ctrl.ui.update_touch_areas()
+        ctrl.view_manager.toggle_suppress_drag(False)
 
     def dragging_over(self, scene_pos):
         """ Dragged kataja object is in this scene position, check if there are items that should
@@ -359,7 +250,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 break
         if not hovering_over_something:
             ctrl.set_drag_hovering(None)
-        self.main.ui_manager.update_positions()
+        ctrl.ui.update_positions()
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
@@ -367,7 +258,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
         # No object was pressed -- either clicking on nothing or ending a selection drag
 
-        if self.graph_view.selection_mode:
+        if ctrl.view_manager.selection_mode:
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges
@@ -589,7 +480,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def animation_tick(self):
         ctrl.items_moving = True
-        f = self.main.forest
+        f = ctrl.forest
         if (not f) or (not f.is_parsed):
             return
 
@@ -602,5 +493,5 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if not (nodes_are_moving or self.timer_counter > 20):
             self.stop_animations()
             ctrl.items_moving = False
-            self.keep_updating_visible_area = False
-        self.fit_to_window_if_needed()
+            ctrl.view_manager.keep_updating = False
+        ctrl.view_manager.fit_to_window_if_needed()

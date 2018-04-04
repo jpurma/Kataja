@@ -50,6 +50,7 @@ from kataja.PaletteManager import PaletteManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.Settings import Settings
+from kataja.ViewManager import ViewManager
 from kataja.UIManager import UIManager
 from kataja.saved.Forest import Forest
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
@@ -167,9 +168,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.color_manager.update_custom_colors()
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
-        self.graph_scene = GraphScene(main=self, graph_view=None)
-        self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
-        self.graph_scene.graph_view = self.graph_view
+        self.view_manager = ViewManager()
+        self.graph_scene = GraphScene()
+        self.graph_view = GraphView(self.graph_scene)
+        self.view_manager.late_init(self.graph_scene, self.graph_view)
         self.ui_manager = UIManager(self)
         self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()

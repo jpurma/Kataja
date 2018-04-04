@@ -188,7 +188,7 @@ class ZoomToFit(KatajaAction):
         """ Fit graph to current window. Usually happens automatically, but also
         available as user action
         """
-        ctrl.graph_scene.fit_to_window(force=True)
+        ctrl.view_manager.fit_to_window(force=True)
 
 
 class ToggleAutomaticZoom(KatajaAction):
@@ -226,10 +226,10 @@ class TogglePanMode(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.graph_view.set_selection_mode(False)
+        ctrl.view_manager.set_selection_mode(False)
 
     def getter(self):
-        return not ctrl.graph_view.selection_mode
+        return not ctrl.view_manager.selection_mode
 
 
 class ToggleSelectMode(KatajaAction):
@@ -241,10 +241,10 @@ class ToggleSelectMode(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.graph_view.set_selection_mode(True)
+        ctrl.view_manager.set_selection_mode(True)
 
     def getter(self):
-        return ctrl.graph_view.selection_mode
+        return ctrl.view_manager.selection_mode
 
 
 class ChangeVisualisation(KatajaAction):
@@ -304,4 +304,4 @@ class ToggleFullScreen(KatajaAction):
             ctrl.ui.store_panel_positions()
             ctrl.main.showFullScreen()
             log.info('(Cmd+f) fullscreen')
-        ctrl.graph_scene.fit_to_window(force=True)
+        ctrl.view_manager.fit_to_window(force=True)
