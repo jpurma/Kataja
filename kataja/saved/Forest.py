@@ -455,12 +455,11 @@ class Forest(SavedObject):
         if self.in_display:
             for item in self.get_all_objects():
                 sc = item.scene()
-                if sc:
-                    continue
+                if not sc:
+                    self.scene.addItem(item)
                 parent = getattr(item, 'locked_to_node', None)
                 if parent and parent is not item.parentItem():
                     item.setParentItem(parent)
-                self.scene.addItem(item)
 
     def add_to_scene(self, item):
         """ Put items belonging to this forest to scene
