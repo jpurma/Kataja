@@ -1718,11 +1718,6 @@ class Node(Movable):
         for edge in self.edges_up:
             edge.end_node_stopped_moving()
 
-    def itemChange(self, change, value):
-        if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
-            ctrl.ui.update_position_for(self)
-        return QtWidgets.QGraphicsObject.itemChange(self, change, value)
-
     def update_visibility(self, fade_in=True, fade_out=True, skip_label=False) -> bool:
         """ see Movable.update_visibility
         This is called logical visibility and can be checked with is_visible().

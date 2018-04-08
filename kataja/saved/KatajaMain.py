@@ -456,7 +456,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Call for forest redraw
         :return: None
         """
-        self.forest.draw()
+        if self.forest and self.forest.in_display:
+            self.forest.draw()
 
     def log_stdout_as_debug(self, text):
         if text.strip():
