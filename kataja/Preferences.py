@@ -128,11 +128,6 @@ class Preferences(object):
                                             'when zoomed out',
                                     'order': 42}
 
-        self.auto_zoom = True
-        self._auto_zoom_ui = {'tab': 'General',
-                              'label': 'Automatic zoom in',
-                              'help': 'Fit the zoom level to tree size when the tree changes',
-                              'order': 41}
         self.zoom_to_center = True
         self._zoom_to_center_ui = {'tab': 'General',
                                    'label': 'Zoom to center',

@@ -2,7 +2,7 @@
 from PyQt5.QtGui import QKeySequence
 
 from kataja.singletons import ctrl, log
-from kataja.KatajaAction import KatajaAction, TransmitAction
+from kataja.KatajaAction import KatajaAction, MediatingAction
 
 
 # ==== Class variables for KatajaActions:
@@ -46,7 +46,7 @@ class TogglePanel(KatajaAction):
         it. Cannot use PanelAction's .panel for that.
         """
         sender = self.sender()
-        if isinstance(sender, TransmitAction):
+        if isinstance(sender, MediatingAction):
             key = sender.key
         else:
             key = sender.data

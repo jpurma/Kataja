@@ -31,7 +31,7 @@ from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 from kataja.utils import time_me
-
+from kataja.globals import ViewUpdateReason
 
 class ViewManager:
     """ ViewportManager is responsible for deciding what part of the GraphScene should
@@ -49,12 +49,9 @@ class ViewManager:
         self._zoomd = (0, 0, 0, 0)
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
         self.zoom_timer = QtCore.QBasicTimer()
-        self._suppressed_drag_mode = False
-        self.manual_zoom = False
-        self.match_final_derivation_size = False
+        self.did_manual_zoom = False
+        self.auto_zoom = True
         self._cached_visible_rect = None
-        self.keep_updating = False
-        self.selection_mode = True
 
         # self.zoom_anim = None
         # self._last_rect = self._target_rect
@@ -62,7 +59,6 @@ class ViewManager:
     def late_init(self, graph_scene, graph_view):
         self.view = graph_view
         self.scene = graph_scene
-        self._suppressed_drag_mode = self.view.dragMode()
 
     # def scale_step(self, r):
     #     ox, oy, ow, oh = self._zoom_rect
@@ -121,17 +117,27 @@ class ViewManager:
     #     #ctrl.call_watchers(self, 'viewport_changed')
 
     # @time_me
-    def instant_fit_to_view(self, target_rect):
+    def _fit_to_view(self, target_rect):
         """ Fit the current scene into view, snugly
         :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
+        self._cached_visible_rect = target_rect
         sr = self.view.sceneRect()
         # if self.zoom_anim:
         #    self.zoom_anim.stop()
-        if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
-        if target_rect.left() < sr.left() or target_rect.top() < sr.top():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(500, 500, 0, 0))
+        # expand the logical scene rect when necessary
+        if target_rect.right() > sr.right():
+            print('expanding right')
+            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 0))
+        if target_rect.bottom() > sr.bottom():
+            print('expanding bottom')
+            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 0, 500))
+        if target_rect.left() < sr.left():
+            print('expanding left')
+            self.view.setSceneRect(sr + QtCore.QMarginsF(500, 0, 0, 0))
+        if target_rect.top() < sr.top():
+            print('expanding top')
+            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 500, 0, 0))
         self.view.fitInView(target_rect, 1)
         self._fit_scale = self.view.transform().m11()
         ctrl.call_watchers(self, 'viewport_moved')
@@ -162,7 +168,7 @@ class ViewManager:
         view_center = self.view.mapToScene(self.view.viewport().rect().center())
         delta = math.pow(2.0, -y_angle / 360.0)
         if delta != 1.0:
-            self.zoom_timer.start(1000, self)
+            self.zoom_timer.start(1000, self.view)
             self._scale_factor = self.scale_view_by(delta)
             if prefs.zoom_to_center:
                 if ctrl.selected:
@@ -181,68 +187,91 @@ class ViewManager:
             else:
                 self.view.centerOn(view_center)
             if prefs.auto_pan_select:
-                if self.view.transform().m11() > self._fit_scale:
-                    if self.selection_mode:
-                        self.set_selection_mode(False)  # Pan mode
-                else:
-                    if not self.selection_mode:
-                        self.set_selection_mode(True)  # Select mode
+                # Toggle pan mode if we are zoomed in
+                self.view.set_selection_mode(self.view.transform().m11() > self._fit_scale)
 
         # self._last_rect = self.mapToScene(self.rect()).boundingRect()
-        self._manual_zoom = True
+        self.did_manual_zoom = True
 
-    def set_selection_mode(self, selection_mode):
-        if selection_mode:
-            self.selection_mode = True
-            self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        else:
-            self.selection_mode = False
-            self.view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        self._suppressed_drag_mode = self.view.dragMode()
+    def _new_visible_rect(self):
+        vr = self._calculate_visible_rect() + self.margins()
+        #print('new visible rect: ', vr)
+        if (not self._cached_visible_rect) or vr != self._cached_visible_rect:
+            return vr
 
-    def toggle_suppress_drag(self, suppress):
-        """ ScrollHandDrag or RubberBandDrag shouldn't register if we are dragging one object
-        (GraphScene handles that). This method allows to suppress these drag modes temporarily.
-         :param suppress: if true, switch to NoDrag, otherwise restore mode suitable to zoom level
-         """
-        if suppress:
-            self._suppressed_drag_mode = self.view.dragMode()
-            self.view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-        else:
-            self.view.setDragMode(self._suppressed_drag_mode)
-
-    def fit_to_window(self, force=False, zoom_in=True):
-        """ Fit all visible items to view window. Resizing may be skipped if there are
-        :param force: force resize
-        :param zoom_in: do resize when it means that
-
-        """
-        mw = prefs.edge_width
-        mh = prefs.edge_height
-        margins = QtCore.QMarginsF(mw, mh * 2, mw, mh)
-        use_current_positions = len(ctrl.forest.nodes) < 10
-        vr = self.visible_rect(current=use_current_positions) + margins
-        ctrl.forest.optimal_rect = vr
-        if force or not self._cached_visible_rect:
-            self.instant_fit_to_view(vr)
-            self._cached_visible_rect = vr
+    def fit_to_window(self):
+        """ Fit all visible items to view window. """
+        self.did_manual_zoom = False
+        vr = self._new_visible_rect()
+        if not vr:
             return
-        if vr == self._cached_visible_rect:
-            return
-        zooming_out = (vr.width() > self._cached_visible_rect.width() or
-                       vr.height() > self._cached_visible_rect.height())
-        if zooming_out or (zoom_in and (self.keep_updating or prefs.auto_zoom)):
-            self.instant_fit_to_view(vr)
-            self._cached_visible_rect = vr
+        self._fit_to_view(vr)
 
-    def fit_to_window_if_needed(self):
-        if not (self.match_final_derivation_size or
-                self.manual_zoom or
-                ctrl.dragged_focus):
-            self.fit_to_window()
+    def fit_if_expanding(self):
+        """ Refit to viewport if new graph is larger than previous """
+        vr = self._new_visible_rect()
+        if not vr:
+            return
+        cvr = self._cached_visible_rect
+        zooming_out = (vr.left() < cvr.left() or
+                       vr.top() < cvr.top() or
+                       vr.right() > cvr.right() or
+                       vr.bottom() > cvr.bottom())
+        if zooming_out:
+            self._fit_to_view(vr)
 
     @staticmethod
-    def visible_rect(current=True):
+    def margins():
+        mw = prefs.edge_width
+        mh = prefs.edge_height
+        return QtCore.QMarginsF(mw, mh * 2, mw, mh)
+
+    def update_viewport(self, reason):
+        if reason == ViewUpdateReason.ANIMATION_STEP:
+            if self.auto_zoom and not self.did_manual_zoom:
+                self.fit_to_window()
+        elif reason == ViewUpdateReason.MANUAL_ZOOM:
+            print('Manual zoom')
+            self.set_auto_zoom(False)
+
+        elif reason == ViewUpdateReason.ACTION_FINISHED:
+            print('Action finished')
+            if self.auto_zoom:
+                self.fit_to_window()
+        elif reason == ViewUpdateReason.FIT_IN_TRIGGERED:
+            print('Fit in triggered')
+            self.fit_to_window()
+        elif reason == ViewUpdateReason.MAJOR_REDRAW:
+            print('Redraw all')
+            if self.auto_zoom:
+                self.fit_to_window()
+        elif reason == ViewUpdateReason.NEW_FOREST:
+            print('Redraw all')
+            self.set_auto_zoom(True)
+            self.fit_to_window()
+
+    def center(self):
+        if self._cached_visible_rect:
+            return self._cached_visible_rect.center()
+        return self._calculate_visible_rect().center()
+
+    # def fit_to_window_if_needed(self):
+    #     if not (self.match_final_derivation_size or
+    #             self.manual_zoom or
+    #             ctrl.dragged_focus):
+    #         self.fit_to_window()
+
+    def set_auto_zoom(self, value):
+        if self.auto_zoom != value:
+            self.auto_zoom = value
+            action = ctrl.ui.get_action('auto_zoom')
+            print('set auto zoom')
+            if action:
+                print('update action')
+                action.update_action()
+
+    @staticmethod
+    def _calculate_visible_rect(current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         min_width = 200
@@ -255,12 +284,13 @@ class ViewManager:
         for node in ctrl.forest.nodes.values():
             if not node:
                 continue
-            if node.parentItem():
+            if (not current) and node.parentItem():
                 continue
             if not node.isVisible():
                 continue
             empty = False
             left, top, right, bottom = node.scene_rect_coordinates(current)
+            #print(left, top, right, bottom)
             rect_left = left if left < rect_left else rect_left
             rect_right = right if right > rect_right else rect_right
             rect_top = top if top < rect_top else rect_top
@@ -275,14 +305,16 @@ class ViewManager:
                 rect_right = right if right > rect_right else rect_right
                 rect_top = top if top < rect_top else rect_top
                 rect_bottom = bottom if bottom > rect_bottom else rect_bottom
+        #print('finally: ', rect_left, rect_top, rect_right, rect_bottom)
         width = rect_right - rect_left
         if width < min_width:
-            rect_right -= (min_width - width) / 2
+            rect_left -= (min_width - width) / 2
             width = min_width
         height = rect_bottom - rect_top
         if height < min_height:
             rect_top -= (min_height - height) / 2
             height = min_height
+        #print('rect: ', rect_left, rect_top, width, height)
         return QtCore.QRectF(rect_left, rect_top, width, height)
 
     @staticmethod

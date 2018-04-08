@@ -437,7 +437,7 @@ class KatajaAction(QtWidgets.QAction):
         return ctrl.ui.active_scope != SELECTION
 
 
-class TransmitAction(QtWidgets.QAction):
+class MediatingAction(QtWidgets.QAction):
     def __init__(self, text='', target=None, key=''):
         QtWidgets.QAction.__init__(self, text)
         self.key = key

@@ -1,9 +1,9 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.KatajaAction import KatajaAction, TransmitAction
+from kataja.KatajaAction import KatajaAction, MediatingAction
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
-from kataja.globals import DOCUMENT, PREFS
+from kataja.globals import DOCUMENT, PREFS, ViewUpdateReason
 from kataja.singletons import ctrl, log
 
 
@@ -185,22 +185,18 @@ class ZoomToFit(KatajaAction):
     k_tooltip = 'Zoom to fit all elements into display.'
 
     def method(self):
-        """ Fit graph to current window. Usually happens automatically, but also
-        available as user action
-        """
-        ctrl.view_manager.fit_to_window(force=True)
+        ctrl.view_manager.update_viewport(ViewUpdateReason.FIT_IN_TRIGGERED)
 
 
 class ToggleAutomaticZoom(KatajaAction):
-    k_action_uid = 'toggle_automatic_zoom'
+    k_action_uid = 'auto_zoom'
     k_command = 'Toggle automatic zooming'
     k_shortcut = 'Shift+Z'
     k_undoable = False
     k_checkable = True
-    k_tooltip = '''<p><b>Auto zoom:</b></p><p><b>True:</b> Try to keep all elements visible when 
-    structures change. 
+    k_tooltip = '''<p><b>Auto zoom:</b></p><p><b>On:</b> Try to keep all elements in view
     </p>
-    <p><b>False:</b> Don't change visible area unless manually triggered.</p> 
+    <p><b>Off:</b> Manual pan and zoom</p> 
     '''
 
     def prepare_parameters(self, args, kwargs):
@@ -211,10 +207,10 @@ class ToggleAutomaticZoom(KatajaAction):
         """ Fit graph to current window. Usually happens automatically, but also
         available as user action
         """
-        ctrl.settings.set('auto_zoom', value, level=PREFS)
+        ctrl.view_manager.auto_zoom = value
 
     def getter(self):
-        return ctrl.settings.get('auto_zoom', level=PREFS)
+        return ctrl.view_manager.auto_zoom
 
 
 class TogglePanMode(KatajaAction):
@@ -226,10 +222,10 @@ class TogglePanMode(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.view_manager.set_selection_mode(False)
+        ctrl.graph_view.set_selection_mode(False)
 
     def getter(self):
-        return not ctrl.view_manager.selection_mode
+        return not ctrl.graph_view.selection_mode
 
 
 class ToggleSelectMode(KatajaAction):
@@ -241,10 +237,10 @@ class ToggleSelectMode(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.view_manager.set_selection_mode(True)
+        ctrl.graph_view.set_selection_mode(True)
 
     def getter(self):
-        return ctrl.view_manager.selection_mode
+        return ctrl.graph_view.selection_mode
 
 
 class ChangeVisualisation(KatajaAction):
@@ -264,7 +260,7 @@ class ChangeVisualisation(KatajaAction):
         sender = self.sender()
         if isinstance(sender, QtWidgets.QComboBox):
             return [str(sender.currentData())], kwargs
-        elif isinstance(sender, TransmitAction):
+        elif isinstance(sender, MediatingAction):
             return [sender.key], kwargs
         elif isinstance(sender, KatajaButtonGroup):
             button = args[0]
@@ -304,4 +300,4 @@ class ToggleFullScreen(KatajaAction):
             ctrl.ui.store_panel_positions()
             ctrl.main.showFullScreen()
             log.info('(Cmd+f) fullscreen')
-        ctrl.view_manager.fit_to_window(force=True)
+        ctrl.view_manager.update_viewport(ViewUpdateReason.FIT_IN_TRIGGERED)

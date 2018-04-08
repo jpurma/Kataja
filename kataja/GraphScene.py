@@ -30,7 +30,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 
-import kataja.globals as g
+from kataja.globals import ViewUpdateReason, CONSTITUENT_NODE
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, open_symbol_data, time_me, caller
 from kataja.saved.Edge import Edge
@@ -73,7 +73,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return:
         """
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
-
 
     def item_moved(self):
         """ Starts the animations unless they are running already
@@ -232,7 +231,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.press(None)
         ctrl.set_drag_hovering(None)
         ctrl.ui.update_touch_areas()
-        ctrl.view_manager.toggle_suppress_drag(False)
+        ctrl.graph_view.toggle_suppress_drag(False)
 
     def dragging_over(self, scene_pos):
         """ Dragged kataja object is in this scene position, check if there are items that should
@@ -258,7 +257,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
         # No object was pressed -- either clicking on nothing or ending a selection drag
 
-        if ctrl.view_manager.selection_mode:
+        if ctrl.graph_view.selection_mode:
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges
@@ -332,7 +331,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     event.acceptProposedAction()
                     if ctrl.free_drawing_mode:
                         node = ctrl.free_drawing.create_node(pos=event.scenePos(),
-                                                             node_type=g.CONSTITUENT_NODE,
+                                                             node_type=CONSTITUENT_NODE,
                                                              label=data['char'])
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
@@ -358,7 +357,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node = ctrl.free_drawing.create_node(pos=event.scenePos(),
                                                              node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
-                        if node_type != g.CONSTITUENT_NODE:
+                        if node_type != CONSTITUENT_NODE:
                             node.lock()
                         message = 'added %s' % args[0]
                     else:
@@ -490,8 +489,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         nodes_are_moving = f.move_nodes()
 
-        if not (nodes_are_moving or self.timer_counter > 20):
+        if not (nodes_are_moving or self.timer_counter < 20):
             self.stop_animations()
             ctrl.items_moving = False
-            ctrl.view_manager.keep_updating = False
-        ctrl.view_manager.fit_to_window_if_needed()
+        ctrl.view_manager.update_viewport(ViewUpdateReason.ANIMATION_STEP)

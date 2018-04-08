@@ -80,9 +80,9 @@ class TopBarButtons(QtWidgets.QFrame):
                                    pixmap=qt_prefs.full_icon, action='fullscreen_mode',
                                    ).to_layout(layout)
 
-        automatic_zoom = TopRowButton(ui_key='toggle_automatic_zoom', parent=self, size=(24, 24),
+        automatic_zoom = TopRowButton(ui_key='auto_zoom', parent=self, size=(24, 24),
                                       pixmap=qt_prefs.autozoom_icon,
-                                      action='toggle_automatic_zoom', ).to_layout(layout)
+                                      action='auto_zoom', ).to_layout(layout)
 
         fit_to_screen = TopRowButton(ui_key='fit_to_screen', parent=self, size=(24, 24),
                                      pixmap=qt_prefs.center_focus_icon,

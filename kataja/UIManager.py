@@ -34,7 +34,7 @@ import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.buttons.OverlayButton as OverlayButtons
 import kataja.ui_widgets.buttons.OverlayButton as ob
-from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, TransmitAction
+from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, MediatingAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
@@ -120,7 +120,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                              'switch_view_mode',
                                                              'toggle_semantics_view'])),
                               ('view_menu', ('&View', ['zoom_to_fit',
-                                                       'toggle_automatic_zoom',
+                                                       'auto_zoom',
                                                        '---',
                                                        'fullscreen_mode'])),
                               ('windows_menu', ('&Windows', ['$toggle_panel', '---',
@@ -542,7 +542,7 @@ class UIManager:
         base_action = self.actions['toggle_panel']
         for panel_data in PANELS:
             panel_key = panel_data['class'].__name__
-            action = TransmitAction(text=panel_data['name'], target=base_action, key=panel_key)
+            action = MediatingAction(text=panel_data['name'], target=base_action, key=panel_key)
             menu_items.append(action)
         return menu_items
 
@@ -550,7 +550,7 @@ class UIManager:
         menu_items = []
         base_action = self.actions['set_visualization']
         for name, vis in VISUALIZATIONS.items():
-            action = TransmitAction(text=name, target=base_action, key=name)
+            action = MediatingAction(text=name, target=base_action, key=name)
             menu_items.append(action)
         return menu_items
 
@@ -558,7 +558,7 @@ class UIManager:
         menu_items = []
         base_action = self.actions['switch_project']
         for i, project in enumerate(ctrl.main.documents):
-            action = TransmitAction(text=project.name, target=base_action, key=i)
+            action = MediatingAction(text=project.name, target=base_action, key=i)
             action.setChecked(project is ctrl.main.document)
             menu_items.append(action)
         return menu_items
@@ -566,10 +566,9 @@ class UIManager:
     def prepare_plugin_menus(self):
         menu_items = []
         base_action = self.actions['switch_plugin']
-        if prefs.active_plugin_name:
-            key = prefs.active_plugin_name
-            action = TransmitAction(text=key, target=base_action, key=key)
-            action.setChecked(True)
+        for key in sorted(self.main.available_plugins):
+            action = MediatingAction(text=key, target=base_action, key=key)
+            action.setChecked(key == prefs.active_plugin_name)
             menu_items.append(action)
         return menu_items
 
@@ -581,6 +580,10 @@ class UIManager:
 
     def update_plugin_menu(self):
         plugin_menu = self._top_menus['plugin_menu']
+        for action in list(plugin_menu.actions()):
+            if isinstance(action, MediatingAction):
+                action.host_menu = None
+                plugin_menu.removeAction(action)
         for action in self.prepare_plugin_menus():
             plugin_menu.addAction(action)
             action.host_menu = plugin_menu

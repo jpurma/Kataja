@@ -29,6 +29,7 @@ from typing import Generator
 from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
+from kataja.globals import ViewUpdateReason
 from kataja.ChainManager import ChainManager
 from kataja.FreeDrawing import FreeDrawing
 from kataja.ProjectionManager import ProjectionManager
@@ -99,7 +100,6 @@ class Forest(SavedObject):
         self.ongoing_animations = set()
         self.halt_drawing = False
         self.comments = comments
-        self.optimal_rect = QtCore.QRectF()
 
         # Update request flags
         self._do_edge_visibility_check = False
@@ -170,10 +170,8 @@ class Forest(SavedObject):
         ctrl.main.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
-        ctrl.view_manager.keep_updating = True
-        ctrl.view_manager.manual_zoom = False
         self.draw()  # do draw once to avoid having the first draw in undo stack.
-        ctrl.view_manager.fit_to_window()
+        ctrl.view_manager.update_viewport(ViewUpdateReason.NEW_FOREST)
         ctrl.resume_undo()
         ctrl.graph_view.setFocus()
 
@@ -188,7 +186,6 @@ class Forest(SavedObject):
                 self.remove_from_scene(item, fade_out=False)
         ctrl.remove_from_watch(self)
         self.in_display = False
-
 
     def clear(self):
         if self.in_display:
@@ -345,8 +342,7 @@ class Forest(SavedObject):
             self.visualization.prepare(self)
             ctrl.settings.set('hide_edges_if_nodes_overlap',
                               self.visualization.hide_edges_if_nodes_overlap, level=g.FOREST)
-            ctrl.view_manager.keep_updating = True
-        ctrl.view_manager.manual_zoom = False
+        ctrl.view_manager.update_viewport(ViewUpdateReason.MAJOR_REDRAW)
 
     def restore_visualization(self):
         name = self.vis_data.get('name', ctrl.settings.get('visualization'))
@@ -355,7 +351,7 @@ class Forest(SavedObject):
             if v:
                 self.visualization = v
                 v.prepare(self, reset=False)
-                ctrl.view_manager.manual_zoom = False
+                ctrl.view_manager.update_viewport(ViewUpdateReason.MAJOR_REDRAW)
 
     def update_visualization(self):
         """ Verify that the active visualization is the same as defined in
@@ -591,8 +587,6 @@ class Forest(SavedObject):
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
-        if not prefs.auto_zoom:
-            ctrl.view_manager.match_final_derivation_size = not self.derivation_steps.is_last()
         self.update_feature_ordering()
         self.update_forest_gloss()
         if self.visualization:
@@ -605,9 +599,8 @@ class Forest(SavedObject):
                     self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
                 prev_trees.append(tree_top)
             # keep everything centered to minimise movement between steps
-            vr = ctrl.view_manager.visible_rect(current=False)
-            cp = vr.center()
-            self.visualization.normalise_all(-cp.x(), -cp.y())
+            #cp = ctrl.view_manager.center()
+            #self.visualization.normalise_all(-cp.x(), -cp.y())
 
         self.chain_manager.after_draw_update()
         self.recalculate_positions_relative_to_nodes()

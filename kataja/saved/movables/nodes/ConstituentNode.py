@@ -318,7 +318,7 @@ class ConstituentNode(Node):
         if self.syntactic_object:
             lines.append(f'Inherited features: '
                          f'{self.syntactic_object.inherited_features}')
-        if self.syntactic_object and self.syntactic_object.word_edge:
+        if self.syntactic_object and getattr(self.syntactic_object, 'word_edge', None):
             lines.append('--Word edge--')
         lines.append('')
         if self.selected:

@@ -1,4 +1,5 @@
 # coding=utf-8
+from enum import Enum
 
 # ## Global enums
 
@@ -142,3 +143,13 @@ EDGE_PLUGGED_IN = 4
 EDGE_RECEIVING_NOW = 3
 EDGE_OPEN = 2
 EDGE_CAN_INSERT = 5
+
+
+class ViewUpdateReason(Enum):
+    """ Reasons for updating viewport """
+    NEW_FOREST = 0
+    MAJOR_REDRAW = 1
+    MANUAL_ZOOM = 2
+    ACTION_FINISHED = 3
+    FIT_IN_TRIGGERED = 4
+    ANIMATION_STEP = 5

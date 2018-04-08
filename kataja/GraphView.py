@@ -67,6 +67,9 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.latest_mpe = None
         self.setSceneRect(-500, -500, 1000, 1000)
+        self.selection_mode = True
+        self._suppressed_drag_mode = self.dragMode()
+
 
     def scrollContentsBy(self, x, y):
         ctrl.call_watchers(self, 'viewport_moved')
@@ -99,3 +102,25 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, event):
         ctrl.view_manager.zoom_by_angle(event.pos(), event.angleDelta().y())
+
+    def toggle_suppress_drag(self, suppress):
+        """ ScrollHandDrag or RubberBandDrag shouldn't register if we are dragging one object
+        (GraphScene handles that). This method allows to suppress these drag modes temporarily.
+         :param suppress: if true, switch to NoDrag, otherwise restore mode suitable to zoom level
+         """
+        if suppress:
+            self._suppressed_drag_mode = self.dragMode()
+            self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
+        else:
+            self.setDragMode(self._suppressed_drag_mode)
+
+    def set_selection_mode(self, selection_mode):
+        if self.selection_mode == selection_mode:
+            return
+        if selection_mode:
+            self.selection_mode = True
+            self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        else:
+            self.selection_mode = False
+            self.view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self._suppressed_drag_mode = self.view.dragMode()

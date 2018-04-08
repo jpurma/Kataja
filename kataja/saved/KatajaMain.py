@@ -264,6 +264,19 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     data['module_path'] = root
                     self.available_plugins[mod_name] = data
 
+    def set_active_plugin(self, plugin_key, enable):
+        if enable:
+            if prefs.active_plugin_name:
+                self.disable_current_plugin()
+            self.enable_plugin(plugin_key)
+            self.load_initial_treeset()
+            return "Enabled plugin '%s'" % plugin_key
+        elif plugin_key == prefs.active_plugin_name:
+            self.disable_current_plugin()
+            self.load_initial_treeset()
+            return "Disabled plugin '%s'" % plugin_key
+        return ""
+
     def enable_plugin(self, plugin_key, reload=False):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 

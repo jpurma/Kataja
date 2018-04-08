@@ -473,6 +473,18 @@ class FeatureNode(Node):
                 painter.setPen(self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
+        # if False:  # False and not self.static:
+        #     painter.setBrush(ctrl.cm.get('accent4tr'))
+        #     #b = QtCore.QRectF(self.future_children_bounding_rect())
+        #     # if b.width() < b.height():
+        #     #    b.setWidth(b.height())
+        #     # elif b.height() < b.width():
+        #     #    b.setHeight(b.width())
+        #     #painter.drawEllipse(b)
+        #
+        #     #painter.drawRect(self.future_children_bounding_rect())
+        #     painter.drawRect(self.boundingRect())
+
 
     @staticmethod
     def get_color_for(feature_name):

@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from kataja.singletons import ctrl, prefs
-from kataja.KatajaAction import KatajaAction
+from kataja.KatajaAction import KatajaAction, MediatingAction
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
@@ -64,14 +64,23 @@ class SwitchPlugin(KatajaAction):
     k_undoable = False
     k_exclusive = True
 
-    def method(self, index):
-        """ Switch to another project. The action description is generated dynamically,
-        not in code below.
+    def prepare_parameters(self, args, kwargs):
+        """ Selected plugin is often mediated by MediatingAction
+        """
+        sender = self.sender()
+        if isinstance(sender, MediatingAction):
+            key = sender.key
+        else:
+            key = sender.data
+        return [key], kwargs
+
+    def method(self, key):
+        """ Switch to use another plugin or disable current plugin.
         :param index:
         """
-        pass
-        # project = ctrl.main.switch_project(index)
-        # log.info("Switched to project '%s'" % project.name)
+        m = ctrl.main.set_active_plugin(key, prefs.active_plugin_name != key)
+        ctrl.ui.update_plugin_menu()
+        return m
 
 
 class ReloadPlugin(KatajaAction):
@@ -114,22 +123,12 @@ class TogglePlugin(KatajaAction):
         :param plugin_key: str
         :param value: bool
         """
-        if value:
-            if prefs.active_plugin_name:
-                ctrl.main.disable_current_plugin()
-            ctrl.main.enable_plugin(plugin_key)
-            ctrl.main.load_initial_treeset()
-            m = "Enabled plugin '%s'" % plugin_key
-        elif plugin_key == prefs.active_plugin_name:
-            ctrl.main.disable_current_plugin()
-            ctrl.main.load_initial_treeset()
-            m = "Disabled plugin '%s'" % plugin_key
-        else:
-            m = ""
+        m = ctrl.main.set_active_plugin(plugin_key, value)
         if self.sender():
             parent = self.sender().parentWidget()
             while parent and not hasattr(parent, 'refresh_plugin_selection'):
                 parent = parent.parentWidget()
             if hasattr(parent, 'refresh_plugin_selection'):
                 parent.refresh_plugin_selection()
+        ctrl.ui.update_plugin_menu()
         return m
