@@ -64,12 +64,11 @@ class GlossNode(Node):
 
     default_edge = g.GLOSS_EDGE
 
-    def __init__(self, label='', static=False):
+    def __init__(self, label=''):
         Node.__init__(self)
         if not label:
             label = 'gloss'
         self.label = label
-        self.static = static
         self._gravity = 1.5
 
     @property

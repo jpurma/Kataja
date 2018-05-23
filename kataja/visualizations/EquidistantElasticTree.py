@@ -61,7 +61,7 @@ class EquidistantElasticTree(BaseVisualization):
         """
         super().reset_node(node)
 
-    def calculate_movement(self, node, other_nodes):
+    def calculate_movement(self, node, other_nodes, heat):
         """ Try to keep the edge between start_point and end_point at a certain length. This has 
         the effect that positioning of edge magnets ends up adjusting the form of the graph. 
         :param node:
@@ -78,8 +78,6 @@ class EquidistantElasticTree(BaseVisualization):
 
         # Sum up all forces pushing this item away.
         for other in other_nodes:
-            if other.static:
-                continue
             if other is node:
                 continue
             other_cbr = other.future_children_bounding_rect()
@@ -138,4 +136,4 @@ class EquidistantElasticTree(BaseVisualization):
         if not node.edges_up:
             xvel += node_x * -0.02
             yvel += node_y * -0.02
-        return round(xvel), round(yvel)
+        return round(xvel * heat), round(yvel * heat)

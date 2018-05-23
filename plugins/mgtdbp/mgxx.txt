@@ -1,0 +1,6 @@
+∅:: T -r -l
+∅:: =T +r +l T
+a:: =T +r A -r
+b:: =T +r B -r
+a:: =A +l T -l
+b:: =B +l T -l

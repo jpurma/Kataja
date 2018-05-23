@@ -74,24 +74,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-    def item_moved(self):
-        """ Starts the animations unless they are running already
-        :return: None
-        """
-        if ctrl.play and not self._timer_id:
-            self._timer_id = self.startTimer(prefs._fps_in_msec)
-            self.timer_counter = 0
-
-    start_animations = item_moved
-
-    def stop_animations(self):
-        """ Stops the move animation timer
-        :return: None
-        """
-
-        self.killTimer(self._timer_id)
-        self._timer_id = 0
-
     def export_3d(self, path, forest):
         """ deprecated
         :param path:
@@ -457,6 +439,25 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
+    def item_moved(self):
+        """ Starts the animations unless they are running already
+        :return: None
+        """
+        if ctrl.play and not self._timer_id:
+            self._timer_id = self.startTimer(prefs._fps_in_msec)
+            self.timer_counter = 0
+            self.heat = 5.0
+
+    start_animations = item_moved
+
+    def stop_animations(self):
+        """ Stops the move animation timer
+        :return: None
+        """
+
+        self.killTimer(self._timer_id)
+        self._timer_id = 0
+
     # @time_me
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes
@@ -484,10 +485,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
 
         self.timer_counter += 1
+        if self.heat > 0.1:
+            self.heat *= 0.96
         if ctrl.pressed:
             return
 
-        nodes_are_moving = f.move_nodes()
+        nodes_are_moving = f.move_nodes(self.heat)
 
         if not (nodes_are_moving or self.timer_counter < 20):
             self.stop_animations()

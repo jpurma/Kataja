@@ -1,0 +1,10 @@
+∅:: =V C
+the:: =N D
+king:: N
+queen:: N
+wine:: N
+beer:: N
+drinks:: =D =D V
+prefers:: =D =D V
+knows:: =C =D V
+says:: =C =D V

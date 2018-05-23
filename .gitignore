@@ -241,6 +241,9 @@ kataja_print*.png
 postsetup.py
 
 plugins/myplugin*
+plugins/mgtdbp/versions
+plugins/mgtdbp/original
+
 profile
 profiler_results.log
 
@@ -252,3 +255,4 @@ venv/
 pypy3/
 
 testi*
+plugins/mgtdbp/versions/mgtdbp-devA.py

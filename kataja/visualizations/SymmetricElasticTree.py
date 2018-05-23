@@ -60,7 +60,7 @@ class SymmetricElasticTree(BaseVisualization):
         node.physics_x = True
         node.physics_y = True
 
-    def calculate_movement(self, node, other_nodes):
+    def calculate_movement(self, node, other_nodes, heat):
         """
 
         :param node:
@@ -120,7 +120,7 @@ class SymmetricElasticTree(BaseVisualization):
 
         # print('node pull: ', pull_x, pull_y)
 
-        return push_x + pull_x, push_y + pull_y  # round(xvel), round(yvel)
+        return (push_x + pull_x) * heat, (push_y + pull_y) * heat  # round(xvel), round(yvel)
 
     def calculate_movement_good(self, node, other_nodes):
         """

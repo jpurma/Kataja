@@ -51,6 +51,7 @@ class ViewManager:
         self.zoom_timer = QtCore.QBasicTimer()
         self.did_manual_zoom = False
         self.auto_zoom = True
+        self.predictive = False
         self._cached_visible_rect = None
 
         # self.zoom_anim = None
@@ -194,9 +195,12 @@ class ViewManager:
         self.did_manual_zoom = True
 
     def _new_visible_rect(self):
+        #print('cached view rect: ', self._cached_visible_rect)
         vr = self._calculate_visible_rect() + self.margins()
         #print('new visible rect: ', vr)
         if (not self._cached_visible_rect) or vr != self._cached_visible_rect:
+            self._cached_visible_rect = vr
+            #print('recalculated view rect: ', vr)
             return vr
 
     def fit_to_window(self):
@@ -228,25 +232,25 @@ class ViewManager:
 
     def update_viewport(self, reason):
         if reason == ViewUpdateReason.ANIMATION_STEP:
-            if self.auto_zoom and not self.did_manual_zoom:
+            if self.auto_zoom and not (self.predictive or self.did_manual_zoom):
                 self.fit_to_window()
         elif reason == ViewUpdateReason.MANUAL_ZOOM:
-            print('Manual zoom')
+            #print('------ MANUAL_ZOOM')
             self.set_auto_zoom(False)
 
         elif reason == ViewUpdateReason.ACTION_FINISHED:
-            print('Action finished')
+            #print('------ ACTION_FINISHED')
             if self.auto_zoom:
                 self.fit_to_window()
         elif reason == ViewUpdateReason.FIT_IN_TRIGGERED:
-            print('Fit in triggered')
+            #print('------ FIT_IN_TRIGGERED')
             self.fit_to_window()
         elif reason == ViewUpdateReason.MAJOR_REDRAW:
-            print('Redraw all')
+            #print('------ MAJOR_REDRAW')
             if self.auto_zoom:
                 self.fit_to_window()
         elif reason == ViewUpdateReason.NEW_FOREST:
-            print('Redraw all')
+            #print('------ NEW_FOREST')
             self.set_auto_zoom(True)
             self.fit_to_window()
 
@@ -271,7 +275,7 @@ class ViewManager:
                 action.update_action()
 
     @staticmethod
-    def _calculate_visible_rect(current=True):
+    def _calculate_visible_rect():
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         min_width = 200
@@ -281,6 +285,7 @@ class ViewManager:
         rect_left = 6000
         rect_right = -6000
         empty = True
+        current = ctrl.forest.free_movers
         for node in ctrl.forest.nodes.values():
             if not node:
                 continue
@@ -315,7 +320,8 @@ class ViewManager:
             rect_top -= (min_height - height) / 2
             height = min_height
         #print('rect: ', rect_left, rect_top, width, height)
-        return QtCore.QRectF(rect_left, rect_top, width, height)
+        r = QtCore.QRectF(rect_left, rect_top, width, height)
+        return r
 
     @staticmethod
     def print_rect():

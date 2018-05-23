@@ -33,7 +33,7 @@ from kataja.singletons import ctrl
 from kataja.utils import time_me
 
 
-#@time_me
+@time_me
 def syntactic_state_to_nodes(forest, syn_state):
     """ This is a big important function to ensure that Nodes on display are only those that
     are present in syntactic objects. Clean up the residue, create those nodes that are
@@ -133,6 +133,10 @@ def syntactic_state_to_nodes(forest, syn_state):
             for feat in me.get_features():
                 if feat.uid not in done_nodes:
                     recursive_add_feature_node(feat, me)
+        if hasattr(me, 'checked_features'):
+            for feat in me.checked_features:
+                if feat.uid not in done_nodes:
+                    recursive_add_feature_node(feat, me)
         if hasattr(me, 'checks'):
             if me.checks and me.checks.uid not in done_nodes:
                 recursive_add_feature_node(me.checks, me)
@@ -197,8 +201,9 @@ def syntactic_state_to_nodes(forest, syn_state):
         :param synobj:
         :return:
         """
+        #print('recursive create edges for feature: ', synobj, synobj.uid)
         fnode = forest.get_node(synobj)
-        assert fnode
+        assert fnode, synobj
         if synobj.uid in done_nodes:
             return fnode
         done_nodes.add(synobj.uid)

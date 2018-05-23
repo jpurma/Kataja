@@ -220,7 +220,7 @@ class CommentNode(Node):
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
 
-    def move(self, other_nodes: list) -> (int, int):
+    def move(self, other_nodes: list, heat: float) -> (int, int):
         """ Override usual movement if comment is connected to some node. If so, try to keep the
         given position relative to that node.
         :return: diff_x, diff_y, normalize, ban_normalization  -- announce how much we moved and if 
@@ -234,7 +234,7 @@ class CommentNode(Node):
             self.current_position = x + dx, y + dy
             return 0, 0, False, False
         else:
-            return super().move(other_nodes)
+            return super().move(other_nodes, heat)
 
     def drop_to(self, x, y, recipient=None, shift_down=False):
         """

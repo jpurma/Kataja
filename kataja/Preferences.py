@@ -365,8 +365,6 @@ class Preferences(object):
                                 'order': 40}
         self.log_level = 10
 
-
-
     def import_node_classes(self, classes):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():

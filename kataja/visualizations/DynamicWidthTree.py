@@ -53,7 +53,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             node.physics_x = True
             node.physics_y = True
 
-    def calculate_movement(self, node: 'Node', other_nodes: list):
+    def calculate_movement(self, node: 'Node', other_nodes: list, heat: float):
         """
 
         :param node:
@@ -123,7 +123,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             # pull to center (0, 0)
             x_vel += node_x * -0.009
 
-        return round(x_vel), 0
+        return round(x_vel * heat), 0
 
     def calculate_movement_old(self, node, other_nodes):
         """

@@ -67,7 +67,7 @@ class LogWidgetPusher(logging.Handler):
         super().__init__(level=level)
 
         def store_everything(record):
-            if not record.msg.strip():
+            if not str(record.msg).strip():
                 return False
             self.everything.append(record)
             if len(self.everything) > MAX_LOG_SIZE:

@@ -82,6 +82,7 @@ class LexiconPanel(Panel):
         :return:
         """
         if signal == 'forest_changed':
+            print('LexPanel got forest_changed -signal')
             self.prepare_lexicon()
         if signal == 'ui_font_changed':
             f = qt_prefs.get_font(CONSOLE_FONT)

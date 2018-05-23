@@ -285,7 +285,6 @@ class EdgePath:
 
             #if connection_style == CONNECT_TO_BORDER and start.is_empty():
             #    connection_style = CONNECT_TO_SIMILAR
-
             if connection_style == SPECIAL:
                 csp = start.special_connection_point(sx, sy, ex, ey, start=True,
                                                      edge_type=self.edge.edge_type)

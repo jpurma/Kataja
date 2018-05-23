@@ -109,7 +109,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.physics_x = False
         self.physics_y = False
         self.repulsion = 0.2
-        self.static = False  # static elements are ignored also when calculating dynamic positions
         # Other
         self._visible_by_logic = True
         self._fade_anim = None
@@ -146,7 +145,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update_position()
 
     def use_physics(self):
-        return (self.physics_x or self.physics_y) and not (self.locked_to_node or self.static)
+        return (self.physics_x or self.physics_y) and not self.locked_to_node
 
     def preferred_z_value(self):
         """ Return z-value appropriate for this type of object. May be constant value or require
@@ -250,7 +249,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         return 0
 
-    def move(self, other_nodes: list) -> (int, int, bool, bool):
+    def move(self, other_nodes: list, heat: float) -> (int, int, bool, bool):
         """ Do one frame of movement: either move towards target position or
         take a step according to algorithm
         1. item folding towards position in part of animation to disappear etc.
@@ -319,7 +318,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 self.locked_to_node.update_bounding_rect()
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():
-            diff_x, diff_y = ctrl.forest.visualization.calculate_movement(self, other_nodes)
+            diff_x, diff_y = ctrl.forest.visualization.calculate_movement(self, other_nodes, heat)
             if not self.physics_x:
                 diff_x = 0
             elif diff_x > 6:
@@ -659,5 +658,4 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     locked = SavedField("locked")
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
-    static = SavedField("static")
     locked_to_node = SavedField("locked_to_node")

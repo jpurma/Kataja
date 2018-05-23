@@ -1,0 +1,45 @@
+wine
+(['wine'], [('cat', 'N')])
+
+the wine
+['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]
+
+prefers the wine
+['*', (['prefers'], [('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]]
+
+prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['prefers'], [('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]]]
+
+knows prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['knows'], [('sel', 'C'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['prefers'], [('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]]]]]
+
+says prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['says'], [('sel', 'C'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['prefers'], [('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]]]]]
+
+knows says knows prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['knows'], [('sel', 'C'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['says'], [('sel', 'C'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['knows'], [('sel', 'C'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', (['prefers'], [('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]]]]]]]]]
+
+the queen prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['queen'], [('cat', 'N')])]]]
+
+the king knows the queen prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['knows'], [('sel', 'C'), ('sel', 'D'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['queen'], [('cat', 'N')])]]]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['king'], [('cat', 'N')])]]]
+
+which wine the queen prefers
+['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['wine'], [('cat', 'N')])]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['queen'], [('cat', 'N')])]]]]
+
+which wine prefers the wine
+['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]], ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['wine'], [('cat', 'N')])]]]]
+
+the king knows which wine the queen prefers
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['knows'], [('sel', 'C'), ('sel', 'D'), ('cat', 'V')]), ['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['wine'], [('cat', 'N')])]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['queen'], [('cat', 'N')])]]]]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['king'], [('cat', 'N')])]]]
+
+the king knows which queen prefers the wine
+['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['knows'], [('sel', 'C'), ('sel', 'D'), ('cat', 'V')]), ['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['wine'], [('cat', 'N')])]], ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['queen'], [('cat', 'N')])]]]]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['king'], [('cat', 'N')])]]]
+
+which queen says the king knows which wine the queen prefers
+['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['says'], [('sel', 'C'), ('sel', 'D'), ('cat', 'V')]), ['*', ([], [('sel', 'V'), ('cat', 'C')]), ['*', ['*', (['knows'], [('sel', 'C'), ('sel', 'D'), ('cat', 'V')]), ['o', ['*', ([], [('sel', 'V'), ('pos', 'wh'), ('cat', 'C')]), ['*', ['*', (['prefers'], [('sel', 'D'), ('sel', 'D'), ('cat', 'V')]), ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['wine'], [('cat', 'N')])]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['queen'], [('cat', 'N')])]]]]], ['*', (['the'], [('sel', 'N'), ('cat', 'D')]), (['king'], [('cat', 'N')])]]]], ['*', (['which'], [('sel', 'N'), ('cat', 'D'), ('neg', 'wh')]), (['queen'], [('cat', 'N')])]]]]
+
+a a
+['o', ['o', ['*', ([], [('sel', 'T'), ('pos', 'r'), ('pos', 'l'), ('cat', 'T')]), ['o', ['*', (['a'], [('sel', 'A'), ('pos', 'l'), ('cat', 'T'), ('neg', 'l')]), ['o', ['*', (['a'], [('sel', 'T'), ('pos', 'r'), ('cat', 'A'), ('neg', 'r')]), ([], [('cat', 'T'), ('neg', 'r'), ('neg', 'l')])]]]]]]]
+

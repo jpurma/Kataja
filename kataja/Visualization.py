@@ -214,13 +214,18 @@ class BaseVisualization:
             node.start_moving()
 
     def normalise_all(self, shift_x=0, shift_y=0):
+        print('normalisation shifts: ', shift_x, shift_y)
+        free_movers = False
         for node in self.forest.nodes.values():
-            if node.locked_to_node or (node.physics_x and node.physics_y):
+            if node.locked_to_node:
+                continue
+            elif node.use_physics():
+                free_movers = True
                 continue
             node.target_position = (node.target_position[0] + shift_x,
                                     node.target_position[1] + shift_y)
-            node.start_moving()  # restart moving since we shifted the end point
-
+            node.start_moving()  # restart moving since we moved the goal
+        return free_movers
 
     def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
         if tree_top not in self.forest.trees:
@@ -454,7 +459,7 @@ class BaseVisualization:
             x_vel += (random.random() * -4) + 2
         return x_vel, y_vel
 
-    def calculate_movement(self, node: 'Node', other_nodes: list):
+    def calculate_movement(self, node: 'Node', other_nodes: list, heat: float):
         """ Base force-directed graph calculation for nodes that are free to float around,
         not given positions by visualisation algo.
         :param node:
@@ -479,8 +484,8 @@ class BaseVisualization:
         # Add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
         gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
 
-        x_vel = x_pull + x_push + gx
-        y_vel = y_pull + y_push + gy
+        x_vel = (x_pull + x_push) * heat + gx
+        y_vel = (y_pull + y_push) * heat + gy
 
         # Add random shuffle for high-energy situations
         x_vel, y_vel = self.speed_noise(node, x_vel, y_vel)

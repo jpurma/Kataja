@@ -25,6 +25,7 @@
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.utils import caller
 
 simple_signs = ('+', '-', '=', 'u')
 
@@ -60,7 +61,7 @@ class BaseFeature(SavedObject):
     addable = {}
 
     def __init__(self, name='Feature', sign='', value=None, family='', checks=None,
-                 checked_by=None, strong=False, **kwargs):
+                 checked_by=None, strong=False, parts=None, **kwargs):
         super().__init__()
         self.name = str(name)
         self.value = value
@@ -72,6 +73,7 @@ class BaseFeature(SavedObject):
         self.checked_by = checked_by
         # feature strength was a concept in early minimalism, but I have repurposed it in my version
         self.strong = strong
+        self.parts = parts or []
 
     def has_value(self, prop):
         return self.value == prop
@@ -127,6 +129,7 @@ class BaseFeature(SavedObject):
         return ":".join(s)
 
     def __hash__(self):
+        print('BaseFeature hash')
         return id(self)
 
     # ############## #
@@ -142,9 +145,11 @@ class BaseFeature(SavedObject):
     family = SavedField("family")
     checks = SavedField("checks")
     checked_by = SavedField("checked_by")
+    parts = SavedField("parts")
 
     @staticmethod
     def from_string(s):
+        print('from string used')
         if not s:
             return
         if s[0] in simple_signs:

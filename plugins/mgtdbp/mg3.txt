@@ -1,0 +1,13 @@
+∅:: =T C
+∅:: =V C
+∅:: D -wh
+the:: =N D
+the:: =N D -ep
+senator:: N
+reporter:: N
+error:: N
+blip:: +ep T
+attack:: =D =D V
+admit:: =D =D V
+-ed:: >V +ep T
+that:: =T +wh ≈N

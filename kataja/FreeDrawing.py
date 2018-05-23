@@ -494,11 +494,11 @@ class FreeDrawing:
 
         # print('--- connecting node %s to %s ' % (child, parent))
         # Check for arguments:
-        if parent == child:
-            raise ForestError('Connecting to self')
-        if not parent and child:
+        if not (parent and child):
             raise ForestError('Trying to connect nodes, but other is missing (parent:%s, '
                               'child%s)' % (parent, child))
+        if parent == child:
+            raise ForestError('Connecting to self: ', parent, child)
 
         if not edge_type:
             edge_type = child.edge_type()

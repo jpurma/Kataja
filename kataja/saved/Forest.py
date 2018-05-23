@@ -99,6 +99,7 @@ class Forest(SavedObject):
         self.heading_text = heading_text
         self.ongoing_animations = set()
         self.halt_drawing = False
+        self.free_movers = False
         self.comments = comments
 
         # Update request flags
@@ -586,9 +587,11 @@ class Forest(SavedObject):
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
+            return
         self.update_feature_ordering()
         self.update_forest_gloss()
         if self.visualization:
+            print('draw visualization')
             self.visualization.prepare_draw()
             prev_trees = []
             for tree_top in self.trees:
@@ -598,17 +601,21 @@ class Forest(SavedObject):
                     self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
                 prev_trees.append(tree_top)
             # keep everything centered to minimise movement between steps
-            #cp = ctrl.view_manager.center()
-            #self.visualization.normalise_all(-cp.x(), -cp.y())
+            # cp = ctrl.view_manager.center()
+            # print('current center point: ', cp)
+            # self.free_movers = self.visualization.normalise_all(-cp.x(), -cp.y())
+            ctrl.view_manager.predictive = not self.free_movers
+
 
         self.chain_manager.after_draw_update()
         self.recalculate_positions_relative_to_nodes()
+        ctrl.view_manager.update_viewport(ViewUpdateReason.MAJOR_REDRAW)
         if start_animations:
             ctrl.graph_scene.start_animations()
         ctrl.graph_view.resetCachedContent()
         ctrl.graph_view.repaint()
 
-    def move_nodes(self) -> bool:
+    def move_nodes(self, heat) -> bool:
         """ Animate nodes one tick toward their next position, or compute the next
         position in dynamic visualisation. Update edges and other forest elements that
          are drawn relative to node positions.
@@ -629,7 +636,7 @@ class Forest(SavedObject):
                 if not node.isVisible():
                     continue
                 # Computed movement
-                diff_x, diff_y, normalize, ban_normalization = node.move(other_nodes)
+                diff_x, diff_y, normalize, ban_normalization = node.move(other_nodes, heat)
                 if allow_normalization and normalize and not ban_normalization:
                     # We cannot rely on movement alone to tell if node should be
                     # normalized. It is possible for node to remain still while other end of
@@ -770,7 +777,10 @@ class Forest(SavedObject):
         for cn in self.nodes.values():
             if cn.node_type == g.CONSTITUENT_NODE:
                 if cn.syntactic_object:
-                    syn_feats = cn.syntactic_object.inherited_features
+                    syn_feats = list(cn.syntactic_object.inherited_features)
+                    if cn.syntactic_object.checked_features:
+                        syn_feats = [feat for feat in cn.syntactic_object.checked_features if
+                                     feat not in syn_feats] + syn_feats
                     if syn_feats is not None:
                         feats = [self.get_node(syn_f) for syn_f in syn_feats]
                         sorted_edges = []

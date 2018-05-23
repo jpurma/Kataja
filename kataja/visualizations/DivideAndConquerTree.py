@@ -102,6 +102,7 @@ class DivideAndConquerTree(BalancedTree):
         .L.........                
         
         """
+        only_similar = True
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width / 2
 
@@ -126,7 +127,7 @@ class DivideAndConquerTree(BalancedTree):
                     return Grid()
                 nleft, ntop, nw, nh = _get_grid_size(node)
                 grids = []
-                children = node.get_children(similar=True, visible=True)
+                children = node.get_children(similar=only_similar, visible=True)
                 last_drawn_child = None
                 for child in children:
                     grid = _build_grid(child, parent=node, done=done)
@@ -159,7 +160,7 @@ class DivideAndConquerTree(BalancedTree):
                     sx = 0
                     size = 0
                     nleft, ntop, nw, nh = _get_grid_size(node)
-                    children = node.get_children(similar=True, visible=True)
+                    children = node.get_children(similar=only_similar, visible=True)
                     for child in children:
                         size += 1
                         nx, ny = g.find_in_grid(child)

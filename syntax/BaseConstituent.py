@@ -73,7 +73,7 @@ class BaseConstituent(SavedObject, IConstituent):
 
     def __repr__(self):
         if self.is_leaf():
-            return 'Constituent(id=%s)' % self.label
+            return 'Constituent(label=%s)' % self.label
         else:
             return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
 
@@ -100,6 +100,9 @@ class BaseConstituent(SavedObject, IConstituent):
         constituent.
         :return:
         """
+        return self.parts
+
+    def sorted_parts(self):
         return self.parts
 
     def print_tree(self):
