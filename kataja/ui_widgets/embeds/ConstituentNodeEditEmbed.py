@@ -67,7 +67,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
                                        on_edit=self.label_edited, label=title,
                                        on_focus_out=self.label_finished)
         self.label.setPalette(ui_p)
-        self.resize_target = self.label
         layout.addWidget(self.label)
 
         tt = "These are either XBar or Bare phrase structure labels that are updated " \
@@ -90,14 +89,12 @@ class ConstituentNodeEditEmbed(UIEmbed):
         title = 'Projects from'
         self.projections = ProjectionButtons(self)
         self.projections.setMaximumWidth(200)
+        layout.addWidget(self.projections)
 
         if not self.projections.empty:
-            make_label(title, self, layout, tt)
+            make_label(title, parent=self, layout=layout, tooltip=tt)
         self.ui_manager.connect_element_to_action(self.projections,
                                                   'set_projecting_node')
-        if self.resize_target:
-            self.resize_handle = ResizeHandle(self, self.resize_target)
-            layout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
         self.setLayout(layout)
         self.update_embed()
         self.update_position()

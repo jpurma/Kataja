@@ -27,12 +27,16 @@ from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
 from syntax.SyntaxConnection import SyntaxConnection
 from mgtdbp.Parser import load_grammar, load_grammar_from_file, Parser
+import kataja.globals as g
 
+CONSTITUENT_TREE = 0
+FEATURE_TREE = 1
 
 class KSyntaxConnection(SyntaxConnection):
     role = "SyntaxConnection"
     supports_editable_lexicon = True
     supports_secondary_labels = False
+    display_modes = ['Constituent tree', 'Feature tree']
 
     def __init__(self):
         SavedObject.__init__(self)
@@ -46,7 +50,8 @@ class KSyntaxConnection(SyntaxConnection):
         self.sentence = ''
         self.parser = None
         self.start = 'C'
-        self.syntax_display_mode = 2
+        self.syntax_display_mode = 1
+        self.current_mode = 0
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
 
@@ -109,24 +114,55 @@ class KSyntaxConnection(SyntaxConnection):
         return self.display_modes[self.syntax_display_mode]
 
     def transform_trees_for_display(self, syn_state):
-        new_class = None
-        if self.syntax_display_mode == STATE_TREE:
-            # StateTree(dt)
-            new_class = StateTree
-        elif self.syntax_display_mode == BARE_TREE:
-            # BareTree(dt)
-            new_class = BareTree
-        elif self.syntax_display_mode == XBAR_TREE:
-            # XBarTree(dt)
-            new_class = TracelessXBarTree
-        if new_class:
-            res = []
-            for synobj in syn_state:
-                if synobj.class_name == 'Constituent':
-                    synobj = new_class(synobj).to_constituent()
-                res.append(synobj)
-            return res
-        else:
+        if self.syntax_display_mode == self.current_mode:
+            print('No transform')
             return syn_state
+        if self.syntax_display_mode == CONSTITUENT_TREE:
+            print('Changing to constituent tree')
+            ctrl.settings.set_node_setting('visible', True, g.FEATURE_NODE, level=g.DOCUMENT)
+            ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
+            ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
+            ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
+            ctrl.settings.set_edge_setting('visible', False, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
+            ctrl.settings.set('node_shape', g.NORMAL, level=g.DOCUMENT)
+            res = []
+            for synobj in syn_state.tree_roots:
+                if synobj.class_name == 'Constituent':
+                    synobj = self.to_constituent(synobj)
+                res.append(synobj)
+            syn_state.tree_roots = res
+            self.current_mode = self.syntax_display_mode
+            for node in ctrl.forest.nodes.values():
+                node.update_visibility()
+            return syn_state
+        elif self.syntax_display_mode == FEATURE_TREE:
+            print('Changing to feature tree')
+            ctrl.settings.set_node_setting('visible', False, g.FEATURE_NODE, level=g.DOCUMENT)
+            ctrl.settings.set('label_text_mode', g.CHECKED_FEATURES, level=g.DOCUMENT)
+            ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
+            ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
+            ctrl.settings.set_edge_setting('visible', True, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
+            ctrl.settings.set('node_shape', g.FEATURE_SHAPE, level=g.DOCUMENT)
+            res = []
+            for synobj in syn_state.tree_roots:
+                if synobj.class_name == 'Constituent':
+                    synobj = self.to_feature_constituent(synobj)
+                res.append(synobj)
+            syn_state.tree_roots = res
+            self.current_mode = self.syntax_display_mode
+            for node in ctrl.forest.nodes.values():
+                node.update_visibility()
+            return syn_state
+        return syn_state
+
+    def to_constituent(self, synobj):
+        return synobj
+
+    def to_feature_constituent(self, synobj):
+        #if synobj.parts:
+        #    synobj.label = ' '.join([str(x) for x in synobj.checked_features])
+        #    for part in synobj.parts:
+        #        self.to_feature_constituent(part)
+        return synobj
 
     start = SavedField("start")

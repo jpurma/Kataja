@@ -38,8 +38,9 @@ class ConstituentPanel(NodePanel):
         layout = widget.layout()
 
         hlayout = box_row(layout)
-        label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed', parent=self)
-        hlayout.addWidget(label)
+        #label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed',
+        # parent=self)
+        #hlayout.addWidget(label)
         w = 32
         b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24,
                          action='set_no_frame_node_shape').to_layout(hlayout)
@@ -56,6 +57,10 @@ class ConstituentPanel(NodePanel):
         b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24,
                          action='set_card_node_shape').to_layout(hlayout)
         b5.setFixedWidth(w)
+        b6 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=self, size=24,
+                         action='set_feature_node_shape').to_layout(hlayout)
+        b6.setFixedWidth(w)
+
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge', tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,

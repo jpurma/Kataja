@@ -1,7 +1,0 @@
-{
-  "name": "MG[+SpIC_mrg] v.E",
-  "description": "A partial rewrite for E. Stabler's top-down beam parser for minimalist grammar with extra condition preventing multiple movements from specifiers. See Stabler (2012) Two models of minimimalist, incremental, syntactic analysis. http://www.linguistics.ucla.edu/people/stabler/Stabler12-2models.pdf , and https://github.com/jpurma/mgtdb",
-  "author": "Jukka Purma",
-  "version": "0.6",
-  "setup": "setup.py"
-}

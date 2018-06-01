@@ -126,6 +126,7 @@ class Node(Movable):
         self.resizable = False
         self.drag_data = None
         self.user_size = None
+        self.inverse_colors = False
         self.text_parse_mode = 1
         self._magnets = []
         self.is_syntactically_valid = False

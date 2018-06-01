@@ -679,9 +679,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     for i, proj in enumerate(self.in_projections):
                         cp = ctrl.cm.get(proj.color_key)
                         if left:
-                            painter.fillPath(self._path.translated(i, i), cp)
+                            painter.fillPath(self.path.true_path.translated(i, i), cp)
                         else:
-                            painter.fillPath(self._path.translated(-i, i), cp)
+                            painter.fillPath(self.path.true_path.translated(-i, i), cp)
                 else:
                     painter.fillPath(dpath, c)
 

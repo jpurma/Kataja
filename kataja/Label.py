@@ -26,7 +26,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.Shapes import SHAPE_PRESETS
 from kataja.LabelDocument import LabelDocument
-from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
+from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, FEATURE_SHAPE, LEFT_ALIGN, \
+    CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data, report
 from kataja.uniqueness_generator import next_available_type_id
@@ -148,6 +149,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.text_align = CENTER_ALIGN
         self.node_shape = NORMAL
         self._font = None
+        self._font_metrics = None
         self.editable_html = ''
         self.lower_html = ''
         self.edited_field = ''
@@ -204,6 +206,7 @@ class Label(QtWidgets.QGraphicsItem):
         if self.lower_part:
             self.lower_part.setFont(font)
         self._font = font
+        self._font_metrics = QtGui.QFontMetrics(font)
 
     def update_font(self):
         self.set_font(self._host.get_font())
@@ -234,6 +237,9 @@ class Label(QtWidgets.QGraphicsItem):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
+        elif self.node_shape == FEATURE_SHAPE:
+            html = html.replace(' ', '&nbsp;&nbsp;')
+
         if force_update or (self.node_shape, html, lower_html, is_card) != self._previous_values:
             if self.editable_html != html:
                 self.editable_doc.blockSignals(True)
@@ -286,6 +292,9 @@ class Label(QtWidgets.QGraphicsItem):
             return 2
         else:
             return 0
+
+    def string_width(self, string):
+        return self._font_metrics.width(string)
 
     def prepare_template(self):
         my_class = self._host.__class__
@@ -418,10 +427,9 @@ class Label(QtWidgets.QGraphicsItem):
         triangle_host = self._host.is_triangle_host()
         if triangle_host:
             label_text = self._host.allowed_label_text_mode()
-            self.draw_triangle = (
-                                     label_text == g.NODE_LABELS or label_text ==
-                                     g.NODE_LABELS_FOR_LEAVES) and self.node_shape not in [
-                g.SCOPEBOX, g.CARD, g.BRACKETED]
+            self.draw_triangle = ((label_text == g.NODE_LABELS or
+                                   label_text == g.NODE_LABELS_FOR_LEAVES) and
+                                   self.node_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED])
         else:
             self.draw_triangle = False
 

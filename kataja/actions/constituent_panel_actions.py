@@ -41,11 +41,11 @@ class SelectLabelShape(KatajaAction):
         """
         bs = ctrl.settings.get_active_setting('node_shape')
         bs += 1
-        if bs > 4:
+        if bs > 5:
             bs = 0
         while bs in ctrl.forest.visualization.banned_node_shapes:
             bs += 1
-            if bs > 4:
+            if bs > 5:
                 bs = 0
         if bs == g.NORMAL:
             m = 'Node shape: Simple'
@@ -58,6 +58,8 @@ class SelectLabelShape(KatajaAction):
         elif bs == g.CARD:
             m = 'Node shape: Cards'
             ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
+        elif bs == g.FEATURE_SHAPE:
+            m = 'Node shape: Feature'
 
         ctrl.settings.set('node_shape', bs, level=ctrl.ui.active_scope)
         ctrl.forest.update_node_shapes()
@@ -171,6 +173,28 @@ class ActivateCardNodeShape(KatajaAction):
     def enabler(self):
         return self.not_selection() and ctrl.forest.visualization and \
                g.CARD not in ctrl.forest.visualization.banned_node_shapes
+
+
+class ActivateFeatureNodeShape(KatajaAction):
+    k_action_uid = 'set_feature_node_shape'
+    k_command = 'Node takes shape of its prominent feature'
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.settings.set('node_shape', g.FEATURE_SHAPE, level=ctrl.ui.active_scope)
+        ctrl.settings.set('feature_check_display', 0, level=ctrl.ui.active_scope)
+        ctrl.forest.update_node_shapes()
+        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
+
+    def getter(self):
+        return ctrl.settings.get_active_setting('node_shape') == g.FEATURE_SHAPE
+
+    def enabler(self):
+        return self.not_selection() and ctrl.forest.visualization and \
+               g.FEATURE_SHAPE not in ctrl.forest.visualization.banned_node_shapes
 
 
 class SelectTraceMode(KatajaAction):

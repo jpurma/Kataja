@@ -150,7 +150,7 @@ class Preferences(object):
         self._node_shape_ui = {'tab': 'Drawing',
                                 'choices': [(0, 'Normal'),
                                             (1, 'Box'),
-                                            (2, 'Bracketed'), (3, 'Card')],
+                                            (2, 'Bracketed'), (3, 'Card'), (4, 'Feature')],
                                 'label': 'Node shapes',
                                 'help': 'Overall shape when drawing a constituent node. '
                                         'Visualizations may override this.',
@@ -205,8 +205,9 @@ class Preferences(object):
         #                                     "only syntactic labels. "}
         self.label_text_mode = 2
         self._label_text_mode_ui = {'tab': 'Drawing',
-                                    'choices': [(SYN_LABELS, 'Syntactic labels (Bare phrase structure)'),
+                                    'choices': [(SYN_LABELS, 'Syntactic labels'),
                                             (SYN_LABELS_FOR_LEAVES, 'Syntactic labels for leaves'),
+                                            (CHECKED_FEATURES, 'Checked features'),
                                             (NODE_LABELS, 'Node labels or syntactic labels'),
                                             (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
                                             (XBAR_LABELS, 'Attempt automatic X-bar labeling'),

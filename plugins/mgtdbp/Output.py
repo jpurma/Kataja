@@ -143,7 +143,7 @@ class DerivationPrinter:
                         'sign': '-',
                         'target': r_key,
                         'label': r_key,
-                        'help': 'move: %s' % (rstr)
+                        'help': 'move: %s' % rstr
                     }
                     edges[r_key].append(d)
                     if r_key != right.lex_key:

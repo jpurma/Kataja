@@ -116,6 +116,7 @@ class FeatureNode(Node):
         self.repulsion = 0.25
         self._gravity = 3.0
         self.fshape = 2
+        self.lexical_color = None
 
         # implement color() to map one of the d['rainbow_%'] colors here.
         # Or if bw mode is on, then something else.
@@ -405,85 +406,74 @@ class FeatureNode(Node):
         self.prepareGeometryChange()
         return self.inner_rect
 
+    def draw_feature_shape(self, painter, rect, left, right, color):
+        old_pen = painter.pen()
+        painter.setPen(QtCore.Qt.NoPen)
+        if left or right:  # square, triangular or round knob
+            base_shape = rect.adjusted(4, 0, 0, 0)
+            if not right:
+                base_shape.adjust(0, 0, -4, 0)
+            path = QtGui.QPainterPath(base_shape.topLeft())
+            path.lineTo(base_shape.topRight())
+            mid = base_shape.height() / 2
+            x, y = to_tuple(base_shape.topRight())
+            if right == 2:  # triangle
+                path.lineTo(x, y + mid - 4)
+                path.lineTo(x - 4, y + mid)
+                path.lineTo(x, y + mid + 4)
+                path.lineTo(x, y + mid + mid)
+            elif right == 3:  # square
+                path.lineTo(x, y + mid - 4)
+                path.lineTo(x - 4, y + mid - 4)
+                path.lineTo(x - 4, y + mid + 4)
+                path.lineTo(x, y + mid + 4)
+                path.lineTo(x, y + mid + mid)
+            elif right == 4:  # roundish
+                path.lineTo(x, y + mid - 2)
+                path.cubicTo(x - 3, y + mid - 2, x - 3, y + mid - 6, x - 6, y + mid)
+                path.cubicTo(x - 3, y + mid + 6, x - 3, y + mid + 2, x, y + mid + 2)
+                path.lineTo(x, y + mid + mid)
+            else:
+                path.quadTo(x + 8, y + mid, x, y + mid + mid)
+            path.lineTo(base_shape.bottomLeft())
+            x, y = to_tuple(base_shape.topLeft())
+            if left == 2:  # triangle
+                path.lineTo(x, y + mid + 4)
+                path.lineTo(x - 4, y + mid)
+                path.lineTo(x, y + mid - 4)
+                path.lineTo(x, y)
+            elif left == 3:  # square
+                path.lineTo(x, y + mid + 4)
+                path.lineTo(x - 4, y + mid + 4)
+                path.lineTo(x - 4, y + mid - 4)
+                path.lineTo(x, y + mid - 4)
+                path.lineTo(x, y)
+            elif left == 4:  # roundish
+                path.lineTo(x, y + mid + 2)
+                path.cubicTo(x - 3, y + mid + 2, x - 3, y + mid + 6, x - 6, y + mid)
+                path.cubicTo(x - 3, y + mid - 6, x - 3, y + mid - 2, x, y + mid - 2)
+                path.lineTo(x, y)
+            else:
+                path.quadTo(x - 8, y + mid, x, y)
+            painter.fillPath(path, color)
+        else:  # solid rect
+            painter.drawRect(rect)
+        painter.setPen(old_pen)
+
     def paint(self, painter, option, widget=None):
         """ FeatureNodes can have shapes that suggest which features can value each other.
         :param painter:
         :param option:
         :param widget:
         """
-        if self.fshape:
-            #painter.setPen(ctrl.cm.get('background1'))
-            #b = self.contextual_background()
-            #painter.setBrush(b)
-            painter.setPen(QtCore.Qt.NoPen)
-            if self.fshape == 1:  # solid rect
-                painter.drawRect(self.inner_rect)
-            elif self.fshape > 1:  # square, triangular or round knob
-                base_shape = self.inner_rect.adjusted(4, 0, 0, 0)
-                knob_at_left = self.valuing()
-                hole_at_right = self.is_needy() or self.is_satisfied()
-                if not hole_at_right:
-                    base_shape.adjust(0, 0, -4, 0)
+        left = self.fshape if self.valuing() else 0
+        right = self.fshape if self.is_needy() or self.is_satisfied() else 0
 
-                path = QtGui.QPainterPath(base_shape.topLeft())
-                path.lineTo(base_shape.topRight())
-                mid = base_shape.height() / 2
-                x, y = to_tuple(base_shape.topRight())
-                if hole_at_right:
-                    if self.fshape == 2:  # triangle
-                        path.lineTo(x, y + mid - 4)
-                        path.lineTo(x - 4, y + mid)
-                        path.lineTo(x, y + mid + 4)
-                        path.lineTo(x, y + mid + mid)
-                    elif self.fshape == 3:  # square
-                        path.lineTo(x, y + mid - 4)
-                        path.lineTo(x - 4, y + mid - 4)
-                        path.lineTo(x - 4, y + mid + 4)
-                        path.lineTo(x, y + mid + 4)
-                        path.lineTo(x, y + mid + mid)
-                    elif self.fshape == 4:  # roundish
-                        path.lineTo(x, y + mid - 2)
-                        path.cubicTo(x - 3, y + mid - 2, x - 3, y + mid - 6, x - 6, y + mid)
-                        path.cubicTo(x - 3, y + mid + 6, x - 3, y + mid + 2, x, y + mid + 2)
-                        path.lineTo(x, y + mid + mid)
-                else:
-                    path.quadTo(x + 8, y + mid, x, y + mid + mid)
-                path.lineTo(base_shape.bottomLeft())
-                x, y = to_tuple(base_shape.topLeft())
-                if knob_at_left:
-                    if self.fshape == 2:  # triangle
-                        path.lineTo(x, y + mid + 4)
-                        path.lineTo(x - 4, y + mid)
-                        path.lineTo(x, y + mid - 4)
-                        path.lineTo(x, y)
-                    elif self.fshape == 3:  # square
-                        path.lineTo(x, y + mid + 4)
-                        path.lineTo(x - 4, y + mid + 4)
-                        path.lineTo(x - 4, y + mid - 4)
-                        path.lineTo(x, y + mid - 4)
-                        path.lineTo(x, y)
-                    elif self.fshape == 4:  # roundish
-                        path.lineTo(x, y + mid + 2)
-                        path.cubicTo(x - 3, y + mid + 2, x - 3, y + mid + 6, x - 6, y + mid)
-                        path.cubicTo(x - 3, y + mid - 6, x - 3, y + mid - 2, x, y + mid - 2)
-                        path.lineTo(x, y)
-                else:
-                    path.quadTo(x - 8, y + mid, x, y)
-                painter.fillPath(path, self.contextual_background())
-                painter.setPen(self.contextual_color())
+        if self.fshape:
+            self.draw_feature_shape(painter, self.inner_rect, left, right,
+                                    self.contextual_background())
         else:
             Node.paint(self, painter, option, widget)
-        # if False:  # False and not self.static:
-        #     painter.setBrush(ctrl.cm.get('accent4tr'))
-        #     #b = QtCore.QRectF(self.future_children_bounding_rect())
-        #     # if b.width() < b.height():
-        #     #    b.setWidth(b.height())
-        #     # elif b.height() < b.width():
-        #     #    b.setHeight(b.width())
-        #     #painter.drawEllipse(b)
-        #
-        #     #painter.drawRect(self.future_children_bounding_rect())
-        #     painter.drawRect(self.boundingRect())
 
 
     @staticmethod
@@ -493,12 +483,19 @@ class FeatureNode(Node):
         else:
             return 'accent7'
 
+    def get_host_color(self):
+        h = self.get_host()
+        if h:
+            return ctrl.cm.get(h.lexical_color())
+
     def get_color_key(self):
         """
         :return:
         """
         if 'color_key' in self.settings:
             ck = self.settings['color_key']
+        elif self.lexical_color:
+            ck = self.lexical_color
         elif self.name in ctrl.forest.semantics_manager.colors:
             ck = ctrl.forest.semantics_manager.colors[self.name]
         elif self.name:
