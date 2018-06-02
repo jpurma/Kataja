@@ -33,19 +33,9 @@ class KnobDial(QtWidgets.QWidget):
         layout.addWidget(self)
 
 
-def label(panel, layout, text='', x=-1, y=-1):
-    """
-
-    :param panel:
-    :param layout:
-    :param text:
-    :return:
-    """
+def label(panel, layout, text=''):
     slabel = QtWidgets.QLabel(text, panel)
-    if x != -1:
-        layout.addWidget(slabel, y, x)
-    else:
-        layout.addWidget(slabel)
+    layout.addWidget(slabel)
     return slabel
 
 
@@ -79,11 +69,6 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
 
 
 def box_row(container):
-    """
-
-    :param container:
-    :return:
-    """
     hlayout = QtWidgets.QHBoxLayout()
     hlayout.setContentsMargins(0, 0, 0, 0)
     if isinstance(container, QtWidgets.QLayout):

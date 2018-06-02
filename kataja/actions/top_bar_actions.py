@@ -160,6 +160,7 @@ class SwitchSyntaxViewMode(KatajaAction):
     def enabler(self):
         return bool(ctrl.forest.syntax.display_modes)
 
+
 class DrawArrow(KatajaAction):
     k_action_uid = 'draw_arrow'
     k_command = 'Draw arrow'

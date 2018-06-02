@@ -2,6 +2,7 @@
 
 from PyQt5 import QtWidgets
 from kataja.singletons import qt_prefs, ctrl
+from kataja.ui_support.panel_utils import box_row
 
 
 class ErrorDialog(QtWidgets.QDialog):
@@ -16,7 +17,7 @@ class ErrorDialog(QtWidgets.QDialog):
         self.error_traceback_text = ''
 
         layout = QtWidgets.QVBoxLayout()
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.message_widget = QtWidgets.QWidget(self)
         self.traceback_widget = QtWidgets.QTextBrowser(self)
         self.traceback_widget.setMinimumWidth(300)
@@ -29,8 +30,7 @@ class ErrorDialog(QtWidgets.QDialog):
         # mlayout.addWidget(self.message_header_label)
         mlayout.addWidget(self.message_error_label)
         self.message_widget.setLayout(mlayout)
-        layout.addLayout(hlayout)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.retry_button = None
         if retry:
             self.retry_button = QtWidgets.QPushButton(self)
@@ -42,7 +42,6 @@ class ErrorDialog(QtWidgets.QDialog):
         self.pass_button.setDefault(True)
         self.pass_button.clicked.connect(self.reject)
         hlayout.addWidget(self.pass_button)
-        layout.addLayout(hlayout)
         self.setLayout(layout)
 
     def set_traceback(self, text):

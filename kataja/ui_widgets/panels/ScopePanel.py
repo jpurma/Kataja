@@ -23,8 +23,7 @@ class ScopePanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, default_position, parent, folded,
-                       foldable=False)
+        Panel.__init__(self, name, default_position, parent, folded, foldable=False)
         self.scope_selector = SelectionBox(parent=self, data=choices_when_not_selection,
                                            action='set_editing_scope')
         self.was_selection = False
@@ -34,14 +33,11 @@ class ScopePanel(Panel):
         self.reset_button.setMinimumHeight(14)
         self.reset_button.setMaximumHeight(14)
         self.push_to_title(self.reset_button)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         inner.setMaximumHeight(40)
         inner.setMinimumWidth(160)
         inner.setMaximumWidth(220)
-        hlayout = QtWidgets.QHBoxLayout()
-        inner.setLayout(hlayout)
-        self.setWidget(inner)
-        self.widget().setAutoFillBackground(True)
+        inner.setAutoFillBackground(True)
         self.finish_init()
 
     def prepare_selections(self):

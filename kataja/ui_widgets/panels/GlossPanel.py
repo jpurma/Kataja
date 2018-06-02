@@ -24,10 +24,8 @@ class GlossPanel(NodePanel):
         :param parent: self.main
         """
 
-        NodePanel.__init__(self, name, g.GLOSS_NODE, default_position, parent, folded,
-                           foldable=True)
-        layout = self.widget().layout()
-        hlayout = box_row(layout)
+        NodePanel.__init__(self, name, g.GLOSS_NODE, default_position, parent, folded)
+        hlayout = box_row(self.vlayout)
         label = KatajaInfoLabel('Edge',
                                 tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
                                 parent=self)

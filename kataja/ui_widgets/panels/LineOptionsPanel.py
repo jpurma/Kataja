@@ -37,8 +37,7 @@ class LineOptionsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget(self)
-        layout = QtWidgets.QVBoxLayout()
+        layout = self.vlayout
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
@@ -152,8 +151,6 @@ class LineOptionsPanel(Panel):
                                             text='Reset curves',
                                             action='reset_control_points').to_layout(hlayout)
         self.reset_adjustment.setMaximumHeight(20)
-        inner.setLayout(layout)
-        self.setWidget(inner)
         self.finish_init()
 
     @property

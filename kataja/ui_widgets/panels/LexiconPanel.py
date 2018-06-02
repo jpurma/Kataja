@@ -21,8 +21,7 @@ class LexiconPanel(Panel):
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout()
+        layout = self.vlayout
         f = qt_prefs.get_font(CONSOLE_FONT)
         self.lextext = QtWidgets.QPlainTextEdit()
         self.setStyleSheet(stylesheet % (f.family(), f.pointSize()))
@@ -36,8 +35,6 @@ class LexiconPanel(Panel):
         self.derive_button = PushButtonBase(parent=self, text='Derive again',
                                             action='derive_from_lexicon').to_layout(layout)
         #layout.addWidget(self.info)
-        inner.setLayout(layout)
-        self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.prepare_lexicon()
         self.finish_init()

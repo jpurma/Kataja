@@ -2,6 +2,7 @@
 from PyQt5 import QtWidgets, QtGui
 from kataja.singletons import prefs, running_environment, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_support.panel_utils import box_row
 
 
 class PluginSelector(QtWidgets.QWidget):
@@ -21,7 +22,7 @@ class PluginSelector(QtWidgets.QWidget):
         self.scroll_area.setMaximumWidth(self.preferred_width)
         layout.addWidget(self.scroll_area)
         layout.addStretch(10)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.plugin_path = QtWidgets.QLabel(
             'Plugin path: %s' % (prefs.plugins_path or running_environment.plugins_path), self)
         self.plugin_path.setMaximumWidth(self.preferred_width - 80)
@@ -32,7 +33,6 @@ class PluginSelector(QtWidgets.QWidget):
         plugin_path_select.setMaximumWidth(72)
         plugin_path_select.clicked.connect(self.open_plugin_path_dialog)
         hlayout.addWidget(plugin_path_select)
-        layout.addLayout(hlayout)
         refresh = QtWidgets.QPushButton('Refresh list', self)
         refresh.setMaximumWidth(80)
         refresh.clicked.connect(self.refresh_plugin_selection)

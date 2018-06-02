@@ -68,7 +68,7 @@ class KSyntaxConnection(SyntaxConnection):
     def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
-        print('calling derive_from_editable_lexicon')
+        print('calling derive_from_editable_lexicon', lexdata)
         grammar = load_grammar(lexdata)
         self.lexicon = grammar
         ctrl.disable_undo()

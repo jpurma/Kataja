@@ -20,22 +20,12 @@ class VisualizationOptionsPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         self.watchlist = ['view_mode_changed']
-        inner = QtWidgets.QWidget(self)
-        layout = QtWidgets.QVBoxLayout()
-        layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        self.vlayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
         self.setMaximumWidth(220)
         self.setMaximumHeight(140)
 
-        hlayout = box_row(layout)
-        layout.addLayout(hlayout)
-        grid = QtWidgets.QGridLayout()
-        grid.setContentsMargins(0, 0, 0, 0)
-
-        layout.addLayout(grid)
-        inner.setLayout(layout)
-        self.setWidget(inner)
         self.finish_init()
 
     def finish_init(self):

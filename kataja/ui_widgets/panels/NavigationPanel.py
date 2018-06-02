@@ -5,6 +5,7 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -21,65 +22,53 @@ class NavigationPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         inner.setMaximumHeight(140)
         inner.setMinimumWidth(160)
         inner.setMaximumWidth(220)
+        inner.setAutoFillBackground(True)
         self.watchlist = ['forest_changed']
-        layout = QtWidgets.QGridLayout()
+        layout = self.vlayout
+        self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
+                                       ).to_layout(layout)
 
-        label = QtWidgets.QLabel('Tree set', self)
-        layout.addWidget(label, 0, 0, 1, 1)
-        hlayout = QtWidgets.QHBoxLayout()
-        self.current_treeset = KatajaSpinbox(parent=self, range_min=1, range_max=5, wrapping=True,
-                                             action='jump_to_forest').to_layout(hlayout)
+        hlayout = box_row(layout)
+        self.current_treeset = KatajaSpinbox(
+            parent=self, range_min=1, range_max=5, wrapping=True, action='jump_to_forest'
+        ).to_layout(hlayout, with_label='Tree set')
         self.current_treeset.setKeyboardTracking(False)
         self.treeset_counter = QtWidgets.QLabel('0', self)
         hlayout.addWidget(self.treeset_counter)
 
-        layout.addLayout(hlayout, 0, 1, 1, 1)
-
+        hlayout = box_row(layout)
         action = ctrl.ui.get_action('previous_forest')
         self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=self,
-                                        action=action)
+                                        action=action).to_layout(hlayout)
         self.prev_tree.setMinimumWidth(72)
-        layout.addWidget(self.prev_tree, 1, 0, 1, 1)
-
         action = ctrl.ui.get_action('next_forest')
         self.next_tree = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow, parent=self,
-                                        action=action)
+                                        action=action).to_layout(hlayout)
         self.next_tree.setMinimumWidth(72)
-        layout.addWidget(self.next_tree, 1, 1, 1, 1)
 
-        new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest')
-        layout.addWidget(new_tree, 3, 0)
+        hlayout = box_row(layout)
+        self.current_derivation = KatajaSpinbox(
+            parent=self, range_min=1, range_max=5,
+            wrapping=True,
+            action='jump_to_derivation').to_layout(hlayout, with_label='Derivation step')
+        self.current_derivation.setKeyboardTracking(False)
+        self.derivation_counter = QtWidgets.QLabel('0', self)
+        hlayout.addWidget(self.derivation_counter)
 
-        self.der_label = QtWidgets.QLabel('Derivation step', self)
-        layout.addWidget(self.der_label, 2, 0, 1, 1)
-
-        derivation_counter = QtWidgets.QLabel('0/0', self)
-        layout.addWidget(derivation_counter, 2, 1, 1, 1)
-        self.derivation_counter = derivation_counter
-
+        hlayout = box_row(layout)
         action = ctrl.ui.get_action('prev_derivation_step')
         self.prev_der = TwoColorButton(text='Previous', bitmaps=qt_prefs.down_arrow, parent=self,
-                                       action=action)
+                                       action=action).to_layout(hlayout)
         self.prev_der.setMaximumHeight(20)
-        layout.addWidget(self.prev_der, 3, 0, 1, 1)
 
         action = ctrl.ui.get_action('next_derivation_step')
         self.next_der = TwoColorButton(text='Next', bitmaps=qt_prefs.up_arrow, parent=self,
-                                       action=action)
+                                       action=action).to_layout(hlayout)
         self.next_der.setMaximumHeight(20)
-        layout.addWidget(self.next_der, 3, 1, 1, 1)
-        inner.setLayout(layout)
-        if False:  # ctrl.forest.supports_derivation:
-            self.der_label.hide()
-            self.derivation_counter.hide()
-            self.next_der.hide()
-            self.prev_der.hide()
-        self.setWidget(inner)
-        self.widget().setAutoFillBackground(True)
         self.finish_init()
 
     def update_tree_counter(self):

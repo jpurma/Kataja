@@ -76,16 +76,11 @@ class MergePanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        ui = self.ui_manager
-        outer = QtWidgets.QWidget(self)
-        olayout = QtWidgets.QVBoxLayout()
-        olayout.setContentsMargins(0, 0, 0, 0)
-        outer.setLayout(olayout)
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.watchlist = ['selection_changed', 'forest_changed', 'palette_changed']
         self.setMaximumWidth(220)
         self.frame = DraggableMergeFrame(parent=self)
-        olayout.addWidget(self.frame)
-        self.setWidget(outer)
+        self.vlayout.addWidget(self.frame)
         self.finish_init()
 
     def update_selection(self):

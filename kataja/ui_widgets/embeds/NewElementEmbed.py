@@ -9,6 +9,7 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 from kataja.utils import guess_node_type
 from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -18,8 +19,7 @@ class NewElementEmbed(UIEmbed):
         UIEmbed.__init__(self, parent, None, 'Create new node')
         self.marker = None
         self.guess_mode = True
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.top_row_layout)
+        layout = self.vlayout
         tt = 'Text for new node'
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
@@ -28,7 +28,7 @@ class NewElementEmbed(UIEmbed):
                                                  smaller_font=smaller_font, prefill='label',
                                                  on_edit=self.guess_type_for_input)
         layout.addWidget(self.input_line_edit)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.node_type_selector = SelectionBox(self)
         self.node_type_selector.currentIndexChanged.connect(self.changed_node_type)
 
@@ -45,8 +45,6 @@ class NewElementEmbed(UIEmbed):
         self.enter_button = PushButtonBase(parent=self, text="Create ↩",
                                            action='create_new_node_from_text'
                                            ).to_layout(hlayout)
-        layout.addLayout(hlayout)
-        self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
 

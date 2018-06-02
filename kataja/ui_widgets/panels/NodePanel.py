@@ -13,8 +13,7 @@ __author__ = 'purma'
 class NodePanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, node_type, default_position='right', parent=None, folded=False,
-                 foldable=True):
+    def __init__(self, name, node_type, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the
         construction can be automated.
@@ -23,7 +22,7 @@ class NodePanel(Panel):
         :param parent: self.main
         """
 
-        Panel.__init__(self, name, default_position, parent, folded, foldable)
+        Panel.__init__(self, name, default_position, parent, folded)
         self.watchlist = ['selection_changed', 'forest_changed', 'palette_changed']
         self.setMaximumWidth(220)
         self.node_type = node_type
@@ -52,14 +51,10 @@ class NodePanel(Panel):
         f = ctrl.settings.get_node_setting('font_id', node_type=node_type)
         self.update_title_font(f)
 
-        if foldable:
-            container = QtWidgets.QWidget(self)
-            container.setContentsMargins(0, 0, 0, 0)
-            clayout = QtWidgets.QVBoxLayout(container)
-            clayout.setContentsMargins(4, 4, 4, 8)
-            container.setLayout(clayout)
-            container.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
-            self.setWidget(container)
+        container = self.widget()
+        container.setContentsMargins(0, 0, 0, 0)
+        self.vlayout.setContentsMargins(4, 4, 4, 8)
+        container.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         self.finish_init()
 
     def update_colors(self):

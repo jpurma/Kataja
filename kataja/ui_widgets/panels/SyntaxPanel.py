@@ -5,6 +5,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -21,15 +22,15 @@ class SyntaxPanel(Panel):
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         inner.setMinimumHeight(40)
         inner.setMaximumHeight(50)
         inner.preferred_size = QtCore.QSize(220, 40)
         inner.sizeHint = self.sizeHint
+        inner.setAutoFillBackground(True)
 
-        layout = QtWidgets.QVBoxLayout()
-        hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(0, 0, 0, 0)
+        layout = self.vlayout
+        hlayout = box_row(layout)
 
         self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
         for key, item in []:
@@ -43,12 +44,8 @@ class SyntaxPanel(Panel):
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
 
-        layout.addLayout(hlayout)
-        inner.setLayout(layout)
         self.watchlist = ['forest_changed']
         self.preferred_size = inner.preferred_size
-        self.setWidget(inner)
-        self.widget().setAutoFillBackground(True)
         self.finish_init()
 
     def watch_alerted(self, obj, signal, field_name, value):

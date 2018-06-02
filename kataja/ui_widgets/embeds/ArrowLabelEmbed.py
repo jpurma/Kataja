@@ -5,6 +5,7 @@ from kataja.singletons import qt_prefs
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.UIEmbed import UIEmbed
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -23,20 +24,17 @@ class ArrowLabelEmbed(UIEmbed):
         UIEmbed.__init__(self, parent, edge, 'Edit edge text')
         self.marker = None
         self.label = edge.label_item
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
+        layout = self.vlayout
         tt = 'Label for arrow'
         f = QtGui.QFont(qt_prefs.get_font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.input_line_edit = KatajaLineEdit(self, tooltip=tt, font=f, prefill='label'
                                               ).to_layout(hlayout)
         # U+21A9 &#8617;
         self.enter_button = PushButtonBase(self, text="↩",
                                            action='edit_edge_label_enter_text'
                                            ).to_layout(hlayout)
-        layout.addLayout(hlayout)
-        self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 37
         self.update_position()

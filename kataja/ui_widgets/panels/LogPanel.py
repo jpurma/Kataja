@@ -112,30 +112,27 @@ class LogPanel(Panel):
                                 action='clear_log').to_layout(tlayout)
         clear_log.setMaximumHeight(20)
 
-        self.inner = QtWidgets.QTextBrowser()
-        layout = QtWidgets.QVBoxLayout()
-        self.inner.setMinimumHeight(48)
-        self.inner.preferred_size = QtCore.QSize(940, 64)
+        self.log_browser = QtWidgets.QTextBrowser()
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
+        self.vlayout.addWidget(self.log_browser)
+        self.log_browser.setMinimumHeight(48)
+        self.log_browser.preferred_size = QtCore.QSize(940, 64)
         f = qt_prefs.get_font(g.CONSOLE_FONT)
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
-        self.inner.setStyleSheet(ss)
+        self.log_browser.setStyleSheet(ss)
         self.command_prompt.setStyleSheet(ss)
         self.prompt_label.setStyleSheet(ss)
-        self.inner.setAutoFillBackground(True)
-        self.inner.sizeHint = self.sizeHint
-        self.inner.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.log_browser.setAutoFillBackground(True)
+        self.log_browser.sizeHint = self.sizeHint
+        self.log_browser.setFocusPolicy(QtCore.Qt.NoFocus)
         self.resize_grip = QtWidgets.QSizeGrip(self)
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
         self.watchlist = ['ui_font_changed']
-
-        layout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
-        self.inner.setLayout(layout)
-
-        self.preferred_size = self.inner.preferred_size
-        self.setWidget(self.inner)
+        self.vlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
+        self.preferred_size = self.log_browser.preferred_size
         self.finish_init()
-        log.log_handler.set_widget(self.inner)
+        log.log_handler.set_widget(self.log_browser)
 
     def sizeHint(self):
         if self.isFloating():
@@ -153,16 +150,16 @@ class LogPanel(Panel):
 
     def append_text(self, text):
         if text.strip():
-            self.inner.append(text.rstrip())
-            self.inner.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+            self.log_browser.append(text.rstrip())
+            self.log_browser.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
 
     def append_error(self, errortext):
-        self.inner.append(errortext.rstrip())
-        self.inner.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+        self.log_browser.append(errortext.rstrip())
+        self.log_browser.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
 
     def rebuild_log(self):
         min_level = ctrl.settings.get('log_level', level=g.PREFS)
-        self.inner.clear()
+        self.log_browser.clear()
         for handler in log.handlers:
             if hasattr(handler, 'everything'):
                 for record in handler.everything:
@@ -170,7 +167,7 @@ class LogPanel(Panel):
                         handler.emit(record)
 
     def clear_log(self):
-        self.inner.clear()
+        self.log_browser.clear()
         for handler in log.handlers:
             if hasattr(handler, 'everything'):
                 handler.everything = []
@@ -189,5 +186,5 @@ class LogPanel(Panel):
         """
         if signal == 'ui_font_changed':
             f = qt_prefs.get_font(g.CONSOLE_FONT)
-            self.widget().setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
-                                                                                 f.pointSize()))
+            self.log_browser.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
+                                                                                    f.pointSize()))

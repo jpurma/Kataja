@@ -5,6 +5,7 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -21,14 +22,15 @@ class VisualizationPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         inner.preferred_size = QtCore.QSize(200, 70)
         inner.setMaximumWidth(220)
         inner.setMaximumHeight(80)
         inner.sizeHint = self.sizeHint
-
-        layout = QtWidgets.QVBoxLayout()
-        hlayout = QtWidgets.QHBoxLayout()
+        inner.setAutoFillBackground(True)
+        self.preferred_size = inner.preferred_size
+        layout = self.vlayout
+        hlayout = box_row(layout)
 
         self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
         self.selector.add_items([(key, '%s (%s)' % (key, item.shortcut)) for key, item in
@@ -42,14 +44,7 @@ class VisualizationPanel(Panel):
         self.toggle_options.setCheckable(True)
         self.toggle_options.data = 'VisualizationOptionsPanel'
 
-        layout.addLayout(hlayout)
-
-        #layout.setContentsMargins(0, 0, 0, 0)
-        inner.setLayout(layout)
         self.watchlist = ['visualization']
-        self.preferred_size = inner.preferred_size
-        self.setWidget(inner)
-        inner.setAutoFillBackground(True)
         self.finish_init()
 
     def showEvent(self, event):

@@ -22,15 +22,11 @@ class FaceCamPanel(Panel):
         self.camera = None
         self.aspect = 1.333333333
         self.camera_width = 320
-        layout = QtWidgets.QVBoxLayout()
-        widget = QtWidgets.QWidget()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
+        self.vlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.viewfinder = QtMultimediaWidgets.QCameraViewfinder()
-        layout.addWidget(self.viewfinder)
-        widget.setLayout(layout)
+        self.vlayout.addWidget(self.viewfinder)
         self.activate_camera()
-        self.setWidget(widget)
         self.finish_init()
         self.releaseMouse()
 

@@ -29,10 +29,9 @@ class HelpPanel(Panel):
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         inner.setContentsMargins(4, 4, 4, 4)
-        self.setContentsMargins(0, 0, 0, 0)
-        layout = QtWidgets.QVBoxLayout()
+        layout = self.vlayout
         self.browser = QtWidgets.QTextBrowser()
         layout.setContentsMargins(0, 0, 0, 0)
         self.browser.setContentsMargins(0, 0, 0, 0)
@@ -47,8 +46,6 @@ class HelpPanel(Panel):
         p.setColor(QtGui.QPalette.Base, QtCore.Qt.transparent)
         self.browser.setPalette(p)
         layout.addWidget(self.browser)
-        inner.setLayout(layout)
-        self.setWidget(inner)
         self.watchlist = ['ui_font_changed']
         self.set_text(HelpPanel.default_text)
         self.finish_init()

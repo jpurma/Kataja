@@ -164,6 +164,11 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.title_widget = PanelTitle(name, self, foldable=foldable)
         self.setTitleBarWidget(self.title_widget)
         self.report_top_level(self.isFloating())
+        inner = QtWidgets.QWidget(self)
+        self.vlayout = QtWidgets.QVBoxLayout()
+        inner.setLayout(self.vlayout)
+        self.setWidget(inner)
+
 
     def finish_init(self):
         """ Do initializations that need to be done after the subclass __init__

@@ -32,10 +32,9 @@ class ConstituentPanel(NodePanel):
         :param parent: self.main
         """
 
-        NodePanel.__init__(self, name, g.CONSTITUENT_NODE, default_position, parent, folded,
-                           foldable=True)
+        NodePanel.__init__(self, name, g.CONSTITUENT_NODE, default_position, parent, folded)
         widget = self.widget()
-        layout = widget.layout()
+        layout = self.vlayout
 
         hlayout = box_row(layout)
         #label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed',
@@ -60,7 +59,6 @@ class ConstituentPanel(NodePanel):
         b6 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=self, size=24,
                          action='set_feature_node_shape').to_layout(hlayout)
         b6.setFixedWidth(w)
-
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge', tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,

@@ -6,13 +6,13 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
 
-
 def color_theme_fragment(panel, layout):
-    hlayout = QtWidgets.QHBoxLayout()
+    hlayout = box_row(layout)
     f = qt_prefs.get_font(g.MAIN_FONT)
     panel.selector = SelectionBox(parent=panel, action='set_active_color_theme').to_layout(hlayout)
     panel.selector.setMaximumWidth(120)
@@ -33,7 +33,6 @@ def color_theme_fragment(panel, layout):
     panel.store_favorite.setStyleSheet(
         'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
     panel.store_favorite.setEnabled(False)
-    layout.addLayout(hlayout)
 
 
 class UnicodeIconButton(PushButtonBase):
@@ -70,16 +69,12 @@ class ColorPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        layout = QtWidgets.QVBoxLayout()
-        widget = QtWidgets.QWidget(self)
+        widget = self.widget()
         widget.setMinimumWidth(160)
         widget.setMaximumWidth(220)
         widget.setMaximumHeight(60)
         self.watchlist = ['color_themes_changed', 'palette_changed']
-        color_theme_fragment(self, layout)
-        widget.setLayout(layout)
-
-        self.setWidget(widget)
+        color_theme_fragment(self, self.vlayout)
         self.finish_init()
 
     def update_available_themes(self):

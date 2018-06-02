@@ -10,6 +10,7 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_support.panel_utils import box_row
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -40,9 +41,6 @@ class NodeEditEmbed(UIEmbed):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         self.setMinimumWidth(220)
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.top_row_layout)
-        layout.addSpacing(4)
         ui_p = self._palette
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
@@ -70,7 +68,6 @@ class NodeEditEmbed(UIEmbed):
             if on_edit and isinstance(on_edit, str):
                 on_edit = getattr(node, on_edit, None)
             field_first = False
-            field = None
             if itype == 'text':
                 width = d.get('width', 140)
                 field = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill=prefill,
@@ -125,9 +122,7 @@ class NodeEditEmbed(UIEmbed):
             if align == 'newline':
                 # new hlayout means new line, but before starting a new hlayout,
                 # end the previous one.
-                if hlayout:
-                    layout.addLayout(hlayout)
-                hlayout = QtWidgets.QHBoxLayout()
+                hlayout = box_row(self.vlayout)
             self.fields[field_name] = field
             if field_first:
                 hlayout.addWidget(field)
@@ -140,9 +135,7 @@ class NodeEditEmbed(UIEmbed):
                 make_label(ui_name, self, hlayout, tt, field, palette)
             if not field_first:
                 hlayout.addWidget(field)
-        if hlayout:
-            layout.addLayout(hlayout)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(self.vlayout)
         hlayout.addStretch(0)
         # U+21A9 &#8617;
         self.enter_button = PushButtonBase(parent=self, text="Keep ↩",
@@ -151,8 +144,6 @@ class NodeEditEmbed(UIEmbed):
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
             hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
-        layout.addLayout(hlayout)
-        self.setLayout(layout)
         self.update_embed()
         self.update_position()
         self.hide()

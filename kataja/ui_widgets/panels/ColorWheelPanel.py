@@ -7,11 +7,13 @@ from kataja.utils import to_tuple
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.panels.ColorThemePanel import color_theme_fragment
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
+from kataja.ui_support.panel_utils import box_row
 import random
 
 __author__ = 'purma'
 
 FLAG = 999
+
 
 def spinner(parent, layout, connect, label='', vmin=0, vmax=360, wrapping=False):
     spin = QtWidgets.QSpinBox(parent)
@@ -25,6 +27,7 @@ def spinner(parent, layout, connect, label='', vmin=0, vmax=360, wrapping=False)
         layout.addWidget(label)
     layout.addWidget(spin)
     return spin
+
 
 class ColorWheelPanel(Panel):
     """
@@ -46,8 +49,8 @@ class ColorWheelPanel(Panel):
         self.try_to_match = True
         self._updating = True
         # ### Color wheel
-        layout = QtWidgets.QVBoxLayout()
-        widget = QtWidgets.QWidget(self)
+        layout = self.vlayout
+        widget = self.widget()
         widget.preferred_size = QtCore.QSize(220, 300)
         # From ColorThemePanel
         color_theme_fragment(self, layout)
@@ -62,10 +65,10 @@ class ColorWheelPanel(Panel):
         self.role_selector = QtWidgets.QComboBox(parent=self)
         self.role_selector.addItems(self.editable_colors)
         self.role_selector.currentTextChanged.connect(self.set_color_role)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         hlayout.addWidget(self.role_label)
         hlayout.addWidget(self.role_selector)
-        layout.addLayout(hlayout)
+
         self.color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(self.selected_hsv), self)
         layout.addWidget(self.color_name)
 
@@ -74,18 +77,16 @@ class ColorWheelPanel(Panel):
         layout.addWidget(self.color_wheel)
 
         layout.addSpacing(8)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.h_spinner = spinner(self, hlayout, self.h_changed, label='H:', vmax=360, wrapping=True)
         self.s_spinner = spinner(self, hlayout, self.s_changed, label='S:', vmax=255)
         self.v_spinner = spinner(self, hlayout, self.v_changed, label='V:', vmax=255)
-        layout.addLayout(hlayout)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.r_spinner = spinner(self, hlayout, self.r_changed, label='R:', vmax=255)
         self.g_spinner = spinner(self, hlayout, self.g_changed, label='G:', vmax=255)
         self.b_spinner = spinner(self, hlayout, self.b_changed, label='B:', vmax=255)
-        layout.addLayout(hlayout)
 
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         match_help = "When adjusting 'content1' or 'background1', try to find contrasting colors " \
                      "for other roles."
         self.match_l = QtWidgets.QLabel("Auto-match palette:")
@@ -107,10 +108,6 @@ class ColorWheelPanel(Panel):
         self.contrast_spin = spinner(self, hlayout, self.contrast_changed, vmin=30, vmax=99)
         self.contrast_spin.setToolTip(chelp)
         self.contrast_spin.setValue(self.match_contrast)
-
-        layout.addLayout(hlayout)
-        widget.setLayout(layout)
-        self.setWidget(widget)
         self._updating = False
         self.finish_init()
 

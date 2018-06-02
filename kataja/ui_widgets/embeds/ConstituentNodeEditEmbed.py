@@ -40,9 +40,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
     def __init__(self, parent, node):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.top_row_layout)
-        layout.addSpacing(4)
+        layout = self.vlayout
         ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
@@ -95,7 +93,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
             make_label(title, parent=self, layout=layout, tooltip=tt)
         self.ui_manager.connect_element_to_action(self.projections,
                                                   'set_projecting_node')
-        self.setLayout(layout)
         self.update_embed()
         self.update_position()
         self.hide()

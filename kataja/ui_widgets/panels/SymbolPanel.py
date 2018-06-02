@@ -123,13 +123,13 @@ class SymbolPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = QtWidgets.QWidget()
+        inner = self.widget()
         # inner.preferred_size = QtCore.QSize(220, 130)
         inner.setMinimumSize(160, 130)
         inner.setMaximumSize(220, 400)
         inner.setMinimumWidth(160)
 
-        layout = QtWidgets.QVBoxLayout()
+        layout = self.vlayout
         self.selector = SelectionBox(parent=self)
         self.selector.add_items([(table_dict[item], item) for item in table_names])
         self.selector.activated.connect(self.change_symbol_set)
@@ -153,7 +153,6 @@ class SymbolPanel(Panel):
         self.resize_grip = QtWidgets.QSizeGrip(self)
         self.resize_grip.hide()
         hlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
-        inner.setLayout(layout)
         self.tables = {}
         keys = list(latex_to_unicode.keys())
         for name in table_names:
@@ -168,7 +167,6 @@ class SymbolPanel(Panel):
         self.tables['common'] = common
         # self.tables['arrows'] = arrows
         self.prepare_symbols('common')
-        self.setWidget(inner)
         self.finish_init()
 
     def prepare_symbols(self, key):

@@ -51,6 +51,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.update_colors()
         self._drag_diff = None
         self.moved_by_hand = False
+        self.vlayout = QtWidgets.QVBoxLayout()
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
         # close_button = QtWidgets.QPushButton("x")
@@ -70,7 +71,9 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.setAutoFillBackground(True)
         self.setBackgroundRole(QtGui.QPalette.Window)
         self.hide()
-        # Remember to add top_row_layout to your layout
+        self.vlayout.addLayout(self.top_row_layout)  # close-button from UIEmbed
+        self.vlayout.addSpacing(4)
+        self.setLayout(self.vlayout)
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events

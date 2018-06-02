@@ -8,6 +8,7 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.embeds.NodeEditEmbed import make_label
 from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
 from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -15,13 +16,12 @@ __author__ = 'purma'
 class GroupLabelEmbed(UIEmbed):
     def __init__(self, parent, group):
         UIEmbed.__init__(self, parent, group, 'Highlight a group of nodes')
+        layout = self.vlayout
         self.marker = None
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         smaller_font = qt_prefs.get_font(g.ITALIC_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         tt = 'Group of nodes can be singled out and named, e.g. as phases'
         self.input_line_edit = ExpandingLineEdit(self, big_font=big_font,
                                                  smaller_font=smaller_font,
@@ -29,8 +29,7 @@ class GroupLabelEmbed(UIEmbed):
                                                  ).to_layout(hlayout,
                                                              with_label=
                                                              'Name for the group (optional)')
-        layout.addLayout(hlayout)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.color_select = ColorSelector(parent=self, host=group, action='change_group_color',
                                           tooltip='Select color for highlight'
                                           ).to_layout(hlayout, with_label='Color')
@@ -40,8 +39,7 @@ class GroupLabelEmbed(UIEmbed):
         self.outline_checkbox = KatajaCheckBox(self, host=group, action='change_group_outline',
                                                tooltip="Group is marked by line drawn around it"
                                                ).to_layout(hlayout, with_label='Outline')
-        layout.addLayout(hlayout)
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         self.delete_button = PushButtonBase(self, host=group, text="Delete",
                                             action='delete_group').to_layout(hlayout)
         self.delete_button.setMaximumWidth(60)
@@ -50,8 +48,6 @@ class GroupLabelEmbed(UIEmbed):
                                            action='save_group_changes').to_layout(hlayout)
         # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(60)
-        layout.addLayout(hlayout)
-        self.setLayout(layout)
         # self.assumed_width = 200
         # self.assumed_height = 37
         self.setMinimumSize(QtCore.QSize(365, 120))

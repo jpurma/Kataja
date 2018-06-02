@@ -8,6 +8,7 @@ from kataja.ui_widgets.buttons.EyeButton import EyeButton
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.panels.NodePanel import NodePanel
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -24,12 +25,10 @@ class FeaturePanel(NodePanel):
         :param parent: self.main
         """
 
-        NodePanel.__init__(self, name, g.FEATURE_NODE, default_position, parent, folded,
-                           foldable=True)
-        widget = self.widget()
-        layout = widget.layout()
+        NodePanel.__init__(self, name, g.FEATURE_NODE, default_position, parent, folded)
+        layout = self.vlayout
 
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         label = KatajaInfoLabel('Checking',
                                 tooltip='How the checking relation is displayed',
                                 parent=self)
@@ -44,9 +43,8 @@ class FeaturePanel(NodePanel):
         b3 = PanelButton(pixmap=qt_prefs.features_connected_icon, parent=self, size=24,
                          action='set_features_connected').to_layout(hlayout)
         b3.setFixedWidth(w)
-        layout.addLayout(hlayout)
 
-        hlayout = QtWidgets.QHBoxLayout()
+        hlayout = box_row(layout)
         label = KatajaInfoLabel('Arrangement',
                                 tooltip='How features are arranged around the constituent',
                                 parent=self)
@@ -64,7 +62,6 @@ class FeaturePanel(NodePanel):
         b4 = PanelButton(pixmap=qt_prefs.feature_hanging_icon, parent=self, size=24,
                          action='set_features_hanging').to_layout(hlayout)
         b4.setFixedWidth(w)
-        layout.addLayout(hlayout)
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge',

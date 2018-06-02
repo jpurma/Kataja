@@ -75,7 +75,7 @@ class Forest(SavedObject):
         self.in_display = False
         self.visualization = None
         self.is_parsed = False
-        self.syntax = syntax or classes.get('SyntaxConnection')()
+        self.syntax = syntax
 
         self.parser = None
         self.undo_manager = None
@@ -108,6 +108,8 @@ class Forest(SavedObject):
         #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
     def init_factories(self):
+        if not self.syntax:
+            syntax = classes.get('SyntaxConnection')()
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
