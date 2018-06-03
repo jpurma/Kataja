@@ -70,8 +70,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._is_moving = False
         self.flattened_settings = {}
 
-        self.in_projections = []
-
         self._local_drag_handle_position = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this
@@ -90,9 +88,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self._visible_by_logic = True
+        self._visible_by_logic = False
         self.cached_edge_start_index = (0, 1)
         self.cached_edge_end_index = (0, 1)
+        self.hide()
 
     def type(self) -> int:
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -405,9 +404,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Drawing color that is sensitive to edge's state
         :return: QColor
         """
-        if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-            base = ctrl.cm.get(self.in_projections[0].color_key)
-        elif self.color_key:
+        if self.color_key:
             base = ctrl.cm.get(self.color_key)
         elif self.alpha and hasattr(self.alpha, 'get_color_key'):
             base = ctrl.cm.get(self.alpha.get_color_key())
@@ -656,34 +653,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
-                # Show many projections
-                if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-                    p.setWidthF(thickness)
-                    left = sx > ex
-                    for i, proj in enumerate(self.in_projections):
-                        cp = QtGui.QPen(p)
-                        cp.setColor(ctrl.cm.get(proj.color_key))
-                        painter.setPen(cp)
-                        if left:
-                            painter.drawPath(dpath.translated(i, i))
-                        else:
-                            painter.drawPath(dpath.translated(-i, i))
-                else:
-                    p.setWidthF(thickness)
-                    painter.setPen(p)
-                    painter.drawPath(dpath)
+                p.setWidthF(thickness)
+                painter.setPen(p)
+                painter.drawPath(dpath)
 
             if self.is_filled():
-                if self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-                    left = sx > ex
-                    for i, proj in enumerate(self.in_projections):
-                        cp = ctrl.cm.get(proj.color_key)
-                        if left:
-                            painter.fillPath(self.path.true_path.translated(i, i), cp)
-                        else:
-                            painter.fillPath(self.path.true_path.translated(-i, i), cp)
-                else:
-                    painter.fillPath(dpath, c)
+                painter.fillPath(dpath, c)
 
             if self.path.arrowhead_start_path:
                 painter.fillPath(self.path.arrowhead_start_path, c)

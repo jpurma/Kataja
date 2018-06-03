@@ -293,9 +293,10 @@ class ViewManager:
                 continue
             if not node.isVisible():
                 continue
+            if node.is_fading_out:
+                continue
             empty = False
             left, top, right, bottom = node.scene_rect_coordinates(current)
-            #print(left, top, right, bottom)
             rect_left = left if left < rect_left else rect_left
             rect_right = right if right > rect_right else rect_right
             rect_top = top if top < rect_top else rect_top

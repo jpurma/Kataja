@@ -501,7 +501,7 @@ class Parser:
             if exp.word:  # ic is result of scan
                 word_cat = exp.word
                 new_tree = parse.tree + [
-                    Constituent(word_cat.node.word,
+                    Constituent(word_cat.node.word or '∅',
                                 features=list(reversed(word_cat.checked)),
                                 path=list(word_cat.path),
                                 movers=word_cat.movers,

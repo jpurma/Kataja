@@ -9,7 +9,6 @@ from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
-from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -67,13 +66,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.label.setPalette(ui_p)
         layout.addWidget(self.label)
 
-        tt = "These are either XBar or Bare phrase structure labels that are updated " \
-             "automatically based on projections."
-        title = 'Generated label'
-        self.autolabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='autolabel'
-                                        ).to_layout(layout, with_label=title, label_first=True)
-        self.autolabel.setReadOnly(True)
-
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
         self.index = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='i',
@@ -82,17 +74,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
 
-        tt = 'Node can be projection from either or both of its children if those children are ' \
-             'heads or projections from their children.'
-        title = 'Projects from'
-        self.projections = ProjectionButtons(self)
-        self.projections.setMaximumWidth(200)
-        layout.addWidget(self.projections)
-
-        if not self.projections.empty:
-            make_label(title, parent=self, layout=layout, tooltip=tt)
-        self.ui_manager.connect_element_to_action(self.projections,
-                                                  'set_projecting_node')
         self.update_embed()
         self.update_position()
         self.hide()
@@ -114,7 +95,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         node = self.host
         self.label.setText(node.label)
         self.synlabel.setText(node.get_syntactic_label())
-        self.autolabel.setText(as_editable_html(node.autolabel))
         self.index.setText(node.index or '')
 
     def triangle_enabled(self):
@@ -169,8 +149,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
             self.synlabel.setFocus()
         elif m == g.NODE_LABELS_FOR_LEAVES or m == g.NODE_LABELS:
             self.label.setFocus()
-        elif m == g.XBAR_LABELS:
-            self.autolabel.setFocus()
 
 
 

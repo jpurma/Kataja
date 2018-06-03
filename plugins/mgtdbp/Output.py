@@ -251,17 +251,23 @@ class DerivationPrinter:
                     if mover_node is not node:
                         node.insert_part(mover_node, 0)
                         node.checked_features = (mover_feat, puller)
+                        node.lexical_heads = list(mover_node.lexical_heads)
                         puller.check(mover_feat)
                         del movers[puller.name]
                         node.label = '>'
                 else:
                     print('weird puller:', puller)
             elif len(node.parts) == 2:
+                node.lexical_heads = list(node.parts[0].lexical_heads)
                 if neither_is_leaf:
                     node.label = '>'
                     node.parts = list(reversed(node.parts))
                 else:
                     node.label = '<'
+            else:
+                node.lexical_heads = [node]
+                if not node.label:
+                    node.label = ' '.join([str(x) for x in node.inherited_features])
 
         build = {}
         top = None
@@ -284,18 +290,16 @@ class DerivationPrinter:
                 continue
             parent = build[key[:-1]]
             assert parent != node
-            parent.parts.append(node)
+            parent.add_part(node)
             if len(parent.parts) == 2:
-                parent.label = ''  # parent.parts.sort()
-                this = parent.parts[0].features[0]
-                that = parent.parts[1].features[0]
-                parent.checked_features = (this, that)
-                if this.sign == '':
-                    this.check(that)
+                left, right = parent.parts
+                left_f = left.features[0]
+                right_f = right.features[0]
+                parent.checked_features = (left_f, right_f)
+                if left_f.sign == '':
+                    left_f.check(right_f)
                 else:
-                    that.check(this)
-            else:
-                parent.label = ''
+                    right_f.check(left_f)
         raise_constituents(top, {})
         assert len([node for node in build.values() if not node.path]) == 1
         assert top

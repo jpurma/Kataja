@@ -30,7 +30,7 @@ except ImportError:
 
 class Constituent(BaseConstituent or object):
     def __init__(self, label='', features=None, parts=None, path=None, movers=None,
-                 lex_key=None, parent_lex_key=None):
+                 lex_key=None, parent_lex_key=None, lexical_heads=None):
         """ Constituents
         :param label:
         :param features:
@@ -38,7 +38,7 @@ class Constituent(BaseConstituent or object):
         :param path:
         """
         if BaseConstituent:
-            super().__init__(label, parts=parts, features=features)
+            super().__init__(label, parts=parts, features=features, lexical_heads=lexical_heads)
         else:
             self.label = label
             self.features = list(features) if features else []
@@ -98,6 +98,6 @@ class Constituent(BaseConstituent or object):
                 return [''] + self.features
 
     def __repr__(self):
-        return 'Constituent(label=%r, features=%r, parts=%r, path=%r, movers=%r. lex_key=%r)' % (
+        return 'Constituent(label=%r, features=%r, parts=%r, path=%r, movers=%r, lex_key=%r)' % (
             self.label, self.features, self.parts, self.path, self.movers, self.lex_key
         )

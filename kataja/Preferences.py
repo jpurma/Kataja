@@ -156,14 +156,11 @@ class Preferences(object):
                                         'Visualizations may override this.',
                                 'order': 30}
 
-        self.projection_style = 0
-        self._projection_style_ui = {'tab': 'Drawing',
-                                'choices': [(0, 'Nothing special'),
-                                            (1, 'Colors'),
-                                            (2, 'Marker pen')],
-                                'label': 'Projection style',
-                                'help': 'How projecting constituents are displayed',
-                                'order': 31}
+
+        self.projection_highlights = False
+        self._projection_highlights_ui = {'tab': 'Drawing', 'label': 'Highlight projections',
+                                          'help': 'Draw thick lines from projecting heads',
+                                          'order': 31}
 
         self.use_magnets = 3
         self._use_magnets_ui = {'tab': 'Drawing', 'choices':
@@ -210,9 +207,6 @@ class Preferences(object):
                                             (CHECKED_FEATURES, 'Checked features'),
                                             (NODE_LABELS, 'Node labels or syntactic labels'),
                                             (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
-                                            (XBAR_LABELS, 'Attempt automatic X-bar labeling'),
-                                            (SECONDARY_LABELS, 'Secondary labels (if syntax '
-                                                               'supports)'),
                                             (NO_LABELS, 'No labels for constituents')],
                                     'label': 'Node label text',
                                     'help': 'Should the tree show freely editable labels (node '
@@ -266,8 +260,6 @@ class Preferences(object):
                                    'help': '(If the plugin supports them)',
                                    'order': 3}
 
-        self.use_xbar_aliases = True
-
         self.single_click_editing = False
         self._single_click_editing_ui = {'tab': 'General', 'label': 'Single click editing',
                                          'help': 'Selecting a node triggers editing its label'}
@@ -294,23 +286,8 @@ class Preferences(object):
         self.include_gloss_to_print = True
         self._include_gloss_to_print_ui = {'tab': 'Printing'}
 
-        self.guess_projections = False
-        # plugins can toggle projection guessing on and off
-
-        self.use_projection = True
-        self._use_projection_ui = {'tab': 'Syntax'}
-
-        self.who_projects = 'left_external'
-        self._who_projects_ui = {'tab': 'Syntax'}
-
         self.binary_branching = False
         self._binary_branching_ui = {'tab': 'Syntax'}
-
-        self.shows_merge_order = False
-        self._shows_merge_order_ui = {'tab': 'Syntax'}
-
-        self.shows_select_order = False
-        self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = deepcopy(master_styles['fancy'])

@@ -54,12 +54,9 @@ class DragData:
         scx, scy = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
-        if hasattr(node, 'contextual_background'):
-            self.background = node.contextual_background()
-        else:
-            bg = ctrl.cm.paper2().lighter(102)
-            bg.setAlphaF(.65)
-            self.background = bg
+        bg = ctrl.cm.paper2().lighter(102)
+        bg.setAlphaF(.65)
+        self.background = bg
         parent = node.parentItem()
         if parent:
             self.parent = parent
@@ -126,7 +123,7 @@ class Node(Movable):
         self.resizable = False
         self.drag_data = None
         self.user_size = None
-        self.inverse_colors = False
+        self.invert_colors = False
         self.text_parse_mode = 1
         self._magnets = []
         self.is_syntactically_valid = False
@@ -147,6 +144,7 @@ class Node(Movable):
         self.triangle_stack = []  # you can always unfold only the outermost triangle, so stack
         self.cached_edge_ordering = {}
         self.color_key = None
+        self.invert_colors = False
 
         self._editing_template = {}
 
@@ -747,20 +745,18 @@ class Node(Movable):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-
-        if self.drag_data:
-            return ctrl.cm.lighter(ctrl.cm.selection())
-        elif ctrl.pressed is self:
-            return ctrl.cm.selection()  # ctrl.cm.active(ctrl.cm.selection())
-        elif self.hovering:
-            # return ctrl.cm.hover()
-            return self.color
-            # return ctrl.cm.hovering(ctrl.cm.selection())
-        elif self.selected:
-            return ctrl.cm.selection()
-            # return ctrl.cm.selected(ctrl.cm.selection())
+        if self.selected:
+            base = ctrl.cm.selection()
         else:
-            return self.color
+            base = ctrl.cm.get(self.get_color_key())
+        if self.drag_data:
+            return ctrl.cm.lighter(base)
+        elif ctrl.pressed is self:
+            return ctrl.cm.active(base)
+        elif self.hovering:
+            return ctrl.cm.hovering(base)
+        else:
+            return base
 
     def get_edge_start_symbol(self):
         return 0
@@ -993,13 +989,10 @@ class Node(Movable):
 
         expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
-            if isinstance(child, Node):
-                #cbr = child.future_children_bounding_rect()
-                #cbr_new = child.future_children_bounding_rect(update=True)
-                #if cbr != cbr_new:
-                #    print(cbr, cbr_new)
+            if isinstance(child, Node) and child.is_visible():
                 expanding_rect |= child.future_children_bounding_rect().translated(
                     *child.target_position)
+
         self._cached_child_rect = expanding_rect
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:

@@ -291,19 +291,14 @@ class SetVisibleLabel(KatajaAction):
         if label_mode is None:
             label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
             syn_mode = ctrl.settings.get('syntactic_mode')
-            support_secondary = ctrl.syntax.supports_secondary_labels
             # some labels are not allowed in syn mode. If called without arguments, rotate to
             # next available mode.
             ok = False
             while not ok:
                 label_mode += 1
-                if label_mode == g.SECONDARY_LABELS and not support_secondary:
-                    ok = False
-                elif label_mode == g.NODE_LABELS_FOR_LEAVES and syn_mode:
+                if label_mode == g.NODE_LABELS_FOR_LEAVES and syn_mode:
                     ok = False
                 elif label_mode == g.NODE_LABELS and syn_mode:
-                    ok = False
-                elif label_mode == g.XBAR_LABELS and syn_mode:
                     ok = False
                 elif label_mode > g.NO_LABELS:
                     ok = False
@@ -317,38 +312,6 @@ class SetVisibleLabel(KatajaAction):
 
     def getter(self):
         return ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
-
-    def enabler(self):
-        return self.not_selection()
-
-class SelectProjectionStyle(KatajaAction):
-    k_action_uid = 'select_projection_style'
-    k_command = 'Select projection style'
-    k_tooltip = 'Switch between different ways to show projecting constituents'
-    k_shortcut = 'Shift+P'
-
-    def prepare_parameters(self, args, kwargs):
-        sender = self.sender()
-        if isinstance(sender, QtWidgets.QComboBox):
-            projection_style = sender.currentData()
-        else:
-            projection_style = None
-        return [], {'projection_style': projection_style}
-
-    def method(self, projection_style=None):
-        """ """
-        if projection_style is None:
-            projection_style = ctrl.settings.get_active_setting('projection_style')
-            projection_style += 1
-            if projection_style == 3:
-                projection_style = 0
-        ctrl.settings.set('projection_style', projection_style, level=ctrl.ui.active_scope)
-        ctrl.forest.projection_manager.update_projection_display()
-        mode_text = prefs.get_ui_text_for_choice(projection_style, 'projection_style')
-        return 'Projection style: ' + mode_text
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('projection_style')
 
     def enabler(self):
         return self.not_selection()

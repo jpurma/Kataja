@@ -21,30 +21,20 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 
-import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
     as_html
 from kataja.saved.movables.Node import Node
-import kataja.ui_graphicsitems.TouchArea as ta
-import kataja.ui_widgets.buttons.OverlayButton as ob
-from kataja.singletons import ctrl, classes, prefs
+import kataja.ui_graphicsitems.TouchArea as TA
+import kataja.ui_widgets.buttons.OverlayButton as OB
+from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import time_me
+import kataja.globals as g
 
+from html import escape
 __author__ = 'purma'
-
-xbar_suffixes = ['´', "'", "P", "(1/)", "\1"]
-
-
-def strip_xbars(al):
-    for s in xbar_suffixes:
-        if len(al) > len(s) and al.endswith(s):
-            return al[:-len(s)]
-    else:
-        return al
 
 
 class ConstituentNode(Node):
@@ -92,36 +82,28 @@ class ConstituentNode(Node):
     # check if this is an appropriate toucharea to draw for given node or edge.
     # format.
 
-    touch_areas_when_dragging = [ta.LeftAddTop, ta.LeftAddSibling, ta.RightAddSibling,
-                                 ta.AddBelowTouchArea]
-    touch_areas_when_selected = [ta.LeftAddTop, ta.RightAddTop, ta.MergeToTop,
-                                 ta.LeftAddInnerSibling, ta.RightAddInnerSibling,
-                                 ta.LeftAddUnaryChild, ta.RightAddUnaryChild, ta.LeftAddLeafSibling,
-                                 ta.RightAddLeafSibling, ta.AddTriangleTouchArea,
-                                 ta.RemoveTriangleTouchArea]
+    touch_areas_when_dragging = [TA.LeftAddTop, TA.LeftAddSibling, TA.RightAddSibling,
+                                 TA.AddBelowTouchArea]
+    touch_areas_when_selected = [TA.LeftAddTop, TA.RightAddTop, TA.MergeToTop,
+                                 TA.LeftAddInnerSibling, TA.RightAddInnerSibling,
+                                 TA.LeftAddUnaryChild, TA.RightAddUnaryChild, TA.LeftAddLeafSibling,
+                                 TA.RightAddLeafSibling, TA.AddTriangleTouchArea,
+                                 TA.RemoveTriangleTouchArea]
 
-    buttons_when_selected = [ob.RemoveMergerButton, ob.NodeEditorButton, ob.RemoveNodeButton,
-                             ob.NodeUnlockButton]
+    buttons_when_selected = [OB.RemoveMergerButton, OB.NodeEditorButton, OB.RemoveNodeButton,
+                             OB.NodeUnlockButton]
 
     def __init__(self, label=''):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self)
         self.heads = []
 
-        # ### Projection -- see also preferences that govern if these are used
-        self.can_project = True
-        self.projecting_to = set()
-
         self.index = ''
         self.label = label
-        self.autolabel = ''
         self.gloss = ''
 
         self.use_lexical_color = False
         self.is_trace = False
-        self.merge_order = 0
-        self.select_order = 0
-        self.in_projections = []
         self.cached_sorted_feature_edges = []
         self._can_cascade_edges = None
 
@@ -294,20 +276,20 @@ class ConstituentNode(Node):
             lines.append("<strong>Trace</strong>")
         elif self.is_leaf():
             lines.append("<strong>Leaf constituent</strong>")
-            lines.append(f"Syntactic label: {repr(self.get_syn_label())}")
+            lines.append(f"Syntactic label: '{escape(self.get_syn_label())}'")
         else:
             lines.append("<strong>Set constituent</strong>")
-            lines.append(f"Syntactic label: {repr(self.get_syn_label())}")
+            lines.append(f"Syntactic label: '{escape(self.get_syn_label())}'")
         if self.index:
             lines.append(f' Index: {repr(self.index)}')
-
-        heads = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h in
-                 self.heads]
-        heads = '; '.join(heads)
-        if len(self.heads) == 1:
-            lines.append(f'head: {heads}')
-        elif len(self.heads) > 1:
-            lines.append(f'heads: {heads}')
+        heads = self.get_heads()
+        heads_str = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h
+                     in heads if h]
+        heads_str = '; '.join(heads_str)
+        if len(heads) == 1:
+            lines.append(f'head: {heads_str}')
+        elif len(heads) > 1:
+            lines.append(f'heads: {heads_str}')
 
         # x, y = self.current_scene_position
         # lines.append(f'pos: ({x:.1f},{y:.1f})')
@@ -326,7 +308,6 @@ class ConstituentNode(Node):
             lines.append(ui_style % 'Click to edit text, drag to move')
         else:
             lines.append(ui_style % 'Click to select, drag to move')
-
         self.k_tooltip = '<br/>'.join(lines)
 
     def short_str(self):
@@ -412,11 +393,6 @@ class ConstituentNode(Node):
         elif label_text_mode == g.SYN_LABELS_FOR_LEAVES:
             if self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
                 l = self.syntactic_object.label
-        elif label_text_mode == g.SECONDARY_LABELS:
-            if self.syntactic_object:
-                l = self.syntactic_object.get_secondary_label()
-        elif label_text_mode == g.XBAR_LABELS:
-            l = self.get_autolabel()
         elif label_text_mode == g.CHECKED_FEATURES:
             if self.syntactic_object:
                 if self.syntactic_object.parts:
@@ -514,9 +490,6 @@ class ConstituentNode(Node):
             else:
                 return '-'
 
-    def get_autolabel(self):
-        return self.autolabel
-
     def is_unnecessary_merger(self):
         """ This merge can be removed, if it has only one child
         :return:
@@ -555,20 +528,24 @@ class ConstituentNode(Node):
     def has_one_child(self):
         return len(self.get_children(similar=True, visible=False)) == 1
 
-    def can_be_projection_of_another_node(self):
-        """ Node can be projection from other nodes if it has other nodes
-        below it.
-        It may be necessary to move this check to syntactic level at some
-        point.
-        :return:
-        """
-        if ctrl.settings.get('use_projection'):
-            if self.is_leaf(only_similar=True, only_visible=False):
-                return False
-            else:
-                return True
-        else:
-            return False
+    def get_heads(self):
+        if self.syntactic_object:
+            res = []
+            for head in self.syntactic_object.get_heads():
+                if head is self.syntactic_object:
+                    res.append(self)
+                else:
+                    node = ctrl.forest.get_node(head)
+                    if node:
+                        res.append(node)
+                    else:
+                        print('missing head for %s, %s' % (self.syntactic_object,
+                                                           self.syntactic_object.lexical_heads))
+            return res
+        return self.heads
+
+    def get_syntactic_heads(self):
+        return self.syntactic_object.get_heads()
 
     def set_heads(self, head):
         """ Set projecting head to be Node, list of Nodes or empty. Notice that this doesn't
@@ -585,36 +562,31 @@ class ConstituentNode(Node):
         else:
             raise ValueError
 
-    def lexical_color(self):
-        l = self.syntactic_object.label
-        if l:
-            c_id = ord(self.syntactic_object.label[0]) % 8 + 1
+    def get_lexical_color(self):
+        heads = self.get_heads()
+        if heads and heads[0] is not self:
+            if heads[0]:
+                return heads[0].get_lexical_color()
         else:
-            c_id = 1
-        return 'accent' + str(c_id)
+            l = self.syntactic_object.label
+            if l:
+                c_id = sum([ord(x) for x in self.syntactic_object.label]) % 8 + 1
+            else:
+                c_id = 1
+            return 'accent' + str(c_id)
 
-    def contextual_color(self):
-        """ Drawing color that is sensitive to node's state
-        :return: QColor
+    def get_color_key(self):
         """
-        if self.selected:
-            base = ctrl.cm.selection()
-        elif self.inverse_colors:
-            base = ctrl.cm.paper()
+        :return:
+        """
+        if 'color_key' in self.settings:
+            ck = self.settings['color_key']
         elif self.use_lexical_color:
-            base = ctrl.cm.get(self.lexical_color())
-        elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
-            base = ctrl.cm.get(self.in_projections[0].color_key)
+            ck = self.get_lexical_color()
         else:
-            base = self.color
-        if self.drag_data:
-            return ctrl.cm.lighter(base)
-        elif ctrl.pressed is self:
-            return ctrl.cm.active(base)
-        elif self.hovering:
-            return ctrl.cm.hovering(base)
-        else:
-            return base
+            ck = ctrl.settings.get_node_setting('color_key', node=self)
+        return ck
+
 
     # ### Features #########################################
 
@@ -761,8 +733,8 @@ class ConstituentNode(Node):
     def get_features(self):
         """ Returns FeatureNodes """
         if self.syntactic_object:
-            g = ctrl.forest.get_node
-            return [g(f) for f in self.syntactic_object.get_features()]
+            getnode = ctrl.forest.get_node
+            return [getnode(f) for f in self.syntactic_object.get_features()]
         else:
             return [f for f in self.get_children(visible=True, of_type=g.FEATURE_EDGE) if
                     f.node_type != g.FEATURE_NODE]
@@ -824,12 +796,6 @@ class ConstituentNode(Node):
 
     # ### Parents & Children ####################################################
 
-    def is_projecting_to(self, other):
-        """
-
-        :param other:
-        """
-        pass
 
     # ### Paint overrides
 
@@ -839,10 +805,11 @@ class ConstituentNode(Node):
         self.use_lexical_color = False
         if shape == g.FEATURE_SHAPE:
             feats = self.get_merged_features()
+            self.use_lexical_color = True
             if not feats:
-                self.use_lexical_color = True
+                self.invert_colors = False
             else:
-                self.inverse_colors = True
+                self.invert_colors = True
                 x = self.inner_rect.left()
                 y = self.inner_rect.top()
                 h = self.inner_rect.height()
@@ -920,16 +887,12 @@ class ConstituentNode(Node):
     @staticmethod
     def allowed_label_text_mode():
         mode = ctrl.settings.get('label_text_mode')
-        if mode == g.SECONDARY_LABELS and not ctrl.syntax.supports_secondary_labels:
-            return g.SYN_LABELS
         if not ctrl.settings.get('syntactic_mode'):
             return mode
         if mode == g.NODE_LABELS:
             return g.SYN_LABELS
         elif mode == g.NODE_LABELS_FOR_LEAVES:
             return g.SYN_LABELS_FOR_LEAVES
-        elif mode == g.XBAR_LABELS:
-            return g.SYN_LABELS
 
     @staticmethod
     def allowed_label_text_modes():
@@ -938,18 +901,13 @@ class ConstituentNode(Node):
         SYN_LABELS_FOR_LEAVES = 1
         NODE_LABELS = 2
         NODE_LABELS_FOR_LEAVES = 3
-        XBAR_LABELS = 4
-        SECONDARY_LABELS = 5
         NO_LABELS = 6
         :return:
         """
         if ctrl.settings.get('syntactic_mode'):
-            allowed = [0, 1, 5, 6]
+            return [0, 1, 6]
         else:
-            allowed = [0, 1, 2, 3, 4, 5, 6]
-        if ctrl.syntax and not ctrl.syntax.supports_secondary_labels:
-            allowed.remove(5)
-        return allowed
+            return [0, 1, 2, 3, 6]
 
     # ############## #
     #                #

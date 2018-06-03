@@ -87,11 +87,11 @@ class ConstituentPanel(NodePanel):
 
         self.label_selector = SelectionBox(parent=self, action='set_visible_label',
                                            data=data).to_layout(hlayout, with_label='Visible label')
-        hlayout = box_row(layout)
-        data = prefs.get_display_choices('projection_style')
-        self.projection_selector = SelectionBox(parent=self, action='select_projection_style',
-                                                data=data).to_layout(hlayout,
-                                                                     with_label='Projection style')
+        #hlayout = box_row(layout)
+        #data = prefs.get_display_choices('projection_style')
+        #self.projection_selector = SelectionBox(parent=self, action='select_projection_style',
+        #                                        data=data).to_layout(hlayout,
+        #                                                             with_label='Projection style')
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('linearization_mode')

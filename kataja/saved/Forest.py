@@ -237,7 +237,6 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-        self.projection_manager.update_projections()
         if ctrl.free_drawing_mode:
             #print('doing nodes to synobjs in forest_edited')
             self.syntax.nodes_to_synobjs(self, self.trees)

@@ -65,7 +65,6 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     visited_nodes = set()
     converted_nodes = set()
     checking_features = set()
-    found_copies = {}
 
     def define_label(node):
         n = len(node.heads)

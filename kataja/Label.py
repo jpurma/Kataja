@@ -581,7 +581,10 @@ class Label(QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         """
-        c = self._host.contextual_color()
+        if self._host.invert_colors:
+            c = ctrl.cm.paper()
+        else:
+            c = self._host.contextual_color()
         self.editable_part.setDefaultTextColor(c)
         if self.lower_part:
             self.lower_part.setDefaultTextColor(c)

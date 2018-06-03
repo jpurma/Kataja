@@ -177,7 +177,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         fnode.value = getattr(syn_feat, 'value', '')
         fnode.family = getattr(syn_feat, 'family', '')
 
-    # ################ Edges & Heads ###################################
+    # ################ Edges ###################################
 
     # I guess that ordering of connections will be broken because of making
     # and deleting connections in unruly fashion
@@ -261,32 +261,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         verify_edge_order_for_constituent_nodes(node)
         return node
 
-    def recursive_update_heads(node):
-        if not node.syntactic_object:
-            #print(f'node "{node}" doesnt have syntactic object')
-            return []
-        my_label = node.syntactic_object.label
-        my_label_parts = [x.strip('() ') for x in my_label.split(',')]
-        if node in done_nodes:
-            return [('_'.join([x.strip('() ') for x in n.label.split(',')]), n) for n in node.heads]
-        done_nodes.add(node)
-        heads = []
-        res = []
-        children = node.get_children(similar=True, visible=False)
-        if children:
-            for child in children:
-                labels = recursive_update_heads(child)
-                for label, head in labels:
-                    if label in my_label:
-                        heads.append(head)
-                        res.append((label, head))
-            node.heads = heads
-            return res
-        else:
-            my_label_parts = ['_'.join(my_label_parts)]
-            node.heads = [node]
-            return [('_'.join(my_label_parts), node)]
-
     # There may be edges that go between trees and these cannot be drawn before nodes of all trees
     # exist.
     done_nodes = set()
@@ -294,10 +268,6 @@ def syntactic_state_to_nodes(forest, syn_state):
     for tree_root in syn_state.tree_roots:
         recursive_create_edges_for_constituent(tree_root)
     edge_keys_to_validate -= found_edges
-
-    done_nodes = set()
-    for tree_root in syn_state.tree_roots:
-        recursive_update_heads(forest.get_node(tree_root))
 
     # for item in numeration:
     #    node, trees = recursive_create(item, set())
@@ -413,7 +383,6 @@ def syntactic_state_to_nodes(forest, syn_state):
     if strat and strat == 'message':
         forest.heading_text = syn_state.msg
     forest.update_forest_gloss()
-    forest.guessed_projections = False
     # ctrl.graph_scene.fit_to_window(force=True)
 
 

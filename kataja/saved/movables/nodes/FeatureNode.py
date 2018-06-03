@@ -116,7 +116,7 @@ class FeatureNode(Node):
         self.repulsion = 0.25
         self._gravity = 3.0
         self.fshape = 2
-        self.lexical_color = None
+        self.invert_colors = True
 
         # implement color() to map one of the d['rainbow_%'] colors here.
         # Or if bw mode is on, then something else.
@@ -471,7 +471,7 @@ class FeatureNode(Node):
 
         if self.fshape:
             self.draw_feature_shape(painter, self.inner_rect, left, right,
-                                    self.contextual_background())
+                                    self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
 
@@ -486,7 +486,7 @@ class FeatureNode(Node):
     def get_host_color(self):
         h = self.get_host()
         if h:
-            return ctrl.cm.get(h.lexical_color())
+            return ctrl.cm.get(h.get_lexical_color())
 
     def get_color_key(self):
         """
@@ -494,8 +494,6 @@ class FeatureNode(Node):
         """
         if 'color_key' in self.settings:
             ck = self.settings['color_key']
-        elif self.lexical_color:
-            ck = self.lexical_color
         elif self.name in ctrl.forest.semantics_manager.colors:
             ck = ctrl.forest.semantics_manager.colors[self.name]
         elif self.name:
@@ -510,44 +508,6 @@ class FeatureNode(Node):
         if self.syntactic_object and self.syntactic_object.is_inactive():
             ck += 'tr'
         return ck
-
-    def contextual_color(self):
-        """ Drawing color that is sensitive to node's state """
-        if self.fshape:
-            return ctrl.cm.get('background1')
-        else:
-            ck = self.get_color_key()
-            c = ctrl.cm.get(ck)
-            if ctrl.pressed == self:
-                return ctrl.cm.active(c)
-            elif self.drag_data or self.hovering:
-                return ctrl.cm.hovering(c)
-            elif ctrl.is_selected(self):
-                return ctrl.cm.active(c)
-                #return ctrl.cm.selection()
-
-    def contextual_background(self):
-        """ Background color that is sensitive to node's state """
-        if self.fshape:
-            ck = self.get_color_key()
-            c = ctrl.cm.get(ck)
-            if ctrl.pressed == self:
-                return ctrl.cm.active(c)
-            elif self.drag_data or self.hovering:
-                return ctrl.cm.hovering(c)
-            elif ctrl.is_selected(self):
-                return ctrl.cm.active(c)
-            else:
-                return c
-        else:
-            if ctrl.pressed == self:
-                return ctrl.cm.active(ctrl.cm.selection())
-            elif self.drag_data or self.hovering:
-                return ctrl.cm.hovering(ctrl.cm.selection())
-            elif ctrl.is_selected(self):
-                return ctrl.cm.selection()
-            else:
-                return qt_prefs.no_brush
 
     def special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
         if edge_type == g.FEATURE_EDGE: # not used atm.

@@ -7,7 +7,6 @@ from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_widgets.buttons.ProjectionButtons import ProjectionButtons
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_support.panel_utils import box_row
@@ -94,10 +93,6 @@ class NodeEditEmbed(UIEmbed):
                 if template_width:
                     field.setFixedWidth(template_width)
                 self.resize_target = field
-            elif itype == 'projection_buttons':
-                width = d.get('width', 200)
-                field = ProjectionButtons(self)
-                field.setMaximumWidth(width)
             elif itype == 'checkbox':
                 field = QtWidgets.QCheckBox(self)
             elif itype == 'preview':

@@ -55,7 +55,7 @@ class BaseConstituent(SavedObject, IConstituent):
                }
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
-    def __init__(self, label='', parts=None, uid='', features=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, lexical_heads=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is
         easily dumped to file. Extending this needs to take account if new elements should also
@@ -67,6 +67,7 @@ class BaseConstituent(SavedObject, IConstituent):
         self.parts = parts or []
         self.inherited_features = features or []
         self.checked_features = None
+        self.lexical_heads = list(lexical_heads) if lexical_heads else []
 
     def __str__(self):
         return str(self.label)
@@ -169,14 +170,6 @@ class BaseConstituent(SavedObject, IConstituent):
             if f.name == key:
                 return f
 
-    def get_secondary_label(self):
-        """ Visualisation can switch between showing labels and some other information in label
-        space. If you want to support this, have "support_secondary_labels = True"
-        in SyntaxConnection and provide something from this getter.
-        :return:
-        """
-        raise NotImplementedError
-
     def has_feature(self, key):
         """ Check the existence of feature within this constituent
         :param key: string for identifying feature type or Feature instance
@@ -229,6 +222,13 @@ class BaseConstituent(SavedObject, IConstituent):
         if ordering_method == 1:
             return list(self.parts)
 
+    def get_heads(self):
+        """ It is useful for constituent to be able to tell what is or which are its
+        original projecting heads. A default implementation is just to save this information as a list.
+        :return:
+        """
+        return self.lexical_heads
+
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent
@@ -262,4 +262,5 @@ class BaseConstituent(SavedObject, IConstituent):
     parts = SavedField("parts")
     checked_features = SavedField("checked_features")
     inherited_features = SavedField("inherited_features")
+    lexical_heads = SavedField("lexical_heads")
 

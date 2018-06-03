@@ -32,11 +32,9 @@ class Projection:
         self.visual = None
         self._changes = False
         self.base_label = ''
-        self.update_autolabels()
 
     def update_chains(self, chains):
         self.chains = chains
-        self.update_autolabels()
 
     def update_color(self):
         if self.base_label:
@@ -87,32 +85,3 @@ class Projection:
         elif self.visual:
             ctrl.forest.remove_from_scene(self.visual)
             self.visual = None
-
-    def update_autolabels(self):
-        """ Compute x-bar labels and put them to node.autolabel
-        :return:
-        """
-        xbar = ctrl.settings.get('use_xbar_aliases') or True
-        self.base_label = Projection.get_base_label(self.head)
-        if xbar:
-            for chain in self.chains:
-                if len(chain) > 1 and len(chain[1].get_children(visible=False, similar=True)) == 1:
-                    chain[0].autolabel = Projection.get_base_label(self.head)
-                    self.base_label = Projection.get_base_label(chain[1])
-                    chain = chain[1:]
-                last = len(chain) - 1
-                for i, node in enumerate(chain):
-                    if i == last:
-                        node.autolabel = self.base_label + 'P'
-                    elif i == 0:
-                        node.autolabel = node.label  # self.base_label
-
-                    else:
-                        node.autolabel = self.base_label + '´'
-                    node.update_label()
-        else:
-            for chain in self.chains:
-                for i, node in enumerate(chain):
-                    node.autolabel = self.base_label
-                    node.update_label()
-        self.update_color()

@@ -176,7 +176,7 @@ class FreeDrawing:
         rel.after_init()
         self.f.store(rel)
         self.f.add_to_scene(rel)
-        if fade and self.f.in_display:
+        if fade and self.f.in_display and start.is_visible() and end.is_visible():
             rel.fade_in()
         return rel
 

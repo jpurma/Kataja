@@ -15,7 +15,6 @@ class SyntaxConnection(SavedObject):
     """
     role = "SyntaxConnection"
     supports_editable_lexicon = False
-    supports_secondary_labels = False
     display_modes = []
 
     options = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),

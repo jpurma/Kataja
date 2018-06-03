@@ -127,15 +127,6 @@ class IConstituent(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def get_secondary_label(self):
-        """ Visualisation can switch between showing labels and some other information in label
-        space. If you want to support this, have "support_secondary_labels = True"
-        in SyntaxConnection and provide something from this getter.
-        :return:
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def has_feature(self, key):
         """ Check the existence of feature within this constituent
         :param key: string for identifying feature type or Feature instance
