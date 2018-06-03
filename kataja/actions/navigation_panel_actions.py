@@ -134,3 +134,30 @@ class PreviousStep(KatajaAction):
         max_i = len(ctrl.forest.derivation_steps.derivation_steps)
         ctrl.forest.forest_edited()
         return f'Previous derivation step: {i + 1}/{max_i}'
+
+
+class JumpToDerivation(KatajaAction):
+    k_action_uid = 'jump_to_derivation'
+    k_command = 'Jump to derivation step'
+
+    def prepare_parameters(self, args, kwargs):
+        if not args:
+            args = [ctrl.forest.derivation_steps.derivation_step_index + 1]
+        try:
+            i = int(args[0])
+            args = [i]
+        except ValueError:
+            args = [ctrl.forest.derivation_steps.derivation_step_index + 1]
+        return args, kwargs
+
+    def method(self, n):
+        ctrl.forest.derivation_steps.jump_to_derivation_step(n - 1)
+        ctrl.forest.forest_edited()
+        msg = ctrl.forest.derivation_steps.current.msg
+        return f'Jump to derivation step: {n}: {msg}'
+
+    def getter(self):
+        return ctrl.forest.derivation_steps.derivation_step_index + 1
+
+    def enabler(self):
+        return ctrl.forest.derivation_steps

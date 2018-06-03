@@ -29,8 +29,8 @@ class NavigationPanel(Panel):
         inner.setAutoFillBackground(True)
         self.watchlist = ['forest_changed']
         layout = self.vlayout
-        self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
-                                       ).to_layout(layout)
+        # self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
+        #                               ).to_layout(layout)
 
         hlayout = box_row(layout)
         self.current_treeset = KatajaSpinbox(
@@ -74,15 +74,14 @@ class NavigationPanel(Panel):
     def update_tree_counter(self):
         keeper = ctrl.main.document
         if keeper is not None:
-            display_index = keeper.current_index + 1  # indexes start at 0, we want to display 1
             max_index = len(keeper.forests)
             self.current_treeset.setMaximum(max_index)
             self.treeset_counter.setText('/ %s' % max_index)
             dm = ctrl.forest.derivation_steps
             if dm:
                 max_der_step = len(dm.derivation_steps)
-                der_step = dm.derivation_step_index + 1
-                self.derivation_counter.setText('%s/%s' % (der_step, max_der_step))
+                self.current_derivation.setMaximum(max_der_step)
+                self.derivation_counter.setText('/ %s' % (max_der_step))
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all

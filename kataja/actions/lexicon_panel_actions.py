@@ -35,7 +35,7 @@ class DeriveFromLexicon(KatajaAction):
     k_shortcut = 'Ctrl+r'
 
     def enabler(self):
-        return ctrl.syntax.supports_editable_lexicon
+        return ctrl.syntax and ctrl.syntax.supports_editable_lexicon
 
     def method(self):
         panel = ctrl.ui.get_panel('LexiconPanel')

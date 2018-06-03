@@ -919,7 +919,7 @@ class ConstituentNode(Node):
     @staticmethod
     def allowed_label_text_mode():
         mode = ctrl.settings.get('label_text_mode')
-        if mode == g.SECONDARY_LABELS and not ctrl.forest.syntax.supports_secondary_labels:
+        if mode == g.SECONDARY_LABELS and not ctrl.syntax.supports_secondary_labels:
             return g.SYN_LABELS
         if not ctrl.settings.get('syntactic_mode'):
             return mode
@@ -946,7 +946,7 @@ class ConstituentNode(Node):
             allowed = [0, 1, 5, 6]
         else:
             allowed = [0, 1, 2, 3, 4, 5, 6]
-        if (not ctrl.forest) or (not ctrl.forest.syntax.supports_secondary_labels):
+        if ctrl.syntax and not ctrl.syntax.supports_secondary_labels:
             allowed.remove(5)
         return allowed
 

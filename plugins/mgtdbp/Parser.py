@@ -564,6 +564,8 @@ class Parser:
     def parse(self, sentence, start='C', lex=''):  #
         if lex:
             self.lex_trees = load_grammar(lex)
+        if not sentence:
+            return
         print('inpt =' + str(sentence.split()))
         start_node = self.lex_trees[start]  # initial head
         start_cat = Cat(start_node, checked=[Feature(start, '')])

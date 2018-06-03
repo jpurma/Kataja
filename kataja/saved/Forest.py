@@ -109,7 +109,7 @@ class Forest(SavedObject):
 
     def init_factories(self):
         if not self.syntax:
-            syntax = classes.get('SyntaxConnection')()
+            self.syntax = classes.get('SyntaxConnection')()
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)

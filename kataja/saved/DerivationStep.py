@@ -155,8 +155,9 @@ class DerivationStepManager(SavedObject):
         :return:
         """
         if self.derivation_step_index + 1 >= len(self.derivation_steps):
-            return
-        self.derivation_step_index += 1
+            self.derivation_step_index = 0
+        else:
+            self.derivation_step_index += 1
         self.restore_derivation_step()
 
     def previous_derivation_step(self):
@@ -164,8 +165,9 @@ class DerivationStepManager(SavedObject):
         :return:
         """
         if self.derivation_step_index == 0:
-            return
-        self.derivation_step_index -= 1
+            self.derivation_step_index = len(self.derivation_steps) - 1
+        else:
+            self.derivation_step_index -= 1
         self.restore_derivation_step()
 
     def jump_to_derivation_step(self, i):

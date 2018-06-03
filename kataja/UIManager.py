@@ -392,7 +392,7 @@ class UIManager:
                     item.toggle_halo(True)
                 if ctrl.settings.get('show_c_command') and not self.active_embed:
                     if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
-                        dominated_synobjs = ctrl.forest.syntax.get_dominated_nodes(
+                        dominated_synobjs = ctrl.syntax.get_dominated_nodes(
                             item)
                         for synobj in dominated_synobjs:
                             node = ctrl.forest.get_node(synobj)

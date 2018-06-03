@@ -149,16 +149,16 @@ class SwitchSyntaxViewMode(KatajaAction):
         syntactic only
         :return:
         """
-        mode_name = ctrl.forest.syntax.next_display_mode()
+        mode_name = ctrl.syntax.next_display_mode()
         ctrl.forest.derivation_steps.restore_derivation_step()
         return mode_name
 
     def getter(self):
-        if ctrl.forest.syntax.display_modes:
-            return ctrl.forest.syntax.syntax_display_mode
+        if ctrl.syntax.display_modes:
+            return ctrl.syntax.syntax_display_mode
 
     def enabler(self):
-        return bool(ctrl.forest.syntax.display_modes)
+        return ctrl.syntax and bool(ctrl.syntax.display_modes)
 
 
 class DrawArrow(KatajaAction):

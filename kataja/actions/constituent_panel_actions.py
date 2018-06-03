@@ -291,7 +291,7 @@ class SetVisibleLabel(KatajaAction):
         if label_mode is None:
             label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
             syn_mode = ctrl.settings.get('syntactic_mode')
-            support_secondary = ctrl.forest.syntax.supports_secondary_labels
+            support_secondary = ctrl.syntax.supports_secondary_labels
             # some labels are not allowed in syn mode. If called without arguments, rotate to
             # next available mode.
             ok = False
