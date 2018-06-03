@@ -232,9 +232,12 @@ class DerivationPrinter:
     def build_kataja_tree_from_dnodes(self, dnodes):
         """ build the derivation tree that has parent as its root, and return it """
 
+        done = set()
+
         def raise_constituents(node, movers):
             neither_is_leaf = True
-            done = set()
+            node.poke('lexical_heads')
+            node.lexical_heads = []
             for part in node.parts:
                 if part not in done:
                     done.add(part)
@@ -251,6 +254,7 @@ class DerivationPrinter:
                     if mover_node is not node:
                         node.insert_part(mover_node, 0)
                         node.checked_features = (mover_feat, puller)
+                        node.poke('lexical_heads')
                         node.lexical_heads = list(mover_node.lexical_heads)
                         puller.check(mover_feat)
                         del movers[puller.name]
@@ -258,6 +262,7 @@ class DerivationPrinter:
                 else:
                     print('weird puller:', puller)
             elif len(node.parts) == 2:
+                node.poke('lexical_heads')
                 node.lexical_heads = list(node.parts[0].lexical_heads)
                 if neither_is_leaf:
                     node.label = '>'
@@ -265,6 +270,7 @@ class DerivationPrinter:
                 else:
                     node.label = '<'
             else:
+                node.poke('lexical_heads')
                 node.lexical_heads = [node]
                 if not node.label:
                     node.label = ' '.join([str(x) for x in node.inherited_features])
@@ -279,6 +285,8 @@ class DerivationPrinter:
                 build[key] = node
             node.parts = []
             node.checked_features = []
+            node.poke('lexical_heads')
+            node.lexical_heads = []
             for feature in node.features:
                 feature.checked_by = None
                 feature.checks = None

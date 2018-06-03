@@ -282,9 +282,17 @@ class ConstituentNode(Node):
             lines.append(f"Syntactic label: '{escape(self.get_syn_label())}'")
         if self.index:
             lines.append(f' Index: {repr(self.index)}')
-        heads = self.get_heads()
-        heads_str = ["itself" if h is self else f'{h.get_syn_label()}, {tt_style % h.uid}' for h
-                     in heads if h]
+        if self.syntactic_object:
+            heads = self.get_syntactic_heads()
+            heads_str = ["itself" if h is self.syntactic_object
+                         else f'{h.label}, {tt_style % h.uid}'
+                         for h in heads]
+        else:
+            heads = self.get_heads()
+            heads_str = ["itself" if h is self
+                         else f'{h.label}, {tt_style % h.uid}'
+                         for h in heads]
+
         heads_str = '; '.join(heads_str)
         if len(heads) == 1:
             lines.append(f'head: {heads_str}')
@@ -540,7 +548,7 @@ class ConstituentNode(Node):
                         res.append(node)
                     else:
                         print('missing head for %s, %s' % (self.syntactic_object,
-                                                           self.syntactic_object.lexical_heads))
+                                                           head.uid))
             return res
         return self.heads
 
@@ -563,17 +571,19 @@ class ConstituentNode(Node):
             raise ValueError
 
     def get_lexical_color(self):
+        if self.is_fading_out:
+            return 'content1'
         heads = self.get_heads()
         if heads and heads[0] is not self:
             if heads[0]:
                 return heads[0].get_lexical_color()
+
+        l = self.syntactic_object.label
+        if l:
+            c_id = sum([ord(x) for x in self.syntactic_object.label]) % 8 + 1
         else:
-            l = self.syntactic_object.label
-            if l:
-                c_id = sum([ord(x) for x in self.syntactic_object.label]) % 8 + 1
-            else:
-                c_id = 1
-            return 'accent' + str(c_id)
+            c_id = 1
+        return 'accent' + str(c_id)
 
     def get_color_key(self):
         """

@@ -201,7 +201,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         :param synobj:
         :return:
         """
-        #print('recursive create edges for feature: ', synobj, synobj.uid)
         fnode = forest.get_node(synobj)
         assert fnode, synobj
         if synobj.uid in done_nodes:
