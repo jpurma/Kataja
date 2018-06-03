@@ -625,6 +625,15 @@ class FeatureNode(Node):
         else:
             return 0
 
+    def compute_piece_width(self, width_function, left, right):
+        w = width_function(str(self))
+        w += 4
+        if left:
+            w += 8
+        elif right:
+            w += 6
+        return w
+
     def update_tooltip(self) -> None:
         """ Hovering status tip """
         synobj = self.syntactic_object

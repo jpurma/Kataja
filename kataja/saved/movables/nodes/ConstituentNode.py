@@ -117,6 +117,7 @@ class ConstituentNode(Node):
         self.autolabel = ''
         self.gloss = ''
 
+        self.use_lexical_color = False
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
@@ -596,11 +597,12 @@ class ConstituentNode(Node):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-
         if self.selected:
             base = ctrl.cm.selection()
         elif self.inverse_colors:
             base = ctrl.cm.paper()
+        elif self.use_lexical_color:
+            base = ctrl.cm.get(self.lexical_color())
         elif self.in_projections and self.in_projections[0].style == g.COLORIZE_PROJECTIONS:
             base = ctrl.cm.get(self.in_projections[0].color_key)
         else:
@@ -774,7 +776,7 @@ class ConstituentNode(Node):
             return ', '.join(feature_strings)
         return ''
 
-    def is_merging_features(self):
+    def get_merged_features(self):
         if self.syntactic_object:
             syn_feats = getattr(self.syntactic_object, 'checked_features', None)
             nodes = []
@@ -783,7 +785,6 @@ class ConstituentNode(Node):
                     n = ctrl.forest.get_node(f)
                     if n:
                         nodes.append(n)
-            print(nodes)
             return nodes
 
     def first_feature(self):
@@ -835,58 +836,58 @@ class ConstituentNode(Node):
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget=widget)
         shape = ctrl.settings.get('node_shape')
+        self.use_lexical_color = False
         if shape == g.FEATURE_SHAPE:
-            feats = self.is_merging_features()
-            if feats:
+            feats = self.get_merged_features()
+            if not feats:
+                self.use_lexical_color = True
+            else:
                 self.inverse_colors = True
-            #if not feats:
-            #    feats = self.first_feature()
-            #    if feats:
-            #        feats = [feats]
-            x = self.inner_rect.left()
-            y = self.inner_rect.top()
-            w = self.inner_rect.width() / (len(feats) or 1)
-            h = self.inner_rect.height()
-            for feat in feats:
-                #feat_color = feat.get_color_key()
-                left = feat.fshape if feat.valuing() else 0
-                right = feat.fshape if feat.is_needy() or feat.is_satisfied() else 0
-                color = feat.get_host_color()
-                feat.draw_feature_shape(painter, QtCore.QRectF(x, y, w, h), left, right, color)
-                painter.setPen(ctrl.cm.get('background1'))
-                x += w
+                x = self.inner_rect.left()
+                y = self.inner_rect.top()
+                h = self.inner_rect.height()
+                for feat in feats:
+                    left = feat.fshape if feat.valuing() else 0
+                    right = feat.fshape if feat.is_needy() or feat.is_satisfied() else 0
+                    color = feat.get_host_color()
+                    w = feat.compute_piece_width(self.label_object.string_width, left, right)
+                    if left:
+                        x -= 4
+                    feat.draw_feature_shape(painter, QtCore.QRectF(x, y, w, h), left, right, color)
+                    painter.setPen(ctrl.cm.get('background1'))
+                    x += w
 
-                # r = QtCore.QRectF(self.inner_rect)
-                # w = r.width()
-                # h = r.height()
-                # if w > h:
-                #     s = h
-                # else:
-                #     s = w
-                # c = r.center()
-                # r = QtCore.QRectF(0, 0, s, s)
-                # r.moveCenter(c)
-                # if ctrl.printing:
-                #     if not feat_color.endswith('tr'):
-                #         feat_color = feat_color + 'tr'
-                #     color = ctrl.cm.get(feat_color)
-                #     painter.setBrush(color)
-                # else:
-                #     gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
-                #     if ctrl.cm.light_on_dark():
-                #         color = ctrl.cm.get(feat_color)
-                #         gradient.setColorAt(1, QtCore.Qt.transparent)
-                #         gradient.setColorAt(0, color)
-                #     else:
-                #         if not feat_color.endswith('tr'):
-                #             feat_color = feat_color + 'tr'
-                #         color = ctrl.cm.get(feat_color)
-                #         gradient.setColorAt(0, QtCore.Qt.transparent)
-                #         gradient.setColorAt(1, color)
-                #     painter.setBrush(gradient)
-                #painter.setPen(QtCore.Qt.NoPen)
-                #painter.drawEllipse(r)
-                #painter.setPen(old_pen)
+                    # r = QtCore.QRectF(self.inner_rect)
+                    # w = r.width()
+                    # h = r.height()
+                    # if w > h:
+                    #     s = h
+                    # else:
+                    #     s = w
+                    # c = r.center()
+                    # r = QtCore.QRectF(0, 0, s, s)
+                    # r.moveCenter(c)
+                    # if ctrl.printing:
+                    #     if not feat_color.endswith('tr'):
+                    #         feat_color = feat_color + 'tr'
+                    #     color = ctrl.cm.get(feat_color)
+                    #     painter.setBrush(color)
+                    # else:
+                    #     gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
+                    #     if ctrl.cm.light_on_dark():
+                    #         color = ctrl.cm.get(feat_color)
+                    #         gradient.setColorAt(1, QtCore.Qt.transparent)
+                    #         gradient.setColorAt(0, color)
+                    #     else:
+                    #         if not feat_color.endswith('tr'):
+                    #             feat_color = feat_color + 'tr'
+                    #         color = ctrl.cm.get(feat_color)
+                    #         gradient.setColorAt(0, QtCore.Qt.transparent)
+                    #         gradient.setColorAt(1, color)
+                    #     painter.setBrush(gradient)
+                    #painter.setPen(QtCore.Qt.NoPen)
+                    #painter.drawEllipse(r)
+                    #painter.setPen(old_pen)
         elif self.has_visible_label():
             old_pen = painter.pen()
             painter.setPen(QtCore.Qt.NoPen)
