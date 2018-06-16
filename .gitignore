@@ -250,6 +250,7 @@ profiler_results.log
 ### Virtualenv
 
 venv/
+venv2/
 
 ### Pypy!
 pypy3/

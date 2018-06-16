@@ -306,11 +306,10 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     if syn_state.transferred:
         new_groups = []
-        if transferred:
-            for transfer_top in transferred:
-                this_group = rec_add_item(transfer_top, [])
-                new_groups.append(this_group)
-                all_new_items.update(set(this_group))
+        for transfer_top in syn_state.transferred:
+            this_group = rec_add_item(transfer_top, [])
+            new_groups.append(this_group)
+            all_new_items.update(set(this_group))
         # Put items to groups if they aren't there
         if new_groups:
             if not old_groups:

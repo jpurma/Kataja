@@ -317,6 +317,14 @@ class PaletteManager:
         data = self.default_themes.get(self.theme_key, None)
         return data and data.get('build', '') == 'random'
 
+    def accent_from_hue(self, hue):
+        h2 = hue * hue
+        h3 = h2 * hue
+        # polynomial approximation of how saturation and value are related to hue in Solarized
+        saturation = 0.0000132 * h3 - 0.0068 * h2 + 0.7769 * hue + 77.188
+        value = -7.07E-6 * h3 + 0.0042 * h2 - 0.6383 * hue + 88.615
+        return QColor.fromHsv(hue, min(255, saturation * 2.55), min(255, value * 2.55))
+
     def is_custom(self):
         return self.theme_key in self.custom_themes
 
@@ -383,7 +391,6 @@ class PaletteManager:
         self.get_qt_palette(cached=False)
         self.get_qt_palette_for_ui(cached=False)
         self.create_accent_palettes()
-
 
     def build_solarized(self, light=True):
         """

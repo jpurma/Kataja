@@ -688,12 +688,6 @@ class Node(Movable):
     def update_relations(self, parents, shape=None, position=None, checking_mode=None):
         pass
 
-    def get_style(self):
-        return {
-            'font_id': self.get_font_id(),
-            'color_key': self.get_color_key()
-        }
-
     # ## Font
     # #####################################################################
 

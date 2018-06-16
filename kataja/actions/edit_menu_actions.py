@@ -107,7 +107,8 @@ class Undo(KatajaAction):
         # visualisation mode
 
     def enabler(self):
-        return bool(ctrl.forest and ctrl.forest.undo_manager.can_undo())
+        return bool(ctrl.forest and ctrl.forest.undo_manager and
+                    ctrl.forest.undo_manager.can_undo())
 
 
 class Redo(KatajaAction):

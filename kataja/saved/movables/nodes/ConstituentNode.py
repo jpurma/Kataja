@@ -106,6 +106,7 @@ class ConstituentNode(Node):
         self.is_trace = False
         self.cached_sorted_feature_edges = []
         self._can_cascade_edges = None
+        self._lexical_color = None
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -127,6 +128,10 @@ class ConstituentNode(Node):
             self.toggle_halo(True)
         ctrl.forest.store(self)
 
+    def update_label(self):
+        self.get_lexical_color(refresh=True)
+        super().update_label()
+
     @staticmethod
     def create_synobj(label, forest):
         """ ConstituentNodes are wrappers for Constituents. Exact
@@ -141,6 +146,16 @@ class ConstituentNode(Node):
 
     def is_card(self):
         return self.label_object and self.label_object.is_card()
+
+    def get_font_id(self) -> str:
+        """
+        :return:
+        """
+        if self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
+            return ctrl.settings.get_node_setting('font_id', node_type=g.FEATURE_NODE)
+
+        return ctrl.settings.get_node_setting('font_id', node=self)
+
 
     def preferred_z_value(self):
         if self.is_card():
@@ -259,12 +274,8 @@ class ConstituentNode(Node):
         self.can_cascade_edges()
         super().reindex_edges()
 
-
     def update_node_shape(self):
         self.label_object.node_shape = ctrl.settings.get('node_shape')
-
-    def should_show_gloss_in_label(self) -> bool:
-        return ctrl.settings.get('lock_glosses_to_label') == 1
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
@@ -414,7 +425,7 @@ class ConstituentNode(Node):
         if l_html:
             html.append(l_html)
 
-        if self.gloss and self.should_show_gloss_in_label():
+        if self.gloss and ctrl.settings.get('lock_glosses_to_label') == 1:
             if html:
                 html.append('<br/>')
             html.append(as_html(self.gloss))
@@ -570,33 +581,51 @@ class ConstituentNode(Node):
         else:
             raise ValueError
 
-    def get_lexical_color(self):
+    def get_lexical_color(self, refresh=True):
         if self.is_fading_out:
-            return 'content1'
-        heads = self.get_heads()
-        if heads and heads[0] is not self:
-            if heads[0]:
-                return heads[0].get_lexical_color()
+            return ctrl.cm.get('content1')
+        if refresh or not self._lexical_color:
+            heads = self.get_heads()
+            if heads and heads[0] is not self:
+                if heads[0]:
+                    self._lexical_color = heads[0].get_lexical_color()
+                    return self._lexical_color
+            if self.syntactic_object:
+                l = ' '.join([str(f) for f in self.syntactic_object.features])
+            else:
+                l = self.label or ''
+            if l:
+                hue = hash(l) % 360
+            else:
+                hue = 1
+            self._lexical_color = ctrl.cm.accent_from_hue(hue)
+        return self._lexical_color
 
-        l = self.syntactic_object.label
-        if l:
-            c_id = sum([ord(x) for x in self.syntactic_object.label]) % 8 + 1
-        else:
-            c_id = 1
-        return 'accent' + str(c_id)
-
-    def get_color_key(self):
+    def contextual_color(self):
+        """ Drawing color that is sensitive to node's state
+        :return: QColor
         """
+        if self.selected:
+            base = ctrl.cm.selection()
+        else:
+            base = self.color
+        if self.drag_data:
+            return ctrl.cm.lighter(base)
+        elif ctrl.pressed is self:
+            return ctrl.cm.active(base)
+        elif self.hovering:
+            return ctrl.cm.hovering(base)
+        else:
+            return base
+
+    @property
+    def color(self) -> QtGui.QColor:
+        """ Helper property to directly get the inherited/local QColor
         :return:
         """
-        if 'color_key' in self.settings:
-            ck = self.settings['color_key']
-        elif self.use_lexical_color:
-            ck = self.get_lexical_color()
-        else:
-            ck = ctrl.settings.get_node_setting('color_key', node=self)
-        return ck
-
+        if self.use_lexical_color:
+            return self.get_lexical_color()
+        return ctrl.cm.get(self.get_color_key())
 
     # ### Features #########################################
 
@@ -769,6 +798,9 @@ class ConstituentNode(Node):
                         nodes.append(n)
             return nodes
 
+    def has_merged_features(self):
+        return self.syntactic_object and getattr(self.syntactic_object, 'checked_features', None)
+
     def first_feature(self):
         if self.syntactic_object and self.syntactic_object.features:
             return ctrl.forest.get_node(self.syntactic_object.features[0])
@@ -811,7 +843,7 @@ class ConstituentNode(Node):
 
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget=widget)
-        shape = ctrl.settings.get('node_shape')
+        shape = self.get_node_shape()
         self.use_lexical_color = False
         if shape == g.FEATURE_SHAPE:
             feats = self.get_merged_features()

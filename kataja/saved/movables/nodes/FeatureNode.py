@@ -486,7 +486,7 @@ class FeatureNode(Node):
     def get_host_color(self):
         h = self.get_host()
         if h:
-            return ctrl.cm.get(h.get_lexical_color())
+            return h.get_lexical_color()
 
     def get_color_key(self):
         """

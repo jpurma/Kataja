@@ -406,10 +406,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self.color_key:
             base = ctrl.cm.get(self.color_key)
-        elif self.alpha and hasattr(self.alpha, 'get_color_key'):
-            base = ctrl.cm.get(self.alpha.get_color_key())
+        elif self.alpha and hasattr(self.alpha, 'color'): #hasattr(self.alpha, 'get_color_key'):
+            base = self.alpha.color # ctrl.cm.get(self.alpha.get_color_key())
         elif self.end:
-            base = ctrl.cm.get(self.end.get_color_key())
+            base = self.end.color # get_color_key())
         else:
             base = ctrl.cm.get('content1')
 
