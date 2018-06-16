@@ -63,6 +63,23 @@ button:active {
 </body>
 <script src="../../webviewer/d3.min.js"></script>
 <script src="../../webviewer/d3-ellipse-force.js"></script>
+<!-- Data is loaded as .js files instead of JSON, because this way we
+  can run visualisations locally instead of having to set up a web server.
+
+  If you have means to save data as JSON, you can make it readable as .js
+  simply by adding a variable declaration before it: e.g. plugin writes
+  graph.json having:
+
+  {nodes: [...], links: [...]}
+
+  we'll make it proper javascript by prepending it with variable assignment:
+
+  const graph = {nodes: [...], links: [...]}
+
+  Then you just use the variables loaded from the file as containing the data
+  you need. Kataja plugins have examples of how to write prefix and then json data 
+  to one file with Python.   
+-->
 <script src="mg0.js"></script>
 <script src="parses.js"></script>-->
 <script>
