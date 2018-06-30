@@ -66,8 +66,11 @@ class BaseConstituent(SavedObject, IConstituent):
         self.features = features or []
         self.parts = parts or []
         self.inherited_features = features or []
-        self.checked_features = None
-        self.lexical_heads = list(lexical_heads) if lexical_heads else []
+        self.checked_features = []
+        self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
+        if features:
+            for feature in features:
+                feature.host = self
 
     def __str__(self):
         return str(self.label)
@@ -237,16 +240,14 @@ class BaseConstituent(SavedObject, IConstituent):
         for part in self.parts:
             new = part.copy()
             new_parts.append(new)
-        new_features = self.features.copy()
-        if self.checked_features:
-            a, b = self.checked_features
-            cf = a.copy(), b.copy()
-        else:
-            cf = None
+        #fmap = dict([(f.uid, f.copy()) for f in set(self.features + self.checked_features)])
+        #new_features = [fmap[f.uid] for f in self.features]
+        #checked_features = [fmap[f.uid] for f in self.checked_features]
+        new_features = [f.copy() for f in self.features]
         nc = self.__class__(label=self.label,
                             parts=new_parts,
-                            features=new_features,
-                            checked_features=cf)
+                            features=new_features)
+        #nc.checked_features = checked_features
         return nc
 
 

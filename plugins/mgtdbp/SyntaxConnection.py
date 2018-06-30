@@ -25,14 +25,15 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
-from syntax.SyntaxConnection import SyntaxConnection
+from syntax.SyntaxConnection import SyntaxConnection as KatajaSyntaxConnection
 from mgtdbp.Parser import load_grammar, load_grammar_from_file, Parser
 import kataja.globals as g
 
 CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
 
-class KSyntaxConnection(SyntaxConnection):
+
+class SyntaxConnection(KatajaSyntaxConnection):
     role = "SyntaxConnection"
     supports_editable_lexicon = True
     supports_secondary_labels = False

@@ -282,47 +282,54 @@ class ConstituentNode(Node):
         tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
         ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
 
-        lines = []
-        if self.is_trace:
-            lines.append("<strong>Trace</strong>")
-        elif self.is_leaf():
-            lines.append("<strong>Leaf constituent</strong>")
-            lines.append(f"Syntactic label: '{escape(self.get_syn_label())}'")
-        else:
-            lines.append("<strong>Set constituent</strong>")
-            lines.append(f"Syntactic label: '{escape(self.get_syn_label())}'")
+        lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
+                 f'uid: {tt_style % self.uid}',
+                 f'target position: {self.target_position}']
+
         if self.index:
             lines.append(f' Index: {repr(self.index)}')
-        if self.syntactic_object:
-            heads = self.get_syntactic_heads()
-            heads_str = ["itself" if h is self.syntactic_object
-                         else f'{h.label}, {tt_style % h.uid}'
-                         for h in heads]
-        else:
+        if not self.syntactic_object:
             heads = self.get_heads()
             heads_str = ["itself" if h is self
                          else f'{h.label}, {tt_style % h.uid}'
                          for h in heads]
-
-        heads_str = '; '.join(heads_str)
-        if len(heads) == 1:
-            lines.append(f'head: {heads_str}')
-        elif len(heads) > 1:
-            lines.append(f'heads: {heads_str}')
+            heads_str = '; '.join(heads_str)
+            if len(heads) == 1:
+                lines.append(f'head: {heads_str}')
+            elif len(heads) > 1:
+                lines.append(f'heads: {heads_str}')
 
         # x, y = self.current_scene_position
         # lines.append(f'pos: ({x:.1f},{y:.1f})')
 
         if self.use_adjustment:
             lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
-        lines.append(f'uid: {tt_style % self.uid}')
 
-        if self.syntactic_object:
-            lines.append(f'Inherited features: '
-                         f'{self.syntactic_object.inherited_features}')
-        if self.syntactic_object and getattr(self.syntactic_object, 'word_edge', None):
-            lines.append('--Word edge--')
-        lines.append('')
+        synobj = self.syntactic_object
+        if synobj:
+            lines.append('')
+            lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
+            lines.append(f'uid: {tt_style % synobj.uid}')
+            lines.append(f"label: '{escape(synobj.label)}'")
+            heads = synobj.get_heads()
+            heads_str = ["itself" if h is synobj
+                         else f'{h.label}, {tt_style % h.uid}'
+                         for h in heads]
+            heads_str = '; '.join(heads_str)
+            if len(heads) == 1:
+                lines.append(f'head: {heads_str}')
+            elif len(heads) > 1:
+                lines.append(f'heads: {heads_str}')
+
+            lines.append(f'inherited features: '
+                         f'{synobj.inherited_features}')
+            lines.append(f'checked features: '
+                         f'{synobj.checked_features}')
+            lines.append('')
+            if getattr(synobj, 'word_edge', None):
+                lines.append('--Word edge--')
+                lines.append('')
+
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
         else:
@@ -414,7 +421,7 @@ class ConstituentNode(Node):
                 l = self.syntactic_object.label
         elif label_text_mode == g.CHECKED_FEATURES:
             if self.syntactic_object:
-                if self.syntactic_object.parts:
+                if self.syntactic_object.parts and self.syntactic_object.checked_features:
                     l = ' '.join([str(x) for x in self.syntactic_object.checked_features])
                 else:
                     l = self.syntactic_object.label
@@ -558,8 +565,8 @@ class ConstituentNode(Node):
                     if node:
                         res.append(node)
                     else:
-                        print('missing head for %s, %s' % (self.syntactic_object,
-                                                           head.uid))
+                        print('missing head for CN %s, %s' % (self.syntactic_object.uid,
+                                                              head.uid))
             return res
         return self.heads
 
@@ -789,7 +796,7 @@ class ConstituentNode(Node):
 
     def get_merged_features(self):
         if self.syntactic_object:
-            syn_feats = getattr(self.syntactic_object, 'checked_features', None)
+            syn_feats = getattr(self.syntactic_object, 'checked_features', [])
             nodes = []
             if syn_feats:
                 for f in syn_feats:
@@ -799,7 +806,7 @@ class ConstituentNode(Node):
             return nodes
 
     def has_merged_features(self):
-        return self.syntactic_object and getattr(self.syntactic_object, 'checked_features', None)
+        return self.syntactic_object and getattr(self.syntactic_object, 'checked_features', [])
 
     def first_feature(self):
         if self.syntactic_object and self.syntactic_object.features:

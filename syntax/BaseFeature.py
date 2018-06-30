@@ -67,19 +67,23 @@ class BaseFeature(SavedObject):
         self.value = value
         self.sign = sign
         self.family = family
-        # this is not strictly necessary, but being able to inform feature who checked what helps
-        # presentation
+        # status of being checked, checking something and being in use could be deduced online,
+        # based on feature's surroundings, but it is cheaper to store them.
         self.checks = checks
         self.checked_by = checked_by
-        # feature strength was a concept in early minimalism, but I have repurposed it in my version
+        self.used = False
+        # Feature strength was a concept in early minimalism, but I have repurposed it in my version
         self.strong = strong
+        # If there are complex features, they should behave like constituents. Not used.
         self.parts = parts or []
+        # It is useful to have a fast route from a feature to lexical element where it is used.
+        self.host = None
 
     def has_value(self, prop):
         return self.value == prop
 
     def is_inactive(self):
-        return False
+        return self.used
 
     def can_satisfy(self):
         return not (self.unvalued() or self.checks or self.checked_by)
@@ -94,9 +98,12 @@ class BaseFeature(SavedObject):
         return self.sign == 'u' or self.sign == '=' or self.sign == '-'
 
     def would_satisfy(self, feature):
-        return isinstance(feature,
-                          BaseFeature) and feature.is_needy() and feature.name == self.name and \
-               self.can_satisfy()
+        return (
+                isinstance(feature, BaseFeature) and
+                feature.is_needy() and
+                feature.name == self.name and
+                self.can_satisfy()
+                )
 
     def check(self, other):
         self.checks = other
@@ -107,6 +114,11 @@ class BaseFeature(SavedObject):
             return self.value == other.value and self.sign == other.sign and \
                    self.name == other.name and self.family == other.family
         return False
+
+    def reset(self):
+        self.checks = None
+        self.checked_by = None
+        self.used = False
 
     def copy(self):
         return self.__class__(name=self.name, sign=self.sign, value=self.value,
@@ -129,7 +141,6 @@ class BaseFeature(SavedObject):
         return ":".join(s)
 
     def __hash__(self):
-        print('BaseFeature hash')
         return id(self)
 
     # ############## #
@@ -146,6 +157,8 @@ class BaseFeature(SavedObject):
     checks = SavedField("checks")
     checked_by = SavedField("checked_by")
     parts = SavedField("parts")
+    host = SavedField("host")
+    used = SavedField("used")
 
     @staticmethod
     def from_string(s):

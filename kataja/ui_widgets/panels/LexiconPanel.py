@@ -53,7 +53,7 @@ class LexiconPanel(Panel):
             self.lextext.clear()
         sentence = ctrl.syntax.get_editable_sentence()
         semantics = ctrl.syntax.get_editable_semantics()
-        self.sentence_text.setText(sentence)
+        self.sentence_text.setText(str(sentence))
         self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 

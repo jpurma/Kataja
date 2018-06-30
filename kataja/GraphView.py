@@ -119,8 +119,8 @@ class GraphView(QtWidgets.QGraphicsView):
             return
         if selection_mode:
             self.selection_mode = True
-            self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         else:
             self.selection_mode = False
-            self.view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        self._suppressed_drag_mode = self.view.dragMode()
+            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self._suppressed_drag_mode = self.dragMode()

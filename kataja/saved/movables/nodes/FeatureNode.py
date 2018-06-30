@@ -596,51 +596,113 @@ class FeatureNode(Node):
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
+        tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
+        ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
+
+        lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
+                 f'uid: {tt_style % self.uid}',
+                 f'target position: {self.target_position}']
+
+        if self.index:
+            lines.append(f' Index: {repr(self.index)}')
+        if not self.syntactic_object:
+            heads = self.get_heads()
+            heads_str = ["itself" if h is self
+                         else f'{h.label}, {tt_style % h.uid}'
+                         for h in heads]
+            heads_str = '; '.join(heads_str)
+            if len(heads) == 1:
+                lines.append(f'head: {heads_str}')
+            elif len(heads) > 1:
+                lines.append(f'heads: {heads_str}')
+
+        # x, y = self.current_scene_position
+        # lines.append(f'pos: ({x:.1f},{y:.1f})')
+
+        if self.use_adjustment:
+            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+
+        synobj = self.syntactic_object
+        if synobj:
+            lines.append('')
+            lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
+            lines.append(f'uid: {tt_style % synobj.uid}')
+            lines.append(f"label: '{escape(synobj.label)}'")
+            heads = synobj.get_heads()
+            heads_str = ["itself" if h is synobj
+                         else f'{h.label}, {tt_style % h.uid}'
+                         for h in heads]
+            heads_str = '; '.join(heads_str)
+            if len(heads) == 1:
+                lines.append(f'head: {heads_str}')
+            elif len(heads) > 1:
+                lines.append(f'heads: {heads_str}')
+
+            lines.append(f'inherited features: '
+                         f'{synobj.inherited_features}')
+            lines.append(f'checked features: '
+                         f'{synobj.checked_features}')
+            lines.append('')
+            if getattr(synobj, 'word_edge', None):
+                lines.append('--Word edge--')
+                lines.append('')
+
+        if self.selected:
+            lines.append(ui_style % 'Click to edit text, drag to move')
+        else:
+            lines.append(ui_style % 'Click to select, drag to move')
+        self.k_tooltip = '<br/>'.join(lines)
+
+    def update_tooltip(self) -> None:
+        """ Hovering status tip """
         synobj = self.syntactic_object
         tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
         ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
 
-        lines = []
-        lines.append("<strong>Feature:</strong>")
-        lines.append(f" name: '{self.name}' sign: '{self.sign}' value: '{self.value}' ")
-        if self.family:
-            lines.append(f"family: '{self.family}'")
-        host = self.get_host()
-        if host:
-            lines.append(f"belonging to: '{host}'")
-        if synobj:
-            if synobj.checks:
-                host = get_host_for_synobj(synobj.checks)
-                if host:
-                    lines.append(f"checks: '{synobj.checks}' of '{host}'")
-                else:
-                    lines.append(f"checks: '{synobj.checks}'")
-            if synobj.checked_by:
-                host = get_host_for_synobj(synobj.checked_by)
-                if host:
-                    lines.append(f"checked by: '{synobj.checked_by}' of '{host}'")
-                else:
-                    lines.append(f"checked by: '{synobj.checked_by}'")
-        else:
+        lines = ["<strong>FeatureNode:</strong>",
+                 f'uid: {tt_style % self.uid}',
+                 f'target position: {self.target_position}']
+        if self.use_adjustment:
+            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+
+        if not synobj:
+            lines.append(f"name: {repr(self.name)}")
+            lines.append(f"sign: {repr(self.sign)}")
+            lines.append(f"value: {repr(self.value)} ")
+            if self.family:
+                lines.append(f"family: '{self.family}'")
+            host = self.get_host()
+            if host:
+                lines.append(f"belonging to: '{host}'")
             if self.checks:
                 lines.append(f"checks: '{self.checks}' of '{self.checks.get_host()}'")
             if self.checked_by:
                 lines.append(f"checked by: '{self.checked_by}' of '{self.checked_by.get_host()}'")
-        lines.append("")
-        lines.append(f'uid: {tt_style % self.uid}')
-        if self.syntactic_object:
-            lines.append(f"synobj: '{self.syntactic_object}', "
-                         f"{tt_style % self.syntactic_object.uid}")
+        else:
+            lines.append("")
+            lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
+            lines.append(f"uid: {tt_style % self.syntactic_object.uid}")
+            lines.append(f"name: '{self.name}'")
+            lines.append(f"sign: '{self.sign}'")
+            lines.append(f"value: '{self.value}' ")
+            if self.family:
+                lines.append(f"family: '{self.family}'")
+            host = self.get_host()
+            if host:
+                lines.append(f"belonging to: '{host}'")
+
+            if synobj.checks:
+                lines.append(f"checks: '{synobj.checks}' ({tt_style % synobj.checks.uid})")
+            if synobj.checked_by:
+                lines.append(f"checked by: '{synobj.checked_by}' "
+                             f"({tt_style % synobj.checked_by.uid})")
+            lines.append(f"active: {not synobj.is_inactive()}")
+
         lines.append("")
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
         else:
             lines.append(ui_style % 'Click to select, drag to move')
-
-        if self.syntactic_object and self.syntactic_object.is_inactive():
-            lines.append("Feature is inactive.")
-        else:
-            lines.append("Feature is active.")
 
         self.k_tooltip = '<br/>'.join(lines)
 

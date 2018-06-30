@@ -94,12 +94,12 @@ var ellipseForce = function (padding, innerRepulsion, outerRepulsion) {
               // Strength of force that this ellipse eminates is modified by ratio of this bit 
               // to the ellipse's width. (It doesn't matter if we use width or height as reference
               // point)  
-              force_ratio1 = d1 / myW;
+              forceRatio1 = d1 / myW;
               // And same for the other ellipse:
               x2 = (otherW * otherH) / Math.sqrt(otherH * otherH + g2 * otherW * otherW);
               y2 = g * x2;
               d2 = Math.sqrt(x2 * x2 + y2 * y2);
-              force_ratio2 = d2 / otherW;
+              forceRatio2 = d2 / otherW;
               // now we can calculate the gap or overlap between two ellipses, and force ratio on 
               // how strongly they should push as average of their force_ratios
               dist = Math.sqrt(distX * distX + distY * distY);

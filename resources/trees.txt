@@ -1,3 +1,72 @@
+[.S [.S-TPC-1
+    [.NP-SBJ
+     [.NP
+       [.NP [.DT A ] [.NN form ] ]
+       [.PP [.IN of ] [.NP [.NN asbestos ] ] ] ]
+     [.RRC
+       [.ADVP-TMP [.RB once ] ]
+       [.VP
+         [.VBN used ]
+         [.VP|<NP-S-CLR>
+           [.NP [.-NONE- * ] ]
+           [.S-CLR
+             [.NP-SBJ [.-NONE- * ] ]
+             [.VP
+               [.TO to ]
+               [.VP
+                 [.VB make ]
+                 [.NP
+                   [.NNP Kent ]
+                   [.NP|<NN-NNS>
+                     [.NN cigarette ]
+                     [.NNS filters ] ] ] ] ] ] ] ] ] ]
+    [.VP
+     [.VBZ has ]
+     [.VP
+       [.VBN caused ]
+       [.NP
+         [.NP
+           [.DT a ]
+           [.NP|<JJ-NN> [.JJ high ] [.NN percentage ] ] ]
+         [.NP|<PP-PP-LOC>
+           [.PP
+             [.IN of ]
+             [.NP [.NN cancer ] [.NNS deaths ] ] ]
+           [.PP-LOC
+             [.IN among ]
+             [.NP
+               [.NP [.DT a ] [.NN group ] ]
+               [.PP
+                 [.IN of ]
+                 [.NP
+                   [.NP [.NNS workers ] ]
+                   [.RRC
+                   [.VP
+                       [.VBN exposed ]
+                       [.VP|<NP-PP-CLR-ADVP-TMP>
+                         [.NP [.-NONE- * ] ]
+                         [.VP|<PP-CLR-ADVP-TMP>
+                           [.PP-CLR
+                             [.TO to ]
+                             [.NP [.PRP it ] ] ]
+                           [.ADVP-TMP
+                             [.NP
+                               [.QP
+                                 [.RBR more ]
+                                 [.QP|<IN-CD>
+                                   [.IN than ]
+                                   [.CD 30 ] ] ]
+                               [.NNS years ] ]
+                             [.IN ago ] ] ] ] ] ] ] ] ] ] ] ] ] ] ] [.S|<,-NP-SBJ-VP-.>
+    [., , ]
+    [.S|<NP-SBJ-VP-.>
+     [.NP-SBJ [.NNS researchers ] ]
+     [.S|<VP-.>
+       [.VP
+         [.VBD reported ]
+         [.SBAR [.-NONE- 0 ] [.S [.-NONE- *T*-1 ] ] ] ]
+       [.. . ] ] ] ] ]
+
 
  [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
   [.T\\$[$+past$]$\\$[$NOM$]$ ]

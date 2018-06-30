@@ -88,7 +88,6 @@ class INodeToKatajaConstituent:
             cnode = self.parsernodes_to_constituentnodes(inode)
         elif isinstance(inode, ITextNode):
             cnode = self.textnode_to_constituentnode(inode)
-        self.forest.projection_manager.guess_heads(cnode)
         return cnode
 
     def textnode_to_constituentnode(self, tnode):

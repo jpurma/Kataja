@@ -34,7 +34,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         words = [self.label]
         for node in self.members:
             if node.syntactic_object:
-                checked_features = getattr(node.syntactic_object, 'checked_features', None)
+                checked_features = getattr(node.syntactic_object, 'checked_features', [])
                 if checked_features and isinstance(checked_features, tuple):
                     checked_feat, valuing_feat = checked_features
                     feat_node = ctrl.forest.get_node(checked_feat)
