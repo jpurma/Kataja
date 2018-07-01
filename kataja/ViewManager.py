@@ -25,13 +25,9 @@
 import math
 
 import PyQt5.QtCore as QtCore
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
-from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl, prefs
-import kataja.globals as g
-from kataja.utils import time_me
 from kataja.globals import ViewUpdateReason
+from itertools import chain
 
 class ViewManager:
     """ ViewportManager is responsible for deciding what part of the GraphScene should

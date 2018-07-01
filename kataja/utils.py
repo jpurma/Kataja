@@ -198,6 +198,16 @@ def save_features(obj, saved, d):
     return key
 
 
+def find_free_filename(fixed_part, extension, counter=0):
+    """ Generate file names until free one is found """
+    if not counter:
+        fpath = fixed_part + extension
+    else:
+        fpath = fixed_part + str(counter) + extension
+    if os.path.exists(fpath):
+        fpath = find_free_filename(fixed_part, extension, counter + 1)
+    return fpath
+
 
 # def linearize(node):
 # res = []

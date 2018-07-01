@@ -24,6 +24,13 @@ class TopBarButtons(QtWidgets.QFrame):
                                               size=36,
                                               action='play_animations').to_layout(layout)
 
+        self.record_button = TwoStateIconButton(ui_key='record_button',
+                                                parent=self,
+                                                pixmap0=qt_prefs.pause_pixmap,
+                                                pixmap1=qt_prefs.play_pixmap,
+                                                size=24,
+                                                action='toggle_recording').to_layout(layout)
+
         self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label',
                                                parent=self,
                                                text0='Free drawing',

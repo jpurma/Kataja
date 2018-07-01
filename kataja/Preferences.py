@@ -85,15 +85,19 @@ class Preferences(object):
 
     def __init__(self, running_environment):
         self.save_key = 'preferences'
-        self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles',
-                           'Performance', 'Plugins', 'Advanced']
+        self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles', 'Performance',
+                           'Plugins', 'Advanced']
 
         self.temp_color_theme = ''
         self.color_theme = 'solarized_lt'
-        self._color_theme_ui = {'tab': 'General', 'special': 'color_themes',
-                               'label': 'Default colors',
-                               'help': 'Color theme used for both trees and editor',
-                               'on_change': 'update_colors', 'order': 10}
+        self._color_theme_ui = {
+            'tab': 'General',
+            'special': 'color_themes',
+            'label': 'Default colors',
+            'help': 'Color theme used for both trees and editor',
+            'on_change': 'update_colors',
+            'order': 10
+        }
         self.hsv = None
 
         self.syntactic_mode = False
@@ -101,225 +105,325 @@ class Preferences(object):
         self.available_styles = ['plain', 'fancy']
 
         self.touch = True
-        self._touch_ui = {'tab': 'General', 'order': 20, 'label': 'Touch-friendly UI',
-                          'help': 'Draggable items are larger'}
+        self._touch_ui = {
+            'tab': 'General',
+            'order': 20,
+            'label': 'Touch-friendly UI',
+            'help': 'Draggable items are larger'
+        }
 
         self.gloss_nodes = True
-        self._gloss_nodes_ui = {'tab': 'General', 'order': 30}
+        self._gloss_nodes_ui = {
+            'tab': 'General',
+            'order': 30
+        }
 
         self.feature_nodes = True
-        self._feature_nodes_ui = {'tab': 'General', 'order': 31,
-                                  'help': 'Draw glosses or features as separate nodes, or include '
-                                          'them as lines in constituent nodes.'}
+        self._feature_nodes_ui = {
+            'tab': 'General',
+            'order': 31,
+            'help': 'Draw glosses or features as separate nodes, or include '
+                    'them as lines in constituent nodes.'
+        }
 
         self.fonts = running_environment.fonts
-        self._fonts_ui = {'tab': 'General', 'special': 'fonts'}
+        self._fonts_ui = {
+            'tab': 'General',
+            'special': 'fonts'
+        }
 
         self.large_ui_text = False
-        self._large_ui_text_ui = {'tab': 'General',
-                                  'label': 'Big UI',
-                                  'help': 'Force user interface to use at least 14pt font.',
-                                  'on_change': 'resize_ui_font', 'order': 40}
+        self._large_ui_text_ui = {
+            'tab': 'General',
+            'label': 'Big UI',
+            'help': 'Force user interface to use at least 14pt font.',
+            'on_change': 'resize_ui_font',
+            'order': 40
+        }
 
         self.auto_pan_select = False
-        self._auto_pan_select_ui = {'tab': 'General',
-                                    'label': 'Switch to pan / select based on zoom level',
-                                    'help': 'Change mouse mode to Move when zoomed in and Select '
-                                            'when zoomed out',
-                                    'order': 42}
+        self._auto_pan_select_ui = {
+            'tab': 'General',
+            'label': 'Switch to pan / select based on zoom level',
+            'help': 'Change mouse mode to Move when zoomed in and Select '
+                    'when zoomed out',
+            'order': 42
+        }
 
         self.zoom_to_center = True
-        self._zoom_to_center_ui = {'tab': 'General',
-                                   'label': 'Zoom to center',
-                                   'help': 'Zoom aims to middle of visible region or to '
-                                           'position of mouse pointer',
-                                   'order': 43}
+        self._zoom_to_center_ui = {
+            'tab': 'General',
+            'label': 'Zoom to center',
+            'help': 'Zoom aims to middle of visible region or to '
+                    'position of mouse pointer',
+            'order': 43
+        }
 
         self.visualization = 'Balanced grid-based tree'
-        self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
-                                  'help': 'Default visualization for new trees.',
-                                  'order': 10,
-                                  'on_change': 'update_visualization'}
+        self._visualization_ui = {
+            'tab': 'Drawing',
+            'special': 'visualizations',
+            'help': 'Default visualization for new trees.',
+            'order': 10,
+            'on_change': 'update_visualization'
+        }
 
         self.thickness_multiplier = 2
-        self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6), 'order': 50, 'help':
-                                      'If the visualization draws some edges as thicker, '
-                                      'this defines how much thicker.'}
+        self._thickness_multiplier = {
+            'tab': 'Drawing',
+            'range': (0.5, 6),
+            'order': 50,
+            'help': 'If the visualization draws some edges as thicker, '
+                    'this defines how much thicker.'
+        }
 
         self.node_shape = 0
-        self._node_shape_ui = {'tab': 'Drawing',
-                                'choices': [(0, 'Normal'),
-                                            (1, 'Box'),
-                                            (2, 'Bracketed'), (3, 'Card'), (4, 'Feature')],
-                                'label': 'Node shapes',
-                                'help': 'Overall shape when drawing a constituent node. '
-                                        'Visualizations may override this.',
-                                'order': 30}
-
+        self._node_shape_ui = {
+            'tab': 'Drawing',
+            'choices': [(0, 'Normal'), (1, 'Box'), (2, 'Bracketed'), (3, 'Card'), (4, 'Feature')],
+            'label': 'Node shapes',
+            'help': 'Overall shape when drawing a constituent node. '
+                    'Visualizations may override this.',
+            'order': 30
+        }
 
         self.projection_highlights = False
-        self._projection_highlights_ui = {'tab': 'Drawing', 'label': 'Highlight projections',
-                                          'help': 'Draw thick lines from projecting heads',
-                                          'order': 31}
+        self._projection_highlights_ui = {
+            'tab': 'Drawing',
+            'label': 'Highlight projections',
+            'help': 'Draw thick lines from projecting heads',
+            'order': 31
+        }
 
         self.use_magnets = 3
-        self._use_magnets_ui = {'tab': 'Drawing', 'choices':
-                                [(0, 'Aim at center of node'),
-                                 (1, 'Magnets at top and bottom'),
-                                 (2, 'Align magnets to parent')],
-                                'help': 'Branches can link to "magnets" in node outlines, '
-                                        'and magnet placement may be affected by parent node',
-                                'order': 40}
+        self._use_magnets_ui = {
+            'tab': 'Drawing',
+            'choices': [(0, 'Aim at center of node'), (1, 'Magnets at top and bottom'),
+                        (2, 'Align magnets to parent')],
+            'help': 'Branches can link to "magnets" in node outlines, '
+                    'and magnet placement may be affected by parent node',
+            'order': 40
+        }
         self.feature_check_display = 1
-        self._feature_check_display_ui = {'tab': 'Drawing', 'choices':
-                                [(0, "Don't show checking"),
-                                 (1, 'Features plug into each other'),
-                                 (2, 'Features are connected by line')],
-                                'help': "Features can 'check out' matching features. This can be "
-                                        "explicitly shown or left as implicit.",
-                                'order': 32}
-
+        self._feature_check_display_ui = {
+            'tab': 'Drawing',
+            'choices': [(0, "Don't show checking"), (1, 'Features plug into each other'),
+                        (2, 'Features are connected by line')],
+            'help': "Features can 'check out' matching features. This can be "
+                    "explicitly shown or left as implicit.",
+            'order': 32
+        }
 
         self.edge_width = 22  # 20
-        self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 20}
+        self._edge_width_ui = {
+            'tab': 'Drawing',
+            'range': (0, 60),
+            'order': 20
+        }
 
         self.edge_height = 22
-        self._edge_height_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 21,
-                                'help': 'Default width and height for branches'}
+        self._edge_height_ui = {
+            'tab': 'Drawing',
+            'range': (0, 60),
+            'order': 21,
+            'help': 'Default width and height for branches'
+        }
 
         self.spacing_between_trees = 3
-        self._spacing_between_trees_ui = {'tab': 'Drawing', 'range': (0, 4),
-                                          'help': 'When there are several trees algorithms try to '
-                                                  'use multiples of "edge width" as padding '
-                                                  'between trees.'}
+        self._spacing_between_trees_ui = {
+            'tab': 'Drawing',
+            'range': (0, 4),
+            'help': 'When there are several trees algorithms try to '
+                    'use multiples of "edge width" as padding '
+                    'between trees.'
+        }
 
         self.show_node_labels = True
-        #self._show_node_labels_ui = {'tab': 'Drawing',
+        # self._show_node_labels_ui = {'tab': 'Drawing',
         #                             'help': "Nodes can have their own labels defined. "
         #                                     "These are aliases that are not used for"
         #                                     "syntactic computation but may help readability"
         #                                     "Either show them and syntactic labels or show "
         #                                     "only syntactic labels. "}
         self.label_text_mode = 2
-        self._label_text_mode_ui = {'tab': 'Drawing',
-                                    'choices': [(SYN_LABELS, 'Syntactic labels'),
-                                            (SYN_LABELS_FOR_LEAVES, 'Syntactic labels for leaves'),
-                                            (CHECKED_FEATURES, 'Checked features'),
-                                            (NODE_LABELS, 'Node labels or syntactic labels'),
-                                            (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
-                                            (NO_LABELS, 'No labels for constituents')],
-                                    'label': 'Node label text',
-                                    'help': 'Should the tree show freely editable labels (node '
-                                            'labels) or labels used in syntactic computation. ',
-                                    'order': 2}
+        self._label_text_mode_ui = {
+            'tab': 'Drawing',
+            'choices': [(SYN_LABELS, 'Syntactic labels'),
+                        (SYN_LABELS_FOR_LEAVES, 'Syntactic labels for leaves'),
+                        (CHECKED_FEATURES, 'Checked features'),
+                        (NODE_LABELS, 'Node labels or syntactic labels'),
+                        (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
+                        (NO_LABELS, 'No labels for constituents')],
+            'label': 'Node label text',
+            'help': 'Should the tree show freely editable labels (node '
+                    'labels) or labels used in syntactic computation. ',
+            'order': 2
+        }
 
         self.linearization_mode = 0
-        self._linearization_mode_ui = {'tab': 'Syntax',
-                                       'choices': [(IMPLICIT_ORDERING,
-                                                    'Implicit ordering (use lists)'),
-                                                   (NO_LINEARIZATION,
-                                                    'Show as unordered sets, disable linearization'),
-                                                   (RANDOM_NO_LINEARIZATION,
-                                                    'Show as sets, shuffle on redraw'),
-                                                   (USE_LINEARIZATION,
-                                                    'Use provided linearization algorithm')
-                                                   ]}
+        self._linearization_mode_ui = {
+            'tab': 'Syntax',
+            'choices': [(IMPLICIT_ORDERING, 'Implicit ordering (use lists)'),
+                        (NO_LINEARIZATION, 'Show as unordered sets, disable linearization'),
+                        (RANDOM_NO_LINEARIZATION, 'Show as sets, shuffle on redraw'),
+                        (USE_LINEARIZATION, 'Use provided linearization algorithm')]
+        }
 
         self.lock_glosses_to_label = 0
-        self._lock_glosses_to_label_ui = {'tab': 'Drawing',
-                                          'label': 'Lock glosses to labels',
-                                          'help': "Glosses are drawn as part of node's label "
-                                                  "complex or as independent entities",
-                                          'order': 21}
+        self._lock_glosses_to_label_ui = {
+            'tab': 'Drawing',
+            'label': 'Lock glosses to labels',
+            'help': "Glosses are drawn as part of node's label "
+                    "complex or as independent entities",
+            'order': 21
+        }
 
         self.feature_positioning = 2
-        self._feature_positioning_ui = {'tab': 'Drawing',
-                                        'choices': [(0, 'Hanging free'),
-                                            (1, 'Vertical column'),
-                                            (2, 'Horizontal row'),
-                                            (3, 'Two columns')],
-                                        'label': 'Feature arrangement',
-                                        'help': 'How features are arranged below nodes.',
-                                        'order': 28}
+        self._feature_positioning_ui = {
+            'tab': 'Drawing',
+            'choices': [(0, 'Hanging free'), (1, 'Vertical column'), (2, 'Horizontal row'),
+                        (3, 'Two columns')],
+            'label': 'Feature arrangement',
+            'help': 'How features are arranged below nodes.',
+            'order': 28
+        }
         self.show_c_command = True
         self.hide_edges_if_nodes_overlap = True
 
         self.trace_strategy = 0
-        self._trace_strategy_ui = {'tab': 'Drawing',
-                                   'choices': [(0, 'Use multidomination'),
-                                               (1, 'Make traces'),
-                                               (2, 'Show traces clustered near original')],
-                                   'label': 'Trace strategy',
-                                   'help': 'How to display moved constituents',
-                                   'order': 29}
+        self._trace_strategy_ui = {
+            'tab': 'Drawing',
+            'choices': [(0, 'Use multidomination'), (1, 'Make traces'),
+                        (2, 'Show traces clustered near original')],
+            'label': 'Trace strategy',
+            'help': 'How to display moved constituents',
+            'order': 29
+        }
         self.last_key_colors = {}
 
         self.show_semantics = False
-        self._show_semantics_ui = {'tab': 'Syntax',
-                                   'label': 'Show semantics',
-                                   'help': '(If the plugin supports them)',
-                                   'order': 3}
+        self._show_semantics_ui = {
+            'tab': 'Syntax',
+            'label': 'Show semantics',
+            'help': '(If the plugin supports them)',
+            'order': 3
+        }
 
         self.single_click_editing = False
-        self._single_click_editing_ui = {'tab': 'General', 'label': 'Single click editing',
-                                         'help': 'Selecting a node triggers editing its label'}
+        self._single_click_editing_ui = {
+            'tab': 'General',
+            'label': 'Single click editing',
+            'help': 'Selecting a node triggers editing its label'
+        }
 
         self.dpi = 300
-        self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',
-                        'help': 'Dots Per Inch setting when exporting images', 'order': 20}
+        self._dpi_ui = {
+            'tab': 'Printing',
+            'choices': [72, 150, 300, 450, 600],
+            'label': 'DPI',
+            'help': 'Dots Per Inch setting when exporting images',
+            'order': 20
+        }
 
         self.print_format = 'pdf'
-        self._print_format_ui = {'tab': 'Printing', 'choices': ['pdf', 'png'], 'order': 10}
+        self._print_format_ui = {
+            'tab': 'Printing',
+            'choices': ['pdf', 'png'],
+            'order': 10
+        }
 
         self.print_file_path = None
-        self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder', 'order': 30,
-                                    'label': 'Quick print path'}
+        self._print_file_path_ui = {
+            'tab': 'Printing',
+            'type': 'folder',
+            'order': 30,
+            'label': 'Quick print path'
+        }
 
         self.print_file_name = 'kataja_print'
-        self._print_file_name_ui = {'tab': 'Printing', 'type': 'text', 'order': 31,
-                                    'label': 'Quick print file name',
-                                    'help': 'Quick print (Ctrl-p) will print a snapshot of the '
-                                            'current tree into a file, file names will be '
-                                            'generated as "katajaprint.pdf", "katajaprint1.pdf", '
-                                            '"katajaprint2.pdf"... and so on.'}
+        self._print_file_name_ui = {
+            'tab': 'Printing',
+            'type': 'text',
+            'order': 31,
+            'label': 'Quick print file name',
+            'help': 'Quick print (Ctrl-p) will print a snapshot of the '
+                    'current tree into a file, file names will be '
+                    'generated as "katajaprint.pdf", "katajaprint1.pdf", '
+                    '"katajaprint2.pdf"... and so on.'
+        }
 
         self.include_gloss_to_print = True
-        self._include_gloss_to_print_ui = {'tab': 'Printing'}
+        self._include_gloss_to_print_ui = {
+            'tab': 'Printing'
+        }
+
+        self.max_animation_frames = 400
+        self._max_animation_frames_ui = {
+            'tab': 'Printing',
+            'min': 20,
+            'max': 1000,
+            'help': 'Gif animations store drawing frames in memory before compiling them into an '
+                    'animation. Too long animations may cause out of memory problems.'
+        }
 
         self.binary_branching = False
-        self._binary_branching_ui = {'tab': 'Syntax'}
+        self._binary_branching_ui = {
+            'tab': 'Syntax'
+        }
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = deepcopy(master_styles['fancy'])
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
         self.nodes = {}
-        self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
+        self._nodes_ui = {
+            'tab': 'Node styles',
+            'special': 'nodes'
+        }
 
         self.plugins_path = ''
         self.active_plugin_name = ''
-        self._active_plugin_name_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
+        self._active_plugin_name_ui = {
+            'tab': 'Plugins',
+            'special': 'plugins',
+            'label': 'Plugins'
+        }
 
         self.FPS = 30
-        self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
+        self._FPS_ui = {
+            'tab': 'Performance',
+            'range': (10, 60),
+            'label': 'Target FPS'
+        }
         self._fps_in_msec = 1000 / self.FPS
 
         self.move_frames = 10
-        self._move_frames_ui = {'tab': 'Performance', 'range': (0, 30),
-                                'on_change': 'prepare_easing_curve', 'label': 'Animation frames'}
+        self._move_frames_ui = {
+            'tab': 'Performance',
+            'range': (0, 30),
+            'on_change': 'prepare_easing_curve',
+            'label': 'Animation frames'
+        }
         self.curve = 'InOutQuad'
-        self._curve_ui = {'tab': 'Performance', 'choices': curves,
-                                 'on_change': 'prepare_easing_curve',
-                          'help': 'Easing curve used to compute the intermediate steps in '
-                                  'animations. Some options are just silly.'}
+        self._curve_ui = {
+            'tab': 'Performance',
+            'choices': curves,
+            'on_change': 'prepare_easing_curve',
+            'help': 'Easing curve used to compute the intermediate steps in '
+                    'animations. Some options are just silly.'
+        }
 
         self.move_effect = False
-        self._move_effect_ui = {'tab': 'Performance',
-                                'help': "Highlight moving nodes. "}
+        self._move_effect_ui = {
+            'tab': 'Performance',
+            'help': "Highlight moving nodes. "
+        }
         self.glow_effect = False
-        self._glow_effect_ui = {'tab': 'Performance',
-                                "help": "Glow effect for selected nodes. Artistic effect for dark "
-                                        "backgrounds, but may look messy on print."}
+        self._glow_effect_ui = {
+            'tab': 'Performance',
+            "help": "Glow effect for selected nodes. Nice effect for dark "
+                    "backgrounds, but may look messy on print."
+        }
 
         # self.blender_app_path =
         # '/Applications/blender.app/Contents/MacOS/blender'
@@ -333,14 +437,15 @@ class Preferences(object):
 
         self.gloss_strategy = 'no'
         # 'message', 'no', 'linearize', 'manual'
-        self._gloss_strategy_ui = {'tab': 'Drawing', 'choices':
-                                [('message', 'Message provided by parser'),
-                                 ('linearize', 'Linearisation of current trees'),
-                                 ('manual', 'Your title/gloss'),
-                                 ('no', 'No title'),],
-                                'help': 'Forests can draw additional text for e.g. gloss, '
-                                        'linearisation or parser output',
-                                'order': 40}
+        self._gloss_strategy_ui = {
+            'tab': 'Drawing',
+            'choices': [('message', 'Message provided by parser'),
+                        ('linearize', 'Linearisation of current trees'),
+                        ('manual', 'Your title/gloss'), ('no', 'No title'), ],
+            'help': 'Forests can draw additional text for e.g. gloss, '
+                    'linearisation or parser output',
+            'order': 40
+        }
         self.log_level = 10
 
     def import_node_classes(self, classes):
@@ -546,7 +651,6 @@ class QtPreferences:
         self.play_pixmap = None
         self.pause_pixmap = None
 
-
     def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
         qt requirements that are difficult to get around.
@@ -650,7 +754,6 @@ class QtPreferences:
         self.play_pixmap = pixmap('play72.png')
         self.pause_pixmap = pixmap('pause72.png')
 
-
     def update(self, preferences, running_environment, log):
         """
 
@@ -697,8 +800,8 @@ class QtPreferences:
         :param running_environment:
         """
         self.fonts = {}
-        asana_math = self.fontdb.addApplicationFont(running_environment.resources_path +
-                                                    "Asana-Math.otf")
+        asana_math = self.fontdb.addApplicationFont(
+            running_environment.resources_path + "Asana-Math.otf")
         if asana_math == -1:
             log.warning("Failed to load 'Asana-Math.otf' from %s, if it is not provided by "
                         "system, things can get ugly.")
@@ -716,11 +819,7 @@ class QtPreferences:
         main.setHintingPreference(QtGui.QFont.PreferNoHinting)
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
-        self.font_bracket_height = font.height()
-        # print('get_font metrics: ', get_font)
-        # print(self.font_space_width, self.font_bracket_width,
-        # self.font_bracket_height)
-        #self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
+        self.font_bracket_height = font.height()  # print('get_font metrics: ', get_font)  # print(self.font_space_width, self.font_bracket_width,  # self.font_bracket_height)  # self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 
     def toggle_large_ui_font(self, enabled, fonts_dict):
         ui_font = self.fonts[UI_FONT]
@@ -733,7 +832,6 @@ class QtPreferences:
         else:
             ui_font.setPointSize(fonts_dict[UI_FONT][2])
             console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
-
 
     def get_font(self, name) -> QtGui.QFont:
         """

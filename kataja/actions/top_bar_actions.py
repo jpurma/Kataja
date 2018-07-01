@@ -66,6 +66,32 @@ class PlayOrPause(KatajaAction):
         return ctrl.play
 
 
+class ToggleRecording(KatajaAction):
+    k_action_uid = 'toggle_recording'
+    k_command = 'Record as gif'
+    k_shortcut = 'Ctrl+r'
+    k_undoable = False
+    k_checkable = True
+    k_tooltip = '''
+    <p><b>Record:</b> Record next actions (anything that causes redrawing) as a gif animation. </p>
+    <p><b>Stop:</b> Finish recording. </p>
+    '''
+
+    def prepare_parameters(self, args, kwargs):
+        return [not ctrl.graph_scene.recording], {}
+
+    def method(self, value):
+        if value or not ctrl.graph_scene.recording:
+            ctrl.main.recorder.start_recording()
+            ctrl.graph_scene.recording = True
+        else:
+            ctrl.main.recorder.stop_recording()
+            ctrl.graph_scene.recording = False
+
+    def getter(self):
+        return ctrl.graph_scene.recording
+
+
 class SwitchEditMode(KatajaAction):
     k_action_uid = 'switch_edit_mode'
     k_command = 'Switch editing mode'
