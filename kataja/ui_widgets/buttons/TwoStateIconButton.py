@@ -4,14 +4,17 @@ from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.utils import colored_image
 
+
 class TwoStateIconButton(PushButtonBase):
 
     permanent_ui = True
 
-    def __init__(self, pixmap0=None, pixmap1=None, **kwargs):
+    def __init__(self, pixmap0=None, pixmap1=None, color0=None, color1=None, **kwargs):
         PushButtonBase.__init__(self, **kwargs)
         self.pixmap0 = pixmap0
         self.pixmap1 = pixmap1
+        self.color0 = color0
+        self.color1 = color1
         self.icon0 = None
         self.icon1 = None
         self.setCheckable(True)
@@ -50,8 +53,9 @@ class TwoStateIconButton(PushButtonBase):
         to update the overlay color.
         :return:
         """
-        c = ctrl.cm.ui()
-        image0 = colored_image(c, self.pixmap0)
+        c0 = self.color0 or ctrl.cm.ui()
+        image0 = colored_image(c0, self.pixmap0)
         self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
-        image1 = colored_image(c, self.pixmap1)
+        c1 = self.color1 or ctrl.cm.ui()
+        image1 = colored_image(c1, self.pixmap1)
         self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))

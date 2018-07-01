@@ -153,7 +153,7 @@ else:
         # and install the main script as such
         scripts=[mainscript], )
 
-setup(name="Kataja", install_requires=['python-qt5'], **extra_options)
+setup(name="Kataja", install_requires=['python-qt5', 'Pillow'], **extra_options)
 ################################################################
 #                   Post-setup repairs                         #
 ################################################################

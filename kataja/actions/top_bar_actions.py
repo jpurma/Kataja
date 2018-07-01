@@ -81,12 +81,15 @@ class ToggleRecording(KatajaAction):
         return [not ctrl.graph_scene.recording], {}
 
     def method(self, value):
+        self.autoplay = False
         if value or not ctrl.graph_scene.recording:
             ctrl.main.recorder.start_recording()
             ctrl.graph_scene.recording = True
+            return 'Start recording'
         else:
             ctrl.main.recorder.stop_recording()
             ctrl.graph_scene.recording = False
+            return 'Stop recording'
 
     def getter(self):
         return ctrl.graph_scene.recording

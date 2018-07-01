@@ -352,6 +352,17 @@ class Preferences(object):
                     '"katajaprint2.pdf"... and so on.'
         }
 
+        self.animation_file_name = 'kataja_clip'
+        self._animation_file_name_ui = {
+            'tab': 'Printing',
+            'type': 'text',
+            'order': 32,
+            'label': 'Animation clip file name',
+            'help': 'Recording a clip (Ctrl-r) creates a gif animation of actions.'
+                    'File names will be '
+                    'generated as "kataja_clip.gif", "kataja_clip1.gif"... and so on.'
+        }
+
         self.include_gloss_to_print = True
         self._include_gloss_to_print_ui = {
             'tab': 'Printing'
@@ -650,6 +661,8 @@ class QtPreferences:
         self.feature_hanging_icon = None
         self.play_pixmap = None
         self.pause_pixmap = None
+        self.record_pixmap = None
+        self.stop_pixmap = None
 
     def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
@@ -753,6 +766,8 @@ class QtPreferences:
         self.feature_hanging_icon = icon('feature_hanging.png')
         self.play_pixmap = pixmap('play72.png')
         self.pause_pixmap = pixmap('pause72.png')
+        self.record_pixmap = pixmap('record48.png')
+        self.stop_pixmap = pixmap('stop36.png')
 
     def update(self, preferences, running_environment, log):
         """

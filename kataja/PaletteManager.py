@@ -156,6 +156,7 @@ class PaletteManager:
 
         # Create some defaults
         self.activate_color_theme(self.default, try_to_remember=False)
+        self.red = c(220, 50, 47)
 
         # Keep an eye on relevant changes
         ctrl.add_watcher(self, 'document_changed')

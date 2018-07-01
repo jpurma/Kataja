@@ -26,8 +26,9 @@ class TopBarButtons(QtWidgets.QFrame):
 
         self.record_button = TwoStateIconButton(ui_key='record_button',
                                                 parent=self,
-                                                pixmap0=qt_prefs.pause_pixmap,
-                                                pixmap1=qt_prefs.play_pixmap,
+                                                pixmap0=qt_prefs.record_pixmap,
+                                                pixmap1=qt_prefs.stop_pixmap,
+                                                color0=ctrl.cm.red,
                                                 size=24,
                                                 action='toggle_recording').to_layout(layout)
 
