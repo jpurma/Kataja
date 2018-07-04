@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtGui
 from kataja.KatajaAction import KatajaAction, MediatingAction
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.globals import DOCUMENT, PREFS, ViewUpdateReason
-from kataja.singletons import ctrl, log
+from kataja.singletons import ctrl, log, prefs
 
 
 # ==== Class variables for KatajaActions:
@@ -78,21 +78,29 @@ class ToggleRecording(KatajaAction):
     '''
 
     def prepare_parameters(self, args, kwargs):
-        return [not ctrl.graph_scene.recording], {}
+        if not ctrl.main.recorder.recording:
+            start = True
+            kwargs = {'width': prefs.animation_width,
+                      'height': prefs.animation_height,
+                      'every_nth': prefs.animation_skip_frames,
+                      'gif': prefs.animation_gif,
+                      'webp': prefs.animation_webp}
+        else:
+            start = False
+            kwargs = {}
+        return [start], kwargs
 
-    def method(self, value):
+    def method(self, start, width=640, height=480, every_nth=1, gif=True, webp=False):
         self.autoplay = False
-        if value or not ctrl.graph_scene.recording:
-            ctrl.main.recorder.start_recording()
-            ctrl.graph_scene.recording = True
-            return 'Start recording'
+        if start:
+            ctrl.main.recorder.start_recording(width, height, every_nth, gif, webp)
+            return 'Started recording.'
         else:
             ctrl.main.recorder.stop_recording()
-            ctrl.graph_scene.recording = False
-            return 'Stop recording'
+            return 'Finished recording.'
 
     def getter(self):
-        return ctrl.graph_scene.recording
+        return ctrl.main.recorder and ctrl.main.recorder.recording
 
 
 class SwitchEditMode(KatajaAction):

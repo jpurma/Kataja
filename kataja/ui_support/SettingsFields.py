@@ -10,10 +10,11 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
     continuous_action_slot = 'valueChanged'
     action_slot = 'sliderReleased'
 
-    def __init__(self, field_name, parent, decimals=True):
+    def __init__(self, field_name, parent, decimals=True, range=None):
         QtWidgets.QHBoxLayout.__init__(self)
         self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, parent)
         self.decimals = decimals
+        self.min, self.max = range or (-10, 10)
         self.field_name = field_name
         self.now_changing = False
         self.on_change_method = None
@@ -21,10 +22,13 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
         if decimals:
             self.spinbox = QtWidgets.QDoubleSpinBox(parent)
             self.spinbox.setDecimals(1)
+            self.slider.setRange(self.min * 10, self.max * 10)
             self.slider.setValue(value * 10)
         else:
             self.spinbox = QtWidgets.QSpinBox(parent)
+            self.slider.setRange(self.min, self.max)
             self.slider.setValue(value)
+        self.spinbox.setRange(self.min, self.max)
         self.spinbox.setValue(value)
         self.slider.setTickInterval(10)
         self.spinbox.setAccelerated(True)
@@ -35,18 +39,6 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
 
     def buddy_target(self):
         return self.slider
-
-    def setRange(self, min, max):
-        """
-
-        :param min:
-        :param max:
-        """
-        self.spinbox.setRange(min, max)
-        if self.decimals:
-            self.slider.setRange(min * 10, max * 10)
-        else:
-            self.slider.setRange(min, max)
 
     def slider_changed(self, value):
         """
@@ -226,10 +218,12 @@ class FieldBuilder:
 
         else:
             field_type = d.get('type', '')
+            f_range = d.get('range', None)
             if not field_type:
                 if d.get('choices', ''):
                     field_type = 'selection'
-                elif isinstance(value, float):
+                elif isinstance(value, float) or f_range and (isinstance(f_range[0], float) or
+                                                              isinstance(f_range[1], float)):
                     field_type = 'float_slider'
                 elif isinstance(value, bool):
                     field_type = 'checkbox'
@@ -237,24 +231,16 @@ class FieldBuilder:
                     field_type = 'int_slider'
                 elif isinstance(value, dict):
                     return
-            if field_type == 'int_slider':
-                if 'range' in d:
-                    minv, maxv = d['range']
+            if field_type == 'int_slider' or field_type == 'float_slider':
+                if f_range:
+                    minv, maxv = f_range
                 elif value < -10 or value > 10:
                     minv, maxv = -200, 200
                 else:
                     minv, maxv = -10, 10
-                f = DoubleSlider(key, widget, decimals=False)
-                f.setRange(minv, maxv)
-            elif field_type == 'float_slider':
-                if 'range' in d:
-                    minv, maxv = d['range']
-                elif value < -10 or value > 10:
-                    minv, maxv = -200, 200
-                else:
-                    minv, maxv = -10, 10
-                f = DoubleSlider(key, widget, decimals=True)
-                f.setRange(minv, maxv)
+                f = DoubleSlider(key, widget,
+                                 decimals=field_type == 'float_slider',
+                                 range=(minv, maxv))
             elif field_type == 'checkbox':
                 f = CheckBox(key, widget)
             elif field_type == 'selection':

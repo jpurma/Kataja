@@ -61,7 +61,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.timer_counter = 0
         self._fade_steps = 0
         self._fade_steps_list = []
-        self.recording = False
         # self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
 
@@ -497,7 +496,5 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.stop_animations()
             ctrl.items_moving = False
         ctrl.view_manager.update_viewport(ViewUpdateReason.ANIMATION_STEP)
-        if self.recording:
+        if ctrl.main.recorder.recording:
             ctrl.main.recorder.record_frame()
-            if ctrl.main.recorder.stopped:
-                self.recording = False

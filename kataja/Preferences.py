@@ -85,8 +85,8 @@ class Preferences(object):
 
     def __init__(self, running_environment):
         self.save_key = 'preferences'
-        self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles', 'Performance',
-                           'Plugins', 'Advanced']
+        self._tab_order = ['General', 'Drawing', 'Printing', 'Animation', 'Syntax', 'Node styles',
+                           'Performance', 'Plugins', 'Advanced']
 
         self.temp_color_theme = ''
         self.color_theme = 'solarized_lt'
@@ -169,9 +169,9 @@ class Preferences(object):
         }
 
         self.thickness_multiplier = 2
-        self._thickness_multiplier = {
+        self._thickness_multiplier_ui = {
             'tab': 'Drawing',
-            'range': (0.5, 6),
+            'range': (0.5, 6.0),
             'order': 50,
             'help': 'If the visualization draws some edges as thicker, '
                     'this defines how much thicker.'
@@ -354,7 +354,7 @@ class Preferences(object):
 
         self.animation_file_name = 'kataja_clip'
         self._animation_file_name_ui = {
-            'tab': 'Printing',
+            'tab': 'Animation',
             'type': 'text',
             'order': 32,
             'label': 'Animation clip file name',
@@ -363,18 +363,50 @@ class Preferences(object):
                     'generated as "kataja_clip.gif", "kataja_clip1.gif"... and so on.'
         }
 
+        self.animation_width = 640
+        self._animation_width_ui = {
+            'tab': 'Animation',
+            'range': (200, 2048),
+            'order': 41
+        }
+        self.animation_height = 400
+        self._animation_height_ui = {
+            'tab': 'Animation',
+            'range': (200, 2048),
+            'order': 42,
+            'help': 'Animation file size grows very fast with width and height.'
+        }
+        self.animation_skip_frames = 2
+        self._animation_skip_frames_ui = {
+            'tab': 'Animation',
+            'range': (1, 4),
+            'order': 43,
+            'help': 'Include only every nth frame.'
+        }
+        self.animation_gif = True
+        self._animation_gif_ui = {
+            'label': 'Save as GIF',
+            'tab': 'Animation',
+            'order': 44,
+        }
+        self.animation_webp = False
+        self._animation_webp_ui = {
+            'label': 'Save as WebP',
+            'tab': 'Animation',
+            'order': 45,
+        }
+        self.animation_max_frames = 400
+        self._animation_max_frames_ui = {
+            'tab': 'Animation',
+            'range': (20, 1000),
+            'order': 46,
+            'help': 'Gif animations store drawing frames in memory before compiling them into an '
+                    'animation. Too long animations may cause out of memory problems.'
+        }
+
         self.include_gloss_to_print = True
         self._include_gloss_to_print_ui = {
             'tab': 'Printing'
-        }
-
-        self.max_animation_frames = 400
-        self._max_animation_frames_ui = {
-            'tab': 'Printing',
-            'min': 20,
-            'max': 1000,
-            'help': 'Gif animations store drawing frames in memory before compiling them into an '
-                    'animation. Too long animations may cause out of memory problems.'
         }
 
         self.binary_branching = False

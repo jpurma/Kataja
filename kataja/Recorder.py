@@ -33,22 +33,28 @@ from PIL import Image
 import tempfile
 import subprocess
 
-GIF = True
-WEBP = False
-TARGET_SIZE = (640, 480)
-
 
 class Recorder:
     def __init__(self, scene):
         self.scene = scene
-        self.stopped = True
+        self.recording = False
         self.frame_count = 0
+        self.width = 640
+        self.height = 480
+        self.every_nth = 1
         self.frames = []
+        self.gif = True
+        self.webp = False
 
-    def start_recording(self):
+    def start_recording(self, width=640, height=480, every_nth=1, gif=True, webp=False):
         self.frame_count = 0
-        self.stopped = False
+        self.recording = True
         self.frames = []
+        self.width = width
+        self.height = height
+        self.every_nth = int(every_nth) or 1
+        self.gif = gif
+        self.webp = webp
         for node in ctrl.forest.nodes.values():
             node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
         # record initial frame before the animations start
@@ -56,11 +62,12 @@ class Recorder:
 
     def stop_recording(self):
         outfile = prefs.animation_file_name
-        self.stopped = True
+        self.recording = False
         max_w = 0
         max_h = 0
         self.frames = [self.frames[0]] + self.frames + [self.frames[-1]]
         log.info(f'  Writing {len(self.frames)} animation frames...')
+        fname = ''
         with tempfile.TemporaryDirectory() as tmpdirname:
             for i, image in enumerate(self.frames):
                 w = image.width()
@@ -88,7 +95,7 @@ class Recorder:
                     resized.append(background)
                 else:
                     resized.append(image.quantize(64))
-            if GIF:
+            if self.gif:
                 fname = outfile + '.gif'
                 resized[0].save(fname,
                                 save_all=True,
@@ -96,7 +103,8 @@ class Recorder:
                                 delay=0.1,
                                 loop=0,
                                 optimize=True)
-            if WEBP:
+                log.info(f'  Gif recorded as {repr(fname)}')
+            if self.webp:
                 fname_w = outfile + '.webp'
                 resized[0].save(fname_w,
                                 save_all=True,
@@ -104,12 +112,35 @@ class Recorder:
                                 delay=0.1,
                                 loop=0,
                                 optimize=True)
-        log.info(f'  Done. Written to {repr(fname)}')
-        if GIF:
-            self.try_gifsicle(fname)
+                log.info(f'  WebP recorded as {repr(fname_w)}')
+        if self.gif:
+            self.try_optimising_with_gifsicle(fname)
         self.frames = []
 
-    def try_gifsicle(self, gifname):
+    def record_frame(self):
+        if self.frame_count % self.every_nth == 0:
+            source = ctrl.main.view_manager.print_rect()
+            self.frames.append(self._write_frame(source))
+        self.frame_count += 1
+        if len(self.frames) == prefs.animation_max_frames:
+            log.info('  Stopping recording, max frame count reached '
+                     f'({prefs.animation_max_frames}).')
+            self.stop_recording()
+
+    def _write_frame(self, source):
+        target = QtCore.QRectF(0, 0, self.width, self.height)
+        image = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
+        image.fill(ctrl.cm.paper())
+        painter = QtGui.QPainter()
+        painter.begin(image)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        self.scene.render(painter, source=source, target=target)
+        painter.end()
+        return image
+
+    @staticmethod
+    def try_optimising_with_gifsicle(gifname):
         commands = ['gifsicle', './gifsicle']
         command = None
         for candidate in commands:
@@ -123,24 +154,3 @@ class Recorder:
             ofile.close()
             if result.returncode == 0:
                 log.info(f'Writing optimized gif as o_{gifname}')
-
-    def record_frame(self):
-        source = ctrl.main.view_manager.print_rect()
-        self.frames.append(self._write_frame(source))
-        self.frame_count += 1
-        if prefs.max_animation_frames == self.frame_count:
-            log.info('  Stopping recording, max frame count reached '
-                     f'({prefs.max_animation_frames}).')
-            self.stop_recording()
-
-    def _write_frame(self, source):
-        target = QtCore.QRectF(0, 0, TARGET_SIZE[0], TARGET_SIZE[1])
-        image = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
-        image.fill(ctrl.cm.paper())
-        painter = QtGui.QPainter()
-        painter.begin(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-        self.scene.render(painter, source=source, target=target)
-        painter.end()
-        return image
