@@ -26,15 +26,16 @@
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from PyQt5.QtCore import QByteArray, QBuffer, QIODevice
 
 from kataja.singletons import ctrl, prefs, log
 from PIL import Image
 
-import io
+import tempfile
+import subprocess
 
 GIF = True
 WEBP = False
+TARGET_SIZE = (640, 480)
 
 
 class Recorder:
@@ -50,39 +51,43 @@ class Recorder:
         self.frames = []
         for node in ctrl.forest.nodes.values():
             node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+        # record initial frame before the animations start
+        self.record_frame()
 
     def stop_recording(self):
         outfile = prefs.animation_file_name
         self.stopped = True
-        images = []
         max_w = 0
         max_h = 0
+        self.frames = [self.frames[0]] + self.frames + [self.frames[-1]]
         log.info(f'  Writing {len(self.frames)} animation frames...')
-        for image in self.frames:
-            ba = QByteArray()
-            buffer = QBuffer(ba)
-            buffer.open(QIODevice.WriteOnly)
-            image.save(buffer, "PNG")
-            pil_image = Image.open(io.BytesIO(ba))
-            images.append(pil_image)
-            w, h = pil_image.size
-            if w > max_w:
-                max_w = w
-            if h > max_h:
-                max_h = h
-        if images:
-            log.info('  Resizing and adjusting...')
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            for i, image in enumerate(self.frames):
+                w = image.width()
+                h = image.height()
+                if w > max_w:
+                    max_w = w
+                if h > max_h:
+                    max_h = h
+                image.save(f'{tmpdirname}/buffer{i}.png')
             resized = []
-            for image in images:
+            count = len(self.frames)
+            self.frames = []
+            log.info('  Loading and resizing images...')
+            for i in range(0, count):
+                image = Image.open(f'{tmpdirname}/buffer{i}.png')
                 w, h = image.size
-                iw = max_w / w
-                ih = max_h / h
-                r = iw if iw < ih else ih
-                new_image = image.resize((int(r * w), int(r * h)))
-                background = Image.new('RGBA', (max_w, max_h), ctrl.cm.paper().getRgb())
-                background.paste(new_image)
-                background = background.quantize(64)
-                resized.append(background)
+                if w != max_w or h != max_h:
+                    iw = max_w / w
+                    ih = max_h / h
+                    r = iw if iw < ih else ih
+                    new_image = image.resize((int(r * w), int(r * h)))
+                    background = Image.new('RGBA', (max_w, max_h), ctrl.cm.paper().getRgb())
+                    background.paste(new_image)
+                    background = background.quantize(64)
+                    resized.append(background)
+                else:
+                    resized.append(image.quantize(64))
             if GIF:
                 fname = outfile + '.gif'
                 resized[0].save(fname,
@@ -92,15 +97,32 @@ class Recorder:
                                 loop=0,
                                 optimize=True)
             if WEBP:
-                fname = outfile + '.webp'
-                resized[0].save(fname,
+                fname_w = outfile + '.webp'
+                resized[0].save(fname_w,
                                 save_all=True,
                                 append_images=resized[1:],
                                 delay=0.1,
                                 loop=0,
                                 optimize=True)
         log.info(f'  Done. Written to {repr(fname)}')
+        if GIF:
+            self.try_gifsicle(fname)
         self.frames = []
+
+    def try_gifsicle(self, gifname):
+        commands = ['gifsicle', './gifsicle']
+        command = None
+        for candidate in commands:
+            completed = subprocess.run(['which', candidate])
+            if completed.returncode == 0:
+                command = candidate
+                break
+        if command:
+            ofile = open('o_' + gifname, 'wb')
+            result = subprocess.run([command, '-O3', gifname], stdout=ofile, stderr=subprocess.PIPE)
+            ofile.close()
+            if result.returncode == 0:
+                log.info(f'Writing optimized gif as o_{gifname}')
 
     def record_frame(self):
         source = ctrl.main.view_manager.print_rect()
@@ -112,12 +134,13 @@ class Recorder:
             self.stop_recording()
 
     def _write_frame(self, source):
-        image = QtGui.QImage(source.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
-        image.fill(QtCore.Qt.transparent)
+        target = QtCore.QRectF(0, 0, TARGET_SIZE[0], TARGET_SIZE[1])
+        image = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
+        image.fill(ctrl.cm.paper())
         painter = QtGui.QPainter()
         painter.begin(image)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-        self.scene.render(painter, source=source)
+        self.scene.render(painter, source=source, target=target)
         painter.end()
         return image
