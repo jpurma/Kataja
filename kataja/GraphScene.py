@@ -487,6 +487,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.timer_counter += 1
         if self.heat > 0.1:
             self.heat *= 0.96
+            #print('heat: ', self.heat)
+        else:
+            self.stop_animations()
         if ctrl.pressed:
             return
 

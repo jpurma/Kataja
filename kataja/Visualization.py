@@ -86,6 +86,9 @@ class BaseVisualization:
         """
         pass
 
+    def has_free_movers(self):
+        return True
+
     def validate_node_shapes(self):
         ls = ctrl.settings.get('node_shape')
         if ls in self.banned_node_shapes:
@@ -449,6 +452,7 @@ class BaseVisualization:
 
     def gravity_force(self, node, is_alone):
         if is_alone:
+            print('using gravity: ', self.gravity)
             return 0, self.gravity
         return 0, 0
 
@@ -482,10 +486,10 @@ class BaseVisualization:
             y_push = 0
 
         # Add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
-        gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
+        #gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
 
-        x_vel = (x_pull + x_push) * heat + gx
-        y_vel = (y_pull + y_push) * heat + gy
+        x_vel = (x_push + x_pull) * heat
+        y_vel = (y_push + y_pull) * heat
 
         # Add random shuffle for high-energy situations
         x_vel, y_vel = self.speed_noise(node, x_vel, y_vel)

@@ -168,7 +168,6 @@ class Node(Movable):
                 ctrl.forest.nodes_from_synobs[synobj.uid] = self
             elif old and not synobj:
                 del ctrl.forest.nodes_from_synobs[old.uid]
-        self.update_label()
 
     def __lt__(self, other):
         return self.label < other.label

@@ -51,7 +51,6 @@ class FreeDrawing:
         data, e.g. caches or helper dicts, but nothing here is saved.
         """
         self.f = forest
-        self.edge_types = set()
         self.node_types = set()
         self._marked_for_deletion = set()
         self.label_rotator = 0
@@ -347,7 +346,6 @@ class FreeDrawing:
             for edge_up in start_node.edges_up:
                 if edge_up.end_links_to == edge:
                     edge_up.end_links_to = None
-
         if end_node:
             for edge_down in end_node.edges_down:
                 if edge_down.start_links_to == edge:
@@ -363,6 +361,7 @@ class FreeDrawing:
                 if edge in start_node.edges_up:  # shouldn't happen
                     start_node.poke('edges_up')
                     start_node.edges_up.remove(edge)
+
             if end_node:
                 if edge in end_node.edges_down:  # shouldn't happen
                     end_node.poke('edges_down')
@@ -370,22 +369,13 @@ class FreeDrawing:
                 if edge in end_node.edges_up:
                     end_node.poke('edges_up')
                     end_node.edges_up.remove(edge)
+
         # -- ui_support elements --
         ctrl.ui.remove_ui_for(edge)
         # -- dictionaries --
         if edge.uid in self.edges:
             self.poke('edges')
             del self.edges[edge.uid]
-        # -- check if it is last of its type --
-        found = False
-        my_type = edge.edge_type
-        if my_type in self.edge_types:
-            for e in self.edges.values():
-                if e.edge_type == my_type:
-                    found = True
-                    break
-            if not found:
-                self.edge_types.remove(my_type)
         # -- scene --
         self.f.remove_from_scene(edge, fade_out=fade)
         # -- undo stack --

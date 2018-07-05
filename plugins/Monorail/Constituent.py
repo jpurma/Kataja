@@ -71,16 +71,6 @@ class Constituent(BaseConstituent or object):
         else:
             return self.inherited_features
 
-    def fast_find_movable(self, c):
-        c += 1
-        if self.parts:
-            left, right = self.parts
-            if (not left.edge): # and left.parts:
-                right.edge = True
-                return right, c
-            return left.fast_find_movable(c)
-        return None, c
-
     def restore(self, done):
         if self in done:
             return None

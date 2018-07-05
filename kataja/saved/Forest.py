@@ -440,7 +440,6 @@ class Forest(SavedObject):
         elif isinstance(item, Edge):
             self.poke('edges')
             self.edges[item.uid] = item
-            self.free_drawing.edge_types.add(item.edge_type)
         elif isinstance(item, Arrow):
             self.poke('arrows')
             self.arrows[item.uid] = item
@@ -594,6 +593,7 @@ class Forest(SavedObject):
         if self.visualization:
             print('draw visualization')
             self.visualization.prepare_draw()
+            self.free_movers = self.visualization.has_free_movers()
             prev_trees = []
             for tree_top in self.trees:
                 self.visualization.draw_tree(tree_top)
@@ -898,7 +898,7 @@ class Forest(SavedObject):
                     if self.should_we_draw(n, node):
                         w += recursive_width(n)
             self.width_map[node.uid] = w
-            node.update_label()
+            #node.update_label()
             return w
 
         self.width_map = {}

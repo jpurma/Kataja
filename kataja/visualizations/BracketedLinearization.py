@@ -65,6 +65,12 @@ class BracketedLinearization(BaseVisualization):
             node.physics_x = False
             node.physics_y = False
 
+    def has_free_movers(self):
+        for node in self.forest.nodes.values():
+            if node.isVisible() and (node.physics_x or node.physics_y):
+                return True
+        return True
+
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges
         :param node: Node

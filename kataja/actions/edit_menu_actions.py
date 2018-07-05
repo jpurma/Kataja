@@ -127,4 +127,5 @@ class Redo(KatajaAction):
         # visualisation mode
 
     def enabler(self):
-        return bool(ctrl.forest and ctrl.forest.undo_manager.can_redo())
+        return bool(ctrl.forest and ctrl.forest.undo_manager and
+                    ctrl.forest.undo_manager.can_redo())

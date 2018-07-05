@@ -229,6 +229,8 @@ class Controller:
 
         :param update_ui:
         """
+        if not self.selected:
+            return
         for obj in self.selected:
             obj.update_selection_status(False)
         self.selected = []
@@ -239,6 +241,8 @@ class Controller:
 
         :param objs:
         """
+        if objs == self.selected:
+            return
         had_objs = bool(self.selected)
         if had_objs:
             for obj in self.selected:
@@ -264,11 +268,14 @@ class Controller:
             return
         if not isinstance(objs, abc.Sequence):
             objs = [objs]
+        found = False
         for obj in objs:
             if obj not in self.selected:
                 self.selected.append(obj)
                 obj.update_selection_status(True)
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+                found = True
+        if found:
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def remove_from_selection(self, objs):
         """
@@ -277,13 +284,20 @@ class Controller:
         """
         if not objs:
             return
-        if not isinstance(objs, abc.Sequence):
-            objs = [objs]
-        for obj in objs:
-            if obj in self.selected:
-                self.selected.remove(obj)
-                obj.update_selection_status(False)
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+        found = False
+        if isinstance(objs, abc.Sequence):
+            for obj in objs:
+                if obj in self.selected:
+                    self.selected.remove(obj)
+                    obj.update_selection_status(False)
+                    found = True
+        else:
+            if objs in self.selected:
+                self.selected.remove(objs)
+                objs.update_selection_status(False)
+                found = True
+        if found:
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def get_selected_nodes(self, of_type=None):
         nclass = self.main.classes.base_node_class

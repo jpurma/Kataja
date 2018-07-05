@@ -166,6 +166,12 @@ class SpirallingTree(BaseVisualization):
             node.physics_x = False
             node.physics_y = False
 
+    def has_free_movers(self):
+        for node in self.forest.nodes.values():
+            if node.isVisible() and (node.physics_x or node.physics_y):
+                return True
+        return True
+
     @caller
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes

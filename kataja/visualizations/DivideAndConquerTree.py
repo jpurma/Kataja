@@ -28,7 +28,7 @@ import time
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.saved.Movable import Movable
-from kataja.singletons import prefs
+from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BalancedTree import BalancedTree
 from kataja.utils import time_me
 
@@ -71,6 +71,12 @@ class DivideAndConquerTree(BalancedTree):
         else:
             node.physics_x = True
             node.physics_y = True
+
+    def has_free_movers(self):
+        for node in self.forest.nodes.values():
+            if node.isVisible() and (node.physics_x or node.physics_y):
+                return True
+        return True
 
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents

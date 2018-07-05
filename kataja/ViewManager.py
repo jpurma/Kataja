@@ -281,24 +281,37 @@ class ViewManager:
         rect_left = 6000
         rect_right = -6000
         empty = True
-        current = ctrl.forest.free_movers
+        use_current_position = ctrl.forest.free_movers
         for node in ctrl.forest.nodes.values():
             if not node:
                 continue
-            if (not current) and node.parentItem():
+            if (not use_current_position) and node.parentItem():
                 continue
             if not node.isVisible():
                 continue
             if node.is_fading_out:
                 continue
             empty = False
-            left, top, right, bottom = node.scene_rect_coordinates(current)
+            left, top, right, bottom = node.scene_rect_coordinates(use_current_position)
+            #if left < rect_left:
+            #    leftmost = node
+            #if right > rect_right:
+            #    rightmost = node
+            #if top < rect_top:
+            #    topmost = node
+            #if bottom > rect_bottom:
+            #    bottommost = node
             rect_left = left if left < rect_left else rect_left
             rect_right = right if right > rect_right else rect_right
             rect_top = top if top < rect_top else rect_top
             rect_bottom = bottom if bottom > rect_bottom else rect_bottom
         if empty:
             return QtCore.QRectF(0, 0, 320, 240)
+        #print('use_current_position:', use_current_position)
+        #print('leftmost:', leftmost, leftmost.scene_rect_coordinates(use_current_position))
+        #print('rightmost:', rightmost, rightmost.scene_rect_coordinates(use_current_position))
+        #print('topmost:', topmost, topmost.scene_rect_coordinates(use_current_position))
+        #print('bottommost:', bottommost, bottommost.scene_rect_coordinates(use_current_position))
         sm = ctrl.forest.semantics_manager
         if sm.visible:
             for item in sm.all_items:

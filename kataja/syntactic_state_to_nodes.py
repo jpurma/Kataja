@@ -42,6 +42,7 @@ def syntactic_state_to_nodes(forest, syn_state):
     :param syn_state: SyntaxState -instance
     :return:
     """
+    t = time.time()
     free_drawing = forest.free_drawing
 
     if forest.syntax.display_modes:
@@ -264,7 +265,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         if node:
             free_drawing.delete_node(node, touch_edges=False, fade=animate)
     for key in edge_keys_to_validate:
-        edge = forest.edges.get(key, None)  # most of these should be deleted already by prev.
+        edge = forest.edges.get(key, None)
         if edge:
             free_drawing.delete_edge(edge, fade=animate)
 

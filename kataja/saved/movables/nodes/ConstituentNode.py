@@ -567,6 +567,7 @@ class ConstituentNode(Node):
                     else:
                         print('missing head for CN %s, %s' % (self.syntactic_object.uid,
                                                               head.uid))
+                        raise hell
             return res
         return self.heads
 

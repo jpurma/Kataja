@@ -27,7 +27,7 @@ from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
 from syntax.SyntaxConnection import SyntaxConnection as KatajaSyntaxConnection
 from Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
-    parse_from_recipe, parse
+    parse_from_recipe, parse, flatten
 import kataja.globals as g
 
 CONSTITUENT_TREE = 0
@@ -103,6 +103,8 @@ class SyntaxConnection(KatajaSyntaxConnection):
         list_to_monorail(self.sentence, [], recipe)
         self.lexicon = deduce_lexicon_from_recipe(recipe)
         parse_from_recipe(recipe, self.lexicon, ctrl.forest)
+        #flat_sentence = flatten(self.sentence)
+        #parse(flat_sentence, self.lexicon, ctrl.forest)
 
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1

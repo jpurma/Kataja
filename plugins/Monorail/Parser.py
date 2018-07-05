@@ -164,7 +164,7 @@ def deduce_lexicon_from_recipe(recipe):
     lexicon = {}
     for lexem in recipe:
         if lexem == '|':
-            node, cl = tree.fast_find_movable(0)
+            node, cl = fast_find_movable(tree, 0)
             checked_feat, feat = come_up_with_a_reason(node, tree)
             # features have to be used in certain order:
             for old_feat in feat.host.features:
@@ -192,13 +192,37 @@ def deduce_lexicon_from_recipe(recipe):
     return lexicon
 
 
+def fast_find_movable(node, c):
+    c += 1
+    if node.parts:
+        left, right = node.parts
+        if not left.edge: # and left.parts:
+            right.edge = True
+            return right, c
+        return fast_find_movable(left, c)
+    return None, c
+
+
+def flatten(tree):
+    sentence = []
+
+    def _flat(treelist):
+        if isinstance(treelist, list):
+            for node in treelist:
+                _flat(node)
+        else:
+            sentence.append(treelist)
+    _flat(tree)
+    return sentence
+
+
 def parse_from_recipe(recipe, lexicon, forest):
     print([x.features for x in lexicon.values()])
     # build phase
     tree = None
     for lexem in recipe:
         if lexem == '|':
-            node, cl = tree.fast_find_movable(0)
+            node, cl = fast_find_movable(tree, 0)
             tree = merge(node, tree)
         else:
             node = lexicon[lexem].copy()
@@ -209,7 +233,7 @@ def parse_from_recipe(recipe, lexicon, forest):
                 tree = merge(node, tree)
             else:
                 tree = node
-            lexicon[lexem] = node
+            #lexicon[lexem] = node
         if forest:
             syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
                                     iteration=Constituent.nodecount)
@@ -218,4 +242,33 @@ def parse_from_recipe(recipe, lexicon, forest):
 
 
 def parse(sentence, lexicon, forest):
-    pass
+    print('parsing: ', sentence)
+    tree = None
+    for lexem in sentence:
+        node = lexicon[lexem].copy()
+        if tree:
+            tree = merge(node, tree)
+        else:
+            tree = node
+        if forest:
+            syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
+                                    iteration=Constituent.nodecount)
+            forest.add_step(syn_state)
+        print(tree)
+        raising, count = fast_find_movable(tree, 0)
+        if raising:
+            checking = find_checking_features(raising, tree)
+            while checking:
+                tree = merge(raising, tree)
+                if forest:
+                    syn_state = SyntaxState(tree_roots=[tree],
+                                            msg='internal merge, ' + str(checking),
+                                            iteration=Constituent.nodecount)
+                    forest.add_step(syn_state)
+
+                raising, count = fast_find_movable(tree, 0)
+                if raising:
+                    checking = find_checking_features(raising, tree)
+                else:
+                    break
+    return tree
