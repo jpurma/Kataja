@@ -689,7 +689,7 @@ class ConstituentNode(Node):
                 if fnode.locked_to_node is self:
                     fbr = fnode.future_children_bounding_rect()
                     nods.append((fnode, total_width - fbr.x()))
-                    total_width += fbr.width() + 4
+                    total_width += fbr.width() # + 4
                     if fnode.height > max_height:
                         max_height = fbr.height()
             if nods:
@@ -698,6 +698,7 @@ class ConstituentNode(Node):
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
         elif fpos == g.TWO_COLUMNS:  # card layout, two columns
+            self._can_cascade_edges = False
             in_card = ctrl.settings.get('node_shape') == g.CARD
             cw, ch = self.label_object.card_size
             center_x = self.boundingRect().center().x()

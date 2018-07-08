@@ -66,25 +66,25 @@ class Document(KatajaDocument):
         if self.forest:
             self.forest.retire_from_drawing()
         self.forests = []
-        sentences = []
+        input_trees = []
         if has_nltk:
             for i in range(*NLTK_TREE_RANGE):  # 199
                 trees = treebank.parsed_sents(f'wsj_0{str(i).rjust(3, "0")}.mrg')
                 for j, tree in enumerate(trees):
                     tree.chomsky_normal_form()
                     tree.collapse_unary()
-                    sentences.append(as_list(tree))
+                    input_trees.append(as_list(tree))
         else:
             readfile = open(filename, 'r')
             for line in readfile:
                 line = line.strip()
                 if line:
-                    sentences.append(ast.literal_eval(line))
+                    input_trees.append(ast.literal_eval(line))
 
-        for sentence in sentences:
-            syn = classes.get('SyntaxConnection')()
-            syn.sentence = sentence
-            forest = Forest(heading_text=str(sentence), syntax=syn)
+        for input_tree in input_trees:
+            syn = classes.get('SyntaxAPI')()
+            syn.input_tree = input_tree
+            forest = Forest(heading_text=str(input_tree), syntax=syn)
             self.forests.append(forest)
         self.current_index = 0
         self.forest = self.forests[0]

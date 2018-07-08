@@ -121,7 +121,7 @@ class Controller:
     @property
     def syntax(self):
         """
-        :return: SyntaxConnection
+        :return: SyntaxAPI
         """
         if self.main.forest:
             return self.main.forest.syntax

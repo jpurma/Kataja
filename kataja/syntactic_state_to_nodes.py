@@ -175,8 +175,6 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     def connect_feature_if_necessary(parent, child, feature):
         edge = parent.get_edge_to(child, g.FEATURE_EDGE, alpha=feature)
-        if parent.label == 'of':
-            print(parent.uid, child.uid, type(child), feature, feature.uid)
         if not edge:
             free_drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, alpha=feature)
         else:
@@ -270,7 +268,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             free_drawing.delete_edge(edge, fade=animate)
 
     # ############# Labels & node shapes ###############################
-
+    print('--- update node shapes in syntactic_state_to_nodes')
     forest.update_node_shapes()
 
     # ############# Groups #######################################

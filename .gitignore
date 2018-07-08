@@ -258,6 +258,7 @@ pypy3/
 testi*
 plugins/mgtdbp/versions/mgtdbp-devA.py
 
+outputs/
 gifsicle
 kataja_clip.gif
 kataja_clip.webp

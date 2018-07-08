@@ -166,6 +166,14 @@ class FeatureNode(Node):
         else:
             return self.checked_by
 
+    def get_host_node(self):
+        if self.syntactic_object and self.syntactic_object.host:
+            return ctrl.forest.get_node(self.syntactic_object.host)
+        else:
+            for parent in self.get_parents(similar=False, visible=False):
+                if parent.node_type == g.CONSTITUENT_NODE:
+                    return parent
+
     def compose_html_for_viewing(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
@@ -236,7 +244,7 @@ class FeatureNode(Node):
             if edge.edge_type == g.CHECKING_EDGE:
                 return edge.start
 
-    def update_relations(self, parents, shape=None, position=None, checking_mode=None):
+    def update_relations(self, shape=None, position=None, checking_mode=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
         'locked_to_node' is the essential attribute in here. For features it should have two 
@@ -246,7 +254,6 @@ class FeatureNode(Node):
         the third option shouldn't happen:
         3: locked to triangle host like constituent nodes are locked to triangle host 
         
-        :param parents: list where we collect parent objects that need to position their children
         :param shape:
         :param position:
         :param checking_mode:
@@ -262,11 +269,11 @@ class FeatureNode(Node):
         checked_by = self.my_checking_feature()
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
+        parents_are_affected = False
+
         if checked_by and self.is_visible():
             if checking_mode == g.NO_CHECKING_EDGE:
-                for parent in self.get_parents(similar=False, visible=True):
-                    if parent.node_type == g.CONSTITUENT_NODE:
-                        parents.append(parent)
+                parents_are_affected = True
                 if self.locked_to_node == checked_by:
                     self.release_from_locked_position()
                 edge = self.get_edge_to(checked_by, g.CHECKING_EDGE)
@@ -278,30 +285,29 @@ class FeatureNode(Node):
                     x = checked_by.future_children_bounding_rect().right() - \
                         self.future_children_bounding_rect().x() - 8
                     self.lock_to_node(checked_by, move_to=(x, 0))
-                    for parent in self.get_parents(similar=False, visible=True):
-                        if parent.node_type == g.CONSTITUENT_NODE:
-                            parents.append(parent)
+                    parents_are_affected = True
+
             elif checking_mode == g.SHOW_CHECKING_EDGE and self.locked_to_node == checked_by:
-                for parent in self.get_parents(similar=False, visible=True):
-                    if parent.node_type == g.CONSTITUENT_NODE:
-                        parents.append(parent)
+                parents_are_affected = True
                 self.release_from_locked_position()
+
         # Then see if it should be fixed to its parent constituent node
         if not locked_to_another_feature:
             if position or shape == g.CARD:
-                for parent in self.get_parents(similar=False, visible=False):
-                    if parent.node_type == g.CONSTITUENT_NODE:
-                        if parent.is_visible():
-                            self.lock_to_node(parent)
-                            parents.append(parent)
-                            break
-                        else:
-                            self.release_from_locked_position()
-                    #elif parent.node_type == g.FEATURE_NODE:
-                    #    if self.locked_to_node == parent:
-                    #        self.release_from_locked_position()
+                parents_are_affected = True
+                host = self.get_host_node()
+                if host and host.is_visible():
+                    self.lock_to_node(host)
+                else:
+                    self.release_from_locked_position()
             else:
                 self.release_from_locked_position()
+        if parents_are_affected:
+            affected_parents = set()
+            for parent in self.get_parents(similar=False, visible=True):
+                if parent.node_type == g.CONSTITUENT_NODE:
+                    affected_parents.add(parent)
+            return affected_parents
 
     def is_needy(self):
         if self.syntactic_object:
@@ -406,11 +412,12 @@ class FeatureNode(Node):
         self.prepareGeometryChange()
         return self.inner_rect
 
-    def draw_feature_shape(self, painter, rect, left, right, color):
+    @staticmethod
+    def draw_feature_shape(painter, rect, left, right, color):
         old_pen = painter.pen()
         painter.setPen(QtCore.Qt.NoPen)
         if left or right:  # square, triangular or round knob
-            base_shape = rect.adjusted(4, 0, 0, 0)
+            base_shape = rect.adjusted(4, 0, -4, 0)
             if not right:
                 base_shape.adjust(0, 0, -4, 0)
             path = QtGui.QPainterPath(base_shape.topLeft())
@@ -474,7 +481,6 @@ class FeatureNode(Node):
                                     self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
-
 
     @staticmethod
     def get_color_for(feature_name):
@@ -593,65 +599,6 @@ class FeatureNode(Node):
         elif right:
             w += 6
         return w
-
-    def update_tooltip(self) -> None:
-        """ Hovering status tip """
-        tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
-        ui_style = f'<strong style="color:{ctrl.cm.ui().name()};">%s</tt>'
-
-        lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
-                 f'uid: {tt_style % self.uid}',
-                 f'target position: {self.target_position}']
-
-        if self.index:
-            lines.append(f' Index: {repr(self.index)}')
-        if not self.syntactic_object:
-            heads = self.get_heads()
-            heads_str = ["itself" if h is self
-                         else f'{h.label}, {tt_style % h.uid}'
-                         for h in heads]
-            heads_str = '; '.join(heads_str)
-            if len(heads) == 1:
-                lines.append(f'head: {heads_str}')
-            elif len(heads) > 1:
-                lines.append(f'heads: {heads_str}')
-
-        # x, y = self.current_scene_position
-        # lines.append(f'pos: ({x:.1f},{y:.1f})')
-
-        if self.use_adjustment:
-            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
-
-        synobj = self.syntactic_object
-        if synobj:
-            lines.append('')
-            lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
-            lines.append(f'uid: {tt_style % synobj.uid}')
-            lines.append(f"label: '{escape(synobj.label)}'")
-            heads = synobj.get_heads()
-            heads_str = ["itself" if h is synobj
-                         else f'{h.label}, {tt_style % h.uid}'
-                         for h in heads]
-            heads_str = '; '.join(heads_str)
-            if len(heads) == 1:
-                lines.append(f'head: {heads_str}')
-            elif len(heads) > 1:
-                lines.append(f'heads: {heads_str}')
-
-            lines.append(f'inherited features: '
-                         f'{synobj.inherited_features}')
-            lines.append(f'checked features: '
-                         f'{synobj.checked_features}')
-            lines.append('')
-            if getattr(synobj, 'word_edge', None):
-                lines.append('--Word edge--')
-                lines.append('')
-
-        if self.selected:
-            lines.append(ui_style % 'Click to edit text, drag to move')
-        else:
-            lines.append(ui_style % 'Click to select, drag to move')
-        self.k_tooltip = '<br/>'.join(lines)
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """

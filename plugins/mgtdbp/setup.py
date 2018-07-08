@@ -25,7 +25,7 @@ from mgtdbp.Parser import Parser
 from mgtdbp.Constituent import Constituent
 from mgtdbp.Feature import Feature
 from mgtdbp.Document import Document
-from mgtdbp.SyntaxConnection import SyntaxConnection
+from mgtdbp.SyntaxAPI import SyntaxAPI
 import os
 from PyQt5 import QtCore
 
@@ -38,7 +38,7 @@ from PyQt5 import QtCore
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Feature, Constituent, Parser, Document, SyntaxConnection]
+plugin_parts = [Feature, Constituent, Parser, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -47,9 +47,9 @@ plugin_parts = [Feature, Constituent, Parser, Document, SyntaxConnection]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-# reload_order = ['myplugin.SyntaxConnection', 'myplugin.KDocument', 'myplugin.setup']
+# reload_order = ['myplugin.SyntaxAPI', 'myplugin.KDocument', 'myplugin.setup']
 reload_order = ['mgtdbp.Constituent', 'mgtdbp.Feature',
-                'mgtdbp.Parser', 'mgtdbp.Document', 'mgtdbp.SyntaxConnection',
+                'mgtdbp.Parser', 'mgtdbp.Document', 'mgtdbp.SyntaxAPI',
                 'mgtdbp.setup']
 
 plugin_preferences = {}

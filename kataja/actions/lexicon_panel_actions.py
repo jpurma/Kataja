@@ -41,8 +41,8 @@ class DeriveFromLexicon(KatajaAction):
         panel = ctrl.ui.get_panel('LexiconPanel')
         if panel:
             lexicon = panel.lextext.toPlainText()
-            sentence = panel.sentence_text.text()
+            input_text = panel.input_text.text()
             semantics = panel.semantics_text.text()
-            ctrl.syntax.derive_from_editable_lexicon(sentence, lexicon, semantics)
+            ctrl.syntax.derive_from_editable_lexicon(ctrl.forest, input_text, lexicon, semantics)
             ctrl.graph_view.setFocus()
             ctrl.forest.forest_edited()

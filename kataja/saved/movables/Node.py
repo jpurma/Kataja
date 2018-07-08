@@ -684,8 +684,8 @@ class Node(Movable):
         return tops
 
     # fixme  -- how often you call this, how is the locked relation restored to visible relation?
-    def update_relations(self, parents, shape=None, position=None, checking_mode=None):
-        pass
+    def update_relations(self, shape=None, position=None, checking_mode=None):
+        return None
 
     # ## Font
     # #####################################################################
@@ -987,6 +987,7 @@ class Node(Movable):
                     *child.target_position)
 
         self._cached_child_rect = expanding_rect
+        #self.inner_rect = self._cached_child_rect
 
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()

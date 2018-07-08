@@ -1,7 +1,7 @@
 # coding=utf-8
 from Monorail.Constituent import Constituent
 from Monorail.Document import Document
-from Monorail.SyntaxConnection import SyntaxConnection
+from Monorail.SyntaxAPI import SyntaxAPI
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -12,7 +12,7 @@ from Monorail.SyntaxConnection import SyntaxConnection
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Document, SyntaxConnection]
+plugin_parts = [Constituent, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -21,7 +21,7 @@ plugin_parts = [Constituent, Document, SyntaxConnection]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-reload_order = ['Monorail.Constituent', 'Monorail.SyntaxConnection',
+reload_order = ['Monorail.Constituent', 'Monorail.SyntaxAPI',
                 'Monorail.Document', 'Monorail.setup']
 
 def start_plugin(main, ctrl, prefs):

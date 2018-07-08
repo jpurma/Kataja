@@ -195,9 +195,9 @@ class Expansion:
 
 
 class Parse:
-    def __init__(self, probability, sentence, cat_queue, tree, msg, prev):
+    def __init__(self, probability, input_words, cat_queue, tree, msg, prev):
         self.probability = probability
-        self.sentence = sentence
+        self.input_words = input_words
         self.cat_queue = cat_queue
         self.tree = tree
         self.msg = msg
@@ -257,7 +257,7 @@ class Parser:
 
     def step_info(self):
         mover_keys = ', '.join(['-' + x for x in self.active_category.movers.keys()]) or None
-        sen_str = ' '.join(self.active_parse.sentence)
+        sen_str = ' '.join(self.active_parse.input_words)
         return f"{sen_str}\nStep {self.c}, exp. {len(self.expansions) + 1}, movers: {mover_keys}\n"
 
     def find_matching_subtree(self, node, target):
@@ -507,8 +507,8 @@ class Parser:
                                 movers=word_cat.movers,
                                 lex_key=word_cat.node.key,
                                 parent_lex_key=exp.word_parent)]
-                cut = 1 if parse.sentence and word_cat.node.word == parse.sentence[0] else 0
-                new_parse = Parse(parse.probability, parse.sentence[cut:],
+                cut = 1 if parse.input_words and word_cat.node.word == parse.input_words[0] else 0
+                new_parse = Parse(parse.probability, parse.input_words[cut:],
                                   parse.cat_queue, new_tree, exp.msg, self.active_parse)
             else:  # merge or move
                 part1 = exp.part1
@@ -527,7 +527,7 @@ class Parser:
                                     features=list(reversed(part2.checked)),
                                     movers=part2.movers,
                                     lex_key=part2.node.key))
-                new_parse = Parse(new_p, list(parse.sentence), cat_queue,
+                new_parse = Parse(new_p, list(parse.input_words), cat_queue,
                                   new_tree, exp.msg, self.active_parse)
             heapq.heappush(self.derivation_queue, new_parse)
 
@@ -539,13 +539,13 @@ class Parser:
             print('# of parses in beam=' + str(
                 len(self.derivation_queue) + 1) + ', p(best parse)=' + str(
                 (-1 * self.active_parse.probability)))
-            if not (self.active_parse.cat_queue or self.active_parse.sentence):
+            if not (self.active_parse.cat_queue or self.active_parse.input_words):
                 print('parse found')
                 return
             elif self.active_parse.cat_queue:
                 # expand best parses
                 self.active_category = heapq.heappop(self.active_parse.cat_queue)
-                self.word = self.active_parse.sentence[0] if self.active_parse.sentence else ''
+                self.word = self.active_parse.input_words[0] if self.active_parse.input_words else ''
 
                 self.expansions = []
                 self.create_expansions()
@@ -561,12 +561,11 @@ class Parser:
         print('no parse found')
         print('c = ', self.c)
 
-    def parse(self, sentence, start='C', lex=''):  #
+    def parse(self, input_words, start='C', lex=''):  #
         if lex:
             self.lex_trees = load_grammar(lex)
-        if not sentence:
+        if not input_words:
             return
-        print('inpt =' + str(sentence.split()))
         start_node = self.lex_trees[start]  # initial head
         start_cat = Cat(start_node, checked=[Feature(start, '')])
         # derivation
@@ -575,10 +574,10 @@ class Parser:
 
         self.derivation_queue = [Parse(  # List of parse states
             -1.0,  # parse probability, lower is better (negated), used for sorting
-            sentence.split(),  # remaining sentence
+            input_words,  # remaining sentence
             list(cat_queue),  # list of prediction states at this point
             [Constituent(lex_key='center')],  # built tree at this point
-            sentence,
+            input_words.join(' '),  # output message
             None  # for backtracking, there is no previous parse
         )]
         heapq.heapify(self.derivation_queue)
@@ -592,7 +591,7 @@ class Parser:
             c += 1
         print(f'{c} steps required, ignoring missteps.')
         t1 = time.time()
-        self.printer.compile_results(self.active_parse, sentence)
+        self.printer.compile_results(self.active_parse, input_words.join(' '))
         print(str(t1 - t0) + "seconds")
 
 
@@ -626,7 +625,7 @@ if __name__ == '__main__':
 
     for gfile, start, sen in sentences:
         p = Parser(lex_items=gfile, min_p=0.0001, outfile=write_file)
-        p.parse(sen, start)
+        p.parse(sen.split(), start)
         if gfile != prev_file: # don't write same file multiple times
             write_lexicon_graph_json(p.lex_trees, gfile)
             prev_file = gfile

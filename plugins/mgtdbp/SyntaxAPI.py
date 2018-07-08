@@ -25,7 +25,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
-from syntax.SyntaxConnection import SyntaxConnection as KatajaSyntaxConnection
+from syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 from mgtdbp.Parser import load_grammar, load_grammar_from_file, Parser
 import kataja.globals as g
 
@@ -33,8 +33,8 @@ CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
 
 
-class SyntaxConnection(KatajaSyntaxConnection):
-    role = "SyntaxConnection"
+class SyntaxAPI(KatajaSyntaxAPI):
+    role = "SyntaxAPI"
     supports_editable_lexicon = True
     supports_secondary_labels = False
     display_modes = ['Constituent tree', 'Feature tree']
@@ -48,7 +48,8 @@ class SyntaxConnection(KatajaSyntaxConnection):
         self.features = {}
         self.lexicon = {}
         self.rules = {}
-        self.sentence = ''
+        self.input_words = []
+        self.input_text = ''
         self.parser = None
         self.start = 'C'
         self.syntax_display_mode = 1
@@ -66,7 +67,7 @@ class SyntaxConnection(KatajaSyntaxConnection):
         print('get_editable_lexicon called')
         return self.parser.printer.print_lexicon(self.parser.lex_trees) if self.parser else ''
 
-    def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
+    def derive_from_editable_lexicon(self, input_text, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
         print('calling derive_from_editable_lexicon', lexdata)
@@ -75,10 +76,11 @@ class SyntaxConnection(KatajaSyntaxConnection):
         ctrl.disable_undo()
         f = ctrl.forest
         f.clear()
-        self.sentence = sentence
+        self.input_text = input_text
+        self.input_words = input_text.split()
         self.parser = Parser(grammar, -0.0001, forest=f)
         # parser doesn't return anything, it pushes derivation steps to forest
-        self.parser.parse(sentence=self.sentence, start='C')
+        self.parser.parse(input_words=self.input_words, start='C')
         ds = f.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
@@ -90,7 +92,7 @@ class SyntaxConnection(KatajaSyntaxConnection):
         edit it and retry parsing.
         :return:
         """
-        return self.sentence
+        return self.input_text
 
     def create_derivation(self, forest):
         """ This is always called to initially turn syntax available here and some input into a
@@ -100,7 +102,7 @@ class SyntaxConnection(KatajaSyntaxConnection):
         print('create_derivation: ', self.lexicon)
         self.parser = Parser(self.lexicon, -0.0001, forest=forest)
         # parser doesn't return anything, it pushes derivation steps to forest
-        self.parser.parse(sentence=self.sentence, start=self.start)
+        self.parser.parse(input_words=self.input_words, start=self.start)
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)

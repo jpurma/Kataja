@@ -165,7 +165,7 @@ class DerivationPrinter:
             self.derivation_steps.append(edges)
 
     def discard_dead_ends(self, active_parse):
-        if active_parse.cat_queue or active_parse.sentence or not DISCARD_DEAD_ENDS:
+        if active_parse.cat_queue or active_parse.input_words or not DISCARD_DEAD_ENDS:
             return
         good_ids = set()
         prev = active_parse

@@ -43,7 +43,7 @@ import PyQt5.QtWidgets as QtWidgets
 import time
 
 import kataja.globals as g
-from syntax.SyntaxConnection import SyntaxConnection
+from syntax.SyntaxAPI import SyntaxAPI
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
@@ -162,7 +162,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         classes.late_init()
         prefs.import_node_classes(classes)
-        self.syntax = SyntaxConnection()
+        self.syntax = SyntaxAPI()
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)

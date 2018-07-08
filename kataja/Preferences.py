@@ -214,14 +214,14 @@ class Preferences(object):
             'order': 32
         }
 
-        self.edge_width = 22  # 20
+        self.edge_width = 16  # 20
         self._edge_width_ui = {
             'tab': 'Drawing',
             'range': (0, 60),
             'order': 20
         }
 
-        self.edge_height = 22
+        self.edge_height = 24
         self._edge_height_ui = {
             'tab': 'Drawing',
             'range': (0, 60),

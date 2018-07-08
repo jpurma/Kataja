@@ -54,9 +54,9 @@ class Document(KatajaDocument):
             sentence = sentence.strip()
             if (not sentence) or sentence.startswith('#'):
                 continue
-            syn = classes.get('SyntaxConnection')()
+            syn = classes.get('SyntaxAPI')()
             syn.load_lexicon(grammar)
-            syn.sentence = sentence
+            syn.input_text = sentence
             syn.start = start
             forest = Forest(heading_text=sentence, syntax=syn)
             self.forests.append(forest)

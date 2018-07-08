@@ -25,7 +25,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
-from syntax.SyntaxConnection import SyntaxConnection as KatajaSyntaxConnection
+from syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 from Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
     parse_from_recipe, parse, flatten
 import kataja.globals as g
@@ -34,8 +34,8 @@ CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
 
 
-class SyntaxConnection(KatajaSyntaxConnection):
-    role = "SyntaxConnection"
+class SyntaxAPI(KatajaSyntaxAPI):
+    role = "SyntaxAPI"
     supports_editable_lexicon = True
     supports_secondary_labels = False
     display_modes = ['Constituent tree', 'Feature tree']
@@ -44,12 +44,13 @@ class SyntaxConnection(KatajaSyntaxConnection):
         SavedObject.__init__(self)
         self.Constituent = classes.get('Constituent')
         self.Feature = classes.get('Feature')
+        self.input_tree = []
         self.trees = []
         self.constituents = {}
         self.features = {}
         self.lexicon = {}
         self.rules = {}
-        self.sentence = ''
+        self.input_text = ''
         self.parser = None
         self.syntax_display_mode = 0
         self.current_mode = 0
@@ -60,29 +61,25 @@ class SyntaxConnection(KatajaSyntaxConnection):
         self.lexicon = []
 
     def get_editable_lexicon(self):
-        """ If it is possible to provide editable lexicon, where to get it
+        """ If it is possible to provide editable lexicon (str), where to get it
         :return:
         """
-        print('get_editable_lexicon called')
-        return self.parser.printer.print_lexicon(self.parser.lex_trees) if self.parser else ''
+        return super().get_editable_lexicon()
 
-    def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
+    def derive_from_editable_lexicon(self, forest, input_text, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
         print('calling derive_from_editable_lexicon', lexdata)
         ctrl.disable_undo()
-        ctrl.forest.clear()
-        self.sentence = sentence
+        forest.clear()
+        self.input_text = input_text
 
-        recipe = []
-        sentence = remove_punctuation(sentence)
-        list_to_monorail(sentence, [], recipe)
-        self.lexicon = deduce_lexicon_from_recipe(recipe)
-        parse_from_recipe(recipe, self.lexicon, ctrl.forest)
-        ds = ctrl.forest.derivation_steps
+        parse(input_text, self.lexicon, forest)
+
+        ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
-        ctrl.forest.prepare_for_drawing()
+        forest.prepare_for_drawing()
         ctrl.resume_undo()
 
     def get_editable_sentence(self):
@@ -90,7 +87,7 @@ class SyntaxConnection(KatajaSyntaxConnection):
         edit it and retry parsing.
         :return:
         """
-        return self.sentence
+        return self.input_text
 
     def create_derivation(self, forest):
         """ This is always called to initially turn syntax available here and some input into a
@@ -99,12 +96,12 @@ class SyntaxConnection(KatajaSyntaxConnection):
         """
         print('create_derivation: ', self.lexicon)
         recipe = []
-        self.sentence = remove_punctuation(self.sentence)
-        list_to_monorail(self.sentence, [], recipe)
+        self.input_tree = remove_punctuation(self.input_tree)
+        list_to_monorail(self.input_tree, [], recipe)
         self.lexicon = deduce_lexicon_from_recipe(recipe)
-        parse_from_recipe(recipe, self.lexicon, ctrl.forest)
-        #flat_sentence = flatten(self.sentence)
-        #parse(flat_sentence, self.lexicon, ctrl.forest)
+        parse_from_recipe(recipe, self.lexicon, forest)
+        #flat_sentence = flatten(self.input_tree)
+        #parse(flat_sentence, self.lexicon, forest)
 
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1

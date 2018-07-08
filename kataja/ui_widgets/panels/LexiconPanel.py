@@ -27,8 +27,8 @@ class LexiconPanel(Panel):
         self.setStyleSheet(stylesheet % (f.family(), f.pointSize()))
         self.watchlist = ['forest_changed', 'ui_font_changed']
         layout.addWidget(self.lextext)
-        self.sentence_text = QtWidgets.QLineEdit()
-        layout.addWidget(self.sentence_text)
+        self.input_text = QtWidgets.QLineEdit()
+        layout.addWidget(self.input_text)
         self.semantics_text = QtWidgets.QLineEdit()
         layout.addWidget(self.semantics_text)
         #self.info = QtWidgets.QLabel('info text here')
@@ -53,7 +53,7 @@ class LexiconPanel(Panel):
             self.lextext.clear()
         sentence = ctrl.syntax.get_editable_sentence()
         semantics = ctrl.syntax.get_editable_semantics()
-        self.sentence_text.setText(str(sentence))
+        self.input_text.setText(str(sentence))
         self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 
@@ -79,7 +79,6 @@ class LexiconPanel(Panel):
         :return:
         """
         if signal == 'forest_changed':
-            print('LexPanel got forest_changed -signal')
             self.prepare_lexicon()
         if signal == 'ui_font_changed':
             f = qt_prefs.get_font(CONSOLE_FONT)

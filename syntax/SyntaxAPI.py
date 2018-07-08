@@ -5,15 +5,15 @@ from kataja.singletons import ctrl, classes
 from kataja.nodes_to_synobjs import nodes_to_synobjs
 
 
-class SyntaxConnection(SavedObject):
+class SyntaxAPI(SavedObject):
     """ This class is the interface between syntax implementations and Kataja calls for them.
     Syntax implementations subclass this and overwrite methods as needed. It is assumed that each
-    Forest will create its own SyntaxConnection -- it may save data specific for that structure, but
-    if many forests e.g. use same lexicon, be wary that all SyntaxConnections point at the same
+    Forest will create its own SyntaxAPI -- it may save data specific for that structure, but
+    if many forests e.g. use same lexicon, be wary that all SyntaxAPIs point at the same
     object without making their own personal copies.
 
     """
-    role = "SyntaxConnection"
+    role = "SyntaxAPI"
     supports_editable_lexicon = False
     display_modes = []
 
@@ -41,7 +41,9 @@ class SyntaxConnection(SavedObject):
         self.features = {}
         self.lexicon = {}
         self.rules = {}
-        self.sentence = ''
+        self.input_text = ''
+        self.input_words = []
+        self.input_tree = []
         self.semantic_hierarchies = [
             ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C'],
             ['N', 'n', 'Poss', 'Num', 'D', 'Q']
@@ -55,18 +57,25 @@ class SyntaxConnection(SavedObject):
         return self.trees
 
     def get_editable_lexicon(self):
-        """ If it is possible to provide editable lexicon, where to get it
+        """ If it is possible to provide editable lexicon (str), where to get it.
         :return:
         """
-        print('old get_editable_lexicon')
-        return repr(self.lexicon)
+        s = []
+        for key, const in self.lexicon.items():
+            if isinstance(const, str):
+                cs = '%s :: %s' % (key, const)
+            else:
+                cs = '%s :: %s' % (key, ' '.join([str(x) for x in const.features]))
+            s.append(cs)
+        s.sort()
+        return '\n'.join(s)
 
     def get_editable_sentence(self):
         """ If the current systems supports parsing, return the current parsed string. User can
         edit it and retry parsing.
         :return:
         """
-        return ''
+        return self.input_text
 
     def get_editable_semantics(self):
         """ If the current systems supports parsing, return the current parsed string. User can
@@ -118,9 +127,12 @@ class SyntaxConnection(SavedObject):
             _pick_leaves(child)
         return [l.syntactic_object for l in leaves]
 
-    def derive_from_editable_lexicon(self, sentence, lexdata, semantics=''):
+    def derive_from_editable_lexicon(self, forest, input_text, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
+        self.input_text = input_text
+        self.create_derivation(forest)
+
         raise NotImplementedError
 
     def nodes_to_synobjs(self, forest, roots):
@@ -138,7 +150,7 @@ class SyntaxConnection(SavedObject):
         structure. Resulting structures are used to populate a forest.
         :return:
         """
-        text = self.sentence.strip()
+        text = self.input_text.strip()
         print('create derivation called w. sentence: ', text)
         roots = forest.parser.string_into_forest(text)
         forest.free_drawing.definitions_to_nodes(self.lexicon)

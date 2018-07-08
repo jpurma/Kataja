@@ -50,9 +50,11 @@ def find_checking_features(left, right):
                     return feat_to_check, feat
 
 
-def inherit_features(head):
+def inherit_features(head, checked_features):
     new_feats = []
     for f in head.inherited_features:
+        ##if f in checked_features:
+        #    f.used = True
         if f.used or f in new_feats:
             continue
         new_feats.append(f)
@@ -82,7 +84,7 @@ def merge(left, right):
             head = right
         else:
             head = left
-    merged.inherited_features = inherit_features(head)
+    merged.inherited_features = inherit_features(head, merged.checked_features)
     merged.lexical_heads = list(head.lexical_heads)
     return merged
 
@@ -121,6 +123,8 @@ def list_to_monorail(lnode, spine, recipe):
 def come_up_with_a_reason(needy_node, giving_node):
     needy_head = needy_node.lexical_heads[0]
     giving_head = giving_node.lexical_heads[0]
+    print('needy head: ', needy_head)
+    print('giving head: ', giving_head)
     for feat in needy_head.features:
         if feat.is_needy() and not feat.used:
             available_needy_feat = feat
@@ -132,16 +136,20 @@ def come_up_with_a_reason(needy_node, giving_node):
                     available_giving_feat = feat
                     break
             if available_needy_feat and available_giving_feat:
+                print('features already available: ', available_needy_feat, available_giving_feat)
+                print(available_needy_feat.checked_by, available_needy_feat.used)
+                print(available_giving_feat.checks, available_giving_feat.used)
                 return available_needy_feat, available_giving_feat
             elif available_needy_feat:
                 new_feature = Feature(name=available_needy_feat.name, sign='')
                 giving_head.features.append(new_feature)
                 new_feature.host = giving_head
+                print('new given feature from: ', new_feature.host, new_feature)
                 return available_needy_feat, new_feature
     fname = string.ascii_letters[max([string.ascii_letters.index(f.name[0]) for f in
                                       needy_head.features + giving_head.features]) + 1]
     if needy_node.parts:
-        if random.randint(1, 3) == 1:
+        if random.randint(1, 3) == 1 and False:
             print('cool')
             needy_f = Feature(fname, sign='=')
         else:
@@ -155,6 +163,7 @@ def come_up_with_a_reason(needy_node, giving_node):
     giving_f.host = giving_head
     needy_node.inherited_features.append(needy_f)
     giving_node.inherited_features.append(giving_f)
+    print('new pair of features')
     return needy_f, giving_f
 
 
@@ -164,13 +173,15 @@ def deduce_lexicon_from_recipe(recipe):
     lexicon = {}
     for lexem in recipe:
         if lexem == '|':
-            node, cl = fast_find_movable(tree, 0)
+            node = fast_find_movable(tree)
             checked_feat, feat = come_up_with_a_reason(node, tree)
+            print(f'checked feats: {checked_feat} ({checked_feat.host}), {feat} ({feat.host})')
             # features have to be used in certain order:
             for old_feat in feat.host.features:
                 if old_feat is feat:
                     break
                 if old_feat.sign == '':
+                    print('disabled ', old_feat)
                     old_feat.used = True
             tree = merge(node, tree)
         else:
@@ -185,22 +196,22 @@ def deduce_lexicon_from_recipe(recipe):
             if tree:
                 tree = merge(node, tree)
             else:
-                tree = node
+                tree = merge(node, startnode())
+
     for node in lexicon.values():
         for feature in node.features:
             feature.reset()
     return lexicon
 
 
-def fast_find_movable(node, c):
-    c += 1
+def fast_find_movable(node):
     if node.parts:
         left, right = node.parts
         if not left.edge: # and left.parts:
             right.edge = True
-            return right, c
-        return fast_find_movable(left, c)
-    return None, c
+            return right
+        return fast_find_movable(left)
+    return None
 
 
 def flatten(tree):
@@ -216,13 +227,16 @@ def flatten(tree):
     return sentence
 
 
+def startnode():
+    return Constituent(label='', features=[Feature(name='e', sign='')])
+
+
 def parse_from_recipe(recipe, lexicon, forest):
-    print([x.features for x in lexicon.values()])
     # build phase
     tree = None
     for lexem in recipe:
         if lexem == '|':
-            node, cl = fast_find_movable(tree, 0)
+            node = fast_find_movable(tree)
             tree = merge(node, tree)
         else:
             node = lexicon[lexem].copy()
@@ -232,7 +246,8 @@ def parse_from_recipe(recipe, lexicon, forest):
             if tree:
                 tree = merge(node, tree)
             else:
-                tree = node
+                tree = merge(node, startnode())
+
             #lexicon[lexem] = node
         if forest:
             syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
@@ -242,20 +257,19 @@ def parse_from_recipe(recipe, lexicon, forest):
 
 
 def parse(sentence, lexicon, forest):
-    print('parsing: ', sentence)
     tree = None
     for lexem in sentence:
         node = lexicon[lexem].copy()
         if tree:
             tree = merge(node, tree)
         else:
-            tree = node
+            tree = merge(node, startnode())
+
         if forest:
             syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
                                     iteration=Constituent.nodecount)
             forest.add_step(syn_state)
-        print(tree)
-        raising, count = fast_find_movable(tree, 0)
+        raising = fast_find_movable(tree)
         if raising:
             checking = find_checking_features(raising, tree)
             while checking:
@@ -266,7 +280,7 @@ def parse(sentence, lexicon, forest):
                                             iteration=Constituent.nodecount)
                     forest.add_step(syn_state)
 
-                raising, count = fast_find_movable(tree, 0)
+                raising = fast_find_movable(tree)
                 if raising:
                     checking = find_checking_features(raising, tree)
                 else:

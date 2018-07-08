@@ -109,7 +109,7 @@ class Forest(SavedObject):
 
     def init_factories(self):
         if not self.syntax:
-            self.syntax = classes.get('SyntaxConnection')()
+            self.syntax = classes.get('SyntaxAPI')()
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -728,11 +728,13 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
+    @time_me
     def update_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
         :return: 
         """
+        t = time.time()
         shape = ctrl.settings.get('node_shape')
         ctrl.release_editor_focus()
         for node in self.nodes.values():
@@ -742,15 +744,23 @@ class Forest(SavedObject):
                 node.setZValue(node.preferred_z_value())
             if node.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(node)
-        parents = []
+        print('1:', time.time() - t)
+        affected_parents = set()
         f_mode = ctrl.settings.get('feature_positioning')
         checking_mode = ctrl.settings.get('feature_check_display')
         for node in ctrl.forest.nodes.values():
-            node.update_relations(parents, shape=shape, position=f_mode, checking_mode=checking_mode)
-            node.update_label()
-        for parent in parents:
+            changed = node.update_relations(shape=shape, position=f_mode,
+                                            checking_mode=checking_mode)
+            if changed:
+                affected_parents |= changed
+                node.update_label()
+        print('2:', time.time() - t)
+        for parent in affected_parents:
             parent.gather_children()
+            parent.update_bounding_rect()
+        print('3:', time.time() - t)
         self.prepare_width_map()
+        print('4:', time.time() - t)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
