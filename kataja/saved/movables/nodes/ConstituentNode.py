@@ -873,7 +873,7 @@ class ConstituentNode(Node):
                         x -= 4
                     feat.draw_feature_shape(painter, QtCore.QRectF(x, y, w, h), left, right, color)
                     painter.setPen(ctrl.cm.get('background1'))
-                    x += w
+                    x += w - 4
 
                     # r = QtCore.QRectF(self.inner_rect)
                     # w = r.width()

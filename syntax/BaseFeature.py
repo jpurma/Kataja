@@ -25,9 +25,8 @@
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.utils import caller
 
-simple_signs = ('+', '-', '=', 'u')
+simple_signs = ('+', '-', '=', 'u', '_')
 
 
 class BaseFeature(SavedObject):

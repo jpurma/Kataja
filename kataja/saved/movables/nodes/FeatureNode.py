@@ -247,7 +247,7 @@ class FeatureNode(Node):
             if edge.edge_type == g.CHECKING_EDGE:
                 return edge.start
 
-    def update_relations(self, shape=None, position=None, checking_mode=None):
+    def update_checking_display(self, shape=None, position=None, checking_mode=None):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
         'locked_to_node' is the essential attribute in here. For features it should have two 
@@ -285,8 +285,14 @@ class FeatureNode(Node):
             elif checking_mode == g.PUT_CHECKED_TOGETHER:
                 locked_to_another_feature = True
                 if self.locked_to_node != checked_by:
+                    if 1 < checked_by.fshape < 4:
+                        compensate = 8
+                    elif checked_by.fshape == 4:
+                        compensate = 10
+                    else:
+                        compensate = 4
                     x = checked_by.future_children_bounding_rect().right() - \
-                        self.future_children_bounding_rect().x() - 8
+                        self.future_children_bounding_rect().x() - compensate
                     self.lock_to_node(checked_by, move_to=(x, 0))
                     parents_are_affected = True
 
@@ -596,7 +602,7 @@ class FeatureNode(Node):
 
     def compute_piece_width(self, width_function, left, right):
         w = width_function(str(self))
-        w += 4
+        w += 6
         if left:
             w += 8
         elif right:

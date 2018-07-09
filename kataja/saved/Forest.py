@@ -745,12 +745,14 @@ class Forest(SavedObject):
         affected_parents = set()
         f_mode = ctrl.settings.get('feature_positioning')
         checking_mode = ctrl.settings.get('feature_check_display')
-        for node in ctrl.forest.nodes.values():
-            changed = node.update_relations(shape=shape, position=f_mode,
-                                            checking_mode=checking_mode)
+        fnodes = [f for f in self.nodes.values() if f.node_type == g.FEATURE_NODE]
+        for fnode in fnodes:
+            fnode.update_label()
+        for fnode in fnodes:
+            changed = fnode.update_checking_display(shape=shape, position=f_mode,
+                                                    checking_mode=checking_mode)
             if changed:
                 affected_parents |= changed
-                node.update_label()
         for parent in affected_parents:
             parent.gather_children()
             parent.update_bounding_rect()

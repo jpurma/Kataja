@@ -683,10 +683,6 @@ class Node(Movable):
         go_up(self)
         return tops
 
-    # fixme  -- how often you call this, how is the locked relation restored to visible relation?
-    def update_relations(self, shape=None, position=None, checking_mode=None):
-        return None
-
     # ## Font
     # #####################################################################
 

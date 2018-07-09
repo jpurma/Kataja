@@ -237,8 +237,6 @@ class Label(QtWidgets.QGraphicsItem):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
-        elif self.node_shape == FEATURE_SHAPE:
-            html = html.replace(' ', '&nbsp;&nbsp;')
 
         if force_update or (self.node_shape, html, lower_html, is_card) != self._previous_values:
             if self.editable_html != html:
