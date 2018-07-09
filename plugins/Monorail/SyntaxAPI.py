@@ -27,7 +27,7 @@ from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
 from syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 from Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
-    parse_from_recipe, parse, flatten
+    parse_from_recipe, parse, flatten, read_lexicon
 import kataja.globals as g
 
 CONSTITUENT_TREE = 0
@@ -73,8 +73,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
         ctrl.disable_undo()
         forest.clear()
         self.input_text = input_text
-
-        parse(input_text, self.lexicon, forest)
+        self.lexicon = read_lexicon(lexdata)
+        parse(input_text.split(), self.lexicon, forest)
 
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
@@ -99,9 +99,10 @@ class SyntaxAPI(KatajaSyntaxAPI):
         self.input_tree = remove_punctuation(self.input_tree)
         list_to_monorail(self.input_tree, [], recipe)
         self.lexicon = deduce_lexicon_from_recipe(recipe)
-        parse_from_recipe(recipe, self.lexicon, forest)
-        #flat_sentence = flatten(self.input_tree)
-        #parse(flat_sentence, self.lexicon, forest)
+        #parse_from_recipe(recipe, self.lexicon, forest)
+        flat_sentence = flatten(self.input_tree)
+        self.input_text = ' '.join(flat_sentence)
+        parse(flat_sentence, self.lexicon, forest)
 
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1

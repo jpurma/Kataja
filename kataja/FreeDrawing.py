@@ -281,7 +281,7 @@ class FreeDrawing:
         # -- groups --
         if ctrl.ui.selection_group and node in ctrl.ui.selection_group:
             ctrl.ui.selection_group.remove_node(node)
-        for group in self.groups.values():
+        for group in list(self.groups.values()):
             if node in group:
                 group.remove_node(node)
 

@@ -268,7 +268,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             free_drawing.delete_edge(edge, fade=animate)
 
     # ############# Labels & node shapes ###############################
-    print('--- update node shapes in syntactic_state_to_nodes')
+    #print('--- update node shapes in syntactic_state_to_nodes')
     forest.update_node_shapes()
 
     # ############# Groups #######################################
@@ -338,27 +338,33 @@ def syntactic_state_to_nodes(forest, syn_state):
     # ---------
     # Update or create mover group
     old_group = None
+    if syn_state.marked:
+        mover = syn_state.marked[0]
+    else:
+        mover = None
+
     for group in forest.groups.values():
         if group.purpose == 'mover':
             old_group = group
             break
-    # if mover:
-    #     mover = forest.get_node(mover)
-    #     if old_group:
-    #         old_group.clear(remove=False)
-    #         group = old_group
-    #     else:
-    #         group = free_drawing.create_group()
-    #         group.purpose = 'mover'
-    #         #group.set_label_text('Next mover')
-    #         group.include_children = False
-    #         group.fill = True
-    #         group.outline = False
-    #         group.update_colors('accent8')
-    #     group.update_selection([mover])
-    # else:
-    #     if old_group:
-    #         old_group.clear(remove=True)
+    if mover:
+        mover = forest.get_node(mover)
+        if old_group:
+            old_group.clear(remove=False)
+            group = old_group
+        else:
+            group = free_drawing.create_group()
+            group.purpose = 'mover'
+            #group.set_label_text('Next mover')
+            group.include_children = False
+            group.fill = False
+            group.outline = True
+            group.set_color_key('accent8')
+        group.update_selection([mover])
+    else:
+        if old_group:
+            old_group.clear(remove=True)
+
     # ---------
     strat = ctrl.settings.get('gloss_strategy')
     if strat and strat == 'message':

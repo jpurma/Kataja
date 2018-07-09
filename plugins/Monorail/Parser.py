@@ -123,9 +123,9 @@ def list_to_monorail(lnode, spine, recipe):
 def come_up_with_a_reason(needy_node, giving_node):
     needy_head = needy_node.lexical_heads[0]
     giving_head = giving_node.lexical_heads[0]
-    print('needy head: ', needy_head)
-    print('giving head: ', giving_head)
     for feat in needy_head.features:
+        if feat.name == 'e':
+            continue
         if feat.is_needy() and not feat.used:
             available_needy_feat = feat
             available_giving_feat = None
@@ -136,21 +136,16 @@ def come_up_with_a_reason(needy_node, giving_node):
                     available_giving_feat = feat
                     break
             if available_needy_feat and available_giving_feat:
-                print('features already available: ', available_needy_feat, available_giving_feat)
-                print(available_needy_feat.checked_by, available_needy_feat.used)
-                print(available_giving_feat.checks, available_giving_feat.used)
                 return available_needy_feat, available_giving_feat
             elif available_needy_feat:
                 new_feature = Feature(name=available_needy_feat.name, sign='')
                 giving_head.features.append(new_feature)
                 new_feature.host = giving_head
-                print('new given feature from: ', new_feature.host, new_feature)
                 return available_needy_feat, new_feature
     fname = string.ascii_letters[max([string.ascii_letters.index(f.name[0]) for f in
                                       needy_head.features + giving_head.features]) + 1]
     if needy_node.parts:
-        if random.randint(1, 3) == 1 and False:
-            print('cool')
+        if random.randint(1, 2) == 1 and False:
             needy_f = Feature(fname, sign='=')
         else:
             needy_f = Feature(fname, sign='-')
@@ -163,7 +158,6 @@ def come_up_with_a_reason(needy_node, giving_node):
     giving_f.host = giving_head
     needy_node.inherited_features.append(needy_f)
     giving_node.inherited_features.append(giving_f)
-    print('new pair of features')
     return needy_f, giving_f
 
 
@@ -175,13 +169,11 @@ def deduce_lexicon_from_recipe(recipe):
         if lexem == '|':
             node = fast_find_movable(tree)
             checked_feat, feat = come_up_with_a_reason(node, tree)
-            print(f'checked feats: {checked_feat} ({checked_feat.host}), {feat} ({feat.host})')
             # features have to be used in certain order:
             for old_feat in feat.host.features:
                 if old_feat is feat:
                     break
                 if old_feat.sign == '':
-                    print('disabled ', old_feat)
                     old_feat.used = True
             tree = merge(node, tree)
         else:
@@ -265,24 +257,46 @@ def parse(sentence, lexicon, forest):
         else:
             tree = merge(node, startnode())
 
+        raising = fast_find_movable(tree)
         if forest:
             syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
-                                    iteration=Constituent.nodecount)
+                                    iteration=Constituent.nodecount,
+                                    marked=[raising])
             forest.add_step(syn_state)
-        raising = fast_find_movable(tree)
         if raising:
             checking = find_checking_features(raising, tree)
             while checking:
                 tree = merge(raising, tree)
+                raising = fast_find_movable(tree)
                 if forest:
                     syn_state = SyntaxState(tree_roots=[tree],
                                             msg='internal merge, ' + str(checking),
-                                            iteration=Constituent.nodecount)
+                                            iteration=Constituent.nodecount,
+                                            marked=[raising])
                     forest.add_step(syn_state)
 
-                raising = fast_find_movable(tree)
                 if raising:
                     checking = find_checking_features(raising, tree)
                 else:
                     break
     return tree
+
+
+def read_lexicon(lexdata):
+    lex = {}
+    lines = lexdata.splitlines()
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith('#'):
+            continue
+        if '::' not in line:
+            continue
+        lexem, features = line.rsplit('::', 1)
+        lexem = lexem.strip()
+        if lexem == '∅':
+            lexem = ''
+        features = [Feature.from_string(fstr) for fstr in features.split()]
+        node = Constituent(label=lexem, features=features)
+        lex[lexem] = node
+    return lex

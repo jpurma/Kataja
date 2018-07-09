@@ -134,7 +134,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         else:
             self.label_item.update_position()
 
-    def remove_node(self, node):
+    def remove_node(self, node, delete_if_empty=True):
         """ Manual removal of single node, should be called e.g. when node is deleted.
         :param node:
         :return:
@@ -148,7 +148,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         if self.selection:
             self.update_shape()
         else:
-            if self.persistent:
+            if self.persistent and delete_if_empty:
                 ctrl.free_drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)

@@ -1,12 +1,9 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
+from PyQt5 import QtCore, QtGui
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
-from kataja.singletons import ctrl
 import math
-from collections import ChainMap
-from kataja.utils import time_me
 import kataja.globals as g
-from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW
+from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW, \
+    EDGE_OPEN_DOMINANT, EDGE_RECEIVING_NOW_DOMINANT
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -346,15 +343,15 @@ class EdgePath:
         elif self.edge.shape_name != self.my_shape.shape_name:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
             self.edge.flatten_settings()
-        (self.draw_path, self.true_path, self.control_points,
-         self.adjusted_control_points) = self.my_shape.path(sp, (ex, ey),
-                                                            self.edge.curve_adjustment,
-                                                            self.curve_dir_start,
-                                                            self.curve_dir_end, thick=thick,
-                                                            start=self.edge.start,
-                                                            end=self.edge.end,
-                                                            inner_only=self.use_simple_path,
-                                                            d=self.edge.flattened_settings)
+        path = self.my_shape.path(sp, (ex, ey),
+                                  self.edge.curve_adjustment,
+                                  self.curve_dir_start,
+                                  self.curve_dir_end, thick=thick,
+                                  start=self.edge.start,
+                                  end=self.edge.end,
+                                  inner_only=self.use_simple_path,
+                                  d=self.edge.flattened_settings)
+        self.draw_path, self.true_path, self.control_points, self.adjusted_control_points = path
         uses_pen = self.edge.has_outline()
 
         if self.use_simple_path:
@@ -417,7 +414,8 @@ class EdgePath:
             return
         symbol = self.edge.start_symbol
         x, y = self.computed_start_point
-        path = QtGui.QPainterPath(QtCore.QPointF(x, y))
+        path = self.draw_path #QtGui.QPainterPath(QtCore.QPointF(x, y))
+        path.moveTo(x, y)
 
         if symbol == 1:
             poly = QtGui.QPolygonF(
@@ -425,19 +423,22 @@ class EdgePath:
                  QtCore.QPointF(x - 1, y), QtCore.QPointF(x, y - 1)])
             path.addPolygon(poly)
         elif symbol == EDGE_OPEN:
-            poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2), QtCore.QPointF(x, y),
-                                    QtCore.QPointF(x - 2, y - 2)])
-            path.addPolygon(poly)
+            path.addEllipse(x - 2, y - 4, 4, 4)
+        elif symbol == EDGE_OPEN_DOMINANT:
+            path.addEllipse(x - 2, y - 4, 4, 4)
+            path.addEllipse(x - 1, y - 6, 2, 2)
         elif symbol == EDGE_RECEIVING_NOW:
-            poly = QtGui.QPolygonF([QtCore.QPointF(x + 2, y - 2), QtCore.QPointF(x, y),
-                                    QtCore.QPointF(x - 2, y - 2)])
-            path.addPolygon(poly)
+            path.addEllipse(x - 2, y - 4, 4, 4)
+        elif symbol == EDGE_RECEIVING_NOW_DOMINANT:
+            path.addEllipse(x - 2, y - 4, 4, 4)
+            path.addEllipse(x - 1, y - 6, 2, 2)
         elif symbol == EDGE_PLUGGED_IN:
             checks_node = self.edge.alpha.get_checks_node()
             for edge in self.edge.start.edges_down:
                 if edge.alpha is checks_node and edge.is_visible():
                     edge.path.update_end_points()
                     cx, cy = edge.path.computed_start_point
+                    cy -= 2
                     xdist = abs(x - cx)
                     if uses_pen:
                         path.cubicTo(x, y - xdist, cx, cy - xdist, cx, cy)
@@ -447,7 +448,7 @@ class EdgePath:
                     break
         elif symbol == EDGE_CAN_INSERT:
             path.lineTo(x, y - 4)
-        self.draw_path += path
+        #self.draw_path += path
 
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.

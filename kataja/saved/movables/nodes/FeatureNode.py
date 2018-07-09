@@ -30,7 +30,7 @@ from PyQt5 import QtGui, QtCore
 import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
-    EDGE_RECEIVING_NOW, CHECKING_EDGE
+    EDGE_RECEIVING_NOW, CHECKING_EDGE, EDGE_RECEIVING_NOW_DOMINANT, EDGE_OPEN_DOMINANT
 from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
@@ -120,6 +120,9 @@ class FeatureNode(Node):
 
         # implement color() to map one of the d['rainbow_%'] colors here.
         # Or if bw mode is on, then something else.
+
+    def get_sign(self):
+        return self.syntactic_object.sign if self.syntactic_object else self.sign
 
     @staticmethod
     def create_synobj(label, forest):
@@ -577,16 +580,16 @@ class FeatureNode(Node):
 
     def get_edge_start_symbol(self):
         if self.satisfies():
-            #print('feat %s satisfies.' % self)
             return EDGE_PLUGGED_IN
         elif self.is_satisfied():
-            #print('feat %s is satisfied.' % self)
+            if self.get_sign() == '=':
+                return EDGE_RECEIVING_NOW_DOMINANT
             return EDGE_RECEIVING_NOW
         elif self.is_needy() and not self.syntactic_object.is_inactive():
-            #print('feat %s is needy.' % self)
+            if self.get_sign() == '=':
+                return EDGE_OPEN_DOMINANT
             return EDGE_OPEN
         elif self.can_satisfy():
-            #print('feat %s can satisfy.' % self)
             return EDGE_CAN_INSERT
         else:
             return 0

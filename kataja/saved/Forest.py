@@ -728,13 +728,11 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    @time_me
     def update_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
         :return: 
         """
-        t = time.time()
         shape = ctrl.settings.get('node_shape')
         ctrl.release_editor_focus()
         for node in self.nodes.values():
@@ -744,7 +742,6 @@ class Forest(SavedObject):
                 node.setZValue(node.preferred_z_value())
             if node.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(node)
-        print('1:', time.time() - t)
         affected_parents = set()
         f_mode = ctrl.settings.get('feature_positioning')
         checking_mode = ctrl.settings.get('feature_check_display')
@@ -754,13 +751,10 @@ class Forest(SavedObject):
             if changed:
                 affected_parents |= changed
                 node.update_label()
-        print('2:', time.time() - t)
         for parent in affected_parents:
             parent.gather_children()
             parent.update_bounding_rect()
-        print('3:', time.time() - t)
         self.prepare_width_map()
-        print('4:', time.time() - t)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -784,6 +778,46 @@ class Forest(SavedObject):
         ctrl.ui.refresh_heading()
 
     def update_feature_ordering(self):
+
+        def sort_attached_features(node):
+            const = node.syntactic_object
+            if const.parts:
+                sorted_syn_feats = []
+                left, right = const.parts
+                left_f = left.inherited_features
+                right_f = right.inherited_features
+                for feat in const.inherited_features + list(const.checked_features):
+                    if feat in left_f:
+                        sorted_syn_feats.append((0, left_f.index(feat), feat))
+                    elif feat in right_f:
+                        sorted_syn_feats.append((1, right_f.index(feat), feat))
+                    else:
+                        raise hell
+                sorted_syn_feats = [f for i, j, f in sorted(sorted_syn_feats)]
+            else:
+                sorted_syn_feats = const.features
+
+            sortable_edges = [(sorted_syn_feats.index(e.alpha.syntactic_object), e) for e in
+                              node.edges_down if e.edge_type == g.FEATURE_EDGE]
+
+            return [e for i, e in sorted(sortable_edges)]
+
+        for cn in self.nodes.values():
+            if cn.node_type == g.CONSTITUENT_NODE:
+                if cn.syntactic_object:
+                    cn.cached_sorted_feature_edges = sort_attached_features(cn)
+                else:
+                    cn.cached_sorted_feature_edges = [e for e in cn.edges_down if e.edge_type
+                                                      == g.FEATURE_EDGE]
+
+        for edge in self.edges.values():
+            edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)
+            edge.cached_edge_end_index = edge.edge_end_index(from_cache=False)
+            if edge.path:
+                edge.path.cached_shift_for_start = None
+                edge.path.cached_shift_for_end = None
+
+    def update_feature_ordering_old(self):
 
         for cn in self.nodes.values():
             if cn.node_type == g.CONSTITUENT_NODE:

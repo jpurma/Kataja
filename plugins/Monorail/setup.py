@@ -22,7 +22,7 @@ plugin_parts = [Constituent, Document, SyntaxAPI]
 # previously initialized special structures can be destroyed.
 
 reload_order = ['Monorail.Constituent', 'Monorail.SyntaxAPI',
-                'Monorail.Document', 'Monorail.setup']
+                'Monorail.Document', 'Monorail.Parser', 'Monorail.setup']
 
 def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. loading

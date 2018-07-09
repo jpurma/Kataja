@@ -47,6 +47,7 @@ class Constituent(BaseConstituent or object):
             self.label = label
             self.features = list(features) if features else []
             self.parts = parts or []
+            self.inherited_features = self.features
             if features:
                 for feature in features:
                     feature.host = self
