@@ -64,23 +64,20 @@ class SyntaxAPI(KatajaSyntaxAPI):
         """ If it is possible to provide editable lexicon, where to get it
         :return:
         """
-        print('get_editable_lexicon called')
         return self.parser.printer.print_lexicon(self.parser.lex_trees) if self.parser else ''
 
     def derive_from_editable_lexicon(self, input_text, lexdata, semantics=''):
         """ Take edited version of get_editable_lexicon output and try derivation with it.
         """
-        print('calling derive_from_editable_lexicon', lexdata)
         grammar = load_grammar(lexdata)
         self.lexicon = grammar
         ctrl.disable_undo()
         f = ctrl.forest
         f.clear()
         self.input_text = input_text
-        self.input_words = input_text.split()
         self.parser = Parser(grammar, -0.0001, forest=f)
         # parser doesn't return anything, it pushes derivation steps to forest
-        self.parser.parse(input_words=self.input_words, start='C')
+        self.parser.parse(input_words=self.input_text.split(), start='C')
         ds = f.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
@@ -99,10 +96,9 @@ class SyntaxAPI(KatajaSyntaxAPI):
         structure. Resulting structures are used to populate a forest.
         :return:
         """
-        print('create_derivation: ', self.lexicon)
         self.parser = Parser(self.lexicon, -0.0001, forest=forest)
         # parser doesn't return anything, it pushes derivation steps to forest
-        self.parser.parse(input_words=self.input_words, start=self.start)
+        self.parser.parse(input_words=self.input_text.split(), start=self.start)
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
@@ -121,7 +117,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
             print('No transform')
             return syn_state
         if self.syntax_display_mode == CONSTITUENT_TREE:
-            print('Changing to constituent tree')
             ctrl.settings.set_node_setting('visible', True, g.FEATURE_NODE, level=g.DOCUMENT)
             ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
             ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
@@ -139,7 +134,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
                 node.update_visibility()
             return syn_state
         elif self.syntax_display_mode == FEATURE_TREE:
-            print('Changing to feature tree')
             ctrl.settings.set_node_setting('visible', False, g.FEATURE_NODE, level=g.DOCUMENT)
             ctrl.settings.set('label_text_mode', g.CHECKED_FEATURES, level=g.DOCUMENT)
             ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)

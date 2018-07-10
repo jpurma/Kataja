@@ -42,7 +42,6 @@ class SyntaxAPI(SavedObject):
         self.lexicon = {}
         self.rules = {}
         self.input_text = ''
-        self.input_words = []
         self.input_tree = []
         self.semantic_hierarchies = [
             ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C'],

@@ -288,7 +288,7 @@ class FeatureNode(Node):
                     if 1 < checked_by.fshape < 4:
                         compensate = 8
                     elif checked_by.fshape == 4:
-                        compensate = 10
+                        compensate = 8
                     else:
                         compensate = 4
                     x = checked_by.future_children_bounding_rect().right() - \
@@ -378,7 +378,7 @@ class FeatureNode(Node):
         if 1 < self.fshape < 4:
             lbw += 4
         elif self.fshape == 4:
-            lbw += 6
+            lbw += 8
         if x_offset or y_offset:
             x = x_offset
             y = y_offset

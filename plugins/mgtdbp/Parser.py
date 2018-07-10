@@ -577,7 +577,7 @@ class Parser:
             input_words,  # remaining sentence
             list(cat_queue),  # list of prediction states at this point
             [Constituent(lex_key='center')],  # built tree at this point
-            input_words.join(' '),  # output message
+            ' '.join(input_words),  # output message
             None  # for backtracking, there is no previous parse
         )]
         heapq.heapify(self.derivation_queue)
@@ -591,7 +591,7 @@ class Parser:
             c += 1
         print(f'{c} steps required, ignoring missteps.')
         t1 = time.time()
-        self.printer.compile_results(self.active_parse, input_words.join(' '))
+        self.printer.compile_results(self.active_parse, ' '.join(input_words))
         print(str(t1 - t0) + "seconds")
 
 

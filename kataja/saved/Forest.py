@@ -785,16 +785,16 @@ class Forest(SavedObject):
             const = node.syntactic_object
             if const.parts:
                 sorted_syn_feats = []
-                left, right = const.parts
-                left_f = left.inherited_features
-                right_f = right.inherited_features
+                feat_lists = [part.inherited_features for part in const.parts]
+                found = False
                 for feat in const.inherited_features + list(const.checked_features):
-                    if feat in left_f:
-                        sorted_syn_feats.append((0, left_f.index(feat), feat))
-                    elif feat in right_f:
-                        sorted_syn_feats.append((1, right_f.index(feat), feat))
-                    else:
-                        raise hell
+                    for i, feat_list in enumerate(feat_lists):
+                        if feat in feat_list:
+                            sorted_syn_feats.append((i, feat_list.index(feat), feat))
+                            found = True
+                            break
+                if not found:
+                    raise hell
                 sorted_syn_feats = [f for i, j, f in sorted(sorted_syn_feats)]
             else:
                 sorted_syn_feats = const.features
