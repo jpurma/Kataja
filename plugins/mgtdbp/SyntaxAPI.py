@@ -132,7 +132,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
             self.current_mode = self.syntax_display_mode
             for node in ctrl.forest.nodes.values():
                 node.update_visibility()
-            ctrl.forest.update_node_shapes()
             return syn_state
         elif self.syntax_display_mode == FEATURE_TREE:
             ctrl.settings.set_node_setting('visible', False, g.FEATURE_NODE, level=g.DOCUMENT)
@@ -150,7 +149,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
             self.current_mode = self.syntax_display_mode
             for node in ctrl.forest.nodes.values():
                 node.update_visibility()
-            ctrl.forest.update_node_shapes()
             return syn_state
         return syn_state
 

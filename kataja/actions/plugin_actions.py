@@ -65,8 +65,7 @@ class SwitchPlugin(KatajaAction):
     k_exclusive = True
 
     def prepare_parameters(self, args, kwargs):
-        """ Selected plugin is often mediated by MediatingAction
-        """
+        """ Selected plugin is often mediated by MediatingAction """
         sender = self.sender()
         if isinstance(sender, MediatingAction):
             key = sender.key

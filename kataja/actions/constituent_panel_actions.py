@@ -62,7 +62,6 @@ class SelectLabelShape(KatajaAction):
             m = 'Node shape: Feature'
 
         ctrl.settings.set('node_shape', bs, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return m
 
     def enabler(self):
@@ -79,7 +78,6 @@ class ActivateNoFrameNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('node_shape', g.NORMAL, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -100,7 +98,6 @@ class ActivateScopeboxNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('node_shape', g.SCOPEBOX, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -121,7 +118,6 @@ class ActivateBracketedNodeShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('node_shape', g.BRACKETED, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -142,7 +138,6 @@ class ActivateBoxShape(KatajaAction):
         :return:
         """
         ctrl.settings.set('node_shape', g.BOX, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -164,7 +159,6 @@ class ActivateCardNodeShape(KatajaAction):
         """
         ctrl.settings.set('node_shape', g.CARD, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -186,7 +180,6 @@ class ActivateFeatureNodeShape(KatajaAction):
         """
         ctrl.settings.set('node_shape', g.FEATURE_SHAPE, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 0, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
@@ -306,7 +299,6 @@ class SetVisibleLabel(KatajaAction):
                 else:
                     ok = True
         ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
-        ctrl.forest.update_node_shapes()
         mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'
 

@@ -590,6 +590,7 @@ class Forest(SavedObject):
             return
         self.update_feature_ordering()
         self.update_forest_gloss()
+        self.update_node_shapes()
         if self.visualization:
             print('draw visualization')
             self.visualization.prepare_draw()
@@ -606,7 +607,6 @@ class Forest(SavedObject):
             # print('current center point: ', cp)
             # self.free_movers = self.visualization.normalise_all(-cp.x(), -cp.y())
             ctrl.view_manager.predictive = not self.free_movers
-
 
         self.chain_manager.after_draw_update()
         self.recalculate_positions_relative_to_nodes()
@@ -751,6 +751,7 @@ class Forest(SavedObject):
             if cnode.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(cnode)
             cnode.gather_children(position, shape)
+            cnode.update_label()
         self.prepare_width_map()
 
     def update_forest_gloss(self):

@@ -342,6 +342,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #             classes.remove_class(class_name)
         classes.restore_default_classes()
         self.init_documents()
+        self.settings_manager.set_document(self.document)
+        self.forest = Forest()
+        self.settings_manager.set_forest(self.forest)
+        self.load_initial_treeset()
         ctrl.resume_undo()
         prefs.active_plugin_name = ''
 

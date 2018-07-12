@@ -105,7 +105,6 @@ def syntactic_state_to_nodes(forest, syn_state):
             node.name = getattr(me, 'name', '')
             node.value = getattr(me, 'value', '')
             node.family = getattr(me, 'family', '')
-            #node.update_label()
         else:
             fns_to_create.append(me)
         # we usually don't have feature structure, but lets assume that possibility
@@ -268,9 +267,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         if edge:
             free_drawing.delete_edge(edge, fade=animate)
 
-    # ############# Labels & node shapes ###############################
-    forest.update_node_shapes()
-
     # ############# Groups #######################################
 
     def rec_add_item(item, result_set):
@@ -369,8 +365,6 @@ def syntactic_state_to_nodes(forest, syn_state):
     strat = ctrl.settings.get('gloss_strategy')
     if strat and strat == 'message':
         forest.heading_text = syn_state.msg
-    forest.update_forest_gloss()
-    # ctrl.graph_scene.fit_to_window(force=True)
 
 
 def verify_edge_order_for_constituent_nodes(node):

@@ -26,7 +26,6 @@ from collections import OrderedDict
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, running_environment, classes
-from kataja.saved.Forest import Forest
 from kataja.utils import time_me
 
 
@@ -46,7 +45,7 @@ class KatajaDocument(SavedObject):
         super().__init__()
         self.name = name or filename or 'New project'
         self.filename = filename
-        self.forests = [Forest()]
+        self.forests = [classes.get('Forest')()]
         self.current_index = 0
         self.forest = None
         self.lexicon = {}
@@ -63,7 +62,7 @@ class KatajaDocument(SavedObject):
         #ctrl.undo_disabled = True
         if self.forest:
             self.forest.retire_from_drawing()
-        forest = Forest()
+        forest = classes.get('Forest')()
         self.current_index += 1
         self.poke('forests')  # <-- announce change in watched list-like attribute
         self.forests.insert(self.current_index, forest)
@@ -186,8 +185,8 @@ class KatajaDocument(SavedObject):
         comments = []
         started_forest = False
 
-        syntax_class = classes.get('SyntaxAPI')
-
+        SyntaxAPI = classes.get('SyntaxAPI')
+        Forest = classes.get('Forest')
         for line in treelist:
             line = line.strip()
             #line.split('=', 1)
@@ -210,7 +209,7 @@ class KatajaDocument(SavedObject):
                     heading_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
-                syn = syntax_class()
+                syn = SyntaxAPI()
                 syn.input_tree = buildstring
                 syn.lexicon = definitions
                 forest = Forest(heading_text=heading_text,
@@ -229,7 +228,7 @@ class KatajaDocument(SavedObject):
             elif line:
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added
-            syn = syntax_class()
+            syn = SyntaxAPI()
             syn.input_tree = buildstring
             syn.lexicon = definitions
             forest = Forest(heading_text=heading_text,
@@ -237,7 +236,7 @@ class KatajaDocument(SavedObject):
                             syntax=syn)
             self.forests.append(forest)
         if not self.forests:
-            syn = syntax_class()
+            syn = SyntaxAPI()
             forest = Forest(heading_text='',
                             comments=[],
                             syntax=syn)
