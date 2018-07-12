@@ -83,7 +83,6 @@ def syntactic_state_to_nodes(forest, syn_state):
             found_nodes.add(node.uid)
             node.syntactic_object = me
             node.label = me.label
-            node.update_label()
         else:
             cns_to_create.append((me, parent_synobj))
         for part in me.parts:
@@ -91,9 +90,9 @@ def syntactic_state_to_nodes(forest, syn_state):
                 recursive_add_const_node(part, me)
         for feat in me.get_features():
             if feat.uid not in done_nodes:
-                recursive_add_feature_node(feat, me)
+                recursive_add_feature_node(feat)
 
-    def recursive_add_feature_node(me, parent_synobj):
+    def recursive_add_feature_node(me):
         """ First we have to create new nodes close to existing nodes to avoid 
         rubberbanding.
         To help this create a list of missing nodes with known positions.
@@ -106,25 +105,25 @@ def syntactic_state_to_nodes(forest, syn_state):
             node.name = getattr(me, 'name', '')
             node.value = getattr(me, 'value', '')
             node.family = getattr(me, 'family', '')
-            node.update_label()
+            #node.update_label()
         else:
-            fns_to_create.append((me, parent_synobj))
+            fns_to_create.append(me)
         # we usually don't have feature structure, but lets assume that possibility
         if hasattr(me, 'parts'):
             for part in me.parts:
                 if part.uid not in done_nodes:
-                    recursive_add_feature_node(part, me)
+                    recursive_add_feature_node(part)
         if hasattr(me, 'features'):
             for feat in me.get_features():
                 if feat.uid not in done_nodes:
-                    recursive_add_feature_node(feat, me)
+                    recursive_add_feature_node(feat)
         if hasattr(me, 'checked_features'):
             for feat in me.checked_features:
                 if feat.uid not in done_nodes:
-                    recursive_add_feature_node(feat, me)
+                    recursive_add_feature_node(feat)
         if hasattr(me, 'checks'):
             if me.checks and me.checks.uid not in done_nodes:
-                recursive_add_feature_node(me.checks, me)
+                recursive_add_feature_node(me.checks)
 
     cns_to_create = []
     fns_to_create = []
@@ -150,11 +149,12 @@ def syntactic_state_to_nodes(forest, syn_state):
         node.set_syntactic_object(syn_bare)
         node.label = syn_bare.label
 
-    for syn_feat, syn_host in fns_to_create:
-        host = forest.get_node(syn_host)
+    for syn_feat in fns_to_create:
+        host = forest.get_node(syn_feat.host)
         if host:
             pos = host.scenePos()
         else:
+            print('missing host for created feature: ', syn_feat, syn_feat.host)
             pos = (0, 0)
         fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
         fnode.set_syntactic_object(syn_feat)
@@ -186,8 +186,9 @@ def syntactic_state_to_nodes(forest, syn_state):
         :param synobj:
         :return:
         """
+        assert synobj
         fnode = forest.get_node(synobj)
-        assert fnode, synobj
+        assert fnode
         if synobj.uid in done_nodes:
             return fnode
         done_nodes.add(synobj.uid)
@@ -268,7 +269,6 @@ def syntactic_state_to_nodes(forest, syn_state):
             free_drawing.delete_edge(edge, fade=animate)
 
     # ############# Labels & node shapes ###############################
-    #print('--- update node shapes in syntactic_state_to_nodes')
     forest.update_node_shapes()
 
     # ############# Groups #######################################

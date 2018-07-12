@@ -728,6 +728,7 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
+    @time_me
     def update_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
@@ -735,27 +736,21 @@ class Forest(SavedObject):
         """
         shape = ctrl.settings.get('node_shape')
         ctrl.release_editor_focus()
-        for node in self.nodes.values():
-            if node.node_type == g.CONSTITUENT_NODE:
-                node.label_object.node_shape = shape
-                node.update_label()
-                node.setZValue(node.preferred_z_value())
-            if node.is_triangle_host():
-                ctrl.free_drawing.add_or_update_triangle_for(node)
-        affected_parents = set()
-        f_mode = ctrl.settings.get('feature_positioning')
+        cnodes = [cn for cn in self.nodes.values() if cn.node_type == g.CONSTITUENT_NODE]
+        position = ctrl.settings.get('feature_positioning')
         checking_mode = ctrl.settings.get('feature_check_display')
         fnodes = [f for f in self.nodes.values() if f.node_type == g.FEATURE_NODE]
         for fnode in fnodes:
             fnode.update_label()
         for fnode in fnodes:
-            changed = fnode.update_checking_display(shape=shape, position=f_mode,
-                                                    checking_mode=checking_mode)
-            if changed:
-                affected_parents |= changed
-        for parent in affected_parents:
-            parent.gather_children()
-            parent.update_bounding_rect()
+            fnode.update_checking_display(shape=shape, position=position, checking_mode=checking_mode)
+        for cnode in cnodes:
+            cnode.label_object.node_shape = shape
+            cnode.update_label()
+            cnode.setZValue(cnode.preferred_z_value())
+            if cnode.is_triangle_host():
+                ctrl.free_drawing.add_or_update_triangle_for(cnode)
+            cnode.gather_children(position, shape)
         self.prepare_width_map()
 
     def update_forest_gloss(self):
@@ -787,14 +782,15 @@ class Forest(SavedObject):
                 sorted_syn_feats = []
                 feat_lists = [part.inherited_features for part in const.parts]
                 found = False
-                for feat in const.inherited_features + list(const.checked_features):
+                for j, feat in enumerate(itertools.chain(const.inherited_features,
+                                                         const.checked_features)):
                     for i, feat_list in enumerate(feat_lists):
                         if feat in feat_list:
                             sorted_syn_feats.append((i, feat_list.index(feat), feat))
                             found = True
                             break
-                if not found:
-                    raise hell
+                    if not found:
+                        sorted_syn_feats.append((-1, j, feat))
                 sorted_syn_feats = [f for i, j, f in sorted(sorted_syn_feats)]
             else:
                 sorted_syn_feats = const.features
@@ -809,8 +805,8 @@ class Forest(SavedObject):
                 if cn.syntactic_object:
                     cn.cached_sorted_feature_edges = sort_attached_features(cn)
                 else:
-                    cn.cached_sorted_feature_edges = [e for e in cn.edges_down if e.edge_type
-                                                      == g.FEATURE_EDGE]
+                    cn.cached_sorted_feature_edges = [e for e in cn.edges_down
+                                                      if e.edge_type == g.FEATURE_EDGE]
 
         for edge in self.edges.values():
             edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)

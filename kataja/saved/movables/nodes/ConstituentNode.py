@@ -565,8 +565,8 @@ class ConstituentNode(Node):
                     if node:
                         res.append(node)
                     else:
-                        print('missing head for CN %s, %s' % (self.syntactic_object.uid,
-                                                              head.uid))
+                        print('missing head for CN %s, %s %s' % (self.syntactic_object.uid,
+                                                                 head.uid, self.syntactic_object))
                         raise hell
             return res
         return self.heads
@@ -654,7 +654,7 @@ class ConstituentNode(Node):
             elif syn_gloss and gloss_node:
                 gloss_node.update_label()
 
-    def gather_children(self):
+    def gather_children(self, position, shape):
         """ If there are other Nodes that are childItems for this node, arrange them to their 
         proper positions. 
         
@@ -662,16 +662,15 @@ class ConstituentNode(Node):
         them in three possible ways. 
         :return: 
         """
-
-        fpos = ctrl.settings.get('feature_positioning')
-        shape = ctrl.settings.get('node_shape')
-        children = self.get_children(visible=True, similar=False)
+        children = [fn for fn in self.get_children(visible=True, similar=False) if
+                    fn.node_type == g.FEATURE_NODE]
         if not children:
             return
-        if shape == g.CARD:
-            fpos = g.TWO_COLUMNS  # only two column arrangement looks good on cards
 
-        if fpos == g.VERTICAL_COLUMN:
+        if shape == g.CARD:
+            position = g.TWO_COLUMNS  # only two column arrangement looks good on cards
+
+        if position == g.VERTICAL_COLUMN:
             center_x = self.boundingRect().center().x()
             bottom_y = self.boundingRect().bottom()
             y = bottom_y
@@ -680,7 +679,7 @@ class ConstituentNode(Node):
                     fbr = fnode.future_children_bounding_rect()
                     fnode.move_to(center_x, y - fbr.y())
                     y += fbr.height() + 2
-        elif fpos == g.HORIZONTAL_ROW:  # horizontal
+        elif position == g.HORIZONTAL_ROW:  # horizontal
             bottom_y = self.boundingRect().bottom()
             nods = []
             total_width = 0
@@ -697,7 +696,7 @@ class ConstituentNode(Node):
                 y = bottom_y + (max_height / 2)
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
-        elif fpos == g.TWO_COLUMNS:  # card layout, two columns
+        elif position == g.TWO_COLUMNS:  # card layout, two columns
             self._can_cascade_edges = False
             in_card = ctrl.settings.get('node_shape') == g.CARD
             cw, ch = self.label_object.card_size

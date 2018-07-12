@@ -100,8 +100,6 @@ def load_grammar(g=''):
         if '::' not in line:
             continue
         word, features = line.rsplit('::', 1)
-        if word == '∅':
-            word = ''
         rev_feats = [Feature.from_string(fstr) for fstr in reversed(features.split())]
         key_feat, *rest = rev_feats
         if key_feat.name not in lex_trees:
@@ -202,6 +200,7 @@ class Parse:
         self.tree = tree
         self.msg = msg
         self.prev = prev
+        self.count = 0  # this is used for id by Output and set by Output.
 
     def __lt__(self, other):
         return self.probability.__lt__(other.probability)
@@ -479,15 +478,15 @@ class Parser:
                     print('cannot handle active feature:', target.feat)
                     raise RuntimeError('create_expansions')
             else:  # the next node is a string node
-                if (not self.expansions) and ((not target.word) or target.word == self.word):
+                if (not self.expansions) and (target.word == '∅' or target.word == self.word):
                     word = Cat(target,
                                checked=self.active_category.checked,
                                path=self.active_category.path)
                     msg = self.step_info()
                     msg += f"Lexicon scan found ({target.word or '∅'}:: "
                     msg += f"...{self.active_category.node.feat})"
-                    print('creating word expansion: word %s (%s), parent %s' % (
-                          target.word, target.key, self.active_category.node))
+                    #print('creating word expansion: word %s (%s), parent %s' % (
+                    #      target.word, target.key, self.active_category.node))
                     self.expansions.append(
                         Expansion(msg,
                                   word=word,
@@ -501,7 +500,7 @@ class Parser:
             if exp.word:  # ic is result of scan
                 word_cat = exp.word
                 new_tree = parse.tree + [
-                    Constituent(word_cat.node.word or '∅',
+                    Constituent(word_cat.node.word,
                                 features=list(reversed(word_cat.checked)),
                                 path=list(word_cat.path),
                                 movers=word_cat.movers,
@@ -583,7 +582,7 @@ class Parser:
         heapq.heapify(self.derivation_queue)
 
         t0 = time.time()
-        self.derive(partial_results=in_kataja or True)
+        self.derive(partial_results=in_kataja)
         prev = self.active_parse
         c = 0
         while prev:

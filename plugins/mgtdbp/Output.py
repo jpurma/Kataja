@@ -52,7 +52,7 @@ except ImportError:
     from Feature import Feature
     from LexNode import LexNode
 
-DISCARD_DEAD_ENDS = False
+DISCARD_DEAD_ENDS = True
 
 
 class DerivationPrinter:
@@ -82,6 +82,7 @@ class DerivationPrinter:
             self.add_derivation_step(idtree)
 
             #print('dtree:', idtree.to_dtree())
+        active_parse.count = self.parse_count
         self.parse_count += 1
 
     def add_derivation_step(self, idtree):
@@ -170,7 +171,7 @@ class DerivationPrinter:
         good_ids = set()
         prev = active_parse
         while prev:
-            good_ids.add(prev.key)
+            good_ids.add(prev.count)
             prev = prev.prev
         all_ids = set(range(0, self.parse_count))
         bad_ids = all_ids - good_ids
@@ -233,6 +234,24 @@ class DerivationPrinter:
         """ build the derivation tree that has parent as its root, and return it """
 
         done = set()
+
+        def fix_hosts(node, done):
+            # since features are assumed top-down and then matched with lexical entries, it
+            # is difficult to track unambiguously which assumed features belonged to which lexical
+            # entries.
+            #
+            # However it is easy to fix feature hosts -- the if the feature is present and the
+            # node is leaf, the leaf is the host
+            #
+            if node in done:
+                return
+            done.add(node)
+            if node.parts:
+                for part in node.parts:
+                    fix_hosts(part, done)
+            else:
+                for feature in node.features:
+                    feature.host = node
 
         def raise_constituents(node, movers):
             neither_is_leaf = True
@@ -309,6 +328,8 @@ class DerivationPrinter:
                 else:
                     right_f.check(left_f)
         raise_constituents(top, {})
+        fix_hosts(top, set())
+
         assert len([node for node in build.values() if not node.path]) == 1
         assert top
         return top
@@ -330,14 +351,14 @@ class DerivationPrinter:
 
 
 def prepare_kataja_lex_tree(lex_trees):
-    root = Constituent('Lexicon')
 
     def as_feature(node):
         feat = node.feat or Feature('√' + (node.word or ''))
         feat.parts = [as_feature(part) for part in node.parts]
         return feat
 
-    root.features = [as_feature(node) for node in lex_trees.values()]
+    features = [as_feature(node) for node in lex_trees.values()]
+    root = Constituent('Lexicon', features=features)
     return root
 
 

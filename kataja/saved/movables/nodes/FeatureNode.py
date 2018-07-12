@@ -247,7 +247,7 @@ class FeatureNode(Node):
             if edge.edge_type == g.CHECKING_EDGE:
                 return edge.start
 
-    def update_checking_display(self, shape=None, position=None, checking_mode=None):
+    def update_checking_display(self, shape, position, checking_mode):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
         'locked_to_node' is the essential attribute in here. For features it should have two 
@@ -263,20 +263,12 @@ class FeatureNode(Node):
         :return:
         """
 
-        if shape is None:
-            shape = ctrl.settings.get('node_shape')
-        if position is None:
-            position = ctrl.settings.get('feature_positioning')
-        if checking_mode is None:
-            checking_mode = ctrl.settings.get('feature_check_display')
         checked_by = self.my_checking_feature()
         # First see if feature should be attached to another feature
         locked_to_another_feature = False
-        parents_are_affected = False
 
         if checked_by and self.is_visible():
             if checking_mode == g.NO_CHECKING_EDGE:
-                parents_are_affected = True
                 if self.locked_to_node == checked_by:
                     self.release_from_locked_position()
                 edge = self.get_edge_to(checked_by, g.CHECKING_EDGE)
@@ -294,16 +286,13 @@ class FeatureNode(Node):
                     x = checked_by.future_children_bounding_rect().right() - \
                         self.future_children_bounding_rect().x() - compensate
                     self.lock_to_node(checked_by, move_to=(x, 0))
-                    parents_are_affected = True
 
             elif checking_mode == g.SHOW_CHECKING_EDGE and self.locked_to_node == checked_by:
-                parents_are_affected = True
                 self.release_from_locked_position()
 
         # Then see if it should be fixed to its parent constituent node
         if not locked_to_another_feature:
             if position or shape == g.CARD:
-                parents_are_affected = True
                 host = self.get_host_node()
                 if host and host.is_visible():
                     self.lock_to_node(host)
@@ -311,12 +300,6 @@ class FeatureNode(Node):
                     self.release_from_locked_position()
             else:
                 self.release_from_locked_position()
-        if parents_are_affected:
-            affected_parents = set()
-            for parent in self.get_parents(similar=False, visible=True):
-                if parent.node_type == g.CONSTITUENT_NODE:
-                    affected_parents.add(parent)
-            return affected_parents
 
     def is_needy(self):
         if self.syntactic_object:

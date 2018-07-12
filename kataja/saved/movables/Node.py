@@ -608,14 +608,6 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
-    def gather_children(self):
-        """ If there are other Nodes that are childItems for this node, arrange them to their 
-        proper positions. Behavior depends a lot on node type, so default implementation does 
-        nothing.
-        :return: 
-        """
-        pass
-
     def get_locked_in_nodes(self):
         return [x for x in self.get_children(visible=True, similar=False) if
                 x.locked_to_node is self]

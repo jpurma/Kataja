@@ -68,9 +68,8 @@ class BaseConstituent(SavedObject, IConstituent):
         self.inherited_features = features or []
         self.checked_features = []
         self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
-        if features:
-            for feature in features:
-                feature.host = self
+        for feature in self.features:
+            feature.host = self
 
     def __str__(self):
         return str(self.label)
