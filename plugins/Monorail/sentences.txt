@@ -7,7 +7,7 @@
 
 [[['Rudolph', 'Agnew'], [',', [[[['55', 'years'], 'old'], ['and', [['former', 'chairman'], ['of', ['Consolidated', ['Gold', ['Fields', 'PLC']]]]]]], ',']]], [['was', ['named', ['*-1', [['a', ['nonexecutive', 'director']], ['of', ['this', ['British', ['industrial', 'conglomerate']]]]]]]], '.']]
 
-[[[[['A', 'form'], ['of', 'asbestos']], ['once', ['used', ['*', ['*', ['to', ['make', ['Kent', ['cigarette', 'filters']]]]]]]]], ['has', ['caused', [['a', ['high', 'percentage']], [['of', ['cancer', 'deaths']], ['among', [['a', 'group'], ['of', ['workers', ['exposed', ['*', [['to', 'it'], [[['more', ['than', '30']], 'years'], 'ago']]]]]]]]]]]]], [',', ['researchers', [['reported', ['0', '*T*-1']], '.']]]]
+[[[[['A', 'form'], ['of1', 'asbestos']], ['once', ['used', ['*', ['*', ['to1', ['make', ['Kent', ['cigarette', 'filters']]]]]]]]], ['has', ['caused', [['a', ['high', 'percentage']], [['of', ['cancer', 'deaths']], ['among', [['a', 'group'], ['of', ['workers', ['exposed', ['*', [['to', 'it'], [[['more', ['than', '30']], 'years'], 'ago']]]]]]]]]]]]], [',', ['researchers', [['reported', ['0', '*T*-1']], '.']]]]
 
 [[[['The', ['asbestos', 'fiber']], [',', ['crocidolite', ',']]], ['is', [['unusually', 'resilient'], [['once', ['it', ['enters', ['the', 'lungs']]]], [',', ['with', [[['even', ['brief', 'exposures']], ['to', 'it']], ['causing', ['symptoms', ['that', ['*T*-1', ['show', ['up', ['decades', 'later']]]]]]]]]]]]]], [',', ['researchers', [['said', ['0', '*T*-2']], '.']]]]
 

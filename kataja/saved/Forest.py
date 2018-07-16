@@ -751,7 +751,8 @@ class Forest(SavedObject):
             if cnode.is_triangle_host():
                 ctrl.free_drawing.add_or_update_triangle_for(cnode)
             cnode.gather_children(position, shape)
-            cnode.update_label()
+            cnode.update_bounding_rect()
+            cnode.update()
         self.prepare_width_map()
 
     def update_forest_gloss(self):
@@ -929,7 +930,12 @@ class Forest(SavedObject):
         once than recursively compute these when updating labels.
         :return:
         """
+        done = set()
+
         def recursive_width(node):
+            if node in done:
+                return 0
+            done.add(node)
             if node.is_leaf(only_similar=True, only_visible=True):
                 if node.is_visible():
                     w = node.label_object.width
@@ -941,7 +947,6 @@ class Forest(SavedObject):
                     if self.should_we_draw(n, node):
                         w += recursive_width(n)
             self.width_map[node.uid] = w
-            #node.update_label()
             return w
 
         self.width_map = {}

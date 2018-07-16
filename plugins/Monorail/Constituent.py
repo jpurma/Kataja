@@ -52,7 +52,7 @@ class Constituent(BaseConstituent or object):
                 for feature in features:
                     feature.host = self
 
-        self.edge = False
+        self.has_raised = False
 
     def __str__(self):
         if self.parts:
@@ -64,9 +64,6 @@ class Constituent(BaseConstituent or object):
         return str(self)
 
     def get_features(self):
-        """ Returns list both inherited and explicit features.
-        :return:
-        """
         if self.features:
             return self.features
         else:

@@ -23,12 +23,12 @@
 # ############################################################################
 
 from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, classes
 from syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 from Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
     parse_from_recipe, parse, flatten, read_lexicon
 import kataja.globals as g
+import time
 
 CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
@@ -95,14 +95,21 @@ class SyntaxAPI(KatajaSyntaxAPI):
         :return:
         """
         print('create_derivation: ', self.lexicon)
+        print('===========================')
+        t = time.time()
         recipe = []
         self.input_tree = remove_punctuation(self.input_tree)
         list_to_monorail(self.input_tree, [], recipe)
+        print('turned to monorail tree : ', time.time() - t)
         self.lexicon = deduce_lexicon_from_recipe(recipe)
-        #parse_from_recipe(recipe, self.lexicon, forest)
+        print('deduced lexicon: ', time.time() - t)
+        parse_from_recipe(recipe, self.lexicon, forest)
+        print('parsed from recipe: ', time.time() - t)
         flat_sentence = flatten(self.input_tree)
+        print('flattened sentence tree: ', time.time() - t)
         self.input_text = ' '.join(flat_sentence)
         parse(flat_sentence, self.lexicon, forest)
+        print('parsed with new lexicon: ', time.time() - t)
 
         ds = forest.derivation_steps
         ds.derivation_step_index = len(ds.derivation_steps) - 1

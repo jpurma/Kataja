@@ -39,15 +39,22 @@ def next_letter(char):
     return string.ascii_letters[string.ascii_letters.index(char) + 1]
 
 
-def find_checking_features(left, right):
+def find_checking_features(left, right, first_must_match=True):
     for feat in right.inherited_features:
-        if feat.sign == '' and not feat.used:
+        if feat.used:
+            continue
+        if feat.sign == '':
             for feat_to_check in left.inherited_features:
-                if ((not feat_to_check.used) and
-                        feat_to_check.name == feat.name and
-                        feat_to_check.sign and
-                        feat_to_check.sign in '=-_'):
+                if feat_to_check.used:
+                    continue
+                if (feat_to_check.name == feat.name and
+                   feat_to_check.sign and
+                   feat_to_check.sign in '=-_'):
                     return feat_to_check, feat
+                if first_must_match:
+                    break
+        if first_must_match:
+            break
 
 
 def inherit_features(head, checked_features):
@@ -61,9 +68,9 @@ def inherit_features(head, checked_features):
     return new_feats
 
 
-def merge(left, right):
+def check_features(merged):
+    left, right = merged.parts
     checking_features = find_checking_features(left, right)
-    merged = Constituent(parts=[left, right])
     if checking_features:
         feat_to_check, feat = checking_features
         feat_to_check.used = True
@@ -79,6 +86,16 @@ def merge(left, right):
             raise ValueError
         feat.check(feat_to_check)
         merged.checked_features = (feat_to_check, feat)
+
+
+def deduce_head(merged):
+    left, right = merged.parts
+    if merged.checked_features:
+        feat_to_check, feat = merged.checked_features
+        if feat_to_check.sign == '=':
+            head = left
+        else:
+            head = right
     else:
         if left.parts:
             head = right
@@ -86,6 +103,13 @@ def merge(left, right):
             head = left
     merged.inherited_features = inherit_features(head, merged.checked_features)
     merged.lexical_heads = list(head.lexical_heads)
+
+
+def merge(left, right):
+    merged = Constituent(parts=[left, right])
+    left.has_raised = bool(left.parts)
+    check_features(merged)
+    deduce_head(merged)
     return merged
 
 
@@ -124,8 +148,6 @@ def come_up_with_a_reason(needy_node, giving_node):
     needy_head = needy_node.lexical_heads[0]
     giving_head = giving_node.lexical_heads[0]
     for feat in needy_head.features:
-        if feat.name == 'e':
-            continue
         if feat.is_needy() and not feat.used:
             available_needy_feat = feat
             available_giving_feat = None
@@ -142,10 +164,11 @@ def come_up_with_a_reason(needy_node, giving_node):
                 giving_head.features.append(new_feature)
                 new_feature.host = giving_head
                 return available_needy_feat, new_feature
+    combined = needy_head.features + giving_head.features
     fname = string.ascii_letters[max([string.ascii_letters.index(f.name[0]) for f in
-                                      needy_head.features + giving_head.features]) + 1]
+                                      combined]) + 1] if combined else 'a'
     if needy_node.parts:
-        if random.randint(1, 2) == 1 and False:
+        if random.randint(1, 2) == 1: # and False:
             needy_f = Feature(fname, sign='=')
         else:
             needy_f = Feature(fname, sign='-')
@@ -182,13 +205,10 @@ def deduce_lexicon_from_recipe(recipe):
                 for feature in node.features:
                     feature.reset()
             else:
-                features = [Feature('e', sign=''), Feature('e', sign='=')]
+                features = []
                 node = Constituent(label=lexem, features=features)
                 lexicon[lexem] = node
-            if tree:
-                tree = merge(node, tree)
-            else:
-                tree = merge(node, startnode())
+            tree = merge(node, tree or startnode())
 
     for node in lexicon.values():
         for feature in node.features:
@@ -197,10 +217,12 @@ def deduce_lexicon_from_recipe(recipe):
 
 
 def fast_find_movable(node):
+    # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
+    # node was merged with.
+    # probably not enough when there is a series of raises that should be done.
     if node.parts:
         left, right = node.parts
-        if not left.edge: # and left.parts:
-            right.edge = True
+        if not left.has_raised: # and left.parts:
             return right
         return fast_find_movable(left)
     return None
@@ -220,7 +242,7 @@ def flatten(tree):
 
 
 def startnode():
-    return Constituent(label='', features=[Feature(name='e', sign='')])
+    return Constituent(label='', features=[Feature(name='0', sign='')])
 
 
 def parse_from_recipe(recipe, lexicon, forest):
@@ -232,53 +254,34 @@ def parse_from_recipe(recipe, lexicon, forest):
             tree = merge(node, tree)
         else:
             node = lexicon[lexem].copy()
-            assert not node.checked_features
-            for feat in node.features:
-                assert not (feat.checked_by or feat.checks)
-            if tree:
-                tree = merge(node, tree)
-            else:
-                tree = merge(node, startnode())
-
-            #lexicon[lexem] = node
-        if forest:
-            syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
-                                    iteration=Constituent.nodecount)
-            forest.add_step(syn_state)
+            tree = merge(node, tree or startnode())
+        export_to_kataja(tree, lexem, fast_find_movable(tree), forest)
     return tree
+
+
+def export_to_kataja(tree, message, focus, forest):
+    if forest:
+        syn_state = SyntaxState(tree_roots=[tree], msg=message,
+                                iteration=Constituent.nodecount,
+                                marked=[focus] if focus else None)
+        forest.add_step(syn_state)
 
 
 def parse(sentence, lexicon, forest):
     tree = None
     for lexem in sentence:
+        # External Merge
         node = lexicon[lexem].copy()
-        if tree:
-            tree = merge(node, tree)
-        else:
-            tree = merge(node, startnode())
-
-        raising = fast_find_movable(tree)
-        if forest:
-            syn_state = SyntaxState(tree_roots=[tree], msg=lexem,
-                                    iteration=Constituent.nodecount,
-                                    marked=[raising])
-            forest.add_step(syn_state)
-        if raising:
-            checking = find_checking_features(raising, tree)
-            while checking:
-                tree = merge(raising, tree)
-                raising = fast_find_movable(tree)
-                if forest:
-                    syn_state = SyntaxState(tree_roots=[tree],
-                                            msg='internal merge, ' + str(checking),
-                                            iteration=Constituent.nodecount,
-                                            marked=[raising])
-                    forest.add_step(syn_state)
-
-                if raising:
-                    checking = find_checking_features(raising, tree)
-                else:
-                    break
+        tree = merge(node, tree or startnode())
+        raising_node = fast_find_movable(tree)
+        export_to_kataja(tree, lexem, raising_node, forest)
+        checking = find_checking_features(raising_node, tree) if raising_node else None
+        # Do Internal Merges as long as possible
+        while checking:
+            tree = merge(raising_node, tree)
+            raising_node = fast_find_movable(tree)
+            export_to_kataja(tree, 'internal merge, ' + str(checking), raising_node, forest)
+            checking = find_checking_features(raising_node, tree) if raising_node else None
     return tree
 
 
