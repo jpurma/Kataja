@@ -31,6 +31,7 @@ import kataja.ui_graphicsitems.TouchArea as TA
 import kataja.ui_widgets.buttons.OverlayButton as OB
 from kataja.singletons import ctrl, prefs
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import coords_as_str
 import kataja.globals as g
 
 from html import escape
@@ -284,7 +285,7 @@ class ConstituentNode(Node):
 
         lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
                  f'uid: {tt_style % self.uid}',
-                 f'target position: {self.target_position}']
+                 f'target position: {coords_as_str(self.target_position)}']
 
         if self.index:
             lines.append(f' Index: {repr(self.index)}')
@@ -303,7 +304,7 @@ class ConstituentNode(Node):
         # lines.append(f'pos: ({x:.1f},{y:.1f})')
 
         if self.use_adjustment:
-            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+            lines.append(f' adjusted position {coords_as_str(self.adjustment)}')
 
         synobj = self.syntactic_object
         if synobj:
@@ -955,9 +956,9 @@ class ConstituentNode(Node):
         :return:
         """
         if ctrl.settings.get('syntactic_mode'):
-            return [0, 1, 6]
+            return [0, 1, 5, 6]
         else:
-            return [0, 1, 2, 3, 6]
+            return [0, 1, 2, 3, 5, 6]
 
     # ############## #
     #                #

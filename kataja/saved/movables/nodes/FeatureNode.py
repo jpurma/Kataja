@@ -35,7 +35,7 @@ from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
-from kataja.utils import to_tuple, time_me
+from kataja.utils import coords_as_str, to_tuple, time_me
 
 color_map = {
     'tense': 'accent7',
@@ -600,9 +600,9 @@ class FeatureNode(Node):
 
         lines = ["<strong>FeatureNode:</strong>",
                  f'uid: {tt_style % self.uid}',
-                 f'target position: {self.target_position}']
+                 f'target position: {coords_as_str(self.target_position)}']
         if self.use_adjustment:
-            lines.append(f' adjusted position ({self.adjustment[0]:.1f}, {self.adjustment[1]:.1f})')
+            lines.append(f' adjusted position {coords_as_str(self.adjustment)}')
 
         if not synobj:
             lines.append(f"name: {repr(self.name)}")

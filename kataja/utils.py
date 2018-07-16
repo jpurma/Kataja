@@ -46,6 +46,10 @@ def colored_image(color, base_image):
     return image
 
 
+def coords_as_str(xy):
+    return '(%.1f, %.1f)' % xy
+
+
 def print_rect(rect):
     """
 
