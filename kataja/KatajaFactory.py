@@ -2,6 +2,7 @@ import kataja.globals as g
 
 # We could use globals but it is safer this way: you can only create objects listed here.
 
+
 def get_role(classobj):
     return getattr(classobj, 'role', classobj.__name__)
 
@@ -82,6 +83,18 @@ class KatajaFactory:
         self.plugin_name_to_base_class = {}
         self.update_node_info()
 
+    def __getattr__(self, item):
+        value = self.get(item)
+        if value:
+            return value
+        raise AttributeError
+
+    def get(self, class_name):
+        if class_name in self.base_name_to_plugin_class:
+            return self.base_name_to_plugin_class[class_name]
+        else:
+            return self.classes[class_name]
+
     def add_mapping(self, base_class, plugin_class):
         plugin_role = get_role(plugin_class)
         if base_class:
@@ -122,16 +135,6 @@ class KatajaFactory:
             self.node_type_to_edge_type[node_type] = nodeclass.default_edge
             self.edge_type_to_node_type[nodeclass.default_edge] = node_type
         self.node_types_order.sort()
-
-    def get(self, class_name):
-        if class_name in self.base_name_to_plugin_class:
-            return self.base_name_to_plugin_class[class_name]
-        else:
-            return self.classes[class_name]
-
-    @property
-    def KatajaDocument(self):
-        return self.get('KatajaDocument')
 
     def get_original(self, class_name):
         if class_name in self.classes:

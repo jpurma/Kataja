@@ -13,6 +13,7 @@ from kataja.utils import to_tuple, add_xy, time_me
 from kataja.FadeInOut import FadeInOut
 from kataja.EdgePath import EdgePath
 from kataja.Shapes import SHAPE_PRESETS
+from kataja.saved.Movable import Movable
 
 
 class Arrow(Movable):

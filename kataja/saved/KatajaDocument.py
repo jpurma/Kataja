@@ -45,7 +45,7 @@ class KatajaDocument(SavedObject):
         super().__init__()
         self.name = name or filename or 'New project'
         self.filename = filename
-        self.forests = [classes.get('Forest')()]
+        self.forests = [classes.Forest()]
         self.current_index = 0
         self.forest = None
         self.lexicon = {}
@@ -62,7 +62,7 @@ class KatajaDocument(SavedObject):
         #ctrl.undo_disabled = True
         if self.forest:
             self.forest.retire_from_drawing()
-        forest = classes.get('Forest')()
+        forest = classes.Forest()
         self.current_index += 1
         self.poke('forests')  # <-- announce change in watched list-like attribute
         self.forests.insert(self.current_index, forest)
@@ -185,8 +185,8 @@ class KatajaDocument(SavedObject):
         comments = []
         started_forest = False
 
-        SyntaxAPI = classes.get('SyntaxAPI')
-        Forest = classes.get('Forest')
+        SyntaxAPI = classes.SyntaxAPI
+        Forest = classes.Forest
         for line in treelist:
             line = line.strip()
             #line.split('=', 1)

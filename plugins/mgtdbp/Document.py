@@ -54,7 +54,7 @@ class Document(KatajaDocument):
             sentence = sentence.strip()
             if (not sentence) or sentence.startswith('#'):
                 continue
-            syn = classes.get('SyntaxAPI')()
+            syn = classes.SyntaxAPI()
             syn.load_lexicon(grammar)
             syn.input_text = sentence
             syn.start = start

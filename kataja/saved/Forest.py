@@ -41,10 +41,9 @@ from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
-from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.singletons import ctrl, classes, prefs
 from kataja.utils import time_me
+from kataja.saved.Arrow import Arrow
 from syntax.SyntaxState import SyntaxState
 
 
@@ -105,11 +104,12 @@ class Forest(SavedObject):
         # Update request flags
         self._do_edge_visibility_check = False
         self._do_recalculate_relative_positions = False
-        #self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
     def init_factories(self):
-        if not self.syntax:
-            self.syntax = classes.get('SyntaxAPI')()
+        """ Some initialisations are postponed to when the forest is selected for
+        display. When there are hundreds of trees, initialising them at once is slow.
+        :return:
+        """
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -164,6 +164,7 @@ class Forest(SavedObject):
         self.in_display = True
         ctrl.disable_undo()
         if not self.is_parsed:
+            print('init factories and parse this forest')
             self.init_factories()
             self.syntax.create_derivation(self)
             self.after_model_update('nodes', 0)
@@ -256,69 +257,6 @@ class Forest(SavedObject):
         """
         self.derivation_steps.remove_iterations(iterations)
 
-    @staticmethod
-    def list_nodes(first):
-        """
-        Do left-first iteration through all nodes. Can become quite large if
-        there is lots of
-         multidomination.
-        :param first: Node, can be started from a certain point in structure
-        :return: iterator through nodes
-        """
-
-        def _iterate(node):
-            yield node
-            for child in node.get_children(similar=False, visible=False):
-                _iterate(child)
-
-        return _iterate(first)
-
-    @staticmethod
-    def list_visible_nodes_once(first):
-        """
-        Do left-first iteration through all nodes and return an iterator
-        where only first instance
-         of each node is present.
-        :param first: Node, can be started from a certain point in structure
-        :return: iterator through nodes
-        """
-        result = []
-
-        def _iterate(node):
-            if node not in result:
-                result.append(node)
-                for child in node.get_children(visible=True, similar=True):
-                    _iterate(child)
-
-        _iterate(first)
-        return result
-
-    @staticmethod
-    def list_nodes_once(first):
-        """
-        Do left-first iteration through all nodes and return a list where
-        only first instance of
-        each node is present.
-        :param first: Node, start from a certain point in structure
-        :return: iterator through nodes
-        """
-        result = []
-
-        def _iterate(node):
-            if node not in result:
-                result.append(node)
-                for child in node.get_children(similar=False, visible=False):
-                    _iterate(child)
-
-        _iterate(first)
-        return result
-
-    def visible_nodes(self) -> Generator[Node, Node, None]:
-        """ Any node that is visible. Ignore the type.
-        :return:
-        """
-        return (x for x in self.nodes.values() if x.is_visible())
-
     def get_nodes_by_index(self, index) -> (Node, set):
         head = None
         traces = set()
@@ -394,7 +332,6 @@ class Forest(SavedObject):
             l = [str(n.syntactic_object) for n in sorted_cons[i:]]
             return delimiter.join(l)
 
-
         if tree_top:
             return _tree_as_text(tree_top)
         elif node:
@@ -406,16 +343,6 @@ class Forest(SavedObject):
                 if new_line:
                     trees.append(new_line)
             return '/ '.join(trees)
-
-    def syntax_trees_as_string(self):
-        """
-        :return:
-        """
-        s = []
-        for tree_top in self.trees:
-            if tree_top.is_constituent:
-                s.append(tree_top.syntactic_object.print_tree())
-        return '\n'.join(s)
 
     # Scene and storage ---------------------------------------------------------------
 
@@ -518,35 +445,10 @@ class Forest(SavedObject):
                self.others.get(uid, None)
 
     def get_node(self, constituent):
-        """
-        Returns a node corresponding to a constituent
-        :rtype : kataja.BaseConstituentNode
-        :param constituent: syntax.BaseConstituent
-        :return: kataja.ConstituentNode
-        """
+        """ Returns a node corresponding to a constituent """
         if not constituent:
             return None
         return self.nodes_from_synobs.get(constituent.uid, None)
-
-    def get_constituent_edges(self):
-        """ Return generator of constituent edges
-        :return: generator
-        """
-        return (x for x in self.edges.values() if
-                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible())
-
-    def get_constituent_nodes(self):
-        """ Return generator of constituent nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if
-                isinstance(x, ConstituentNode) and x.is_visible())
-
-    def get_feature_nodes(self):
-        """ Return generator of feature nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if isinstance(x, FeatureNode))
 
     # Drawing and updating --------------------------------------------
 
@@ -592,7 +494,6 @@ class Forest(SavedObject):
         self.update_forest_gloss()
         self.update_node_shapes()
         if self.visualization:
-            print('draw visualization')
             self.visualization.prepare_draw()
             self.free_movers = self.visualization.has_free_movers()
             prev_trees = []
@@ -734,6 +635,7 @@ class Forest(SavedObject):
         presented in right way.        
         :return: 
         """
+        t = time.time()
         shape = ctrl.settings.get('node_shape')
         ctrl.release_editor_focus()
         cnodes = [cn for cn in self.nodes.values() if cn.node_type == g.CONSTITUENT_NODE]
@@ -762,7 +664,7 @@ class Forest(SavedObject):
             if strat == 'linearisation':
                 gts = []
                 for tree_top in self.trees:
-                    gt = ctrl.syntax.linearize(tree_top)
+                    gt = self.syntax.linearize(tree_top)
                     if gt:
                         gts.append(gt)
                 self.heading_text = ' '.join(gts)

@@ -42,8 +42,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
 
     def __init__(self):
         SavedObject.__init__(self)
-        self.Constituent = classes.get('Constituent')
-        self.Feature = classes.get('Feature')
+        self.Constituent = classes.Constituent
+        self.Feature = classes.Feature
         self.input_tree = []
         self.trees = []
         self.constituents = {}

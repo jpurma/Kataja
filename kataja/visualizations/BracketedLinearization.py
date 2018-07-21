@@ -88,7 +88,7 @@ class BracketedLinearization(BaseVisualization):
         else:
             ls += 1
         ctrl.settings.set('node_shape', ls, level=g.FOREST)
-        for node in self.forest.visible_nodes():
+        for node in self.forest.nodes.values():
             self.reset_node(node)
 
     def prepare_draw(self):

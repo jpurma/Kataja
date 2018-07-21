@@ -99,7 +99,7 @@ class BaseVisualization:
             self.forest.update_node_shapes()
 
     def reset_nodes(self):
-        for node in self.forest.visible_nodes():
+        for node in self.forest.nodes.values():
             self.reset_node(node)
 
     def say_my_name(self):

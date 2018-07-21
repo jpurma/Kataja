@@ -605,6 +605,27 @@ class Node(Movable):
 
         return filter(filter_func, self.edges_down)
 
+    def list_descendants_once(self):
+        """
+        Do left-first iteration through all nodes and return a list where
+        only first instance of each node is present.
+        :param first: Node, start from a certain point in structure
+        :return: iterator through nodes
+        """
+        done = set()
+        result = []
+
+        def _iterate(node):
+            if node not in done:
+                result.append(node)
+                done.add(node)
+                for edge in node.edges_down:
+                    if edge.end:
+                        _iterate(edge.end)
+
+        _iterate(self)
+        return result[1:]
+
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 

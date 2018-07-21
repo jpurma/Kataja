@@ -80,7 +80,7 @@ class ConstituentPanel(NodePanel):
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
-        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
+        allowed = classes.ConstituentNode.allowed_label_text_modes()
         data = prefs.get_display_choices('label_text_mode')
         data = [(choice, text) for (choice, text) in data if choice
                 in allowed]
@@ -108,14 +108,14 @@ class ConstituentPanel(NodePanel):
         self.finish_init()
 
     def syntactic_mode_changed(self):
-        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
+        allowed = classes.ConstituentNode.allowed_label_text_modes()
         data = prefs.get_display_choices('label_text_mode')
         data = [(choice, text) for (choice, text) in data if choice
                 in allowed]
         self.label_selector.rebuild_choices(data)
 
     def forest_changed(self):
-        allowed = classes.get('ConstituentNode').allowed_label_text_modes()
+        allowed = classes.ConstituentNode.allowed_label_text_modes()
         data = prefs.get_display_choices('label_text_mode')
         data = [(choice, text) for (choice, text) in data if choice
                 in allowed]

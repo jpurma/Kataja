@@ -43,7 +43,6 @@ import PyQt5.QtWidgets as QtWidgets
 import time
 
 import kataja.globals as g
-from syntax.SyntaxAPI import SyntaxAPI
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
@@ -52,7 +51,6 @@ from kataja.SavedObject import SavedObject
 from kataja.Settings import Settings
 from kataja.ViewManager import ViewManager
 from kataja.UIManager import UIManager
-from kataja.saved.Forest import Forest
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.ui_support.ErrorDialog import ErrorDialog
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
@@ -157,12 +155,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.settings_manager = Settings()
         self.documents = []
         self.document = None
-        ctrl.late_init(self)
+        ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
         # capture_stdout(log, self.log_stdout_as_debug, ctrl)
-
-        classes.late_init()
-        prefs.import_node_classes(classes)
-        self.syntax = SyntaxAPI()
+        classes.late_init()  # make all default classes available
+        prefs.import_node_classes(classes)  # add node styles defined at class to prefs
+        self.syntax = classes.SyntaxAPI()
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
@@ -182,7 +179,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.init_documents()
         self.settings_manager.set_document(self.document)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
-        self.forest = Forest()
+        self.forest = classes.Forest()
         self.settings_manager.set_forest(self.forest)
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
@@ -343,7 +340,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         classes.restore_default_classes()
         self.init_documents()
         self.settings_manager.set_document(self.document)
-        self.forest = Forest()
+        self.forest = classes.Forest()
         self.settings_manager.set_forest(self.forest)
         self.load_initial_treeset()
         ctrl.resume_undo()
@@ -395,7 +392,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         plugins have changed the classes that implement these.
         :return:
         """
-        self.documents = [classes.get('KatajaDocument')()]
+        self.documents = [classes.KatajaDocument()]
         self.document = self.documents[0]
         ctrl.call_watchers(self.document, 'document_changed')
 

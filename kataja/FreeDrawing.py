@@ -31,7 +31,6 @@ from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Image import Image
-from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
 from kataja.utils import time_me
@@ -634,14 +633,11 @@ class FreeDrawing:
         :param node:
         :raise ForestError:
         """
-        if not isinstance(node, ConstituentNode):
+        if node.node_type != g.CONSTITUENT_NODE:
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and "
                               "forcing it to binary merge")
 
-        if hasattr(node, 'index'):
-            i = node.index
-        else:
-            i = ''
+        i = node.index or ''
         children = list(node.get_children(similar=True, visible=False))
         for child in list(children):
             parents = node.get_parents(similar=True, visible=False)
@@ -681,8 +677,7 @@ class FreeDrawing:
             for parent in list(bad_parents):
                 self.delete_node(parent)
 
-    def unary_add_child_for_constituentnode(self, new_node: ConstituentNode,
-                                            old_node: ConstituentNode, add_left=True):
+    def unary_add_child_for_constituentnode(self, new_node, old_node, add_left=True):
         """
         :param new_node:
         :param old_node:
@@ -700,7 +695,7 @@ class FreeDrawing:
         else:
             self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
 
-    def add_sibling_for_constituentnode(self, new_node, old_node: ConstituentNode, add_left=True):
+    def add_sibling_for_constituentnode(self, new_node, old_node, add_left=True):
         """ Create a new merger node to top of this node and have this node and new node as its
         children.
         :param new_node:
@@ -850,7 +845,7 @@ class FreeDrawing:
         if root not in root.triangle_stack:
             root.poke('triangle_stack')
             root.triangle_stack.append(root)
-        fold_scope = self.f.list_nodes_once(root)[1:]
+        fold_scope = root.list_descendants_once()
         folded = []
         bad_mothers = set()
         if not fold_scope:  # triangle is just visual addition to label
@@ -903,7 +898,7 @@ class FreeDrawing:
         """
         :param node:
         """
-        fold_scope = [f for f in self.f.list_nodes_once(root)]
+        fold_scope = root.list_descendants_once()
         for node in fold_scope:
             if (not node.triangle_stack) or node.triangle_stack[-1] is not root:
                 print('node in triangles fold scope doesnt have triangle root in triangle_stack:',

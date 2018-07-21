@@ -119,7 +119,7 @@ class Controller:
         self.settings = main.settings_manager
 
     @property
-    def syntax(self):
+    def syntax(self) -> 'kataja.syntax.SyntaxAPI':
         """
         :return: SyntaxAPI
         """
@@ -129,14 +129,14 @@ class Controller:
             return self.main.syntax
 
     @property
-    def ui(self):
+    def ui(self) -> 'kataja.UIManager':
         """
         :return: UIManager
         """
         return self.main.ui_manager  # getattr(self.main, 'ui_manager', None)
 
     @property
-    def cm(self):
+    def cm(self) -> 'kataja.PaletteManager':
         """ Shortcut to color manager, which replaces palettes, colors etc.
         older solutions.
         :return: PaletteManager
@@ -144,7 +144,7 @@ class Controller:
         return self.main.color_manager
 
     @property
-    def forest(self):
+    def forest(self) -> 'kataja.saved.Forest':
         """ Shortcut to active forest
         :return: Forest
         """
@@ -166,11 +166,11 @@ class Controller:
     def graph_view(self) -> 'kataja.GraphView':
         return self.main.graph_view
 
-    def is_zooming(self):
+    def is_zooming(self) -> bool:
         return self.main.graph_view.zoom_timer.isActive()
 
     @property
-    def play(self):
+    def play(self) -> bool:
         return self.main.document.play
     # ******* Selection *******
 

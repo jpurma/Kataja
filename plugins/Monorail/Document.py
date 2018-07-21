@@ -82,7 +82,7 @@ class Document(KatajaDocument):
                     input_trees.append(ast.literal_eval(line))
 
         for input_tree in input_trees:
-            syn = classes.get('SyntaxAPI')()
+            syn = classes.SyntaxAPI()
             syn.input_tree = input_tree
             forest = Forest(heading_text=str(input_tree), syntax=syn)
             self.forests.append(forest)

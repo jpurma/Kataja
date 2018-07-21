@@ -219,7 +219,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return self.end_links_to.chain_down(chain)
         return chain
 
-
     def final_end_node(self):
         if not self.end_links_to:
             return self.end

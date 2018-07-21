@@ -34,8 +34,8 @@ class SyntaxAPI(SavedObject):
 
     def __init__(self):
         super().__init__()
-        self.Constituent = classes.get('Constituent')
-        self.Feature = classes.get('Feature')
+        self.Constituent = classes.Constituent
+        self.Feature = classes.Feature
         self.trees = []
         self.constituents = {}
         self.features = {}
@@ -150,8 +150,9 @@ class SyntaxAPI(SavedObject):
         :return:
         """
         text = self.input_text.strip()
-        print('create derivation called w. sentence: ', text)
-        roots = forest.parser.string_into_forest(text)
+        tree = self.input_tree.strip()
+        print('create derivation called w. sentence: ', tree)
+        roots = forest.parser.string_into_forest(tree)
         forest.free_drawing.definitions_to_nodes(self.lexicon)
         self.nodes_to_synobjs(forest, roots)
 
