@@ -265,9 +265,7 @@ class ViewManager:
         if self.auto_zoom != value:
             self.auto_zoom = value
             action = ctrl.ui.get_action('auto_zoom')
-            print('set auto zoom')
             if action:
-                print('update action')
                 action.update_action()
 
     @staticmethod

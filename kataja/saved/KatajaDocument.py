@@ -47,7 +47,7 @@ class KatajaDocument(SavedObject):
         self.filename = filename
         self.forests = [classes.Forest()]
         self.current_index = 0
-        self.forest = None
+        self.forest = self.forests[0]
         self.lexicon = {}
         self.structures = OrderedDict()
         self.constituents = OrderedDict()
@@ -76,6 +76,8 @@ class KatajaDocument(SavedObject):
         """
         if not self.forests:
             return None
+        if self.forest:
+            self.forest.retire_from_drawing()
         if self.current_index < len(self.forests) - 1:
             return self.jump_to_forest(self.current_index + 1)
         else:
@@ -87,6 +89,8 @@ class KatajaDocument(SavedObject):
         """
         if not self.forests:
             return None
+        if self.forest:
+            self.forest.retire_from_drawing()
         if self.current_index > 0:
             return self.jump_to_forest(self.current_index - 1)
         else:
@@ -98,6 +102,8 @@ class KatajaDocument(SavedObject):
         """
         if not self.forests:
             return 0, None
+        if self.forest:
+            self.forest.retire_from_drawing()
         if i < 0:
             i = 0
         elif i >= len(self.forests):
@@ -138,6 +144,7 @@ class KatajaDocument(SavedObject):
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
 
+    @time_me
     def create_forests(self, filename=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
         This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.

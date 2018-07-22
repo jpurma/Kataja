@@ -1,6 +1,5 @@
 from kataja.SavedObject import SavedObject
-from kataja.KatajaFactory import KatajaFactory
-from kataja.globals import FOREST
+import kataja.globals as g
 from kataja.singletons import ctrl, classes
 from kataja.nodes_to_synobjs import nodes_to_synobjs
 
@@ -43,6 +42,8 @@ class SyntaxAPI(SavedObject):
         self.rules = {}
         self.input_text = ''
         self.input_tree = []
+        self.display_mode = 0
+        self.current_mode = 0
         self.semantic_hierarchies = [
             ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C'],
             ['N', 'n', 'Poss', 'Num', 'D', 'Q']
@@ -54,6 +55,34 @@ class SyntaxAPI(SavedObject):
         """ List the constituent structures of the workspace, represented by their topmost element
         """
         return self.trees
+
+    def read_lexicon(self, lexdata):
+        lex = {}
+        lines = lexdata.splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith('#'):
+                continue
+            if '::' not in line:
+                continue
+            lexem, features = line.rsplit('::', 1)
+            lexem = lexem.strip()
+            if lexem == '∅':
+                lexem = ''
+            features = [self.Feature.from_string(fstr) for fstr in features.split()]
+            node = self.Constituent(label=lexem, features=features)
+            lex[lexem] = node
+        return lex
+
+    def normalised_input_text(self):
+        string = self.input_text.lower()
+        chars_to_remove = ',".?!():<>[]|'
+        for char in chars_to_remove:
+            string = string.replace(char, '')
+        string = string.split()
+        string = ' '.join([x.strip() for x in string])
+        return string
 
     def get_editable_lexicon(self):
         """ If it is possible to provide editable lexicon (str), where to get it.
@@ -126,14 +155,6 @@ class SyntaxAPI(SavedObject):
             _pick_leaves(child)
         return [l.syntactic_object for l in leaves]
 
-    def derive_from_editable_lexicon(self, forest, input_text, lexdata, semantics=''):
-        """ Take edited version of get_editable_lexicon output and try derivation with it.
-        """
-        self.input_text = input_text
-        self.create_derivation(forest)
-
-        raise NotImplementedError
-
     def nodes_to_synobjs(self, forest, roots):
         """ Wrapper for function to update all syntactic objects to correspond with the current
         node graph, if possible. It can be complicated and it is sensitive to modifications in
@@ -144,17 +165,61 @@ class SyntaxAPI(SavedObject):
         syntax = self
         return nodes_to_synobjs(forest, syntax, roots)
 
-    def create_derivation(self, forest):
-        """ This is always called to initially turn syntax available here and some input into a
-        structure. Resulting structures are used to populate a forest.
+    def _prepare_derivation_parameters(self, input_text, lexicon, semantics):
+        if lexicon is not None:
+            if isinstance(lexicon, dict):
+                self.lexicon = lexicon
+            else:
+                self.lexicon = self.read_lexicon(lexicon)
+        if input_text is not None:
+            if isinstance(input_text, list):
+                self.input_tree = input_text
+                self.input_text = ''
+            else:
+                input_text = input_text.strip()
+                if input_text.startswith('[') and input_text.endswith(']'):
+                    self.input_tree = input_text
+                    self.input_text = ''
+                else:
+                    self.input_tree = []
+                    self.input_text = input_text
+        if semantics:
+            self.semantic_hierarchies = semantics
+
+    def create_derivation(self, input_text=None, lexicon=None, semantics=None, forest=None):
+        """ Attempt parsing with given sentence or tree and with given lexicon. If these are left
+        out, do or redo parsing with instance's stored sentence, lexicon and semantics.
+
+        If a forest is provided, derivation steps are created there.
         :return:
         """
-        text = self.input_text.strip()
-        tree = self.input_tree.strip()
-        print('create derivation called w. sentence: ', tree)
-        roots = forest.parser.string_into_forest(tree)
-        forest.free_drawing.definitions_to_nodes(self.lexicon)
-        self.nodes_to_synobjs(forest, roots)
+        self._prepare_derivation_parameters(input_text, lexicon, semantics)
+
+        if self.input_tree:
+            print('create derivation called w. sentence: ', self.input_tree)
+            roots = forest.parser.string_into_forest(self.input_tree)
+            forest.free_drawing.definitions_to_nodes(self.lexicon)
+            self.nodes_to_synobjs(forest, roots)
+
+    def set_display_mode(self, i):
+        self.display_mode = i
+
+    def next_display_mode(self):
+        self.display_mode += 1
+        if self.display_mode == len(self.display_modes):
+            self.display_mode = 0
+        return self.display_modes[self.display_mode]
+
+    def update_display_mode(self, syn_state):
+        """ Modify display settings or syn_state according to current display mode. Does nothing
+        by default.
+        :param syn_state:
+        :return: changed syn_state
+        """
+        if self.display_mode != self.current_mode:
+            #  do changes
+            pass
+        return syn_state
 
     def get_constituent_from_lexicon(self, identifier):
         """ Fetch constituent from lexicon

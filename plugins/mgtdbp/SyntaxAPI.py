@@ -66,24 +66,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
         """
         return self.parser.printer.print_lexicon(self.parser.lex_trees) if self.parser else ''
 
-    def derive_from_editable_lexicon(self, input_text, lexdata, semantics=''):
-        """ Take edited version of get_editable_lexicon output and try derivation with it.
-        """
-        grammar = load_grammar(lexdata)
-        self.lexicon = grammar
-        ctrl.disable_undo()
-        f = ctrl.forest
-        f.clear()
-        self.input_text = input_text
-        self.parser = Parser(grammar, -0.0001, forest=f)
-        # parser doesn't return anything, it pushes derivation steps to forest
-        self.parser.parse(input_words=self.input_text.split(), start='C')
-        ds = f.derivation_steps
-        ds.derivation_step_index = len(ds.derivation_steps) - 1
-        ds.jump_to_derivation_step(ds.derivation_step_index)
-        f.prepare_for_drawing()
-        ctrl.resume_undo()
-
     def get_editable_sentence(self):
         """ If the current systems supports parsing, return the current parsed string. User can
         edit it and retry parsing.
@@ -91,26 +73,17 @@ class SyntaxAPI(KatajaSyntaxAPI):
         """
         return self.input_text
 
-    def create_derivation(self, forest):
-        """ This is always called to initially turn syntax available here and some input into a
-        structure. Resulting structures are used to populate a forest.
+    def create_derivation(self, input_text=None, lexicon=None, semantics=None, forest=None):
+        """ Attempt parsing with given sentence or tree and with given lexicon. If these are left
+        out, do or redo parsing with instance's stored sentence, lexicon and semantics.
+
+        If a forest is provided, derivation steps are created there.
         :return:
         """
+        self._prepare_derivation_parameters(input_text, lexicon, semantics)
         self.parser = Parser(self.lexicon, -0.0001, forest=forest)
         # parser doesn't return anything, it pushes derivation steps to forest
         self.parser.parse(input_words=self.input_text.split(), start=self.start)
-        ds = forest.derivation_steps
-        ds.derivation_step_index = len(ds.derivation_steps) - 1
-        ds.jump_to_derivation_step(ds.derivation_step_index)
-
-    def set_display_mode(self, i):
-        self.display_mode = i
-
-    def next_display_mode(self):
-        self.display_mode += 1
-        if self.display_mode == len(self.display_modes):
-            self.display_mode = 0
-        return self.display_modes[self.display_mode]
 
     def update_display_mode(self, syn_state):
         if self.display_mode == self.current_mode:
@@ -161,5 +134,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
         #    for part in synobj.parts:
         #        self.to_feature_constituent(part)
         return synobj
+
+    def read_lexicon(self, lexdata):
+        return load_grammar(lexdata)
 
     start = SavedField("start")

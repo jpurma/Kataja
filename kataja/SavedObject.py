@@ -454,7 +454,7 @@ class SavedObject(object):
 
         # forest, or otherwise things go awry
         if class_key == 'Forest':
-            kataja_main.forest = obj
+            kataja_main.document.forest = obj
 
         # keep track of which objects have been restored
         restored[obj_key] = obj

@@ -128,7 +128,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                              'toggle_all_panels', '---',
                                                              '$switch_project'])),
                               ('plugin_menu', ('&Plugin', ['manage_plugins', 'reload_plugin',
-                                                           '---', '$switch_plugin'])),
+                                                           '---', '$toggle_plugin'])),
                               ('help_menu', ('&Help', ['help']))])
 
 
@@ -567,7 +567,7 @@ class UIManager:
 
     def prepare_plugin_menus(self):
         menu_items = []
-        base_action = self.actions['switch_plugin']
+        base_action = self.actions['toggle_plugin']
         for key in sorted(self.main.available_plugins):
             action = MediatingAction(text=key, target=base_action, key=key)
             action.setChecked(key == prefs.active_plugin_name)
@@ -652,7 +652,7 @@ class UIManager:
                         exp_items += self.prepare_visualisation_menus()
                     elif key == 'switch_project':
                         exp_items += self.prepare_project_menus()
-                    elif key == 'switch_plugin':
+                    elif key == 'toggle_plugin':
                         exp_items += self.prepare_plugin_menus()
                 elif isinstance(item, tuple):
                     exp_items.append(expand_list(item[0], item[1]))

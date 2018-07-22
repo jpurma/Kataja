@@ -58,30 +58,6 @@ class ManagePlugins(KatajaAction):
         ctrl.ui.preferences_dialog.stackwidget.setCurrentIndex(i)
 
 
-class SwitchPlugin(KatajaAction):
-    k_action_uid = 'switch_plugin'
-    k_checkable = True
-    k_undoable = False
-    k_exclusive = True
-
-    def prepare_parameters(self, args, kwargs):
-        """ Selected plugin is often mediated by MediatingAction """
-        sender = self.sender()
-        if isinstance(sender, MediatingAction):
-            key = sender.key
-        else:
-            key = sender.data
-        return [key], kwargs
-
-    def method(self, key):
-        """ Switch to use another plugin or disable current plugin.
-        :param index:
-        """
-        m = ctrl.main.set_active_plugin(key, prefs.active_plugin_name != key)
-        ctrl.ui.update_plugin_menu()
-        return m
-
-
 class ReloadPlugin(KatajaAction):
     k_action_uid = 'reload_plugin'
     k_command = '&Reload plugins'
@@ -110,12 +86,20 @@ class TogglePlugin(KatajaAction):
     k_command = 'Enable plugin'
     k_command_alt = 'Disable plugin'
     k_undoable = False
+    k_checkable = True
+    k_exclusive = True
     k_tooltip = "Plugins can drastically change how Kataja operates and what it tries to do. " \
                 "Be sure you trust the code before enabling a plugin. "
 
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()
-        return [sender.plugin_key, sender.isChecked()], kwargs
+        if isinstance(sender, MediatingAction):
+            key = sender.key
+        elif hasattr(sender, 'plugin_key'):
+            key = sender.plugin_key
+        else:
+            key = sender.data
+        return [key, sender.isChecked()], kwargs
 
     def method(self, plugin_key, value):
         """ Enable or disable plugin identified by plugin_key

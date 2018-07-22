@@ -40,9 +40,16 @@ class DeriveFromLexicon(KatajaAction):
     def method(self):
         panel = ctrl.ui.get_panel('LexiconPanel')
         if panel:
-            lexicon = panel.lextext.toPlainText()
-            input_text = panel.input_text.text()
-            semantics = panel.semantics_text.text()
-            ctrl.syntax.derive_from_editable_lexicon(ctrl.forest, input_text, lexicon, semantics)
+            forest = ctrl.forest
+            forest.clear()
+            ctrl.syntax.create_derivation(input_text=panel.input_text.text(),
+                                          lexicon=panel.lextext.toPlainText(),
+                                          semantics=panel.semantics_text.text(),
+                                          forest=forest)
+            forest.is_parsed = True
+            ds = forest.derivation_steps
+            ds.derivation_step_index = len(ds.derivation_steps) - 1
+            ds.jump_to_derivation_step(ds.derivation_step_index)
+            forest.forest_edited()
+            forest.prepare_for_drawing()
             ctrl.graph_view.setFocus()
-            ctrl.forest.forest_edited()

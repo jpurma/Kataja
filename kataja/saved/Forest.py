@@ -69,12 +69,10 @@ class Forest(SavedObject):
         super().__init__()
         self.nodes_from_synobs = {}
         self.main = ctrl.main
-        self.main.forest = self  # assign self to be the active forest while
-        # creating the managers.
         self.in_display = False
         self.visualization = None
         self.is_parsed = False
-        self.syntax = syntax
+        self.syntax = syntax or classes.SyntaxAPI()
 
         self.parser = None
         self.undo_manager = None
@@ -164,12 +162,15 @@ class Forest(SavedObject):
         self.in_display = True
         ctrl.disable_undo()
         if not self.is_parsed:
-            print('init factories and parse this forest')
             self.init_factories()
-            self.syntax.create_derivation(self)
+            self.syntax.create_derivation(forest=self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
+            ds = self.derivation_steps
+            ds.derivation_step_index = len(ds.derivation_steps) - 1
+            ds.jump_to_derivation_step(ds.derivation_step_index)
             self.forest_edited()
+
         ctrl.add_watcher(self, 'palette_changed')
         ctrl.main.update_colors()
         self.add_all_to_scene()
@@ -185,6 +186,7 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
+        print('retire from drawing called for forest')
         if self.is_parsed:
             for item in self.get_all_objects():
                 self.remove_from_scene(item, fade_out=False)
@@ -482,10 +484,12 @@ class Forest(SavedObject):
                 ctrl.remove_from_selection(item)
         ctrl.multiselection_end()
 
+    @time_me
     def draw(self, start_animations=False):
         """ Update all trees in the forest according to current visualization
         """
         if self.halt_drawing:
+            print('halt drawing is on')
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
@@ -512,7 +516,7 @@ class Forest(SavedObject):
         self.chain_manager.after_draw_update()
         self.recalculate_positions_relative_to_nodes()
         ctrl.view_manager.update_viewport(ViewUpdateReason.MAJOR_REDRAW)
-        if start_animations:
+        if start_animations or True:
             ctrl.graph_scene.start_animations()
         ctrl.graph_view.resetCachedContent()
         ctrl.graph_view.repaint()
@@ -699,8 +703,9 @@ class Forest(SavedObject):
             else:
                 sorted_syn_feats = const.features
 
-            sortable_edges = [(sorted_syn_feats.index(e.alpha.syntactic_object), e) for e in
-                              node.edges_down if e.edge_type == g.FEATURE_EDGE]
+            sortable_edges = [(sorted_syn_feats.index(e.alpha.syntactic_object)
+                               if e.alpha else i + 100, e) for i, e in
+                              enumerate(node.edges_down) if e.edge_type == g.FEATURE_EDGE]
 
             return [e for i, e in sorted(sortable_edges)]
 

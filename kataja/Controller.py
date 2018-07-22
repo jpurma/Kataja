@@ -91,7 +91,7 @@ class Controller:
         self.undo_disabled = 0  # stacking flag that affects if pickle.load assumes
         # an empty workspace (loading new) or if it tries to compare changes
         # (undo).
-        self.watchers_disabled = False  # flag to suppress watchers -- not
+        self.watchers_enabled = True  # flag to suppress watchers -- not
         # sure if it is *ever* a good idea
         self.printing = False
         self.unassigned_objects = {}
@@ -148,7 +148,7 @@ class Controller:
         """ Shortcut to active forest
         :return: Forest
         """
-        return self.main.forest
+        return self.main.document.forest
 
     @property
     def free_drawing(self) -> 'kataja.FreeDrawing':
@@ -416,7 +416,7 @@ class Controller:
         :return:
         """
 
-        if not self.watchers_disabled:
+        if self.watchers_enabled:
             watchers = self.get_watchers(signal)
             for watcher in watchers:
                 watcher.watch_alerted(obj, signal, field_name, value)

@@ -191,8 +191,7 @@ class SwitchSyntaxViewMode(KatajaAction):
         return mode_name
 
     def getter(self):
-        if ctrl.syntax.display_modes:
-            return ctrl.syntax.display_mode
+        return ctrl.syntax.display_mode
 
     def enabler(self):
         return ctrl.syntax and bool(ctrl.syntax.display_modes)

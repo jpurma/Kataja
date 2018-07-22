@@ -59,6 +59,7 @@ class Document(KatajaDocument):
         :param filename: not used
         :param clear: start with empty
         """
+        print('creating forests in Monorail')
         filename = filename or Document.default_treeset_file
 
         # Clear this screen before we start creating a mess

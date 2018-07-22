@@ -134,11 +134,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.init_done = False
+        ctrl.watchers_enabled = False
         kataja_app.processEvents()
         SavedObject.__init__(self)
 
         self.use_tooltips = True
         self.available_plugins = {}
+        self.active_plugin_setup = {}
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
@@ -149,7 +151,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.app = kataja_app
         self.classes = classes
         self.save_prefs = not no_prefs
-        self.forest = None
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
         self.settings_manager = Settings()
@@ -179,14 +180,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.init_documents()
         self.settings_manager.set_document(self.document)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
-        self.forest = classes.Forest()
         self.settings_manager.set_forest(self.forest)
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
-        ctrl.call_watchers(self, 'viewport_changed')
         self.setWindowTitle(self.tr("Kataja"))
         self.print_started = False
         self.show()
@@ -195,6 +194,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.activateWindow()
         # self.status_bar = self.statusBar()
         self.install_plugins()
+        ctrl.watchers_enabled = True
+        ctrl.call_watchers(self, 'viewport_resized')
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
         # ctrl.call_watchers(self.document, 'forest_changed')
@@ -208,6 +209,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.init_done = True
         self.action_finished(undoable=False, play=True)
         self.forest.undo_manager.flush_pile()
+
+
+    @property
+    def forest(self):
+        return self.document.forest
 
     def update_style_sheet(self):
         c = ctrl.cm.drawing()
@@ -280,13 +286,18 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 
         """
-        init_state = self.init_done
-        self.init_done = False
         self.active_plugin_setup = self.load_plugin(plugin_key)
         if not self.active_plugin_setup:
             return
-        self.clear_all()
+
+        # shut down side effects
+        init_state = self.init_done
+        self.init_done = False
         ctrl.disable_undo()
+        ctrl.watchers_enabled = False
+        # ----------------------
+
+        self.clear_all()
         if reload:
             available = []
             for key in sys.modules:
@@ -316,34 +327,41 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.init_documents()
+
+        # resume with side effects
+        ctrl.watchers_enabled = True
         ctrl.resume_undo()
-        prefs.active_plugin_name = plugin_key
         self.init_done = init_state
+        # ----------------------
+        prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):
         """ Disable the current plugin and load the default trees instead.
         :param clear: if True, have empty treeset, if False, try to load default kataja treeset."""
         if not self.active_plugin_setup:
+            print('bailing out disable plugin: no active plugin recognised')
             return
+
+        # shut down side effects
+        init_state = self.init_done
+        self.init_done = False
         ctrl.disable_undo()
+        ctrl.watchers_enabled = False
+        # ----------------------
+
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
-        # print(classes.base_name_to_plugin_class)
-        # if hasattr(self.active_plugin_setup, 'plugin_parts'):
-        #     for classobj in self.active_plugin_setup.plugin_parts:
-        #         class_name = classobj.__name__
-        #         if class_name:
-        #             log.info(f'removing {class_name}')
-        #             print(f'removing {class_name}')
-        #             classes.remove_class(class_name)
         classes.restore_default_classes()
         self.init_documents()
         self.settings_manager.set_document(self.document)
-        self.forest = classes.Forest()
         self.settings_manager.set_forest(self.forest)
-        self.load_initial_treeset()
+
+        # resume with side effects
+        ctrl.watchers_enabled = True
         ctrl.resume_undo()
+        self.init_done = init_state
+        # ----------------------
         prefs.active_plugin_name = ''
 
     def load_plugin(self, plugin_module):
@@ -400,7 +418,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
-
+        if self.forest:
+            self.forest.retire_from_drawing()
         self.document.create_forests(clear=False)
         self.change_forest()
         self.ui_manager.update_projects_menu()
@@ -439,10 +458,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ctrl.disable_undo()
         if self.forest:
             self.forest.retire_from_drawing()
-        if not self.document.forest:
+        else:
             self.document.create_forests(clear=True)
-        self.forest = self.document.forest
         self.settings_manager.set_forest(self.forest)
+        print(f'has forest with {len(self.forest.nodes)} nodes')
         if self.forest.is_parsed:
             if self.forest.derivation_steps:
                 ds = self.forest.derivation_steps
@@ -505,11 +524,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         elif m:
             log.info(m)
         if ctrl.action_redraw:
-            ctrl.forest.draw()
+            self.forest.draw()
         if undoable and not error:
-            ctrl.forest.undo_manager.take_snapshot(m)
+            self.forest.undo_manager.take_snapshot(m)
         if play:
-            ctrl.graph_scene.start_animations()
+            self.graph_scene.start_animations()
         ctrl.ui.update_actions()
 
     def trigger_action(self, name, *args, **kwargs):
@@ -582,7 +601,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         png = prefs.print_format == 'png'
         source = self.view_manager.print_rect()
 
-        for node in ctrl.forest.nodes.values():
+        for node in self.forest.nodes.values():
             node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
 
         if png:
@@ -591,7 +610,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self._write_pdf(source, path, filename)
 
         # Restore image
-        for node in ctrl.forest.nodes.values():
+        for node in self.forest.nodes.values():
             node.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
 
@@ -658,7 +677,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.documents.append(classes.KatajaDocument(clear=True))
         self.document = self.documents[-1]
         self.settings_manager.set_document(self.document)
-        self.forest = None
 
     # ## Other window events
     ###################################################
@@ -742,7 +760,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.change_color_theme(prefs.color_theme, force=True)
 
     def update_visualization(self):
-        ctrl.forest.set_visualization(prefs.visualization)
+        self.forest.set_visualization(prefs.visualization)
         self.redraw()
 
     def resize_ui_font(self):
@@ -770,4 +788,3 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     # ############## #
 
     document = SavedField("document")
-    forest = SavedField("forest")
