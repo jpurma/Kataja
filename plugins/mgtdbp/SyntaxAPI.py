@@ -52,7 +52,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
         self.input_text = ''
         self.parser = None
         self.start = 'C'
-        self.syntax_display_mode = 1
+        self.display_mode = 1
         self.current_mode = 0
         for key, value in self.options.items():
             self.rules[key] = value.get('default')
@@ -104,19 +104,19 @@ class SyntaxAPI(KatajaSyntaxAPI):
         ds.jump_to_derivation_step(ds.derivation_step_index)
 
     def set_display_mode(self, i):
-        self.syntax_display_mode = i
+        self.display_mode = i
 
     def next_display_mode(self):
-        self.syntax_display_mode += 1
-        if self.syntax_display_mode == len(self.display_modes):
-            self.syntax_display_mode = 0
-        return self.display_modes[self.syntax_display_mode]
+        self.display_mode += 1
+        if self.display_mode == len(self.display_modes):
+            self.display_mode = 0
+        return self.display_modes[self.display_mode]
 
-    def transform_trees_for_display(self, syn_state):
-        if self.syntax_display_mode == self.current_mode:
+    def update_display_mode(self, syn_state):
+        if self.display_mode == self.current_mode:
             print('No transform')
             return syn_state
-        if self.syntax_display_mode == CONSTITUENT_TREE:
+        if self.display_mode == CONSTITUENT_TREE:
             ctrl.settings.set_node_setting('visible', True, g.FEATURE_NODE, level=g.DOCUMENT)
             ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
             ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
@@ -129,11 +129,11 @@ class SyntaxAPI(KatajaSyntaxAPI):
                     synobj = self.to_constituent(synobj)
                 res.append(synobj)
             syn_state.tree_roots = res
-            self.current_mode = self.syntax_display_mode
+            self.current_mode = self.display_mode
             for node in ctrl.forest.nodes.values():
                 node.update_visibility()
             return syn_state
-        elif self.syntax_display_mode == FEATURE_TREE:
+        elif self.display_mode == FEATURE_TREE:
             ctrl.settings.set_node_setting('visible', False, g.FEATURE_NODE, level=g.DOCUMENT)
             ctrl.settings.set('label_text_mode', g.CHECKED_FEATURES, level=g.DOCUMENT)
             ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
@@ -146,7 +146,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
                     synobj = self.to_feature_constituent(synobj)
                 res.append(synobj)
             syn_state.tree_roots = res
-            self.current_mode = self.syntax_display_mode
+            self.current_mode = self.display_mode
             for node in ctrl.forest.nodes.values():
                 node.update_visibility()
             return syn_state

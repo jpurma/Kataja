@@ -122,8 +122,12 @@ class LogWidgetPusher(logging.Handler):
         if self.widget is None:
             self.backlog.append(record)
         else:
+            msg = record.getMessage()
             if record.levelno == logging.ERROR:
                 tag = '<font color="red">'
+                end_tag = '</font>'
+            elif msg.startswith('>>>'):
+                tag = '<font color="blue">'
                 end_tag = '</font>'
             else:
                 tag = ''
@@ -141,5 +145,5 @@ class LogWidgetPusher(logging.Handler):
             else:
                 levelname = f'<b>{modname}{record.levelname}:</b> '
 
-            self.widget.append(tag + levelname + record.getMessage() + end_tag)
+            self.widget.append(tag + levelname + msg + end_tag)
             self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
