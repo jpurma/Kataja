@@ -75,13 +75,11 @@ def check_features(merged):
         feat_to_check, feat = checking_features
         feat_to_check.used = True
         if feat_to_check.sign == '=':
-            head = left
             feat.used = True
         elif feat_to_check.sign == '-':
-            head = right
             feat.used = True
         elif feat_to_check.sign == '_':
-            head = right
+            feat.used = False
         else:
             raise ValueError
         feat.check(feat_to_check)
@@ -222,7 +220,7 @@ def fast_find_movable(node):
     # probably not enough when there is a series of raises that should be done.
     if node.parts:
         left, right = node.parts
-        if not left.has_raised: # and left.parts:
+        if not left.has_raised:
             return right
         return fast_find_movable(left)
     return None
@@ -271,7 +269,11 @@ def parse(sentence, lexicon, forest):
     tree = None
     for lexem in sentence:
         # External Merge
-        node = lexicon[lexem].copy()
+        if lexem in lexicon:
+            node = lexicon[lexem].copy()
+        else:
+            node = Constituent(lexem)
+            lexicon[lexem] = node.copy()
         tree = merge(node, tree or startnode())
         raising_node = fast_find_movable(tree)
         export_to_kataja(tree, lexem, raising_node, forest)
@@ -303,3 +305,8 @@ def read_lexicon(lexdata):
         node = Constituent(label=lexem, features=features)
         lex[lexem] = node
     return lex
+
+
+def load_lexicon(filename):
+    f = open(filename)
+    return read_lexicon(f.read())

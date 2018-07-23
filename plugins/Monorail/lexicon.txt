@@ -1,0 +1,11 @@
+A :: -a
+Kent :: =b c d
+asbestos :: a
+cigarette :: -a
+filters :: a b
+form :: a -b
+make :: -c
+of :: =a b =g
+once :: -f
+to :: =d e
+used :: =e f g

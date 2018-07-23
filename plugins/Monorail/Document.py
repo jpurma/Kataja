@@ -26,6 +26,7 @@ from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
+from Monorail.Parser import load_lexicon
 import ast
 
 try:
@@ -52,6 +53,7 @@ class Document(KatajaDocument):
      in here, as scope of undo should be a single Forest. """
 
     default_treeset_file = running_environment.plugins_path + '/Monorail/sentences.txt'
+    default_lexicon_file = running_environment.plugins_path + '/Monorail/lexicon.txt'
 
     def create_forests(self, filename=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
@@ -59,7 +61,6 @@ class Document(KatajaDocument):
         :param filename: not used
         :param clear: start with empty
         """
-        print('creating forests in Monorail')
         filename = filename or Document.default_treeset_file
 
         # Clear this screen before we start creating a mess
@@ -68,6 +69,9 @@ class Document(KatajaDocument):
             self.forest.retire_from_drawing()
         self.forests = []
         input_trees = []
+
+        shared_lexicon = load_lexicon(Document.default_lexicon_file)
+
         if has_nltk:
             for i in range(*NLTK_TREE_RANGE):  # 199
                 trees = treebank.parsed_sents(f'wsj_0{str(i).rjust(3, "0")}.mrg')
@@ -80,11 +84,18 @@ class Document(KatajaDocument):
             for line in readfile:
                 line = line.strip()
                 if line:
-                    input_trees.append(ast.literal_eval(line))
+                    if line.startswith('[') and line.endswith(']'):
+                        input_trees.append(ast.literal_eval(line))
+                    else:
+                        input_trees.append(line)
 
         for input_tree in input_trees:
             syn = classes.SyntaxAPI()
-            syn.input_tree = input_tree
+            syn.lexicon = shared_lexicon
+            if isinstance(input_tree, list):
+                syn.input_tree = input_tree
+            else:
+                syn.input_text = input_tree
             forest = Forest(heading_text=str(input_tree), syntax=syn)
             self.forests.append(forest)
         self.current_index = 0
