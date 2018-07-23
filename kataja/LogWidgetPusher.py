@@ -124,10 +124,10 @@ class LogWidgetPusher(logging.Handler):
         else:
             msg = record.getMessage()
             if record.levelno == logging.ERROR:
-                tag = '<font color="red">'
+                tag = '<font color="#dc322f">'
                 end_tag = '</font>'
             elif msg.startswith('>>>'):
-                tag = '<font color="blue">'
+                tag = '<font color="#2aa198">'
                 end_tag = '</font>'
             else:
                 tag = ''

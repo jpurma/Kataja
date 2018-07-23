@@ -72,17 +72,5 @@ class KatajaLineEdit(QtWidgets.QLineEdit, UIWidget):
         else:
             return QtWidgets.QLineEdit.dropEvent(self, event)
 
-    def update_visual(self, **kw):
-        """
-
-        :param kw:
-        """
-        if 'palette' in kw:
-            self.setPalette(kw['palette'])
-        if 'font' in kw:
-            self.setFont(kw['font'])
-        if 'text' in kw:
-            self.setText(kw['text'])
-
     def flag_as_changed(self, text):
         self.changed = True

@@ -13,7 +13,7 @@ class SyntaxAPI(SavedObject):
 
     """
     role = "SyntaxAPI"
-    supports_editable_lexicon = False
+    supports_editable_lexicon = True
     display_modes = []
 
     options = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),
@@ -88,22 +88,25 @@ class SyntaxAPI(SavedObject):
         """ If it is possible to provide editable lexicon (str), where to get it.
         :return:
         """
-        s = []
-        for key, const in self.lexicon.items():
-            if isinstance(const, str):
-                cs = '%s :: %s' % (key, const)
-            else:
-                cs = '%s :: %s' % (key, ' '.join([str(x) for x in const.features]))
-            s.append(cs)
-        s.sort()
-        return '\n'.join(s)
+        if isinstance(self.lexicon, dict):
+            s = []
+            for key, const in self.lexicon.items():
+                if isinstance(const, str):
+                    cs = '%s :: %s' % (key, const)
+                else:
+                    cs = '%s :: %s' % (key, ' '.join([str(x) for x in const.features]))
+                s.append(cs)
+            s.sort()
+            return '\n'.join(s)
+        else:
+            return self.lexicon
 
     def get_editable_sentence(self):
         """ If the current systems supports parsing, return the current parsed string. User can
         edit it and retry parsing.
         :return:
         """
-        return self.input_text
+        return self.input_text or str(self.input_tree)
 
     def get_editable_semantics(self):
         """ If the current systems supports parsing, return the current parsed string. User can
@@ -194,11 +197,9 @@ class SyntaxAPI(SavedObject):
         :return:
         """
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
-
         if self.input_tree:
-            print('create derivation called w. sentence: ', self.input_tree)
-            roots = forest.parser.string_into_forest(self.input_tree)
-            forest.free_drawing.definitions_to_nodes(self.lexicon)
+            roots = forest.parser.string_into_forest(str(self.input_tree))
+            forest.free_drawing.definitions_to_nodes(self.get_editable_lexicon())
             self.nodes_to_synobjs(forest, roots)
 
     def set_display_mode(self, i):

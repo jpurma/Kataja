@@ -165,15 +165,3 @@ class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
                 event.acceptProposedAction()
         else:
             return QtWidgets.QWidget.dropEvent(self, event)
-
-    def update_visual(self, **kw):
-        """
-
-        :param kw:
-        """
-        if 'palette' in kw:
-            self.setPalette(kw['palette'])
-        if 'font' in kw:
-            self.setFont(kw['font'])
-        if 'text' in kw:
-            self.setText(kw['text'])

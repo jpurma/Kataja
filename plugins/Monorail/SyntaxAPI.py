@@ -84,7 +84,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
             input_tree = remove_punctuation(self.input_tree)
             list_to_monorail(input_tree, [], recipe)
             print('turned to monorail tree : ', time.time() - t)
-            self.lexicon = deduce_lexicon_from_recipe(recipe)
+            self.lexicon = deduce_lexicon_from_recipe(recipe, self.lexicon)
             print('deduced lexicon: ', time.time() - t)
             parse_from_recipe(recipe, self.lexicon, forest)
             print('parsed from recipe: ', time.time() - t)

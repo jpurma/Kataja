@@ -21,7 +21,7 @@ class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
 
 class ExpandingTextArea(QtWidgets.QWidget):
     def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None, label=None,
-                 on_focus_out=None):
+                 on_focus_out=None, use_parsing_modes=True):
         QtWidgets.QWidget.__init__(self, parent)
         self.raw_text = ''
         self.parsed_latex = ''
@@ -29,19 +29,26 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.parsing_mode = 1
         layout = QtWidgets.QVBoxLayout()
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        self.input_parsing_modes = KatajaButtonGroup()
-        self.tex_radio = QtWidgets.QRadioButton("TeX", self)
-        self.html_radio = QtWidgets.QRadioButton("HTML", self)
-        self.input_parsing_modes.addButton(self.tex_radio, 1)
-        self.input_parsing_modes.addButton(self.html_radio, 2)
-        self.input_parsing_modes.buttonClicked.connect(self.change_text_field_mode)
+        self.use_parsing_modes = use_parsing_modes
+        if use_parsing_modes:
+            self.input_parsing_modes = KatajaButtonGroup()
+            self.tex_radio = QtWidgets.QRadioButton("TeX", self)
+            self.html_radio = QtWidgets.QRadioButton("HTML", self)
+            self.input_parsing_modes.addButton(self.tex_radio, 1)
+            self.input_parsing_modes.addButton(self.html_radio, 2)
+            self.input_parsing_modes.buttonClicked.connect(self.change_text_field_mode)
+            host = self.get_host()
+            if host:
+                self.input_parsing_modes.button(host.text_parse_mode).setChecked(True)
+
         if label:
             lab = QtWidgets.QLabel(label, self)
             self.top_row_layout.addWidget(lab)
             self.top_row_layout.addStretch(0)
-        self.top_row_layout.addWidget(self.tex_radio)
-        self.top_row_layout.addWidget(self.html_radio)
-        self.top_row_layout.addStretch(0)
+        if use_parsing_modes:
+            self.top_row_layout.addWidget(self.tex_radio)
+            self.top_row_layout.addWidget(self.html_radio)
+            self.top_row_layout.addStretch(0)
         layout.addLayout(self.top_row_layout)
         self.text_area = MyPlainTextEdit(parent, on_focus_out)
         self.text_area.setAutoFillBackground(True)
@@ -55,7 +62,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
 
         self.text_area.setEnabled(True)
         self.cut_point = 24
-        self.input_parsing_modes.button(self.get_host().text_parse_mode).setChecked(True)
 
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.text_area)
@@ -74,6 +80,16 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.setAcceptDrops(True)
         self.original_size = None
         self.changed = False
+
+    def focusInEvent(self, event):
+        self.grabKeyboard()
+        print('grabbing keyboard')
+        #ctrl.grab_arrow_keys()
+
+    def focusOutEvent(self, event):
+        self.releaseKeyboard()
+        print('releasing keyboard')
+        #ctrl.grab_arrow_keys
 
     def get_host(self):
         parent = self.parentWidget()
@@ -172,17 +188,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
             return parser.process(self.text())
         else:
             return self.raw_text
-
-    def update_visual(self, **kw):
-        """
-        :param kw:
-        """
-        if 'palette' in kw:
-            self.setPalette(kw['palette'])
-        if 'font' in kw:
-            self.setFont(kw['font'])
-        if 'text' in kw:
-            self.setText(kw['text'])
 
 
 class PreviewLabel(QtWidgets.QLabel):

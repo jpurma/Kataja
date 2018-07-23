@@ -35,18 +35,12 @@ class HelpPanel(Panel):
         self.browser = QtWidgets.QTextBrowser()
         layout.setContentsMargins(0, 0, 0, 0)
         self.browser.setContentsMargins(0, 0, 0, 0)
-        f = qt_prefs.get_font(UI_FONT)
-        point_size = f.pointSize()
-        if point_size < 14:
-            point_size = 12
-        self.browser.setStyleSheet('font-size: %spx;' % point_size)
         self.browser.setMinimumWidth(200)
         self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.browser.palette()
         p.setColor(QtGui.QPalette.Base, QtCore.Qt.transparent)
         self.browser.setPalette(p)
         layout.addWidget(self.browser)
-        self.watchlist = ['ui_font_changed']
         self.set_text(HelpPanel.default_text)
         self.finish_init()
         ctrl.graph_view.activateWindow()
@@ -57,23 +51,4 @@ class HelpPanel(Panel):
 
     def text(self):
         return self.browser.toHtml()
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'ui_font_changed':
-            f = qt_prefs.get_font(UI_FONT)
-            point_size = f.pointSize()
-            if point_size < 14:
-                point_size = 12
-            self.browser.setStyleSheet('font-size: %spx;' % point_size)
 

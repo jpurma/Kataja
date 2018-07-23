@@ -182,10 +182,10 @@ def come_up_with_a_reason(needy_node, giving_node):
     return needy_f, giving_f
 
 
-def deduce_lexicon_from_recipe(recipe):
+def deduce_lexicon_from_recipe(recipe, lexicon=None):
     # deduce features phase
     tree = None
-    lexicon = {}
+    lexicon = lexicon or {}
     for lexem in recipe:
         if lexem == '|':
             node = fast_find_movable(tree)

@@ -169,7 +169,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         inner.setLayout(self.vlayout)
         self.setWidget(inner)
 
-
     def finish_init(self):
         """ Do initializations that need to be done after the subclass __init__
         has completed. e.g. hide this from view, which can have odd results
@@ -333,7 +332,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
 
         :param QShowEvent:
         """
-        if not self._watched:
+        if self.watchlist and not self._watched:
             for signal in self.watchlist:
                 ctrl.add_watcher(self, signal)
             self._watched = True

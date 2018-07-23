@@ -954,16 +954,21 @@ class FreeDrawing:
             if 'accent%s' % i not in color_keys:
                 return 'accent%s' % i
 
-    def definitions_to_nodes(self, defs):
+    def definitions_to_nodes(self, defstring):
+
         leaves = {}
         for node in self.f.nodes.values():
             if node.is_leaf(only_similar=True, only_visible=False):
                 leaves[self.f.parser.get_root_word(node.label)] = node
-        for key, deffy in defs.items():
+        for line in defstring.splitlines():
+            if '::' not in line:
+                continue
+            key, value = line.split('::', 1)
+            key = key.strip()
             if not key in leaves:
                 print('missing key ', key)
                 continue
-            parts = [x.strip() for x in deffy.split(',')]
+            parts = [x.strip() for x in value.split(',')]
             node = leaves[key]
             for part in parts:
                 if (part.startswith("'") and part.endswith("'")) or (

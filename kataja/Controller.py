@@ -434,3 +434,11 @@ class Controller:
         if self.text_editor_focus:
             self.text_editor_focus.release_editor_focus()
         self.text_editor_focus = None
+
+    def allow_arrow_shortcuts(self):
+        for action in self.ui.arrow_actions:
+            action.setEnabled(bool(action.enabler()))
+
+    def suppress_arrow_shortcuts(self):
+        for action in self.ui.arrow_actions:
+            action.setEnabled(False)

@@ -23,15 +23,14 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
         self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
         self.changed = False
         self.textChanged.connect(self.flag_as_changed)
-        if not font:
-            font = qt_prefs.get_font(g.CONSOLE_FONT)
-        self.setStyleSheet('font-family: "%s"; font-size: %spx; background-color: %s' % (
-            font.family(), font.pointSize(), ctrl.cm.paper().name()))
+        # if a font is provided here, it has to be updated manually. Default font (console) will get updated through
+        # master stylesheet
+        if font:
+            self.setStyleSheet('font-family: "%s"; font-size: %spx;' % (
+                font.family(), font.pointSize()))
 
         if on_edit:
             self.textChanged.connect(on_edit)
-        # self.setFixedSize(200, 100)
-        # self.text_area.textChanged.connect(self.text_area_check_for_resize)
         self.updateGeometry()
 
     def dragEnterEvent(self, event):
@@ -59,23 +58,21 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
         else:
             return QtWidgets.QPlainTextEdit.dropEvent(self, event)
 
+    def focusInEvent(self, event):
+        self.grabKeyboard()
+        ctrl.suppress_arrow_shortcuts()
+        super().focusInEvent(event)
+
+    def focusOutEvent(self, event):
+        self.releaseKeyboard()
+        ctrl.allow_arrow_shortcuts()
+        super().focusOutEvent(event)
+
     def text(self):
         return self.toPlainText()
 
     def setText(self, text):
         self.setPlainText(text)
 
-    def update_visual(self, **kw):
-        """
-
-        :param kw:
-        """
-        if 'palette' in kw:
-            self.setPalette(kw['palette'])
-        if 'font' in kw:
-            self.setFont(kw['font'])
-        if 'text' in kw:
-            self.setPlainText(kw['text'])
-
-    def flag_as_changed(self, text):
+    def flag_as_changed(self):
         self.changed = True

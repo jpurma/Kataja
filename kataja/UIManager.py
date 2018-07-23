@@ -99,7 +99,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
-          {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': True},
+          {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': False},
           {'class': HelpPanel, 'name': 'Help', 'position': 'float', 'closed': True}]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
@@ -168,6 +168,7 @@ class UIManager:
         self.qe_label = None
         self.drag_info = None
         self.floating_tip = None
+        self.arrow_actions = []
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -536,7 +537,7 @@ class UIManager:
                continue
             mod_path = 'kataja.actions.' + module[:-3]
             self._load_actions(mod_path)
-
+        self.arrow_actions = [a for a in self.actions.values() if a.k_shortcut in ['Left', 'Right', 'Up', 'Down']]
         log.info('Prepared %s actions.' % len(self.actions))
 
     def prepare_panel_menus(self):

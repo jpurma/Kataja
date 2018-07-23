@@ -29,6 +29,10 @@ from kataja.singletons import ctrl, running_environment, classes
 from kataja.utils import time_me
 
 
+def definitions_as_text(defs):
+    return '\n'.join([f'{key} :: {value}' for key, value in defs.items()])
+
+
 class KatajaDocument(SavedObject):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest.
@@ -218,7 +222,7 @@ class KatajaDocument(SavedObject):
             elif started_forest and not line:
                 syn = SyntaxAPI()
                 syn.input_tree = buildstring
-                syn.lexicon = definitions
+                syn.lexicon = definitions_as_text(definitions)
                 forest = Forest(heading_text=heading_text,
                                 comments=comments,
                                 syntax=syn)
@@ -237,7 +241,7 @@ class KatajaDocument(SavedObject):
         if started_forest:  # make sure that the last forest is also added
             syn = SyntaxAPI()
             syn.input_tree = buildstring
-            syn.lexicon = definitions
+            syn.lexicon = definitions_as_text(definitions)
             forest = Forest(heading_text=heading_text,
                             comments=comments,
                             syntax=syn)

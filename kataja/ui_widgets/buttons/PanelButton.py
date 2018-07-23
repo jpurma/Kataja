@@ -73,9 +73,7 @@ class PanelButton(PushButtonBase):
         painter.end()
         return image
 
-
     def update_colors(self, color_key=None):
         if color_key:
             self.color_key = color_key
-        # self.update_style_sheet()
         self.compose_icon()

@@ -157,7 +157,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.documents = []
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
-        # capture_stdout(log, self.log_stdout_as_debug, ctrl)
+        capture_stdout(log, self.log_stdout_as_debug, ctrl)
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         self.syntax = classes.SyntaxAPI()
@@ -196,9 +196,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.install_plugins()
         ctrl.watchers_enabled = True
         ctrl.call_watchers(self, 'viewport_resized')
+        ctrl.call_watchers(self.document, 'forest_changed')
+        self.init_done = True
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
-        # ctrl.call_watchers(self.document, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -206,7 +207,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         # for gesture in gestures:
         #    self.grabGesture(gesture)
-        self.init_done = True
         self.action_finished(undoable=False, play=True)
         self.forest.undo_manager.flush_pile()
 
