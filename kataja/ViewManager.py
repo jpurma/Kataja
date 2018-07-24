@@ -29,6 +29,7 @@ from kataja.singletons import ctrl, prefs
 from kataja.globals import ViewUpdateReason
 from itertools import chain
 
+
 class ViewManager:
     """ ViewportManager is responsible for deciding what part of the GraphScene should
     be displayed to GraphView and when it should be updated. In Qt GraphScene and
@@ -230,6 +231,7 @@ class ViewManager:
         if reason == ViewUpdateReason.ANIMATION_STEP:
             if self.auto_zoom and not (self.predictive or self.did_manual_zoom):
                 self.fit_to_window()
+
         elif reason == ViewUpdateReason.MANUAL_ZOOM:
             #print('------ MANUAL_ZOOM')
             self.set_auto_zoom(False)

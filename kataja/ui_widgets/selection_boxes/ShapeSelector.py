@@ -77,14 +77,15 @@ class ShapeSelector(TableModelSelectionBox):
             item.setIcon(icon)
 
     def connect_main(self):
-        self._connections += [ctrl.main.palette_changed.connect(self.update_colors),
-                              ctrl.main.scope_changed.connect(self.update_colors),
-                              ctrl.main.active_edge_color_changed.connect(self.update_colors)]
+        m = ctrl.main
+        self._connections += [(m.palette_changed, m.palette_changed.connect(self.update_colors)),
+                              (m.scope_changed, m.scope_changed.connect(self.update_colors)),
+                              (m.active_edge_color_changed, m.active_edge_color_changed.connect(self.update_colors))]
 
     def disconnect_main(self):
-        for item in self._connections:
+        for host, item in self._connections:
             if item:
-                ctrl.main.disconnect(item)
+                host.disconnect(item)
         self._connections = []
 
     def showEvent(self, event):
