@@ -25,6 +25,8 @@
 import sys
 from collections import abc
 
+from PyQt5 import QtCore
+
 from kataja.utils import caller
 
 # gc.set_debug(gc.DEBUG_LEAK)
@@ -62,7 +64,6 @@ class Controller:
 
         self.main = None
         self.settings = None
-        self.watchers = {}
         self.structure = None
         self.selected = []
         self.selected_root = None
@@ -89,10 +90,7 @@ class Controller:
         self.print_garbage = True
         self.focus = None
         self.undo_disabled = 0  # stacking flag that affects if pickle.load assumes
-        # an empty workspace (loading new) or if it tries to compare changes
-        # (undo).
-        self.watchers_enabled = True  # flag to suppress watchers -- not
-        # sure if it is *ever* a good idea
+        # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.printing = False
         self.unassigned_objects = {}
         self.items_moving = False
@@ -195,7 +193,7 @@ class Controller:
 
     def multiselection_end(self):
         self.multiselection_delay = False
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+        self.main.selection_changed.emit()
         self.ui.add_message(f'selected {len(self.selected)} objects')
 
     def multiple_selection(self):
@@ -234,7 +232,7 @@ class Controller:
         for obj in self.selected:
             obj.update_selection_status(False)
         self.selected = []
-        self.call_watchers(self, 'selection_changed', value=[])
+        self.main.selection_changed.emit()
 
     def select(self, objs):
         """
@@ -250,14 +248,14 @@ class Controller:
             self.selected = []
         if not objs:
             if had_objs:
-                self.call_watchers(self, 'selection_changed', value=self.selected)
+                self.main.selection_changed.emit()
             return
         if not isinstance(objs, abc.Sequence):
             objs = [objs]
         for obj in objs:
             obj.update_selection_status(True)
         self.selected = objs
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+        self.main.selection_changed.emit()
 
     def add_to_selection(self, objs):
         """
@@ -275,7 +273,7 @@ class Controller:
                 obj.update_selection_status(True)
                 found = True
         if found:
-            self.call_watchers(self, 'selection_changed', value=self.selected)
+            self.main.selection_changed.emit()
 
     def remove_from_selection(self, objs):
         """
@@ -297,7 +295,7 @@ class Controller:
                 objs.update_selection_status(False)
                 found = True
         if found:
-            self.call_watchers(self, 'selection_changed', value=self.selected)
+            self.main.selection_changed.emit()
 
     def get_selected_nodes(self, of_type=None):
         nclass = self.main.classes.base_node_class
@@ -374,54 +372,6 @@ class Controller:
         """*** calling quits ***"""
         print('quit?')
         sys.exit()
-
-    # Watchers #####################################
-
-    def add_watcher(self, obj, signal):
-        """
-
-        :param signal:
-        :param obj:
-        """
-        if signal in self.watchers:
-            watchlist = self.watchers[signal]
-            if obj not in watchlist:
-                watchlist.append(obj)
-        else:
-            self.watchers[signal] = [obj]
-
-    def remove_from_watch(self, obj):
-        """
-
-        :param obj:
-        """
-        for watchlist in self.watchers.values():
-            if obj in watchlist:
-                watchlist.remove(obj)
-
-    def get_watchers(self, signal):
-        """
-        :param signal:
-        :return:
-        """
-        return self.watchers.get(signal, [])
-
-    def call_watchers(self, obj, signal, field_name=None, value=None):
-        """ Alert (UI) objects that are watching for changes for given field
-        in given object
-        :param obj: object that is sending the signal
-        :param signal: str to identify what kind of signal is sent
-        :param field_name: affected field name (optional)
-        :param value: new value for field (optional)
-        :return:
-        """
-
-        if self.watchers_enabled:
-            watchers = self.get_watchers(signal)
-            for watcher in watchers:
-                watcher.watch_alerted(obj, signal, field_name, value)
-                # if not watchers:
-                #    print('no watcher found for signal "%s"' % signal)
 
     def disable_undo(self):
         self.undo_disabled += 1

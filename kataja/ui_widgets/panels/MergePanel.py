@@ -11,6 +11,7 @@ __author__ = 'purma'
 class DraggableMergeFrame(QtWidgets.QFrame):
     def __init__(self, parent=None):
         QtWidgets.QFrame.__init__(self, parent)
+        ctrl.main.palette_changed.connect(self.update_colors)
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
         self.setAutoFillBackground(True)
         hlayout = QtWidgets.QHBoxLayout()
@@ -60,7 +61,7 @@ class DraggableMergeFrame(QtWidgets.QFrame):
             self.add_button.setDown(False)
             ctrl.ui.set_scope(self.key)
             ctrl.deselect_objects()
-            ctrl.call_watchers(self, 'scope_changed')
+            ctrl.main.scope_changed.emit()
         QtWidgets.QFrame.mouseReleaseEvent(self, event)
 
 
@@ -77,53 +78,13 @@ class MergePanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         self.vlayout.setContentsMargins(0, 0, 0, 0)
-        self.watchlist = ['selection_changed', 'forest_changed', 'palette_changed']
         self.setMaximumWidth(220)
         self.frame = DraggableMergeFrame(parent=self)
         self.vlayout.addWidget(self.frame)
         self.finish_init()
-
-    def update_selection(self):
-        """ Called after ctrl.selection has changed. Prepare panel to use
-        selection as scope
-        :return:
-        """
-        # self.frame.update_frame()
-
-    def update_colors(self):
-        self.frame.update_colors()
 
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
         pass
-
-    def showEvent(self, event):
-        """ Panel may have missed signals to update its contents when it was hidden: update all
-        that signals would update.
-        :param event:
-        :return:
-        """
-        self.update_selection()
-        super().showEvent(event)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to
-        listen. These signals are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act
-         accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'selection_changed':
-            self.update_selection()
-        elif signal == 'forest_changed':
-            self.update_selection()
-        elif signal == 'palette_changed':
-            self.update_colors()

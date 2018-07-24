@@ -1,5 +1,6 @@
 import logging
 import queue
+from html import escape
 
 import sys
 from PyQt5 import QtGui, QtCore
@@ -145,5 +146,5 @@ class LogWidgetPusher(logging.Handler):
             else:
                 levelname = f'<b>{modname}{record.levelname}:</b> '
 
-            self.widget.append(tag + levelname + msg + end_tag)
+            self.widget.append(tag + levelname + escape(msg) + end_tag)
             self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)

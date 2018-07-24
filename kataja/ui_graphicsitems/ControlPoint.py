@@ -64,20 +64,6 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         """
         return self.__qt_type_id__
 
-    def show(self):
-        """ Assign as a watcher if necessary and make visible
-        :return: None
-        """
-        if self.role == g.LABEL_START:
-            ctrl.add_watcher(self, 'edge_label')
-
-    def hide(self):
-        """ Remove from watchers' list when control point is hidden
-        :return: None
-        """
-        if self.role == g.LABEL_START:
-            ctrl.remove_from_watch(self)
-
     def _compute_position(self):
         """
         :return:
@@ -268,6 +254,3 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
                 pen = cm.ui()
             painter.setPen(pen)
             painter.drawRect(self._xy, self._xy, self._wh, self._wh)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        print(obj, signal, field_name, value)

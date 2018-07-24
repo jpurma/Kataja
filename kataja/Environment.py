@@ -9,26 +9,26 @@ from kataja.globals import *
 __author__ = 'purma'
 
 # Alternatives: Cambria Math, Asana Math, XITS Math
-mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 10],
+mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 11],
              UI_FONT: ['Helvetica Neue', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
              ITALIC_FONT: ['Asana Math', 'Italic', 12],
-             SMALL_CAPS: ['Menlo', 'Normal', 9],
+             SMALL_CAPS: ['Menlo', 'Normal', 10],
              SMALL_FEATURE: ['Helvetica Neue', 'Normal', 7],
              CUSTOM_FONT1: ['Asana Math', 'Normal', 12],
              CUSTOM_FONT2: ['Asana Math', 'Normal', 12],
              CUSTOM_FONT3: ['Asana Math', 'Normal', 12]}
 
-linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 10],
+linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 11],
                UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Asana Math', 'Italic', 12],
-               BOLD_FONT: ['STIX', 'Bold', 12], SMALL_CAPS: ['Lao MN', 'Normal', 9],
+               BOLD_FONT: ['STIX', 'Bold', 12], SMALL_CAPS: ['Lao MN', 'Normal', 10],
                SMALL_FEATURE: ['Lao MN', 'Normal', 7],
                CUSTOM_FONT1: ['Asana Math', 'Normal', 12],
                CUSTOM_FONT2: ['Asana Math', 'Normal', 12],
                CUSTOM_FONT3: ['Asana Math', 'Normal', 12]}
 
-windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 10], CONSOLE_FONT: ['Consolas', 'Normal', 10],
+windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 11], CONSOLE_FONT: ['Consolas', 'Normal', 10],
                  UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Cambria', 'Italic', 10],
-                 BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 8],
+                 BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 9],
                  SMALL_FEATURE: ['Lao MN', 'Normal', 7],
                  CUSTOM_FONT1: ['Cambria', 'Normal', 10],
                  CUSTOM_FONT2: ['Cambria', 'Normal', 10],

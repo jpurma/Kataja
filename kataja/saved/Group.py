@@ -31,7 +31,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.ui_manager = ctrl.ui
         self.role = None
         self.host = None
-        self.watchlist = []
         self.is_fading_in = False
         self.is_fading_out = False
         # -- end faking as UIItem

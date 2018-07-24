@@ -29,6 +29,7 @@ from kataja.singletons import ctrl, prefs
 from kataja.globals import ViewUpdateReason
 from itertools import chain
 
+
 class ViewManager:
     """ ViewportManager is responsible for deciding what part of the GraphScene should
     be displayed to GraphView and when it should be updated. In Qt GraphScene and
@@ -137,7 +138,7 @@ class ViewManager:
             self.view.setSceneRect(sr + QtCore.QMarginsF(0, 500, 0, 0))
         self.view.fitInView(target_rect, 1)
         self._fit_scale = self.view.transform().m11()
-        ctrl.call_watchers(self, 'viewport_moved')
+        ctrl.main.viewport_moved.emit()
 
     def scale_view_by(self, delta):
         """
@@ -156,7 +157,7 @@ class ViewManager:
             factor = 9.0
         self.view.resetTransform()
         self.view.scale(factor, factor)
-        ctrl.call_watchers(self, 'viewport_moved')
+        ctrl.main.viewport_moved.emit()
         return factor
 
     def zoom_by_angle(self, pointer_pos, y_angle):
@@ -230,6 +231,7 @@ class ViewManager:
         if reason == ViewUpdateReason.ANIMATION_STEP:
             if self.auto_zoom and not (self.predictive or self.did_manual_zoom):
                 self.fit_to_window()
+
         elif reason == ViewUpdateReason.MANUAL_ZOOM:
             #print('------ MANUAL_ZOOM')
             self.set_auto_zoom(False)

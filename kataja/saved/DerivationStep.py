@@ -191,5 +191,5 @@ class DerivationStepManager(SavedObject):
     # ############## #
 
     derivation_steps = SavedField("derivation_steps")
-    derivation_step_index = SavedField("derivation_step_index", watcher="forest_changed")
+    derivation_step_index = SavedField("derivation_step_index", watcher=ctrl.main.forest_changed)
     forest = SavedField("forest")

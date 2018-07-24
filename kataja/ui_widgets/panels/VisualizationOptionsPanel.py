@@ -19,7 +19,7 @@ class VisualizationOptionsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        self.watchlist = ['view_mode_changed']
+        ctrl.main.view_mode_changed.connect(self.update_panel)
         self.vlayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
@@ -75,18 +75,4 @@ class VisualizationOptionsPanel(Panel):
         """
         self.update_panel()
         super().showEvent(event)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        self.update_panel()
 

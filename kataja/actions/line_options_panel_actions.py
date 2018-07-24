@@ -85,7 +85,7 @@ class ChangeEdgeColor(PanelAction):
                                            edge_type=edge_type, level=level)
             for edge in ctrl.forest.edges.values():
                 edge.update()
-        ctrl.call_watchers(self, 'active_edge_color_changed')  # shape_selector needs this
+        ctrl.main.active_edge_color_changed.emit()  # shape_selector needs this
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope()

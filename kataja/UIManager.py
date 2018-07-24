@@ -183,11 +183,11 @@ class UIManager:
         # Create UI panels, requires actions to exist
         self.create_panels()
         self.create_float_buttons()
-        ctrl.add_watcher(self, 'selection_changed')
-        ctrl.add_watcher(self, 'forest_changed')
-        ctrl.add_watcher(self, 'viewport_moved')
-        ctrl.add_watcher(self, 'viewport_resized')
-        ctrl.add_watcher(self, 'ui_font_changed')
+        ctrl.main.selection_changed.connect(self.update_selections)
+        ctrl.main.forest_changed.connect(self.clear_and_refresh_heading)
+        ctrl.main.viewport_moved.connect(self.update_positions)
+        ctrl.main.viewport_resized.connect(self.update_positions_and_top_bar)
+        ctrl.main.ui_font_changed.connect(self.redraw_panels)
 
     def disable_item(self, ui_key):
         """ Disable ui_item, assuming it can be disabled (buttons etc).
@@ -222,7 +222,7 @@ class UIManager:
         else:
             self.scope_is_selection = False
         self.active_scope = scope
-        ctrl.call_watchers(self, 'scope_changed')
+        ctrl.main.scope_changed.emit()
 
     def set_help_text(self, text, append=False, prepend=False):
         panel = self.get_panel('HelpPanel')
@@ -357,7 +357,6 @@ class UIManager:
             d[key] = item.manual_run_command
         return d
 
-
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection groups has to be handled somewhere. """
@@ -479,6 +478,11 @@ class UIManager:
         UI has to update its elements too."""
         for item in self._items.values():
             item.update_position()
+
+    def update_positions_and_top_bar(self):
+        self.update_positions()
+        if self.top_bar_buttons:
+            self.top_bar_buttons.update_position()
 
     def update_position_for(self, obj):
         """ Update position of ui_support-elements for selected (non-ui_support) object.
@@ -1067,7 +1071,6 @@ class UIManager:
     def update_edit_mode(self):
         val = ctrl.free_drawing_mode
         self.top_bar_buttons.edit_mode_button.setChecked(not val)
-        ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
     # ### Embedded buttons ############################
 
@@ -1164,7 +1167,6 @@ class UIManager:
     # ### Control points
     # ####################################################################
 
-
     def _add_cp(self, host, index, role):
         cp = ControlPoint(host, index=index, role=role)
         self.add_ui(cp)
@@ -1255,7 +1257,7 @@ class UIManager:
 
 
     def refresh_heading(self):
-        if not ctrl.forest:
+        if not (ctrl.main.document and ctrl.forest):
             return
         heading = ctrl.forest.heading_text or ''
         if not self.heading:
@@ -1266,33 +1268,6 @@ class UIManager:
     def toggle_heading(self):
         self.heading.set_folded(not self.heading.folded)
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to
-        listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act
-         accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'selection_changed':
-            self.update_selections()
-            #print('update actions because selection changed:')
-            #self.update_actions()
-        elif signal == 'forest_changed':
-            self.clear_items()
-            self.refresh_heading()
-            #self.update_actions()
-        elif signal == 'viewport_moved':
-            self.update_positions()
-        elif signal == 'viewport_resized':
-            self.update_positions()
-            if self.top_bar_buttons:
-                self.top_bar_buttons.update_position()
-        elif signal == 'ui_font_changed':
-            self.redraw_panels()
+    def clear_and_refresh_heading(self):
+        self.clear_items()
+        self.refresh_heading()

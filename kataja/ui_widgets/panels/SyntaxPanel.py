@@ -43,26 +43,13 @@ class SyntaxPanel(Panel):
                                           ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
-
-        self.watchlist = ['forest_changed']
+        ctrl.main.forest_changed.connect(self.update_treeset_counter)
         self.preferred_size = inner.preferred_size
         self.finish_init()
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'forest_changed':
-            keeper = ctrl.main.document
-            if keeper is not None:
-                display_index = keeper.current_index + 1
-                max_index = len(keeper.forests)
-                self.treeset_counter.setText('%s/%s' % (display_index, max_index))
+    def update_treeset_counter(self):
+        keeper = ctrl.main.document
+        if keeper is not None:
+            display_index = keeper.current_index + 1
+            max_index = len(keeper.forests)
+            self.treeset_counter.setText('%s/%s' % (display_index, max_index))

@@ -45,7 +45,8 @@ class ColorWheelPanel(Panel):
         self.selected_role = 'content1'
         self.selected_hsv = ctrl.cm.get(self.selected_role).getHsvF()[:3]
         self.match_contrast = 65
-        self.watchlist = ['palette_changed', 'color_themes_changed']
+        ctrl.main.palette_changed.connect(self.update_themes_and_colors)
+        ctrl.main.color_themes_changed.connect(self.update_themes_and_colors)
         self.try_to_match = True
         self._updating = True
         # ### Color wheel
@@ -246,36 +247,18 @@ class ColorWheelPanel(Panel):
             self.randomise.show()
             self.store_favorite.show()
 
-
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
         that signals would update.
         :param event:
         :return:
         """
-        self.update_available_themes()
-        self.update_colors()
+        self.update_themes_and_colors()
         super().showEvent(event)
 
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'palette_changed':
-            self.update_available_themes()
-            self.update_colors()
-        elif signal == 'color_themes_changed':
-            self.update_available_themes()
-            self.update_colors()
+    def update_themes_and_colors(self):
+        self.update_available_themes()
+        self.update_colors()
 
 
 class ColorWheelInner(QtWidgets.QWidget):

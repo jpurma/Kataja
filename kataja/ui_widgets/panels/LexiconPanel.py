@@ -20,7 +20,7 @@ class LexiconPanel(Panel):
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        self.watchlist = ['forest_changed']
+        ctrl.main.forest_changed.connect(self.prepare_lexicon)
         layout = self.vlayout
         tt = 'Editable lexicon'
         self.lextext = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Lexicon')
@@ -42,7 +42,7 @@ class LexiconPanel(Panel):
         ctrl.graph_view.setFocus()
 
     def prepare_lexicon(self):
-        if not ctrl.watchers_enabled:
+        if ctrl.main.signalsBlocked():
             return
         text = ctrl.syntax.get_editable_lexicon()
         sentence = ctrl.syntax.get_editable_sentence()
@@ -67,19 +67,4 @@ class LexiconPanel(Panel):
         """
         self.prepare_lexicon()
         super().showEvent(event)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'forest_changed':
-            self.prepare_lexicon()
 

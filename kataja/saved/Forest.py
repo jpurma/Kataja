@@ -67,6 +67,7 @@ class Forest(SavedObject):
         is_parsed is True.
         """
         super().__init__()
+        self._connections = []
         self.nodes_from_synobs = {}
         self.main = ctrl.main
         self.in_display = False
@@ -161,6 +162,7 @@ class Forest(SavedObject):
         """
         self.in_display = True
         ctrl.disable_undo()
+        self.connect_main()
         if not self.is_parsed:
             self.init_factories()
             self.syntax.create_derivation(forest=self)
@@ -171,7 +173,6 @@ class Forest(SavedObject):
             ds.jump_to_derivation_step(ds.derivation_step_index)
             self.forest_edited()
 
-        ctrl.add_watcher(self, 'palette_changed')
         ctrl.main.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
@@ -186,12 +187,20 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
-        print('retire from drawing called for forest')
         if self.is_parsed:
             for item in self.get_all_objects():
                 self.remove_from_scene(item, fade_out=False)
-        ctrl.remove_from_watch(self)
         self.in_display = False
+        self.disconnect_main()
+
+    def connect_main(self):
+        self._connections += [ctrl.main.palette_changed.connect(self.others_update_colors)]
+
+    def disconnect_main(self):
+        for item in self._connections:
+            if item:
+                ctrl.main.palette_changed.disconnect(item)
+        self._connections = []
 
     def clear(self):
         if self.in_display:
@@ -881,7 +890,7 @@ class Forest(SavedObject):
         for node in nodes:
             node.update_label()
             node.update_visibility(skip_label=True)
-        ctrl.call_watchers(self, 'view_mode_changed', value=syntactic_mode)
+        ctrl.main.view_mode_changed.emit()
         if syntactic_mode:
             if ctrl.main.color_manager.paper().value() < 100:
                 ctrl.settings.set('temp_color_theme', 'dk_gray', level=g.FOREST)
@@ -891,24 +900,9 @@ class Forest(SavedObject):
             ctrl.settings.set('temp_color_theme', '', level=g.FOREST)
         ctrl.main.update_colors()
 
-    # ## Watcher #########################
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to
-        listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act
-         accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'palette_changed':
-            for other in self.others.values():
-                other.update_colors()
+    def others_update_colors(self):
+        for other in self.others.values():
+            other.update_colors()
 
     # ############## #
     #                #
@@ -922,7 +916,7 @@ class Forest(SavedObject):
     arrows = SavedField("arrows")
     groups = SavedField("groups")
     others = SavedField("others")
-    vis_data = SavedField("vis_data", watcher="visualization")
+    vis_data = SavedField("vis_data", watcher=ctrl.main.visualisation_changed)
     derivation_steps = SavedField("derivation_steps")
     comments = SavedField("comments")
     heading_text = SavedField("heading_text")

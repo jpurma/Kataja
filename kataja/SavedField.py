@@ -46,14 +46,9 @@ class SavedField(object):
 
     == Watchers ==
 
-    The descriptor also supports announcing the changes in values to arbitrary Kataja objects.
+    The descriptor also supports announcing the changes by emitting signals.
     Usually this will be used to reflect changed value in UI elements, e.g. changing
     numeric values in comboboxes as user drags an element.
-
-    The signaling works by giving a string identifier for 'watcher'. Then, if value is changed,
-    Kataja looks into its global dict where Kataja (UI) objects are listed under the identifier.
-    If there are objects, all of them are called with method 'watch_alerted', with calling
-    object, field name, and new value as arguments.
 
     """
 
@@ -77,13 +72,13 @@ class SavedField(object):
                     if self.if_changed:
                         self.if_changed(obj, value)
                     if self.watcher:
-                        obj.call_watchers(self.watcher, self.name, value)
+                        self.watcher.emit()
             else:
                 obj._saved[self.name] = value
                 if self.if_changed:
                     self.if_changed(obj, value)
                 if self.watcher:
-                    obj.call_watchers(self.watcher, self.name, value)
+                    self.watcher.emit()
         elif self.name in obj._saved:
             old = obj._saved[self.name]
             if old != value:
@@ -96,13 +91,13 @@ class SavedField(object):
                 if self.if_changed:
                     self.if_changed(obj, value)
                 if self.watcher:
-                    obj.call_watchers(self.watcher, self.name, value)
+                    self.watcher.emit()
         else:
             obj._saved[self.name] = value
             if self.if_changed:
                 self.if_changed(obj, value)
             if self.watcher:
-                obj.call_watchers(self.watcher, self.name, value)
+                self.watcher.emit()
 
 
 class SavedFieldWithGetter(SavedField):

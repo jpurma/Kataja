@@ -73,7 +73,8 @@ class ColorPanel(Panel):
         widget.setMinimumWidth(160)
         widget.setMaximumWidth(220)
         widget.setMaximumHeight(60)
-        self.watchlist = ['color_themes_changed', 'palette_changed']
+        ctrl.main.palette_changed.connect(self.update_available_themes)
+        ctrl.main.color_themes_changed.connect(self.update_available_themes)
         color_theme_fragment(self, self.vlayout)
         self.finish_init()
 
@@ -102,21 +103,4 @@ class ColorPanel(Panel):
         """
         self.update_available_themes()
         super().showEvent(event)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'color_themes_changed':
-            self.update_available_themes()
-        elif signal == 'palette_changed':
-            self.update_available_themes()
 
