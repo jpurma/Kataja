@@ -74,7 +74,7 @@ stylesheet = """
 QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 QComboBox QAbstractItemView {selection-color: %(ui)s;}
-KatajaTextArea {font-family: "%(console_font)s"; font-size: %(console_font_size)spx;}
+KatajaTextarea {font-family: "%(console_font)s"; font-size: %(console_font_size)spx;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
 sup sub {font-size: 8pt; vertical-align: sub}
@@ -171,7 +171,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.documents = []
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
-        capture_stdout(log, self.log_stdout_as_debug, ctrl)
+        #capture_stdout(log, self.log_stdout_as_debug, ctrl)
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         self.syntax = classes.SyntaxAPI()
