@@ -23,7 +23,7 @@ class NodePanel(Panel):
         """
 
         Panel.__init__(self, name, default_position, parent, folded)
-        self.watchlist = ['selection_changed', 'forest_changed', 'palette_changed']
+        ctrl.main.palette_changed.connect(self.update_colors)
         self.setMaximumWidth(220)
         self.node_type = node_type
         node_type_name = classes.node_info[node_type]['name'].lower()
@@ -65,35 +65,11 @@ class NodePanel(Panel):
             self.node_color_selector.set_color(color_key)
         self.add_button.update_colors(color_key=color_key)
 
-    def update_selection(self):
-        pass
-
     def update_title_font(self, font_key):
         self.title_widget.update_font(font_key)
-
 
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
         pass
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to
-        listen. These signals are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act
-         accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'selection_changed':
-            self.update_selection()
-        elif signal == 'forest_changed':
-            self.update_selection()
-        elif signal == 'palette_changed':
-            self.update_colors()

@@ -135,7 +135,7 @@ class PaletteManager:
         When a palette is saved, its QColors should be turned to HSV+A tuples.
      """
 
-    def __init__(self):
+    def __init__(self, main):
         # Current theme
         self.theme_key = ''
         self.default = 'solarized_lt'
@@ -160,8 +160,7 @@ class PaletteManager:
         self.blue = c(38, 139, 210)
 
         # Keep an eye on relevant changes
-        ctrl.add_watcher(self, 'document_changed')
-        ctrl.add_watcher(self, 'color_themes_changed')
+        main.document_changed.connect(self.update_themes_and_colors_and_announce_it)
 
     def update_custom_colors(self):
         for key, rgba in prefs.custom_colors.items():
@@ -204,7 +203,7 @@ class PaletteManager:
         }
         prefs.custom_themes[self.current_hex] = theme
         self.update_custom_themes()
-        ctrl.call_watchers(self, 'color_themes_changed')
+        ctrl.main.color_themes_changed.emit()
         return self.current_hex, theme['name']
 
     def create_custom_theme_from_modification(self, color_key, color, contrast):
@@ -241,7 +240,7 @@ class PaletteManager:
             del prefs.custom_themes[theme_key]
         if theme_key in self.custom_themes:
             del self.custom_themes[theme_key]
-        ctrl.call_watchers(self, 'color_themes_changed')
+        ctrl.main.color_themes_changed.emit()
 
     def activate_color_theme(self, theme_key, try_to_remember=True):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active
@@ -350,7 +349,7 @@ class PaletteManager:
             ctrl.settings.set('color_theme', new_key, level=DOCUMENT)
             self.update_custom_themes()
             ctrl.main.update_colors(randomise=False, animate=False)
-            ctrl.call_watchers(self, 'color_themes_changed')
+            ctrl.main.color_themes_changed.emit()
         else:
             self.d[key] = color
             if compute_companions:
@@ -766,21 +765,10 @@ class PaletteManager:
                               self.broken(p['bright_text']), p['base'], p['window'])
         return palette
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen.
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'document_changed':
-            self.update_custom_themes()
-            self.update_custom_colors()
-            ctrl.call_watchers(self, 'color_themes_changed')
-
+    def update_themes_and_colors_and_announce_it(self):
+        self.update_custom_themes()
+        self.update_custom_colors()
+        ctrl.main.color_themes_changed.emit()
 
 # HUSL colors and the code for creating them is from here:
 # https://github.com/husl-colors/husl-python

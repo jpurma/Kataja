@@ -97,6 +97,7 @@ class LineColorIcon(QtGui.QIcon):
 class ColorSelector(TableModelSelectionBox):
     def __init__(self, **kwargs):
         TableModelSelectionBox.__init__(self, **kwargs)
+        ctrl.main.palette_changed.connect(self.update)
         self.setIconSize(QSize(16, 16))
         self.setMinimumWidth(24)
         self.setMaximumWidth(24)
@@ -175,14 +176,3 @@ class ColorSelector(TableModelSelectionBox):
             'lighter': ctrl.cm.get(color_key).lighter().name()
         })
         self.select_by_data(color_key)
-
-    def showEvent(self, event):
-        ctrl.add_watcher(self, 'palette_changed')
-        super().showEvent(event)
-
-    def hideEvent(self, event):
-        ctrl.remove_from_watch(self)
-        super().hideEvent(event)
-
-    def watch_alerted(self, *kw, **kwargs):
-        self.update()  # it is palette_changed -signal, update forces redraw

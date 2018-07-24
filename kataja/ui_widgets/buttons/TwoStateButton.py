@@ -26,7 +26,7 @@ class TwoStateButton(PanelButton):
             fm = QtGui.QFontMetrics(font)
             mw = max(fm.width(text0), fm.width(text1))
             self.setMinimumWidth(mw + 24)
-            ctrl.add_watcher(self, 'ui_font_changed')
+            ctrl.main.ui_font_changed.connect(self.update_font)
         self.setMinimumHeight(24)
         self.toggled.connect(self.toggle_state)
         self.compose_icon()
@@ -64,23 +64,10 @@ class TwoStateButton(PanelButton):
         self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
         self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'ui_font_changed':
-            font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
-            font.setPointSize(font.pointSize() * 1.2)
-            fm = QtGui.QFontMetrics(font)
-            mw = max([fm.width(text) for text in self.text_options])
-            self.setMinimumWidth(mw + 12)
-            self.update()
-
+    def update_font(self):
+        font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
+        font.setPointSize(font.pointSize() * 1.2)
+        fm = QtGui.QFontMetrics(font)
+        mw = max([fm.width(text) for text in self.text_options])
+        self.setMinimumWidth(mw + 12)
+        self.update()

@@ -65,7 +65,6 @@ class PanelTitle(QtWidgets.QWidget):
         # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
         self.panel = panel
         self.preferred_size = QtCore.QSize(220, 22)
-        self._watched = False
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
         self.setMinimumSize(self.preferred_size)
@@ -141,10 +140,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
         self.folded = folded
         self.name = name
-        self._watched = False
         self._last_position = None
         self.resize_grip = None
-        self.watchlist = []
         self.default_position = default_position
 
         if default_position == 'bottom':
@@ -176,10 +173,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         setting them up. Subclass __init__:s must call finish_init at the end!
         :return:
         """
-        if self.isVisible() and not self._watched:
-            for signal in self.watchlist:
-                ctrl.add_watcher(self, signal)
-            self._watched = True
         self.set_folded(self.folded)
         if self.isFloating():
             self.move(self.initial_position())
@@ -311,42 +304,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         if y + h > screen_rect.bottom():
             y = screen_rect.bottom() - h
         return QtCore.QPoint(x, y)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        pass
-        #print('watch alerted: ', obj, signal, field_name, value)
-
-    def showEvent(self, QShowEvent):
-        """
-
-        :param QShowEvent:
-        """
-        if self.watchlist and not self._watched:
-            for signal in self.watchlist:
-                ctrl.add_watcher(self, signal)
-            self._watched = True
-        QtWidgets.QDockWidget.showEvent(self, QShowEvent)
-
-    def closeEvent(self, QCloseEvent):
-        """
-
-        :param QCloseEvent:
-        :return:
-        """
-        ctrl.remove_from_watch(self)
-        self._watched = False
-        QtWidgets.QDockWidget.closeEvent(self, QCloseEvent)
 
 
 

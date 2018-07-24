@@ -128,7 +128,6 @@ class LogPanel(Panel):
         self.resize_grip = QtWidgets.QSizeGrip(self)
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
-        self.watchlist = ['ui_font_changed']
         self.vlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         self.preferred_size = self.log_browser.preferred_size
         self.finish_init()
@@ -171,20 +170,3 @@ class LogPanel(Panel):
         for handler in log.handlers:
             if hasattr(handler, 'everything'):
                 handler.everything = []
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'ui_font_changed':
-            f = qt_prefs.get_font(g.CONSOLE_FONT)
-            self.log_browser.setStyleSheet('font-family: "%s"; font-size: %spx;' % (f.family(),
-                                                                                    f.pointSize()))

@@ -72,7 +72,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
 
     def scrollContentsBy(self, x, y):
-        ctrl.call_watchers(self, 'viewport_moved')
+        ctrl.main.viewport_moved.emit()
         QtWidgets.QGraphicsView.scrollContentsBy(self, x, y)
 
     def resizeEvent(self, event):
@@ -82,7 +82,7 @@ class GraphView(QtWidgets.QGraphicsView):
         """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
         # self._last_rect = self.mapToScene(self.rect()).boundingRect()
-        ctrl.call_watchers(self, 'viewport_resized')
+        ctrl.main.viewport_resized.emit()
 
     def mousePressEvent(self, event):
         """ Here we have a workaround for clicking labels and having editing cursor appear to

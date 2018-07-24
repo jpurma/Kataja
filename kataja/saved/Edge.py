@@ -820,7 +820,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         if rad is None:
             rad = orad
         self.curve_adjustment[index] = dist, rad
-        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.path.changed = True
         self.make_path()
         self.update()
@@ -845,7 +844,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # Saved properties
     edge_type = SavedField("edge_type")
-    curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
+    curve_adjustment = SavedField("curve_adjustment")
     start = SavedField("start")
     end = SavedField("end")
     alpha = SavedField("alpha")

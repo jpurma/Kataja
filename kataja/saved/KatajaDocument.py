@@ -265,5 +265,5 @@ class KatajaDocument(SavedObject):
 
     forests = SavedField("forests")
     current_index = SavedField("current_index")
-    forest = SavedField("forest", watcher="forest_changed")
+    forest = SavedField("forest", watcher=ctrl.main.forest_changed)
     lexicon = SavedField("lexicon")

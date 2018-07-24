@@ -33,6 +33,7 @@ class LineStyleIcon(QtGui.QIcon):
 class ShapeSelector(TableModelSelectionBox):
     def __init__(self, for_edge_type=None, **kwargs):
         TableModelSelectionBox.__init__(self, **kwargs)
+        self._connections = []
         self.for_edge_type = for_edge_type
         self.setIconSize(QtCore.QSize(64, 16))
         items = []
@@ -75,17 +76,21 @@ class ShapeSelector(TableModelSelectionBox):
             icon.compose_icon(color)
             item.setIcon(icon)
 
+    def connect_main(self):
+        self._connections += [ctrl.main.palette_changed.connect(self.update_colors),
+                              ctrl.main.scope_changed.connect(self.update_colors),
+                              ctrl.main.active_edge_color_changed.connect(self.update_colors)]
+
+    def disconnect_main(self):
+        for item in self._connections:
+            if item:
+                ctrl.main.disconnect(item)
+        self._connections = []
+
     def showEvent(self, event):
-        ctrl.add_watcher(self, 'active_edge_color_changed')
-        ctrl.add_watcher(self, 'palette_changed')
-        ctrl.add_watcher(self, 'scope_changed')
+        self.connect_main()
         super().showEvent(event)
 
     def hideEvent(self, event):
-        ctrl.remove_from_watch(self)
+        self.disconnect_main()
         super().hideEvent(event)
-
-    def watch_alerted(self, *kw, **kwargs):
-        self.update_colors()
-
-

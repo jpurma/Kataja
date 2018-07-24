@@ -27,7 +27,7 @@ class NavigationPanel(Panel):
         inner.setMinimumWidth(160)
         inner.setMaximumWidth(220)
         inner.setAutoFillBackground(True)
-        self.watchlist = ['forest_changed']
+        ctrl.main.forest_changed.connect(self.update_tree_counter)
         layout = self.vlayout
         # self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
         #                               ).to_layout(layout)
@@ -91,18 +91,3 @@ class NavigationPanel(Panel):
         """
         self.update_tree_counter()
         super().showEvent(event)
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'forest_changed':
-            self.update_tree_counter()

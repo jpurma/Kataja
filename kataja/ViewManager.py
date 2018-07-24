@@ -137,7 +137,7 @@ class ViewManager:
             self.view.setSceneRect(sr + QtCore.QMarginsF(0, 500, 0, 0))
         self.view.fitInView(target_rect, 1)
         self._fit_scale = self.view.transform().m11()
-        ctrl.call_watchers(self, 'viewport_moved')
+        ctrl.main.viewport_moved.emit()
 
     def scale_view_by(self, delta):
         """
@@ -156,7 +156,7 @@ class ViewManager:
             factor = 9.0
         self.view.resetTransform()
         self.view.scale(factor, factor)
-        ctrl.call_watchers(self, 'viewport_moved')
+        ctrl.main.viewport_moved.emit()
         return factor
 
     def zoom_by_angle(self, pointer_pos, y_angle):

@@ -46,7 +46,8 @@ class LineOptionsPanel(Panel):
         self.active_node_type = g.CONSTITUENT_NODE
         self.shape_selector = None
 
-        self.watchlist = ['scope_changed', 'selection_changed']
+        ctrl.main.selection_changed.connect(self.update_panel)
+        ctrl.main.scope_changed.connect(self.update_panel)
 
         spac = 8
         hlayout = box_row(layout)
@@ -318,20 +319,3 @@ class LineOptionsPanel(Panel):
         if fillable:
             return self.get_active_shape_setting('fill')
         return False
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'scope_changed':
-            self.update_panel()
-        elif signal == 'selection_changed':
-            self.update_panel()

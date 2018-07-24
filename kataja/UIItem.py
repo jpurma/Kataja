@@ -32,7 +32,6 @@ class UIItem:
         self.ui_manager = ctrl.ui
         self.role = role  # optional way to identify if cannot be distinguished w. class
         self.host = host
-        self.watchlist = []
         self.priority = 10
         self.k_tooltip = tooltip
         self.is_fading_in = False
@@ -42,9 +41,6 @@ class UIItem:
         self._opacity_effect = None
         self._disable_effect = False
         self._hovering = False
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        pass
 
     def update_position(self):
         pass

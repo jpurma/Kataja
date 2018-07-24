@@ -120,16 +120,6 @@ class SavedObject(object):
         self._cd = DELETED
         ctrl.undo_pile.add(self)
 
-    def call_watchers(self, signal, field_name=None, value=None):
-        """ Alert (UI) objects that are watching for changes for given field
-        in this object
-        :param signal:
-        :param field_name:
-        :param value:
-        :return:
-        """
-        ctrl.call_watchers(self, signal, field_name, value)
-
     def transitions(self):
         """ Create a dict of changes based on modified attributes of the item.
         result dict has tuples as value, where the first item is value

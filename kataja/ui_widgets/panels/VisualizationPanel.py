@@ -44,7 +44,7 @@ class VisualizationPanel(Panel):
         self.toggle_options.setCheckable(True)
         self.toggle_options.data = 'VisualizationOptionsPanel'
 
-        self.watchlist = ['visualization']
+        ctrl.main.visualisation_changed.connect(self.update_visualisation)
         self.finish_init()
 
     def showEvent(self, event):
@@ -56,22 +56,13 @@ class VisualizationPanel(Panel):
         # ??
         super().showEvent(event)
 
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        if signal == 'visualization':
-            if value and 'name' in value:
-                index = list(VISUALIZATIONS.keys()).index(value['name'])
-                self.selector.setCurrentIndex(index)
+    def update_visualisation(self):
+        if not ctrl.main.document:
+            return
+        data = ctrl.forest.vis_data
+        if data and 'name' in data:
+            index = list(VISUALIZATIONS.keys()).index(data['name'])
+            self.selector.setCurrentIndex(index)
 
     def sizeHint(self):
         #print("VisualizationPanel asking for sizeHint, ", self.preferred_size)

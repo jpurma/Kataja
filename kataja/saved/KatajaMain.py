@@ -74,6 +74,7 @@ stylesheet = """
 QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
 OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 QComboBox QAbstractItemView {selection-color: %(ui)s;}
+KatajaTextArea {font-family: "%(console_font)s"; font-size: %(console_font_size)spx;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 sub sub {font-size: 8pt; vertical-align: sub}
 sup sub {font-size: 8pt; vertical-align: sub}
@@ -125,6 +126,19 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     keypresses and menus. """
     unique = True
 
+    active_edge_color_changed = QtCore.pyqtSignal()
+    color_themes_changed = QtCore.pyqtSignal()
+    document_changed = QtCore.pyqtSignal()
+    forest_changed = QtCore.pyqtSignal()
+    palette_changed = QtCore.pyqtSignal()
+    scope_changed = QtCore.pyqtSignal()
+    selection_changed = QtCore.pyqtSignal()
+    ui_font_changed = QtCore.pyqtSignal()
+    viewport_moved = QtCore.pyqtSignal()
+    viewport_resized = QtCore.pyqtSignal()
+    view_mode_changed = QtCore.pyqtSignal()
+    visualisation_changed = QtCore.pyqtSignal()
+
     def __init__(self, kataja_app, no_prefs=False, reset_prefs=False):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. Receives launch arguments:
@@ -134,7 +148,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.init_done = False
-        ctrl.watchers_enabled = False
+        self.blockSignals(True)
         kataja_app.processEvents()
         SavedObject.__init__(self)
 
@@ -152,7 +166,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.classes = classes
         self.save_prefs = not no_prefs
         self.fontdb = QtGui.QFontDatabase()
-        self.color_manager = PaletteManager()
+        self.color_manager = PaletteManager(self)
         self.settings_manager = Settings()
         self.documents = []
         self.document = None
@@ -194,9 +208,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.activateWindow()
         # self.status_bar = self.statusBar()
         self.install_plugins()
-        ctrl.watchers_enabled = True
-        ctrl.call_watchers(self, 'viewport_resized')
-        ctrl.call_watchers(self.document, 'forest_changed')
+        self.blockSignals(False)
+        self.viewport_resized.emit()
+        self.forest_changed.emit()
         self.init_done = True
         self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
@@ -220,6 +234,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ui = ctrl.cm.ui()
         f = qt_prefs.get_font(g.UI_FONT)
         fm = qt_prefs.get_font(g.MAIN_FONT)
+        fc = qt_prefs.get_font(g.CONSOLE_FONT)
         self.setStyleSheet(stylesheet % {
             'draw': c.name(),
             'lighter': c.lighter().name(),
@@ -232,7 +247,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             'ui_darker': ui.darker().name(),
             'main_font': fm.family(),
             'main_font_size': fm.pointSize(),
-            'heading_font_size': fm.pointSize() * 2
+            'heading_font_size': fm.pointSize() * 2,
+            'console_font': fc.family(),
+            'console_font_size': fc.pointSize(),
         })
 
     def leaveEvent(self, event):
@@ -294,7 +311,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         init_state = self.init_done
         self.init_done = False
         ctrl.disable_undo()
-        ctrl.watchers_enabled = False
+        self.blockSignals(True)
         # ----------------------
 
         self.clear_all()
@@ -329,7 +346,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.init_documents()
 
         # resume with side effects
-        ctrl.watchers_enabled = True
+        self.blockSignals(False)
         ctrl.resume_undo()
         self.init_done = init_state
         # ----------------------
@@ -346,7 +363,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         init_state = self.init_done
         self.init_done = False
         ctrl.disable_undo()
-        ctrl.watchers_enabled = False
+        self.blockSignals(True)
         # ----------------------
 
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
@@ -358,7 +375,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.settings_manager.set_forest(self.forest)
 
         # resume with side effects
-        ctrl.watchers_enabled = True
+        self.blockSignals(False)
         ctrl.resume_undo()
         self.init_done = init_state
         # ----------------------
@@ -398,7 +415,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return:
         """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes, log)
-        ctrl.call_watchers(self, 'color_themes_changed')
+        self.color_themes_changed.emit()
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
@@ -412,7 +429,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         self.documents = [classes.KatajaDocument()]
         self.document = self.documents[0]
-        ctrl.call_watchers(self.document, 'document_changed')
+        self.document_changed.emit()
 
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
@@ -435,7 +452,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest.retire_from_drawing()
         self.documents.append(classes.KatajaDocument(name=name))
         self.document = self.documents[-1]
-        ctrl.call_watchers(self.document, 'document_changed')
+        self.document_changed.emit()
         self.change_forest()
         self.ui_manager.update_projects_menu()
         return self.document
@@ -443,7 +460,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def switch_project(self, i):
         self.forest.retire_from_drawing()
         self.document = self.documents[i]
-        ctrl.call_watchers(self.document, 'document_changed')
+        self.document_changed.emit()
         self.change_forest()
         self.ui_manager.update_projects_menu()
         return self.document
@@ -728,7 +745,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def update_colors(self, randomise=False, animate=True):
         """ This is the master palette change.
         Its effects should propagate to all objects in scene and ui, either through updated
-        style sheets, paletteChanged -events or 'palette_changed' -watchers.
+        style sheets, paletteChanged -events or 'palette_changed' -signals.
         :param randomise:
         :param animate:
         :return:
@@ -738,7 +755,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         cm.update_colors(randomise=randomise)
         self.app.setPalette(cm.get_qt_palette())
         self.update_style_sheet()
-        ctrl.call_watchers(self, 'palette_changed')
+        ctrl.main.palette_changed.emit()
         if cm.gradient:
             if old_gradient_base != cm.paper() and animate:
                 self.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
@@ -766,20 +783,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def resize_ui_font(self):
         qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)
         self.update_style_sheet()
-
-    def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
-         are declared in 'self.watchlist'.
-
-         This method will try to sort out the received signals and act accordingly.
-
-        :param obj: the object causing the alarm
-        :param signal: identifier for type of the alarm
-        :param field_name: name of the field of the object causing the alarm
-        :param value: value given to the field
-        :return:
-        """
-        pass
 
     # ############## #
     #                #

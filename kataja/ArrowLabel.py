@@ -115,7 +115,6 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         self._host.poke('label_data')
         self._host.label_data['start_at'] = value
         self.update_position()
-        self._host.call_watchers('edge_label_adjust', 'start_at', value)
 
     def update_position(self):
         """ Compute and set position for edge label. Make sure that path is
@@ -149,7 +148,6 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         self._host.poke('label_data')
         self._host.label_data['angle'] = value
         self.update_position()
-        self._host.call_watchers('edge_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
@@ -167,7 +165,6 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         self._host.poke('label_data')
         self._host.label_data['dist'] = value
         self.update_position()
-        self._host.call_watchers('edge_label_adjust', 'dist', value)
 
     def magnet_positions(self):
         w = self._size.width() / 2.0
@@ -340,7 +337,6 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
             new_angle = a2
         self.label_angle = new_angle
         self.label_dist = math.hypot(line_x, line_y)
-        ctrl.call_watchers(edge, 'edge_label_adjust', 'adjustment', adjustment)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():
