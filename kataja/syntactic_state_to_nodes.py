@@ -118,8 +118,15 @@ def syntactic_state_to_nodes(forest, syn_state):
                     recursive_add_feature_node(feat)
         if hasattr(me, 'checked_features'):
             for feat in me.checked_features:
-                if feat.uid not in done_nodes:
-                    recursive_add_feature_node(feat)
+                if isinstance(feat, tuple):
+                    x, y = feat
+                    if x.uid not in done_nodes:
+                        recursive_add_feature_node(x)
+                    if y.uid not in done_nodes:
+                        recursive_add_feature_node(y)
+                else:
+                    if feat.uid not in done_nodes:
+                        recursive_add_feature_node(feat)
         if hasattr(me, 'checks'):
             if me.checks and me.checks.uid not in done_nodes:
                 recursive_add_feature_node(me.checks)
@@ -224,7 +231,13 @@ def syntactic_state_to_nodes(forest, syn_state):
                 forest.semantics_manager.add_to_array(node, sem_label, sem_array_n)
             checked_features = getattr(synobj, 'checked_features', [])
             if checked_features:
-                features += list(checked_features)
+                for xy in checked_features:
+                    if isinstance(xy, tuple):
+                        x, y = xy
+                        features.append(x)
+                        features.append(y)
+                    else:
+                        features.append(xy)
             for feature in features:
                 # Try to find where from this edge has been inherited.
                 # Connect this node to there.

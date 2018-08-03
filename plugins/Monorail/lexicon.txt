@@ -1,4 +1,9 @@
-Pekka :: nom
-on :: T
-rakastanut :: V
-Merjaa :: prt
+Hassu :: _nom
+Merjaa :: -Foc =V1 N =N +prt
+Pekka :: _A -Foc -T nom
+harvinaisen :: gen
+joka :: =N rel
+kaunista :: ≤gen =V1 N =N +prt
+nukkuu :: 
+on :: -V T Foc
+rakastanut :: V1 V =prt acc

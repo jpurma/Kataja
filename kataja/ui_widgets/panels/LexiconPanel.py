@@ -47,6 +47,7 @@ class LexiconPanel(Panel):
         text = ctrl.syntax.get_editable_lexicon()
         sentence = ctrl.syntax.get_editable_sentence()
         semantics = ctrl.syntax.get_editable_semantics()
+        print('preparing lexicon as: ', repr(text))
         self.lextext.setText(text)
         self.input_text.setText(sentence)
         if len(sentence) > 150:

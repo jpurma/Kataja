@@ -65,6 +65,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
         edit it and retry parsing.
         :return:
         """
+        print(repr(self.input_text))
         return self.input_text
 
     def create_derivation(self, input_text=None, lexicon=None, semantics=None, forest=None):

@@ -39,29 +39,108 @@ def next_letter(char):
     return string.ascii_letters[string.ascii_letters.index(char) + 1]
 
 
-def find_checking_features(left, right, first_must_match=True):
+# The first matching feature pair is returned (start to look from positive features at right).
+def find_checking_features_1(left, right):
+    checking_features = []
     for feat in right.inherited_features:
         if feat.used:
             continue
-        if feat.sign == '':
+        if feat.sign == '' or feat.sign == '+':
             for feat_to_check in left.inherited_features:
                 if feat_to_check.used:
                     continue
                 if (feat_to_check.name == feat.name and
                    feat_to_check.sign and
-                   feat_to_check.sign in '=-_'):
-                    return feat_to_check, feat
-                if first_must_match:
+                   feat_to_check.sign in '=-_≤'):
+                    checking_features.append((feat_to_check, feat))
+    return checking_features
+
+
+# Strictly match features, match has to be from the first unused feature in both left and right
+def find_checking_features_2(left, right):
+    checking_features = []
+    for feat in right.inherited_features:
+        if feat.used:
+            continue
+        if feat.sign == '' or feat.sign == '+':
+            for feat_to_check in left.inherited_features:
+                if feat_to_check.used:
+                    continue
+                if (feat_to_check.name == feat.name and
+                   feat_to_check.sign and
+                   feat_to_check.sign in '=-_≤'):
+                    checking_features.append((feat_to_check, feat))
+                    continue
+                break
+        break
+    return checking_features
+
+
+# Strictly match positive features, the feature must be the first unused positive in the right
+def find_checking_features_3(left, right):
+    checking_features = []
+    for feat in right.inherited_features:
+        if feat.used:
+            continue
+        if feat.sign == '' or feat.sign == '+':
+            found = False
+            for feat_to_check in left.inherited_features:
+                if feat_to_check.used:
+                    continue
+                if (feat_to_check.name == feat.name and
+                   feat_to_check.sign and
+                   feat_to_check.sign in '=-_≤'):
+                    checking_features.append((feat_to_check, feat))
+                    found = True
+            print('tried to find match for ', feat, ' in ', left.inherited_features)
+            if not found:
+                break
+    return checking_features
+
+
+# Strictly match negative feature, the feature must be the first unused negative in the left
+def find_checking_features_4(left, right):
+    checking_features = []
+    for feat in right.inherited_features:
+        if feat.used:
+            continue
+        if feat.sign == '' or feat.sign == '+':
+            for feat_to_check in left.inherited_features:
+                if feat_to_check.used or feat_to_check.sign not in '=-_≤':
+                    continue
+                if feat_to_check.name == feat.name and feat_to_check.sign:
+                    checking_features.append((feat_to_check, feat))
+                else:
                     break
-        if first_must_match:
-            break
+    return checking_features
 
 
-def inherit_features(head, checked_features):
+def mark_used_1(feat_to_check, feat):
+    if feat.sign == '':
+        feat_to_check.used = True
+    elif feat.sign == '+':
+        feat_to_check.used = False
+
+    if feat_to_check.sign == '=':
+        feat.used = True
+    elif feat_to_check.sign == '-':
+        feat.used = True
+    elif feat_to_check.sign == '≤':
+        feat.used = True
+    elif feat_to_check.sign == '_':
+        feat.used = False
+        # merged.parts = [right, left]
+    else:
+        raise ValueError
+
+
+find_checking_features = find_checking_features_3
+mark_used = mark_used_1
+
+
+def inherit_features(head):
     new_feats = []
     for f in head.inherited_features:
-        ##if f in checked_features:
-        #    f.used = True
         if f.used or f in new_feats:
             continue
         new_feats.append(f)
@@ -71,43 +150,33 @@ def inherit_features(head, checked_features):
 def check_features(merged):
     left, right = merged.parts
     checking_features = find_checking_features(left, right)
-    if checking_features:
-        feat_to_check, feat = checking_features
-        feat_to_check.used = True
-        if feat_to_check.sign == '=':
-            feat.used = True
-        elif feat_to_check.sign == '-':
-            feat.used = True
-        elif feat_to_check.sign == '_':
-            feat.used = False
-        else:
-            raise ValueError
+    for feat_to_check, feat in checking_features:
+        mark_used(feat_to_check, feat)
         feat.check(feat_to_check)
-        merged.checked_features = (feat_to_check, feat)
+    merged.checked_features = checking_features
 
 
 def deduce_head(merged):
     left, right = merged.parts
     if merged.checked_features:
-        feat_to_check, feat = merged.checked_features
-        if feat_to_check.sign == '=':
-            head = left
-        else:
-            head = right
+        for feat_to_check, feat in merged.checked_features:
+            if feat_to_check.sign == '=' or feat_to_check.sign == '≤':
+                head = left
+            else:
+                head = right
+            if feat_to_check.sign == '≤':
+                merged.parts = [right, left]
     else:
         if left.parts:
             head = right
         else:
             head = left
-    merged.inherited_features = inherit_features(head, merged.checked_features)
+    merged.inherited_features = inherit_features(head)
     merged.lexical_heads = list(head.lexical_heads)
 
 
 def merge(left, right):
     merged = Constituent(parts=[left, right])
-    left.has_raised = bool(left.parts)
-    check_features(merged)
-    deduce_head(merged)
     return merged
 
 
@@ -214,16 +283,74 @@ def deduce_lexicon_from_recipe(recipe, lexicon=None):
     return lexicon
 
 
-def fast_find_movable(node):
+def fast_find_movable_1(node, excluded=None):
+    # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
+    # node was merged with.
+    # probably not enough when there is a series of raises that should be done.
+    if not excluded:
+        excluded = node
+    if node.parts:
+        if node is not excluded:
+            for part in node.parts:
+                if not part.has_raised:
+                    return node
+        for part in node.parts:
+            n = fast_find_movable_1(part, excluded=excluded)
+            if n:
+                return n
+    return None
+
+def fast_find_movable_2(node, excluded=None):
+    # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
+    # node was merged with.
+    # probably not enough when there is a series of raises that should be done.
+    if not excluded:
+        excluded = node
+    if not done:
+        done = set()
+    if node in done:
+        return
+    if node.parts:
+        if node is not excluded:
+            for part in node.parts:
+                if not part.has_raised:
+                    return node
+        for part in node.parts:
+            n = fast_find_movable_1(part, excluded=excluded)
+            if n:
+                return n
+    return None
+
+
+def fast_find_movable_3(node):
     # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
     # node was merged with.
     # probably not enough when there is a series of raises that should be done.
     if node.parts:
         left, right = node.parts
-        if not left.has_raised:
-            return right
-        return fast_find_movable(left)
+        if right.parts:
+            return right.parts[0]
+        return right
     return None
+
+
+def fast_find_movable_4(node, excluded=None):
+    # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
+    # node was merged with.
+    # probably not enough when there is a series of raises that should be done.
+    if not excluded:
+        excluded = node
+    if node.parts:
+        if node is not excluded and not (node.checked_features and node.has_raised):
+            return node
+        for part in node.parts:
+            n = fast_find_movable_4(part, excluded=excluded)
+            if n:
+                return n
+    return None
+
+
+fast_find_movable = fast_find_movable_4
 
 
 def flatten(tree):
@@ -240,7 +367,9 @@ def flatten(tree):
 
 
 def startnode():
-    return Constituent(label='', features=[Feature(name='0', sign='')])
+    c = Constituent(label='', features=[Feature(name='0', sign='')])
+    c.has_raised = True
+    return c
 
 
 def parse_from_recipe(recipe, lexicon, forest):
@@ -275,12 +404,16 @@ def parse(sentence, lexicon, forest):
             node = Constituent(lexem)
             lexicon[lexem] = node.copy()
         tree = merge(node, tree or startnode())
+        deduce_head(tree)
         raising_node = fast_find_movable(tree)
-        export_to_kataja(tree, lexem, raising_node, forest)
+        export_to_kataja(tree, 'em: %s' % lexem, raising_node, forest)
         checking = find_checking_features(raising_node, tree) if raising_node else None
         # Do Internal Merges as long as possible
         while checking:
             tree = merge(raising_node, tree)
+            check_features(tree)
+            deduce_head(tree)
+            raising_node.has_raised = True
             raising_node = fast_find_movable(tree)
             export_to_kataja(tree, 'internal merge, ' + str(checking), raising_node, forest)
             checking = find_checking_features(raising_node, tree) if raising_node else None
@@ -289,7 +422,11 @@ def parse(sentence, lexicon, forest):
 
 def read_lexicon(lexdata):
     lex = {}
-    lines = lexdata.splitlines()
+    if isinstance(lexdata, list):
+        lines = lexdata
+    else:
+        lines = lexdata.splitlines()
+    print('read_lexicon has lines: ', lines)
 
     for line in lines:
         line = line.strip()
@@ -309,4 +446,7 @@ def read_lexicon(lexdata):
 
 def load_lexicon(filename):
     f = open(filename)
-    return read_lexicon(f.read())
+    lines = f.readlines()
+    print('loaded lexicon strings as lines: ', repr(lines))
+    f.close()
+    return read_lexicon(lines)

@@ -4,14 +4,13 @@ Visualizing Biolinguistics
 
 [Main site](http://www.kataja.purma.fi)
 
-Kataja is an open source visualization framework for researchers working with syntax of human languages. 
-Kataja aims to be the best available tool for:
+Kataja is an open source visualization tool for minimalist grammars of human languages. 
+Kataja helps you to:
 
- - **DRAWING** syntax trees
- - **PRESENTING** syntactic phenomena
- - **EXPERIMENTING** with syntax models
+ - **DRAW** syntax trees
+ - **PRESENT** syntactic phenomena
+ - **EXPERIMENT** with your own syntactic models
 
-The features will be added to satisfy these needs.
 
 Kataja is designed and developed by Jukka Purma and it is published under GPL3 license. See COPYING.
 The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Saara Huhmarniemi (University of Helsinki, prev. supervised by Pauli Brattico) and prof. Teemu Leinonen (Aalto ARTS). 
@@ -20,34 +19,29 @@ Kataja is built on Qt5 and Python3, using Riverbank Software's PyQt5 to provide 
 
 # About current version
 
-The software is alpha and under intense development. Daily updates may break features, and generally are not made in order to publish new features, but to help express and maintain the daily progress with the code base.  
+The software is alpha and under sporadic development. At this stage there are no actual releases, but the code from the master branch should run. Daily updates may break features here and there.  
 
-# Running and installing on Mac OS X
+# Running and installing
 
-There are two ways for running Kataja in Mac OS X:
+It is recommended to run Kataja as a Python script in virtualenv, directly from the source code. 
 
-1. As a Kataja.app -- recommended for everyday use, easier to install. 
-2. Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5, PyQt5, latest sip. Installing these has become easier recently.  See instructions below.
+Kataja can be built and distributed as a standalone app for MacOS, Windows and Linux, but providing these will wait until the features are stable enough.
 
-Both options can coexist on same system, though they may share user  preferences. 
+## Downloading current version 
 
-## Option 1: download, install and run Kataja.app
+Either clone source code or download zip from https://github.com/jpurma/Kataja from green 'Clone or download' button. If you choose to download, expand zip somewhere.
 
-1. Download Kataja.dmg, double click to open it. 
-2. Drag Kataja -application to your Applications-folder. 
-3. Double click Kataja.app to launch it.
+Kataja requires Python 3.6 or newer. Python distributions for various operating systems can be found at http://python.org
 
-Like any well-behaving Mac app, Kataja will on first run create a folder to `~/Library/Application Support/Kataja` and a preferences file in `~/Preferences/fi.purma.Kataja.plist`. The Application Support folder will include folder `plugins`, which is the easiest way to extend Kataja. 
-
-## Option 2a: run with Python
+## Preparing virtual environment, loading dependencies and running Kataja
 
 It is recommended to run Kataja in virtualenv, so that its dependencies can be kept separated from user and system files.
 
-First navigate to Kataja folder and create a folder for your virtual environment with virtualenv command:
+First navigate into Kataja-folder and create a folder for your virtual environment with virtualenv command:
 
     virtualenv venv
 
-Then activate the virtualenv. While virtualenv is active, 'python' refers to virtualenv's own python and all the libraries and dependancies will be installed into venv-folder.
+Then activate virtualenv. While virtualenv is active, 'python' refers to virtualenv's own python and all the libraries and dependancies will be installed into venv-folder.
 
     source venv/bin/activate
 
@@ -65,59 +59,41 @@ When you want to deactivate virtualenv, use:
 
 You only have to create virtualenv and install requirements once. Subsequent Kataja runs only require that you have activated virtualenv.
 
-## Option 2b -- Building Kataja.app from source for distribution
 
-Building Kataja.app is only necessary if you want to distribute your own version of Kataja, and it is necessary to test if you are proposing changes to Kataja that may break the app building, e.g. require new qt dylibs. For normal develop & run -cycle this step is not necessary.
+### Installing without virtualenv ###
 
-### Use Wheels to install Qt5.x, SIP and PyQt5 ###
+Another option is to skip the virtualenv and install dependencies for user's python framework. In this case there is a small risk that at some point another python project upgrades some of the dependencies into something incompatible and breaks something in Kataja. And cleaning up Kataja's required dependencies is not as straightforward.
 
-A new easy method to install necessary dependencies is made possible with Python 3.5 and Python Wheels. Try:
+Just navigate to Kataja folder and run:
 
-    pip3 install pyqt5
+    pip3 install -r requirements.txt
+    
+Or if installation fails because of `PermissionError: permission denied`, try again with sudo:
 
-If it results in PermissionError: permission denied, try again with sudo:
+    sudo pip3 install -r requirements.txt
 
-    sudo pip3 install pyqt5
-
-This will install open source versions of Qt and PyQt, just what you needed.
-
-If you really want to use Python 3.4 or pip3-based install fails from other reasons, download PyQt5 and SIP from http://www.riverbankcomputing.com/ and follow instructions there (Software -> PyQt -> PyQt5 Reference Guide -> Building and Installing from Source)
-
-get your own copy of Kataja source files with either "Clone in Desktop" or "Download ZIP" in https://github.com/jpurma/Kataja .
-
-Navigate to Kataja -folder with terminal, and in there:
+Then run Kataja with:
 
     python3 Kataja.py
+
+
+### Building Kataja as runnable app in MacOS (deprecated)
 
 You will need to have Kataja runnable from script. The only new piece required for building Kataja.app is py2app, ( https://pythonhosted.org/py2app/ ).
 
-The thing to note is that you want to install it for Python3, and the installers often default on Python2-series. Depending on what are the installers available for you, install py2app with either:
+Assuming virtualenv, install py2app 
   
-    sudo pip3 install -U py2app
+    pip install py2app
     
-or 
-    
-    sudo easy_install3 -U py2app
 
 Once py2app is installed, go to Kataja folder and run 
 
-    python3 setup.py py2app
+    python setup.py py2app
     
-This will take ~10 seconds, and end with `------ Done ------` if everything is right. At first try, it `setup.py` may sk you to edit its `qt_mac` -variable to provide a path to your Qt installation.
+This will take ~10 seconds, and end with `------ Done ------` if everything is right. At first try, it `setup.py` may ask you to edit its `qt_mac` -variable to provide a path to your Qt installation.
 
 The build script will build Kataja.app to `dist/` and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with `create_dmg` -variable in `setup.py`. 
 
-## Windows ##
-
-to be added
-
-## Linux ##
-
-I don't have time or expertise for making Linux distributables, as the variance is great and installing the dependencies is anyways easier and more expectable in linux. The same principles as in Option 2a for Mac OS X apply. You'll need Python3.4>, Qt5.6, PyQt5 and compatible SIP. See instructions on  http://www.riverbankcomputing.com/ to install everything necessary for PyQt5. 
-
-When you have Kataja -folder in your preferred place, navigate there and:
- 
-    python3 Kataja.py
  
 3rd party resources
 -------------------

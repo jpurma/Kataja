@@ -41,6 +41,7 @@ class DeriveFromLexicon(KatajaAction):
         panel = ctrl.ui.get_panel('LexiconPanel')
         if panel:
             input_text = panel.input_text.text()
+            print('input text: ', repr(input_text))
             lexicon = panel.lextext.text()
             semantics = panel.semantics_text.text()
             forest = ctrl.forest

@@ -71,6 +71,7 @@ class Document(KatajaDocument):
         input_trees = []
 
         shared_lexicon = load_lexicon(Document.default_lexicon_file)
+        print('loaded shared_lexicon: ', shared_lexicon)
 
         if has_nltk:
             for i in range(*NLTK_TREE_RANGE):  # 199

@@ -69,17 +69,4 @@ class Constituent(BaseConstituent or object):
         else:
             return self.inherited_features
 
-    def restore(self, done):
-        if self in done:
-            return None
-        done.add(self)
-        if self.parts:
-            new_parts = []
-            for part in self.parts:
-                child = part.restore(done)
-                if child:
-                    new_parts.append(child)
-            if len(new_parts) == 1:
-                return new_parts[0]
-            return new_parts
-        return self
+    has_raised = SavedField('has_raised')

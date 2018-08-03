@@ -693,6 +693,16 @@ class Forest(SavedObject):
 
     def update_feature_ordering(self):
 
+        def flat(listlike):
+            res = []
+            for xy in listlike:
+                if isinstance(xy, tuple):
+                    res.append(xy[0])
+                    res.append(xy[1])
+                else:
+                    res.append(xy)
+            return res
+
         def sort_attached_features(node):
             const = node.syntactic_object
             if const.parts:
@@ -700,7 +710,7 @@ class Forest(SavedObject):
                 feat_lists = [part.inherited_features for part in const.parts]
                 found = False
                 for j, feat in enumerate(itertools.chain(const.inherited_features,
-                                                         const.checked_features)):
+                                                         flat(const.checked_features))):
                     for i, feat_list in enumerate(feat_lists):
                         if feat in feat_list:
                             sorted_syn_feats.append((i, feat_list.index(feat), feat))
