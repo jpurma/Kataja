@@ -40,7 +40,7 @@ class NewStructure(KatajaAction):
         :return: None
         """
         i, forest = ctrl.main.document.new_forest()
-        ctrl.main.change_forest()
+        ctrl.main.document.set_forest(forest)
         log.info('(Cmd-n) New forest, n.%s' % (i + 1))
 
 
@@ -56,7 +56,6 @@ class NextForest(KatajaAction):
         :return: None
         """
         i, forest = ctrl.main.document.next_forest()
-        ctrl.main.change_forest()
         return f'Next forest: {i + 1}: {forest.textual_form()}'
 
 
@@ -72,7 +71,6 @@ class PreviousForest(KatajaAction):
         :return: None
         """
         i, forest = ctrl.main.document.prev_forest()
-        ctrl.main.change_forest()
         return f'Previous forest: {i + 1}: {forest.textual_form()}'
 
 
@@ -91,11 +89,8 @@ class JumpToForest(KatajaAction):
         return args, kwargs
 
     def method(self, n):
-        current = ctrl.main.document.current_index
-        i, forest = ctrl.main.document.jump_to_forest(n - 1)
-        if i != current:
-            ctrl.main.change_forest()
-            return f'Jump to tree set: {i + 1}: {forest.textual_form()}'
+        i, forest = ctrl.main.document.set_forest_by_index(n - 1)
+        return f'Jump to tree set: {i + 1}: {forest.textual_form()}'
 
     def getter(self):
         return ctrl.main.document.current_index + 1
@@ -120,7 +115,7 @@ class NextStep(KatajaAction):
         return f'Next derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest.derivation_steps.derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_steps.derivation_steps
 
 
 class PreviousStep(KatajaAction):
@@ -139,7 +134,7 @@ class PreviousStep(KatajaAction):
         return f'Previous derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest.derivation_steps.derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_steps.derivation_steps
 
 
 class JumpToDerivation(KatajaAction):
@@ -167,4 +162,4 @@ class JumpToDerivation(KatajaAction):
         return ctrl.forest.derivation_steps.derivation_step_index + 1
 
     def enabler(self):
-        return ctrl.forest.derivation_steps.derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_steps.derivation_steps

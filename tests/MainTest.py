@@ -4,8 +4,8 @@ __author__ = 'purma'
 
 import unittest
 import sys
-from kataja.saved.KatajaMain import KatajaMain
-from PyQt5 import QtWidgets, QtGui, QtCore, QtTest
+from kataja.KatajaMain import KatajaMain
+from PyQt5 import QtWidgets, QtCore, QtTest
 from kataja.singletons import running_environment
 
 running_environment.switch_to_test_mode()

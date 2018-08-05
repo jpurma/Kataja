@@ -68,126 +68,65 @@ class SelectLabelShape(KatajaAction):
         return self.not_selection()
 
 
-class ActivateNoFrameNodeShape(KatajaAction):
+class ActivatePlainNodeShape(KatajaAction):
     k_action_uid = 'set_no_frame_node_shape'
     k_command = 'Borderless nodes'
     k_checkable = True
+    shape = g.NORMAL
 
     def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.NORMAL, level=ctrl.ui.active_scope)
+        ctrl.settings.set('node_shape', self.shape, level=ctrl.ui.active_scope)
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.NORMAL
+        return ctrl.settings.get_active_setting('node_shape') == self.shape
 
     def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.NORMAL not in ctrl.forest.visualization.banned_node_shapes
+        return ctrl.forest and self.not_selection() and ctrl.forest.visualization and \
+               self.shape not in ctrl.forest.visualization.banned_node_shapes
 
 
-class ActivateScopeboxNodeShape(KatajaAction):
+class ActivateScopeboxNodeShape(ActivatePlainNodeShape):
     k_action_uid = 'set_scopebox_node_shape'
     k_command = "Box showing node's scope"
     k_checkable = True
-
-    def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.SCOPEBOX, level=ctrl.ui.active_scope)
-        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.SCOPEBOX
-
-    def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.SCOPEBOX not in ctrl.forest.visualization.banned_node_shapes
+    shape = g.SCOPEBOX
 
 
 class ActivateBracketedNodeShape(KatajaAction):
     k_action_uid = 'set_bracketed_node_shape'
     k_command = 'Bracketed nodes'
     k_checkable = True
-
-    def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.BRACKETED, level=ctrl.ui.active_scope)
-        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.BRACKETED
-
-    def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.BRACKETED not in ctrl.forest.visualization.banned_node_shapes
+    shape = g.BRACKETED
 
 
 class ActivateBoxShape(KatajaAction):
     k_action_uid = 'set_box_node_shape'
     k_command = 'Framed nodes'
     k_checkable = True
-
-    def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.BOX, level=ctrl.ui.active_scope)
-        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.BOX
-
-    def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.BOX not in ctrl.forest.visualization.banned_node_shapes
+    shape = g.BOX
 
 
 class ActivateCardNodeShape(KatajaAction):
     k_action_uid = 'set_card_node_shape'
     k_command = 'Nodes as cards'
     k_checkable = True
+    shape = g.CARD
 
     def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.CARD, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
-        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.CARD
-
-    def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.CARD not in ctrl.forest.visualization.banned_node_shapes
+        return super().method()
 
 
 class ActivateFeatureNodeShape(KatajaAction):
     k_action_uid = 'set_feature_node_shape'
     k_command = 'Node takes shape of its prominent feature'
     k_checkable = True
+    shape = g.FEATURE_SHAPE
 
     def method(self):
-        """ Set nodes to be frameless and small
-        :return:
-        """
-        ctrl.settings.set('node_shape', g.FEATURE_SHAPE, level=ctrl.ui.active_scope)
         ctrl.settings.set('feature_check_display', 0, level=ctrl.ui.active_scope)
-        return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
-
-    def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == g.FEATURE_SHAPE
-
-    def enabler(self):
-        return self.not_selection() and ctrl.forest.visualization and \
-               g.FEATURE_SHAPE not in ctrl.forest.visualization.banned_node_shapes
+        return super().method()
 
 
 class SelectTraceMode(KatajaAction):
@@ -225,7 +164,7 @@ class SelectTraceMode(KatajaAction):
         return ctrl.settings.get_active_setting('trace_strategy')
 
     def enabler(self):
-        return self.not_selection()
+        return ctrl.forest and self.not_selection()
 
 
 class SelectLinearizationMode(KatajaAction):
@@ -261,7 +200,7 @@ class SelectLinearizationMode(KatajaAction):
         return ctrl.settings.get_active_setting('linearization_mode')
 
     def enabler(self):
-        return self.not_selection()
+        return ctrl.forest and self.not_selection()
 
 
 class SetVisibleLabel(KatajaAction):
@@ -306,5 +245,5 @@ class SetVisibleLabel(KatajaAction):
         return ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
 
     def enabler(self):
-        return self.not_selection()
+        return ctrl.forest and self.not_selection()
 

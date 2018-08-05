@@ -45,8 +45,6 @@ import kataja.globals as g
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
-from kataja.SavedField import SavedField
-from kataja.SavedObject import SavedObject
 from kataja.Settings import Settings
 from kataja.ViewManager import ViewManager
 from kataja.UIManager import UIManager
@@ -116,11 +114,10 @@ HeadingWidget QLabel {font-family: "%(main_font)s";
 # ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
 
 
-class KatajaMain(SavedObject, QtWidgets.QMainWindow):
+class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
-    unique = True
 
     active_edge_color_changed = QtCore.pyqtSignal()
     color_themes_changed = QtCore.pyqtSignal()
@@ -147,7 +144,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self._stored_init_state = True
         self.disable_signaling()
         kataja_app.processEvents()
-        SavedObject.__init__(self)
 
         self.use_tooltips = True
         self.available_plugins = {}
@@ -165,6 +161,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager(self)
         self.settings_manager = Settings()
+        self.document_changed.connect(self.settings_manager.update_document)
+        self.forest_changed.connect(self.settings_manager.update_forest)
         self.documents = []
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
@@ -187,10 +185,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.init_documents()
-        self.settings_manager.set_document(self.document)
+        self.create_default_documents()
         kataja_app.setPalette(self.color_manager.get_qt_palette())
-        self.settings_manager.set_forest(self.forest)
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
         self.graph_scene.late_init()
@@ -218,7 +214,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         # for gesture in gestures:
         #    self.grabGesture(gesture)
         self.action_finished(undoable=False, play=True)
-        self.forest.undo_manager.flush_pile()
+        if self.forest:
+            self.forest.undo_manager.flush_pile()
 
 
     @property
@@ -265,6 +262,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         ctrl.resume_undo()
         self.init_done = self._stored_init_state
         # ----------------------
+
+    # Plugins ################################
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
@@ -349,8 +348,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
-        self.init_documents()
-
+        self.create_default_documents()
         self.enable_signaling()
         prefs.active_plugin_name = plugin_key
 
@@ -367,10 +365,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
         classes.restore_default_classes()
-        self.init_documents()
-        self.settings_manager.set_document(self.document)
-        self.settings_manager.set_forest(self.forest)
-
+        self.create_default_documents()
         self.enable_signaling()
 
         prefs.active_plugin_name = ''
@@ -403,6 +398,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.enable_plugin(prefs.active_plugin_name, reload=False)
         self.ui_manager.update_plugin_menu()
 
+    # Preferences ###################################
+
     def reset_preferences(self):
         """
 
@@ -416,74 +413,68 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.preferences_dialog.open()
         self.ui_manager.preferences_dialog.trigger_all_updates()
 
-    def init_documents(self):
+    # Document / Project #########################
+
+    def create_document(self, name):
+        document = classes.KatajaDocument(name=name)
+        self.documents.append(document)
+        return document
+
+    def set_document(self, document):
+        if document != self.document:
+            if self.document:
+                self.document.retire_from_display()
+            self.document = document
+            self.document_changed.emit()
+            self.document.update_forest()
+            self.setWindowTitle(f'Kataja — {self.document.name}')
+
+    def create_default_documents(self):
         """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
         plugins have changed the classes that implement these.
         :return:
         """
-        self.documents = [classes.KatajaDocument()]
-        self.document = self.documents[0]
-        self.document_changed.emit()
+        self.documents = []
+        doc = self.create_document('Example')
+        self.set_document(doc)
+        if self.signalsBlocked():
+            self.settings_manager.update_document()
 
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.document.create_forests(clear=False)
-        self.change_forest()
-        self.ui_manager.update_projects_menu()
+        forests = self.document.create_forests(clear=False)
+        if forests:
+            self.document.forests = forests
+            self.document.set_forest(forests[0])
 
     def create_new_project(self):
         names = [fk.name for fk in self.documents]
         name_base = 'New project'
-        name = 'New project'
+        name = name_base
         c = 1
         while name in names:
             name = '%s %s' % (name_base, c)
             c += 1
-        self.forest.retire_from_drawing()
-        self.documents.append(classes.KatajaDocument(name=name))
-        self.document = self.documents[-1]
-        self.document_changed.emit()
-        self.change_forest()
-        self.ui_manager.update_projects_menu()
-        return self.document
+        doc = self.create_document(name=name)
+        self.set_document(doc)
+        return doc
 
     def switch_project(self, i):
-        self.forest.retire_from_drawing()
-        self.document = self.documents[i]
-        self.document_changed.emit()
-        self.change_forest()
-        self.ui_manager.update_projects_menu()
-        return self.document
+        self.forest.retire_from_display()
+        doc = self.documents[i]
+        self.set_document(doc)
+        return doc
+
+    def clear_all(self):
+        """ Empty everything - maybe necessary before changing plugin """
+        self.documents = []
+        doc = self.create_document()
+        self.set_document(doc)
 
     # ### Visualization
     # #############################################################
-
-    def change_forest(self):
-        """ Tells the scene to remove current trees and related data and
-        change it to a new one. Signal 'forest_changed' is already sent by forest keeper.
-        """
-        ctrl.disable_undo()
-        if self.forest:
-            self.forest.retire_from_drawing()
-        else:
-            self.document.create_forests(clear=True)
-        self.settings_manager.set_forest(self.forest)
-        print(f'has forest with {len(self.forest.nodes)} nodes')
-        if self.forest.is_parsed:
-            if self.forest.derivation_steps:
-                ds = self.forest.derivation_steps
-                if not ds.activated:
-                    print('jumping to derivation step: ', ds.derivation_step_index)
-                    ds.jump_to_derivation_step(ds.derivation_step_index)
-            else:
-                print('no derivation steps')
-        self.forest.prepare_for_drawing()
-        ctrl.resume_undo()
-        # if self.forest.undo_manager.
 
     def redraw(self):
         """ Call for forest redraw
@@ -520,7 +511,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     #        """
     #        return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-    # ## Menu management #######################################################
+    # ## Actions #######################################################
 
     def action_finished(self, m='', undoable=True, error=None, play=False):
         """ Write action to undo stack, report back to user and redraw trees
@@ -534,10 +525,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             log.error(error)
         elif m:
             log.info(m)
-        if ctrl.action_redraw:
-            self.forest.draw()
-        if undoable and not error:
-            self.forest.undo_manager.take_snapshot(m)
+        if self.forest:
+            if ctrl.action_redraw:
+                self.forest.draw()
+            if undoable and not error:
+                self.forest.undo_manager.take_snapshot(m)
         if play:
             self.graph_scene.start_animations()
         ctrl.ui.update_actions()
@@ -572,6 +564,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         for action in self.ui_manager.actions.values():
             action.setDisabled(True)
 
+    # Color theme #################################
+
     def change_color_theme(self, mode, force=False):
         """
         triggered by color mode selector in colors panel
@@ -579,10 +573,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param mode:
         """
         if mode != ctrl.settings.get('color_theme') or force:
-            if ctrl.settings.document:
+            if self.document:
                 ctrl.settings.set('color_theme', mode, level=g.DOCUMENT)
             ctrl.settings.set('color_theme', mode, level=g.PREFS)
             self.update_colors()
+
+    # Printing ###################################
 
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
@@ -674,15 +670,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.action_finished()
         return True
 
-    def clear_all(self):
-        """ Empty everything - maybe necessary before loading new data. """
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.document = None
-        self.documents.append(classes.KatajaDocument(clear=True))
-        self.document = self.documents[-1]
-        self.settings_manager.set_document(self.document)
-
     # ## Other window events
     ###################################################
 
@@ -703,32 +690,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.save_prefs:
             prefs.save_preferences()
         log.info('...done')
-
-    def create_save_data(self):
-        """
-        Make a large dictionary of all objects with all of the complex stuff
-        and circular references stripped out.
-        :return: dict
-        """
-        savedata = {}
-        open_references = {}
-        savedata['save_scheme_version'] = 0.4
-        self.save_object(savedata, open_references)
-        max_rounds = 10
-        c = 0
-        while open_references and c < max_rounds:
-            c += 1
-            # print(len(savedata))
-            # print('---------------------------')
-            for obj in list(open_references.values()):
-                if hasattr(obj, 'uid'):
-                    obj.save_object(savedata, open_references)
-                else:
-                    print('cannot save open reference object ', obj)
-        assert (c < max_rounds)
-        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
-        # print(savedata)
-        return savedata
 
     def update_colors(self, randomise=False, animate=True):
         """ This is the master palette change.
@@ -771,11 +732,3 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     def resize_ui_font(self):
         qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)
         self.update_style_sheet()
-
-    # ############## #
-    #                #
-    #  Save support  #
-    #                #
-    # ############## #
-
-    document = SavedField("document")

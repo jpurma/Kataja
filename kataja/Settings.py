@@ -84,6 +84,10 @@ class Settings:
     def set_ui_manager(self, ui_manager):
         self.ui = ui_manager
 
+    def update_document(self):
+        document = ctrl.main.document
+        self.set_document(document)
+
     def set_document(self, document):
         self.document = document
         self.forest = None
@@ -103,8 +107,14 @@ class Settings:
             flat.update(chain_parts[1])
             self.flat_shape_settings[key] = flat
 
+    def update_forest(self):
+        forest = ctrl.main.forest
+        self.set_forest(forest)
+
     def set_forest(self, forest):
         self.forest = forest
+        if not forest:
+            return
         self.forest_chain.maps[0] = forest.settings
         node_types = forest.settings.get('nodes', {})
         for key, node in self.node_type_chains.items():

@@ -181,7 +181,7 @@ class Forest(SavedObject):
         ctrl.resume_undo()
         ctrl.graph_view.setFocus()
 
-    def retire_from_drawing(self):
+    def retire_from_display(self):
         """ Announce that this forest should not try to work with scene
         anymore --
          some other forest is occupying the scene now.

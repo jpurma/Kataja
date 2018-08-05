@@ -51,6 +51,18 @@ file_extensions = {
 }
 
 
+def deduce_format(filename):
+    save_format = 'dict'
+    zipped = False
+    for key, value, in file_extensions.items():
+        if filename.endswith(value):
+            i = key.split('.')
+            zipped = len(i) == 2
+            save_format = i[0]
+            break
+    return save_format, zipped
+
+
 # Not sure if we need a separate set for
 # windows, if they still use three-letter extensions
 
@@ -108,20 +120,8 @@ class Open(KatajaAction):
         )
         return filename
 
-    @staticmethod
-    def deduce_format(filename):
-        save_format = 'dict'
-        zipped = False
-        for key, value, in file_extensions.items():
-            if filename.endswith(value):
-                i = key.split('.')
-                zipped = len(i) == 2
-                save_format = i[0]
-                break
-        return save_format, zipped
-
     def load_file(self, filename):
-        save_format, zipped = self.deduce_format(filename)
+        save_format, zipped = deduce_format(filename)
 
         if zipped:
             if save_format == 'json' or save_format == 'dict':
@@ -169,21 +169,19 @@ class Open(KatajaAction):
         # prefs.update(data['preferences'].__dict__)
         # qt_prefs.update(prefs)
         m = ctrl.main
-        print('starting to insert loaded data ')
         m.disable_signaling()
 
-        m.clear_all()
-        print('cleared, starting to load')
-        m.load_objects(data, m)
-        print('done load')
-
+        doc = m.create_document(filename)
+        print('created empty document')
+        doc.load_objects(data, m)
+        print('done load it with saved data')
         m.enable_signaling()
-
-        print('done finish reload')
+        m.set_document(doc)
+        print('done setting it as active document')
 
         ctrl.main.document_changed.emit()
         print('document changed, emit')
-        m.change_forest()
+        doc.update_forest()
         print('forest changed')
         log.info("Loaded '%s'." % filename)
 
@@ -194,33 +192,31 @@ class Save(KatajaAction):
     k_shortcut = QKeySequence(QKeySequence.Save)
     k_undoable = False
 
-    def save_as(self):
-        ctrl.main.action_finished()
+    @staticmethod
+    def get_filename_from_dialog():
         file_help = """"All (*.kataja *.zkataja *.dict *.zdict *.json *.zjson);;
-    Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
-    Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
-    JSON dumps (*.json);; Packed JSON (*.zjson)
-    """
-        filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main, "Save Kataja trees",
-                                                                    "", file_help)
-        if filename:
-            ctrl.main.document.filename = filename
-            self.save(filename)
+        Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
+        Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
+        JSON dumps (*.json);; Packed JSON (*.zjson)
+        """
+        # inspection doesn't recognize that getOpenFileName is static, switch it
+        # off:
+        # noinspection PyTypeChecker,PyCallByClass
+        filename, filetypes = QtWidgets.QFileDialog.getSaveFileName(
+            ctrl.main,
+            "Save Kataja trees",
+            prefs.userspace_path,
+            file_help
+        )
+        return filename
 
-    def save(self, filename):
-        save_format = 'pickle'
-        zipped = False
-        for key, value, in file_extensions.items():
-            if filename.endswith(value):
-                i = key.split('.')
-                zipped = len(i) == 2
-                save_format = i[0]
-                break
+    @staticmethod
+    def save_file(filename):
+        save_format, zipped = deduce_format(filename)
 
-        all_data = ctrl.main.create_save_data()
+        all_data = ctrl.main.document.create_save_data()
         t = time.time()
         pickle_format = 4
-        print(filename)
 
         if save_format == 'pickle':
             if zipped:
@@ -249,20 +245,13 @@ class Save(KatajaAction):
         f.close()
         log.info("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
 
-        # fileFormat  = action.data().toByteArray()
-        # self.saveFile(fileFormat)
-
     def method(self, filename=''):
-        """ Save kataja data with an existing file name.
-        :param filename: filename received from dialog.
-        Format is deduced from the extension of filename.
-        :return: None
-        """
         filename = filename or ctrl.main.document.filename
+        if not filename:
+            filename = self.get_filename_from_dialog()
         if filename:
-            self.save(filename)
-        else:
-            self.save_as()
+            ctrl.main.document.filename = filename
+            self.save_file(filename)
 
 
 # Inherits Save (^above), so it can use its methods. Ask file dialog, then save.
@@ -272,9 +261,11 @@ class SaveAs(Save):
     k_shortcut = QKeySequence(QKeySequence.SaveAs)
     k_undoable = False
 
-    def method(self, filename=''):
-        """ Save kataja data to file set by file dialog """
-        self.save_as()
+    def method(self, filename='', save_as=False):
+        filename = self.get_filename_from_dialog()
+        if filename:
+            ctrl.main.document.filename = filename
+            self.save_file(filename)
 
 
 class PrintToFile(KatajaAction):

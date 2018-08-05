@@ -44,6 +44,8 @@ class LexiconPanel(Panel):
     def prepare_lexicon(self):
         if ctrl.main.signalsBlocked():
             return
+        if not ctrl.syntax:
+            return
         text = ctrl.syntax.get_editable_lexicon()
         sentence = ctrl.syntax.get_editable_sentence()
         semantics = ctrl.syntax.get_editable_semantics()

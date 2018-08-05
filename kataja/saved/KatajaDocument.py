@@ -38,84 +38,89 @@ class KatajaDocument(SavedObject):
     as scope of undo should be a single Forest.
 
     :param name: Optional readable name for document
-    :param filename: File name for saving the document. Initially empty, will be set on save
     """
 
     unique = True
 
     default_treeset_file = running_environment.resources_path + 'trees.txt'
 
-    def __init__(self, name=None, filename=None, clear=False):
+    def __init__(self, name=None):
         super().__init__()
-        self.name = name or filename or 'New project'
-        self.filename = filename
-        self.forests = [classes.Forest()]
+        self.name = name or 'New project'
+        self.filename = name
+        self.forests = []
         self.current_index = 0
-        self.forest = self.forests[0]
+        self.forest = None
+        self.use_shared_lexicon = False
         self.lexicon = {}
         self.structures = OrderedDict()
         self.constituents = OrderedDict()
         self.features = OrderedDict()
         self.play = True
 
+    def retire_from_display(self):
+        if self.forest:
+            self.forest.retire_from_display()
+
     def new_forest(self):
         """ Add a new forest after the current one.
         :return: tuple (current_index (int), selected forest (Forest)
         """
         ctrl.undo_pile = set()
-        #ctrl.undo_disabled = True
-        if self.forest:
-            self.forest.retire_from_drawing()
         forest = classes.Forest()
-        self.current_index += 1
         self.poke('forests')  # <-- announce change in watched list-like attribute
-        self.forests.insert(self.current_index, forest)
-        self.forest = forest  # <-- at this point the signal is sent to update UI
-        #ctrl.undo_disabled = False
+        self.forests.insert(self.current_index + 1, forest)
+        self.set_forest_by_index(self.current_index + 1)
         return self.current_index, self.forest
 
     def next_forest(self):
         """ Select the next forest in the list of forests. The list loops at end.
         :return: tuple (current_index (int), selected forest (Forest)
         """
-        if not self.forests:
-            return None
-        if self.forest:
-            self.forest.retire_from_drawing()
-        if self.current_index < len(self.forests) - 1:
-            return self.jump_to_forest(self.current_index + 1)
-        else:
-            return self.jump_to_forest(0)
+        i = self.current_index + 1 if self.current_index < len(self.forests) - 1 else 0
+        return self.set_forest_by_index(i)
 
     def prev_forest(self):
         """ Select the previous forest in the list of forests. The list loops at -1.
         :return: tuple (current_index (int), selected forest (Forest)
         """
-        if not self.forests:
-            return None
-        if self.forest:
-            self.forest.retire_from_drawing()
-        if self.current_index > 0:
-            return self.jump_to_forest(self.current_index - 1)
-        else:
-            return self.jump_to_forest(len(self.forests) - 1)
+        i = self.current_index - 1 if self.current_index > 0 else len(self.forests) - 1
+        return self.set_forest_by_index(i)
 
-    def jump_to_forest(self, i):
+    def set_forest_by_index(self, i):
         """ Jump to forest with given index,
         :return: tuple (current_index (int), selected forest (Forest)
         """
         if not self.forests:
             return 0, None
-        if self.forest:
-            self.forest.retire_from_drawing()
         if i < 0:
             i = 0
         elif i >= len(self.forests):
             i = len(self.forests) - 1
-        self.current_index = i
+        new_forest = self.forests[i]
+        return self.set_forest(new_forest)
+
+    def set_forest(self, forest, force=False):
+        if (not forest) or (forest is self.forest and not force):
+            return self.current_index, forest
+        elif self.forest:
+            self.forest.retire_from_display()
+        self.current_index = self.forests.index(forest)
         ctrl.undo_pile = set()
-        self.forest = self.forests[self.current_index]
-        return self.current_index, self.forest
+        self.forest = forest
+        ctrl.disable_undo()
+        if forest.is_parsed:
+            if forest.derivation_steps:
+                ds = forest.derivation_steps
+                if not ds.activated:
+                    ds.jump_to_derivation_step(ds.derivation_step_index)
+        forest.prepare_for_drawing()
+        ctrl.resume_undo()
+        ctrl.main.forest_changed.emit()
+        return self.current_index, forest
+
+    def update_forest(self):
+        self.set_forest(self.forest, force=True)
 
     def play_animations(self, value, from_button=False):
         self.play = value
@@ -148,8 +153,9 @@ class KatajaDocument(SavedObject):
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
 
-    @time_me
-    def create_forests(self, filename=None, clear=False):
+
+    @staticmethod
+    def create_forests(filename=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
         This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.
 
@@ -178,13 +184,9 @@ class KatajaDocument(SavedObject):
         if clear:
             treelist = []
         else:
-            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or []
+            treelist = KatajaDocument.load_treelist_from_text_file(KatajaDocument.default_treeset_file) or []
 
-        # Clear this screen before we start creating a mess
-        ctrl.disable_undo() # disable tracking of changes (e.g. undo)
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.forests = []
+        forests = []
 
         # buildstring is the bracket trees or trees.
         buildstring = []
@@ -226,7 +228,7 @@ class KatajaDocument(SavedObject):
                 forest = Forest(heading_text=heading_text,
                                 comments=comments,
                                 syntax=syn)
-                self.forests.append(forest)
+                forests.append(forest)
                 started_forest = False
             # trees definition starts a new forest
             elif line and not started_forest:
@@ -245,17 +247,40 @@ class KatajaDocument(SavedObject):
             forest = Forest(heading_text=heading_text,
                             comments=comments,
                             syntax=syn)
-            self.forests.append(forest)
-        if not self.forests:
+            forests.append(forest)
+        if not forests:
             syn = SyntaxAPI()
             forest = Forest(heading_text='',
                             comments=[],
                             syntax=syn)
-            self.forests.append(forest)
-        self.current_index = 0
-        self.forest = self.forests[0]
-        # allow change tracking (undo) again
-        ctrl.resume_undo()
+            forests.append(forest)
+        return forests
+
+    def create_save_data(self):
+        """
+        Make a large dictionary of all objects with all of the complex stuff
+        and circular references stripped out.
+        :return: dict
+        """
+        savedata = {}
+        open_references = {}
+        savedata['save_scheme_version'] = 0.4
+        self.save_object(savedata, open_references)
+        max_rounds = 10
+        c = 0
+        while open_references and c < max_rounds:
+            c += 1
+            # print(len(savedata))
+            # print('---------------------------')
+            for obj in list(open_references.values()):
+                if hasattr(obj, 'uid'):
+                    obj.save_object(savedata, open_references)
+                else:
+                    print('cannot save open reference object ', obj)
+        assert (c < max_rounds)
+        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
+        # print(savedata)
+        return savedata
 
     # ############## #
     #                #
@@ -265,5 +290,6 @@ class KatajaDocument(SavedObject):
 
     forests = SavedField("forests")
     current_index = SavedField("current_index")
-    forest = SavedField("forest", watcher=ctrl.main.forest_changed)
+    forest = SavedField("forest")
     lexicon = SavedField("lexicon")
+    use_shared_lexicon = SavedField("use_shared_lexicon")

@@ -18,7 +18,6 @@ import datetime
 import os
 import sys
 import argparse
-import queue
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -96,7 +95,7 @@ def launch_kataja():
     app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up
-    from kataja.saved.KatajaMain import KatajaMain
+    from kataja.KatajaMain import KatajaMain
 
     window = KatajaMain(app, **kwargs)
     splash.finish(window)

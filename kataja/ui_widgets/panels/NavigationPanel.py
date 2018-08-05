@@ -77,7 +77,7 @@ class NavigationPanel(Panel):
             max_index = len(keeper.forests)
             self.current_treeset.setMaximum(max_index)
             self.treeset_counter.setText('/ %s' % max_index)
-            dm = ctrl.forest.derivation_steps
+            dm = ctrl.forest.derivation_steps if ctrl.forest else 0
             if dm:
                 max_der_step = len(dm.derivation_steps)
                 self.current_derivation.setMaximum(max_der_step)

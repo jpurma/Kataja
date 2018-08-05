@@ -188,6 +188,7 @@ class UIManager:
         ctrl.main.viewport_moved.connect(self.update_positions)
         ctrl.main.viewport_resized.connect(self.update_positions_and_top_bar)
         ctrl.main.ui_font_changed.connect(self.redraw_panels)
+        ctrl.main.document_changed.connect(self.update_projects_menu)
 
     def disable_item(self, ui_key):
         """ Disable ui_item, assuming it can be disabled (buttons etc).
@@ -581,6 +582,8 @@ class UIManager:
 
     def update_projects_menu(self):
         win_menu = self._top_menus['windows_menu']
+        for action in list(win_menu.actions()):
+            win_menu.removeAction(action)
         for action in self.prepare_project_menus():
             win_menu.addAction(action)
             action.host_menu = win_menu
