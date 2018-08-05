@@ -121,10 +121,7 @@ class Controller:
         """
         :return: SyntaxAPI
         """
-        if self.main.forest:
-            return self.main.forest.syntax
-        else:
-            return self.main.syntax
+        return self.main.forest and self.main.forest.syntax
 
     @property
     def ui(self) -> 'kataja.UIManager':

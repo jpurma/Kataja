@@ -90,31 +90,26 @@ class Open(KatajaAction):
     k_shortcut = QKeySequence(QKeySequence.Open)
     k_undoable = False
 
-    def method(self, filename=''):
-        """ Open file browser to load a kataja data file
-        :param filename: optional filename, if given, no file dialog is displayed
-        :return: None
-        """
-        m = ctrl.main
-        # fileName  = QtGui.QFileDialog.getOpenFileName(self,
-        # self.tr("Open File"),
-        # QtCore.QDir.currentPath())
+    @staticmethod
+    def get_filename_from_dialog():
         file_help = """All (*.kataja *.zkataja *.dict *.zdict *.json *.zjson);;
-    Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
-    Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
-    JSON dumps (*.json);; Packed JSON (*.zjson);;
-    Text files containing bracket trees (*.txt, *.tex)"""
-
+        Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
+        Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
+        JSON dumps (*.json);; Packed JSON (*.zjson);;
+        Text files containing bracket trees (*.txt, *.tex)"""
         # inspection doesn't recognize that getOpenFileName is static, switch it
         # off:
         # noinspection PyTypeChecker,PyCallByClass
-        if not filename:
-            filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main, "Open "
-                                                                                   "KatajaMain "
-                                                                                   "trees", "",
-                                                                        file_help)
-        if not filename:
-            return
+        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(
+            ctrl.main,
+            "Open Kataja trees",
+            prefs.userspace_path,
+            file_help
+        )
+        return filename
+
+    @staticmethod
+    def deduce_format(filename):
         save_format = 'dict'
         zipped = False
         for key, value, in file_extensions.items():
@@ -123,8 +118,11 @@ class Open(KatajaAction):
                 zipped = len(i) == 2
                 save_format = i[0]
                 break
+        return save_format, zipped
 
-        m.clear_all()
+    def load_file(self, filename):
+        save_format, zipped = self.deduce_format(filename)
+
         if zipped:
             if save_format == 'json' or save_format == 'dict':
                 f = gzip.open(filename, 'rt')
@@ -150,18 +148,43 @@ class Open(KatajaAction):
         elif save_format == 'json':
             data = json.load(f)
         else:
-            f.close()
             log.info("Failed to load '%s'. Unknown format." % filename)
+        f.close()
+        return data
+
+    def method(self, filename=''):
+        """ Open file browser to load a kataja data file
+        :param filename: optional filename, if given, no file dialog is displayed
+        :return: None
+        """
+        if not filename:
+            filename = self.get_filename_from_dialog()
+        if not filename:
             return
 
-        f.close()
+        data = self.load_file(filename)
+        if not data:
+            return
+
         # prefs.update(data['preferences'].__dict__)
         # qt_prefs.update(prefs)
-        ctrl.disable_undo()
+        m = ctrl.main
+        print('starting to insert loaded data ')
+        m.disable_signaling()
+
+        m.clear_all()
+        print('cleared, starting to load')
         m.load_objects(data, m)
-        ctrl.resume_undo()
+        print('done load')
+
+        m.enable_signaling()
+
+        print('done finish reload')
+
         ctrl.main.document_changed.emit()
+        print('document changed, emit')
         m.change_forest()
+        print('forest changed')
         log.info("Loaded '%s'." % filename)
 
 
@@ -271,25 +294,11 @@ class PrintToFile(KatajaAction):
          2nd step is triggered by a timer in main window.
          :return: None
         """
-        if prefs.print_file_path is None:
-            dialog = QtWidgets.QFileDialog(ctrl.main)
-            dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptOpen)
-            dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
-            dialog.setLabelText(QtWidgets.QFileDialog.Accept, "Select")
-            title = 'Select folder where to save your tree graphs (this needs to be done only once)'
-            dialog.setWindowTitle(title)
-            if dialog.exec_():
-                files = dialog.selectedFiles()
-                if files:
-                    prefs.print_file_path = files[0]
-            else:
-                return
-
         sc = ctrl.graph_scene
         # hide unwanted components
         no_brush = QtGui.QBrush(Qt.NoBrush)
         sc.setBackgroundBrush(no_brush)
-        sc.photo_frame = sc.addRect(sc.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
+        sc.photo_frame = sc.addRect(ctrl.view_manager.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
         sc.update()
         for node in ctrl.forest.nodes.values():
             node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)

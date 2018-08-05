@@ -332,14 +332,6 @@ class Preferences(object):
             'order': 10
         }
 
-        self.print_file_path = None
-        self._print_file_path_ui = {
-            'tab': 'Printing',
-            'type': 'folder',
-            'order': 30,
-            'label': 'Quick print path'
-        }
-
         self.print_file_name = 'kataja_print'
         self._print_file_name_ui = {
             'tab': 'Printing',
@@ -472,8 +464,14 @@ class Preferences(object):
         # '/Applications/blender.app/Contents/MacOS/blender'
         # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
-        self.userspace_path = None
-        # self.file_name = 'savetest.kataja'
+        self.userspace_path = 'workspace'
+        self._userspace_path_ui = {
+            'tab': 'General',
+            'type': 'folder',
+            'order': 0,
+            'label': 'Workspace path',
+            'help': 'Default folder for saving, loading and printing trees'
+        }
 
         self.custom_themes = {}
         self.custom_colors = {}

@@ -1,10 +1,6 @@
 import itertools
 
-from collections import defaultdict
-
 from kataja.singletons import ctrl
-from kataja.globals import CONSTITUENT_NODE
-from kataja.utils import time_me
 
 
 class ProjectionManager:
@@ -16,7 +12,6 @@ class ProjectionManager:
     @property
     def projection_visuals(self):
         return (p.visual for p in self.projections.values() if p.visual)
-
 
     def remove_projection(self, head):
         projection = self.projections.get(head, None)

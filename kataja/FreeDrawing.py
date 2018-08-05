@@ -50,7 +50,6 @@ class FreeDrawing:
         data, e.g. caches or helper dicts, but nothing here is saved.
         """
         self.f = forest
-        self.node_types = set()
         self._marked_for_deletion = set()
         self.label_rotator = 0
 
@@ -293,16 +292,6 @@ class FreeDrawing:
                 del self.f.nodes_from_synobs[node.syntactic_object.uid]
 
         assert (node.uid not in self.f.nodes)
-        # -- check if it is last of its type --
-        found = False
-        my_type = node.node_type
-        for n in self.nodes.values():
-            if n.node_type == my_type:
-                found = True
-                break
-        if not found:
-            if my_type in self.node_types:
-                self.node_types.remove(my_type)
 
         # if fading out, item scene position has to remain same during the fade. If disappear
         # instantly, it doesnt matter

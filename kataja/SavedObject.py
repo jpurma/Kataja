@@ -16,6 +16,7 @@ from kataja.uniqueness_generator import next_available_uid
 __author__ = 'purma'
 ALLOW_SETS = False
 
+
 class SaveError(Exception):
     """ for errors related to storing the model
     """
@@ -39,15 +40,16 @@ class SavedObject(object):
     allowed_settings = []
 
     def __init__(self, uid=None, **kw):
+        class_name = getattr(self.__class__, 'role', self.__class__.__name__)
         if self.unique:
-            uid = self.__class__.__name__
+            uid = class_name
         elif uid is None:
-            uid = next_available_uid()
+            uid = class_name + str(next_available_uid())
         self._saved = {}
         self._history = {}
         self.uid = uid
         self.settings = {}
-        self.class_name = getattr(self.__class__, 'role', self.__class__.__name__)
+        self.class_name = class_name
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
         self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored
@@ -308,8 +310,6 @@ class SavedObject(object):
         :param self:
         """
         full_map = {}
-        restored = {}
-        full_data = data
 
         # First we need a full index of objects that already exist within the
         #  existing objects.
@@ -338,7 +338,9 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        self.restore(self.uid, full_data, full_map, restored, kataja_main, root=True)
+        print('full map: ', full_map)
+        print(len(full_map))
+        self.restore(self.uid, data, full_map, {}, kataja_main, root=True)
 
     def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):
         """ Recursively restore objects inside the scope of current obj. Used
@@ -352,6 +354,48 @@ class SavedObject(object):
             if obj_key.isdigit():
                 obj_key = int(obj_key)
 
+        # print('restoring %s' % obj_key)
+        # Don't restore object several times, even if the object is referred
+        # in several places
+        if obj_key in restored:
+            # print('already restored')
+            return restored[obj_key]
+        # If the object already exists (e.g. we are doing undo), the loaded
+        # values overwrite existing values.
+        obj = full_map.get(obj_key, None)
+
+        # new data that the object should have
+        new_data = full_data.get(obj_key, None)
+        if not (obj or new_data):
+            return None
+        elif obj and not new_data:
+            print(obj, " is not present in save data")
+        class_key = new_data['class_name']
+
+        if not obj:
+            # print('Creating obj with class_key: ', class_key, obj_key)
+            obj = classes.create(class_key)
+        # when creating/modifying values inside forests, they may refer back
+        # to ctrl.forest. That has to be the current
+
+        # forest, or otherwise things go awry
+        if class_key == 'Forest':
+            kataja_main.document.forest = obj
+
+        # keep track of which objects have been restored
+        restored[obj_key] = obj
+
+        obj.inflate_from_data(new_data, full_data, full_map, restored, kataja_main)
+
+        # objects need to be finalized after setting values, do this only once per load.
+        if root:
+            for item in restored.values():
+                if hasattr(item, 'after_init'):
+                    # print('restoring item, calling after_init for ', type(item), item)
+                    item.after_init()
+        return obj
+
+    def inflate_from_data(self, data, full_data, full_map, restored, kataja_main):
         def inflate(data):
             """ Recursively turn QObject descriptions back into actual
             objects and object references
@@ -359,7 +403,7 @@ class SavedObject(object):
             :param data:
             :return:
             """
-            # print('inflating %s in %s' % (str(data), self))
+            #print('inflating %s in %s' % (repr(data), self))
             if data is None:
                 return data
             elif isinstance(data, (int, float)):
@@ -367,12 +411,12 @@ class SavedObject(object):
             elif isinstance(data, dict):
                 result = {}
                 for k, value in data.items():
-                    result[k] = inflate(value)
+                    result[k] = inflate(value) if value else value
                 return result
             elif isinstance(data, list):
                 result = []
                 for item in data:
-                    result.append(inflate(item))
+                    result.append(inflate(item) if item else item)
                 return result
             elif isinstance(data, str):
                 if data.startswith('*r*'):
@@ -404,61 +448,24 @@ class SavedObject(object):
                     else:
                         result = []
                         for item in data:
-                            result.append(inflate(item))
+                            result.append(inflate(item) if item else item)
                         result = tuple(result)
                         return result
                 else:
                     result = []
                     for item in data:
-                        result.append(inflate(item))
+                        result.append(inflate(item) if item else item)
                     result = tuple(result)
                     return result
             elif isinstance(data, set):
                 result = set()
                 for item in data:
-                    result.add(inflate(item))
+                    result.add(inflate(item) if item else item)
                 return result
             return data
 
-        # print('restoring %s , %s ' % (obj_key, class_key))
-        # Don't restore object several times, even if the object is referred
-        # in several places
-        if obj_key in restored:
-            return restored[obj_key]
-        # If the object already exists (e.g. we are doing undo), the loaded
-        # values overwrite existing values.
-        obj = full_map.get(obj_key, None)
-
-        # new data that the object should have
-        new_data = full_data.get(obj_key, None)
-        if not (obj or new_data):
-            return None
-        elif obj and not new_data:
-            print(obj, " is not present in save data")
-        class_key = new_data['class_name']
-
-        if not obj:
-            obj = classes.create(class_key)
-        # when creating/modifying values inside forests, they may refer back
-        # to ctrl.forest. That has to be the current
-
-        # forest, or otherwise things go awry
-        if class_key == 'Forest':
-            kataja_main.document.forest = obj
-
-        # keep track of which objects have been restored
-        restored[obj_key] = obj
-
-        for key, old_value in obj._saved.items():
-            new_value = new_data.get(key, None)
-            if new_value is not None:
+        for key, old_value in self._saved.items():
+            new_value = data.get(key, None)
+            if new_value:
                 new_value = inflate(new_value)
-            setattr(obj, key, new_value)
-
-        # objects need to be finalized after setting values, do this only once per load.
-        if root:
-            for item in restored.values():
-                if hasattr(item, 'after_init'):
-                    # print('restoring item, calling after_init for ', type(item), item)
-                    item.after_init()
-        return obj
+            setattr(self, key, new_value)

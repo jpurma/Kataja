@@ -133,9 +133,9 @@ class Selector(QtWidgets.QComboBox):
             self.on_change_method()
 
 
-class FileChooser(QtWidgets.QHBoxLayout):
+class FileChooser(QtWidgets.QVBoxLayout):
     def __init__(self, field_name, parent=None, folders_only=False):
-        QtWidgets.QHBoxLayout.__init__(self)
+        QtWidgets.QVBoxLayout.__init__(self)
         self.parent_widget = parent
         self.folders_only = folders_only
         self.textbox = QtWidgets.QLineEdit()

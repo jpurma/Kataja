@@ -35,7 +35,6 @@ import json
 import os.path
 import sys
 import traceback
-import queue
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -66,9 +65,6 @@ from kataja.LogWidgetPusher import capture_stdout
 # objgraph = None
 
 
-
-# KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
-# .SelectionBox, .QComboBox,
 stylesheet = """
 .QWidget, .SelectionBox, .QComboBox, QLabel, QAbstractButton, QAbstractSpinBox, QDialog, QFrame,
 QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
@@ -148,7 +144,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.init_done = False
-        self.blockSignals(True)
+        self._stored_init_state = True
+        self.disable_signaling()
         kataja_app.processEvents()
         SavedObject.__init__(self)
 
@@ -174,7 +171,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #capture_stdout(log, self.log_stdout_as_debug, ctrl)
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
-        self.syntax = classes.SyntaxAPI()
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
         self.settings_manager.set_prefs(prefs)
@@ -200,7 +196,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
-        self.setWindowTitle(self.tr("Kataja"))
+        self.setWindowTitle("Kataja")
         self.print_started = False
         self.show()
         self.raise_()
@@ -208,11 +204,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.activateWindow()
         # self.status_bar = self.statusBar()
         self.install_plugins()
-        self.blockSignals(False)
+        self.load_initial_treeset()
+        self.enable_signaling()
+
         self.viewport_resized.emit()
         self.forest_changed.emit()
-        self.init_done = True
-        self.load_initial_treeset()
         log.info('Welcome to Kataja! (h) for help')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
@@ -254,6 +250,21 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
     def leaveEvent(self, event):
         ctrl.ui.force_hide_help()
+
+    def disable_signaling(self):
+        # shut down side effects
+        self._stored_init_state = self.init_done
+        self.init_done = False
+        ctrl.disable_undo()
+        self.blockSignals(True)
+        # ----------------------
+
+    def enable_signaling(self):
+        # resume with side effects
+        self.blockSignals(False)
+        ctrl.resume_undo()
+        self.init_done = self._stored_init_state
+        # ----------------------
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
@@ -307,12 +318,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if not self.active_plugin_setup:
             return
 
-        # shut down side effects
-        init_state = self.init_done
-        self.init_done = False
-        ctrl.disable_undo()
-        self.blockSignals(True)
-        # ----------------------
+        self.disable_signaling()
 
         self.clear_all()
         if reload:
@@ -345,11 +351,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.init_documents()
 
-        # resume with side effects
-        self.blockSignals(False)
-        ctrl.resume_undo()
-        self.init_done = init_state
-        # ----------------------
+        self.enable_signaling()
         prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):
@@ -359,12 +361,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             print('bailing out disable plugin: no active plugin recognised')
             return
 
-        # shut down side effects
-        init_state = self.init_done
-        self.init_done = False
-        ctrl.disable_undo()
-        self.blockSignals(True)
-        # ----------------------
+        self.disable_signaling()
 
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
@@ -374,11 +371,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.settings_manager.set_document(self.document)
         self.settings_manager.set_forest(self.forest)
 
-        # resume with side effects
-        self.blockSignals(False)
-        ctrl.resume_undo()
-        self.init_done = init_state
-        # ----------------------
+        self.enable_signaling()
+
         prefs.active_plugin_name = ''
 
     def load_plugin(self, plugin_module):
@@ -600,12 +594,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.print_started = False
         self.killTimer(event.timerId())
         # Prepare file and path
-        path = prefs.print_file_path or prefs.userspace_path or \
+        path = prefs.userspace_path or \
                running_environment.default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
-            print("bad path for printing (print_file_path in preferences) , "
+            print("bad path for printing (userspace_path in preferences) , "
                   "using '.' instead.")
             path = './'
         filename = prefs.print_file_name
@@ -685,12 +679,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.forest:
             self.forest.retire_from_drawing()
         self.document = None
-        # Garbage collection doesn't mix well with animations that are still running
-        # print('garbage stats:', gc.get_count())
-        # gc.collect()
-        # print('after collection:', gc.get_count())
-        # if gc.garbage:
-        #    print('garbage:', gc.garbage)
         self.documents.append(classes.KatajaDocument(clear=True))
         self.document = self.documents[-1]
         self.settings_manager.set_document(self.document)

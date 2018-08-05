@@ -125,16 +125,12 @@ class ViewManager:
         #    self.zoom_anim.stop()
         # expand the logical scene rect when necessary
         if target_rect.right() > sr.right():
-            print('expanding right')
             self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 0))
         if target_rect.bottom() > sr.bottom():
-            print('expanding bottom')
             self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 0, 500))
         if target_rect.left() < sr.left():
-            print('expanding left')
             self.view.setSceneRect(sr + QtCore.QMarginsF(500, 0, 0, 0))
         if target_rect.top() < sr.top():
-            print('expanding top')
             self.view.setSceneRect(sr + QtCore.QMarginsF(0, 500, 0, 0))
         self.view.fitInView(target_rect, 1)
         self._fit_scale = self.view.transform().m11()

@@ -81,7 +81,7 @@ class Forest(SavedObject):
         self.free_drawing = None
         self.semantics_manager = None
         self.projection_manager = None
-        self.derivation_steps = None
+        self.derivation_steps = DerivationStepManager(self)
 
         self.old_label_mode = 0
         self.trees = []
@@ -115,7 +115,6 @@ class Forest(SavedObject):
         self.free_drawing = FreeDrawing(self)
         self.semantics_manager = SemanticsManager(self)
         self.projection_manager = ProjectionManager(self)
-        self.derivation_steps = DerivationStepManager(self)
 
     def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
@@ -143,7 +142,8 @@ class Forest(SavedObject):
         """
         # print('created a forest %s , its traces should be visible: %s ' % (
         # self, self.traces_are_visible()))
-        pass
+        print('after_init for forest: ', self)
+        self.is_parsed = False
         # for node in self.nodes.values():
         # if node.syntactic_object:
         # self.nodes_by_uid[node.syntactic_object.uid] = node
@@ -187,9 +187,8 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
-        if self.is_parsed:
-            for item in self.get_all_objects():
-                self.remove_from_scene(item, fade_out=False)
+        for item in self.get_all_objects():
+            self.remove_from_scene(item, fade_out=False)
         self.in_display = False
         self.disconnect_main()
 
@@ -370,7 +369,6 @@ class Forest(SavedObject):
         if isinstance(item, Node):
             self.poke('nodes')
             self.nodes[item.uid] = item
-            self.free_drawing.node_types.add(item.node_type)
             if item.syntactic_object:
                 # remember to rebuild nodes_by_uid in undo/redo, as it is not
                 #  stored in model
@@ -445,8 +443,8 @@ class Forest(SavedObject):
                                     self.edges.values(),
                                     self.arrows.values(),
                                     self.others.values(),
-                                    self.projection_manager.projection_visuals,
-                                    self.semantics_manager.all_items,
+                                    self.projection_manager.projection_visuals if self.projection_manager else [],
+                                    self.semantics_manager.all_items if self.semantics_manager else [],
                                     self.groups.values()):
                 yield item
 

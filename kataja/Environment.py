@@ -57,8 +57,8 @@ class Environment:
             self.code_mode = 'python'
         self.fonts = font_map.get(self.platform, font_map['default'])
         self.resources_path = ''
-        self.default_userspace_path = ''
-        self.plugins_path = ''
+        self.default_userspace_path = 'workspace'
+        self.plugins_path = 'plugins'
         if self.platform == 'mac':
             self.cmd_or_ctrl = '⌘'
         else:
@@ -98,7 +98,7 @@ class Environment:
         kataja_root = prefs_code[:-len('kataja/' + filename)]
         self.resources_path = kataja_root + 'resources/'
         self.plugins_path = kataja_root + 'plugins'
-        self.default_userspace_path = kataja_root
+        self.default_userspace_path = kataja_root + 'workspace'
 
     def init_win_exe_paths(self):
         """ Is this enough for windows exe?
@@ -107,7 +107,7 @@ class Environment:
         # my_path = Path(sys.argv[0]).parts
         self.plugins_path = 'plugins'
         self.resources_path = 'resources/'
-        self.default_userspace_path = ''
+        self.default_userspace_path = 'workspace'
 
     def init_mac_app_paths(self):
         """ When runnins as a mac app, the plugins directory is put to Application
