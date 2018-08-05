@@ -55,7 +55,8 @@ class Document(KatajaDocument):
     default_treeset_file = running_environment.plugins_path + '/Monorail/sentences.txt'
     default_lexicon_file = running_environment.plugins_path + '/Monorail/lexicon.txt'
 
-    def create_forests(self, filename=None, clear=False):
+    @staticmethod
+    def create_forests(filename=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
 
         :param filename: not used
@@ -63,11 +64,7 @@ class Document(KatajaDocument):
         """
         filename = filename or Document.default_treeset_file
 
-        # Clear this screen before we start creating a mess
-        ctrl.disable_undo() # disable tracking of changes (e.g. undo)
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.forests = []
+        forests = []
         input_trees = []
 
         shared_lexicon = load_lexicon(Document.default_lexicon_file)
@@ -98,8 +95,5 @@ class Document(KatajaDocument):
             else:
                 syn.input_text = input_tree
             forest = Forest(heading_text=str(input_tree), syntax=syn)
-            self.forests.append(forest)
-        self.current_index = 0
-        self.forest = self.forests[0]
-        # allow change tracking (undo) again
-        ctrl.resume_undo()
+            forests.append(forest)
+        return forests

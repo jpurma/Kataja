@@ -37,7 +37,8 @@ class PoPDocument(KatajaDocument):
     #
     default_treeset_file = running_environment.plugins_path + '/PoP2/POP.txt'
 
-    def create_forests(self, filename=None, clear=False):
+    @staticmethod
+    def create_forests(filename=None, clear=False):
         """ This will read example sentences in form used by Ginsburg / Fong parser
 
         1 Tom read a book. (Chomsky 2015:10) ['C','Tpres',['D','n','Tom'],'v*','read','a','n',
@@ -52,13 +53,9 @@ class PoPDocument(KatajaDocument):
         if clear:
             treelist = []
         else:
-            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file) or []
+            treelist = PoPDocument.load_treelist_from_text_file(PoPDocument.default_treeset_file) or []
 
-        # Clear this screen before we start creating a mess
-        ctrl.disable_undo() # disable tracking of changes (e.g. undo)
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.forests = []
+        forests = []
 
         start = 0
         end = 10
@@ -88,7 +85,7 @@ class PoPDocument(KatajaDocument):
             target_example = ast.literal_eval(lbracket + target_str)
             ug.out(sentence_number, sentence, target_example)
             forest = Forest(heading_text=sentence)
-            self.forests.append(forest)
+            forests.append(forest)
             so = ug.generate_derivation(target_example, forest=forest)
 
             #forest.derivation_steps.jump_to_derivation_step(0)
@@ -96,7 +93,4 @@ class PoPDocument(KatajaDocument):
             #ug.out("MRGOperations", ug.merge_counter)
             #ug.out("FTInheritanceOp", ug.inheritance_counter)
             #ug.out("FTCheckOp", ug.feature_check_counter)
-        self.current_index = 0
-        self.forest = self.forests[0]
-        # allow change tracking (undo) again
-        ctrl.resume_undo()
+        return forests

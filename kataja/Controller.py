@@ -143,7 +143,7 @@ class Controller:
         """ Shortcut to active forest
         :return: Forest
         """
-        return self.main.document.forest
+        return self.main.document and self.main.document.forest
 
     @property
     def free_drawing(self) -> 'kataja.FreeDrawing':

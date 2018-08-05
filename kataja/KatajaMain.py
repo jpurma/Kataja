@@ -148,6 +148,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.use_tooltips = True
         self.available_plugins = {}
         self.active_plugin_setup = {}
+        self.setWindowTitle("Kataja")
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
@@ -192,7 +193,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
-        self.setWindowTitle("Kataja")
         self.print_started = False
         self.show()
         self.raise_()
@@ -319,7 +319,8 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         self.disable_signaling()
 
-        self.clear_all()
+        self.clear_documents()
+
         if reload:
             available = []
             for key in sys.modules:
@@ -363,7 +364,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
-        self.clear_all()
+        self.clear_documents()
         classes.restore_default_classes()
         self.create_default_documents()
         self.enable_signaling()
@@ -421,13 +422,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         return document
 
     def set_document(self, document):
-        if document != self.document:
+        if document is not self.document:
             if self.document:
                 self.document.retire_from_display()
             self.document = document
             self.document_changed.emit()
-            self.document.update_forest()
-            self.setWindowTitle(f'Kataja — {self.document.name}')
+            if document:
+                document.update_forest()
+                self.setWindowTitle(f'Kataja — {document.name}')
 
     def create_default_documents(self):
         """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
@@ -467,11 +469,10 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.set_document(doc)
         return doc
 
-    def clear_all(self):
+    def clear_documents(self):
         """ Empty everything - maybe necessary before changing plugin """
         self.documents = []
-        doc = self.create_document()
-        self.set_document(doc)
+        self.set_document(None)
 
     # ### Visualization
     # #############################################################

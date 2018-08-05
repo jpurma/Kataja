@@ -25,7 +25,7 @@
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
-from mgtdbp.Parser import Parser, sentences
+from mgtdbp.Parser import sentences
 from kataja.singletons import classes
 
 
@@ -37,19 +37,14 @@ class Document(KatajaDocument):
     #
     default_treeset_file = running_environment.plugins_path + '/mgtdbpE/sentences.txt'
 
-    def create_forests(self, filename=None, clear=False):
+    @staticmethod
+    def create_forests(filename=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
 
         :param filename: not used
         :param clear: start with empty
         """
-
-        # Clear this screen before we start creating a mess
-        ctrl.disable_undo() # disable tracking of changes (e.g. undo)
-        if self.forest:
-            self.forest.retire_from_drawing()
-        self.forests = []
-
+        forests = []
         for grammar, start, sentence in sentences:
             sentence = sentence.strip()
             if (not sentence) or sentence.startswith('#'):
@@ -59,8 +54,5 @@ class Document(KatajaDocument):
             syn.input_text = sentence
             syn.start = start
             forest = Forest(heading_text=sentence, syntax=syn)
-            self.forests.append(forest)
-        self.current_index = 0
-        self.forest = self.forests[0]
-        # allow change tracking (undo) again
-        ctrl.resume_undo()
+            forests.append(forest)
+        return forests
