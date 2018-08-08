@@ -44,6 +44,7 @@ class CommentNode(Node):
     display = True
     is_syntactic = False
     can_be_in_groups = False
+    resizable = True
     editable = {'text': dict(name='',
                              prefill='comment',
                              tooltip='freeform text, invisible for processing',
@@ -69,7 +70,6 @@ class CommentNode(Node):
         Node.__init__(self)
         if not label:
             label = 'comment'
-        self.resizable = True
         self.label = label
         self.physics_x = False
         self.physics_y = False
@@ -146,53 +146,32 @@ class CommentNode(Node):
             # Update ui items around the label (or node hosting the label)
             ctrl.ui.update_position_for(self)
 
-        elif self.label_object:
-            self.label_object.resize_label()
+        self.label_object.resize_label()
 
     def dragging_my_arrow(self):
         return True
 
+    def node_alone(self):
+        return not (self.edges_down or self.edges_up)
+
     def __str__(self):
         return 'comment: %s' % self.text
 
-    def update_bounding_rect(self):
-        """
-
-
-        :return:
-        """
-        if self.image_object:
-            self.prepareGeometryChange()
-            my_class = self.__class__
-            if self.user_size is None:
-                user_width, user_height = 0, 0
-            else:
-                user_width, user_height = self.user_size
-
-            lbr = self.image_object.boundingRect()
-            lbw = lbr.width()
-            lbh = lbr.height()
-            lbx = self.image_object.x()
-            lby = self.image_object.y()
-            self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-            self.width = max((lbw, my_class.width, user_width))
-            self.height = max((lbh, my_class.height, user_height))
-            y = self.height / -2
-            x = self.width / -2
-            self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
-            w4 = (self.width - 2) / 4.0
-            w2 = (self.width - 2) / 2.0
-            h2 = (self.height - 2) / 2.0
-
-            self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
-                             (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
-            if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
-                ctrl.ui.selection_group.update_shape()
-
-            return self.inner_rect
-
-        else:
-            return super().update_bounding_rect()
+    def _calculate_inner_rect(self):
+        user_width, user_height = self.user_size if self.user_size is not None else (0, 0)
+        label = self.image_object or self.label_object
+        label_rect = label.boundingRect()
+        label_w = label_rect.width()
+        label_h = label_rect.height()
+        self.label_rect = label_rect
+        w = max((label_w, CommentNode.width, user_width))
+        h = max((label_h, CommentNode.height, user_height))
+        x = w / -2
+        y = h / -2
+        self.width = w
+        self.height = h
+        self._create_magnets(x, y, w, h)
+        return QtCore.QRectF(x, y, w, h)
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -287,3 +266,4 @@ class CommentNode(Node):
     # ############## #
 
     image_path = SavedField("image_path", if_changed=set_image_path)
+    user_size = SavedField("user_size")

@@ -53,14 +53,20 @@ class KatajaDocument(SavedObject):
         self.forest = None
         self.use_shared_lexicon = False
         self.lexicon = {}
-        self.structures = OrderedDict()
-        self.constituents = OrderedDict()
-        self.features = OrderedDict()
         self.play = True
 
     def retire_from_display(self):
         if self.forest:
             self.forest.retire_from_display()
+
+    def load_default_forests(self):
+        """ Loads and initializes a new set of trees. Has to be done before
+        the program can do anything sane.
+        """
+        forests = self.create_forests(clear=False)
+        if forests:
+            self.forests = forests
+            self.set_forest(forests[0])
 
     def new_forest(self):
         """ Add a new forest after the current one.
@@ -127,18 +133,6 @@ class KatajaDocument(SavedObject):
         if not from_button:
             action = self.ui.get_action('play_animations')
             action.update_ui_value()
-
-    def build_lexicon_dict(self):
-        self.constituents = OrderedDict()
-        self.features = OrderedDict()
-        self.structures = OrderedDict()
-        for key, data in sorted(self.lexicon.items()):
-            if data.startswith('['):
-                self.structures[key] = data
-            elif data.startswith('<'):
-                self.features[key] = data
-            elif key != 'lexicon_info':
-                self.constituents[key] = data
 
     @staticmethod
     def load_treelist_from_text_file(filename):

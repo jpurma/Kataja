@@ -23,13 +23,14 @@
 # ############################################################################
 from PyQt5 import QtCore, QtGui
 
+from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
 from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
     as_html
 from kataja.saved.movables.Node import Node
 import kataja.ui_graphicsitems.TouchArea as TA
 import kataja.ui_widgets.buttons.OverlayButton as OB
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import coords_as_str
 import kataja.globals as g
@@ -96,7 +97,8 @@ class ConstituentNode(Node):
 
     def __init__(self, label=''):
         """ Most of the initiation is inherited from Node """
-        Node.__init__(self)
+        super().__init__()
+        self.label_object = ComplexLabel(parent=self)
         self.heads = []
 
         self.index = ''
@@ -152,11 +154,10 @@ class ConstituentNode(Node):
         """
         :return:
         """
-        if self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
+        if self.label_object and self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
             return ctrl.settings.get_node_setting('font_id', node_type=g.FEATURE_NODE)
 
         return ctrl.settings.get_node_setting('font_id', node=self)
-
 
     def preferred_z_value(self):
         if self.is_card():
@@ -380,13 +381,13 @@ class ConstituentNode(Node):
             return self.syntactic_object.label
         return ''
 
-    def compose_html_for_viewing(self, peek_into_synobj=True):
+    def label_as_html(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
-        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        'label_as_html' -method. This is so that it is easier to create custom
         implementations for constituents without requiring custom constituentnodes.
 
-        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
 
         :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
@@ -396,8 +397,8 @@ class ConstituentNode(Node):
         """
 
         # Allow custom syntactic objects to override this
-        if peek_into_synobj and hasattr(self.syntactic_object, 'compose_html_for_viewing'):
-            return self.syntactic_object.compose_html_for_viewing(self)
+        if peek_into_synobj and hasattr(self.syntactic_object, 'label_as_html'):
+            return self.syntactic_object.label_as_html(self)
 
         html = []
 
@@ -448,18 +449,18 @@ class ConstituentNode(Node):
                 lower_html = as_html(qroof_content)
         return ''.join(html), lower_html
 
-    def compose_html_for_editing(self):
+    def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
         into just one field value that is allowed to be edited, in constituentnode this is
         either label or synobj's label. This can be overridden in syntactic object by having
-        'compose_html_for_editing' -method there. The method returns a tuple,
+        'label_as_editable_html' -method there. The method returns a tuple,
           (field_name, setter, html).
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if self.syntactic_object and hasattr(self.syntactic_object, 'compose_html_for_editing'):
-            return self.syntactic_object.compose_html_for_editing(self)
+        if self.syntactic_object and hasattr(self.syntactic_object, 'label_as_editable_html'):
+            return self.syntactic_object.label_as_editable_html(self)
         label_text_mode = self.allowed_label_text_mode()
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
@@ -540,6 +541,23 @@ class ConstituentNode(Node):
                     self._can_cascade_edges = False
                     break
             return self._can_cascade_edges
+
+    def get_node_shape(self):
+        """ Node shapes are based on settings-stack, but also get_shape_setting in label.
+        Return this get_shape_setting value.
+        :return:
+        """
+        return self.label_object.node_shape
+
+    def get_lower_part_y(self):
+        """ This should return the relative (within node) y-coordinate to bottom part of label.
+        If the label is only one row, bottom and top part are the same.
+        Lower and top parts can each have multiple lines in them, the idea is that
+        triangle goes between them.
+        :return:
+        """
+        return self.label_object.get_lower_part_y()
+
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.
@@ -845,14 +863,88 @@ class ConstituentNode(Node):
 
     #################################
 
-    # ### Parents & Children ####################################################
-
-
     # ### Paint overrides
 
+    def _calculate_inner_rect(self):
+        label = self.label_object
+        x_offset = 0
+        y_offset = 0
+        label_w = 0
+        label_h = 0
+        if self._label_visible:
+            label_rect = label.boundingRect()
+            label_w = label_rect.width()
+            label_h = label_rect.height()
+            x_offset = label.x_offset
+            y_offset = label.y_offset
+            self.label_rect = label_rect
+        if label.node_shape == g.BRACKETED or label.node_shape == g.SCOPEBOX:
+            box_width = ctrl.forest.width_map.get(self.uid, 0)
+        else:
+            box_width = 0
+        w = max((label_w,  ConstituentNode.width, box_width))
+        h = max((label_h, ConstituentNode.height))
+        if x_offset or y_offset:
+            x = x_offset
+            y = y_offset
+        else:
+            x = w / -2
+            y = h / -2
+        self.width = w
+        self.height = h
+        self._create_magnets(x, y, w, h)
+        return QtCore.QRectF(x, y, w, h)
+
     def paint(self, painter, option, widget=None):
-        super().paint(painter, option, widget=widget)
-        shape = self.get_node_shape()
+        """ Painting is sensitive to mouse/selection issues, but usually with nodes it is
+        the label of the node that needs complex painting.
+        :param painter:
+        :param option:
+        :param widget:
+         """
+        shape = self.label_object.node_shape
+        if shape == g.CARD:
+            xr = 4
+            yr = 8
+        else:
+            xr = 5
+            yr = 5
+        pen = QtGui.QPen(self.contextual_color())
+        pen.setWidth(1)
+        rect = False
+        brush = QtCore.Qt.NoBrush
+
+        if shape == g.SCOPEBOX or (shape == g.BOX and not self.is_empty()):
+            pen.setWidthF(0.5)
+            brush = ctrl.cm.paper2()
+            rect = True
+        elif self.label_object.is_card():
+            brush = ctrl.cm.paper2()
+            rect = True
+        if self.drag_data:
+            rect = True
+            brush = self.drag_data.background
+        elif self.hovering:
+            if rect:
+                brush = ctrl.cm.paper()
+            rect = True
+        elif ctrl.pressed is self or self.selected:
+            if rect:
+                brush = ctrl.cm.paper()
+            if not hasattr(self, 'halo'):
+                rect = True
+
+        # elif self.has_empty_label() and self.node_alone():
+        #    pen.setStyle(QtCore.Qt.DotLine)
+        #    rect = True
+        painter.setPen(pen)
+        if rect:
+            painter.setBrush(brush)
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
+        if shape == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
+            painter.setFont(self.get_font())
+            painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
+
         self.use_lexical_color = False
         if shape == g.FEATURE_SHAPE:
             feats = self.get_merged_features()
@@ -874,38 +966,6 @@ class ConstituentNode(Node):
                     feat.draw_feature_shape(painter, QtCore.QRectF(x, y, w, h), left, right, color)
                     painter.setPen(ctrl.cm.get('background1'))
                     x += w - 4
-
-                    # r = QtCore.QRectF(self.inner_rect)
-                    # w = r.width()
-                    # h = r.height()
-                    # if w > h:
-                    #     s = h
-                    # else:
-                    #     s = w
-                    # c = r.center()
-                    # r = QtCore.QRectF(0, 0, s, s)
-                    # r.moveCenter(c)
-                    # if ctrl.printing:
-                    #     if not feat_color.endswith('tr'):
-                    #         feat_color = feat_color + 'tr'
-                    #     color = ctrl.cm.get(feat_color)
-                    #     painter.setBrush(color)
-                    # else:
-                    #     gradient = QtGui.QRadialGradient(0, 0, r.height() / 2, 0, r.top() + 4)
-                    #     if ctrl.cm.light_on_dark():
-                    #         color = ctrl.cm.get(feat_color)
-                    #         gradient.setColorAt(1, QtCore.Qt.transparent)
-                    #         gradient.setColorAt(0, color)
-                    #     else:
-                    #         if not feat_color.endswith('tr'):
-                    #             feat_color = feat_color + 'tr'
-                    #         color = ctrl.cm.get(feat_color)
-                    #         gradient.setColorAt(0, QtCore.Qt.transparent)
-                    #         gradient.setColorAt(1, color)
-                    #     painter.setBrush(gradient)
-                    #painter.setPen(QtCore.Qt.NoPen)
-                    #painter.drawEllipse(r)
-                    #painter.setPen(old_pen)
         elif self.has_visible_label():
             old_pen = painter.pen()
             painter.setPen(QtCore.Qt.NoPen)

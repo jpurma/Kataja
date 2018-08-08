@@ -54,6 +54,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self._br = None
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
+        self._should_update = False
         if selection:
             self.update_selection(selection)
         self.update_shape()
@@ -200,6 +201,14 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         else:
             self.selection = []
             self.selection_with_children = []
+
+    def please_update(self):
+        self._should_update = True
+
+    def update_if_needed(self):
+        if self._should_update:
+            self._should_update = False
+            self.update_shape()
 
     def update_shape(self):
 

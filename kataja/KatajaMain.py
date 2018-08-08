@@ -200,7 +200,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.activateWindow()
         # self.status_bar = self.statusBar()
         self.install_plugins()
-        self.load_initial_treeset()
+        self.document.load_default_forests()
         self.enable_signaling()
 
         self.viewport_resized.emit()
@@ -301,11 +301,11 @@ class KatajaMain(QtWidgets.QMainWindow):
             if prefs.active_plugin_name:
                 self.disable_current_plugin()
             self.enable_plugin(plugin_key)
-            self.load_initial_treeset()
+            self.document.load_default_forests()
             return "Enabled plugin '%s'" % plugin_key
         elif plugin_key == prefs.active_plugin_name:
             self.disable_current_plugin()
-            self.load_initial_treeset()
+            self.document.load_default_forests()
             return "Disabled plugin '%s'" % plugin_key
         return ""
 
@@ -442,15 +442,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         if self.signalsBlocked():
             self.settings_manager.update_document()
 
-    def load_initial_treeset(self):
-        """ Loads and initializes a new set of trees. Has to be done before
-        the program can do anything sane.
-        """
-        forests = self.document.create_forests(clear=False)
-        if forests:
-            self.document.forests = forests
-            self.document.set_forest(forests[0])
-
     def create_new_project(self):
         names = [fk.name for fk in self.documents]
         name_base = 'New project'
@@ -464,7 +455,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         return doc
 
     def switch_project(self, i):
-        self.forest.retire_from_display()
         doc = self.documents[i]
         self.set_document(doc)
         return doc
@@ -495,22 +485,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         :return:
         """
         self.app.log_handler.set_widget(browserwidget)
-
-        #    def mousePressEvent(self, event):
-
-    #        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
-    #        :param event:
-    #        them downwards. This is for debugging. """
-    #        QtWidgets.QMainWindow.mousePressEvent(self, event)
-
-    #    def keyPressEvent(self, event):
-    #        # if not self.key_manager.receive_key_press(event):
-    #        """
-    #
-    #        :param event:
-    #        :return:
-    #        """
-    #        return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
     # ## Actions #######################################################
 

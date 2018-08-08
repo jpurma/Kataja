@@ -29,6 +29,7 @@ from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
+from kataja.SimpleLabel import SimpleLabel
 from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
     EDGE_RECEIVING_NOW, CHECKING_EDGE, EDGE_RECEIVING_NOW_DOMINANT, EDGE_OPEN_DOMINANT
 from kataja.singletons import ctrl, qt_prefs, classes
@@ -177,36 +178,36 @@ class FeatureNode(Node):
                 if parent.node_type == g.CONSTITUENT_NODE:
                     return parent
 
-    def compose_html_for_viewing(self):
+    def label_as_html(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
-        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        'label_as_html' -method. This is so that it is easier to create custom
         implementations for constituents without requiring custom constituentnodes.
 
-        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
-            return self.syntactic_object.compose_html_for_viewing(self)
+        if hasattr(self.syntactic_object, 'label_as_html'):
+            return self.syntactic_object.label_as_html(self)
         return str(self), ''
 
-    def compose_html_for_editing(self):
+    def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
         into just one field value that is allowed to be edited, in constituentnode this is
         either label synobj's label. This can be overridden in syntactic object by having
-        'compose_html_for_editing' -method there. The method returns a tuple,
+        'label_as_editable_html' -method there. The method returns a tuple,
           (field_name, html).
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
-            return self.syntactic_object.compose_html_for_editing(self)
+        if hasattr(self.syntactic_object, 'label_as_editable_html'):
+            return self.syntactic_object.label_as_editable_html(self)
 
-        return 'name', self.compose_html_for_viewing()[0]
+        return 'name', self.label_as_html()[0]
 
     def parse_quick_edit(self, text):
         """ This is an optional method for node to parse quick edit information into multiple
@@ -337,72 +338,38 @@ class FeatureNode(Node):
                 return edge.chain_up([edge])
         return []
 
-    def update_bounding_rect(self):
-        """ Override Node's update_bounding_rect because FeatureNodes have special shapes that 
-        need to be accounted in their bounding rect
-        :return:
-        """
-        lbw = FeatureNode.width
-        lbh = FeatureNode.height
-        lbx = 0
-        lby = 0
+    def _calculate_inner_rect(self):
+        label = self.label_object
         x_offset = 0
         y_offset = 0
-        if self._label_visible and self.label_object:
-            l = self.label_object
-            lbr = l.boundingRect()
-            lbw = max((lbr.width(), lbw))
-            lbh = max((lbr.height(), lbh))
-            lbx = l.x()
-            lby = l.y()
-            x_offset = l.x_offset
-            y_offset = l.y_offset
-        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+        w = 0
+        h = 0
+        if self._label_visible:
+            label_rect = label.boundingRect()
+            w = label_rect.width()
+            h = label_rect.height()
+            x_offset = label.x_offset
+            y_offset = label.y_offset
+            self.label_rect = label_rect
         if 1 < self.fshape < 4:
-            lbw += 4
+            w += 4
         elif self.fshape == 4:
-            lbw += 8
+            w += 8
+        if w < FeatureNode.width:
+            w = FeatureNode.width
+        if h < FeatureNode.height:
+            h = FeatureNode.height
+
         if x_offset or y_offset:
             x = x_offset
             y = y_offset
         else:
-            x = lbw / -2
-            y = lbh / -2
-        self.inner_rect = QtCore.QRectF(x, y, lbw, lbh)
-        w4 = (lbw - 2) / 4.0
-        w2 = (lbw - 2) / 2.0
-        h2 = (lbh - 2) / 2.0
-        y_max = y + lbh - 4
-        x_max = x + lbw
-        #  0--1--2--3--4
-        #  |           |
-        #  5           6
-        #  |           |
-        #  7--8--9-10-11
-        self._magnets = [
-            (x, y),
-            (x + w4, y),
-            (x + w2, y),
-            (x + w2 + w4, y),
-            (x_max, y),
-            (x, y + h2),
-            (x_max, y + h2),
-            (x, y_max),
-            (x + w4, y_max),
-            (x + w2, y_max),
-            (x + w2 + w4, y_max),
-            (x_max, y_max)]
-        self.width = lbw
-        self.height = lbh
-        expanding_rect = QtCore.QRectF(self.inner_rect)
-        for child in self.childItems():
-            if isinstance(child, Node):
-                expanding_rect |= child.future_children_bounding_rect().translated(*child.target_position)
-        self._cached_child_rect = expanding_rect
-        if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
-            ctrl.ui.selection_group.update_shape()
-        self.prepareGeometryChange()
-        return self.inner_rect
+            x = w / -2
+            y = h / -2
+        self.width = w
+        self.height = h
+        self._create_magnets(x, y, w, h)
+        return QtCore.QRectF(x, y, w, h)
 
     @staticmethod
     def draw_feature_shape(painter, rect, left, right, color):

@@ -728,14 +728,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         # if prefs.move_effect:
         #    self._use_simple_path = False
 
-    def free_drawing_mode(self, *args, **kwargs):
-        """ Utility method for checking conditions for editing operations
-        :param args: ignored
-        :param kwargs: ignored
-        :return:
-        """
-        return ctrl.free_drawing_mode
-
     # Shape helpers #############################
 
     def get_shape_property(self, key, missing=None):

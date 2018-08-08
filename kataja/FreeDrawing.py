@@ -24,6 +24,7 @@
 import string
 
 import time
+from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.errors import ForestError
@@ -67,6 +68,35 @@ class FreeDrawing:
 
     def poke(self, attribute):
         self.f.poke(attribute)
+
+    @staticmethod
+    def copy_node_position(source, target):
+        """ Helper method for newly created items. Takes other item and copies movement related
+        attributes from it (physics settings, locks, adjustment etc).
+        :param other:
+        :return:
+        """
+        parent = target.parentItem()
+        if parent is source.parentItem():
+            target.current_position = source.current_position[0], source.current_position[1]
+            target.target_position = source.target_position
+        else:
+            csp = source.current_scene_position
+            nsp = QtCore.QPointF(csp[0], csp[1])
+            if parent:
+                nsp = parent.mapFromScene(nsp)
+            else:
+                nsp = target.mapFromScene(nsp)
+            target.current_position = nsp.x(), nsp.y()
+            target.target_position = nsp.x(), nsp.y()
+        if target.current_scene_position != source.current_scene_position:
+            print('copy position led to different positions: ', target.current_scene_position,
+                  source.current_scene_position)
+        target.locked = source.locked
+        target.use_adjustment = source.use_adjustment
+        target.adjustment = source.adjustment
+        target.physics_x = source.physics_x
+        target.physics_y = source.physics_y
 
     # #### Comments #########################################
 
@@ -130,7 +160,7 @@ class FreeDrawing:
             self.f.visualization.reset_node(node)
         # it should however inherit settings from relative, if such are given
         if relative:
-            node.copy_position(relative)
+            self.copy_node_position(source=relative, target=node)
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
@@ -583,7 +613,7 @@ class FreeDrawing:
         # infinite loop somewhere
 
         if old_node.pos():
-            new_node.copy_position(old_node)
+            self.copy_node_position(source=old_node, target=new_node)
         new_node.update_visibility(fade_in=True)  # active=True,
 
         # add new node to relevant groups

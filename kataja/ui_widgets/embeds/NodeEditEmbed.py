@@ -78,7 +78,7 @@ class NodeEditEmbed(UIEmbed):
                 field = KatajaTextarea(self, tooltip=tt, font=smaller_font, prefill=prefill,
                                        on_edit=on_edit)
                 max_w = 200
-                if node.user_size:
+                if node.resizable and node.user_size:
                     w = node.user_size[0]
                 elif template_width:
                     w = template_width
@@ -224,4 +224,4 @@ class NodeEditEmbed(UIEmbed):
         # default to field that gets edited in quickedit
         if self.fields:
             print(self.fields)
-            self.fields[self.host.compose_html_for_editing()[0]].setFocus()
+            self.fields[self.host.label_as_editable_html()[0]].setFocus()

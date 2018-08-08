@@ -30,9 +30,11 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-from kataja.Label import Label
+from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
+from kataja.SimpleLabel import SimpleLabel
 from kataja.saved.Movable import Movable
+from kataja.saved.Draggable import Draggable
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
@@ -43,26 +45,6 @@ import kataja.ui_widgets.buttons.OverlayButton as Buttons
 call_counter = [0]
 
 
-class DragData:
-    """ Helper object to contain drag-related data for duration of dragging """
-
-    def __init__(self, node: 'Node', is_host, mousedown_scene_pos):
-        self.is_host = is_host
-        self.position_before_dragging = node.current_position
-        self.adjustment_before_dragging = node.adjustment
-        mx, my = mousedown_scene_pos
-        scx, scy = node.current_scene_position
-        self.distance_from_pointer = scx - mx, scy - my
-        self.dragged_distance = None
-        bg = ctrl.cm.paper2().lighter(102)
-        bg.setAlphaF(.65)
-        self.background = bg
-        parent = node.parentItem()
-        if parent:
-            self.parent = parent
-        else:
-            self.parent = None
-
 
 qbytes_scale = QtCore.QByteArray()
 qbytes_scale.append("scale")
@@ -71,7 +53,7 @@ qbytes_scale.append("scale")
 # ctrl = Controller object, gives accessa to other modules
 
 
-class Node(Movable):
+class Node(Draggable, Movable):
     """ Basic class for any visualization elements that can be connected to
     each other """
     __qt_type_id__ = next_available_type_id()
@@ -85,6 +67,7 @@ class Node(Movable):
     display_name = ('Abstract node', 'Abstract nodes')
     display = False
     can_be_in_groups = True
+    resizable = False
     editable = {}
     allowed_child_types = []
 
@@ -107,20 +90,18 @@ class Node(Movable):
     def __init__(self):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify
-        this for
-        Constituents, Features etc. """
+        this for Constituents, Features etc. """
         self.label_object = None
         Movable.__init__(self)
+        Draggable.__init__(self)
+        self.node_type_settings_chain = None
+        self.label_object = SimpleLabel(parent=self)
         self.syntactic_object = None
         self.label = ''
-        self.node_type_settings_chain = None
         self.selected = False
         self._label_visible = True
-        self._label_qdocument = None
         self.label_rect = None
         self._gravity = 0
-        self.label_object = Label(parent=self)
-        self.resizable = False
         self.drag_data = None
         self.user_size = None
         self.invert_colors = False
@@ -243,36 +224,19 @@ class Node(Movable):
         return None
 
     @property
-    def offset_x(self):
-        if self.label_object:
-            return self.label_object.x_offset
-        else:
-            return self.width / -2
-
-    @property
-    def offset_y(self):
-        if self.label_object:
-            return self.label_object.y_offset
-        else:
-            return self.height / -2
-
-    @property
     def centered_scene_position(self):
         sx, sy = self.current_scene_position
-        ox = self.offset_x
-        oy = self.offset_y
-        cx = sx + ox + self.width / 2
-        cy = sy + oy + self.height / 2
-        return cx, cy
+        sx += self.label_object.x_offset + self.width / 2
+        sy += self.label_object.y_offset + self.height / 2
+        return sx, sy
 
-
-    def compose_html_for_viewing(self, peek_into_synobj=True):
+    def label_as_html(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
-        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        'label_as_html' -method. This is so that it is easier to create custom
         implementations for constituents without requiring custom constituentnodes.
 
-        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
 
         :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
@@ -282,23 +246,23 @@ class Node(Movable):
         """
 
         # Allow custom syntactic objects to override this
-        if peek_into_synobj and hasattr(self.syntactic_object, 'compose_html_for_viewing'):
-            return self.syntactic_object.compose_html_for_viewing(self)
+        if peek_into_synobj and hasattr(self.syntactic_object, 'label_as_html'):
+            return self.syntactic_object.label_as_html(self)
 
         return as_html(self.label), ''
 
-    def compose_html_for_editing(self):
+    def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
         into just one field value that is allowed to be edited, in constituentnode this is
         either label or synobj's label. This can be overridden in syntactic object by having
-        'compose_html_for_editing' -method there. The method returns a tuple,
+        'label_as_editable_html' -method there. The method returns a tuple,
           (field_name, setter, html).
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
-            return self.syntactic_object.compose_html_for_editing(self)
+        if hasattr(self.syntactic_object, 'label_as_editable_html'):
+            return self.syntactic_object.label_as_editable_html(self)
 
         return 'label', as_html(self.label)
 
@@ -316,29 +280,7 @@ class Node(Movable):
         return False
 
     def is_empty(self):
-        if self.label_object:
-            return self.label_object.is_empty()
-        return True
-
-    def cut(self, others):
-        """
-        :param others: other items targeted for cutting, to help decide which relations to maintain
-        :return:
-        """
-        for parent in self.get_parents(similar=False, visible=False):
-            if parent not in others:
-                ctrl.free_drawing.disconnect_node(parent, self)
-        for child in self.get_children(similar=False, visible=False):
-            if child not in others:
-                ctrl.free_drawing.disconnect_node(self, child)
-        ctrl.forest.remove_from_scene(self)
-        return self
-
-    # def copy(self, **kwargs):
-    #     if self.syntactic_object:
-    #         synobj = self.syntactic_object.copy()
-    #     else:
-    #         synobj = None
+        return self.label_object.is_empty()
 
     def get_editing_template(self):
         """ Create or fetch a dictionary template to help building an editing
@@ -357,8 +299,7 @@ class Node(Movable):
         return not self.triangle_stack
 
     def if_changed_font(self, value):
-        if self.label_object:
-            self.label_object.set_font(qt_prefs.get_font(value))
+        self.label_object.set_font(qt_prefs.get_font(value))
 
     # Non-model-based properties ########################################
 
@@ -380,49 +321,6 @@ class Node(Movable):
         Movable.reset(self)
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
-
-    # def fade_out(self, s=300):
-    #     for edge in itertools.chain(self.edges_down, self.edges_up):
-    #         edge.fade_out(s=s)
-    #     super().fade_out(s=s)
-    #
-    # def fade_in(self, s=300):
-    #     for edge in self.edges_up:
-    #         if (edge.start and edge.start.is_visible()) or not edge.start:
-    #             edge.fade_in(s=s)
-    #     for edge in self.edges_down:
-    #         if edge.end and edge.end.is_visible():
-    #             edge.fade_in(s=s)
-    #
-    #     super().fade_in(s=s)
-
-    def copy_position(self, other):
-        """ Helper method for newly created items. Takes other item and copies movement related
-        attributes from it (physics settings, locks, adjustment etc).
-        :param other:
-        :return:
-        """
-        parent = self.parentItem()
-        if parent is other.parentItem():
-            self.current_position = other.current_position[0], other.current_position[1]
-            self.target_position = other.target_position
-        else:
-            csp = other.current_scene_position
-            nsp = QtCore.QPointF(csp[0], csp[1])
-            if parent:
-                nsp = parent.mapFromScene(nsp)
-            else:
-                nsp = self.mapFromScene(nsp)
-            self.current_position = nsp.x(), nsp.y()
-            self.target_position = nsp.x(), nsp.y()
-        if self.current_scene_position != other.current_scene_position:
-            print('copy position led to different positions: ', self.current_scene_position,
-                  other.current_scene_position)
-        self.locked = other.locked
-        self.use_adjustment = other.use_adjustment
-        self.adjustment = other.adjustment
-        self.physics_x = other.physics_x
-        self.physics_y = other.physics_y
 
     # ### Children and parents
     # ####################################################
@@ -510,16 +408,6 @@ class Node(Movable):
         :return:
         """
         return not self.get_children(visible=only_visible, similar=only_similar)
-
-    def get_only_parent(self, only_similar=True, only_visible=True):
-        """ Returns one or zero parents -- useful when not using multidomination
-        :param only_similar:
-        :param only_visible:
-        """
-        parents = self.get_parents(similar=only_similar, visible=only_visible)
-        if parents:
-            return parents[0]
-        return None
 
     def is_top_node(self, only_similar=True, only_visible=False):
         """ Root node is the topmost node of a trees
@@ -626,13 +514,6 @@ class Node(Movable):
         _iterate(self)
         return result[1:]
 
-    def node_alone(self):
-        return not (self.edges_down or self.edges_up)
-
-    def get_locked_in_nodes(self):
-        return [x for x in self.get_children(visible=True, similar=False) if
-                x.locked_to_node is self]
-
     def can_have_as_child(self, other=None):
         """ Check, usually when dragging objects, if parent -- child relationship is possible in
         current state. This can be affected by the editing mode, properties of child and parent
@@ -653,9 +534,7 @@ class Node(Movable):
                         other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
             return False
         elif other_type in self.allowed_child_types:
-            if other:
-                return other not in self.get_children(similar=False, visible=False)
-            return True
+            return other not in self.get_children(similar=False, visible=False) if other else True
         return False
 
     def get_sorted_nodes(self):
@@ -747,10 +626,7 @@ class Node(Movable):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if self.selected:
-            base = ctrl.cm.selection()
-        else:
-            base = ctrl.cm.get(self.get_color_key())
+        base = ctrl.cm.selection() if self.selected else ctrl.cm.get(self.get_color_key())
         if self.drag_data:
             return ctrl.cm.lighter(base)
         elif ctrl.pressed is self:
@@ -770,8 +646,6 @@ class Node(Movable):
         """
         :return:
         """
-        if not self.label_object:
-            self.label_object = Label(parent=self)
         self.label_object.update_font()
         self.label_object.update_label()
         self.update_label_visibility()
@@ -783,11 +657,7 @@ class Node(Movable):
         displayed. Node itself can be visible even when its label is not.
         :return:
         """
-        if not self.label_object:
-            self.update_label()
-        self._label_visible = self.label_object.has_content() or \
-            self.label_object.is_quick_editing() or \
-            self.label_object.is_card()
+        self._label_visible = self.label_object.keep_visible()
         self.label_object.setVisible(self._label_visible)
 
     def update_tooltip(self):
@@ -806,71 +676,31 @@ class Node(Movable):
         """ implement if label can be modified by editing it directly """
         pass
 
-    def get_lower_part_y(self):
-        """ This should return the relative (within node) y-coordinate to bottom part of label.
-        If the label is only one row, bottom and top part are the same.
-        Lower and top parts can each have multiple lines in them, the idea is that
-        triangle goes between them.
-        :return:
-        """
-        if self.label_object:
-            return self.label_object.get_lower_part_y()
-        else:
-            return 0
-
     def get_top_y(self):
         """ Implement this if the movable has content where differentiating between bottom row and
          top row can potentially make sense.
         :return:
         """
-        if self.label_object:
-            return self.label_object.get_top_y()
-        else:
-            return 0
-
-    def get_node_shape(self):
-        """ Node shapes are based on settings-stack, but also get_shape_setting in label.
-        Return this get_shape_setting value.
-        :return:
-        """
-        if self.label_object:
-            return self.label_object.node_shape
-        else:
-            return g.NORMAL
+        return self.label_object.get_top_y()
 
     # ## Qt overrides
     # ######################################################################
     # @time_me
+
+    # Probably overrided by node type's own paint-method
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        ls = self.label_object.node_shape
-        if ls == g.CARD:
-            xr = 4
-            yr = 8
-        else:
-            xr = 5
-            yr = 5
+        xr = 5
+        yr = 5
         pen = QtGui.QPen(self.contextual_color())
         pen.setWidth(1)
         rect = False
         brush = Qt.NoBrush
 
-        # if not self.edges_up:
-        #     painter.setPen(pen)
-        #     painter.drawLine(0, 0, 0, 2)
-        #     painter.drawRect(self.label_rect)
-        #     painter.drawRect(self.inner_rect)
-        if ls == g.SCOPEBOX or (ls == g.BOX and not self.is_empty()):
-            pen.setWidthF(0.5)
-            brush = ctrl.cm.paper2()
-            rect = True
-        elif self.label_object.is_card():
-            brush = ctrl.cm.paper2()
-            rect = True
         if self.drag_data:
             rect = True
             brush = self.drag_data.background
@@ -884,28 +714,10 @@ class Node(Movable):
             if not hasattr(self, 'halo'):
                 rect = True
 
-        # elif self.has_empty_label() and self.node_alone():
-        #    pen.setStyle(QtCore.Qt.DotLine)
-        #    rect = True
         painter.setPen(pen)
         if rect:
             painter.setBrush(brush)
             painter.drawRoundedRect(self.inner_rect, xr, yr)
-        if ls == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
-            painter.setFont(self.get_font())
-            painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
-        # painter.drawRect(-2, -2, 4, 4)
-        # if False:  # False and not self.static:
-        #     painter.setBrush(ctrl.cm.get('accent4tr'))
-        #     #b = QtCore.QRectF(self.future_children_bounding_rect())
-        #     # if b.width() < b.height():
-        #     #    b.setWidth(b.height())
-        #     # elif b.height() < b.width():
-        #     #    b.setHeight(b.width())
-        #     #painter.drawEllipse(b)
-        #
-        #     #painter.drawRect(self.future_children_bounding_rect())
-        #     painter.drawRect(self.boundingRect())
 
     def has_visible_label(self):
         """
@@ -923,52 +735,12 @@ class Node(Movable):
         """
         return False
 
-    def update_bounding_rect(self):
-        """ Do housekeeping for bounding rect and related measurements
-        :return:
-        """
-        my_class = self.__class__
-        obr = self.inner_rect
-        if self.user_size is None:
-            user_width, user_height = 0, 0
-        else:
-            user_width, user_height = self.user_size
-
-        lbw = 0
-        lbh = 0
-        lbx = 0
-        lby = 0
-        x_offset = 0
-        y_offset = 0
-        box_width = 0
-
-        if self._label_visible and self.label_object:
-            label = self.label_object
-            lbr = label.boundingRect()
-            lbw = lbr.width()
-            lbh = lbr.height()
-            lbx = label.x()
-            lby = label.y()
-            x_offset = label.x_offset
-            y_offset = label.y_offset
-        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-        if self.label_object and self.label_object.node_shape == g.BRACKETED \
-                or self.label_object.node_shape == g.SCOPEBOX:
-            box_width = ctrl.forest.width_map.get(self.uid, 0)
-        self.width = max((lbw, my_class.width, user_width, box_width))
-        self.height = max((lbh, my_class.height, user_height))
-        if x_offset or y_offset:
-            x = x_offset
-            y = y_offset
-        else:
-            x = self.width / -2
-            y = self.height / -2
-        self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
-        w4 = (self.width - 2) / 4.0
-        w2 = (self.width - 2) / 2.0
-        h2 = (self.height - 2) / 2.0
-        y_max = y + self.height - 4
-        x_max = x + self.width
+    def _create_magnets(self, x, y, w, h):
+        w4 = (w - 2) / 4.0
+        w2 = (w - 2) / 2.0
+        h2 = (h - 2) / 2.0
+        y_max = y + h - 4
+        x_max = x + w
 
         #  0--1--2--3--4
         #  |           |
@@ -989,6 +761,40 @@ class Node(Movable):
             (x + w2 + w4, y_max),
             (x_max, y_max)]
 
+    def _calculate_inner_rect(self):
+        my_class = self.__class__
+        label = self.label_object
+        x_offset = 0
+        y_offset = 0
+        label_w = 0
+        label_h = 0
+        if self._label_visible:
+            label_rect = label.boundingRect()
+            label_w = label_rect.width()
+            label_h = label_rect.height()
+            x_offset = label.x_offset
+            y_offset = label.y_offset
+            self.label_rect = label_rect
+        w = max((label_w, my_class.width))
+        h = max((label_h, my_class.height))
+        if x_offset or y_offset:
+            x = x_offset
+            y = y_offset
+        else:
+            x = w / -2
+            y = h / -2
+        self.width = w
+        self.height = h
+        self._create_magnets(x, y, w, h)
+        return QtCore.QRectF(x, y, w, h)
+
+    def update_bounding_rect(self):
+        """ Do housekeeping for bounding rect and related measurements
+        :return:
+        """
+        old_br = self.inner_rect
+        self.inner_rect = self._calculate_inner_rect()
+
         expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
             if isinstance(child, Node) and child.is_visible():
@@ -996,12 +802,11 @@ class Node(Movable):
                     *child.target_position)
 
         self._cached_child_rect = expanding_rect
-        #self.inner_rect = self._cached_child_rect
 
-        if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
-            ctrl.ui.selection_group.update_shape()
-        if obr != self.inner_rect:
+        if old_br != self.inner_rect:
             self.prepareGeometryChange()
+            if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
+                ctrl.ui.selection_group.please_update()
         return self.inner_rect
 
     def overlap_rect(self):
@@ -1009,11 +814,6 @@ class Node(Movable):
             return self.sceneBoundingRect().adjusted(-2, -2, 4, 4)
         else:
             return QtCore.QRectF()
-
-    def set_user_size(self, width, height):
-        self.user_size = (width, height)
-        if self.label_object:
-            self.label_object.resize_label()
 
     def scene_rect_coordinates(self, current=False):
         if current:
@@ -1028,14 +828,6 @@ class Node(Movable):
         maxx += scx
         maxy += scy
         return minx, miny, maxx, maxy
-
-    def future_scene_bounding_rect(self):
-        r = self.future_children_bounding_rect()
-        p = self.parentItem()
-        if p:
-            return p.mapToScene(r)
-        else:
-            return self.mapToScene(r)
 
     def future_children_bounding_rect(self, limit_height=False) -> QtCore.QRectF:
         """ This combines boundingRect with children's boundingRects based on children's
@@ -1142,24 +934,7 @@ class Node(Movable):
         return edges
 
     def reindex_edges(self):
-        down = defaultdict(list)
-        up = defaultdict(list)
-        # for edge in self.edges_down:
-        #     down[edge.edge_type].append(edge)
-        # for edge in self.edges_up:
-        #     up[edge.edge_type].append(edge)
-        # for edges in down.values():
-        #     down_size = len(down)
-        #     for i, edge in enumerate(edges):
-        #         edge.cached_edge_start_index = (i, down_size)
-        #         if edge.path:
-        #             edge.path.cached_shift_for_start = None
-        # for edges in up.values():
-        #     up_size = len(up)
-        #     for i, edge in enumerate(edges):
-        #         edge.cached_edge_end_index = (i, up_size)
-        #         if edge.path:
-        #             edge.path.cached_shift_for_start = None
+        pass
 
     # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
@@ -1200,28 +975,6 @@ class Node(Movable):
             node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
             node.update_label()
             node.update_visibility()
-
-    # def on_press(self, value):
-    #     """ Testing if we can add some push-depth effect.
-    #     :param value: pressed or not
-    #     :return:
-    #     """
-    #     print('on_press')
-    #     # push-animation is unwanted if we are already editing the text:
-    #     if self.label_object and self.label_object.is_quick_editing():
-    #         pass
-    #     elif value:
-    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-    #         self.anim.setDuration(20)
-    #         self.anim.setStartValue(self.scale())
-    #         self.anim.setEndValue(0.90)
-    #         self.anim.start()
-    #     else:
-    #         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-    #         self.anim.setDuration(20)
-    #         self.anim.setStartValue(self.scale())
-    #         self.anim.setEndValue(1.0)
-    #         self.anim.start()
 
     # ## Magnets
     # ######################################################################
@@ -1386,334 +1139,11 @@ class Node(Movable):
             action.run_command(self.uid, has_params=True)
         return self
 
-    # Drag flow:
-
-    # 0.
-    #
-
-    # 1. drag -- compute drag's current situation, where is mouse cursor, should we start
-    # dragging or just announce new position for 'dragged_to'.
-    #
-    #   2. start_dragging -- drag is initiated from this node. If the node was already selected,
-    #   then other nodes that were selected at the same time are also understood to be dragged.
-    #   If the node has unambiguous children, these are also dragged. If node is top node of a tree,
-    #   then the tree is the object of dragging, and not node.
-    #
-    #   2b. prepare_children_for_dragging -- compute what should be included in drag for this
-    #   type of node.
-    #
-    #   3. prepare_dragging_participiant -- this is called for each node that is included into drag.
-    #   Prepares drag data and sets up animations.
-    #
-    #   4. dragged_to -- this is called for each node in drag set. Node moves to position
-    #   relative to drag given scene position (given position is the position of drag pointer
-    #   and main dragged element.
-    #
-    # 5. drop_to -- with dragged node, activate whatever happens in this position if something is
-    # dropped there. Call finish_dragging.
-    #
-    #   6. finish_dragging -- if called with dragged node, calls finish_dragging also for other
-    #   nodes in drag set. Clears temporary data and restores node to normal. Should always be
-    #   called, even when dragging is cancelled or interrupted.
-
-    def start_dragging(self, scene_pos):
-        """ Figure out which nodes belong to the dragged set of nodes.
-        :param scene_pos:
-        """
-        ctrl.dragged_focus = self
-        ctrl.dragged_set = set()
-        ctrl.dragged_groups = set()
-        multidrag = False
-        # if we are working with selection, this is more complicated, as there may be many nodes
-        # and trees dragged at once, with one focus for dragging.
-        if self.selected:
-            selected_nodes = [x for x in ctrl.selected if isinstance(x, Node)]
-            # include those nodes in selection and their children that are not part of wholly
-            # dragged trees
-            for item in selected_nodes:
-                if item.drag_data:
-                    continue
-                elif getattr(item, 'draggable', True):
-                    item.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
-                    item.prepare_children_for_dragging(scene_pos)
-                    multidrag = True
-        # no selection -- drag what is under the pointer
-        else:
-            self.prepare_children_for_dragging(scene_pos)
-            self.prepare_dragging_participiant(host=True, scene_pos=scene_pos)
-
-        moving = ctrl.dragged_set
-        ctrl.ui.prepare_touch_areas_for_dragging(moving=moving, multidrag=multidrag)
-        ctrl.ui.create_drag_info(self)
-        self.start_moving()
-
-    def prepare_children_for_dragging(self, scene_pos):
-        """ Implement this if structure is supposed to drag with the node
-        :return:
-        """
-        pass
-
-    def prepare_dragging_participiant(self, host=False, scene_pos=None):
-        """ Add this node into the entourage of dragged node. These nodes will
-        maintain their relative position to dragged node while dragging.
-        This can and should be called also for the host of the dragging operation. In this case
-        host=True.
-        :return: None
-        :param host: is this the main dragged node or one of its children
-        :param scene_pos: mouse position when dragging started -- dragging participiant will keep
-        its distance from pointer fixed during dragging
-        """
-        ctrl.dragged_set.add(self)
-        ctrl.add_my_group_to_dragged_groups(self)
-        self.drag_data = True
-        self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
-
-        parent = self.parentItem()
-        if parent:
-            parent.setZValue(500)
-            # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-            # self.anim.setEasingCurve(QtCore.QEasingCurve.Linear)
-            # self.anim.setDuration(600)
-            # self.anim.setStartValue(self.scale())
-            # self.anim.setEndValue(1.5)
-            # self.anim.start()
-
-    def drag(self, event):
-        """ Drag also elements that are counted to be involved: features,
-        children etc. Drag is called to only one principal drag host element. 'dragged_to' is
-        called for each element.
-        :param event:
-        """
-        crossed_out_flag = event.modifiers() == QtCore.Qt.ShiftModifier
-        for edge in self.edges_up:
-            edge.crossed_out_flag = crossed_out_flag
-        scene_pos = to_tuple(event.scenePos())
-        nx, ny = scene_pos
-
-        # Call dragged_to -method for all nodes that are dragged with the drag focus
-        # Their positions are relative to this focus, compute how much.
-        for node in ctrl.dragged_set:
-            d = node.drag_data
-            dx, dy = d.distance_from_pointer
-            node.dragged_to((int(nx + dx), int(ny + dy)))
-        ctrl.ui.show_drag_adjustment()
-        for group in ctrl.dragged_groups:
-            group.update_shape()
-
-    def dragged_to(self, scene_pos):
-        """ Dragged focus is in scene_pos. Move there or to position relative to that
-        :param scene_pos: current pos of drag pointer (tuple x,y)
-        :return:
-        """
-        super().dragged_to(scene_pos)
-        edge_list = [self.edges_up, self.edges_down]
-        for item in self.childItems():
-            if isinstance(item, Node):
-                edge_list.append(item.edges_up)
-                edge_list.append(item.edges_down)
-        for edge in itertools.chain.from_iterable(edge_list):
-            edge.make_path()
-            edge.update()
-
-    def accepts_drops(self, dragged):
-        """
-
-        :param dragged:
-        :return:
-        """
-        if isinstance(dragged, ControlPoint):
-            if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
-                return True
-        # elif isinstance(dragged, TouchArea):
-        # return True
-        return False
-
-    def drop_to(self, x, y, recipient=None, shift_down=False):
-        """
-
-        :param recipient:
-        :param x:
-        :param y:
-        :param shift_down:
-        :return: action finished -message (str)
-        """
-        self.stop_moving()
-        self.update()
-        for edge in self.edges_up:
-            edge.crossed_out_flag = False
-            if shift_down:
-                ctrl.free_drawing.disconnect_node(edge=edge)
-        if recipient and recipient.accepts_drops(self):
-            self.release()
-            recipient.drop(self)
-        else:
-            if self.use_physics():
-                drop_action = ctrl.ui.get_action('move_node')
-                drop_action.run_command(self.uid, x, y, has_params=True)
-            else:
-                adj_x, adj_y = self.adjustment
-                drop_action = ctrl.ui.get_action('adjust_node')
-                drop_action.run_command(self.uid, adj_x, adj_y, has_params=True)
-        self.update_position()
-        self.finish_dragging()
-
-    def finish_dragging(self):
-        """ Flush dragging-related temporary variables. Called always when
-        dragging is finished for any
-         reason.
-        :return:
-        """
-        if self is ctrl.dragged_focus:
-            for node in ctrl.dragged_set:
-                if node is not self:
-                    node.finish_dragging()
-            ctrl.dragged_set = set()
-            ctrl.dragged_focus = None
-            ctrl.dragged_groups = set()
-            ctrl.dragged_text = None
-        self.setZValue(self.preferred_z_value())
-        self.drag_data = None
-        ctrl.ui.remove_drag_info()
-        # self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
-        # self.anim.setDuration(100)
-        # self.anim.setStartValue(self.scale())
-        # self.anim.setEndValue(1.0)
-        # self.anim.start()
-
-    def cancel_dragging(self):
-        """ Fixme: not called by anyone
-        Revert dragged items to their previous positions.
-        :return: None
-        """
-        d = self.drag_data
-        if d:
-            self.adjustment = d.adjustment_before_dragging
-            self.current_position = d.position_before_dragging
-            self.update_position()
-            if d.is_host:
-                for node in ctrl.dragged_set:
-                    node.cancel_dragging()
-            self.setZValue(self.preferred_z_value())
-            self.drag_data = None
-
-    def lock(self):
-        """ Display lock, unless already locked. Added functionality to
-        recognize the state before
-         dragging started.
-        :return:
-        """
-        # was_locked = self.locked or self.use_adjustment
-        super().lock()
-        # if not was_locked:
-        print('locking node to position')
-        if self.is_visible():
-            ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
-
-    # ### Mouse - Qt events ##################################################
-
-    def mousePressEvent(self, event):
-        ctrl.press(self)
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, e):
-        # mouseMoveEvents only happen between mousePressEvents and mouseReleaseEvents
-        scene_pos_pf = e.scenePos()
-        if ctrl.dragged_focus is self:
-            self.drag(e)
-            ctrl.graph_scene.dragging_over(scene_pos_pf)
-        elif (e.buttonDownScenePos(QtCore.Qt.LeftButton) - scene_pos_pf).manhattanLength() > 6:
-            scene_pos = to_tuple(scene_pos_pf)
-            self.start_dragging(scene_pos)
-            self.drag(e)
-            ctrl.graph_scene.dragging_over(scene_pos_pf)
-        super().mouseMoveEvent(e)
-
-    def mouseReleaseEvent(self, event):
-        """ Either we are finishing dragging or clicking the node. If clicking a node with
-        editable label, the click has to be replayed to Label (QGraphicsTextItem) when it has
-        toggled the edit mode on, to let its inaccessible method for positioning cursor on click
-        position to do its work.
-        :param event:
-        :return:
-        """
-        replay_click = False
-        shift = event.modifiers() == QtCore.Qt.ShiftModifier
-
-        if ctrl.pressed is self:
-            ctrl.release(self)
-            if ctrl.dragged_set:
-                x, y = to_tuple(event.scenePos())
-                self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
-                ctrl.graph_scene.kill_dragging()
-                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
-            else:  # This is a regular click on 'pressed' object
-                self.select(adding=shift, select_area=False)
-                if self.label_object.is_quick_editing():
-                    replay_click = True
-                self.update()
-        super().mouseReleaseEvent(event)
-        if replay_click and False:
-            ctrl.graph_view.replay_mouse_press()
-            self.label_object.editable_part.mouseReleaseEvent(event)
-            ctrl.release(self)
-
-    def dragEnterEvent(self, event):
-        """ Dragging a foreign object (could be from ui_support) over a node, entering.
-        :param event:
-        """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
-                or event.mimeData().hasFormat("text/plain"):
-            self.label_object.dragEnterEvent(event)
-            self.hovering = True
-        else:
-            QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
-
-    def dragLeaveEvent(self, event):
-        """ Dragging a foreign object (could be from ui_support) over a node, leaving.
-        :param event:
-        """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
-                or event.mimeData().hasFormat("text/plain"):
-            event.acceptProposedAction()
-            self.hovering = False
-        else:
-            QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
-
-    def dropEvent(self, event: 'QGraphicsSceneDragDropEvent'):
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
-                or event.mimeData().hasFormat("text/plain"):
-            self.label_object.dropEvent(event)
-
-    def start_moving(self):
-        """ Hint edges that they shouldn't compute everything while these nodes are moving.
-        :return:
-        """
-        Movable.start_moving(self)
-        if prefs.move_effect:
-            self.toggle_halo(True)
-        for edge in self.edges_down:
-            edge.start_node_started_moving()
-        for edge in self.edges_up:
-            edge.end_node_started_moving()
-
     def short_str(self):
         return as_html(self.label) or "no label"
 
     def has_ordered_children(self):
         return True
-
-    def stop_moving(self):
-        """ Experimental: remove glow effect from moving things
-        :return:
-        """
-        Movable.stop_moving(self)
-        if prefs.move_effect:
-            if not self.selected:
-                self.toggle_halo(False)
-        for edge in self.edges_down:
-            edge.start_node_stopped_moving()
-        for edge in self.edges_up:
-            edge.end_node_stopped_moving()
 
     def update_visibility(self, fade_in=True, fade_out=True, skip_label=False) -> bool:
         """ see Movable.update_visibility
@@ -1745,11 +1175,34 @@ class Node(Movable):
         pass
 
     def is_quick_editing(self):
-        if self.label_object:
-            return self.label_object.is_quick_editing()
-        return False
+        return self.label_object.is_quick_editing()
 
     # ###### Halo for showing some association with selected node (e.g. c-command) ######
+
+    def start_moving(self):
+        """ Hint edges that they shouldn't compute everything while these nodes are moving.
+        :return:
+        """
+        super().start_moving()
+        if prefs.move_effect:
+            self.toggle_halo(True)
+        for edge in self.edges_down:
+            edge.start_node_started_moving()
+        for edge in self.edges_up:
+            edge.end_node_started_moving()
+
+    def stop_moving(self):
+        """ Experimental: remove glow effect from moving things
+        :return:
+        """
+        super().stop_moving()
+        if prefs.move_effect:
+            if not self.selected:
+                self.toggle_halo(False)
+        for edge in self.edges_down:
+            edge.start_node_stopped_moving()
+        for edge in self.edges_up:
+            edge.end_node_stopped_moving()
 
     def toggle_halo(self, value, small=False):
         if value and not self.halo_item:
@@ -1800,42 +1253,6 @@ class Node(Movable):
         self.halo_item.setPen(c)
         self.halo_item.setBrush(c)
 
-    # noinspection PyTypeChecker
-    def check_conditions(self, cond):
-        """ Various templates may need to check that all conditions apply before doing things.
-        Conditions are methods in this node or in syntactic object of this node.
-        this method takes
-        1) str with method name
-        2) list of method names or
-        3) dict where there is a key 'condition' that has (1, 2) as value.
-        It returns True if the method/s return True or if the methods are missing.
-        (understand this as 'no filters' instead of 'no pass')
-        It also accepts 'not:methodname' in string to negate the result.
-        :param cond: None, string, list or dict
-        :return:
-        """
-        if not cond:
-            return True
-        elif isinstance(cond, list):
-            for c in cond:
-                if not self.check_conditions(c):
-                    return False
-            return True
-        elif isinstance(cond, str):
-            not_flag = False
-            if cond.startswith('not:'):
-                cond = cond[4:]
-                not_flag = True
-            cmethod = getattr(self, cond)
-            if (not cmethod) and self.syntactic_object:
-                cmethod = getattr(self.syntactic_object, cond)
-            if cmethod:
-                if not_flag:
-                    return not cmethod()
-                else:
-                    return cmethod()
-            raise NotImplementedError(cond)
-
     # ############## #
     #                #
     #  Save support  #
@@ -1847,5 +1264,4 @@ class Node(Movable):
     label = SavedField("label")
     edges_up = SavedField("edges_up")
     edges_down = SavedField("edges_down")
-    user_size = SavedField("user_size")
     triangle_stack = SavedField("triangle_stack")
