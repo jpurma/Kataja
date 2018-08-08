@@ -150,7 +150,6 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(False)
         self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
         self.editable_part.setTextWidth(-1)
-        self.set_font(self._host.get_font())
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -189,8 +188,6 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
         else:
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
         html = self._host.label_as_html()
-        if isinstance(html, tuple):
-            html = html[0]
         if force_update or html != self.editable_html:
             if self.editable_html != html:
                 self.editable_doc.blockSignals(True)

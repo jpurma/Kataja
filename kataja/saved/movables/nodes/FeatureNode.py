@@ -192,7 +192,7 @@ class FeatureNode(Node):
         # Allow custom syntactic objects to override this
         if hasattr(self.syntactic_object, 'label_as_html'):
             return self.syntactic_object.label_as_html(self)
-        return str(self), ''
+        return str(self)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -338,7 +338,7 @@ class FeatureNode(Node):
                 return edge.chain_up([edge])
         return []
 
-    def _calculate_inner_rect(self):
+    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
         label = self.label_object
         x_offset = 0
         y_offset = 0

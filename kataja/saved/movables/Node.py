@@ -761,7 +761,7 @@ class Node(Draggable, Movable):
             (x + w2 + w4, y_max),
             (x_max, y_max)]
 
-    def _calculate_inner_rect(self):
+    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
         my_class = self.__class__
         label = self.label_object
         x_offset = 0
@@ -775,8 +775,8 @@ class Node(Draggable, Movable):
             x_offset = label.x_offset
             y_offset = label.y_offset
             self.label_rect = label_rect
-        w = max((label_w, my_class.width))
-        h = max((label_h, my_class.height))
+        w = max((extra_w, label_w, my_class.width))
+        h = max((extra_h, label_h, my_class.height))
         if x_offset or y_offset:
             x = x_offset
             y = y_offset

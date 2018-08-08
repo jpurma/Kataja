@@ -37,8 +37,7 @@ inner_cards = False
 
 
 class ComplexLabel(SimpleLabel):
-    """ Labels are names of nodes. Node itself provides a template for what to show in label,
-    label composes its document (html layout) for its contents based on that. """
+    """ ComplexLabels are labels that can have two textareas and a triangle between them """
     max_width = 400
     __qt_type_id__ = next_available_type_id()
     card_size = (60, 90)

@@ -147,19 +147,19 @@ class ConstituentNode(Node):
         c.after_init()
         return c
 
-    def is_card(self):
+    def is_card(self) -> bool:
         return self.label_object and self.label_object.is_card()
 
     def get_font_id(self) -> str:
         """
         :return:
         """
-        if self.label_object and self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
+        if self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
             return ctrl.settings.get_node_setting('font_id', node_type=g.FEATURE_NODE)
 
         return ctrl.settings.get_node_setting('font_id', node=self)
 
-    def preferred_z_value(self):
+    def preferred_z_value(self) -> int:
         if self.is_card():
             return 2
         else:
@@ -865,35 +865,10 @@ class ConstituentNode(Node):
 
     # ### Paint overrides
 
-    def _calculate_inner_rect(self):
-        label = self.label_object
-        x_offset = 0
-        y_offset = 0
-        label_w = 0
-        label_h = 0
-        if self._label_visible:
-            label_rect = label.boundingRect()
-            label_w = label_rect.width()
-            label_h = label_rect.height()
-            x_offset = label.x_offset
-            y_offset = label.y_offset
-            self.label_rect = label_rect
-        if label.node_shape == g.BRACKETED or label.node_shape == g.SCOPEBOX:
-            box_width = ctrl.forest.width_map.get(self.uid, 0)
-        else:
-            box_width = 0
-        w = max((label_w,  ConstituentNode.width, box_width))
-        h = max((label_h, ConstituentNode.height))
-        if x_offset or y_offset:
-            x = x_offset
-            y = y_offset
-        else:
-            x = w / -2
-            y = h / -2
-        self.width = w
-        self.height = h
-        self._create_magnets(x, y, w, h)
-        return QtCore.QRectF(x, y, w, h)
+    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
+        if self.label_object.node_shape == g.BRACKETED or self.label_object.node_shape == g.SCOPEBOX:
+            extra_w = ctrl.forest.width_map.get(self.uid, 0)
+        return super()._calculate_inner_rect(extra_w=extra_w)
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with nodes it is
