@@ -31,9 +31,9 @@ class HiConstituent(BaseConstituent):
         :return:
         """
 
-        html, lower_html = node.label_as_html(peek_into_synobj=False)
+        html = node.label_as_html(peek_into_synobj=False)
         html += ', hi: ' + self.hi
-        return html, lower_html
+        return html
 
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.

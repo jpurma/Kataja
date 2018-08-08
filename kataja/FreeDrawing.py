@@ -845,7 +845,6 @@ class FreeDrawing:
 
         :param node:
         """
-
         def wrap_in_qroof(ilines):
             if len(ilines) > 1:
                 parts = []
@@ -917,11 +916,10 @@ class FreeDrawing:
         """
         :param node:
         """
+        root.poke('triangle_stack')
+        root.triangle_stack.pop()
         fold_scope = root.list_descendants_once()
         for node in fold_scope:
-            if (not node.triangle_stack) or node.triangle_stack[-1] is not root:
-                print('node in triangles fold scope doesnt have triangle root in triangle_stack:',
-                      node)
             if node.triangle_stack and node.triangle_stack[-1] is root:
                 node.poke('triangle_stack')
                 node.triangle_stack.pop()
@@ -930,8 +928,7 @@ class FreeDrawing:
                 # eliminate here.
                 node.release_from_locked_position()
             node.update_visibility()  # with triangle_stack reduced, hidden nodes may become
-            # visible again.
-            # movement back to visualisation positions is handled by visualisation redraw
+            # visible again. movement back to visualisation positions is handled by visualisation redraw
         remove_triangle(root.label)
         root.update_label()
         # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now

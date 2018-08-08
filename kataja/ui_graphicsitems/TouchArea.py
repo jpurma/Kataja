@@ -392,7 +392,7 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
     def update_end_points(self):
         x, y = self.host.centered_scene_position
         lbr = self.host.label_object.boundingRect()
-        y += self.host.label_object.triangle_y + lbr.top() + symbol_radius + 2
+        y += lbr.bottom() + symbol_radius + 2
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(x, y)

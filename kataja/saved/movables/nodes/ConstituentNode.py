@@ -428,9 +428,7 @@ class ConstituentNode(Node):
                 else:
                     l = self.syntactic_object.label
 
-        separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
-        l_html = as_html(l, omit_triangle=separate_triangle,
-                         include_index=include_index and self.index)
+        l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
 
@@ -441,13 +439,7 @@ class ConstituentNode(Node):
         if html and html[-1] == '<br/>':
             html.pop()
 
-        # Lower part
-        lower_html = ''
-        if separate_triangle:
-            qroof_content = extract_triangle(l)
-            if qroof_content:
-                lower_html = as_html(qroof_content)
-        return ''.join(html), lower_html
+        return ''.join(html)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label

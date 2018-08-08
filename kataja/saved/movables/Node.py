@@ -197,9 +197,7 @@ class Node(Draggable, Movable):
             return
 
         if 'triangle_stack' in updated_fields:
-            print('updating triangle_stack')
             if self.is_triangle_host():
-                print('rebuilding triangle headed by ', self)
                 ctrl.free_drawing.add_or_update_triangle_for(self)
         if 'locked_to_node' in updated_fields:
             print('updating locked_to_node')
@@ -249,7 +247,7 @@ class Node(Draggable, Movable):
         if peek_into_synobj and hasattr(self.syntactic_object, 'label_as_html'):
             return self.syntactic_object.label_as_html(self)
 
-        return as_html(self.label), ''
+        return as_html(self.label)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -940,10 +938,6 @@ class Node(Draggable, Movable):
     # Here we have only low level local behavior of triangles. Most of the
     # action is done in Forest
     # as triangles may involve complicated forest-level calculations.
-
-    def is_cosmetic_triangle(self):
-        """ Triangle that doesn't have any other nodes folded into it """
-        return self in self.triangle_stack and self.is_leaf(only_similar=True, only_visible=False)
 
     def should_draw_triangle(self):
         """ When in syntactic mode or using automatic labels, don't draw cosmetic triangles        
