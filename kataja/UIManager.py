@@ -1155,17 +1155,8 @@ class UIManager:
         self.quick_edit_buttons.update_position()
         self.quick_edit_buttons.update_values()
 
-        qe_label = OverlayButtons.OverlayLabel(node, self.main.graph_view)
-        self.add_ui(qe_label)
-        qe_label.update_position()
-        if not qe_label.isVisible():
-            qe_label.show()
-
     def remove_quick_edit_buttons(self):
         self.quick_edit_buttons.hide()
-        qe_label = self.get_ui(ob.OverlayLabel)
-        if qe_label:
-            self.remove_ui(qe_label)
 
     # ### Control points
     # ####################################################################

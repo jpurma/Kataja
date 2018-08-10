@@ -456,13 +456,7 @@ class ConstituentNode(Node):
         label_text_mode = self.allowed_label_text_mode()
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
-                if self.triangle_stack:
-                    lower_part = extract_triangle(self.label)
-                    return 'node label', as_html(self.label,
-                                                 omit_triangle=True) + '<br/>' + as_html(
-                        lower_part or '')
-                else:
-                    return 'node label', as_html(self.label)
+                return 'node label', as_html(self.label)
             elif self.syntactic_object:
                 return 'syntactic label', as_html(self.syntactic_object.label)
             else:
@@ -540,16 +534,6 @@ class ConstituentNode(Node):
         :return:
         """
         return self.label_object.node_shape
-
-    def get_lower_part_y(self):
-        """ This should return the relative (within node) y-coordinate to bottom part of label.
-        If the label is only one row, bottom and top part are the same.
-        Lower and top parts can each have multiple lines in them, the idea is that
-        triangle goes between them.
-        :return:
-        """
-        return self.label_object.get_lower_part_y()
-
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.

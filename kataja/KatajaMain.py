@@ -66,7 +66,6 @@ from kataja.LogWidgetPusher import capture_stdout
 stylesheet = """
 .QWidget, .SelectionBox, .QComboBox, QLabel, QAbstractButton, QAbstractSpinBox, QDialog, QFrame,
 QMainWindow, QDialog, QDockWidget {font-family: "%(ui_font)s"; font-size: %(ui_font_size)spx;}
-OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
 QComboBox QAbstractItemView {selection-color: %(ui)s;}
 KatajaTextarea {font-family: "%(console_font)s"; font-size: %(console_font_size)spx;}
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}

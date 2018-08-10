@@ -345,7 +345,7 @@ class Draggable(Movable):
         Movable.mouseReleaseEvent(self, event)
         if replay_click and False:
             ctrl.graph_view.replay_mouse_press()
-            self.label_object.editable_part.mouseReleaseEvent(event)
+            self.label_object.mouseReleaseEvent(event)
             ctrl.release(self)
 
     def dragEnterEvent(self, event):

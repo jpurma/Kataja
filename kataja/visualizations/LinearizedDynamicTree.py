@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.singletons import prefs, log
-from kataja.globals import NORMAL, BOTTOM_ROW, CONSTITUENT_NODE
+from kataja.globals import NORMAL, TOP, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 
@@ -109,5 +109,5 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 x += nw / 2
                 node.physics_x = False
                 node.physics_y = False
-                node.move_to(x, start_height, valign=BOTTOM_ROW)
+                node.move_to(x, start_height, valign=TOP)
                 x += (nw / 2) + 10

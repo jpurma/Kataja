@@ -22,15 +22,12 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtCore
 
-from kataja.Shapes import SHAPE_PRESETS
-from kataja.LabelDocument import LabelDocument
 from kataja.SimpleLabel import SimpleLabel
 from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
-import kataja.globals as g
 
 
 inner_cards = False
@@ -82,7 +79,7 @@ class ComplexLabel(SimpleLabel):
                 else:
                     self.editable_doc.setTextWidth(-1)
                 self.editable_html = html
-                self.editable_part.setHtml(html)
+                self.setHtml(html)
                 self.editable_doc.blockSignals(False)
 
             ctrl.qdocument_parser.process(self.editable_doc)
@@ -123,7 +120,7 @@ class ComplexLabel(SimpleLabel):
         if self.is_card():
             width = self.card_size[0]
         else:
-            self.editable_part.setTextWidth(-1)
+            self.setTextWidth(-1)
             ideal_width = self.editable_doc.idealWidth()
             if user_width and user_width < ideal_width:
                 width = user_width
@@ -135,7 +132,7 @@ class ComplexLabel(SimpleLabel):
                 width = 20
             elif width > ComplexLabel.max_width:
                 width = ComplexLabel.max_width
-        self.editable_part.setTextWidth(width)
+        self.setTextWidth(width)
 
         # ------------------- Height -------------------
         if self.is_card():
@@ -148,15 +145,13 @@ class ComplexLabel(SimpleLabel):
         self.width = width
         self.height = total_height
         # middle line is 0
-        self.upper_part_y = 0
         self.x_offset = width / -2.0
         if self.is_card():
-            self.y_offset = self.upper_part_y
+            self.y_offset = 0
         else:
             self.y_offset = -half_height
 
         self.setPos(self.x_offset, self.y_offset)
-        self.editable_part.setPos(0, self.upper_part_y)
         # Update ui items around the label (or node hosting the label)
         ctrl.ui.update_position_for(self._host)
 
@@ -164,7 +159,7 @@ class ComplexLabel(SimpleLabel):
         if self.is_card():
             return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
         else:
-            return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
+            return super().boundingRect()
 
     # def _paint_triangle(self, painter, c):
     #     left = 0

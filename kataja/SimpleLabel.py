@@ -40,77 +40,7 @@ sup sup {font-size: 8pt; vertical-align: sup}
 """
 
 
-class MyGraphicsTextItem(QtWidgets.QGraphicsTextItem):
-    def __init__(self, parent, host):
-        QtWidgets.QGraphicsTextItem.__init__(self, parent)
-        self._host = host
-
-    def hoverMoveEvent(self, event):
-        if not self._host._is_moving:
-            ctrl.ui.move_help(event)
-
-
-class QuickEditTextItem(QtWidgets.QGraphicsTextItem):
-    def mousePressEvent(self, event):
-        # something in mousePressEvent causes it to ignore further mouse events.
-        p = self.parent()
-        if p._quick_editing:
-            QtWidgets.QGraphicsTextItem.mousePressEvent(self, event)
-        else:
-            # otherwise let the node handle mousePress logic.
-            p._host.mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        p = self.parent()
-        if p._quick_editing:
-            QtWidgets.QGraphicsTextItem.mouseMoveEvent(self, event)
-        else:
-            p._host.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        p = self.parent()
-        if p._quick_editing:
-            p.cursor_position_changed(self.textCursor())
-            QtWidgets.QGraphicsTextItem.mouseReleaseEvent(event)
-        else:
-            p._host.mouseReleaseEvent(event)
-
-    def keyReleaseEvent(self, keyevent):
-        """ keyReleaseEvent is received after the keypress is registered by editor, so if we
-        check cursor position here we receive the situation after normal cursor movement. So
-        moving 'up' to first line would also register here as being in first line and moving up.
-        Which is one up too many. So instead we store the last cursor pos and use that to decide
-        if we are eg. in first line and moving up.
-        :param keyevent:
-        :return:
-        """
-        p = self.parent()
-        c = self.textCursor()
-        print('label keyreleaseevent')
-        p.cursor_position_changed(c)
-        next_sel = None
-        if p._fresh_focus:
-            p._fresh_focus = False
-        elif p._last_blockpos:
-            print('previous block pos: ', p._last_blockpos)
-            first, last, first_line, last_line = p._last_blockpos
-            if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'left')
-            elif last and keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'right')
-            elif first_line and keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'up')
-            elif last_line and keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'down')
-            if next_sel and next_sel != p._host:
-                self.clearFocus()
-                ctrl.select(next_sel)
-                next_sel.setFocus()
-        p._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
-                            c.blockNumber() == p.editable_doc.blockCount() - 1)
-
-
-class SimpleLabel(QtWidgets.QGraphicsItem):
+class SimpleLabel(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
     label composes its document (html layout) for its contents based on that. """
     max_width = 400
@@ -118,12 +48,10 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
 
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
-        QtWidgets.QGraphicsItem.__init__(self, parent)
-        self.editable_part = MyGraphicsTextItem(self, parent)
+        QtWidgets.QGraphicsTextItem.__init__(self, parent)
         self._host = parent
         self.has_been_initialized = False
         self.top_y = 0
-        self.upper_part_y = 0
         self.bottom_y = 0
         self.width = 0
         self.height = 0
@@ -142,14 +70,14 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
         self.prepare_template()  # !<----
         self.editable_doc = LabelDocument()
         self._fresh_focus = False
-        self.editable_part.setDocument(self.editable_doc)
+        self.setDocument(self.editable_doc)
         self.setZValue(20)  # ZValue amongst the childItems of Node
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
         self.setAcceptHoverEvents(False)
         self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
-        self.editable_part.setTextWidth(-1)
+        self.setTextWidth(-1)
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -161,16 +89,11 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
     def keep_visible(self):
         return self.has_content() or self.is_quick_editing()
 
-    def hoverMoveEvent(self, event):
-        # print('L sending hoverMoveEvent')
-        ctrl.ui.move_help(event)
-        QtWidgets.QGraphicsItem.hoverMoveEvent(self, event)
-
     def __str__(self):
         return 'Label:' + self.editable_html
 
     def set_font(self, font):
-        self.editable_part.setFont(font)
+        self.setFont(font)
         self._font = font
         self._font_metrics = QtGui.QFontMetrics(font)
 
@@ -193,7 +116,7 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
                 self.editable_doc.blockSignals(True)
                 self.editable_doc.setTextWidth(-1)
                 self.editable_html = html
-                self.editable_part.setHtml(html)
+                self.setHtml(html)
                 self.editable_doc.blockSignals(False)
 
             ctrl.qdocument_parser.process(self.editable_doc)
@@ -218,10 +141,10 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
         return not self.editable_html
 
     def cursor(self):
-        return self.editable_part.textCursor()
+        return self.textCursor()
 
     def char_format(self) -> QtGui.QTextCharFormat:
-        return self.editable_part.textCursor().charFormat()
+        return self.textCursor().charFormat()
 
     def has_content(self) -> bool:
         return bool(self.editable_html)
@@ -255,20 +178,20 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
             if ctrl.text_editor_focus:
                 ctrl.release_editor_focus()
             ctrl.text_editor_focus = self
-            self.editable_part.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             self.editable_doc.setTextWidth(self._get_editing_width())
             self.edited_field, self.editable_html = self._host.label_as_editable_html()
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
-            self.editable_part.setHtml(self.editable_html)
+            self.setHtml(self.editable_html)
             self.editable_doc.cursorPositionChanged.connect(self.cursor_position_changed)
 
             self.resize_label()
-            self.editable_part.setAcceptDrops(True)
+            self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
-            self.editable_part.setFocus()
+            self.setFocus()
             self._fresh_focus = True
 
         elif self._quick_editing:
@@ -280,10 +203,10 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()
             self._host.update_label()
-            self.editable_part.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            self.editable_part.setAcceptDrops(False)
-            self.editable_part.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-            self.editable_part.clearFocus()
+            self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            self.setAcceptDrops(False)
+            self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            self.clearFocus()
             self._fresh_focus = False
 
     def cursor_position_changed(self, cursor):
@@ -323,7 +246,7 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
 
         user_width, user_height = self.get_max_size_from_host()
         # ------------------- Width -------------------
-        self.editable_part.setTextWidth(-1)
+        self.setTextWidth(-1)
         ideal_width = self.editable_doc.idealWidth()
         if user_width and user_width < ideal_width:
             width = user_width
@@ -335,7 +258,7 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
             width = 20
         elif width > SimpleLabel.max_width:
             width = SimpleLabel.max_width
-        self.editable_part.setTextWidth(width)
+        self.setTextWidth(width)
 
         # ------------------- Height -------------------
         total_height = self.editable_doc.size().height()
@@ -344,14 +267,17 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
         self.bottom_y = half_height
         self.width = width
         self.height = total_height
-        self.upper_part_y = 0
         self.x_offset = width / -2.0
         self.y_offset = -half_height
         self.setPos(self.x_offset, self.y_offset)
-        self.editable_part.setPos(0, self.upper_part_y)
 
         # Update ui items around the label (or node hosting the label)
         ctrl.ui.update_position_for(self._host)
+
+    def hoverMoveEvent(self, event):
+        if not self._host._is_moving:
+            ctrl.ui.move_help(event)
+            QtWidgets.QGraphicsItem.hoverMoveEvent(self, event)
 
     def dropEvent(self, event):
         mim = event.mimeData()
@@ -360,19 +286,19 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
             event.accept()
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
-                self.editable_part.textCursor().insertText(data['char'])
+                self.textCursor().insertText(data['char'])
                 event.acceptProposedAction()
         elif mim.hasFormat("text/plain"):
             print('label dropEvent text/plain')
             event.accept()
             event.acceptProposedAction()
-            self.editable_part.dropEvent(event)
+            super().dropEvent(event)
         else:
             print('label dropEvent something')
-            self.editable_part.dropEvent(event)
+            super().dropEvent(event)
 
-    def boundingRect(self):
-        return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
+#    def boundingRect(self):
+#        return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
 
     def dragEnterEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
@@ -399,4 +325,5 @@ class SimpleLabel(QtWidgets.QGraphicsItem):
             c = ctrl.cm.paper()
         else:
             c = self._host.contextual_color()
-        self.editable_part.setDefaultTextColor(c)
+        self.setDefaultTextColor(c)
+        super().paint(painter, option, widget)

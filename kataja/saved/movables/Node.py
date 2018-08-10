@@ -1089,6 +1089,7 @@ class Node(Draggable, Movable):
                 if ctrl.settings.get('single_click_editing'):
                     self.label_object.set_quick_editing(True)
         else:
+            print('deselect ', self)
             self.setZValue(self.preferred_z_value())
             self.label_object.set_quick_editing(False)
         self.update()

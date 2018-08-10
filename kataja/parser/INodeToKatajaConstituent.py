@@ -115,13 +115,17 @@ class INodeToKatajaConstituent:
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
         cn = f.free_drawing.create_node()
-        children.reverse()
-        direction = g.LEFT
-        if len(children) == 1:
-            direction = g.NO_ALIGN
-        for child in children:
-            f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
-            direction = g.RIGHT
+        if parsernode.has_triangle:
+            print('there is a triangle in parsernode')
+            pass
+        if children:
+            children.reverse()
+            direction = g.LEFT
+            if len(children) == 1:
+                direction = g.NO_ALIGN
+            for child in children:
+                f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
+                direction = g.RIGHT
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
         # disabled because derivation steps work on constituents, not nodes

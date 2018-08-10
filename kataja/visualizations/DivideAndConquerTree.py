@@ -200,6 +200,6 @@ class DivideAndConquerTree(BalancedTree):
             width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
-                    node.move_to(width_now, height_now, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
+                    node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width
 

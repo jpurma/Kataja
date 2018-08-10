@@ -646,9 +646,7 @@ class Forest(SavedObject):
         presented in right way.        
         :return: 
         """
-        t = time.time()
         shape = ctrl.settings.get('node_shape')
-        ctrl.release_editor_focus()
         cnodes = [cn for cn in self.nodes.values() if cn.node_type == g.CONSTITUENT_NODE]
         position = ctrl.settings.get('feature_positioning')
         checking_mode = ctrl.settings.get('feature_check_display')
