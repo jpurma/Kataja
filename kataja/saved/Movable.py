@@ -430,12 +430,12 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param event:
         """
         self.start_hovering()
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.show_help(self, event)
         event.accept()
 
     def hoverMoveEvent(self, event):
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.move_help(event)
 
     def hoverLeaveEvent(self, event):
@@ -444,8 +444,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self._direct_hovering:
             self.stop_hovering()
-        if not ctrl.items_moving:
-            ctrl.ui.hide_help(self, event)
+        ctrl.ui.hide_help(self, event)
 
     def start_hovering(self):
         if not self._direct_hovering:

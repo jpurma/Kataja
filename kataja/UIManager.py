@@ -1072,8 +1072,11 @@ class UIManager:
 
     # Mode HUD
     def update_edit_mode(self):
-        val = ctrl.free_drawing_mode
-        self.top_bar_buttons.edit_mode_button.setChecked(not val)
+        free_drawing = ctrl.free_drawing_mode
+        self.top_bar_buttons.edit_mode_button.setChecked(not free_drawing)
+        if free_drawing and ctrl.settings.get('syntactic_mode', level=g.DOCUMENT):
+            ctrl.forest.change_view_mode(False)
+        self.top_bar_buttons.view_mode_button.setVisible(not free_drawing)
 
     # ### Embedded buttons ############################
 
@@ -1223,7 +1226,6 @@ class UIManager:
             self.remove_ui(self.drag_info)
             self.drag_info = None
 
-
     def show_help(self, item, event):
         if not (item.k_tooltip or (item.k_action and item.k_action.active_tooltip)):
             if self.floating_tip and self.floating_tip.isVisible():
@@ -1248,7 +1250,6 @@ class UIManager:
     def move_help(self, event):
         if self.floating_tip:
             self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
-
 
     def refresh_heading(self):
         if not (ctrl.main.document and ctrl.forest):

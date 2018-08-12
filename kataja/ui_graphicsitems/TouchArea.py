@@ -244,22 +244,20 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if value and not self._hovering:
             self._hovering = True
             self.setZValue(1000)
-
         elif (not value) and self._hovering:
             self._hovering = False
             self.setZValue(self.z_value)
-
         self.update()
 
     def hoverEnterEvent(self, event):
-        if (not self._hovering) and not ctrl.pressed:
+        if not (self.hovering or ctrl.pressed or ctrl.scene_moving):
             self.prepareGeometryChange()
             self.hovering = True
             ctrl.ui.show_help(self, event)
         QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        if self._hovering:
+        if self.hovering:
             self.prepareGeometryChange()
             self.hovering = False
             ctrl.ui.hide_help(self, event)

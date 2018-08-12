@@ -45,7 +45,7 @@ class ViewManager:
         self._fit_scale = 1.0
         self._zoomd = (0, 0, 0, 0)
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
-        self.zoom_timer = QtCore.QBasicTimer()
+        self._zoom_timer = None
         self.did_manual_zoom = False
         self.auto_zoom = True
         self.predictive = False
@@ -57,6 +57,8 @@ class ViewManager:
     def late_init(self, graph_scene, graph_view):
         self.view = graph_view
         self.scene = graph_scene
+        self._zoom_timer = QtCore.QTimer(graph_view)
+        self._zoom_timer.setSingleShot(True)
 
     # def scale_step(self, r):
     #     ox, oy, ow, oh = self._zoom_rect
@@ -156,13 +158,16 @@ class ViewManager:
         ctrl.main.viewport_moved.emit()
         return factor
 
+    def is_zooming(self) -> bool:
+        return self._zoom_timer.isActive()
+
     def zoom_by_angle(self, pointer_pos, y_angle):
         """
         """
         view_center = self.view.mapToScene(self.view.viewport().rect().center())
         delta = math.pow(2.0, -y_angle / 360.0)
         if delta != 1.0:
-            self.zoom_timer.start(1000, self.view)
+            self._zoom_timer.start(100)
             self._scale_factor = self.scale_view_by(delta)
             if prefs.zoom_to_center:
                 if ctrl.selected:

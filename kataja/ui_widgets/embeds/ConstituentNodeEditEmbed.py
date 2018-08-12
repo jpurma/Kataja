@@ -40,6 +40,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         layout = self.vlayout
+        drawing_mode = ctrl.free_drawing
         ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
@@ -57,6 +58,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         make_label(title, self, layout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         layout.addWidget(self.synlabel)
+        self.synlabel.setReadOnly(True)
 
         tt = "Freeform label or text for node, has no effect for syntactic computation"
         title = 'User label'

@@ -157,6 +157,7 @@ class UIWidget(UIItem):
     can_fade = True
     is_widget = True
     scene_item = False
+    mouse_tracking = False
 
     def __init__(self, action='', **kwargs):
         UIItem.__init__(self, **kwargs)
@@ -200,7 +201,6 @@ class UIWidget(UIItem):
 
     def enterEvent(self, event):
         self._hovering = True
-        self.setMouseTracking(True)
         ctrl.ui.show_help(self, event)
 
     def mouseMoveEvent(self, event):

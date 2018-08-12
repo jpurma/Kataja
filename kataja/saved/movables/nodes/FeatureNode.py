@@ -641,7 +641,7 @@ class FeatureNode(Node):
         if self.locked_to_node and self.locked_to_node._direct_hovering:
             self.locked_to_node.stop_hovering()
         self.start_hovering()
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.show_help(self, event)
         event.accept()
 
@@ -651,12 +651,11 @@ class FeatureNode(Node):
         """
         if self._direct_hovering:
             self.stop_hovering()
-            if not ctrl.items_moving:
-                ctrl.ui.hide_help(self, event)
+            ctrl.ui.hide_help(self, event)
         if self.locked_to_node and \
                 self.locked_to_node.sceneBoundingRect().contains(event.scenePos()):
             self.locked_to_node.start_hovering()
-            if not ctrl.items_moving:
+            if not ctrl.scene_moving:
                 ctrl.ui.show_help(self.locked_to_node, event)
         event.accept()
 
