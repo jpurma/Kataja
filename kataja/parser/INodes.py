@@ -619,6 +619,9 @@ class ICommandNode(ITextNode):
             lines.append('')
         return lines
 
+    def to_text_node(self):
+        return ITextNode(parts=self.parts)
+
 
 class IParserNode(ITextNode):
     """ Node used temporarily for parsing latex-style trees. It represents ConstituentNode while
@@ -639,7 +642,7 @@ class IParserNode(ITextNode):
         ITextNode.__init__(self, parts=parts)
         self.label_rows = label_rows or []
         self.index = None
-        self.has_triangle = False
+        self.has_triangle = None
 
     def is_empty(self):
         return not (self.label_rows or self.parts)

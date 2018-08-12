@@ -177,17 +177,16 @@ class ConstituentNode(Node):
                     if part.startswith('.'):
                         inode.parts[i] = part[1:]
                     return True
-                elif isinstance(part, ICommandNode) and part.command == 'qroof':
-                    self.triangle_stack = [self]
-                    continue
                 else:
                     return remove_dot_label(part, row_n)
+
+        extract_triangle(self.label, remove_from_original=True)
 
         if parsernode.index:
             self.index = parsernode.index
         rows = parsernode.label_rows
-        # Remove dotlabel
 
+        # Remove dotlabel
         for i, row in enumerate(list(rows)):
             if isinstance(row, str):
                 if row.startswith('.'):
@@ -196,18 +195,8 @@ class ConstituentNode(Node):
             stop = remove_dot_label(row, i)
             if stop:
                 break
-        # △
 
         self.label = join_lines(rows)
-        # now as rows are in one INode / string, we can extract the triangle part and put it to
-        # end. It is different to qtree's way of handling triangles, but much simpler for us in
-        # long run.
-        triangle_part = extract_triangle(self.label, remove_from_original=True)
-        if triangle_part:
-            assert isinstance(self.label, ITextNode)
-
-            self.label.parts.append('\n')
-            self.label.parts.append(triangle_part)
         if self.index:
             base = as_html(self.label)
             if base.strip().startswith('t<sub>'):
@@ -286,6 +275,7 @@ class ConstituentNode(Node):
 
         lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
                  f'uid: {tt_style % self.uid}',
+                 f'label: {escape(str(self.label))}',
                  f'target position: {coords_as_str(self.target_position)}']
 
         if self.index:
@@ -293,7 +283,7 @@ class ConstituentNode(Node):
         if not self.syntactic_object:
             heads = self.get_heads()
             heads_str = ["itself" if h is self
-                         else f'{h.label}, {tt_style % h.uid}'
+                         else f'{escape(str(h.label))}, {tt_style % h.uid}'
                          for h in heads]
             heads_str = '; '.join(heads_str)
             if len(heads) == 1:
@@ -315,7 +305,7 @@ class ConstituentNode(Node):
             lines.append(f"label: '{escape(synobj.label)}'")
             heads = synobj.get_heads()
             heads_str = ["itself" if h is synobj
-                         else f'{h.label}, {tt_style % h.uid}'
+                         else f'{escape(h.label)}, {tt_style % h.uid}'
                          for h in heads]
             heads_str = '; '.join(heads_str)
             if len(heads) == 1:

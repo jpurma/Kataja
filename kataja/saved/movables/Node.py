@@ -294,7 +294,7 @@ class Node(Draggable, Movable):
         return bool(self.triangle_stack and self.triangle_stack[-1] is self)
 
     def can_have_triangle(self):
-        return not self.triangle_stack
+        return (not self.triangle_stack) and not self.is_leaf(only_similar=True, only_visible=False)
 
     def if_changed_font(self, value):
         self.label_object.set_font(qt_prefs.get_font(value))

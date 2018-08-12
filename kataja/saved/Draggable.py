@@ -82,7 +82,6 @@ class Draggable(Movable):
         this for
         Constituents, Features etc. """
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        print('calling init for draggable')
         self.drag_data = None
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
