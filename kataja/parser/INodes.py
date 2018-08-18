@@ -103,22 +103,6 @@ def extract_triangle(item, remove_from_original=False):
                 return found
 
 
-def remove_triangle(item):
-    """ Turn triangled part of INode back to regular ITextNode """
-    if isinstance(item, ITextNode):
-        for i, part in enumerate(list(item.parts)):
-            if isinstance(part, ICommandNode) and part.command == 'qroof':
-                if isinstance(item, ICommandNode):
-                    item.parts[i] = ITextNode(parts=part.parts)
-                elif len(item.parts) == i + 1:
-                    item.parts = item.parts[0:i] + part.parts
-                else:
-                    item.parts = item.parts[0:i] + part.parts + item.parts[i + 1:]
-                break
-            else:
-                remove_triangle(part)
-
-
 def join_lines(lines):
     """ Flatten rows of label into one string/ITextNode/ICommandNode
     It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and
@@ -619,6 +603,9 @@ class ICommandNode(ITextNode):
             lines.append('')
         return lines
 
+    def to_text_node(self):
+        return ITextNode(parts=self.parts)
+
 
 class IParserNode(ITextNode):
     """ Node used temporarily for parsing latex-style trees. It represents ConstituentNode while
@@ -639,7 +626,7 @@ class IParserNode(ITextNode):
         ITextNode.__init__(self, parts=parts)
         self.label_rows = label_rows or []
         self.index = None
-        self.has_triangle = False
+        self.has_triangle = None
 
     def is_empty(self):
         return not (self.label_rows or self.parts)

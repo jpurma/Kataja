@@ -835,12 +835,11 @@ def draw_x(painter, x, y, end_spot_size):
     painter.drawLine(x - end_spot_size, y + end_spot_size, x + end_spot_size, y - end_spot_size)
 
 
-def draw_triangle(painter, x, y, w=10):
-    w2 = w / 2
-    path = QtGui.QPainterPath(QtCore.QPointF(x - w, y + w2))
+def draw_triangle(painter, x, y, r=10):
+    path = QtGui.QPainterPath(QtCore.QPointF(x - r, y + r))
     path.lineTo(x, y)
-    path.lineTo(x + w, y + w2)
-    path.lineTo(x - w, y + w2)
+    path.lineTo(x + r, y + r)
+    path.lineTo(x - r, y + r)
     painter.drawPath(path)
 
 

@@ -550,19 +550,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     @property
     def hovering(self):
-        """
-
-
-        :return:
-        """
         return self._indirect_hovering or self._direct_hovering
 
     @hovering.setter
     def hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
-        :return:
-        """
         if value and not self._indirect_hovering:
             self._indirect_hovering = True
             self.prepareGeometryChange()
@@ -574,33 +565,21 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self.update()
 
     def hoverEnterEvent(self, event):
-        """
-        Overrides (and calls) QtWidgets.QGraphicsItem.hoverEnterEvent
-        Toggles hovering state and necessary graphical effects.
-        :param event:
-        """
         if not self._direct_hovering:
             self.start_hovering()
-            if not ctrl.items_moving:
+            if not ctrl.scene_moving:
                 ctrl.ui.show_help(self, event)
         event.accept()
         # QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverMoveEvent(self, event):
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.move_help(event)
-        #QtWidgets.QGraphicsObject.hoverMoveEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        """
-
-        :param event:
-        """
         if self._direct_hovering:
             self.stop_hovering()
-            if not ctrl.items_moving:
-                ctrl.ui.hide_help(self, event)
-            #QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+            ctrl.ui.hide_help(self, event)
         self.hovering = False
 
     # ## Scene-managed call

@@ -27,7 +27,7 @@ import random
 import math
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, \
+from kataja.globals import TOP, MIDDLE, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, \
     NO_ALIGN, DELETED, CREATED
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.SavedObject import SavedObject
@@ -191,15 +191,14 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, valign=MIDDLE, align=NO_ALIGN,
-                can_adjust=True):
+    def move_to(self, x, y, valign=MIDDLE, align=NO_ALIGN, can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:
         :param valign: What position inside the moved item should correspond to given coordinates.
         By default align is in center, but often you may want to move items
         so that e.g. their top rows are aligned.
-        Values are TOP(0), TOP_ROW(1), MIDDLE(2), BOTTOM_ROW(3) and BOTTOM(4)_
+        Values are TOP(0),  MIDDLE(2), and BOTTOM(4)_
         :param align: NO_ALIGN, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
         :param can_adjust: can use movable's adjustment to adjust the target position
         :return:
@@ -212,10 +211,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             pass
         elif valign == TOP:
             y -= self.boundingRect().top()
-        elif valign == TOP_ROW:
-            y -= self.get_top_y()
-        elif valign == BOTTOM_ROW:
-            y -= self.get_lower_part_y()
         elif valign == BOTTOM:
             y -= self.boundingRect().bottom()
         if align == NO_ALIGN:
@@ -234,20 +229,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             self.current_position = x, y
             ctrl.forest.order_recalculation_of_positions_relative_to_nodes()
-
-    def get_lower_part_y(self):
-        """ Implement this if the movable has content where differentiating between bottom row
-        and top row can potentially make sense.
-        :return:
-        """
-        return 0
-
-    def get_top_y(self):
-        """ Implement this if the movable has content where differentiating between bottom row
-        and top row can potentially make sense.
-        :return:
-        """
-        return 0
 
     def move(self, other_nodes: list, heat: float) -> (int, int, bool, bool):
         """ Do one frame of movement: either move towards target position or
@@ -448,12 +429,12 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param event:
         """
         self.start_hovering()
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.show_help(self, event)
         event.accept()
 
     def hoverMoveEvent(self, event):
-        if not ctrl.items_moving:
+        if not ctrl.scene_moving:
             ctrl.ui.move_help(event)
 
     def hoverLeaveEvent(self, event):
@@ -462,8 +443,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self._direct_hovering:
             self.stop_hovering()
-        if not ctrl.items_moving:
-            ctrl.ui.hide_help(self, event)
+        ctrl.ui.hide_help(self, event)
 
     def start_hovering(self):
         if not self._direct_hovering:

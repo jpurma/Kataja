@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.singletons import prefs, log
-from kataja.globals import NORMAL, BOTTOM_ROW, CONSTITUENT_NODE
+from kataja.globals import NORMAL, TOP, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 
@@ -91,7 +91,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         tree_top.physics_x = True
         tree_top.physics_y = True
         for node in tree_top.get_sorted_nodes()[1:]:
-            if node.is_leaf() and node.node_type == CONSTITUENT_NODE:
+            if node.is_leaf() or node.is_triangle_host() and node.node_type == CONSTITUENT_NODE:
                 if node and not node.locked_to_node:
                     node.physics_x = False
                     node.physics_y = False
@@ -109,5 +109,5 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 x += nw / 2
                 node.physics_x = False
                 node.physics_y = False
-                node.move_to(x, start_height, valign=BOTTOM_ROW)
+                node.move_to(x, start_height, valign=TOP)
                 x += (nw / 2) + 10

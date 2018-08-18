@@ -57,7 +57,7 @@ class Layer:
         self.rect = self.focus.inner_rect.translated(self.x, self.y)
         if not self.has_room(self.rect):
             return False
-        self.focus.move_to(self.x, self.y, valign=g.TOP_ROW)
+        self.focus.move_to(self.x, self.y, valign=g.TOP)
         self.add_area()
         return True
 
@@ -104,7 +104,7 @@ class Layer:
             if not self.has_room(self.rect):
                 return False
             self.angle = math.pi / 2
-        self.focus.move_to(self.x, self.y, valign=g.TOP_ROW)
+        self.focus.move_to(self.x, self.y, valign=g.TOP)
         self.add_area()
         return True
 
@@ -200,23 +200,24 @@ class SpirallingTree(BaseVisualization):
             if self.iterations > 500:
                 print("Reached 500 iterations, quit trying")
                 return None
-            ch = [x for x in layer.focus.get_children(similar=True, visible=True) if
-                  not x.locked_to_node]
-            layer.layers = []
-            for i, child_node in enumerate(ch):
-                if self.forest.should_we_draw(child_node, layer.focus):
-                    child_layer = Layer(child_node, parent=layer, vis=self)
-                    success = child_layer.try_to_draw(i, len(ch))
-                    if not success:
-                        child_layer.remove_areas()
-                        expanded_layer = someone_must_expand(layer, sides)
-                        return expanded_layer
-                    layer.layers.append(child_layer)
-                    self.waiting_list.append(child_layer)
-            for child in layer.layers:
-                if child in self.waiting_list:
-                    self.waiting_list.remove(child)
-                    return child
+            if not layer.focus.is_triangle_host():
+                ch = [x for x in layer.focus.get_children(similar=True, visible=True) if
+                      not x.locked_to_node]
+                layer.layers = []
+                for i, child_node in enumerate(ch):
+                    if self.forest.should_we_draw(child_node, layer.focus):
+                        child_layer = Layer(child_node, parent=layer, vis=self)
+                        success = child_layer.try_to_draw(i, len(ch))
+                        if not success:
+                            child_layer.remove_areas()
+                            expanded_layer = someone_must_expand(layer, sides)
+                            return expanded_layer
+                        layer.layers.append(child_layer)
+                        self.waiting_list.append(child_layer)
+                for child in layer.layers:
+                    if child in self.waiting_list:
+                        self.waiting_list.remove(child)
+                        return child
             while layer.parent:
                 layer = layer.parent
                 if self.waiting_list:
@@ -234,6 +235,8 @@ class SpirallingTree(BaseVisualization):
                 self.draw_tree(tree_top, sides=sides)
 
         for node in tree_top.get_sorted_nodes():
+            if node.is_triangle_host():
+                continue
             my_sides = len([x for x in node.get_children(visible=True, similar=True) if
                             not x.locked_to_node]) + 1
             if my_sides > sides:

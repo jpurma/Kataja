@@ -35,7 +35,6 @@ from kataja.saved.movables.Image import Image
 from kataja.singletons import ctrl, classes, log
 from kataja.nodes_to_synobjs import figure_out_syntactic_label
 from kataja.utils import time_me
-from kataja.parser.INodes import join_lines, ICommandNode, ITextNode, remove_triangle
 
 
 class FreeDrawing:
@@ -837,106 +836,6 @@ class FreeDrawing:
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
         merger_node.set_heads(heads)
         return merger_node
-
-    # ### Triangles ##############################################
-
-    def add_or_update_triangle_for(self, root):
-        """
-
-        :param node:
-        """
-
-        def wrap_in_qroof(ilines):
-            if len(ilines) > 1:
-                parts = []
-                for iline in ilines:
-                    parts.append(iline)
-                    parts.append('\n')
-                parts.pop()
-            elif isinstance(ilines[0], ICommandNode):
-                parts = ilines
-            elif isinstance(ilines[0], ITextNode):
-                parts = ilines[0].parts
-            else:
-                parts = ilines
-            return ICommandNode(command="qroof", parts=parts)
-
-        if root not in root.triangle_stack:
-            root.poke('triangle_stack')
-            root.triangle_stack.append(root)
-        fold_scope = root.list_descendants_once()
-        folded = []
-        bad_mothers = set()
-        if not fold_scope:  # triangle is just visual addition to label
-            # some parts in the visual label have to be marked with qroof-tag
-            lines = root.label.splitlines()
-            if len(lines) < 2:
-                root.label = wrap_in_qroof(lines)
-            else:
-                root.label = join_lines([lines[0], wrap_in_qroof(lines[1:])])
-            return
-
-        # triangle_stack for node holds the ground truth of triangles. Folding and graphicsitem
-        # parent relation are surface stuff.
-
-        for node in fold_scope:
-            if root not in node.triangle_stack:
-                node.poke('triangle_stack')
-                node.triangle_stack.append(root)
-            # multidominated nodes can be folded if all parents are in scope
-            # of fold
-            parents = node.get_parents()
-            if len(parents) > 1:
-                can_fold = True
-                for parent in parents:
-                    if parent not in fold_scope:
-                        bad_mothers.add(node)
-                        can_fold = False
-                        break
-                if can_fold:
-                    folded.append(node)
-            else:
-                folded.append(node)
-
-        # remember that the branch that couldn't be folded won't allow
-        # any of its children to be
-        # folded either.
-
-        def _remove_children(bad_mother: Node):
-            for child in bad_mother.get_children(similar=False, visible=False):
-                if child in folded:
-                    folded.remove(child)
-                    _remove_children(child)
-
-        for bm in bad_mothers:
-            _remove_children(bm)
-
-        root.fold_into_me(folded)
-
-    def remove_triangle_from(self, root):
-        """
-        :param node:
-        """
-        fold_scope = root.list_descendants_once()
-        for node in fold_scope:
-            if (not node.triangle_stack) or node.triangle_stack[-1] is not root:
-                print('node in triangles fold scope doesnt have triangle root in triangle_stack:',
-                      node)
-            if node.triangle_stack and node.triangle_stack[-1] is root:
-                node.poke('triangle_stack')
-                node.triangle_stack.pop()
-            if node.parentItem() == root:
-                # lets see what happens to node positions -- this may lead to jumps we want to
-                # eliminate here.
-                node.release_from_locked_position()
-            node.update_visibility()  # with triangle_stack reduced, hidden nodes may become
-            # visible again.
-            # movement back to visualisation positions is handled by visualisation redraw
-        remove_triangle(root.label)
-        root.update_label()
-        # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now
-        # in wrong positions and have to be redrawn. Update all contained triangles:
-        [self.add_or_update_triangle_for(n) for n in fold_scope if n.is_triangle_host()]
 
     # ######## Groups (Amoebas) ################################
 

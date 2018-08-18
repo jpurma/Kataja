@@ -111,7 +111,7 @@ class BracketedLinearization(BaseVisualization):
 
         def draw_node(node, left_edge=0, y=0):
             nw = width_map[node.uid]
-            node.move_to(left_edge, y, valign=g.BOTTOM_ROW, align=g.LEFT_ALIGN)
+            node.move_to(left_edge, y, valign=g.TOP, align=g.LEFT_ALIGN)
             le = left_edge + node.label_object.left_bracket_width()
             for child in node.get_children(visible=True, similar=True):
                 if child.locked_to_node:

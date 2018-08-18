@@ -82,7 +82,6 @@ class Draggable(Movable):
         this for
         Constituents, Features etc. """
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        print('calling init for draggable')
         self.drag_data = None
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -345,7 +344,7 @@ class Draggable(Movable):
         Movable.mouseReleaseEvent(self, event)
         if replay_click and False:
             ctrl.graph_view.replay_mouse_press()
-            self.label_object.editable_part.mouseReleaseEvent(event)
+            self.label_object.mouseReleaseEvent(event)
             ctrl.release(self)
 
     def dragEnterEvent(self, event):

@@ -177,17 +177,16 @@ class ConstituentNode(Node):
                     if part.startswith('.'):
                         inode.parts[i] = part[1:]
                     return True
-                elif isinstance(part, ICommandNode) and part.command == 'qroof':
-                    self.triangle_stack = [self]
-                    continue
                 else:
                     return remove_dot_label(part, row_n)
+
+        extract_triangle(self.label, remove_from_original=True)
 
         if parsernode.index:
             self.index = parsernode.index
         rows = parsernode.label_rows
-        # Remove dotlabel
 
+        # Remove dotlabel
         for i, row in enumerate(list(rows)):
             if isinstance(row, str):
                 if row.startswith('.'):
@@ -196,18 +195,8 @@ class ConstituentNode(Node):
             stop = remove_dot_label(row, i)
             if stop:
                 break
-        # △
 
         self.label = join_lines(rows)
-        # now as rows are in one INode / string, we can extract the triangle part and put it to
-        # end. It is different to qtree's way of handling triangles, but much simpler for us in
-        # long run.
-        triangle_part = extract_triangle(self.label, remove_from_original=True)
-        if triangle_part:
-            assert isinstance(self.label, ITextNode)
-
-            self.label.parts.append('\n')
-            self.label.parts.append(triangle_part)
         if self.index:
             base = as_html(self.label)
             if base.strip().startswith('t<sub>'):
@@ -286,6 +275,7 @@ class ConstituentNode(Node):
 
         lines = [f"<strong>ConstituentNode{' (Trace)' if self.is_trace else ''}</strong>",
                  f'uid: {tt_style % self.uid}',
+                 f'label: {escape(str(self.label))}',
                  f'target position: {coords_as_str(self.target_position)}']
 
         if self.index:
@@ -293,7 +283,7 @@ class ConstituentNode(Node):
         if not self.syntactic_object:
             heads = self.get_heads()
             heads_str = ["itself" if h is self
-                         else f'{h.label}, {tt_style % h.uid}'
+                         else f'{escape(str(h.label))}, {tt_style % h.uid}'
                          for h in heads]
             heads_str = '; '.join(heads_str)
             if len(heads) == 1:
@@ -315,7 +305,7 @@ class ConstituentNode(Node):
             lines.append(f"label: '{escape(synobj.label)}'")
             heads = synobj.get_heads()
             heads_str = ["itself" if h is synobj
-                         else f'{h.label}, {tt_style % h.uid}'
+                         else f'{escape(h.label)}, {tt_style % h.uid}'
                          for h in heads]
             heads_str = '; '.join(heads_str)
             if len(heads) == 1:
@@ -428,9 +418,7 @@ class ConstituentNode(Node):
                 else:
                     l = self.syntactic_object.label
 
-        separate_triangle = bool(self.is_cosmetic_triangle() and self.triangle_stack[-1] is self)
-        l_html = as_html(l, omit_triangle=separate_triangle,
-                         include_index=include_index and self.index)
+        l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
 
@@ -441,13 +429,7 @@ class ConstituentNode(Node):
         if html and html[-1] == '<br/>':
             html.pop()
 
-        # Lower part
-        lower_html = ''
-        if separate_triangle:
-            qroof_content = extract_triangle(l)
-            if qroof_content:
-                lower_html = as_html(qroof_content)
-        return ''.join(html), lower_html
+        return ''.join(html)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -464,13 +446,7 @@ class ConstituentNode(Node):
         label_text_mode = self.allowed_label_text_mode()
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
             if self.label:
-                if self.triangle_stack:
-                    lower_part = extract_triangle(self.label)
-                    return 'node label', as_html(self.label,
-                                                 omit_triangle=True) + '<br/>' + as_html(
-                        lower_part or '')
-                else:
-                    return 'node label', as_html(self.label)
+                return 'node label', as_html(self.label)
             elif self.syntactic_object:
                 return 'syntactic label', as_html(self.syntactic_object.label)
             else:
@@ -548,16 +524,6 @@ class ConstituentNode(Node):
         :return:
         """
         return self.label_object.node_shape
-
-    def get_lower_part_y(self):
-        """ This should return the relative (within node) y-coordinate to bottom part of label.
-        If the label is only one row, bottom and top part are the same.
-        Lower and top parts can each have multiple lines in them, the idea is that
-        triangle goes between them.
-        :return:
-        """
-        return self.label_object.get_lower_part_y()
-
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.

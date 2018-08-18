@@ -77,9 +77,7 @@ FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'
 
 # Vertical align
 TOP = 0
-TOP_ROW = 1
 MIDDLE = 2
-BOTTOM_ROW = 3
 BOTTOM = 4
 
 # Horizontal align

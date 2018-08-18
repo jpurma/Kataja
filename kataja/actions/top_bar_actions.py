@@ -170,6 +170,9 @@ class SwitchViewMode(KatajaAction):
     def getter(self):
         return ctrl.settings.get('syntactic_mode', level=DOCUMENT)
 
+    def enabler(self):
+        return not ctrl.free_drawing_mode
+
 
 class SwitchSyntaxViewMode(KatajaAction):
     k_action_uid = 'switch_syntax_view_mode'

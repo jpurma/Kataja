@@ -367,27 +367,3 @@ class LockButton(OverlayButton):
     def fade_out(self, s=600):
         super().fade_out(s=s)
 
-class OverlayLabel(UIWidget, QtWidgets.QLabel):
-    """ A floating label on top of main canvas. These are individual UI
-    elements each.
-    """
-    selection_independent = False
-    permanent_ui = False
-
-    def __init__(self, host, parent=None, ui_key=None, tooltip='', **kwargs):
-        UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host, **kwargs)
-        text = host.label_object.edited_field + "→"
-        QtWidgets.QLabel.__init__(self, text, parent)
-        self.k_tooltip = tooltip
-
-    def update_edited_field(self):
-        self.setText(self.host.label_object.edited_field + "→")
-
-    def update_position(self):
-        """ """
-        adjust = QtCore.QPointF(-self.width() - 4, 8)
-        x, y = self.host.current_scene_position
-        y += self.host.get_top_y()
-        p = QtCore.QPointF(x - (self.host.width / 2), y)
-        p = ctrl.main.graph_view.mapFromScene(p) + adjust
-        self.move(p.toPoint())

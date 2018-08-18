@@ -7,18 +7,12 @@ from kataja.parser.SuperParser import SuperParser
 
 
 class INodeToKatajaConstituent:
-    """ INodeParser relies on a chain of parser components where the strings
-    are parsed into
-     intermediary nodes (INodes) and these can be more easily turned into
-     Constituents,
-     ConstituentNodes and their various text elements (RTF documents, raw text,
-     stripped text).
-    The benefit of this approach is that parsing raw strings to INodes can be
-    used as well
+    """ INodeParser relies on a chain of parser components where the strings are parsed into
+     intermediary nodes (INodes) and these can be more easily turned into Constituents,
+     ConstituentNodes and their various text elements (RTF documents, raw text, stripped text).
+    The benefit of this approach is that parsing raw strings to INodes can be used as well
      with text elements that require parsing LaTeX to Rich Text Format or HTML.
-     If the raw
-     strings are stored with nodes, INodes can be easily recreated and
-     translated when required.
+     If the raw strings are stored with nodes, INodes can be easily recreated and translated when required.
     """
 
     def __init__(self, forest):
@@ -56,7 +50,6 @@ class INodeToKatajaConstituent:
 
     def string_into_forest(self, string):
         """ Parse the text as new nodes in the current forest.
-
         :param string:
         """
         if not string:
@@ -96,7 +89,7 @@ class INodeToKatajaConstituent:
         :param node:
         :return:
         """
-        cn = self.forest.free_drawing.create_node(label=tnode)
+        cn = self.forest.free_drawing.create_node(label=tnode, node_type=g.CONSTITUENT_NODE)
         cn.update_label()
         return cn
 
@@ -115,15 +108,20 @@ class INodeToKatajaConstituent:
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
         cn = f.free_drawing.create_node()
-        children.reverse()
-        direction = g.LEFT
-        if len(children) == 1:
-            direction = g.NO_ALIGN
-        for child in children:
-            f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
-            direction = g.RIGHT
+        if parsernode.has_triangle:
+            assert not children
+            child = self.textnode_to_constituentnode(parsernode.has_triangle.to_text_node())
+            children.append(child)
+            child.triangle_stack = [cn]
+            cn.triangle_stack = [cn]
+        if children:
+            children.reverse()
+            direction = g.LEFT
+            if len(children) == 1:
+                direction = g.NO_ALIGN
+            for child in children:
+                f.free_drawing.connect_node(parent=cn, child=child, direction=direction)
+                direction = g.RIGHT
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
-        # disabled because derivation steps work on constituents, not nodes
-        # f.derivation_steps.save_and_create_derivation_step([cn])
         return cn

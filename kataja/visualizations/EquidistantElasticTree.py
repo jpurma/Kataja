@@ -98,20 +98,10 @@ class EquidistantElasticTree(BaseVisualization):
         # Now subtract all forces pulling items together.
         total_edges = 0
         edges = []
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+        for start, e in node.get_edges_up_with_children():
             total_edges += 1
             edges.append((e.end_point, e.start_point, e.pull))
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+        for end, e in node.get_edges_down_with_children():
             total_edges += 1
             edges.append((e.start_point, e.end_point, e.pull))
         for my_point, other_point, edge_pull in edges:

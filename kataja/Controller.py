@@ -161,8 +161,9 @@ class Controller:
     def graph_view(self) -> 'kataja.GraphView':
         return self.main.graph_view
 
-    def is_zooming(self) -> bool:
-        return self.main.graph_view.zoom_timer.isActive()
+    @property
+    def scene_moving(self) -> bool:
+        return self.items_moving or self.main.view_manager.is_zooming()
 
     @property
     def play(self) -> bool:

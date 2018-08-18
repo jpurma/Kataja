@@ -124,17 +124,11 @@ class BalancedTree(BaseVisualization):
 
         def recursive_position(node, x, y, largest_x):
             if node.locked_to_node:
-                return x, y
-            if node.is_leaf(only_similar=True, only_visible=True):
-                leaf_rect = node.future_children_bounding_rect(limit_height=True)
-                x -= leaf_rect.right()
-                node.move_to(x, y)
-                return x + leaf_rect.left(), y + leaf_rect.top(), largest_x
-            else:
+                return x, y, largest_x
+            children = node.get_children(visible=True, similar=True, reverse=True)
+            if children and not node.is_triangle_host():
                 smallest_y = y
-                children = node.get_children(visible=True, similar=True, reverse=True)
-                if children:
-                    largest_x = x
+                largest_x = x
                 for child in children:
                     if self.forest.should_we_draw(child, node):
                         x, new_y, largest_x = recursive_position(child, x, y, largest_x)
@@ -146,8 +140,13 @@ class BalancedTree(BaseVisualization):
                 y -= my_rect.bottom()
                 y -= prefs.edge_height
                 new_x = (largest_x + x) / 2
-                node.move_to(new_x, y)
+                node.move_to(new_x, y, valign=g.BOTTOM)
                 return x, y + my_rect.top(), largest_x
+            else:
+                leaf_rect = node.future_children_bounding_rect(limit_height=True)
+                x -= leaf_rect.right()
+                node.move_to(x, y, valign=g.BOTTOM)
+                return x + leaf_rect.left(), y + leaf_rect.top(), largest_x
 
         recursive_position(tree_top, 0, 0, 0)
 
