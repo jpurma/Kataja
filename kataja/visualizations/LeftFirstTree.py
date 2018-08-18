@@ -93,7 +93,8 @@ class LeftFirstTree(BaseVisualization):
         elif not self.forest.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
-
+        if node.is_triangle_host():
+            return
         children = [x for x in node.get_children(similar=True, visible=True) if
                     not x.locked_to_node]
         if not children:

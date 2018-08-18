@@ -191,8 +191,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, valign=MIDDLE, align=NO_ALIGN,
-                can_adjust=True):
+    def move_to(self, x, y, valign=MIDDLE, align=NO_ALIGN, can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:

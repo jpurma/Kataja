@@ -103,22 +103,6 @@ def extract_triangle(item, remove_from_original=False):
                 return found
 
 
-def remove_triangle(item):
-    """ Turn triangled part of INode back to regular ITextNode """
-    if isinstance(item, ITextNode):
-        for i, part in enumerate(list(item.parts)):
-            if isinstance(part, ICommandNode) and part.command == 'qroof':
-                if isinstance(item, ICommandNode):
-                    item.parts[i] = ITextNode(parts=part.parts)
-                elif len(item.parts) == i + 1:
-                    item.parts = item.parts[0:i] + part.parts
-                else:
-                    item.parts = item.parts[0:i] + part.parts + item.parts[i + 1:]
-                break
-            else:
-                remove_triangle(part)
-
-
 def join_lines(lines):
     """ Flatten rows of label into one string/ITextNode/ICommandNode
     It gets bit complicated, because str+ITextNode, str+str, ITextNode+ITextNode and

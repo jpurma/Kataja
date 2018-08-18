@@ -315,12 +315,6 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
             QtWidgets.QGraphicsTextItem.dragEnterEvent(self, event)
 
     def paint(self, painter, option, widget):
-        """ Painting is sensitive to mouse/selection issues, but usually with
-        nodes it is the label of the node that needs complex painting
-        :param painter:
-        :param option:
-        :param widget:
-        """
         if self._host.invert_colors:
             c = ctrl.cm.paper()
         else:

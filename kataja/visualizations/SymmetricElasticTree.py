@@ -91,20 +91,12 @@ class SymmetricElasticTree(BaseVisualization):
         pull_x = 0
         pull_y = 0
         connected = set()
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is not node:
-                connected.add((e.path.abstract_end_point, e.path.abstract_start_point,
-                               target_distance * (similar_edges_up(e) + 1), e.pull))
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is not node:
-                connected.add((e.path.abstract_start_point, e.path.abstract_end_point,
-                               target_distance * (similar_edges_up(e) + 1), e.pull))
+        for start, e in node.get_edges_up_with_children():
+            connected.add((e.path.abstract_end_point, e.path.abstract_start_point,
+                           target_distance * (similar_edges_up(e) + 1), e.pull))
+        for end, e in node.get_edges_down_with_children():
+            connected.add((e.path.abstract_start_point, e.path.abstract_end_point,
+                           target_distance * (similar_edges_up(e) + 1), e.pull))
 
         for (sx, sy), (ex, ey), preferred_dist, weight in connected:
             dist_x, dist_y = int(sx - ex), int(sy - ey)
@@ -137,18 +129,10 @@ class SymmetricElasticTree(BaseVisualization):
         node_x, node_y = node.node_center_position()
 
         connected = set()
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is not node:
-                connected.add(other)
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is not node:
-                connected.add(other)
+        for start, e in node.get_edges_up_with_children():
+            connected.add(start)
+        for end, e in node.get_edges_down_with_children():
+            connected.add(end)
 
         # Sum up all forces pushing this item away.
         for other in other_nodes:
@@ -238,22 +222,12 @@ class SymmetricElasticTree(BaseVisualization):
         # Now subtract all forces pulling items together.
         total_edges = 0
         edges = []
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+        for start, e in node.get_edges_up_with_children():
             total_edges += 1
-            edges.append((other, e.pull))
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+            edges.append((start, e.pull))
+        for end, e in node.get_edges_down_with_children():
             total_edges += 1
-            edges.append((other, e.pull))
+            edges.append((end, e.pull))
 
         for other, edge_pull in edges:
             fbr_other = other.future_children_bounding_rect()

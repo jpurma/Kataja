@@ -30,15 +30,13 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
 from kataja.SimpleLabel import SimpleLabel
+from kataja.Triangle import Triangle
 from kataja.saved.Movable import Movable
 from kataja.saved.Draggable import Draggable
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me, create_blur_effect
 from kataja.parser.INodes import as_html
 import kataja.ui_widgets.buttons.OverlayButton as Buttons
 
@@ -198,7 +196,7 @@ class Node(Draggable, Movable):
 
         if 'triangle_stack' in updated_fields:
             if self.is_triangle_host():
-                ctrl.free_drawing.add_or_update_triangle_for(self)
+                Triangle.add_or_update_triangle_for(self)
         if 'locked_to_node' in updated_fields:
             print('updating locked_to_node')
             if isinstance(self.parentItem(), Node):
@@ -911,24 +909,40 @@ class Node(Draggable, Movable):
             self.move_to(*move_to)
             parent.update_bounding_rect()
 
-    def get_edges_down_with_children(self):
+    def get_edges_down_with_children(self, start=None, edges=None):
         """ Sometimes you need to count in also edges of locked in nodes (they are childItems). 
         :return: 
         """
-        edges = self.edges_down[:]
+        if not start:
+            start = self
+            edges = []
+        for e in self.edges_down:
+            end = e.end
+            while end.locked_to_node:
+                end = end.locked_to_node
+            if end is not start:
+                edges.append((end, e))
         for item in self.childItems():
             if isinstance(item, Node):
-                edges += item.get_edges_down_with_children()
+                item.get_edges_down_with_children(start=self, edges=edges)
         return edges
 
-    def get_edges_up_with_children(self):
+    def get_edges_up_with_children(self, end=None, edges=None):
         """ Sometimes you need to count in also edges of locked in nodes (they are childItems). 
         :return: 
         """
-        edges = self.edges_up[:]
+        if not end:
+            end = self
+            edges = []
+        for e in self.edges_up:
+            start = e.start
+            while start.locked_to_node:
+                start = start.locked_to_node
+            if end is not start:
+                edges.append((start, e))
         for item in self.childItems():
             if isinstance(item, Node):
-                edges += item.get_edges_up_with_children()
+                item.get_edges_up_with_children(end=self, edges=edges)
         return edges
 
     def reindex_edges(self):
@@ -964,11 +978,23 @@ class Node(Draggable, Movable):
         xt = x / 2
         self.label_object.triangle_width = x
         self.update_label()
-        y = self.boundingRect().bottom()
+        bottom = self.boundingRect().bottom()
+        y = bottom + prefs.edge_height
         for node, my_x, my_l in to_do:
             node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
             node.update_label()
             node.update_visibility()
+        self.draw_triangle(bottom, x, prefs.edge_height)
+
+    def draw_triangle(self, top, width, height):
+        triangle = Triangle(host=self, width=width, height=height)
+        triangle.setY(top)
+
+    def remove_triangle(self):
+        for item in self.childItems():
+            if isinstance(item, Triangle):
+                item.setParentItem(None)
+                item.hide()
 
     # ## Magnets
     # ######################################################################

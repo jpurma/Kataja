@@ -29,6 +29,7 @@ from typing import Generator
 from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
+from kataja.Triangle import Triangle
 from kataja.globals import ViewUpdateReason
 from kataja.ChainManager import ChainManager
 from kataja.FreeDrawing import FreeDrawing
@@ -660,7 +661,7 @@ class Forest(SavedObject):
             cnode.update_label()
             cnode.setZValue(cnode.preferred_z_value())
             if cnode.is_triangle_host():
-                ctrl.free_drawing.add_or_update_triangle_for(cnode)
+                Triangle.add_or_update_triangle_for(cnode)
             cnode.gather_children(position, shape)
             cnode.update_bounding_rect()
             cnode.update()

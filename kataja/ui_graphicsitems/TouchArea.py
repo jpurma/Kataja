@@ -298,8 +298,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         ctrl.deselect_objects()
 
 
-
-
 class AbstractBelowTouchArea(TouchArea):
     def update_end_points(self):
         x, y = self.host.centered_scene_position
@@ -309,13 +307,6 @@ class AbstractBelowTouchArea(TouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
 
     def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -359,6 +350,9 @@ class AddTriangleTouchArea(AbstractBelowTouchArea):
     def __init__(self, host):
         super().__init__(host, click_action='add_triangle')
 
+    def boundingRect(self):
+        return QtCore.QRectF(-symbol_radius - 2, 0, symbol_radius * 2 + 4, symbol_radius + 2)
+
     def paint(self, painter, option, widget):
         """
 
@@ -370,11 +364,10 @@ class AddTriangleTouchArea(AbstractBelowTouchArea):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
-        painter.setPen(c)
-        draw_triangle(painter, 0, 0)
-        if self._hovering:
-            painter.setPen(c)
-            draw_triangle(painter, 0, -5, 6)
+        p = QtGui.QPen(c)
+        p.setWidth(3 if self._hovering else 1)
+        painter.setPen(p)
+        draw_triangle(painter, 0, 0, r=symbol_radius)
 
 
 class RemoveTriangleTouchArea(AbstractBelowTouchArea):
@@ -387,13 +380,8 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
     def __init__(self, host):
         super().__init__(host, click_action='remove_triangle')
 
-    def update_end_points(self):
-        x, y = self.host.centered_scene_position
-        lbr = self.host.label_object.boundingRect()
-        y += lbr.bottom() + symbol_radius + 2
-        self.end_point = x, y
-        self.start_point = self.end_point
-        self.setPos(x, y)
+    def boundingRect(self):
+        return QtCore.QRectF(-symbol_radius - 2, -symbol_radius - 2, symbol_radius * 2 + 4, symbol_radius * 2 + 4)
 
     def paint(self, painter, option, widget):
         """
@@ -406,14 +394,10 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
-        painter.setPen(c)
-        # draw_triangle(painter, 0, 0)
-        draw_x(painter, 0, 0, symbol_radius / 2)
-        if self._hovering:
-            p = QtGui.QPen(c)
-            p.setWidth(2)
-            painter.setPen(p)
-            draw_x(painter, 0, 0, symbol_radius)
+        p = QtGui.QPen(c)
+        p.setWidth(3 if self._hovering else 1)
+        painter.setPen(p)
+        draw_x(painter, 0, 0, symbol_radius)
 
 
 class StartArrowTouchArea(AbstractBelowTouchArea):

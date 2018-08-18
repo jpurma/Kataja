@@ -161,11 +161,12 @@ class HeadDownTree(BaseVisualization):
                 return Grid()
             elif self.forest.should_we_draw(node, parent):
                 grids = []
-                children = node.get_children(visible=True, similar=True)
-                for child in children:
-                    grid = _build_grid(child, parent=node)
-                    if grid:
-                        grids.append(grid)
+                if not node.is_triangle_host():
+                    children = node.get_children(visible=True, similar=True)
+                    for child in children:
+                        grid = _build_grid(child, parent=node)
+                        if grid:
+                            grids.append(grid)
                 # Recursion base case
                 if not grids:
                     g = Grid()

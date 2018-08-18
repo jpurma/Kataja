@@ -112,7 +112,8 @@ class INodeToKatajaConstituent:
             assert not children
             child = self.textnode_to_constituentnode(parsernode.has_triangle.to_text_node())
             children.append(child)
-            cn.triangle_stack = [child, cn]
+            child.triangle_stack = [cn]
+            cn.triangle_stack = [cn]
         if children:
             children.reverse()
             direction = g.LEFT

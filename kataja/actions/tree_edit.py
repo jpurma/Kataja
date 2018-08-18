@@ -6,6 +6,7 @@ from PyQt5.QtGui import QKeySequence
 
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
+from kataja.Triangle import Triangle
 from kataja.singletons import ctrl, classes, log
 from kataja.utils import guess_node_type
 from kataja.saved.Edge import Edge
@@ -159,7 +160,7 @@ class AddTriangle(KatajaAction):
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
-        ctrl.free_drawing.add_or_update_triangle_for(node)
+        Triangle.add_or_update_triangle_for(node)
         ctrl.deselect_objects()
         node.update_label()
 
@@ -179,7 +180,7 @@ class RemoveTriangle(KatajaAction):
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
-        ctrl.free_drawing.remove_triangle_from(node)
+        Triangle.remove_triangle_from(node)
         ctrl.deselect_objects()
         node.update_label()
 

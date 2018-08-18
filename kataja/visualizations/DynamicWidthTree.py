@@ -90,22 +90,12 @@ class DynamicWidthTree(DivideAndConquerTree):
 
         total_edges = 0
         edges = []
-        for e in node.get_edges_up_with_children():
-            other = e.start
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+        for start, e in node.get_edges_up_with_children():
             total_edges += 1
-            edges.append((other, e.pull))
-        for e in node.get_edges_down_with_children():
-            other = e.end
-            while other.locked_to_node:
-                other = other.locked_to_node
-            if other is node:
-                continue
+            edges.append((start, e.pull))
+        for end, e in node.get_edges_down_with_children():
             total_edges += 1
-            edges.append((other, e.pull))
+            edges.append((end, e.pull))
 
         for other, edge_pull in edges:
             other_cbr = other.future_children_bounding_rect()
