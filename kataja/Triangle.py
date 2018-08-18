@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.FadeInOut import FadeInOut
 from kataja.Shapes import SHAPE_PRESETS
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 
 
@@ -72,22 +72,18 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             triangle.lineTo(center, top)
             painter.drawPath(triangle)
         else:
-            # This looks complicated, but it is necessary. We want node's edge type's shape
-            # class and its properties so that the triangle can be drawn in similar style.
+            # We want node's shape class and its properties so that the triangle can be drawn in similar style.
             edge_type = self._host.edge_type()
             shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
             path_class = SHAPE_PRESETS[shape_name]
-            path, lpath, foo, bar = path_class.path((center, top), (right, bottom), [],
-                                                    g.BOTTOM, g.TOP)
-            fill = path_class.fillable and ctrl.settings.get_shape_setting('fill',
-                                                                           edge_type=edge_type)
+            path, lpath, foo, bar = path_class.path((center, top), (right, bottom), [], g.BOTTOM, g.TOP)
+            fill = path_class.fillable and ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
             if fill:
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
             painter.drawLine(left, bottom, right, bottom)
-            path, lpath, foo, bar = path_class.path((center, top), (left, bottom), [], g.BOTTOM,
-                                                    g.TOP)
+            path, lpath, foo, bar = path_class.path((center, top), (left, bottom), [], g.BOTTOM, g.TOP)
 
             if fill:
                 painter.fillPath(path, c)
@@ -96,6 +92,37 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
 
     @staticmethod
     def add_or_update_triangle_for(root):
+
+        def fold_into_me(host, nodes):
+            to_do = []
+            x = 0
+            for node in nodes:
+                node.lock_to_node(host)
+                br = node.boundingRect()
+                to_do.append((node, x, br.left()))
+                if not node.hidden_in_triangle():
+                    x += br.width()
+            xt = x / 2
+            host.label_object.triangle_width = x
+            host.update_label()
+            bottom = host.boundingRect().bottom()
+            y = bottom + prefs.edge_height
+            for node, my_x, my_l in to_do:
+                node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
+                node.update_label()
+                node.update_visibility()
+            draw_triangle(host, bottom, x, prefs.edge_height)
+
+        def draw_triangle(host, top, width, height):
+            triangle = Triangle(host=host, width=width, height=height)
+            triangle.setY(top)
+
+        def remove_children(bad_mother):
+            for child in bad_mother.get_children(similar=False, visible=False):
+                if child in folded:
+                    folded.remove(child)
+                    remove_children(child)
+
         if root not in root.triangle_stack:
             root.poke('triangle_stack')
             root.triangle_stack.append(root)
@@ -110,8 +137,7 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             if root not in node.triangle_stack:
                 node.poke('triangle_stack')
                 node.triangle_stack.append(root)
-            # multidominated nodes can be folded if all parents are in scope
-            # of fold
+            # multidominated nodes can be folded if all parents are in scope of fold
             parents = node.get_parents()
             if len(parents) > 1:
                 can_fold = True
@@ -125,34 +151,30 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             else:
                 folded.append(node)
 
-        # remember that the branch that couldn't be folded won't allow
-        # any of its children to be
-        # folded either.
-
-        def _remove_children(bad_mother):
-            for child in bad_mother.get_children(similar=False, visible=False):
-                if child in folded:
-                    folded.remove(child)
-                    _remove_children(child)
-
+        # remember that the branch that couldn't be folded won't allow any of its children to be folded either.
         for bm in bad_mothers:
-            _remove_children(bm)
+            remove_children(bm)
 
-        root.fold_into_me(folded)
+        fold_into_me(root, folded)
 
     @staticmethod
     def remove_triangle_from(root):
+
+        def remove_triangle(host):
+            for item in host.childItems():
+                if isinstance(item, Triangle):
+                    item.setParentItem(None)
+                    item.hide()
+
         root.poke('triangle_stack')
         root.triangle_stack.pop()
-        root.remove_triangle()
+        remove_triangle(root)
         fold_scope = root.list_descendants_once()
         for node in fold_scope:
             if node.triangle_stack and node.triangle_stack[-1] is root:
                 node.poke('triangle_stack')
                 node.triangle_stack.pop()
             if node.parentItem() == root:
-                # lets see what happens to node positions -- this may lead to jumps we want to
-                # eliminate here.
                 node.release_from_locked_position()
                 if not node.isVisible():
                     node.current_position = root.current_position
@@ -160,4 +182,6 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             # visible again. movement back to visualisation positions is handled by visualisation redraw
         # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now
         # in wrong positions and have to be redrawn. Update all contained triangles:
-        [Triangle.add_or_update_triangle_for(n) for n in fold_scope if n.is_triangle_host()]
+        for n in fold_scope:
+            if n.is_triangle_host():
+                Triangle.add_or_update_triangle_for(n)

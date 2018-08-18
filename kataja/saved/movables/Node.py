@@ -948,16 +948,6 @@ class Node(Draggable, Movable):
     def reindex_edges(self):
         pass
 
-    # ######## Triangles #########################################
-    # Here we have only low level local behavior of triangles. Most of the
-    # action is done in Forest
-    # as triangles may involve complicated forest-level calculations.
-
-    def should_draw_triangle(self):
-        """ When in syntactic mode or using automatic labels, don't draw cosmetic triangles        
-        :return: 
-        """
-
     def hidden_in_triangle(self):
         """ Check if this node should be included in triangle's visible row of nodes or if it 
         should be hidden. 
@@ -965,36 +955,6 @@ class Node(Draggable, Movable):
         """
         return self.triangle_stack and self.triangle_stack[-1] is not self and not self.is_leaf(
             only_similar=True, only_visible=False)
-
-    def fold_into_me(self, nodes):
-        to_do = []
-        x = 0
-        for node in nodes:
-            node.lock_to_node(self)
-            br = node.boundingRect()
-            to_do.append((node, x, br.left()))
-            if not node.hidden_in_triangle():
-                x += br.width()
-        xt = x / 2
-        self.label_object.triangle_width = x
-        self.update_label()
-        bottom = self.boundingRect().bottom()
-        y = bottom + prefs.edge_height
-        for node, my_x, my_l in to_do:
-            node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
-            node.update_label()
-            node.update_visibility()
-        self.draw_triangle(bottom, x, prefs.edge_height)
-
-    def draw_triangle(self, top, width, height):
-        triangle = Triangle(host=self, width=width, height=height)
-        triangle.setY(top)
-
-    def remove_triangle(self):
-        for item in self.childItems():
-            if isinstance(item, Triangle):
-                item.setParentItem(None)
-                item.hide()
 
     # ## Magnets
     # ######################################################################
