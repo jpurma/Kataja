@@ -106,19 +106,19 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             host.label_object.triangle_width = x
             host.update_label()
             bottom = host.boundingRect().bottom()
-            y = bottom + prefs.edge_height
+            height = max(x / 8, prefs.edge_height)
             for node, my_x, my_l in to_do:
-                node.move_to(my_x - my_l - xt, y, can_adjust=False, valign=g.TOP)
+                node.move_to(my_x - my_l - xt, bottom + height, can_adjust=False, valign=g.TOP)
                 node.update_label()
                 node.update_visibility()
-            draw_triangle(host, bottom, x, prefs.edge_height)
+            draw_triangle(host, bottom, x, height)
 
         def draw_triangle(host, top, width, height):
             triangle = Triangle(host=host, width=width, height=height)
             triangle.setY(top)
 
-        def remove_children(bad_mother):
-            for child in bad_mother.get_children(similar=False, visible=False):
+        def remove_children(bad_node):
+            for child in bad_node.get_children(similar=False, visible=False):
                 if child in folded:
                     folded.remove(child)
                     remove_children(child)
@@ -128,10 +128,12 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             root.triangle_stack.append(root)
         fold_scope = root.list_descendants_once()
         folded = []
-        bad_mothers = set()
+        left_out = set()
 
         # triangle_stack for node holds the ground truth of triangles. Folding and graphicsitem
         # parent relation are surface stuff.
+        whole_triangle = set(fold_scope)
+        whole_triangle.add(root)
 
         for node in fold_scope:
             if root not in node.triangle_stack:
@@ -142,8 +144,8 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             if len(parents) > 1:
                 can_fold = True
                 for parent in parents:
-                    if parent not in fold_scope:
-                        bad_mothers.add(node)
+                    if parent not in whole_triangle:
+                        left_out.add(node)
                         can_fold = False
                         break
                 if can_fold:
@@ -152,8 +154,8 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
                 folded.append(node)
 
         # remember that the branch that couldn't be folded won't allow any of its children to be folded either.
-        for bm in bad_mothers:
-            remove_children(bm)
+        for bad_node in left_out:
+            remove_children(bad_node)
 
         fold_into_me(root, folded)
 
@@ -166,22 +168,25 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
                     item.setParentItem(None)
                     item.hide()
 
+        assert root.triangle_stack[-1] is root
         root.poke('triangle_stack')
         root.triangle_stack.pop()
         remove_triangle(root)
         fold_scope = root.list_descendants_once()
+        restored_hosts = []
         for node in fold_scope:
             if node.triangle_stack and node.triangle_stack[-1] is root:
                 node.poke('triangle_stack')
                 node.triangle_stack.pop()
-            if node.parentItem() == root:
+            if node.parentItem() is root:
+                if node.is_triangle_host():
+                    restored_hosts.append(node)
                 node.release_from_locked_position()
                 if not node.isVisible():
                     node.current_position = root.current_position
             node.update_visibility()  # with triangle_stack reduced, hidden nodes may become
             # visible again. movement back to visualisation positions is handled by visualisation redraw
-        # when unfolding a triangle you may unfold previous triangles. Their leaf nodes are now
+        # when unfolding a triangle previous triangles may become unfolded. Their leaf nodes are now
         # in wrong positions and have to be redrawn. Update all contained triangles:
-        for n in fold_scope:
-            if n.is_triangle_host():
-                Triangle.add_or_update_triangle_for(n)
+        for host in restored_hosts:
+            Triangle.add_or_update_triangle_for(host)
