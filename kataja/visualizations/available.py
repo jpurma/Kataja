@@ -35,11 +35,12 @@ from kataja.visualizations.LinearizedDynamicTree import LinearizedDynamicTree
 from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
 from kataja.visualizations.BalancedTree import BalancedTree
+from kataja.visualizations.GridlessDivideAndConquerTree import GridlessDivideAndConquerTree
 
 
 # These will be mapped to number keys 1...0,+ in given order.
 
-visualizations_list = [LeftFirstTree,
+visualizations_list = [GridlessDivideAndConquerTree,
                        DivideAndConquerTree,
                        BalancedTree,
                        HeadDownTree,

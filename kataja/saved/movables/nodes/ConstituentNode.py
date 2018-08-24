@@ -936,6 +936,7 @@ class ConstituentNode(Node):
             painter.setPen(p)
             painter.drawLine(r.topLeft().toPoint(), r.topRight().toPoint())
 
+
     @staticmethod
     def allowed_label_text_mode():
         mode = ctrl.settings.get('label_text_mode')
