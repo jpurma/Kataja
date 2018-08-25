@@ -113,7 +113,7 @@ class DivideAndConquerTree(BalancedTree):
         edge_width = prefs.edge_width / 2
 
         def _get_grid_size(mnode):
-            br = mnode.future_children_bounding_rect(limit_height=True)
+            br = mnode.future_children_bounding_rect(limit_height=False)
             node_width = br.width()
             node_height = br.height()
             node_offset_y = br.y()

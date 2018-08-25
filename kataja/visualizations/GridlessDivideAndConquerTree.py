@@ -22,19 +22,31 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 import kataja.globals as g
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BalancedTree import BalancedTree
 
 squeeze = True
 
+
+def bump_polygons(left, right, adjust):
+    if left[0] + adjust >= right[0]:
+        return True
+    pl = QtGui.QPolygon()
+    adjusted = [int(x) + adjust if i % 2 == 0 else int(x) for i, x in enumerate(left)]
+    pl.setPoints(adjusted)
+    pr = QtGui.QPolygon()
+    pr.setPoints([int(x) for x in right])
+    return pl.intersects(pr)
+
+
 class Block:
     def __init__(self, node: 'kataja.saved.Node', done=None):
         if done is None:
             done = set()
         self.node = node
-        br = node.future_children_bounding_rect(limit_height=True)
+        br = node.future_children_bounding_rect(limit_height=False)
         self.node_br = br
         self.left = br.left()
         self.top = br.top()
@@ -74,9 +86,9 @@ class Block:
         r = self.node_br.right()
         h = self.node_br.height()
         t = self.node_br.top()
-        points = [(self.x + r, self.y + t), (self.x + r, self.y + t + h)]
-        if self.child_blocks:
-            return points + self.child_blocks[-1].right_edges
+        points = [self.x + r, self.y + t, self.x + r, self.y + t + h]
+        for cb in reversed(self.child_blocks):
+            points += cb.right_edges
         return points
 
     @property
@@ -84,9 +96,9 @@ class Block:
         l = self.node_br.left()
         h = self.node_br.height()
         t = self.node_br.top()
-        points = [(self.x + l, self.y + t), (self.x + l, self.y + t + h)]
-        if self.child_blocks:
-            return points + self.child_blocks[0].left_edges
+        points = [self.x + l, self.y + t, self.x + l, self.y + t + h]
+        for cb in self.child_blocks:
+            points += cb.left_edges
         return points
 
     def move(self, x, y, include_children=True):
@@ -136,10 +148,42 @@ class Block:
             y_adjust = self.bottom + prefs.edge_height - child.top
             child.move(x_adjust, y_adjust)
         self.height += prefs.edge_height + max_height
-        if squeeze and len(self.child_blocks) == 2:
-            print('squeeze these: ---------------------')
-            print(self.first_child.right_edges)
-            print(self.last_child.left_edges)
+        if squeeze and len(self.child_blocks) > 1:
+            left = None
+            for right in self.child_blocks:  # handle more than 2 children by treating them pairwise
+                if left:
+                    self.try_to_bump(left, right)
+                left = right
+
+    def try_to_bump(self, left, right):
+        left_edge = []
+        # Instead of bumping left and right, one has to bump all [..., left] and [right, ...] children.
+        # It may be that the child just before the left had a branch that overlaps with the right side branches.
+        for child in self.child_blocks:
+            left_edge += child.right_edges
+            if child is left:
+                break
+        right_edge = []
+        for child in reversed(self.child_blocks):
+            right_edge += child.left_edges
+            if child is right:
+                break
+        adjust = prefs.edge_width
+        while (not bump_polygons(left_edge, right_edge, adjust)) and adjust < 1000:
+            adjust += prefs.edge_width
+        amount = adjust - 3 * prefs.edge_width
+        if amount > 0:
+            a2 = amount / 2
+            self.width -= amount
+            self.left += a2
+            for child in self.child_blocks:
+                child.move(a2, 0)
+                if child is left:
+                    break
+            for child in reversed(self.child_blocks):
+                child.move(-a2, 0)
+                if child is right:
+                    break
 
 
 class GridlessDivideAndConquerTree(BalancedTree):

@@ -143,7 +143,7 @@ class BalancedTree(BaseVisualization):
                 node.move_to(new_x, y, valign=g.BOTTOM)
                 return x, y + my_rect.top(), largest_x
             else:
-                leaf_rect = node.future_children_bounding_rect(limit_height=True)
+                leaf_rect = node.future_children_bounding_rect(limit_height=False)
                 x -= leaf_rect.right()
                 node.move_to(x, y, valign=g.BOTTOM)
                 return x + leaf_rect.left(), y + leaf_rect.top(), largest_x

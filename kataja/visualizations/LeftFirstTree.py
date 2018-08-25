@@ -187,7 +187,7 @@ class LeftFirstTree(BaseVisualization):
             x = offset_x
             for x_i, node in enumerate(row):
                 if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
-                    cbr = node.future_children_bounding_rect(limit_height=True)
+                    cbr = node.future_children_bounding_rect(limit_height=False)
                     height_spillover = cbr.bottom() - edge_height
                     if height_spillover > extra_height:
                         if edge_height:
