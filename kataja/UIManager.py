@@ -338,7 +338,6 @@ class UIManager:
         """
         self.update_positions()
 
-    @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         for action in self.actions.values():

@@ -492,7 +492,6 @@ class Forest(SavedObject):
                 ctrl.remove_from_selection(item)
         ctrl.multiselection_end()
 
-    @time_me
     def draw(self, start_animations=False):
         """ Update all trees in the forest according to current visualization
         """
@@ -641,7 +640,6 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    @time_me
     def update_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        

@@ -338,8 +338,8 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        print('full map: ', full_map)
-        print(len(full_map))
+        # print('full map: ', full_map)
+        # print(len(full_map))
         self.restore(self.uid, data, full_map, {}, kataja_main, root=True)
 
     def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):
@@ -366,10 +366,8 @@ class SavedObject(object):
 
         # new data that the object should have
         new_data = full_data.get(obj_key, None)
-        if not (obj or new_data):
-            return None
-        elif obj and not new_data:
-            print(obj, " is not present in save data")
+        if not new_data:
+            return obj
         class_key = new_data['class_name']
 
         if not obj:
