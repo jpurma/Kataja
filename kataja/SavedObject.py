@@ -55,7 +55,10 @@ class SavedObject(object):
         self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored
 
     def __str__(self):
-        return self.class_name + str(self.uid)
+        return str(self.uid)
+
+    def __repr__(self):
+        return super().__repr__() + f'(uid:{self.uid})'
 
     def copy(self):
         """ Make a new object of same type and copy its attributes.
@@ -338,8 +341,8 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        # print('full map: ', full_map)
-        # print(len(full_map))
+        print('full map: ', full_map)
+        print(len(full_map))
         self.restore(self.uid, data, full_map, {}, kataja_main, root=True)
 
     def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):

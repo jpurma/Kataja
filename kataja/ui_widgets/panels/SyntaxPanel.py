@@ -48,7 +48,7 @@ class SyntaxPanel(Panel):
         self.finish_init()
 
     def update_treeset_counter(self):
-        keeper = ctrl.main.document
+        keeper = ctrl.document
         if keeper is not None:
             display_index = keeper.current_index + 1
             max_index = len(keeper.forests)

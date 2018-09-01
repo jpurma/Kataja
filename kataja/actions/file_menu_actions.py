@@ -77,23 +77,8 @@ class NewProject(KatajaAction):
         """ Create new project, replaces the current project at the moment.
         :return: None
         """
-        project = ctrl.main.create_new_project()
+        project = ctrl.main.start_new_document()
         log.info("Starting a new project '%s'" % project.name)
-
-
-class SwitchProject(KatajaAction):
-    k_action_uid = 'switch_project'
-    k_checkable = True
-    k_undoable = False
-    k_exclusive = True
-
-    def method(self, index):
-        """ Switch to another project. The action description is generated dynamically,
-        not in code below.
-        :param index:
-        """
-        project = ctrl.main.switch_project(index)
-        log.info("Switched to project '%s'" % project.name)
 
 
 class Open(KatajaAction):
@@ -120,7 +105,7 @@ class Open(KatajaAction):
         )
         return filename
 
-    def load_file(self, filename):
+    def load_data_from_file(self, filename):
         save_format, zipped = deduce_format(filename)
 
         if zipped:
@@ -162,7 +147,7 @@ class Open(KatajaAction):
         if not filename:
             return
 
-        data = self.load_file(filename)
+        data = self.load_data_from_file(filename)
         if not data:
             return
 
@@ -170,11 +155,24 @@ class Open(KatajaAction):
         # qt_prefs.update(prefs)
         m = ctrl.main
         m.disable_signaling()
-
-        doc = m.create_document(filename)
+        required_plugin = data.get('kataja_plugin_name', '')
+        if required_plugin != prefs.active_plugin_name:
+            if required_plugin:
+                print('having to switch plugins')
+                ctrl.main.enable_plugin(required_plugin, reload=False)
+            else:
+                print('has to disable plugin')
+                ctrl.main.disable_current_plugin()
+        root_uid = data.get('kataja_root_document_uid', '')
+        doc = m.start_new_document(filename, uid=root_uid)
+        print('loading data: ', data)
         print('created empty document')
         doc.load_objects(data, m)
+        doc.has_filename = True
         print('done load it with saved data')
+        print(f'received {len(doc.forests)} forests, with: ')
+        for i, forest in enumerate(doc.forests):
+            print(f'Forest {i}: {len(forest.nodes)} nodes and {len(forest.edges)} edges.)')
         m.enable_signaling()
         m.set_document(doc)
         print('done setting it as active document')
@@ -208,13 +206,14 @@ class Save(KatajaAction):
             prefs.userspace_path,
             file_help
         )
+        print('received filename from dialog: ', filename)
         return filename
 
     @staticmethod
     def save_file(filename):
         save_format, zipped = deduce_format(filename)
 
-        all_data = ctrl.main.document.create_save_data()
+        all_data = ctrl.document.create_save_data()
         t = time.time()
         pickle_format = 4
 
@@ -245,16 +244,15 @@ class Save(KatajaAction):
         f.close()
         log.info("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
 
-    def method(self, filename=''):
-        filename = filename or ctrl.main.document.filename
-        if not filename:
+    def method(self):
+        filename = ctrl.document.filename
+        if not (filename and ctrl.document.has_filename):
             filename = self.get_filename_from_dialog()
         if filename:
-            ctrl.main.document.filename = filename
-            self.save_file(filename)
+            ctrl.document.has_filename = True
+        self.save_file(filename)
 
 
-# Inherits Save (^above), so it can use its methods. Ask file dialog, then save.
 class SaveAs(Save):
     k_action_uid = 'save_as'
     k_command = 'Save as'
@@ -264,7 +262,8 @@ class SaveAs(Save):
     def method(self, filename='', save_as=False):
         filename = self.get_filename_from_dialog()
         if filename:
-            ctrl.main.document.filename = filename
+            ctrl.document.filename = filename
+            ctrl.document.has_filename = True
             self.save_file(filename)
 
 

@@ -163,7 +163,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.settings_manager = Settings()
         self.document_changed.connect(self.settings_manager.update_document)
         self.forest_changed.connect(self.settings_manager.update_forest)
-        self.documents = []
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
         #capture_stdout(log, self.log_stdout_as_debug, ctrl)
@@ -185,7 +184,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.create_default_documents()
+        self.create_default_document()
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
@@ -318,7 +317,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         self.disable_signaling()
 
-        self.clear_documents()
+        self.clear_document()
 
         if reload:
             available = []
@@ -348,7 +347,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
-        self.create_default_documents()
+        self.create_default_document()
         self.enable_signaling()
         prefs.active_plugin_name = plugin_key
 
@@ -363,9 +362,9 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
-        self.clear_documents()
+        self.clear_document()
         classes.restore_default_classes()
-        self.create_default_documents()
+        self.create_default_document()
         self.enable_signaling()
 
         prefs.active_plugin_name = ''
@@ -415,9 +414,9 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # Document / Project #########################
 
-    def create_document(self, name):
-        document = classes.KatajaDocument(name=name)
-        self.documents.append(document)
+    def start_new_document(self, name, uid=None):
+        document = classes.KatajaDocument(name=name, uid=uid)
+        self.set_document(document)
         return document
 
     def set_document(self, document):
@@ -430,37 +429,17 @@ class KatajaMain(QtWidgets.QMainWindow):
                 document.update_forest()
                 self.setWindowTitle(f'Kataja — {document.name}')
 
-    def create_default_documents(self):
-        """ Put empty forest keepers (Kataja documents) in place -- you want to do this after
+    def create_default_document(self):
+        """ Put empty Kataja document in place -- you want to do this after
         plugins have changed the classes that implement these.
         :return:
         """
-        self.documents = []
-        doc = self.create_document('Example')
-        self.set_document(doc)
+        self.start_new_document('Example')
         if self.signalsBlocked():
             self.settings_manager.update_document()
 
-    def create_new_project(self):
-        names = [fk.name for fk in self.documents]
-        name_base = 'New project'
-        name = name_base
-        c = 1
-        while name in names:
-            name = '%s %s' % (name_base, c)
-            c += 1
-        doc = self.create_document(name=name)
-        self.set_document(doc)
-        return doc
-
-    def switch_project(self, i):
-        doc = self.documents[i]
-        self.set_document(doc)
-        return doc
-
-    def clear_documents(self):
+    def clear_document(self):
         """ Empty everything - maybe necessary before changing plugin """
-        self.documents = []
         self.set_document(None)
 
     # ### Visualization

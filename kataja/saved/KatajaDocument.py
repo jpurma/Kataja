@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl, running_environment, classes
+from kataja.singletons import ctrl, running_environment, classes, prefs
 from kataja.utils import time_me
 
 
@@ -44,8 +44,8 @@ class KatajaDocument(SavedObject):
 
     default_treeset_file = running_environment.resources_path + 'trees.txt'
 
-    def __init__(self, name=None):
-        super().__init__()
+    def __init__(self, name=None, uid=None):
+        super().__init__(uid=uid)
         self.name = name or 'New project'
         self.filename = name
         self.forests = []
@@ -54,6 +54,7 @@ class KatajaDocument(SavedObject):
         self.use_shared_lexicon = False
         self.lexicon = {}
         self.play = True
+        self.has_filename = False
 
     def retire_from_display(self):
         if self.forest:
@@ -258,8 +259,9 @@ class KatajaDocument(SavedObject):
         """
         savedata = {}
         open_references = {}
-        savedata['save_scheme_version'] = 0.4
+        savedata['kataja_plugin_name'] = prefs.active_plugin_name
         self.save_object(savedata, open_references)
+        savedata['kataja_root_document_uid'] = self.uid
         max_rounds = 10
         c = 0
         while open_references and c < max_rounds:

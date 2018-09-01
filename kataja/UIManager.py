@@ -125,8 +125,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                        'fullscreen_mode',
                                                        'toggle_recording'])),
                               ('windows_menu', ('&Windows', ['$toggle_panel', '---',
-                                                             'toggle_all_panels', '---',
-                                                             '$switch_project'])),
+                                                             'toggle_all_panels'])),
                               ('plugin_menu', ('&Plugin', ['manage_plugins', 'reload_plugin',
                                                            '---', '$toggle_plugin'])),
                               ('help_menu', ('&Help', ['help']))])
@@ -188,7 +187,6 @@ class UIManager:
         ctrl.main.viewport_moved.connect(self.update_positions)
         ctrl.main.viewport_resized.connect(self.update_positions_and_top_bar)
         ctrl.main.ui_font_changed.connect(self.redraw_panels)
-        ctrl.main.document_changed.connect(self.update_projects_menu)
 
     def disable_item(self, ui_key):
         """ Disable ui_item, assuming it can be disabled (buttons etc).
@@ -561,15 +559,6 @@ class UIManager:
             menu_items.append(action)
         return menu_items
 
-    def prepare_project_menus(self):
-        menu_items = []
-        base_action = self.actions['switch_project']
-        for i, project in enumerate(ctrl.main.documents):
-            action = MediatingAction(text=project.name, target=base_action, key=i)
-            action.setChecked(project is ctrl.main.document)
-            menu_items.append(action)
-        return menu_items
-
     def prepare_plugin_menus(self):
         menu_items = []
         base_action = self.actions['toggle_plugin']
@@ -578,14 +567,6 @@ class UIManager:
             action.setChecked(key == prefs.active_plugin_name)
             menu_items.append(action)
         return menu_items
-
-    def update_projects_menu(self):
-        win_menu = self._top_menus['windows_menu']
-        for action in list(win_menu.actions()):
-            win_menu.removeAction(action)
-        for action in self.prepare_project_menus():
-            win_menu.addAction(action)
-            action.host_menu = win_menu
 
     def update_plugin_menu(self):
         plugin_menu = self._top_menus['plugin_menu']
@@ -657,8 +638,6 @@ class UIManager:
                         exp_items += self.prepare_panel_menus()
                     elif key == 'set_visualization':
                         exp_items += self.prepare_visualisation_menus()
-                    elif key == 'switch_project':
-                        exp_items += self.prepare_project_menus()
                     elif key == 'toggle_plugin':
                         exp_items += self.prepare_plugin_menus()
                 elif isinstance(item, tuple):
@@ -1251,7 +1230,7 @@ class UIManager:
             self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
 
     def refresh_heading(self):
-        if not (ctrl.main.document and ctrl.forest):
+        if not (ctrl.document and ctrl.forest):
             return
         heading = ctrl.forest.heading_text or ''
         if not self.heading:

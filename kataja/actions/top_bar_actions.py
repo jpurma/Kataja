@@ -60,7 +60,7 @@ class PlayOrPause(KatajaAction):
         else:
             ctrl.graph_scene.stop_animations()
             self.autoplay = False
-        ctrl.main.document.play_animations(value, from_button=True)
+        ctrl.document.play_animations(value, from_button=True)
 
     def getter(self):
         return ctrl.play

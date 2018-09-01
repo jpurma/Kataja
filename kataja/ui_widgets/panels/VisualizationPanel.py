@@ -57,7 +57,7 @@ class VisualizationPanel(Panel):
         super().showEvent(event)
 
     def update_visualisation(self):
-        if not (ctrl.main.document and ctrl.forest):
+        if not (ctrl.document and ctrl.forest):
             return
         data = ctrl.forest.vis_data
         if data and 'name' in data:

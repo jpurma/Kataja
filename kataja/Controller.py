@@ -166,6 +166,10 @@ class Controller:
         return self.items_moving or self.main.view_manager.is_zooming()
 
     @property
+    def document(self) -> 'kataja.saved.KatajaDocument':
+        return self.main.document
+
+    @property
     def play(self) -> bool:
         return self.main.document.play
     # ******* Selection *******

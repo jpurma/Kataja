@@ -85,8 +85,7 @@ class Settings:
         self.ui = ui_manager
 
     def update_document(self):
-        document = ctrl.main.document
-        self.set_document(document)
+        self.set_document(ctrl.document)
 
     def set_document(self, document):
         self.document = document
