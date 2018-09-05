@@ -834,10 +834,9 @@ class AbstractJointedTouchArea(TouchArea):
 
             :param end_point: End point can be given or it can be calculated.
             """
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
-                                                                             edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)
         sx, sy = self.host.magnet(2)
         self.start_point = sx, sy
         h2 = self.host.__class__.height / 2
@@ -997,10 +996,9 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
-                                                                             edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)
         sx, sy = self.host.magnet(7)
         self.start_point = sx, sy
         if end_point:
@@ -1098,10 +1096,9 @@ class AbstractRightAddChild(AbstractChildTouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
-        self._fill_path = shape.fillable and ctrl.settings.get_shape_setting('fill',
-                                                                             edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)
         sx, sy = self.host.magnet(11)
         self.start_point = sx, sy
         if end_point:

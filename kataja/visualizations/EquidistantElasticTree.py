@@ -36,7 +36,7 @@ class EquidistantElasticTree(BaseVisualization):
 
     """
     name = 'Equidistant Elastic Tree'
-    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+    banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
     hide_edges_if_nodes_overlap = False
 
     def __init__(self):
@@ -52,7 +52,7 @@ class EquidistantElasticTree(BaseVisualization):
         self.forest = forest
         if reset:
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """

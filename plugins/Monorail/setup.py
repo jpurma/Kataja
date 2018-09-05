@@ -30,10 +30,10 @@ def start_plugin(main, ctrl, prefs):
     import kataja.globals as g
     ctrl.free_drawing_mode = False
     ctrl.ui.update_edit_mode()
-    ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
-    ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
-    ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
-    ctrl.settings.set_edge_setting('visible', False, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
+    ctrl.doc_settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES)
+    ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
+    ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
+    ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
     ctrl.ui.show_panel('LexiconPanel')
 
 

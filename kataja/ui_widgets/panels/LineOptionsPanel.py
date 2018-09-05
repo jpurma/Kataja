@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 from kataja.Shapes import SHAPE_PRESETS
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl, prefs, classes
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 from kataja.ui_widgets.KatajaRadioButton import KatajaRadioButton
@@ -164,7 +164,7 @@ class LineOptionsPanel(Panel):
     @property
     def active_shape_name(self):
         if self.active_node_type:
-            return ctrl.settings.get_edge_setting('edge_shape', edge_type=self.active_edge_type)
+            return ctrl.forest.settings.get_for_edge_type('edge_shape', self.active_edge_type)
 
     def finish_init(self):
         Panel.finish_init(self)
@@ -238,43 +238,11 @@ class LineOptionsPanel(Panel):
         self.update_panel()
         super().showEvent(event)
 
-    def get_active_edge_setting(self, key):
-        """ Return edge setting either from selected items or from ui.active_edge_type. If there
-        are settings made in node level, return first of such occurence.
-        :param key:
-        :return:
-        """
-        if ctrl.ui.scope_is_selection:
-            edges = ctrl.get_selected_edges()
-            if edges:
-                for edge in edges:
-                    if key in edge.settings:
-                        return edge.settings[key]
-                return ctrl.settings.get_edge_setting(key, edge=edges[0])
-        return ctrl.settings.get_edge_setting(key, edge_type=self.active_edge_type,
-                                              level=ctrl.ui.active_scope)
-
     def get_active_node_setting(self, key):
-        if ctrl.ui.scope_is_selection:
-            nodes = ctrl.get_selected_nodes()
-            if nodes:
-                for node in nodes:
-                    if key in node.settings:
-                        return node.settings[key]
-                return ctrl.settings.get_node_setting(key, node=nodes[0])
-        return ctrl.settings.get_node_setting(key, node_type=self.active_node_type,
-                                              level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_node_setting(key, self.active_node_type)
 
     def active_edge_has_setting(self, key):
-        if ctrl.ui.scope_is_selection:
-            edges = ctrl.get_selected_edges()
-            if edges:
-                for edge in edges:
-                    if key in edge.flattened_settings:
-                        return True
-            return False
-        shape_name = ctrl.settings.get_edge_setting('shape_name',
-            edge_type=self.active_edge_type, level=ctrl.ui.active_scope)
+        shape_name = ctrl.ui.get_active_edge_setting('shape_name', self.active_edge_type)
         return key in SHAPE_PRESETS[shape_name].defaults
 
     def get_active_shape_setting(self, key):
@@ -284,14 +252,21 @@ class LineOptionsPanel(Panel):
         :return:
         """
         if ctrl.ui.scope_is_selection:
-            edges = ctrl.get_selected_edges()
-            if edges:
-                for edge in edges:
-                    if key in edge.settings:
-                        return edge.settings[key]
-                return edges[0].flattened_settings[key]
-        return ctrl.settings.get_shape_setting(key, edge_type=self.active_edge_type,
-                                               level=ctrl.ui.active_scope)
+            nodes = ctrl.get_selected_nodes()
+            if nodes:
+                for node in nodes:
+                    if key in node._settings:
+                        return node._settings[key]
+                return nodes[0].settings.get(key)
+            shape_name = ctrl.ui.get_active_edge_setting('shape_name', self.active_edge_type)
+            return ctrl.forest.settings.get_for_edge_shape(key, shape_name)
+        shape_name = ctrl.ui.get_active_edge_setting('shape_name', self.active_edge_type)
+        if ctrl.ui.active_scope == g.FOREST:
+            return ctrl.forest.settings.get_for_edge_shape(key, shape_name)
+        elif ctrl.ui.active_scope == g.DOCUMENT:
+            return ctrl.doc_settings.get_for_edge_shape(key, shape_name)
+        else:
+            return prefs.get_for_edge_shape(key, shape_name)
 
     def get_active_shape_property(self, key):
         """ Return the class property of currently active edge shape.
@@ -305,7 +280,7 @@ class LineOptionsPanel(Panel):
                     if key in edge.settings:
                         return edge.settings[key]
                 return getattr(edges[0].path.my_shape, key)
-        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=self.active_edge_type)
+        shape_name = self.get_active_edge_setting('shape_name')
         return getattr(SHAPE_PRESETS[shape_name], key)
 
     def is_active_fillable(self):

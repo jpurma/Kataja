@@ -6,7 +6,6 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
 
 from kataja.globals import LEFT, RIGHT
-from kataja.singletons import ctrl
 
 __author__ = 'purma'
 
@@ -784,7 +783,6 @@ available_shapes = [ShapedCubicPath, CubicPath, ShapedQuadraticPath, QuadraticPa
 
 
 def draw_circle(painter, x, y, end_spot_size):
-    painter.setBrush(ctrl.cm.paper())
     painter.drawEllipse(x - end_spot_size + 1, y - end_spot_size + 1, 2 * end_spot_size,
                         2 * end_spot_size)
 

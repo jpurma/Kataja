@@ -90,12 +90,12 @@ class SyntaxAPI(KatajaSyntaxAPI):
             print('No transform')
             return syn_state
         if self.display_mode == CONSTITUENT_TREE:
-            ctrl.settings.set_node_setting('visible', True, g.FEATURE_NODE, level=g.DOCUMENT)
-            ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
-            ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
-            ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
-            ctrl.settings.set_edge_setting('visible', False, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
-            ctrl.settings.set('node_shape', g.NORMAL, level=g.DOCUMENT)
+            ctrl.document.set_for_node_type('visible', True, g.FEATURE_NODE)
+            ctrl.document.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES)
+            ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
+            ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
+            ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
+            ctrl.doc_settings.set('cn_shape', g.NORMAL)
             res = []
             for synobj in syn_state.tree_roots:
                 if synobj.class_name == 'Constituent':
@@ -107,12 +107,12 @@ class SyntaxAPI(KatajaSyntaxAPI):
                 node.update_visibility()
             return syn_state
         elif self.display_mode == FEATURE_TREE:
-            ctrl.settings.set_node_setting('visible', False, g.FEATURE_NODE, level=g.DOCUMENT)
-            ctrl.settings.set('label_text_mode', g.CHECKED_FEATURES, level=g.DOCUMENT)
-            ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
-            ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
-            ctrl.settings.set_edge_setting('visible', True, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
-            ctrl.settings.set('node_shape', g.FEATURE_SHAPE, level=g.DOCUMENT)
+            ctrl.doc_settings.set_for_node_type('visible', False, g.FEATURE_NODE)
+            ctrl.doc_settings.set('label_text_mode', g.CHECKED_FEATURES)
+            ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
+            ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
+            ctrl.doc_settings.set_for_edge_type('visible', True, g.CONSTITUENT_EDGE)
+            ctrl.doc_settings.set('cn_shape', g.FEATURE_SHAPE)
             res = []
             for synobj in syn_state.tree_roots:
                 if synobj.class_name == 'Constituent':

@@ -140,7 +140,6 @@ EDGE_OPEN_DOMINANT = 6
 EDGE_RECEIVING_NOW_DOMINANT = 7
 
 
-
 class ViewUpdateReason(Enum):
     """ Reasons for updating viewport """
     NEW_FOREST = 0

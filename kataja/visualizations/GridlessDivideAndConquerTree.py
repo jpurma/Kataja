@@ -188,7 +188,7 @@ class Block:
 
 class GridlessDivideAndConquerTree(BalancedTree):
     name = 'Gridless Balanced tree'
-    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+    banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
 
     def __init__(self):
         BalancedTree.__init__(self)
@@ -208,7 +208,7 @@ class GridlessDivideAndConquerTree(BalancedTree):
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """

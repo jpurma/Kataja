@@ -48,7 +48,7 @@ class SymmetricElasticTree(BaseVisualization):
         self.forest = forest
         if reset:
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """

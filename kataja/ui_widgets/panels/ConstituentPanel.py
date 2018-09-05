@@ -14,7 +14,7 @@ __author__ = 'purma'
 
 
 def banned_label_text_modes():
-    if ctrl.settings.get('syntactic_mode'):
+    if ctrl.doc_settings.get('syntactic_mode'):
         return [g.NODE_LABELS, g.NODE_LABELS_FOR_LEAVES]
     else:
         return []
@@ -42,22 +42,22 @@ class ConstituentPanel(NodePanel):
         #hlayout.addWidget(label)
         w = 32
         b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24,
-                         action='set_no_frame_node_shape').to_layout(hlayout)
+                         action='set_no_frame_cn_shape').to_layout(hlayout)
         b1.setFixedWidth(w)
         b2 = PanelButton(pixmap=qt_prefs.shape_icon_scope, parent=self, size=24,
-                         action='set_scopebox_node_shape').to_layout(hlayout)
+                         action='set_scopebox_cn_shape').to_layout(hlayout)
         b2.setFixedWidth(w)
         b3 = PanelButton(pixmap=qt_prefs.shape_icon_brackets, parent=self, size=24,
-                         action='set_bracketed_node_shape').to_layout(hlayout)
+                         action='set_bracketed_cn_shape').to_layout(hlayout)
         b3.setFixedWidth(w)
         b4 = PanelButton(pixmap=qt_prefs.shape_icon_box, parent=self, size=24,
-                         action='set_box_node_shape').to_layout(hlayout)
+                         action='set_box_cn_shape').to_layout(hlayout)
         b4.setFixedWidth(w)
         b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24,
-                         action='set_card_node_shape').to_layout(hlayout)
+                         action='set_card_cn_shape').to_layout(hlayout)
         b5.setFixedWidth(w)
         b6 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=self, size=24,
-                         action='set_feature_node_shape').to_layout(hlayout)
+                         action='set_feature_cn_shape').to_layout(hlayout)
         b6.setFixedWidth(w)
 
         hlayout = box_row(layout)

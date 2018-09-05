@@ -43,7 +43,6 @@ class VisualizationOptionsPanel(Panel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        s = ctrl.settings
         self.updateGeometry()
         self.update()
 

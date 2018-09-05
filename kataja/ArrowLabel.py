@@ -82,7 +82,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         but what is returned here is the actual QFont.
         :return: QFont instance
         """
-        font_id = ctrl.settings.get_node_setting('font_id', node_type=g.COMMENT_NODE)
+        font_id = self._host.forest.settings.get_for_node_type('font_id', g.COMMENT_NODE)
         return qt_prefs.get_font(font_id or g.MAIN_FONT)
 
     @property
@@ -90,7 +90,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         """ Font is the font used for label. This returns the kataja internal font name.
         :return:
         """
-        return ctrl.settings.get_node_setting('font_id', node_type=g.COMMENT_NODE) or g.MAIN_FONT
+        return self._host.forest.settings.get_for_node_type('font_id', g.COMMENT_NODE) or g.MAIN_FONT
 
     @font_name.setter
     def font_name(self, value=None):

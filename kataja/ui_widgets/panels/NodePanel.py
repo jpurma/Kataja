@@ -27,8 +27,7 @@ class NodePanel(Panel):
         self.setMaximumWidth(220)
         self.node_type = node_type
         node_type_name = classes.node_info[node_type]['name'].lower()
-        color_key = ctrl.settings.get_node_setting('color_key', node_type=node_type,
-                                                   level=ctrl.ui.active_scope)
+        color_key = ctrl.ui.get_active_node_setting('color_key', node_type=node_type)
 
         self.add_button = PanelButton(parent=self, pixmap=qt_prefs.add_icon,
                                       action='add_%s_node' % node_type_name, size=20,
@@ -48,7 +47,7 @@ class NodePanel(Panel):
                                                  action='change_%s_color' % node_type_name)
         self.push_to_title(self.node_color_selector)
 
-        f = ctrl.settings.get_node_setting('font_id', node_type=node_type)
+        f = ctrl.ui.get_active_node_setting('font_id', node_type=node_type)
         self.update_title_font(f)
 
         container = self.widget()
@@ -58,8 +57,7 @@ class NodePanel(Panel):
         self.finish_init()
 
     def update_colors(self):
-        color_key = ctrl.settings.get_node_setting('color_key', node_type=self.node_type,
-                                                   level=ctrl.ui.active_scope)
+        color_key = ctrl.ui.get_active_node_setting('color_key', node_type=self.node_type)
         if color_key:
             self.font_selector.set_color(color_key)
             self.node_color_selector.set_color(color_key)

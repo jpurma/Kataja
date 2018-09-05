@@ -42,7 +42,7 @@ class ComplexLabel(SimpleLabel):
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
         SimpleLabel.__init__(self, parent)
-        self.node_shape = NORMAL
+        self.cn_shape = NORMAL
         self._previous_values = None
 
     def keep_visible(self):
@@ -64,14 +64,14 @@ class ComplexLabel(SimpleLabel):
             print('problems ahead:')
             print(self._host, self._host.node_type, self._host.syntactic_object)
 
-        if self.node_shape == SCOPEBOX:
+        if self.cn_shape == SCOPEBOX:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '<sub>' + html + '</sub>'
-        elif self.node_shape == BRACKETED:
+        elif self.cn_shape == BRACKETED:
             if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '[<sub>' + html + '</sub>'
 
-        if force_update or (self.node_shape, html, is_card) != self._previous_values:
+        if force_update or (self.cn_shape, html, is_card) != self._previous_values:
             if self.editable_html != html:
                 self.editable_doc.blockSignals(True)
                 if is_card:
@@ -83,12 +83,12 @@ class ComplexLabel(SimpleLabel):
                 self.editable_doc.blockSignals(False)
 
             ctrl.qdocument_parser.process(self.editable_doc)
-            self._previous_values = (self.node_shape, self.editable_html, is_card)
+            self._previous_values = (self.cn_shape, self.editable_html, is_card)
 
         self.resize_label()
 
     def is_card(self):
-        if self.node_shape != CARD:
+        if self.cn_shape != CARD:
             return False
         if inner_cards:
             return True
@@ -102,9 +102,9 @@ class ComplexLabel(SimpleLabel):
         return self.width
 
     def right_bracket_width(self) -> int:
-        if self.node_shape == BRACKETED:
+        if self.cn_shape == BRACKETED:
             return 6
-        elif self.node_shape == SCOPEBOX:
+        elif self.cn_shape == SCOPEBOX:
             return 2
         else:
             return 0

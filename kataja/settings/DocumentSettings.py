@@ -1,4 +1,3 @@
-# coding=utf-8
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -22,18 +21,13 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from kataja.singletons import ctrl, prefs
+from kataja.settings.ForestSettings import ForestSettings
 
-from kataja.saved.Movable import Movable
 
+class DocumentSettings(ForestSettings):
 
-class Image(Movable, QtWidgets.QGraphicsPixmapItem):
+    def __init__(self, document):
+        super().__init__(document)
+        self.next = prefs
 
-    def __init__(self, img, box=QtCore.QRectF(0, 0, 480, 400), forest=None):
-        pixmap = QtGui.QPixmap(img)
-        # pixmap=pixmap.scaledToHeight(int(box.height()))
-        QtWidgets.QGraphicsPixmapItem.__init__(self, pixmap)
-        Movable.__init__(self, forest=forest)
-        self.setFlag(QtWidgets.QGraphicsRectItem.ItemIsMovable)
-        self.setTransformationMode(QtCore.Qt.SmoothTransformation)
-        # self.setPos(pixmap.width()*-.5, pixmap.height()*-.5)

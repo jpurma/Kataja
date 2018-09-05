@@ -57,7 +57,7 @@ class HeadDownTree(BaseVisualization):
 
     """
     name = 'Head down trees'
-    banned_node_shapes = (g.BRACKETED,)
+    banned_cn_shapes = (g.BRACKETED,)
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -77,7 +77,7 @@ class HeadDownTree(BaseVisualization):
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """

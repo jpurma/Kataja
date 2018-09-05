@@ -38,12 +38,12 @@ class SetLogLevel(KatajaAction):
         return [value], kwargs
 
     def method(self, value):
-        ctrl.settings.set('log_level', value, level=g.PREFS)
+        prefs.set('log_level', value)
         panel = ctrl.ui.get_panel('LogPanel')
         panel.rebuild_log()
 
     def getter(self):
-        return ctrl.settings.get('log_level', level=g.PREFS)
+        return prefs.get('log_level')
 
 
 class ClearLog(KatajaAction):

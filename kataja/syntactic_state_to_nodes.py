@@ -117,6 +117,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     recursive_add_feature_node(feat)
         if hasattr(me, 'checked_features'):
             for feat in me.checked_features:
+                print(feat)
                 if isinstance(feat, tuple):
                     x, y = feat
                     if x.uid not in done_nodes:
@@ -231,6 +232,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             checked_features = getattr(synobj, 'checked_features', [])
             if checked_features:
                 for xy in checked_features:
+                    print('adding checked features: ', xy)
                     if isinstance(xy, tuple):
                         x, y = xy
                         features.append(x)
@@ -374,7 +376,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             old_group.clear(remove=True)
 
     # ---------
-    strat = ctrl.settings.get('gloss_strategy')
+    strat = forest.settings.get('gloss_strategy')
     if strat and strat == 'message':
         forest.heading_text = syn_state.msg
 

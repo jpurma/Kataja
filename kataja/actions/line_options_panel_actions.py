@@ -73,18 +73,9 @@ class ChangeEdgeColor(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        # Update color for selected edges
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.color_key = color_key
-                edge.update()
-        # ... or update color for all edges of this type
-        else:
-            ctrl.settings.set_edge_setting('color_key', color_key,
-                                           edge_type=edge_type, level=level)
-            for edge in ctrl.forest.edges.values():
-                edge.update()
+        ctrl.ui.set_active_edge_setting('color_key', color_key, edge_type=edge_type)
+        for edge in ctrl.forest.edges.values():
+            edge.update()
         ctrl.main.active_edge_color_changed.emit()  # shape_selector needs this
 
     def enabler(self):
@@ -116,8 +107,7 @@ class EdgeArrowheadStart(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        old_value = ctrl.settings.get_edge_setting('arrowheads', edge_type=edge_type, level=level)
+        old_value = self.panel.get_active_edge_setting('arrowheads')
         if old_value == g.AT_END and value:
             new_value = g.AT_BOTH
         elif old_value == g.AT_BOTH and not value:
@@ -128,13 +118,8 @@ class EdgeArrowheadStart(PanelAction):
             new_value = g.AT_START
         else:
             return
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                ctrl.settings.set_edge_setting('arrowheads', new_value, edge=edge)
-        else:
-            ctrl.settings.set_edge_setting('arrowheads', new_value, edge_type=edge_type,
-                                           level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_active_edge_setting('arrowheads', new_value, edge_type)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope()
@@ -166,8 +151,7 @@ class EdgeArrowheadEnd(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        old_value = ctrl.settings.get_edge_setting('arrowheads', edge_type=edge_type, level=level)
+        old_value = self.panel.get_active_edge_setting('arrowheads')
         if old_value == g.AT_START and value:
             new_value = g.AT_BOTH
         elif old_value == g.AT_BOTH and not value:
@@ -178,13 +162,8 @@ class EdgeArrowheadEnd(PanelAction):
             new_value = g.AT_END
         else:
             return
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                ctrl.settings.set_edge_setting('arrowheads', new_value, edge=edge)
-        else:
-            ctrl.settings.set_edge_setting('arrowheads', new_value, edge_type=edge_type,
-                                           level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_active_edge_setting('arrowheads', new_value, edge_type)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return ctrl.ui.has_edges_in_scope()
@@ -214,14 +193,7 @@ class ResetControlPoints(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.reset_control_points()
-        else:
-            for edge in ctrl.forest.edges.values():
-                if edge.edge_type == edge_type:
-                    edge.reset_control_points()
+        ctrl.ui.reset_control_points()
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope()
@@ -246,17 +218,7 @@ class ResetEdgeSettings(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.reset_settings()
-            ctrl.forest.redraw_edges()
-        else:
-            ctrl.settings.reset_edge_settings(level=level, edge_type=edge_type)
-            for edge in ctrl.forest.edges.values():
-                if edge.edge_type == edge_type:
-                    edge.reset_settings()
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.reset_active_edge_setting(edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope()
@@ -284,13 +246,8 @@ class LeafShapeX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.set_leaf_width(value)
-        else:
-            ctrl.settings.set_shape_setting('leaf_x', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('leaf_x', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_x')
@@ -321,13 +278,8 @@ class LeafShapeY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.set_leaf_height(value)
-        else:
-            ctrl.settings.set_shape_setting('leaf_y', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('leaf_y', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_y')
@@ -357,13 +309,8 @@ class EdgeThickness(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.set_thickness(value)
-        else:
-            ctrl.settings.set_shape_setting('thickness', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('thickness', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.has_active_outline()
@@ -393,13 +340,8 @@ class ChangeEdgeRelativeCurvatureX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.change_edge_relative_curvature_x(value)
-        else:
-            ctrl.settings.set_shape_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and \
@@ -430,14 +372,8 @@ class ChangeEdgeRelativeCurvatureY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.change_edge_relative_curvature_y(value)
-        else:
-            ctrl.settings.set_shape_setting('rel_dy', value * .01, edge_type=edge_type,
-                                            level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('rel_dy', value * .01, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and \
@@ -468,13 +404,8 @@ class ChangeEdgeFixedCurvatureX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.change_edge_fixed_curvature_x(value)
-        else:
-            ctrl.settings.set_shape_setting('fixed_dx', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('fixed_dx', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and \
@@ -505,13 +436,8 @@ class ChangeEdgeFixedCurvatureY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.change_edge_fixed_curvature_y(value)
-        else:
-            ctrl.settings.set_shape_setting('fixed_dy', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('fixed_dy', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and \
@@ -542,13 +468,8 @@ class EdgeShapeFill(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.set_fill(value)
-        else:
-            ctrl.settings.set_shape_setting('fill', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('fill', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable()
@@ -578,13 +499,8 @@ class EdgeShapeLine(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges():
-                edge.set_outline(value)
-        else:
-            ctrl.settings.set_shape_setting('outline', value, edge_type=edge_type, level=level)
-            ctrl.forest.redraw_edges(edge_type=edge_type)
+        ctrl.ui.set_shape_setting('outline', value, edge_type=edge_type, level=level)
+        ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
         return self.panel and ctrl.ui.has_edges_in_scope()

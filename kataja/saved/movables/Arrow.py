@@ -20,9 +20,9 @@ class Arrow(Movable):
     __qt_type_id__ = next_available_type_id()
     role = 'Arrow'
 
-    def __init__(self, start=None, end=None, start_point=None, end_point=None, text=None):
+    def __init__(self, start=None, end=None, start_point=None, end_point=None, text=None, forest=None):
         FadeInOut.__init__(self)
-        Movable.__init__(self)
+        Movable.__init__(self, forest=forest)
         QtWidgets.QGraphicsObject.__init__(self)
         self.start = start
         self.end = end

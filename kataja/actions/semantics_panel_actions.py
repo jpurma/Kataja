@@ -40,14 +40,14 @@ class ToggleSemanticsView(KatajaAction):
         return [sender.isChecked()], {}
 
     def method(self, checked):
-        ctrl.settings.set('show_semantics', checked, level=ctrl.ui.active_scope)
-        if ctrl.settings.get('show_semantics'):
+        ctrl.ui.set_active_setting('show_semantics', checked)
+        if checked:
             ctrl.forest.semantics_manager.show()
         else:
             ctrl.forest.semantics_manager.hide()
 
     def getter(self):
-        return ctrl.settings.get('show_semantics', level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_setting('show_semantics')
 
     def enabler(self):
         return ctrl.forest and ctrl.forest.in_display and ctrl.forest.semantics_manager.models and \

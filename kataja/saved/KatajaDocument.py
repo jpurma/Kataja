@@ -26,7 +26,7 @@ from collections import OrderedDict
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, running_environment, classes, prefs
-from kataja.utils import time_me
+from kataja.settings.DocumentSettings import DocumentSettings
 
 
 def definitions_as_text(defs):
@@ -48,6 +48,7 @@ class KatajaDocument(SavedObject):
         super().__init__(uid=uid)
         self.name = name or 'New project'
         self.filename = name
+        self.settings = DocumentSettings(self)
         self.forests = []
         self.current_index = 0
         self.forest = None
@@ -261,7 +262,6 @@ class KatajaDocument(SavedObject):
         open_references = {}
         savedata['kataja_plugin_name'] = prefs.active_plugin_name
         self.save_object(savedata, open_references)
-        savedata['kataja_root_document_uid'] = self.uid
         max_rounds = 10
         c = 0
         while open_references and c < max_rounds:

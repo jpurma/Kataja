@@ -1,4 +1,3 @@
-# coding=utf-8
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -22,18 +21,26 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.saved.Movable import Movable
+class NodeSettings:
 
+    def __init__(self, node: 'kataja.saved.movables.Node'):
+        self.node = node
 
-class Image(Movable, QtWidgets.QGraphicsPixmapItem):
+    @property
+    def data(self):
+        return self.node._settings
 
-    def __init__(self, img, box=QtCore.QRectF(0, 0, 480, 400), forest=None):
-        pixmap = QtGui.QPixmap(img)
-        # pixmap=pixmap.scaledToHeight(int(box.height()))
-        QtWidgets.QGraphicsPixmapItem.__init__(self, pixmap)
-        Movable.__init__(self, forest=forest)
-        self.setFlag(QtWidgets.QGraphicsRectItem.ItemIsMovable)
-        self.setTransformationMode(QtCore.Qt.SmoothTransformation)
-        # self.setPos(pixmap.width()*-.5, pixmap.height()*-.5)
+    def get(self, key):
+        v = self.data.get(key, None)
+        if v is None:
+            return self.node.forest.settings.get_for_node_type(key, self.node.node_type)
+
+    def set(self, key, value):
+        self.node.poke('_settings')
+        self.data[key] = value
+
+    def delete(self, key):
+        if key in self.data:
+            self.node.poke('_settings')
+            del self.data[key]

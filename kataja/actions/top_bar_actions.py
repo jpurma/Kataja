@@ -164,11 +164,11 @@ class SwitchViewMode(KatajaAction):
         :return:
         """
         if syntactic_mode is None:
-            syntactic_mode = not ctrl.settings.get('syntactic_mode', level=DOCUMENT)
+            syntactic_mode = not ctrl.doc_settings.get('syntactic_mode')
         ctrl.forest.change_view_mode(syntactic_mode)
 
     def getter(self):
-        return ctrl.settings.get('syntactic_mode', level=DOCUMENT)
+        return ctrl.document and ctrl.doc_settings.get('syntactic_mode')
 
     def enabler(self):
         return not ctrl.free_drawing_mode

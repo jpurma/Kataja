@@ -26,6 +26,6 @@ class ProjectionManager:
         This is done by removing all projection displays before drawing them.
         :return:
         """
-        highlight = ctrl.settings.get('highlight_projections')
-        for projection in self.projections.values():
-            projection.set_visuals(projection_style)
+        highlight = self.forest.settings.get('highlight_projections')
+        #for projection in self.projections.values():
+        #    projection.set_visuals(projection_style)

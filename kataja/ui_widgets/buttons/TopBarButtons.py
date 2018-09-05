@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 from kataja.ui_widgets.buttons.OverlayButton import TopRowButton, VisButton
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
@@ -52,7 +52,7 @@ class TopBarButtons(QtWidgets.QFrame):
         view_label = QtWidgets.QLabel("Visualisation:")
         layout.addWidget(view_label)
 
-        default_vis = ctrl.settings.get('visualization', level=g.PREFS)
+        default_vis = prefs.visualization
         self.vis_buttons = KatajaButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut

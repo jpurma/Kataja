@@ -27,6 +27,7 @@ from PyQt5 import QtGui, QtCore
 from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
+from kataja.Shapes import SHAPE_PRESETS
 
 # Disable these if necessary for debugging
 enable_loading_preferences = True
@@ -177,8 +178,8 @@ class Preferences(object):
                     'this defines how much thicker.'
         }
 
-        self.node_shape = 0
-        self._node_shape_ui = {
+        self.cn_shape = 0
+        self._cn_shape_ui = {
             'tab': 'Drawing',
             'choices': [(0, 'Normal'), (1, 'Box'), (2, 'Bracketed'), (3, 'Card'), (4, 'Feature')],
             'label': 'Node shapes',
@@ -614,6 +615,53 @@ class Preferences(object):
                 continue
             if key in ldict:
                 setattr(self, key, ldict[key])
+
+    # Support settings-interface ########################
+
+    @property
+    def flat_edge_dict(self):
+        return master_styles['fancy']
+
+    @property
+    def flat_shape_dict(self):
+        return SHAPE_PRESETS
+
+    def get(self, key):
+        return getattr(self, key)
+
+    def get_for_node_type(self, key, node_type):
+        print(key, self.nodes[node_type])
+        return self.nodes[node_type][key]
+
+    def get_for_edge_type(self, key, edge_type):
+        return self.edges[edge_type][key]
+
+    def get_for_edge_shape(self, key, edge_shape):
+        return SHAPE_PRESETS[edge_shape].defaults[key]
+
+    def set(self, key, value):
+        setattr(self, key, value)
+
+    def set_for_node_type(self, key, value, node_type):
+        self.nodes[node_type][key] = value
+
+    def set_for_edge_type(self, key, value, edge_type):
+        self.edges[edge_type][key] = value
+
+    def set_for_edge_shape(self, key, value, edge_shape):
+        pass
+
+    def delete(self, key):
+        pass
+
+    def del_for_node_type(self, key, node_type):
+        pass
+
+    def del_for_edge_type(self, key, edge_type):
+        pass
+
+    def del_for_edge_shape(self, key, edge_shape):
+        pass
 
 
 class QtPreferences:

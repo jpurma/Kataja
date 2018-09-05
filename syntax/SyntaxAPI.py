@@ -1,6 +1,7 @@
 from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 import kataja.globals as g
-from kataja.singletons import ctrl, classes
+from kataja.singletons import classes
 from kataja.nodes_to_synobjs import nodes_to_synobjs
 
 
@@ -527,3 +528,6 @@ class SyntaxAPI(SavedObject):
         feature = self.Feature(**kw)
         self.features[feature.uid] = feature
         return feature
+
+    input_text = SavedField("input_text")
+    input_tree = SavedField("input_tree")

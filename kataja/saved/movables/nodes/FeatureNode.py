@@ -62,14 +62,6 @@ color_map = {
             }
 
 
-def get_host_for_synobj(synobj):
-    fnode = ctrl.forest.get_node(synobj)
-    if fnode:
-        for parent in fnode.get_parents():
-            if parent.node_type == g.CONSTITUENT_NODE:
-                return parent
-
-
 class FeatureNode(Node):
     """
     Node to express a feature of a constituent
@@ -106,8 +98,8 @@ class FeatureNode(Node):
 
     default_edge = g.FEATURE_EDGE
 
-    def __init__(self, label='', sign='', value='', family=''):
-        Node.__init__(self)
+    def __init__(self, label='', sign='', value='', family='', forest=None):
+        Node.__init__(self, forest=forest)
         self.name = label
         self.sign = sign
         self.value = value
@@ -158,7 +150,7 @@ class FeatureNode(Node):
         if self.syntactic_object:
             checks = self.syntactic_object.checks
             if checks:
-                return ctrl.forest.get_node(checks)
+                return self.forest.get_node(checks)
         else:
             return self.checks
 
@@ -166,13 +158,13 @@ class FeatureNode(Node):
         if self.syntactic_object:
             checked_by = self.syntactic_object.checked_by
             if checked_by:
-                return ctrl.forest.get_node(checked_by)
+                return self.forest.get_node(checked_by)
         else:
             return self.checked_by
 
     def get_host_node(self):
         if self.syntactic_object and self.syntactic_object.host:
-            return ctrl.forest.get_node(self.syntactic_object.host)
+            return self.forest.get_node(self.syntactic_object.host)
         else:
             for parent in self.get_parents(similar=False, visible=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
@@ -441,10 +433,9 @@ class FeatureNode(Node):
         else:
             Node.paint(self, painter, option, widget)
 
-    @staticmethod
-    def get_color_for(feature_name):
-        if feature_name in ctrl.forest.semantics_manager.colors:
-            return ctrl.forest.semantics_manager.colors[feature_name]
+    def get_color_for(self, feature_name):
+        if feature_name in self.forest.semantics_manager.colors:
+            return self.forest.semantics_manager.colors[feature_name]
         else:
             return 'accent7'
 
@@ -457,10 +448,10 @@ class FeatureNode(Node):
         """
         :return:
         """
-        if 'color_key' in self.settings:
-            ck = self.settings['color_key']
-        elif self.name in ctrl.forest.semantics_manager.colors:
-            ck = ctrl.forest.semantics_manager.colors[self.name]
+        if 'color_key' in self._settings:
+            ck = self.settings.get('color_key')
+        elif self.name in self.forest.semantics_manager.colors:
+            ck = self.forest.semantics_manager.colors[self.name]
         elif self.name:
             if len(self.name) > 1 and self.name[0] == 'w' and self.name[1] in \
                     string.ascii_uppercase:
@@ -469,14 +460,14 @@ class FeatureNode(Node):
                 c_id = ord(self.name[0]) % 8 + 1
                 ck = 'accent' + str(c_id)
         else:
-            ck = ctrl.settings.get_node_setting('color_key', node=self)
+            ck = self.settings.get('color_key')
         if self.syntactic_object and self.syntactic_object.is_inactive():
             ck += 'tr'
         return ck
 
     def special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
         if edge_type == g.FEATURE_EDGE: # not used atm.
-            f_align = ctrl.settings.get('feature_positioning')
+            f_align = self.forest.settings.get('feature_positioning')
             br = self.boundingRect()
             left, top, right, bottom = (int(x * .8) for x in br.getCoords())
             if f_align == 0: # direct

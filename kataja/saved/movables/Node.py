@@ -35,6 +35,7 @@ from kataja.SimpleLabel import SimpleLabel
 from kataja.Triangle import Triangle
 from kataja.saved.Movable import Movable
 from kataja.saved.Draggable import Draggable
+from kataja.settings.NodeSettings import NodeSettings
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.parser.INodes import as_html
@@ -85,14 +86,14 @@ class Node(Draggable, Movable):
     buttons_when_selected = [Buttons.NodeEditorButton, Buttons.RemoveNodeButton,
                              Buttons.NodeUnlockButton]
 
-    def __init__(self):
+    def __init__(self, forest=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify
         this for Constituents, Features etc. """
         self.label_object = None
-        Movable.__init__(self)
+        Movable.__init__(self, forest=forest)
         Draggable.__init__(self)
-        self.node_type_settings_chain = None
+        self.settings = NodeSettings(self)
         self.label_object = SimpleLabel(parent=self)
         self.syntactic_object = None
         self.label = ''
@@ -142,11 +143,11 @@ class Node(Draggable, Movable):
     def set_syntactic_object(self, synobj):
         old = self.syntactic_object
         self.syntactic_object = synobj
-        if ctrl.forest:
+        if self.forest:
             if synobj:
-                ctrl.forest.nodes_from_synobs[synobj.uid] = self
+                self.forest.nodes_from_synobs[synobj.uid] = self
             elif old and not synobj:
-                del ctrl.forest.nodes_from_synobs[old.uid]
+                del self.forest.nodes_from_synobs[old.uid]
 
     def __lt__(self, other):
         return self.label < other.label
@@ -168,13 +169,12 @@ class Node(Draggable, Movable):
         :return: None
         """
         self.in_scene = True
-        self.node_type_settings_chain = ctrl.settings.node_type_chains[self.node_type].new_child()
         self.update_label()
         self.update_visibility()
         self.announce_creation()
         if prefs.glow_effect:
             self.toggle_halo(True)
-        ctrl.forest.store(self)
+        self.forest.store(self)
 
     def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
@@ -186,8 +186,8 @@ class Node(Draggable, Movable):
             print('*** re-creating node in after_model_update')
             self.update_label()
             self.update_visibility()
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
+            self.forest.store(self)
+            self.forest.add_to_scene(self)
             return
         elif transition_type == g.DELETED:
             print('*** deleting node in after_model_update')
@@ -585,10 +585,10 @@ class Node(Draggable, Movable):
         """
         :return:
         """
-        return ctrl.settings.get_node_setting('font_id', node=self)
+        return self.settings.get('font_id')
 
     def set_font_id(self, value):
-        ctrl.settings.set_node_setting('font_id', value, node=self)
+        self.settings.set('font_id', value)
 
     # ### Colors and drawing settings
     # ############################################################
@@ -604,10 +604,10 @@ class Node(Draggable, Movable):
         """
         :return:
         """
-        return ctrl.settings.get_node_setting('color_key', node=self)
+        return self.settings.get('color_key')
 
     def set_color_key(self, value):
-        ctrl.settings.set_node_setting('color_key', value, node=self)
+        self.settings.set('color_key', value)
 
     def palette(self):
         """
@@ -980,7 +980,7 @@ class Node(Draggable, Movable):
         current_scene_position
         :return:
         """
-        magnets = ctrl.settings.get('use_magnets')
+        magnets = self.forest.settings.get('use_magnets')
         if scene_pos:
             x1, y1 = scene_pos
         else:
@@ -1043,7 +1043,7 @@ class Node(Draggable, Movable):
         current_scene_position
         :return:
         """
-        magnets = ctrl.settings.get('use_magnets')
+        magnets = self.forest.settings.get('use_magnets')
         if scene_pos:
             x1, y1 = scene_pos
         else:
@@ -1072,7 +1072,7 @@ class Node(Draggable, Movable):
         if selected:
             self.setZValue(200)
             if ctrl.single_selection() and not ctrl.multiselection_delay:
-                if ctrl.settings.get('single_click_editing'):
+                if prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             print('deselect ', self)
@@ -1113,7 +1113,7 @@ class Node(Draggable, Movable):
                 action = ctrl.ui.get_action('select')
                 action.run_command(self.uid, has_params=True)
             else:
-                if not ctrl.settings.get('single_click_editing'):
+                if not prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             action = ctrl.ui.get_action('select')
@@ -1138,9 +1138,9 @@ class Node(Draggable, Movable):
         if not skip_label:
             self.update_label_visibility()
 
-        if (not self.is_syntactic) and ctrl.settings.get('syntactic_mode'):
+        if (not self.is_syntactic) and ctrl.forest.settings.get('syntactic_mode'):
             self._visible_by_logic = False
-        elif ctrl.settings.get_node_setting('visible', node=self) and not self.hidden_in_triangle():
+        elif self.settings.get('visible') and not self.hidden_in_triangle():
             self._visible_by_logic = True
         else:
             self._visible_by_logic = False
@@ -1149,10 +1149,10 @@ class Node(Draggable, Movable):
         if changed:
             # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
             # visible
-            ctrl.forest.order_edge_visibility_check()
+            self.forest.order_edge_visibility_check()
         return changed
 
-    def update_node_shape(self):
+    def update_cn_shape(self):
         pass
 
     def is_quick_editing(self):

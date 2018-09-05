@@ -80,7 +80,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     When nodes that don't use physics are dragged, the adjustment.
 
     """
-    def __init__(self):
+    def __init__(self, forest=None):
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
@@ -117,7 +117,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._direct_hovering = False
         self._indirect_hovering = False
         self.setZValue(self.preferred_z_value())
-
+        self.forest = forest
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -137,10 +137,10 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         #print('movable after_model_update, ', transition_type, revert_transition)
         if transition_type == CREATED:
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
+            self.forest.store(self)
+            self.forest.add_to_scene(self)
         elif transition_type == DELETED:
-            ctrl.forest.remove_from_scene(self, fade_out=False)
+            self.forest.remove_from_scene(self, fade_out=False)
             return
         self.update_position()
 
@@ -228,7 +228,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self.start_moving()
         else:
             self.current_position = x, y
-            ctrl.forest.order_recalculation_of_positions_relative_to_nodes()
+            self.forest.order_recalculation_of_positions_relative_to_nodes()
 
     def move(self, other_nodes: list, heat: float) -> (int, int, bool, bool):
         """ Do one frame of movement: either move towards target position or
@@ -299,7 +299,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 self.locked_to_node.update_bounding_rect()
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics() and self.is_visible():
-            diff_x, diff_y = ctrl.forest.visualization.calculate_movement(self, other_nodes, heat)
+            diff_x, diff_y = self.forest.visualization.calculate_movement(self, other_nodes, heat)
             if not self.physics_x:
                 diff_x = 0
             elif diff_x > 6:
@@ -639,3 +639,5 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     physics_x = SavedField("physics_x")
     physics_y = SavedField("physics_y")
     locked_to_node = SavedField("locked_to_node")
+    forest = SavedField("forest")
+

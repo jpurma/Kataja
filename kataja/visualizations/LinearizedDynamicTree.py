@@ -50,7 +50,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             self.set_data('max_height_steps', max_height_steps)
             self.set_data('height_steps', max_height_steps / 2)
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """

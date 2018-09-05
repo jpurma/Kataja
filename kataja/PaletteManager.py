@@ -167,7 +167,7 @@ class PaletteManager:
             color = c.fromRgbF(*rgba)
             if color:
                 self.d[key] = color
-        custom_colors = ctrl.settings.get('custom_colors', level=DOCUMENT)
+        custom_colors = ctrl.doc_settings.get('custom_colors')
         if custom_colors:
             for key, rgba in custom_colors.items():
                 color = c.fromRgbF(*rgba)
@@ -178,7 +178,7 @@ class PaletteManager:
         self.custom_themes = OrderedDict()
         for key in sorted(list(prefs.custom_themes.keys())):
             self.custom_themes[key] = prefs.custom_themes[key]
-        sd = ctrl.settings.get('custom_themes', level=DOCUMENT)
+        sd = ctrl.doc_settings.get('custom_themes')
         if sd:
             for key in sorted(list(sd.keys())):
                 self.custom_themes[key] = sd[key]
@@ -275,7 +275,7 @@ class PaletteManager:
         elif build == 'random':
             found = False
             if try_to_remember:
-                remembered = ctrl.settings.get('last_key_colors')  # found from forest's settings
+                remembered = ctrl.forest.settings.get('last_key_colors')  # found from forest's settings
                 if theme_key in remembered:
                     self.hsv = list(remembered[theme_key])
                     found = True
@@ -291,14 +291,14 @@ class PaletteManager:
                 key_color = c.fromRgbF(r, g, b)
                 self.hsv = list(key_color.getHsvF())[:3]
                 if ctrl.forest:
-                    remembered = ctrl.settings.get('last_key_colors')
+                    remembered = ctrl.forest.settings.get('last_key_colors')
                     if remembered:
                         remembered[theme_key] = self.hsv
                     else:
                         remembered = {
                             theme_key: self.hsv
                         }
-                    ctrl.settings.set('last_key_colors', remembered, level=FOREST)
+                    ctrl.forest.settings.set('last_key_colors', remembered)
         if colors:
             for key, (r, g, b, a) in colors.items():
                 color = c.fromRgbF(r, g, b)
@@ -345,8 +345,8 @@ class PaletteManager:
 
         if self.theme_key in self.default_themes and not key.startswith('custom'):
             new_key, name = self.create_custom_theme_from_modification(key, color, contrast)
-            ctrl.settings.set('color_theme', new_key, level=PREFS)
-            ctrl.settings.set('color_theme', new_key, level=DOCUMENT)
+            prefs.set('color_theme', new_key)
+            ctrl.doc_settings.set('color_theme', new_key)
             self.update_custom_themes()
             ctrl.main.update_colors(randomise=False, animate=False)
             ctrl.main.color_themes_changed.emit()
@@ -363,9 +363,9 @@ class PaletteManager:
                     else:
                         self.d['background2'] = adjust_lightness(color, 8)
             if key.startswith('custom') and can_save:
-                custom_colors = ctrl.settings.get('custom_colors', level=DOCUMENT) or {}
+                custom_colors = ctrl.doc_settings.get('custom_colors') or {}
                 custom_colors[key] = color.getRgbF()
-                ctrl.settings.set('custom_colors', custom_colors, level=DOCUMENT)
+                ctrl.doc_settings.set('custom_colors', custom_colors)
                 prefs.custom_colors[key] = color.getRgbF()
             if self.theme_key in self.custom_themes:
                 # same theme_data object also lives in prefs, updating it once does them both
@@ -387,7 +387,10 @@ class PaletteManager:
         :param settings:
         :param randomise: if color mode allows, generate new base color
         """
-        theme_key = ctrl.settings.get('temp_color_theme') or ctrl.settings.get('color_theme')
+        if ctrl.forest:
+            theme_key = ctrl.forest.settings.get('temp_color_theme') or ctrl.forest.settings.get('color_theme')
+        else:
+            theme_key = ctrl.doc_settings.get('color_theme')
         self.activate_color_theme(theme_key, try_to_remember=not randomise)
         self.get_qt_palette(cached=False)
         self.get_qt_palette_for_ui(cached=False)

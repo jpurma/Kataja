@@ -65,9 +65,9 @@ class CommentNode(Node):
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
 
-    def __init__(self, label='comment'):
+    def __init__(self, label='comment', forest=None):
         self.image_object = None
-        Node.__init__(self)
+        Node.__init__(self, forest=forest)
         if not label:
             label = 'comment'
         self.label = label

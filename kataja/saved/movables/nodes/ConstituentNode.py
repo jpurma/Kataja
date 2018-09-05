@@ -21,6 +21,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from collections import Iterable
+
 from PyQt5 import QtCore, QtGui
 
 from kataja.ComplexLabel import ComplexLabel
@@ -95,9 +97,9 @@ class ConstituentNode(Node):
     buttons_when_selected = [OB.RemoveMergerButton, OB.NodeEditorButton, OB.RemoveNodeButton,
                              OB.NodeUnlockButton]
 
-    def __init__(self, label=''):
+    def __init__(self, label='', forest=None):
         """ Most of the initiation is inherited from Node """
-        super().__init__()
+        super().__init__(forest=forest)
         self.label_object = ComplexLabel(parent=self)
         self.heads = []
 
@@ -114,6 +116,18 @@ class ConstituentNode(Node):
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
 
+    # Creating constituent nodes will happen in coarsely three different circumstances. There are different
+    # presuppositions in each about the forest context in that creation.
+    #
+    # 1. Creating nodes because of user's drawing action or because the treeloader parsed a node into existence.
+    #    Here the node is addition to existing and can immediately join into the necessary relations.
+    # 2. Restoring nodes into forest from derivation step or from undo.
+    #    Here there are bundle of nodes that are removed or added at once, so when they are sequently created, they may
+    #    have relations to nodes that are not yet created -- handling of such relations has to be delayed until all
+    #    nodes, edges etc. are there.
+    # 3. Loading nodes into forests that are not currently visible. Same limitations as with 2, but also restoring of
+    #    relations shouldn't refer to currently active forest -- it should point to the real originating forest.
+
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
         1st wave creates the objects and calls __init__, and then iterates through and sets the
@@ -121,15 +135,16 @@ class ConstituentNode(Node):
         to each other and know their values.
         :return: None
         """
+        print('after init for constituentnode: ', self, ' where active forest is :', self.forest, 'in display: ', self.forest.in_display)
         self.update_gloss()
-        self.update_node_shape()
+        self.update_cn_shape()
         self.update_label()
         self.update_visibility()
         self.update_tooltip()
         self.announce_creation()
         if prefs.glow_effect:
             self.toggle_halo(True)
-        ctrl.forest.store(self)
+        self.forest.store(self)
 
     def update_label(self):
         self.get_lexical_color(refresh=True)
@@ -154,10 +169,9 @@ class ConstituentNode(Node):
         """
         :return:
         """
-        if self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
-            return ctrl.settings.get_node_setting('font_id', node_type=g.FEATURE_NODE)
-
-        return ctrl.settings.get_node_setting('font_id', node=self)
+        if self.get_cn_shape() == g.FEATURE_SHAPE and self.has_merged_features():
+            return self.forest.settings.get_for_node_type('font_id', node_type=g.FEATURE_NODE)
+        return self.settings.get('font_id')
 
     def preferred_z_value(self) -> int:
         if self.is_card():
@@ -221,7 +235,7 @@ class ConstituentNode(Node):
         return self.syntactic_object and getattr(self.syntactic_object, 'word_edge', False)
 
     def has_ordered_children(self):
-        mode = ctrl.settings.get('linearization_mode')
+        mode = self.forest.settings.get('linearization_mode')
         if mode == g.NO_LINEARIZATION or mode == g.RANDOM_NO_LINEARIZATION:
             return False
         elif mode == g.USE_LINEARIZATION:
@@ -265,8 +279,8 @@ class ConstituentNode(Node):
         self.can_cascade_edges()
         super().reindex_edges()
 
-    def update_node_shape(self):
-        self.label_object.node_shape = ctrl.settings.get('node_shape')
+    def update_cn_shape(self):
+        self.label_object.cn_shape = self.forest.settings.get('cn_shape')
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
@@ -414,7 +428,13 @@ class ConstituentNode(Node):
         elif label_text_mode == g.CHECKED_FEATURES:
             if self.syntactic_object:
                 if self.syntactic_object.parts and self.syntactic_object.checked_features:
-                    l = ' '.join([str(x) for x in self.syntactic_object.checked_features])
+                    fl = []
+                    for f in self.syntactic_object.checked_features:
+                        if isinstance(f, tuple):
+                            fl.append(' '.join([str(x) for x in f]))
+                        else:
+                            fl.append(str(f))
+                    l = ' '.join(fl)
                 else:
                     l = self.syntactic_object.label
 
@@ -422,7 +442,7 @@ class ConstituentNode(Node):
         if l_html:
             html.append(l_html)
 
-        if self.gloss and ctrl.settings.get('lock_glosses_to_label') == 1:
+        if self.gloss and self.forest.settings.get('lock_glosses_to_label') == 1:
             if html:
                 html.append('<br/>')
             html.append(as_html(self.gloss))
@@ -518,12 +538,12 @@ class ConstituentNode(Node):
                     break
             return self._can_cascade_edges
 
-    def get_node_shape(self):
+    def get_cn_shape(self):
         """ Node shapes are based on settings-stack, but also get_shape_setting in label.
         Return this get_shape_setting value.
         :return:
         """
-        return self.label_object.node_shape
+        return self.label_object.cn_shape
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.
@@ -546,7 +566,7 @@ class ConstituentNode(Node):
                 if head is self.syntactic_object:
                     res.append(self)
                 else:
-                    node = ctrl.forest.get_node(head)
+                    node = self.forest.get_node(head)
                     if node:
                         res.append(node)
                     else:
@@ -683,7 +703,7 @@ class ConstituentNode(Node):
                     fnode.move_to(left_margin + x, y)
         elif position == g.TWO_COLUMNS:  # card layout, two columns
             self._can_cascade_edges = False
-            in_card = ctrl.settings.get('node_shape') == g.CARD
+            in_card = self.forest.settings.get('cn_shape') == g.CARD
             cw, ch = self.label_object.card_size
             center_x = self.boundingRect().center().x()
             top_y = 22
@@ -765,7 +785,7 @@ class ConstituentNode(Node):
     def get_features(self):
         """ Returns FeatureNodes """
         if self.syntactic_object:
-            getnode = ctrl.forest.get_node
+            getnode = self.forest.get_node
             return [getnode(f) for f in self.syntactic_object.get_features()]
         else:
             return [f for f in self.get_children(visible=True, of_type=g.FEATURE_EDGE) if
@@ -782,13 +802,19 @@ class ConstituentNode(Node):
 
     def get_merged_features(self):
         if self.syntactic_object:
-            syn_feats = getattr(self.syntactic_object, 'checked_features', [])
+            checked_feats = getattr(self.syntactic_object, 'checked_features', [])
             nodes = []
-            if syn_feats:
-                for f in syn_feats:
-                    n = ctrl.forest.get_node(f)
-                    if n:
-                        nodes.append(n)
+            if checked_feats:
+                for f in checked_feats:
+                    if isinstance(f, tuple):
+                        for ff in f:
+                            n = self.forest.get_node(ff)
+                            if n:
+                                nodes.append(n)
+                    else:
+                        n = self.forest.get_node(f)
+                        if n:
+                            nodes.append(n)
             return nodes
 
     def has_merged_features(self):
@@ -796,7 +822,7 @@ class ConstituentNode(Node):
 
     def first_feature(self):
         if self.syntactic_object and self.syntactic_object.features:
-            return ctrl.forest.get_node(self.syntactic_object.features[0])
+            return self.forest.get_node(self.syntactic_object.features[0])
 
 
     # ### Checks for callable actions ####
@@ -832,8 +858,8 @@ class ConstituentNode(Node):
     # ### Paint overrides
 
     def _calculate_inner_rect(self, extra_w=0, extra_h=0):
-        if self.label_object.node_shape == g.BRACKETED or self.label_object.node_shape == g.SCOPEBOX:
-            extra_w = ctrl.forest.width_map.get(self.uid, 0)
+        if self.label_object.cn_shape == g.BRACKETED or self.label_object.cn_shape == g.SCOPEBOX:
+            extra_w = self.forest.width_map.get(self.uid, 0)
         return super()._calculate_inner_rect(extra_w=extra_w)
 
     def paint(self, painter, option, widget=None):
@@ -843,7 +869,7 @@ class ConstituentNode(Node):
         :param option:
         :param widget:
          """
-        shape = self.label_object.node_shape
+        shape = self.label_object.cn_shape
         if shape == g.CARD:
             xr = 4
             yr = 8
@@ -936,11 +962,9 @@ class ConstituentNode(Node):
             painter.setPen(p)
             painter.drawLine(r.topLeft().toPoint(), r.topRight().toPoint())
 
-
-    @staticmethod
-    def allowed_label_text_mode():
-        mode = ctrl.settings.get('label_text_mode')
-        if not ctrl.settings.get('syntactic_mode'):
+    def allowed_label_text_mode(self):
+        mode = self.forest.settings.get('label_text_mode')
+        if not self.forest.settings.get('syntactic_mode'):
             return mode
         if mode == g.NODE_LABELS:
             return g.SYN_LABELS
@@ -957,7 +981,7 @@ class ConstituentNode(Node):
         NO_LABELS = 6
         :return:
         """
-        if ctrl.settings.get('syntactic_mode'):
+        if ctrl.forest and ctrl.forest.settings.get('syntactic_mode'):
             return [0, 1, 5, 6]
         else:
             return [0, 1, 2, 3, 5, 6]

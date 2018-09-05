@@ -276,7 +276,7 @@ class EdgePath:
         sx, sy = start.current_scene_position if start else self.edge.start_point
         ex, ey = end.current_scene_position if end else self.edge.end_point
         if start:
-            connection_style = self.edge.flattened_settings['start_connects_to']
+            connection_style = self.edge.settings.get('start_connects_to')
             if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
 
@@ -298,7 +298,7 @@ class EdgePath:
             elif connection_style == CONNECT_TO_SIMILAR:
                 self._connect_start_to_similar(sx, sy)
         if end:
-            connection_style = self.edge.flattened_settings['end_connects_to']
+            connection_style = self.edge.settings.get('end_connects_to')
             if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
 
@@ -339,10 +339,8 @@ class EdgePath:
         thick = 1
         if not self.my_shape:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            self.edge.flatten_settings()
         elif self.edge.shape_name != self.my_shape.shape_name:
             self.my_shape = SHAPE_PRESETS[self.edge.shape_name]()
-            self.edge.flatten_settings()
         path = self.my_shape.path(sp, (ex, ey),
                                   self.edge.curve_adjustment,
                                   self.curve_dir_start,
@@ -350,7 +348,7 @@ class EdgePath:
                                   start=self.edge.start,
                                   end=self.edge.end,
                                   inner_only=self.use_simple_path,
-                                  d=self.edge.flattened_settings)
+                                  d=self.edge.settings.flat_dict)
         self.draw_path, self.true_path, self.control_points, self.adjusted_control_points = path
         uses_pen = self.edge.has_outline()
 
@@ -453,12 +451,12 @@ class EdgePath:
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.
         """
-        arrowheads = self.edge.flattened_settings['arrowheads']
+        arrowheads = self.edge.settings.get('arrowheads')
         if not (arrowheads == g.AT_START or arrowheads == g.AT_BOTH):
             self.arrowhead_start_path = None
             return
         ad = 0.5
-        t = self.edge.flattened_settings['thickness']
+        t = self.edge.settings.get('thickness')
         size = self.arrowhead_size_at_start
         if t:
             size *= t
@@ -489,12 +487,12 @@ class EdgePath:
     def make_arrowhead_at_end(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its end.
         """
-        arrowheads = self.edge.flattened_settings['arrowheads']
+        arrowheads = self.edge.settings.get('arrowheads')
         if not (arrowheads == g.AT_END or arrowheads == g.AT_BOTH):
             self.arrowhead_end_path = None
             return
         ad = 0.5
-        t = self.edge.flattened_settings['thickness']
+        t = self.edge.settings.get('thickness')
         size = self.arrowhead_size_at_end
         if t:
             size *= t

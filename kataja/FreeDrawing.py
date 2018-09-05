@@ -24,6 +24,7 @@
 import string
 
 import time
+import random
 from PyQt5 import QtCore
 
 import kataja.globals as g
@@ -49,24 +50,24 @@ class FreeDrawing:
         """ attach free drawing to specific forest. FreeDrawing can have non-permanent instance
         data, e.g. caches or helper dicts, but nothing here is saved.
         """
-        self.f = forest
+        self.forest = forest
         self._marked_for_deletion = set()
         self.label_rotator = 0
 
     @property
     def nodes(self):
-        return self.f.nodes
+        return self.forest.nodes
 
     @property
     def edges(self):
-        return self.f.edges
+        return self.forest.edges
 
     @property
     def groups(self):
-        return self.f.groups
+        return self.forest.groups
 
     def poke(self, attribute):
-        self.f.poke(attribute)
+        self.forest.poke(attribute)
 
     @staticmethod
     def copy_node_position(source, target):
@@ -103,15 +104,15 @@ class FreeDrawing:
         """ Add comment item to forest
         :param comment: comment item
         """
-        self.f.comments.append(comment)
+        self.forest.comments.append(comment)
 
     def remove_comment(self, comment):
         """ Remove comment item from forest
         :param comment: comment item
         :return:
         """
-        if comment in self.f.comments:
-            self.f.comments.remove(comment)
+        if comment in self.forest.comments:
+            self.forest.comments.remove(comment)
 
     def remove_intertree_relations(self):
         """ After disconnections there may be multidominated nodes whose
@@ -150,20 +151,20 @@ class FreeDrawing:
         :return:
         """
         node_class = classes.nodes.get(node_type)
-        node = node_class(label=label, **kw)
+        node = node_class(label=label, forest=self.forest, **kw)
         node.after_init()
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
         # then lock this node.
-        if self.f.visualization:
-            self.f.visualization.reset_node(node)
+        if self.forest.visualization:
+            self.forest.visualization.reset_node(node)
         # it should however inherit settings from relative, if such are given
         if relative:
             self.copy_node_position(source=relative, target=node)
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
-        self.f.add_to_scene(node)
+        self.forest.add_to_scene(node)
         node.update_visibility(fade_in=False, fade_out=False)
         return node
 
@@ -198,11 +199,11 @@ class FreeDrawing:
         :param alpha:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type, alpha=alpha)
+        rel = Edge(self.forest, start=start, end=end, edge_type=edge_type, alpha=alpha)
         rel.after_init()
-        self.f.store(rel)
-        self.f.add_to_scene(rel)
-        if fade and self.f.in_display and start.is_visible() and end.is_visible():
+        self.forest.store(rel)
+        self.forest.add_to_scene(rel)
+        if fade and self.forest.in_display and start.is_visible() and end.is_visible():
             rel.fade_in()
         return rel
 
@@ -214,8 +215,8 @@ class FreeDrawing:
         :return:
         """
         im = Image(image_path)
-        self.f.others[im.uid] = im
-        self.f.add_to_scene(im)
+        self.forest.others[im.uid] = im
+        self.forest.add_to_scene(im)
         return im
 
     def create_trace_for(self, node):
@@ -226,7 +227,7 @@ class FreeDrawing:
         """
         index = node.index
         if not index:
-            index = self.f.chain_manager.next_free_index()
+            index = self.forest.chain_manager.next_free_index()
             node.index = index
         trace = self.create_node(label='t', relative=node)
         trace.is_trace = True
@@ -234,7 +235,7 @@ class FreeDrawing:
         trace.update_label()
         return trace
 
-    def create_arrow(self, start=None, end=None, text=None):
+    def create_arrow(self, p1, p2, text=None):
         """ Create an arrow (Edge) using the default arrow style
 
         :param p1: start point
@@ -262,9 +263,9 @@ class FreeDrawing:
             end = None
         arrow = Arrow(start=start, end=end, start_point=start_point,
                       end_point=end_point, text=text)
-        self.f.store(arrow)
-        self.f.add_to_scene(arrow)
-        if fade and self.f.in_display:
+        self.forest.store(arrow)
+        self.forest.add_to_scene(arrow)
+        if fade and self.forest.in_display:
             arrow.fade_in()
         ctrl.select(arrow)
         return arrow
@@ -317,10 +318,10 @@ class FreeDrawing:
             self.poke('nodes')
             del self.nodes[node.uid]
         if node.syntactic_object:
-            if node.syntactic_object.uid in self.f.nodes_from_synobs:
-                del self.f.nodes_from_synobs[node.syntactic_object.uid]
+            if node.syntactic_object.uid in self.forest.nodes_from_synobs:
+                del self.forest.nodes_from_synobs[node.syntactic_object.uid]
 
-        assert (node.uid not in self.f.nodes)
+        assert (node.uid not in self.forest.nodes)
 
         # if fading out, item scene position has to remain same during the fade. If disappear
         # instantly, it doesnt matter
@@ -335,7 +336,7 @@ class FreeDrawing:
         if hasattr(node, 'on_delete'):
             node.on_delete()
         # -- scene --
-        self.f.remove_from_scene(node, fade_out=fade)
+        self.forest.remove_from_scene(node, fade_out=fade)
         # -- undo stack --
         node.announce_deletion()
         # -- remove from selection
@@ -394,7 +395,7 @@ class FreeDrawing:
             self.poke('edges')
             del self.edges[edge.uid]
         # -- scene --
-        self.f.remove_from_scene(edge, fade_out=fade)
+        self.forest.remove_from_scene(edge, fade_out=fade)
         # -- undo stack --
         edge.announce_deletion()
         # -- remove circularity block
@@ -816,7 +817,7 @@ class FreeDrawing:
             old = left
         lx, ly = left.current_scene_position
         rx, ry = right.current_scene_position
-        pos = (lx + rx) / 2, (ly + ry) / 2 - ctrl.settings.get('edge_height')
+        pos = (lx + rx) / 2, (ly + ry) / 2 - ctrl.forest.settings.get('edge_height')
 
         label = ''
         if heads:
@@ -852,13 +853,13 @@ class FreeDrawing:
 
     def create_group(self):
         group = Group(selection=[], persistent=True)
-        self.f.add_to_scene(group)
+        self.forest.add_to_scene(group)
         self.poke('groups')
         self.groups[group.uid] = group
         return group
 
     def remove_group(self, group):
-        self.f.remove_from_scene(group)
+        self.forest.remove_from_scene(group)
         ctrl.ui.remove_ui_for(group)
         if group.uid in self.groups:
             self.poke('groups')
@@ -875,9 +876,9 @@ class FreeDrawing:
     def definitions_to_nodes(self, defstring):
 
         leaves = {}
-        for node in self.f.nodes.values():
+        for node in self.forest.nodes.values():
             if node.is_leaf(only_similar=True, only_visible=False):
-                leaves[self.f.parser.get_root_word(node.label)] = node
+                leaves[self.forest.parser.get_root_word(node.label)] = node
         for line in defstring.splitlines():
             if '::' not in line:
                 continue

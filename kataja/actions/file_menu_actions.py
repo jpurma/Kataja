@@ -153,8 +153,8 @@ class Open(KatajaAction):
 
         # prefs.update(data['preferences'].__dict__)
         # qt_prefs.update(prefs)
-        m = ctrl.main
-        m.disable_signaling()
+        main = ctrl.main
+        main.disable_signaling()
         required_plugin = data.get('kataja_plugin_name', '')
         if required_plugin != prefs.active_plugin_name:
             if required_plugin:
@@ -163,18 +163,17 @@ class Open(KatajaAction):
             else:
                 print('has to disable plugin')
                 ctrl.main.disable_current_plugin()
-        root_uid = data.get('kataja_root_document_uid', '')
-        doc = m.start_new_document(filename, uid=root_uid)
-        print('loading data: ', data)
+        doc = main.start_new_document(filename)
+
         print('created empty document')
-        doc.load_objects(data, m)
+        doc.load_objects(data)
         doc.has_filename = True
         print('done load it with saved data')
         print(f'received {len(doc.forests)} forests, with: ')
         for i, forest in enumerate(doc.forests):
             print(f'Forest {i}: {len(forest.nodes)} nodes and {len(forest.edges)} edges.)')
-        m.enable_signaling()
-        m.set_document(doc)
+        main.enable_signaling()
+        main.set_document(doc)
         print('done setting it as active document')
 
         ctrl.main.document_changed.emit()

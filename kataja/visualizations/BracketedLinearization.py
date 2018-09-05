@@ -34,7 +34,7 @@ class BracketedLinearization(BaseVisualization):
     modes of showing brackets:
     """
     name = 'Bracketed linearization'
-    banned_node_shapes = ()
+    banned_cn_shapes = ()
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -51,7 +51,7 @@ class BracketedLinearization(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
         if reset:
             self.reset_nodes()
 
@@ -82,12 +82,12 @@ class BracketedLinearization(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes
         is triggered here. """
 
-        ls = ctrl.settings.get('node_shape')
+        ls = self.forest.settings.get('cn_shape')
         if ls == g.BOX:
             ls = g.NORMAL
         else:
             ls += 1
-        ctrl.settings.set('node_shape', ls, level=g.FOREST)
+        self.forest.settings.set('cn_shape', ls)
         for node in self.forest.nodes.values():
             self.reset_node(node)
 
@@ -101,7 +101,7 @@ class BracketedLinearization(BaseVisualization):
         draw themselves """
 
         width_map = self.forest.width_map
-        ls = ctrl.settings.get('node_shape')
+        ls = self.forest.settings.get('cn_shape')
         if ls == g.BRACKETED or ls == g.NORMAL:
             y_shift = 0
         elif ls == g.CARD:
