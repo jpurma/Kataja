@@ -43,7 +43,7 @@ class GlossNode(Node):
     display = True
     is_syntactic = False
 
-    editable = {
+    editable_fields = {
         'label': dict(name='Gloss', prefill='gloss', tooltip='translation (optional)')
     }
 

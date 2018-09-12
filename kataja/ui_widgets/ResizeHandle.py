@@ -3,7 +3,6 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl
-from kataja.saved.movables.Node import Node
 
 
 class ResizeHandle(QtWidgets.QSizeGrip):

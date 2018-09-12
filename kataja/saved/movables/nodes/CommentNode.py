@@ -45,10 +45,11 @@ class CommentNode(Node):
     is_syntactic = False
     can_be_in_groups = False
     resizable = True
-    editable = {'text': dict(name='',
-                             prefill='comment',
-                             tooltip='freeform text, invisible for processing',
-                             input_type='expandingtext')}
+    quick_editable = True
+    editable_fields = {'text': dict(name='',
+                                    prefill='comment',
+                                    tooltip='freeform text, invisible for processing',
+                                    input_type='expandingtext')}
 
     default_style = {'fancy': {'color_key': 'accent4',
                                'font_id': g.MAIN_FONT,

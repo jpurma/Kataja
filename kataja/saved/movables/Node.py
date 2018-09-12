@@ -22,10 +22,7 @@
 #
 # ############################################################################
 
-import itertools
 import math
-from collections import defaultdict
-import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
@@ -37,6 +34,7 @@ from kataja.saved.Movable import Movable
 from kataja.saved.Draggable import Draggable
 from kataja.settings.NodeSettings import NodeSettings
 from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.parser.INodes import as_html
 import kataja.ui_widgets.buttons.OverlayButton as Buttons
@@ -67,7 +65,8 @@ class Node(Draggable, Movable):
     display = False
     can_be_in_groups = True
     resizable = False
-    editable = {}
+    quick_editable = False
+    editable_fields = {}
     allowed_child_types = []
 
     default_style = {
@@ -80,6 +79,7 @@ class Node(Draggable, Movable):
         'visible': True,
     }
 
+    embed_edit = NodeEditEmbed
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
@@ -1064,7 +1064,7 @@ class Node(Draggable, Movable):
         if selected:
             self.setZValue(200)
             if ctrl.single_selection() and not ctrl.multiselection_delay:
-                if self.editable and prefs.single_click_editing:
+                if self.quick_editable and prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             print('deselect ', self)
@@ -1105,15 +1105,12 @@ class Node(Draggable, Movable):
                 action = ctrl.ui.get_action('select')
                 action.run_command(self.uid, has_params=True)
             else:
-                if self.editable and not prefs.single_click_editing:
+                if self.quick_editable and not prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             action = ctrl.ui.get_action('select')
             action.run_command(self.uid, has_params=True)
         return self
-
-    def short_str(self):
-        return as_html(self.label) or "no label"
 
     def has_ordered_children(self):
         return True

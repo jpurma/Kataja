@@ -52,7 +52,7 @@ class ConstituentNode(Node):
     width = 20
     height = 20
     is_constituent = True
-    editable = False
+    quick_editable = False
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
 
@@ -131,8 +131,6 @@ class ConstituentNode(Node):
         to each other and know their values.
         :return: None
         """
-        print('after init for constituentnode: ', self, ' where active forest is :', self.forest, 'in display: ', self.forest.in_display,
-              'having synobj ', self.syntactic_object)
         self.update_gloss()
         self.update_cn_shape()
         self.update_label()
@@ -157,6 +155,7 @@ class ConstituentNode(Node):
 
     def set_gloss(self, text):
         self.gloss = text
+        self.update_gloss()
         if self.gloss_node:
             self.gloss_node.text = text
         else:
@@ -306,13 +305,6 @@ class ConstituentNode(Node):
             lines.append(ui_style % 'Click to select, drag to move')
         self.k_tooltip = '<br/>'.join(lines)
 
-    def short_str(self):
-        label = as_text(self.label)
-        if len(label) > 50:
-            return label[:50] + '...'
-        else:
-            return label
-
     def __str__(self):
         label = as_text(self.label, single_line=True)
         return f'CN {label}'
@@ -338,7 +330,6 @@ class ConstituentNode(Node):
         label_text_mode = self.label_text_mode
         include_index = False
         l = ''
-        print(label_text_mode)
         if label_text_mode == g.NODE_LABELS:
             l = self.label
         elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
@@ -357,7 +348,6 @@ class ConstituentNode(Node):
                 l = self.label
 
         l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
-        print('getting label for constituent: ', l_html, l)
         if l_html:
             html.append(l_html)
 
@@ -424,11 +414,7 @@ class ConstituentNode(Node):
                 node = self.forest.get_node(head)
                 if node:
                     res.append(node)
-                print('node missing for a head: ', head)
         return res
-
-    def get_syntactic_heads(self):
-        return self.syntactic_object.get_heads()
 
     def get_lexical_color(self, refresh=True):
         if self.is_fading_out:
@@ -475,22 +461,18 @@ class ConstituentNode(Node):
 
     # ### Features #########################################
 
-    def update_gloss(self, value=None):
+    def update_gloss(self):
         """
 
 
         """
-        if not self.syntactic_object:
-            return
-        syn_gloss = self.gloss
         gloss_node = self.gloss_node
-        if not ctrl.undo_disabled:
-            if gloss_node and not syn_gloss:
-                ctrl.free_drawing.delete_node(gloss_node)
-            elif syn_gloss and not gloss_node:
-                ctrl.free_drawing.create_gloss_node(host=self)
-            elif syn_gloss and gloss_node:
-                gloss_node.update_label()
+        if gloss_node and not self.gloss:
+            ctrl.free_drawing.delete_node(gloss_node)
+        elif self.gloss and not gloss_node:
+            ctrl.free_drawing.create_gloss_node(host=self)
+        elif self.gloss and gloss_node:
+            gloss_node.update_label()
 
     def gather_children(self, position, shape):
         """ If there are other Nodes that are childItems for this node, arrange them to their 
@@ -781,4 +763,4 @@ class ConstituentNode(Node):
     # ############## #
 
     index = SavedField("index")
-    gloss = SavedField("gloss", if_changed=update_gloss)
+    gloss = SavedField("gloss")

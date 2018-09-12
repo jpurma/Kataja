@@ -59,6 +59,7 @@ class ForestSettings:
         v = self.data.get(key, None)
         if v is None:
             return self.next.get(key)
+        return v
 
     def _get_in(self, key, subtype, subtype_container):
         sc = self.data.get(subtype_container, None)

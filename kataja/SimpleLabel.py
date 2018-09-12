@@ -129,10 +129,10 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         my_class = self._host.__class__
         if self._host.syntactic_object:
             synclass = self._host.syntactic_object.__class__
-            syn_editable = getattr(synclass, 'editable', {})
-            self.editable = combine_dicts(syn_editable, my_class.editable)
+            syn_editable_fields = getattr(synclass, 'editable_fields', {})
+            self.editable = combine_dicts(syn_editable_fields, my_class.editable_fields)
         else:
-            self.editable = my_class.editable
+            self.editable = my_class.editable_fields
 
     def is_empty(self) -> bool:
         """ Turning this node into label would result in an empty label.

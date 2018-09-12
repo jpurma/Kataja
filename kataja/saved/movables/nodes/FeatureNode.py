@@ -31,7 +31,6 @@ from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGE
     EDGE_RECEIVING_NOW, CHECKING_EDGE, EDGE_RECEIVING_NOW_DOMINANT, EDGE_OPEN_DOMINANT
 from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
-from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.utils import coords_as_str, to_tuple
@@ -72,25 +71,23 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    editable = {}
-    viewable = {'name': dict(name='Name', prefill='name',
+    quick_editable = False
+    editable_fields = {'name': dict(name='Name', prefill='name',
                              tooltip='Name of the feature, used as identifier',
-                             syntactic=True),
-                'value': dict(name='Value',
-                              prefill='value',
-                              tooltip='Value given to this feature',
-                              syntactic=True),
-                'sign': dict(name='Sign',
-                             prefill='sign',
-                             tooltip='Sign of this feature, e.g. +, -, u, =...'),
-                'family': dict(name='Family', prefill='family',
-                               tooltip='Several distinct features can be '
-                                       'grouped under one family (e.g. '
-                                       'phi-features)',
-                               syntactic=True)
-                }
-
-    embed_edit = NodeEditEmbed
+                                     syntactic=True),
+                        'value': dict(name='Value',
+                                      prefill='value',
+                                      tooltip='Value given to this feature',
+                                      syntactic=True),
+                        'sign': dict(name='Sign',
+                                     prefill='sign',
+                                     tooltip='Sign of this feature, e.g. +, -, u, =...'),
+                        'family': dict(name='Family', prefill='family',
+                                       tooltip='Several distinct features can be '
+                                               'grouped under one family (e.g. '
+                                               'phi-features)',
+                                       syntactic=True)
+                      }
 
     default_style = {'fancy': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
                                'visible': True},
