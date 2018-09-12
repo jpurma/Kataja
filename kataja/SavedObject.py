@@ -341,8 +341,8 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        print('full map: ', full_map)
-        print(len(full_map))
+        # print('full map: ', full_map)
+        # print(len(full_map))
         restored = {}
         self.restore(self.uid, data, full_map, restored)
         # objects need to be finalized after setting values, do this only once per load.
@@ -373,14 +373,14 @@ class SavedObject(object):
         new_data = full_data.get(obj_key, None)
         if not new_data:
             return obj
-        if obj:
-            print('Putting new data to existing obj:', new_data)
+        # if obj:
+        #    print('Putting new data to existing obj:', new_data)
         class_key = new_data['class_name']
 
         if not obj:
-            print('Creating obj with key: ', obj_key)
+            # print('Creating obj with key: ', obj_key)
             obj = classes.create(class_key)
-        print('object data: ', new_data)
+        # print('object data: ', new_data)
         # keep track of which objects have been restored
         restored[obj_key] = obj
 
@@ -409,8 +409,8 @@ class SavedObject(object):
                 result = []
                 for item in data:
                     result.append(inflate(item) if item else item)
-                print('inflated list ', result)
-                print('from data: ', data)
+                # print('inflated list ', result)
+                # print('from data: ', data)
                 return result
             elif isinstance(data, str):
                 if data.startswith('*r*'):

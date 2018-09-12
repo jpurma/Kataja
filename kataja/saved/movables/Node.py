@@ -273,16 +273,6 @@ class Node(Draggable, Movable):
     def is_empty(self):
         return self.label_object.is_empty()
 
-    def get_editing_template(self):
-        """ Create or fetch a dictionary template to help building an editing
-        UI for Node.
-        The template is based on 'editable'-class variable and combines
-        templates from Node
-        and its subclasses and its syntactic object's templates.
-        :return: dict
-        """
-        return self.label_object.editable
-
     def is_triangle_host(self):
         return bool(self.triangle_stack and self.triangle_stack[-1] is self)
 

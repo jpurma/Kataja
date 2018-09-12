@@ -223,7 +223,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             checked_features = getattr(synobj, 'checked_features', [])
             if checked_features:
                 for xy in checked_features:
-                    print('adding checked features: ', xy)
+                    # print('adding checked features: ', xy)
                     if isinstance(xy, tuple):
                         x, y = xy
                         features.append(x)

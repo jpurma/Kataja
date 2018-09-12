@@ -156,7 +156,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         # do nothing if we already have a good enough position. For user it is better if the
         # panel stays in place than if it jumps around.
         if view_rect.contains(my_rect, proper=True) and not node_rect.intersects(my_rect):
-            print('do nothing: ', my_rect, view_rect, node_rect)
+            # print('do nothing: ', my_rect, view_rect, node_rect)
             return
 
         ncy = node_rect.center().y()
