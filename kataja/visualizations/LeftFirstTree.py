@@ -39,6 +39,7 @@ class LeftFirstTree(BaseVisualization):
     further down and right. """
     name = 'Left first trees'
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -79,12 +80,6 @@ class LeftFirstTree(BaseVisualization):
             if node.isVisible() and (node.physics_x or node.physics_y):
                 return True
         return True
-
-    @caller
-    def reselect(self):
-        """ if there are different modes for one visualization, rotating
-        between different modes is triggered here. """
-        self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
@@ -155,10 +150,6 @@ class LeftFirstTree(BaseVisualization):
                 nx += x_step
             elif len(children) == 2:
                 nx += x_step * 2
-
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree_top):
         """ Draws the trees to a table or a grid, much like latex qtree and

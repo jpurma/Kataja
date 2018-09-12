@@ -41,8 +41,6 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled, after new classes are initialised. This can be
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
-    ctrl.free_drawing_mode = False
-    ctrl.ui.update_edit_mode()
 
 
 def tear_down_plugin(main, ctrl, prefs):

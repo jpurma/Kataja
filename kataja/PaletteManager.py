@@ -388,7 +388,7 @@ class PaletteManager:
         :param randomise: if color mode allows, generate new base color
         """
         if ctrl.forest:
-            theme_key = ctrl.forest.settings.get('temp_color_theme') or ctrl.forest.settings.get('color_theme')
+            theme_key = ctrl.forest.settings.get('color_theme')
         else:
             theme_key = ctrl.doc_settings.get('color_theme')
         self.activate_color_theme(theme_key, try_to_remember=not randomise)

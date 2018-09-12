@@ -89,7 +89,6 @@ class Preferences(object):
         self._tab_order = ['General', 'Drawing', 'Printing', 'Animation', 'Syntax', 'Node styles',
                            'Performance', 'Plugins', 'Advanced']
 
-        self.temp_color_theme = ''
         self.color_theme = 'solarized_lt'
         self._color_theme_ui = {
             'tab': 'General',
@@ -249,11 +248,9 @@ class Preferences(object):
         self.label_text_mode = 2
         self._label_text_mode_ui = {
             'tab': 'Drawing',
-            'choices': [(SYN_LABELS, 'Syntactic labels'),
-                        (SYN_LABELS_FOR_LEAVES, 'Syntactic labels for leaves'),
-                        (CHECKED_FEATURES, 'Checked features'),
-                        (NODE_LABELS, 'Node labels or syntactic labels'),
-                        (NODE_LABELS_FOR_LEAVES, 'Node labels or syntactic labels for leaves'),
+            'choices': [(CHECKED_FEATURES, 'Checked features'),
+                        (NODE_LABELS, 'Show all labels'),
+                        (NODE_LABELS_FOR_LEAVES, 'Show labels for leaves'),
                         (NO_LABELS, 'No labels for constituents')],
             'label': 'Node label text',
             'help': 'Should the tree show freely editable labels (node '
@@ -630,7 +627,6 @@ class Preferences(object):
         return getattr(self, key)
 
     def get_for_node_type(self, key, node_type):
-        print(key, self.nodes[node_type])
         return self.nodes[node_type][key]
 
     def get_for_edge_type(self, key, edge_type):

@@ -91,7 +91,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
             return syn_state
         if self.display_mode == CONSTITUENT_TREE:
             ctrl.document.set_for_node_type('visible', True, g.FEATURE_NODE)
-            ctrl.document.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES)
+            ctrl.document.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
             ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
             ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
             ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)

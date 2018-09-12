@@ -83,8 +83,7 @@ class Node(Draggable, Movable):
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = []
     touch_areas_when_selected = []
-    buttons_when_selected = [Buttons.NodeEditorButton, Buttons.RemoveNodeButton,
-                             Buttons.NodeUnlockButton]
+    buttons_when_selected = [Buttons.NodeEditorButton, Buttons.NodeUnlockButton]  # Buttons.RemoveNodeButton
 
     def __init__(self, forest=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -226,7 +225,7 @@ class Node(Draggable, Movable):
         sy += self.label_object.y_offset + self.height / 2
         return sx, sy
 
-    def label_as_html(self, peek_into_synobj=True):
+    def label_as_html(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
         'label_as_html' -method. This is so that it is easier to create custom
@@ -234,15 +233,11 @@ class Node(Draggable, Movable):
 
         Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
-
-        :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
-        needs the result from this implementation (e.g. to append something to it), you have to
-        turn this off to avoid infinite loop. See example plugins.
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if peek_into_synobj and hasattr(self.syntactic_object, 'label_as_html'):
+        if hasattr(self.syntactic_object, 'label_as_html'):
             return self.syntactic_object.label_as_html(self)
 
         return as_html(self.label)
@@ -526,10 +521,7 @@ class Node(Draggable, Movable):
                 other_type = ctrl.dragged_text
         else:
             other_type = other.node_type
-        if (not ctrl.free_drawing_mode) and (
-                        other_type == g.CONSTITUENT_NODE or other_type == g.FEATURE_NODE):
-            return False
-        elif other_type in self.allowed_child_types:
+        if other_type in self.allowed_child_types:
             return other not in self.get_children(similar=False, visible=False) if other else True
         return False
 
@@ -1072,7 +1064,7 @@ class Node(Draggable, Movable):
         if selected:
             self.setZValue(200)
             if ctrl.single_selection() and not ctrl.multiselection_delay:
-                if prefs.single_click_editing:
+                if self.editable and prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             print('deselect ', self)
@@ -1113,7 +1105,7 @@ class Node(Draggable, Movable):
                 action = ctrl.ui.get_action('select')
                 action.run_command(self.uid, has_params=True)
             else:
-                if not prefs.single_click_editing:
+                if self.editable and not prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             action = ctrl.ui.get_action('select')

@@ -40,39 +40,41 @@ class ConstituentNodeEditEmbed(UIEmbed):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         layout = self.vlayout
+        drawing_mode = ctrl.free_drawing
         ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
-        ui_g = QtGui.QPalette(ui_p)
-        ui_g.setColor(QtGui.QPalette.Text, ctrl.cm.get('accent5'))
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
         tt = 'Label used in syntactic computations, plain string. Visible in <i>syntactic mode</i> ' \
              'or if <i>Displayed label</i> is empty.'
         title = 'Syntactic label'
-        self.synlabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='label')
+        self.synlabel = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='label',
+                                       on_edit=self.synlabel_edited,
+                                       on_finish=self.synlabel_finished,
+                                       on_return=self.synlabel_finished)
         make_label(title, self, layout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         layout.addWidget(self.synlabel)
         self.synlabel.setReadOnly(True)
 
-        tt = 'Index to connect several copies of the same node in a tree.'
+        tt = "Freeform label or text for node, has no effect for syntactic computation"
+        title = 'User label'
+        self.label = ExpandingTextArea(self, tooltip=tt, font=smaller_font, prefill='label',
+                                       on_edit=self.label_edited, label=title,
+                                       on_focus_out=self.label_finished)
+        self.label.setPalette(ui_p)
+        layout.addWidget(self.label)
+
+        tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
-        self.index = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='i'
+        self.index = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='i',
+                                    on_finish=self.index_finished
                                     ).to_layout(layout, with_label=title, label_first=True)
-        self.index.setReadOnly(True)
         self.index.setPalette(ui_p)
         self.index.setMaximumWidth(20)
-
-        tt = 'Gloss is syntactically inert translation or explanation for the constituent'
-        title = 'Gloss'
-        self.gloss_label = KatajaLineEdit(self, tooltip=tt, font=big_font, prefill='gloss',
-                                          on_finish=self.gloss_finished)
-        self.gloss_label.setPalette(ui_g)
-        make_label(title, self, layout, tt, self.gloss_label, ui_s)
-        layout.addWidget(self.gloss_label)
 
         self.update_embed()
         self.update_position()
@@ -93,13 +95,43 @@ class ConstituentNodeEditEmbed(UIEmbed):
     def update_fields(self):
         """ Update field values on embed form based on template """
         node = self.host
-        self.synlabel.setText(node.label)
-        self.gloss_label.setText(node.gloss)
+        self.label.setText(node.label)
+        self.synlabel.setText(node.get_syntactic_label())
         self.index.setText(node.index or '')
 
-    def gloss_finished(self):
-        text = self.gloss_label.text()
-        self.host.set_gloss(text)
+    def triangle_enabled(self):
+        node = self.host
+        if not node:
+            return False
+        elif not node.triangle_stack:
+            return True
+        elif node.triangle_stack[-1] == node:
+            return True
+        return False
+
+    def synlabel_edited(self, *args, **kwargs):
+        #print('synlabel edited')
+        #print(args, kwargs)
+        pass
+
+    def synlabel_finished(self):
+        text = self.synlabel.text()
+        self.host.parse_edited_label('syntactic label', text)
+        ctrl.forest.forest_edited()
+        self.update_fields()
+
+    def label_edited(self, *args, **kwargs):
+        pass
+
+    def label_finished(self):
+        text = self.label.inode_text()
+        self.host.parse_edited_label('node label', text)
+        ctrl.forest.forest_edited()
+        self.update_fields()
+
+    def index_finished(self):
+        text = self.index.text()
+        self.host.parse_edited_label('index', text)
         ctrl.forest.forest_edited()
         self.update_fields()
 
@@ -114,7 +146,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         """ Find the main element to focus in this embed.
         :return:
         """
-        self.synlabel.setFocus()
+        self.label.setFocus()
 
 
 

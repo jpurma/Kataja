@@ -1,0 +1,7 @@
+{
+	"name": "FreeDrawing",
+	"description": "A mode where trees can be edited freely without interference from syntactic model",
+	"author": "Jukka Purma",
+	"version": "0.1",
+	"setup": "setup.py"
+}

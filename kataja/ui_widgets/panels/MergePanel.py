@@ -32,10 +32,7 @@ class DraggableMergeFrame(QtWidgets.QFrame):
 
     def update_frame(self):
         node_class = classes.nodes.get(self.key, None)
-        if ctrl.free_drawing_mode:
-            value = bool(node_class)
-        else:
-            value = node_class and not node_class.is_syntactic
+        value = node_class.editable
         if value and ctrl.doc_settings.get('syntactic_mode'):
             value = node_class.is_syntactic
         self.setEnabled(value)

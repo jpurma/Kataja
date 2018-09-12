@@ -348,9 +348,7 @@ class SavedObject(object):
         # objects need to be finalized after setting values, do this only once per load.
         for item in restored.values():
             if hasattr(item, 'after_init'):
-                print('restoring item, calling after_init for ', type(item), item)
-                if hasattr(item, 'parts'):
-                    print('parts: ', item.parts)
+                #print('restoring item, calling after_init for ', type(item), item)
                 item.after_init()
 
     def restore(self, obj_key, full_data, full_map, restored):

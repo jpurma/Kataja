@@ -80,10 +80,8 @@ class ConstituentPanel(NodePanel):
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)
-        allowed = classes.ConstituentNode.allowed_label_text_modes()
         data = prefs.get_display_choices('label_text_mode')
-        data = [(choice, text) for (choice, text) in data if choice
-                in allowed]
+        data = [(choice, text) for (choice, text) in data]
 
         self.label_selector = SelectionBox(parent=self, action='set_visible_label',
                                            data=data).to_layout(hlayout, with_label='Visible label')

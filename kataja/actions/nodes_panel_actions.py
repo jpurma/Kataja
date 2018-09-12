@@ -50,34 +50,6 @@ class AbstractAddNode(KatajaAction):
         ctrl.forest.forest_edited()
 
 
-class AddConstituentNode(AbstractAddNode):
-    k_action_uid = 'add_constituent_node'
-    k_command = 'Add constituent node'
-    k_tooltip = 'Create new constituent node'
-    node_type = g.CONSTITUENT_NODE
-
-    def enabler(self):
-        if ctrl.free_drawing_mode:
-            self.active_tooltip = self.tip0
-        else:
-            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
-        return ctrl.free_drawing_mode
-
-
-class AddFeatureNode(AbstractAddNode):
-    k_action_uid = 'add_feature_node'
-    k_command = 'Add feature node'
-    k_tooltip = 'Create new feature node'
-    node_type = g.FEATURE_NODE
-
-    def enabler(self):
-        if ctrl.free_drawing_mode:
-            self.active_tooltip = self.tip0
-        else:
-            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
-        return ctrl.free_drawing_mode
-
-
 class AddGlossNode(AbstractAddNode):
     k_action_uid = 'add_gloss_node'
     k_command = 'Add gloss node'

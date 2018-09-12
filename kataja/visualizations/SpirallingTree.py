@@ -127,6 +127,7 @@ class SpirallingTree(BaseVisualization):
     right. """
     name = 'Spiralling trees'
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -171,16 +172,6 @@ class SpirallingTree(BaseVisualization):
             if node.isVisible() and (node.physics_x or node.physics_y):
                 return True
         return True
-
-    @caller
-    def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes
-        is triggered here. """
-        self.set_data('rotation', self.get_data('rotation') - 1)
-
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree_top, sides=0):
         """

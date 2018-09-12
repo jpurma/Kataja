@@ -101,9 +101,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         if node:
             found_nodes.add(node.uid)
             node.syntactic_object = me
-            node.name = getattr(me, 'name', '')
-            node.value = getattr(me, 'value', '')
-            node.family = getattr(me, 'family', '')
         else:
             fns_to_create.append(me)
         # we usually don't have feature structure, but lets assume that possibility
@@ -151,9 +148,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     break
         if not pos:
             pos = (sc_center, sc_middle)
-        node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
-        node.set_syntactic_object(syn_bare)
-        node.label = syn_bare.label
+        free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos, synobj=syn_bare)
 
     for syn_feat in fns_to_create:
         host = forest.get_node(syn_feat.host)
@@ -162,11 +157,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         else:
             print('missing host for created feature: ', syn_feat, syn_feat.host)
             pos = (0, 0)
-        fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
-        fnode.set_syntactic_object(syn_feat)
-        fnode.name = getattr(syn_feat, 'name', '')
-        fnode.value = getattr(syn_feat, 'value', '')
-        fnode.family = getattr(syn_feat, 'family', '')
+        free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos, synobj=syn_feat)
 
     # ################ Edges ###################################
 

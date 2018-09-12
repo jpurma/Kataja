@@ -53,6 +53,7 @@ class BaseVisualization:
     name = 'BaseVisualization base class'
     banned_cn_shapes = ()
     hide_edges_if_nodes_overlap = True
+    use_rotation = False
 
     def __init__(self):
         """ This is called once when building Kataja. Set up properties for this kind of 
@@ -84,7 +85,23 @@ class BaseVisualization:
         matter for all forest and not single trees.
         :return:
         """
-        pass
+        if self.use_rotation:
+            new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
+            self.set_data('rotation', new_rotation)
+
+    def reselect(self):
+        """ if there are different modes for one visualization, rotating between different modes
+        is triggered here.
+
+        Default is to randomly jiggle all dynamically placed nodes.
+        """
+        if self.use_rotation:
+            self.set_data('rotation', self.get_data('rotation', 0) - 1)
+        else:
+            for node in self.forest.nodes.values():
+                if node.use_physics():
+                    x, y = node.current_position
+                    node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
     def has_free_movers(self):
         return True
@@ -273,18 +290,6 @@ class BaseVisualization:
     # node.update_visibility(show_edges = True, scope = 0)
     # if node.is_visible() != vis:
     # print 'V node hidden: ', node
-
-    @caller
-    def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes 
-        is triggered here. 
-        
-        Default is to randomly jiggle all dynamically placed nodes.
-        """
-        for node in self.forest.nodes.values():
-            if node.use_physics():
-                x, y = node.current_position
-                node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
     def edge_pull(self, node, node_x, node_y, pull_factor=.7):
         # attract

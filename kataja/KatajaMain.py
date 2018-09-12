@@ -125,7 +125,6 @@ class KatajaMain(QtWidgets.QMainWindow):
     ui_font_changed = QtCore.pyqtSignal()
     viewport_moved = QtCore.pyqtSignal()
     viewport_resized = QtCore.pyqtSignal()
-    view_mode_changed = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
     def __init__(self, kataja_app, no_prefs=False, reset_prefs=False):

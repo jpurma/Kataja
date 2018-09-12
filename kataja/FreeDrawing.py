@@ -140,7 +140,7 @@ class FreeDrawing:
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, label='', relative=None, pos=None, node_type=1, **kw):
+    def create_node(self, label='', relative=None, pos=None, node_type=1, synobj=None, **kw):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param label: label text for node, behaviour depends on node type, usually main text content
@@ -148,10 +148,13 @@ class FreeDrawing:
         given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
+        :param synobj:
         :return:
         """
         node_class = classes.nodes.get(node_type)
         node = node_class(label=label, forest=self.forest, **kw)
+        if synobj:
+            node.set_syntactic_object(synobj)
         node.after_init()
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,

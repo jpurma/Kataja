@@ -39,10 +39,10 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                     checked_feat, valuing_feat = checked_features
                     feat_node = ctrl.forest.get_node(checked_feat)
                     parents = feat_node.get_parents()
-                    words.append('(' + ' '.join([x.get_syn_label() for x in parents]) + ')')
+                    words.append('(' + ' '.join([x.label for x in parents]) + ')')
                     feat_node = ctrl.forest.get_node(valuing_feat)
                     parents = feat_node.get_parents()
-                    words.append(' '.join([x.get_syn_label() for x in parents]))
+                    words.append(' '.join([x.label for x in parents]))
 
         self.setText(' '.join(words))
 

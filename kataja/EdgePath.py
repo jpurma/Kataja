@@ -431,7 +431,7 @@ class EdgePath:
             path.addEllipse(x - 2, y - 4, 4, 4)
             path.addEllipse(x - 1, y - 6, 2, 2)
         elif symbol == EDGE_PLUGGED_IN:
-            checks_node = self.edge.alpha.get_checks_node()
+            checks_node = self.edge.alpha.checks
             for edge in self.edge.start.edges_down:
                 if edge.alpha is checks_node and edge.is_visible():
                     edge.path.update_end_points()

@@ -35,7 +35,7 @@ class NewElementEmbed(UIEmbed):
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
             node_class = classes.nodes.get(key, None)
-            if (not node_class) or (node_class.is_syntactic and not ctrl.free_drawing_mode):
+            if (not node_class) or (not node_class.editable):
                 continue
             self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
         self.node_type_selector.add_items(self.node_types)

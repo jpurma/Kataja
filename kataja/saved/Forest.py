@@ -250,10 +250,6 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-        if ctrl.free_drawing_mode:
-            #print('doing nodes to synobjs in forest_edited')
-            self.syntax.nodes_to_synobjs(self, self.trees)
-
     def add_step(self, syn_state: SyntaxState):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.
@@ -606,12 +602,6 @@ class Forest(SavedObject):
     def simple_parse(self, text):
         return self.parser.simple_parse(text)
 
-    def create_node_from_string(self, text):
-        """
-        :param text:
-        """
-        return self.parser.string_into_forest(text)
-
     def order_edge_visibility_check(self):
         """ Make sure that all edges are checked to update their visibility.
         This can be called multiple
@@ -747,37 +737,6 @@ class Forest(SavedObject):
                 edge.path.cached_shift_for_start = None
                 edge.path.cached_shift_for_end = None
 
-    def update_feature_ordering_old(self):
-
-        for cn in self.nodes.values():
-            if cn.node_type == g.CONSTITUENT_NODE:
-                if cn.syntactic_object:
-                    syn_feats = list(cn.syntactic_object.inherited_features)
-                    if cn.syntactic_object.checked_features:
-                        syn_feats = [feat for feat in cn.syntactic_object.checked_features if
-                                     feat not in syn_feats] + syn_feats
-                    if syn_feats is not None:
-                        feats = [self.get_node(syn_f) for syn_f in syn_feats]
-                        sorted_edges = []
-                        edges = set(cn.edges_down)
-                        for feat in feats:
-                            for edge in edges:
-                                if edge.alpha is feat or edge.end is feat:
-                                    edges.remove(edge)
-                                    sorted_edges.append(edge)
-                                    break
-                        cn.cached_sorted_feature_edges = sorted_edges
-                else:
-                    cn.cached_sorted_feature_edges = [e for e in cn.edges_down if e.edge_type
-                                                      == g.FEATURE_EDGE]
-
-        for edge in self.edges.values():
-            edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)
-            edge.cached_edge_end_index = edge.edge_end_index(from_cache=False)
-            if edge.path:
-                edge.path.cached_shift_for_start = None
-                edge.path.cached_shift_for_end = None
-
     def compute_traces_to_draw(self, rotator) -> int:
         """ This is complicated, but returns a dictionary that tells for each index key
         (used by chains) in which position at trees to draw the node. Positions are identified by
@@ -896,23 +855,6 @@ class Forest(SavedObject):
         new_nodes = self.parser.string_into_forest(text)
         if new_nodes:
             self.free_drawing.replace_node(node, new_nodes[0])
-
-    # View mode
-    def change_view_mode(self, syntactic_mode):
-        ctrl.doc_settings.set('syntactic_mode', syntactic_mode)
-        nodes = list(self.nodes.values())
-        for node in nodes:
-            node.update_label()
-            node.update_visibility(skip_label=True)
-        ctrl.main.view_mode_changed.emit()
-        if syntactic_mode:
-            if ctrl.main.color_manager.paper().value() < 100:
-                self.settings.set('temp_color_theme', 'dk_gray')
-            else:
-                self.settings.set('temp_color_theme', 'gray')
-        else:
-            self.settings.set('temp_color_theme', '')
-        ctrl.main.update_colors()
 
     def others_update_colors(self):
         for other in self.others.values():

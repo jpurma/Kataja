@@ -117,7 +117,6 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                              'select_trace_strategy',
                                                              'select_feature_display_mode',
                                                              'switch_syntax_view_mode',
-                                                             'switch_view_mode',
                                                              'toggle_semantics_view'])),
                               ('view_menu', ('&View', ['zoom_to_fit',
                                                        'auto_zoom',
@@ -911,10 +910,7 @@ class UIManager:
         miminimise panels jumping around.
         """
         self.close_active_embed()
-        if node.node_type == g.CONSTITUENT_NODE:
-            self.active_embed = ConstituentNodeEditEmbed(self.main.graph_view, node)
-        else:
-            self.active_embed = NodeEditEmbed(self.main.graph_view, node)
+        self.active_embed = node.embed_edit(self.main.graph_view, node)
         if previous_embed:
             self.active_embed.move(previous_embed.pos())
             self.active_embed.update_position()
@@ -975,12 +971,7 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        print('update_touch_areas_for_selected_edge')
-        #if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
-        #    self.get_or_create_touch_area(edge, 'LeftAddInnerSibling',
-        #                                  self.get_action('inner_add_sibling_left'))
-        #    self.get_or_create_touch_area(edge, 'RightAddInnerSibling',
-        #                                  self.get_action('inner_add_sibling_right'))
+        pass
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """ Show connection points for dragged nodes.
@@ -1048,13 +1039,6 @@ class UIManager:
         """
         log.log(level, msg)
 
-    # Mode HUD
-    def update_edit_mode(self):
-        free_drawing = ctrl.free_drawing_mode
-        self.top_bar_buttons.edit_mode_button.setChecked(not free_drawing)
-        if free_drawing and ctrl.doc_settings.get('syntactic_mode'):
-            ctrl.forest.change_view_mode(False)
-        self.top_bar_buttons.view_mode_button.setVisible(not free_drawing)
 
     # ### Embedded buttons ############################
 
@@ -1066,7 +1050,6 @@ class UIManager:
         #     item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
-        self.update_edit_mode()
 
     def add_button(self, button, action):
         button.update_position()
@@ -1104,8 +1087,7 @@ class UIManager:
         :param group:
         :return:
         """
-        for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton,
-                             ob.DeleteGroupButton]:
+        for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton]:
             if button_class.condition(group):
                 button = self.get_or_create_button(group, button_class)
                 group.add_button(button)

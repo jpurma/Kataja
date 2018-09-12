@@ -72,9 +72,7 @@ def start_plugin(main, ctrl, prefs):
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
     import kataja.globals as g
-    ctrl.free_drawing_mode = False
-    ctrl.ui.update_edit_mode()
-    ctrl.doc_settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES)
+    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
     ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
     ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
     ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)

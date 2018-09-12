@@ -35,6 +35,7 @@ class BracketedLinearization(BaseVisualization):
     """
     name = 'Bracketed linearization'
     banned_cn_shapes = ()
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -92,9 +93,8 @@ class BracketedLinearization(BaseVisualization):
             self.reset_node(node)
 
     def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
+        super().prepare_draw()
         self.forest.prepare_width_map()
-        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree_top):
         """ Bracket manager's width map tells the required widths and labels know already how to

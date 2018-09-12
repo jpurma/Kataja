@@ -1,3 +1,4 @@
+
 # coding=utf-8
 # ############################################################################
 #
@@ -24,17 +25,20 @@
 
 import random
 import string
+import itertools
 from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
+from kataja.SavedField import SavedField
+from kataja.SimpleLabel import SimpleLabel
+from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
     EDGE_RECEIVING_NOW, CHECKING_EDGE, EDGE_RECEIVING_NOW_DOMINANT, EDGE_OPEN_DOMINANT
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node
-from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
-from kataja.utils import coords_as_str, to_tuple
+from kataja.utils import coords_as_str, to_tuple, time_me
 
 color_map = {
     'tense': 'accent7',
@@ -56,8 +60,33 @@ color_map = {
     't': 'accent4',
     'p': 'accent5',
     'q': 'accent6',
-    'c': 'accent7'
+    'c': 'accent7',
 }
+
+
+class EditableFeatureNode(FeatureNode):
+
+    editable = {}
+    viewable = {'name': dict(name='Name', prefill='name',
+                             tooltip='Name of the feature, used as identifier',
+                             syntactic=True),
+                'value': dict(name='Value',
+                              prefill='value',
+                              tooltip='Value given to this feature',
+                              syntactic=True),
+                'sign': dict(name='Sign',
+                             prefill='sign',
+                             tooltip='Sign of this feature, e.g. +, -, u, =...'),
+                'family': dict(name='Family', prefill='family',
+                               tooltip='Several distinct features can be '
+                                       'grouped under one family (e.g. '
+                                       'phi-features)',
+                               syntactic=True)
+                }
+
+    def __init__(self, label='', sign='', value='', family='', forest=None):
+        super().__init__(forest=forest)
+        self.syntactic_object = Feature(label=label, sign=sign, value=value, family=family)
 
 
 class FeatureNode(Node):
@@ -90,8 +119,6 @@ class FeatureNode(Node):
                                syntactic=True)
                 }
 
-    embed_edit = NodeEditEmbed
-
     default_style = {'fancy': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
                                'visible': True},
                      'plain': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
@@ -99,40 +126,30 @@ class FeatureNode(Node):
 
     default_edge = g.FEATURE_EDGE
 
-    def __init__(self, label=None, forest=None):
+    def __init__(self, label='', sign='', value='', family='', forest=None):
         Node.__init__(self, forest=forest)
         self.repulsion = 0.25
         self._gravity = 3.0
         self.fshape = 2
         self.invert_colors = True
 
-    @property
-    def name(self):
-        return self.syntactic_object.name
+        # implement color() to map one of the d['rainbow_%'] colors here.
+        # Or if bw mode is on, then something else.
 
-    @property
-    def sign(self):
-        return self.syntactic_object.sign
+    def get_sign(self):
+        return self.syntactic_object.sign if self.syntactic_object else self.sign
 
-    @property
-    def value(self):
-        return self.syntactic_object.value
-
-    @property
-    def family(self):
-        return self.syntactic_object.family
-
-    @property
-    def checks(self):
-        f = self.syntactic_object.checks
-        if f:
-            return self.forest.get_node(f)
-
-    @property
-    def checked_by(self):
-        f = self.syntactic_object.checked_by
-        if f:
-            return self.forest.get_node(f)
+    @staticmethod
+    def create_synobj(label, forest):
+        """ FeatureNodes are wrappers for Features. Exact
+        implementation/class of feature is defined in ctrl.
+        :return:
+        """
+        if not label:
+            label = 'Feature'
+        obj = ctrl.syntax.Feature(name=label)
+        obj.after_init()
+        return obj
 
     def preferred_z_value(self):
         return 60
@@ -151,6 +168,30 @@ class FeatureNode(Node):
             y += random.uniform(-4, 4)
         self.set_original_position((x, y))
 
+    def get_checks_node(self):
+        if self.syntactic_object:
+            checks = self.syntactic_object.checks
+            if checks:
+                return self.forest.get_node(checks)
+        else:
+            return self.checks
+
+    def get_checked_by_node(self):
+        if self.syntactic_object:
+            checked_by = self.syntactic_object.checked_by
+            if checked_by:
+                return self.forest.get_node(checked_by)
+        else:
+            return self.checked_by
+
+    def get_host_node(self):
+        if self.syntactic_object and self.syntactic_object.host:
+            return self.forest.get_node(self.syntactic_object.host)
+        else:
+            for parent in self.get_parents(similar=False, visible=False):
+                if parent.node_type == g.CONSTITUENT_NODE:
+                    return parent
+
     def label_as_html(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
@@ -165,7 +206,7 @@ class FeatureNode(Node):
         # Allow custom syntactic objects to override this
         if hasattr(self.syntactic_object, 'label_as_html'):
             return self.syntactic_object.label_as_html(self)
-        return str(self.syntactic_object)
+        return str(self)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -175,29 +216,62 @@ class FeatureNode(Node):
           (field_name, html).
         :return:
         """
-        return None
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'label_as_editable_html'):
+            return self.syntactic_object.label_as_editable_html(self)
+
+        return 'name', self.label_as_html()[0]
+
+    def parse_quick_edit(self, text):
+        """ This is an optional method for node to parse quick edit information into multiple
+        fields. Usually nodes do without this: quickediting only changes one field at a time and
+        interpretation is straightforward. E.g. features can have more complex parsing.
+        :param text:
+        :return:
+        """
+        if hasattr(self.syntactic_object, 'parse_quick_edit'):
+            return self.syntactic_object.parse_quick_edit(self, text)
+        parts = text.split(':')
+        name = ''
+        value = ''
+        family = ''
+        if len(parts) >= 3:
+            name, value, family = parts
+        elif len(parts) == 2:
+            name, value = parts
+        elif len(parts) == 1:
+            name = parts[0]
+        if len(name) > 1 and name.startswith('u') and name[1].isupper():
+            name = name[1:]
+        if name and name[0] in classes.Feature.simple_signs:
+            self.sign = name[0]
+            name = name[1:]
+        self.name = name
+        self.value = value
+        self.family = family
 
     def hidden_in_triangle(self):
-        """ If features are folded into triangle, they are always hidden. 
-        :return: 
+        """ If features are folded into triangle, they are always hidden.
+        :return:
         """
         return bool(self.triangle_stack)
 
     def my_checking_feature(self):
-        f = self.syntactic_object.checked_by
-        if f:
-            return self.forest.get_node(f)
+        for edge in self.edges_up:
+            if edge.edge_type == g.CHECKING_EDGE:
+                return edge.start
 
     def update_checking_display(self, shape, position, checking_mode):
         """ Cluster features according to feature_positioning -setting or release them to be
         positioned according to visualisation.
-        'locked_to_node' is the essential attribute in here. For features it should have two 
-        kinds of values or None: 
+        'locked_to_node' is the essential attribute in here. For features it should have two
+        kinds of values or None:
         1: locked to parent constituent node -- this is used to arrange features neatly below node.
         2: locked to another feature -- this is used to show feature checking
         the third option shouldn't happen:
-        3: locked to triangle host like constituent nodes are locked to triangle host 
-        
+        3: locked to triangle host like constituent nodes are locked to triangle host
+
         :param shape:
         :param position:
         :param checking_mode:
@@ -234,7 +308,7 @@ class FeatureNode(Node):
         # Then see if it should be fixed to its parent constituent node
         if not locked_to_another_feature:
             if position or shape == g.CARD:
-                host = self.get_host()
+                host = self.get_host_node()
                 if host and host.is_visible():
                     self.lock_to_node(host)
                 else:
@@ -243,30 +317,40 @@ class FeatureNode(Node):
                 self.release_from_locked_position()
 
     def is_needy(self):
-        return self.syntactic_object.is_needy()
+        if self.syntactic_object:
+            return self.syntactic_object.is_needy()
+        else:
+            return self.sign in ('u', '=', '-')
 
     def valuing(self):
-        return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
+        if self.syntactic_object:
+            return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
+        else:
+            return self.checks or self.sign not in ('u', '=', '-')
 
     def can_satisfy(self):
-        return self.syntactic_object.can_satisfy()
+        if self.syntactic_object:
+            return self.syntactic_object.can_satisfy()
+        else:
+            return self.sign not in ('u', '=', '-')
 
     def is_satisfied(self):
-        return self.syntactic_object.checked_by
+        if self.syntactic_object:
+            return self.syntactic_object.checked_by
+        else:
+            return self.checked_by
 
     def satisfies(self):
-        return self.syntactic_object.checks
+        if self.syntactic_object:
+            return self.syntactic_object.checks
+        else:
+            return self.checks
 
     def get_edges_to_me(self):
         for edge in self.edges_up:
             if edge.alpha is self:
                 return edge.chain_up([edge])
         return []
-
-    def get_host(self):
-        for parent in self.get_parents():
-            if parent.node_type == g.CONSTITUENT_NODE:
-                return parent
 
     def _calculate_inner_rect(self, extra_w=0, extra_h=0):
         label = self.label_object
@@ -399,22 +483,22 @@ class FeatureNode(Node):
                 ck = 'accent' + str(c_id)
         else:
             ck = self.settings.get('color_key')
-        if self.syntactic_object.is_inactive():
+        if self.syntactic_object and self.syntactic_object.is_inactive():
             ck += 'tr'
         return ck
 
     def special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
-        if edge_type == g.FEATURE_EDGE: # not used atm.
+        if edge_type == g.FEATURE_EDGE:  # not used atm.
             f_align = self.forest.settings.get('feature_positioning')
             br = self.boundingRect()
             left, top, right, bottom = (int(x * .8) for x in br.getCoords())
-            if f_align == 0: # direct
+            if f_align == 0:  # direct
 
                 if start:
                     return (sx, sy), BOTTOM_SIDE
                 else:
                     return (ex, ey), BOTTOM_SIDE
-            elif f_align == 1: # vertical
+            elif f_align == 1:  # vertical
                 if start:
                     if sx < ex:
                         return (sx + right, sy), RIGHT_SIDE
@@ -467,11 +551,11 @@ class FeatureNode(Node):
         if self.satisfies():
             return EDGE_PLUGGED_IN
         elif self.is_satisfied():
-            if self.sign == '=':
+            if self.get_sign() == '=':
                 return EDGE_RECEIVING_NOW_DOMINANT
             return EDGE_RECEIVING_NOW
         elif self.is_needy() and not self.syntactic_object.is_inactive():
-            if self.sign == '=':
+            if self.get_sign() == '=':
                 return EDGE_OPEN_DOMINANT
             return EDGE_OPEN
         elif self.can_satisfy():
@@ -500,24 +584,38 @@ class FeatureNode(Node):
         if self.use_adjustment:
             lines.append(f' adjusted position {coords_as_str(self.adjustment)}')
 
-        lines.append("")
-        lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
-        lines.append(f"uid: {tt_style % synobj.uid}")
-        lines.append(f"name: '{synobj.name}'")
-        lines.append(f"sign: '{synobj.sign}'")
-        lines.append(f"value: '{synobj.value}' ")
-        if self.family:
-            lines.append(f"family: '{synobj.family}'")
-        host = self.get_host()
-        if host:
-            lines.append(f"belonging to: '{host}'")
+        if not synobj:
+            lines.append(f"name: {repr(self.name)}")
+            lines.append(f"sign: {repr(self.sign)}")
+            lines.append(f"value: {repr(self.value)} ")
+            if self.family:
+                lines.append(f"family: '{self.family}'")
+            host = self.get_host()
+            if host:
+                lines.append(f"belonging to: '{host}'")
+            if self.checks:
+                lines.append(f"checks: '{self.checks}' of '{self.checks.get_host()}'")
+            if self.checked_by:
+                lines.append(f"checked by: '{self.checked_by}' of '{self.checked_by.get_host()}'")
+        else:
+            lines.append("")
+            lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
+            lines.append(f"uid: {tt_style % self.syntactic_object.uid}")
+            lines.append(f"name: '{self.name}'")
+            lines.append(f"sign: '{self.sign}'")
+            lines.append(f"value: '{self.value}' ")
+            if self.family:
+                lines.append(f"family: '{self.family}'")
+            host = self.get_host()
+            if host:
+                lines.append(f"belonging to: '{host}'")
 
-        if synobj.checks:
-            lines.append(f"checks: '{synobj.checks}' ({tt_style % synobj.checks.uid})")
-        if synobj.checked_by:
-            lines.append(f"checked by: '{synobj.checked_by}' "
-                         f"({tt_style % synobj.checked_by.uid})")
-        lines.append(f"active: {not synobj.is_inactive()}")
+            if synobj.checks:
+                lines.append(f"checks: '{synobj.checks}' ({tt_style % synobj.checks.uid})")
+            if synobj.checked_by:
+                lines.append(f"checked by: '{synobj.checked_by}' "
+                             f"({tt_style % synobj.checked_by.uid})")
+            lines.append(f"active: {not synobj.is_inactive()}")
 
         lines.append("")
         if self.selected:
@@ -529,10 +627,10 @@ class FeatureNode(Node):
 
     def _start_direct_hover(self):
         super()._start_direct_hover()
-        ch = self.checks
+        ch = self.get_checks_node()
         if ch:
             ch.hovering = True
-        ch_by = self.checked_by
+        ch_by = self.get_checked_by_node()
         if ch_by:
             ch_by.hovering = True
         for edge in self.get_edges_to_me():
@@ -540,10 +638,10 @@ class FeatureNode(Node):
 
     def _stop_direct_hover(self):
         super()._stop_direct_hover()
-        ch = self.checks
+        ch = self.get_checks_node()
         if ch:
             ch.hovering = False
-        ch_by = self.checked_by
+        ch_by = self.get_checked_by_node()
         if ch_by:
             ch_by.hovering = False
         for edge in self.get_edges_to_me():
@@ -573,3 +671,21 @@ class FeatureNode(Node):
             if not ctrl.scene_moving:
                 ctrl.ui.show_help(self.locked_to_node, event)
         event.accept()
+
+    def get_host(self):
+        for parent in self.get_parents():
+            if parent.node_type == g.CONSTITUENT_NODE:
+                return parent
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    name = SavedField("name")
+    value = SavedField("value")
+    sign = SavedField("sign")
+    family = SavedField("family")
+    checks = SavedField("checks")
+    checked_by = SavedField("checked_by")

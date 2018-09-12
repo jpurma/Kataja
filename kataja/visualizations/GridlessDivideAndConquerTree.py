@@ -189,6 +189,7 @@ class Block:
 class GridlessDivideAndConquerTree(BalancedTree):
     name = 'Gridless Balanced tree'
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
+    use_rotation = True
 
     def __init__(self):
         BalancedTree.__init__(self)
@@ -228,15 +229,6 @@ class GridlessDivideAndConquerTree(BalancedTree):
             if node.isVisible() and (node.physics_x or node.physics_y):
                 return True
         return True
-
-    def reselect(self):
-        """ Rotate between drawing multidominated elements close to their various parents
-        """
-        self.set_data('rotation', self.get_data('rotation') - 1)
-
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree_top):
         top_block = Block(tree_top)

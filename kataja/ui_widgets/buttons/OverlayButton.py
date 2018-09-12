@@ -147,8 +147,7 @@ class CutEdgeButton(OverlayButton):
 
     @classmethod
     def condition(cls, edge):
-        return edge.start and edge.end and (
-            ctrl.free_drawing_mode or edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE])
+        return edge.start and edge.end and edge.edge_type in [g.GLOSS_EDGE, g.COMMENT_EDGE]
 
     def update_position(self):
         """ Put button left and below the starting point of edge.
@@ -207,36 +206,6 @@ class NodeOverlayButton(OverlayButton):
     def leaveEvent(self, event):
         self.host.hovering = False
         OverlayButton.leaveEvent(self, event)
-
-
-class RemoveMergerButton(NodeOverlayButton):
-    """ Button to delete unnecessary node between grandparent and child"""
-
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, pixmap='delete_icon',
-                         action='remove_merger')
-        self.priority = 99
-
-    @classmethod
-    def condition(cls, host):
-        return ctrl.free_drawing_mode and host.node_type == g.CONSTITUENT_NODE and \
-               host.is_unnecessary_merger()
-
-
-class RemoveNodeButton(NodeOverlayButton):
-    """ Button to delete node """
-
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, color_key='accent3',
-                         pixmap='delete_icon', action='remove_node')
-        self.priority = 100
-
-    @classmethod
-    def condition(cls, host):
-        return ctrl.free_drawing_mode and (
-            (host.node_type == g.CONSTITUENT_NODE and not host.is_unnecessary_merger())
-            or host.node_type != g.CONSTITUENT_NODE
-        )
 
 
 class NodeUnlockButton(NodeOverlayButton):
@@ -303,17 +272,6 @@ class GroupOptionsButton(GroupButton):
     @classmethod
     def condition(cls, host):
         return host.persistent
-
-
-class DeleteGroupButton(GroupButton):
-    def __init__(self, host, parent):
-        super().__init__(host=host, parent=parent, size=16, color_key='accent3',
-                         pixmap=qt_prefs.delete_icon, action='delete_group_items')
-        self.priority = 24
-
-    @classmethod
-    def condition(cls, host):
-        return ctrl.free_drawing_mode
 
 
 class NodeEditorButton(OverlayButton):
