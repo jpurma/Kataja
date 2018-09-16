@@ -1,10 +1,14 @@
 
 
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-
+from kataja.SavedField import SavedField
 import plugins.FreeDrawing.TouchAreas as TA
 import plugins.FreeDrawing.OverlayButtons as OB
 from plugins.FreeDrawing.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
+import kataja.globals as g
+from kataja.singletons import classes
+from kataja.parser.INodes import as_html, extract_triangle, join_lines
+
 
 class EditableConstituentNode(ConstituentNode):
 
@@ -33,9 +37,10 @@ class EditableConstituentNode(ConstituentNode):
 
     embed_edit = ConstituentNodeEditEmbed
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+    def __init__(self, label, *args, **kwargs):
+        super().__init__(label, *args, **kwargs)
+        self.heads = []
+        self.syntactic_object = classes.Constituent(label)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -45,8 +50,6 @@ class EditableConstituentNode(ConstituentNode):
           (field_name, setter, html).
         :return:
         """
-
-        # Allow custom syntactic objects to override this
         label_text_mode = self.label_text_mode
         l = ''
         if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
@@ -59,10 +62,6 @@ class EditableConstituentNode(ConstituentNode):
         success = False
         if not success:
             if label_name == 'node label':
-                self.poke('label')
-                self.label = value
-                return True
-            elif label_name == 'syntactic label':
                 self.syntactic_object.label = value
                 return True
             elif label_name == 'index':
@@ -137,12 +136,11 @@ class EditableConstituentNode(ConstituentNode):
         """
         if isinstance(head, list):
             self.heads = list(head)
-        elif isinstance(head, Node):
+        elif isinstance(head, ConstituentNode):
             self.heads = [head]
         elif not head:
             self.heads = []
         else:
             raise ValueError
-
 
     heads = SavedField("heads")

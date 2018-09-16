@@ -285,7 +285,7 @@ class Preferences(object):
             'help': 'How features are arranged below nodes.',
             'order': 28
         }
-        self.show_c_command = True
+        self.highlight_dominated_nodes_on_selection = True
         self.hide_edges_if_nodes_overlap = True
 
         self.trace_strategy = 0

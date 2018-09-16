@@ -43,8 +43,8 @@ class AbstractAddNode(KatajaAction):
         """
         ntype = self.__class__.node_type
         pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
-        label = ctrl.free_drawing.next_free_label()
-        node = ctrl.free_drawing.create_node(label=label, pos=pos, node_type=ntype)
+        label = ctrl.drawing.next_free_label()
+        node = ctrl.drawing.create_node(label=label, pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
         log.info('Added new %s.' % nclass.display_name[0])
         ctrl.forest.forest_edited()

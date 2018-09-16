@@ -389,16 +389,11 @@ class UIManager:
                 self.update_buttons_for_selected_node(item)
                 if item.node_type == g.CONSTITUENT_NODE:
                     item.toggle_halo(True)
-                if ctrl.forest.settings.get('show_c_command') and not self.active_embed:
-                    if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
-                        dominated_synobjs = ctrl.syntax.get_dominated_nodes(
-                            item)
-                        for synobj in dominated_synobjs:
-                            node = ctrl.forest.get_node(synobj)
-                            if node and node.is_visible():
+                    if not active_embed and ctrl.forest.settings.get('highlight_dominated_nodes_on_selection'):
+                        for node in item.get_sorted_nodes():
+                            if node.node_type == g.CONSTITUENT_NODE and node.is_visible():
                                 node.toggle_halo(True, small=True)
-                if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
-                    self.start_editing_node(item, active_embed)
+                self.start_editing_node(item, active_embed)
             elif isinstance(item, Group):
                 self.selection_group = item
                 self.add_buttons_for_group(item)
@@ -423,7 +418,7 @@ class UIManager:
                     self.selection_group = Group(
                         selection=nodes,
                         persistent=False,
-                        color_key=ctrl.free_drawing.get_group_color_suggestion())
+                        color_key=ctrl.drawing.get_group_color_suggestion())
                     self.add_ui(self.selection_group)
                 self.add_buttons_for_group(self.selection_group)
             else:
@@ -501,16 +496,16 @@ class UIManager:
     # ### Actions and Menus
     # ####################################################
 
-    def _load_actions(self, mod_path:str, seek_only=False):
+    def load_actions_from_module(self, mod, added=None, replaced=None):
         """ Seek and import actions from a module. Lower level operation, called from
         create_actions and when initialising plugins.
-        :param mod_path: working module path
-        :param seek_only: instead of instantiating and putting actions to dict, we can return a
-            list of found action classes. This is useful when removing actions added by a plugin.
+        :param mod: Python module
+        :param added: if a list is provided, these keys were added to a dict from this module. Useful when unloading a
+            plugin module.
+        :param replaced: if a dict is provided, store an existing action replaced by a new action here.
+            Useful for restoring the original state when a plugin has overrode actions.
         :return: list of found action classes
         """
-        found = []
-        mod = importlib.import_module(mod_path)
         for class_name in vars(mod):
             if class_name.startswith(
                     '_') or class_name == 'KatajaAction':
@@ -521,12 +516,17 @@ class UIManager:
             if not a_class.k_action_uid:  # Ignore abstract classes, they are there only to
                 # reduce amount of copied code across e.g. different node types.
                 continue
-            found.append(a_class)
-            if not seek_only:
-                action = a_class()
-                self.actions[action.key] = action
-                #self.main.addAction(action)
-        return found
+            action = a_class()
+            if added is not None:
+                added.append(action.key)
+            if replaced is not None and action.key in self.actions:
+                replaced[action.key] = self.actions[action.key]
+            self.actions[action.key] = action
+
+    def unload_actions_from_module(self, added, replaced):
+        for action_key in added:
+            del self.actions[action_key]
+        self.actions.update(replaced)
 
     def create_actions(self):
         """ KatajaActions define user commands and interactions. They are loaded from modules in
@@ -537,7 +537,8 @@ class UIManager:
             if module == '__init__.py' or module[-3:] != '.py':
                continue
             mod_path = 'kataja.actions.' + module[:-3]
-            self._load_actions(mod_path)
+            mod = importlib.import_module(mod_path)
+            self.load_actions_from_module(mod)
         self.arrow_actions = [a for a in self.actions.values() if a.k_shortcut in ['Left', 'Right', 'Up', 'Down']]
         log.info('Prepared %s actions.' % len(self.actions))
 

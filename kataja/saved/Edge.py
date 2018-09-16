@@ -134,7 +134,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self.forest.store(self)
             self.forest.add_to_scene(self)
         elif transition_type == g.DELETED:
-            ctrl.free_drawing.delete_edge(self, fade=False)
+            ctrl.drawing.delete_edge(self, fade=False)
             return
         self.connect_end_points(self.start, self.end)
         self.update_visibility()
@@ -243,7 +243,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         start = self.start
         end = self.end
         if not (start and end):
-            ctrl.free_drawing.delete_edge(self)
+            ctrl.drawing.delete_edge(self)
             return False
         lv = True
         if self._nodes_overlap:
@@ -328,7 +328,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :param node:
         """
-        ctrl.free_drawing.set_edge_start(self, node)
+        ctrl.drawing.set_edge_start(self, node)
         self.update_shape()
 
     def connect_end_to(self, node):
@@ -336,7 +336,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :param node:
         """
-        ctrl.free_drawing.set_edge_end(self, node)
+        ctrl.drawing.set_edge_end(self, node)
         self.update_shape()
 
     def __lt__(self, other):

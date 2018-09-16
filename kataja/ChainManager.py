@@ -90,7 +90,7 @@ class ChainManager:
             if index in heads:
                 original = heads[index]
                 for trace in traces:
-                    self.forest.free_drawing.replace_node(trace, original)
+                    self.forest.drawing.replace_node(trace, original)
 
     def multidomination_to_traces(self):
         def _find_paths_up(n, depth):
@@ -120,8 +120,8 @@ class ChainManager:
             my_parents = parents[index]
             if len(my_parents) > 1:
                 for foo, parent in my_parents[1:]:
-                    trace = self.forest.free_drawing.create_trace_for(original)
-                    self.forest.free_drawing.replace_node(original, trace, only_for_parent=parent)
+                    trace = self.forest.drawing.create_trace_for(original)
+                    self.forest.drawing.replace_node(original, trace, only_for_parent=parent)
 
     def next_free_index(self):
         """ Return the next available letter suitable for indexes (i, j, k, l...)

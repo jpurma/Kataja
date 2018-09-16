@@ -1,7 +1,9 @@
 # coding=utf-8
-from Monorail.Constituent import Constituent
-from Monorail.Document import Document
-from Monorail.SyntaxAPI import SyntaxAPI
+from plugins.FreeDrawing.EditableFeatureNode import EditableFeatureNode
+from plugins.FreeDrawing.EditableConstituentNode import EditableConstituentNode
+from plugins.FreeDrawing.EditableForest import EditableForest
+from plugins.FreeDrawing.EditableSyntax import EditableSyntax
+import plugins.FreeDrawing.actions
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -9,10 +11,13 @@ from Monorail.SyntaxAPI import SyntaxAPI
 # classes. The classes themselves should follow the format of Kataja classes (see
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
-# them here, you have to put class definitions *before* the plugin_parts -line.
+# them here, you have to put class definitions *before* the plugin_classes -line.
 
-# plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Document, SyntaxAPI]
+# plugin_classes = [PythonClass,...]
+plugin_classes = [EditableFeatureNode, EditableConstituentNode, EditableForest, EditableSyntax]
+
+# plugin_actions = PythonModule / None
+plugin_actions = plugins.FreeDrawing.actions
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -21,18 +26,16 @@ plugin_parts = [Constituent, Document, SyntaxAPI]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-reload_order = ['Monorail.Constituent', 'Monorail.SyntaxAPI',
-                'Monorail.Document', 'Monorail.Parser', 'Monorail.setup']
+reload_order = ['FreeDrawing.EditableFeatureNode', 'FreeDrawing.EditableConstituentNode']
 
 def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. loading
     lexicons or adding new data to main, ctrl or prefs without reclassing them."""
     import kataja.globals as g
-    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
+    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS)
     ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
     ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
-    ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
-    ctrl.ui.show_panel('LexiconPanel')
+    ctrl.doc_settings.set_for_edge_type('visible', True, g.CONSTITUENT_EDGE)
 
 
 def tear_down_plugin(main, ctrl, prefs):

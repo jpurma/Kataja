@@ -60,7 +60,7 @@ class MakeSelectionGroupPersistent(KatajaAction):
         """ Open group editing embed.
         :type group_uid: object
         """
-        new_group = ctrl.forest.free_drawing.turn_selection_group_to_group(ctrl.ui.selection_group)
+        new_group = ctrl.forest.drawing.turn_selection_group_to_group(ctrl.ui.selection_group)
 
 
 class ToggleGroupPersistence(KatajaAction):
@@ -91,7 +91,7 @@ class DeleteGroupItems(KatajaAction):
         """
         for item in ctrl.selected:
             if isinstance(item, Node):
-                ctrl.free_drawing.delete_node(item, touch_edges=True, fade=True)
+                ctrl.drawing.delete_node(item, touch_edges=True, fade=True)
         ctrl.ui.remove_selection_group()
 
     def enabler(self):
@@ -183,7 +183,7 @@ class SaveGroupChanges(KatajaAction):
             group.update_shape()
             name = group.get_label_text() or ctrl.cm.get_color_name(group.color_key)
             if not group.persistent:
-                ctrl.forest.free_drawing.turn_selection_group_to_group(group)
+                ctrl.forest.drawing.turn_selection_group_to_group(group)
                 ctrl.deselect_objects()
 
             log.info("Saved group '%s'" % name)

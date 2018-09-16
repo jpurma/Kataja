@@ -9,10 +9,10 @@ from Monorail.SyntaxAPI import SyntaxAPI
 # classes. The classes themselves should follow the format of Kataja classes (see
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
-# them here, you have to put class definitions *before* the plugin_parts -line.
+# them here, you have to put class definitions *before* the plugin_classes -line.
 
-# plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Document, SyntaxAPI]
+# plugin_classes = [PythonClass,...]
+plugin_classes = [Constituent, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods

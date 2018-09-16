@@ -1,11 +1,11 @@
-from kataja.SavedObject import SavedObject
+from syntax.SyntaxAPI import SyntaxAPI
 from kataja.SavedField import SavedField
 import kataja.globals as g
 from kataja.singletons import classes
 from plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
 
 
-class SyntaxAPI(SavedObject):
+class EditableSyntax(SyntaxAPI):
     """ This class is the interface between syntax implementations and Kataja calls for them.
     Syntax implementations subclass this and overwrite methods as needed. It is assumed that each
     Forest will create its own SyntaxAPI -- it may save data specific for that structure, but
@@ -14,7 +14,7 @@ class SyntaxAPI(SavedObject):
 
     """
     role = "SyntaxAPI"
-    supports_editable_lexicon = True
+    supports_editable_lexicon = False
     display_modes = []
 
     options = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),
@@ -138,27 +138,6 @@ class SyntaxAPI(SavedObject):
             _pick_leaves(parent)
         return [l.syntactic_object for l in leaves]
 
-    def get_dominated_nodes(self, node):
-        """ General solution works on level of nodes, not constituents, so this shouldn't be used
-        to determine how nodes relate to each others.
-        :param node:
-        :return:
-        """
-        def _pick_leaves(n):
-            if n not in passed:
-                passed.add(n)
-                leaves.append(n)
-                children = n.get_children(visible=False, similar=True)
-                if children:
-                    for c in children:
-                        _pick_leaves(c)
-        leaves = []
-        passed = set()
-        passed.add(node)
-        for child in node.get_children(visible=False, similar=True):
-            _pick_leaves(child)
-        return [l.syntactic_object for l in leaves]
-
     def nodes_to_synobjs(self, forest, roots):
         """ Wrapper for function to update all syntactic objects to correspond with the current
         node graph, if possible. It can be complicated and it is sensitive to modifications in
@@ -199,7 +178,7 @@ class SyntaxAPI(SavedObject):
         """
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
         if self.input_tree:
-            roots = self.parser.string_into_forest(str(self.input_tree))
+            roots = forest.parser.string_into_forest(str(self.input_tree))
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
             self.nodes_to_synobjs(forest, roots)
 

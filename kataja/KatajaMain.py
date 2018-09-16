@@ -323,8 +323,8 @@ class KatajaMain(QtWidgets.QMainWindow):
                 importlib.reload(sys.modules[mod_name])
                 log.info('reloaded module %s' % mod_name)
 
-        if hasattr(self.active_plugin_setup, 'plugin_parts'):
-            for classobj in self.active_plugin_setup.plugin_parts:
+        if hasattr(self.active_plugin_setup, 'plugin_classes'):
+            for classobj in self.active_plugin_setup.plugin_classes:
                 base_class = classes.find_base_model(classobj)
                 if base_class:
                     classes.add_mapping(base_class, classobj)
@@ -332,6 +332,13 @@ class KatajaMain(QtWidgets.QMainWindow):
                 else:
                     m = "adding %s " % classobj.__name__
                 log.info(m)
+        actions_module = getattr(self.active_plugin_setup, 'plugin_actions', None)
+        if actions_module:
+            classes.replaced_actions = {}
+            classes.added_actions = []
+            ctrl.ui.load_actions_from_module(actions_module,
+                                             added=classes.added_actions,
+                                             replaced=classes.replaced_actions)
         if hasattr(self.active_plugin_setup, 'help_file'):
             dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
             print(dir_path)
@@ -340,6 +347,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.create_default_document()
         self.enable_signaling()
+        print(sys.modules)
         prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):
@@ -354,6 +362,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_document()
+        ctrl.ui.unload_actions_from_module(classes.added_actions, classes.replaced_actions)
+        classes.added_actions = []
+        classes.replaced_actions = {}
         classes.restore_default_classes()
         self.create_default_document()
         self.enable_signaling()

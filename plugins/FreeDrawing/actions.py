@@ -41,7 +41,7 @@ class CreateNewNodeFromText(EmbedAction):
         if node_type == g.TREE:
             node = ctrl.forest.simple_parse(text)
         else:
-            node = ctrl.free_drawing.create_node(pos=focus_point, node_type=node_type, label=text)
+            node = ctrl.drawing.create_node(pos=focus_point, node_type=node_type, label=text)
         if node:
             node.lock()
         ctrl.ui.close_active_embed()
@@ -71,7 +71,7 @@ class RemoveMerger(KatajaAction):
             log.warn('Trying to remove an intermediate monobranch node, but node "%s" '
                      'is not such node.' % node)
         ctrl.remove_from_selection(node)
-        ctrl.free_drawing.delete_unnecessary_merger(node)
+        ctrl.drawing.delete_unnecessary_merger(node)
         ctrl.forest.forest_edited()
 
 
@@ -91,7 +91,7 @@ class RemoveNode(KatajaAction):
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
         ctrl.remove_from_selection(node)
-        ctrl.free_drawing.delete_node(node, touch_edges=True)
+        ctrl.drawing.delete_node(node, touch_edges=True)
         ctrl.forest.forest_edited()
 
 
@@ -132,24 +132,24 @@ class ConnectNode(KatajaAction):
         if node_uid:
             new_node = ctrl.forest.nodes[node_uid]
         else:
-            label = new_label or ctrl.free_drawing.next_free_label()
-            new_node = ctrl.free_drawing.create_node(label=label, relative=target,
+            label = new_label or ctrl.drawing.next_free_label()
+            new_node = ctrl.drawing.create_node(label=label, relative=target,
                                                      node_type=new_type)
         if position == 'child':
-            ctrl.free_drawing.connect_node(parent=target, child=new_node)
+            ctrl.drawing.connect_node(parent=target, child=new_node)
         elif position == 'top_left':
             # fixme: check that this is top node
-            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=True)
+            ctrl.drawing.merge_to_top(target, new_node, merge_to_left=True)
         elif position == 'top_right':
-            ctrl.free_drawing.merge_to_top(target, new_node, merge_to_left=False)
+            ctrl.drawing.merge_to_top(target, new_node, merge_to_left=False)
         elif position == 'sibling_left':
-            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=True)
+            ctrl.drawing.add_sibling_for_constituentnode(new_node, target, add_left=True)
         elif position == 'sibling_right':
-            ctrl.free_drawing.add_sibling_for_constituentnode(new_node, target, add_left=False)
+            ctrl.drawing.add_sibling_for_constituentnode(new_node, target, add_left=False)
         elif position == 'child_left':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target, add_left=True)
+            ctrl.drawing.unary_add_child_for_constituentnode(new_node, target, add_left=True)
         elif position == 'child_right':
-            ctrl.free_drawing.unary_add_child_for_constituentnode(new_node, target, add_left=False)
+            ctrl.drawing.unary_add_child_for_constituentnode(new_node, target, add_left=False)
         ctrl.forest.forest_edited()
 
     def drop2(self, dropped_node):
@@ -164,7 +164,7 @@ class ConnectNode(KatajaAction):
         if not dropped_node:
             return
         # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
+        ctrl.drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
                                               self._align_left, self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.end.adjustment
@@ -194,7 +194,7 @@ class MergeToTop(KatajaAction):
         node = ctrl.forest.nodes[node_uid]
         tops = node.get_highest()
         if len(tops) == 1:
-            ctrl.free_drawing.merge_to_top(tops[0], node, merge_to_left=left)
+            ctrl.drawing.merge_to_top(tops[0], node, merge_to_left=left)
             ctrl.forest.forest_edited()
 
 
@@ -217,7 +217,7 @@ class InsertNodeBetween(KatajaAction):
         assert (self.host.start and self.host.end)
         adjustment = self.host.end.adjustment
         # host is an edge
-        ctrl.free_drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
+        ctrl.drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
                                               self._align_left, self.start_point)
 
         for node in ctrl.dragged_set:

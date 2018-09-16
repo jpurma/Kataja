@@ -41,6 +41,9 @@ class KatajaFactory:
         self.node_type_to_edge_type = {}
         self.edge_type_to_node_type = {}
 
+        self.added_actions = []  # actions added by the current plugin
+        self.replaced_actions = {}  # actions replaced by the current plugin
+
     def late_init(self):
         """ Import and set available all of the default classes """
 

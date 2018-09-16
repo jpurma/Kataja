@@ -150,7 +150,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent and delete_if_empty:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -169,7 +169,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -179,7 +179,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.update_shape()
         if remove:
             if self.persistent:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 

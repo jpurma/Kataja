@@ -29,7 +29,7 @@ import kataja.globals as g
 from kataja.Triangle import Triangle
 from kataja.globals import ViewUpdateReason
 from kataja.ChainManager import ChainManager
-from kataja.FreeDrawing import FreeDrawing
+from kataja.ForestDrawing import ForestDrawing
 from kataja.ProjectionManager import ProjectionManager
 from kataja.SemanticsManager import SemanticsManager
 from kataja.SavedField import SavedField
@@ -76,7 +76,7 @@ class Forest(SavedObject):
         self.parser = None
         self.undo_manager = None
         self.chain_manager = None
-        self.free_drawing = None
+        self.drawing = None
         self.semantics_manager = None
         self.projection_manager = None
         self.settings = None
@@ -112,7 +112,7 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.free_drawing = FreeDrawing(self)
+        self.drawing = ForestDrawing(self)
         self.semantics_manager = SemanticsManager(self)
         self.projection_manager = ProjectionManager(self)
 
@@ -211,7 +211,7 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.free_drawing = FreeDrawing(self)
+        self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
         self.trees = []
@@ -599,9 +599,6 @@ class Forest(SavedObject):
                 if node.triangle_stack:
                     node.label_object.update_label(force_update=True)
 
-    def simple_parse(self, text):
-        return self.parser.simple_parse(text)
-
     def order_edge_visibility_check(self):
         """ Make sure that all edges are checked to update their visibility.
         This can be called multiple
@@ -842,19 +839,6 @@ class Forest(SavedObject):
         for tree_top in self:
             recursive_width(tree_top)
         return self.width_map
-
-    # ### Minor updates for forest elements
-    # #######################################################################
-
-    def reform_constituent_node_from_string(self, text, node):
-        """
-
-        :param text:
-        :param node:
-        """
-        new_nodes = self.parser.string_into_forest(text)
-        if new_nodes:
-            self.free_drawing.replace_node(node, new_nodes[0])
 
     def others_update_colors(self):
         for other in self.others.values():

@@ -190,7 +190,7 @@ class Node(Draggable, Movable):
             return
         elif transition_type == g.DELETED:
             print('*** deleting node in after_model_update')
-            ctrl.free_drawing.delete_node(self, touch_edges=False, fade=False)
+            ctrl.drawing.delete_node(self, touch_edges=False, fade=False)
             return
 
         if 'triangle_stack' in updated_fields:

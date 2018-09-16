@@ -40,7 +40,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         layout = self.vlayout
-        drawing_mode = ctrl.free_drawing
         ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
@@ -58,15 +57,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         make_label(title, self, layout, tt, self.synlabel, ui_s)
         self.synlabel.setPalette(ui_p)
         layout.addWidget(self.synlabel)
-        self.synlabel.setReadOnly(True)
-
-        tt = "Freeform label or text for node, has no effect for syntactic computation"
-        title = 'User label'
-        self.label = ExpandingTextArea(self, tooltip=tt, font=smaller_font, prefill='label',
-                                       on_edit=self.label_edited, label=title,
-                                       on_focus_out=self.label_finished)
-        self.label.setPalette(ui_p)
-        layout.addWidget(self.label)
 
         tt = 'Optional index for announcing link between multiple instances.'
         title = 'Index'
@@ -95,8 +85,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
     def update_fields(self):
         """ Update field values on embed form based on template """
         node = self.host
-        self.label.setText(node.label)
-        self.synlabel.setText(node.get_syntactic_label())
+        self.synlabel.setText(node.label)
         self.index.setText(node.index or '')
 
     def triangle_enabled(self):
@@ -120,15 +109,6 @@ class ConstituentNodeEditEmbed(UIEmbed):
         ctrl.forest.forest_edited()
         self.update_fields()
 
-    def label_edited(self, *args, **kwargs):
-        pass
-
-    def label_finished(self):
-        text = self.label.inode_text()
-        self.host.parse_edited_label('node label', text)
-        ctrl.forest.forest_edited()
-        self.update_fields()
-
     def index_finished(self):
         text = self.index.text()
         self.host.parse_edited_label('index', text)
@@ -146,7 +126,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         """ Find the main element to focus in this embed.
         :return:
         """
-        self.label.setFocus()
+        self.synlabel.setFocus()
 
 
 

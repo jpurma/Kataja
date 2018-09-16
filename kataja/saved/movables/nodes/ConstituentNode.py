@@ -27,8 +27,7 @@ from PyQt5 import QtCore, QtGui
 
 from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
-from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
-    as_html
+from kataja.parser.INodes import as_text, as_html
 from kataja.saved.movables.Node import Node
 import kataja.ui_graphicsitems.TouchArea as TA
 import kataja.ui_widgets.buttons.OverlayButton as OB
@@ -468,9 +467,9 @@ class ConstituentNode(Node):
         """
         gloss_node = self.gloss_node
         if gloss_node and not self.gloss:
-            ctrl.free_drawing.delete_node(gloss_node)
+            ctrl.drawing.delete_node(gloss_node)
         elif self.gloss and not gloss_node:
-            ctrl.free_drawing.create_gloss_node(host=self)
+            ctrl.drawing.create_gloss_node(host=self)
         elif self.gloss and gloss_node:
             gloss_node.update_label()
 

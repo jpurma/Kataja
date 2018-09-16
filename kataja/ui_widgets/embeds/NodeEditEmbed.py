@@ -55,7 +55,6 @@ class NodeEditEmbed(UIEmbed):
         self.fields = {}
         self.resize_target = None
         hlayout = None
-        drawing_mode = ctrl.free_drawing
 
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
@@ -66,8 +65,6 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
-            if syntactic and drawing_mode:
-                continue
             on_edit = d.get('on_edit', None)
             if on_edit and isinstance(on_edit, str):
                 on_edit = getattr(node, on_edit, None)

@@ -148,8 +148,8 @@ class Controller:
         return self.main.document and self.main.document.forest
 
     @property
-    def free_drawing(self) -> 'kataja.FreeDrawing':
-        return self.main.forest.free_drawing
+    def drawing(self) -> 'kataja.ForestDrawing':
+        return self.main.forest.drawing
 
     @property
     def view_manager(self) -> 'kataja.ViewManager':
