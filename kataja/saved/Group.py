@@ -22,7 +22,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     scene_item = True
     is_widget = False
 
-    def __init__(self, selection=None, persistent=True, color_key='accent1'):
+    def __init__(self, selection=None, persistent=True, color_key='accent1', forest=None):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # -- Fake as UIItem to make selection groups part of UI:
@@ -31,6 +31,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.ui_manager = ctrl.ui
         self.role = None
         self.host = None
+        self.forest = forest
         self.is_fading_in = False
         self.is_fading_out = False
         # -- end faking as UIItem
@@ -82,10 +83,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         :return: None
         """
         if transition_type == g.CREATED:
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
+            self.forest.store(self)
+            self.forest.add_to_scene(self)
         elif transition_type == g.DELETED:
-            ctrl.forest.remove_from_scene(self, fade_out=False)
+            self.forest.remove_from_scene(self, fade_out=False)
             return
         if updated_fields:
             self.update_selection(self.selection)
@@ -149,7 +150,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent and delete_if_empty:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -168,7 +169,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -178,7 +179,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.update_shape()
         if remove:
             if self.persistent:
-                ctrl.free_drawing.remove_group(self)
+                ctrl.drawing.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 

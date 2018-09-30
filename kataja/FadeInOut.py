@@ -90,7 +90,8 @@ class FadeInOut:
     def fade_out_finished_delete(self):
         self.is_fading_out = False
         self.hide()
-        ctrl.forest.remove_from_scene(self, fade_out=False)
+        if hasattr(self, 'forest'):
+            self.forest.remove_from_scene(self, fade_out=False)
 
     def fade_out_finished(self):
         self.is_fading_out = False

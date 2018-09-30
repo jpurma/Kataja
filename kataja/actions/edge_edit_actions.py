@@ -52,6 +52,6 @@ class DisconnectEdge(KatajaAction):
         except KeyError:
             log.error(f'No such edge: {edge_uid}.')
             return
-        ctrl.free_drawing.disconnect_edge(edge)
+        ctrl.drawing.disconnect_edge(edge)
         ctrl.ui.update_selections()
         ctrl.forest.forest_edited()

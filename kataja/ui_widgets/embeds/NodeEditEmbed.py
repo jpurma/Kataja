@@ -10,6 +10,7 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_support.panel_utils import box_row
+from kataja.utils import combine_dicts
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -40,32 +41,30 @@ class NodeEditEmbed(UIEmbed):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         self.setMinimumWidth(220)
+        self.editable = {}
         ui_p = self._palette
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-        ed = node.get_editing_template()
-        sortable = [(item.get('order', 100), key) for key, item in ed.items()]
+        self.prepare_template()
+        sortable = [(item.get('order', 100), key) for key, item in self.editable.items()]
         sortable.sort()
         field_names = [key for order, key in sortable]
         self.fields = {}
         self.resize_target = None
         hlayout = None
-        drawing_mode = ctrl.free_drawing
 
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
-            d = ed.get(field_name, {})
+            d = self.editable.get(field_name, {})
             # if d.get('hidden', False) or not self.host.check_conditions(d):
             #    continue
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
-            if syntactic and drawing_mode:
-                continue
             on_edit = d.get('on_edit', None)
             if on_edit and isinstance(on_edit, str):
                 on_edit = getattr(node, on_edit, None)
@@ -158,11 +157,17 @@ class NodeEditEmbed(UIEmbed):
         """
         return self.host.boundingRect().height() / 2
 
+    def prepare_template(self):
+        if self.host.syntactic_object:
+            syn_editable_fields = getattr(self.host.syntactic_object, 'editable_fields', {})
+            self.editable = combine_dicts(syn_editable_fields, self.host.editable_fields)
+        else:
+            self.editable = self.host.editable_fields
+
     def update_fields(self):
         """ Update field values on embed form based on template """
-        ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
-            d = ed.get(field_name, {})
+            d = self.editable.get(field_name, {})
             if 'getter' in d:
                 value = getattr(self.host, d['getter'])()
             else:
@@ -195,9 +200,8 @@ class NodeEditEmbed(UIEmbed):
         """ Submit field values back to object based on template
         :return:
         """
-        ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
-            d = ed.get(field_name, {})
+            d = self.editable.get(field_name, {})
             itype = d.get('input_type', 'text')
             if itype == 'text' or itype == 'textarea':
                 value = field.text()
@@ -219,12 +223,11 @@ class NodeEditEmbed(UIEmbed):
         :return:
         """
         # look for explicit focus in template definitions.
-        ed = self.host.get_editing_template()
-        for key, data in ed.items():
+        for key, data in self.editable.items():
             if 'focus' in data and data['focus']:
                 self.fields[key].setFocus()
                 return
         # default to field that gets edited in quickedit
-        if self.fields:
-            print(self.fields)
-            self.fields[self.host.label_as_editable_html()[0]].setFocus()
+        main_field_tuple = self.host.label_as_editable_html()
+        if self.fields and main_field_tuple:
+            self.fields[main_field_tuple[0]].setFocus()

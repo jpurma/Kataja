@@ -19,7 +19,6 @@ class VisualizationOptionsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        ctrl.main.view_mode_changed.connect(self.update_panel)
         self.vlayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
@@ -43,7 +42,6 @@ class VisualizationOptionsPanel(Panel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        s = ctrl.settings
         self.updateGeometry()
         self.update()
 

@@ -58,12 +58,12 @@ class Controller:
     importing those classes in here. Method annotation remains incomplete because of this.
     """
 
-    def __init__(self):
+    def __init__(self, prefs):
         # self.set_prefs('default')
         # : :type self.main: KatajaMain
 
         self.main = None
-        self.settings = None
+        self.prefs = prefs
         self.structure = None
         self.selected = []
         self.selected_root = None
@@ -74,7 +74,6 @@ class Controller:
         self.pressed = None  # set() # prepare for multitouch
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.text_editor_focus = None
-        self.free_drawing_mode = True
         self.dragged_focus = None
         self.dragged_text = None
         self.dragged_set = set()
@@ -114,7 +113,6 @@ class Controller:
         :param main: KatajaMain
         """
         self.main = main
-        self.settings = main.settings_manager
 
     @property
     def syntax(self) -> 'kataja.syntax.SyntaxAPI':
@@ -139,6 +137,10 @@ class Controller:
         return self.main.color_manager
 
     @property
+    def doc_settings(self):
+        return self.document.settings if self.document else self.prefs
+
+    @property
     def forest(self) -> 'kataja.saved.Forest':
         """ Shortcut to active forest
         :return: Forest
@@ -146,8 +148,8 @@ class Controller:
         return self.main.document and self.main.document.forest
 
     @property
-    def free_drawing(self) -> 'kataja.FreeDrawing':
-        return self.main.forest.free_drawing
+    def drawing(self) -> 'kataja.ForestDrawing':
+        return self.main.forest.drawing
 
     @property
     def view_manager(self) -> 'kataja.ViewManager':

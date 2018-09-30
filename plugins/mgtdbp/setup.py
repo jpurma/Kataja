@@ -35,10 +35,10 @@ from PyQt5 import QtCore
 # classes. The classes themselves should follow the format of Kataja classes (see
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
-# them here, you have to put class definitions *before* the plugin_parts -line.
+# them here, you have to put class definitions *before* the plugin_classes -line.
 
-# plugin_parts = [PythonClass,...]
-plugin_parts = [Feature, Constituent, Parser, Document, SyntaxAPI]
+# plugin_classes = [PythonClass,...]
+plugin_classes = [Feature, Constituent, Parser, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -56,8 +56,8 @@ plugin_preferences = {}
 # These are additional preferences added by plugin. They extend the bottom layer of preferences
 # hierarchy and can have an UI elements in 'Preferences' panel. You can have custom panels or
 # code to make them editable in document-, forest- or node/edge-level, or just programmatically
-# store values there. They will be stored in prefs, document.settings, forest.settings,
-# node.settings or edge.settings, managed by ctrl.settings -object. They compete for namespace with
+# store values there. They will be stored in prefs, doc_settings. forest.settings,
+# node.settings or edge.settings. They compete for namespace with
 # existing settings, so see kataja. Preferences to find out what is already there and use unique
 # names.
 
@@ -72,18 +72,16 @@ def start_plugin(main, ctrl, prefs):
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
     import kataja.globals as g
-    ctrl.free_drawing_mode = False
-    ctrl.ui.update_edit_mode()
-    ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
-    ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
-    ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
-    ctrl.settings.set_edge_setting('visible', False, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
+    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
+    ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
+    ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
+    ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
     ctrl.ui.show_panel('LexiconPanel')
+
 
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
-
     pass
 
 

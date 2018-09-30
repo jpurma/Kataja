@@ -38,7 +38,8 @@ class LeftFirstTree(BaseVisualization):
     branch takes the space it needs, and may force next branch drawing to
     further down and right. """
     name = 'Left first trees'
-    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+    banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -59,7 +60,7 @@ class LeftFirstTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         self._indentation = 0
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
@@ -79,12 +80,6 @@ class LeftFirstTree(BaseVisualization):
             if node.isVisible() and (node.physics_x or node.physics_y):
                 return True
         return True
-
-    @caller
-    def reselect(self):
-        """ if there are different modes for one visualization, rotating
-        between different modes is triggered here. """
-        self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
@@ -156,10 +151,6 @@ class LeftFirstTree(BaseVisualization):
             elif len(children) == 2:
                 nx += x_step * 2
 
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
-
     def draw_tree(self, tree_top):
         """ Draws the trees to a table or a grid, much like latex qtree and
         then scales the grid to the scene. """
@@ -167,7 +158,7 @@ class LeftFirstTree(BaseVisualization):
         edge_width = prefs.edge_width
         merged_grid = Grid()
         self._indentation = 0
-        self._shuffle = ctrl.settings.get('linearization_mode') == g.RANDOM_NO_LINEARIZATION
+        self._shuffle = self.forest.settings.get('linearization_mode') == g.RANDOM_NO_LINEARIZATION
         if tree_top and tree_top.node_type == g.CONSTITUENT_NODE:
             self._put_to_grid(merged_grid, tree_top, 0, 0)
         offset_x = 0  # tree_w/-2

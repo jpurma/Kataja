@@ -74,7 +74,7 @@ class ReloadPlugin(KatajaAction):
             ctrl.main.init_done = False
             ctrl.main.disable_current_plugin()
             ctrl.main.enable_plugin(key, reload=True)
-            self.document.load_default_forests()
+            ctrl.main.document.load_default_forests()
             ctrl.main.init_done = True
 
     def enabler(self):

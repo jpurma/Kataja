@@ -9,10 +9,10 @@ from Monorail.SyntaxAPI import SyntaxAPI
 # classes. The classes themselves should follow the format of Kataja classes (see
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
-# them here, you have to put class definitions *before* the plugin_parts -line.
+# them here, you have to put class definitions *before* the plugin_classes -line.
 
-# plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Document, SyntaxAPI]
+# plugin_classes = [PythonClass,...]
+plugin_classes = [Constituent, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -28,12 +28,10 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. loading
     lexicons or adding new data to main, ctrl or prefs without reclassing them."""
     import kataja.globals as g
-    ctrl.free_drawing_mode = False
-    ctrl.ui.update_edit_mode()
-    ctrl.settings.set('label_text_mode', g.SYN_LABELS_FOR_LEAVES, level=g.DOCUMENT)
-    ctrl.settings.set('feature_positioning', g.HORIZONTAL_ROW, level=g.DOCUMENT)
-    ctrl.settings.set('feature_check_display', g.NO_CHECKING_EDGE, level=g.DOCUMENT)
-    ctrl.settings.set_edge_setting('visible', False, g.CONSTITUENT_EDGE, level=g.DOCUMENT)
+    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
+    ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
+    ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
+    ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
     ctrl.ui.show_panel('LexiconPanel')
 
 

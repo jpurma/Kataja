@@ -51,8 +51,9 @@ def centered_node_position(node, cbr):
 class BaseVisualization:
     """ Base class for different 'drawTree' implementations """
     name = 'BaseVisualization base class'
-    banned_node_shapes = ()
+    banned_cn_shapes = ()
     hide_edges_if_nodes_overlap = True
+    use_rotation = False
 
     def __init__(self):
         """ This is called once when building Kataja. Set up properties for this kind of 
@@ -77,26 +78,42 @@ class BaseVisualization:
         self._max_hits = {}
         if reset:
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def prepare_draw(self):
         """ This is called every time before visualisation is drawn, a place to do preparations that
         matter for all forest and not single trees.
         :return:
         """
-        pass
+        if self.use_rotation:
+            new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
+            self.set_data('rotation', new_rotation)
+
+    def reselect(self):
+        """ if there are different modes for one visualization, rotating between different modes
+        is triggered here.
+
+        Default is to randomly jiggle all dynamically placed nodes.
+        """
+        if self.use_rotation:
+            self.set_data('rotation', self.get_data('rotation', 0) - 1)
+        else:
+            for node in self.forest.nodes.values():
+                if node.use_physics():
+                    x, y = node.current_position
+                    node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
     def has_free_movers(self):
         return True
 
-    def validate_node_shapes(self):
-        ls = ctrl.settings.get('node_shape')
-        if ls in self.banned_node_shapes:
+    def validate_cn_shapes(self):
+        ls = self.forest.settings.get('cn_shape')
+        if ls in self.banned_cn_shapes:
             ls = 0
-            while ls in self.banned_node_shapes:
+            while ls in self.banned_cn_shapes:
                 ls += 1
-            ctrl.settings.set('node_shape', ls, level=g.FOREST)
-            self.forest.update_node_shapes()
+            self.forest.settings.set('cn_shape', ls)
+            self.forest.update_cn_shapes()
 
     def reset_nodes(self):
         for node in self.forest.nodes.values():
@@ -273,18 +290,6 @@ class BaseVisualization:
     # node.update_visibility(show_edges = True, scope = 0)
     # if node.is_visible() != vis:
     # print 'V node hidden: ', node
-
-    @caller
-    def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes 
-        is triggered here. 
-        
-        Default is to randomly jiggle all dynamically placed nodes.
-        """
-        for node in self.forest.nodes.values():
-            if node.use_physics():
-                x, y = node.current_position
-                node.current_position = x + random.randint(-20, 20), y + random.randint(-20, 20)
 
     def edge_pull(self, node, node_x, node_y, pull_factor=.7):
         # attract

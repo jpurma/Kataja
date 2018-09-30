@@ -96,74 +96,19 @@ class UndoManager:
         #    return
         ctrl.disable_undo()
         ctrl.multiselection_start()
-        ctrl.forest.halt_drawing = True
+        self.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions, transition_type)
-        ctrl.forest.edge_visibility_check()
-        ctrl.forest.flush_and_rebuild_temporary_items()
+        self.forest.edge_visibility_check()
+        self.forest.flush_and_rebuild_temporary_items()
         log.info('undo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
         self._current -= 1
-        ctrl.forest.halt_drawing = False
+        self.forest.halt_drawing = False
 
         print('-------undo finished', self._current)
-
-    # def undo_old(self):
-    #     """ Move backward in the undo stack
-    #     :return: None
-    #     """
-    #     if not self._stack:
-    #         return
-    #     #if self._current == 0:
-    #     #    log.info('undo [%s]: Cannot undo further' % self._current)
-    #     #    return
-    #     ctrl.disable_undo()
-    #     ctrl.multiselection_start()
-    #     ctrl.forest.halt_drawing = True
-    #     msg, snapshot = self._stack[self._current]
-    #     affected = set()
-    #     for obj, transitions, transition_type in snapshot.values():
-    #         obj.revert_to_earlier(transitions)
-    #         if transition_type == CREATED:
-    #             ctrl.free_drawing.delete_item(obj, ignore_consequences=True)
-    #         elif transition_type == DELETED:
-    #             print('restoring object: ', obj)
-    #             ctrl.forest.add_to_scene(obj)
-    #         affected.add(obj)
-    #         if hasattr(obj, 'update_visibility'):
-    #             obj.update_visibility()
-    #             if not obj.isVisible():
-    #                 print('not visible')
-    #     ctrl.forest.edge_visibility_check()
-    #     for obj, transitions, transition_type in snapshot.values():
-    #         if transition_type == CREATED:
-    #             revtt = DELETED
-    #         elif transition_type == DELETED:
-    #             revtt = CREATED
-    #         else:
-    #             revtt = transition_type
-    #         obj.after_model_update(transitions.keys(), revtt)
-    #         if getattr(obj.__class__, 'syntactic_object', False):
-    #             node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
-    #             if node and node not in affected:
-    #                 node.after_model_update([], revtt)
-    #     ctrl.forest.flush_and_rebuild_temporary_items()
-    #     for node in ctrl.forest.nodes.values():
-    #         if not node.isVisible():
-    #             print('hidden node: ', node)
-    #         elif not node._visible_by_logic:
-    #             print('logic says hide:', node)
-    #         elif node.is_fading_in:
-    #             print('node is fading in: ', node)
-    #     log.info('undo [%s]: %s' % (self._current, msg))
-    #     ctrl.multiselection_end()
-    #     ctrl.resume_undo()
-    #     self._current -= 1
-    #     ctrl.forest.halt_drawing = False
-    #
-    #     print('-------undo finished', self._current)
 
     def redo(self):
         """ Move forward in the undo stack
@@ -176,16 +121,16 @@ class UndoManager:
             return
         ctrl.disable_undo()
         ctrl.multiselection_start()
-        ctrl.forest.halt_drawing = True
+        self.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         for obj, transitions, transition_type in snapshot.values():
             obj.move_to_later(transitions, transition_type)
-        ctrl.forest.edge_visibility_check()
-        ctrl.forest.flush_and_rebuild_temporary_items()
+        self.forest.edge_visibility_check()
+        self.forest.flush_and_rebuild_temporary_items()
         log.info('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
-        ctrl.forest.halt_drawing = False
+        self.forest.halt_drawing = False
         print('------redo finished: ', msg, self._current)
 
     @staticmethod

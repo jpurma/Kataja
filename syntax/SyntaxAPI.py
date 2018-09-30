@@ -1,7 +1,8 @@
 from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 import kataja.globals as g
-from kataja.singletons import ctrl, classes
-from kataja.nodes_to_synobjs import nodes_to_synobjs
+from kataja.singletons import classes
+from plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
 
 
 class SyntaxAPI(SavedObject):
@@ -198,8 +199,8 @@ class SyntaxAPI(SavedObject):
         """
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
         if self.input_tree:
-            roots = forest.parser.string_into_forest(str(self.input_tree))
-            forest.free_drawing.definitions_to_nodes(self.get_editable_lexicon())
+            roots = self.parser.string_into_forest(str(self.input_tree))
+            forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
             self.nodes_to_synobjs(forest, roots)
 
     def set_display_mode(self, i):
@@ -527,3 +528,6 @@ class SyntaxAPI(SavedObject):
         feature = self.Feature(**kw)
         self.features[feature.uid] = feature
         return feature
+
+    input_text = SavedField("input_text")
+    input_tree = SavedField("input_tree")

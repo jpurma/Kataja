@@ -34,7 +34,8 @@ class BracketedLinearization(BaseVisualization):
     modes of showing brackets:
     """
     name = 'Bracketed linearization'
-    banned_node_shapes = ()
+    banned_cn_shapes = ()
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -51,7 +52,7 @@ class BracketedLinearization(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
         if reset:
             self.reset_nodes()
 
@@ -82,26 +83,25 @@ class BracketedLinearization(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes
         is triggered here. """
 
-        ls = ctrl.settings.get('node_shape')
+        ls = self.forest.settings.get('cn_shape')
         if ls == g.BOX:
             ls = g.NORMAL
         else:
             ls += 1
-        ctrl.settings.set('node_shape', ls, level=g.FOREST)
+        self.forest.settings.set('cn_shape', ls)
         for node in self.forest.nodes.values():
             self.reset_node(node)
 
     def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
+        super().prepare_draw()
         self.forest.prepare_width_map()
-        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree_top):
         """ Bracket manager's width map tells the required widths and labels know already how to
         draw themselves """
 
         width_map = self.forest.width_map
-        ls = ctrl.settings.get('node_shape')
+        ls = self.forest.settings.get('cn_shape')
         if ls == g.BRACKETED or ls == g.NORMAL:
             y_shift = 0
         elif ls == g.CARD:

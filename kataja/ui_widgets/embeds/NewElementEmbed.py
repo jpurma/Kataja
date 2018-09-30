@@ -2,11 +2,9 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl, classes
-from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_widgets.buttons.OverlayButton import OverlayButton
 from kataja.utils import guess_node_type
 from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_support.panel_utils import box_row
@@ -35,7 +33,7 @@ class NewElementEmbed(UIEmbed):
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
             node_class = classes.nodes.get(key, None)
-            if (not node_class) or (node_class.is_syntactic and not ctrl.free_drawing_mode):
+            if (not node_class) or (not node_class.editable):
                 continue
             self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
         self.node_type_selector.add_items(self.node_types)

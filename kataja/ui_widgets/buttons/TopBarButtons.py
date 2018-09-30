@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 from kataja.ui_widgets.buttons.OverlayButton import TopRowButton, VisButton
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
@@ -33,26 +33,12 @@ class TopBarButtons(QtWidgets.QFrame):
                                                 size=24,
                                                 action='toggle_recording').to_layout(layout)
 
-        self.edit_mode_button = TwoStateButton(ui_key='edit_mode_label',
-                                               parent=self,
-                                               text0='Free drawing',
-                                               text1='Visualisation',
-                                               action='switch_edit_mode').to_layout(layout)
-        layout.addStretch(0)
-
-        # Center side
-        self.view_mode_button = TwoStateButton(ui_key='view_mode_label', parent=self,
-                                               text0='Show all layers',
-                                               text1='Show only syntactic layer',
-                                               pixmap0=qt_prefs.eye_pixmap,
-                                               action='switch_view_mode').to_layout(layout)
-
         layout.addStretch(0)
 
         view_label = QtWidgets.QLabel("Visualisation:")
         layout.addWidget(view_label)
 
-        default_vis = ctrl.settings.get('visualization', level=g.PREFS)
+        default_vis = prefs.visualization
         self.vis_buttons = KatajaButtonGroup(parent=self)
         for vkey, vis in VISUALIZATIONS.items():
             shortcut = vis.shortcut

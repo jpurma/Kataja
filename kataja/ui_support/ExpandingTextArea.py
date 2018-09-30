@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.utils import open_symbol_data, caller
-from kataja.parser.INodes import ITextNode, as_html, as_text, as_editable_latex, as_editable_html
+from kataja.parser.INodes import as_editable_latex, as_editable_html
 import kataja.globals as g
 import html
 

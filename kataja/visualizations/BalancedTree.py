@@ -33,7 +33,8 @@ class BalancedTree(BaseVisualization):
 
     """
     name = 'Balanced trees'
-    banned_node_shapes = (g.BRACKETED,)
+    banned_cn_shapes = (g.BRACKETED,)
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -51,7 +52,7 @@ class BalancedTree(BaseVisualization):
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """
@@ -65,13 +66,6 @@ class BalancedTree(BaseVisualization):
         else:
             node.physics_x = True
             node.physics_y = True
-
-    def reselect(self):
-        self.set_data('rotation', self.get_data('rotation', 0) - 1)
-
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
 
     def has_free_movers(self):
         for node in self.forest.nodes.values():

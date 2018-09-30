@@ -29,11 +29,11 @@ from kataja.saved.Movable import Movable
 
 class Image(Movable, QtWidgets.QGraphicsPixmapItem):
 
-    def __init__(self, img, box=QtCore.QRectF(0, 0, 480, 400)):
+    def __init__(self, img, box=QtCore.QRectF(0, 0, 480, 400), forest=None):
         pixmap = QtGui.QPixmap(img)
         # pixmap=pixmap.scaledToHeight(int(box.height()))
         QtWidgets.QGraphicsPixmapItem.__init__(self, pixmap)
-        Movable.__init__(self)
+        Movable.__init__(self, forest=forest)
         self.setFlag(QtWidgets.QGraphicsRectItem.ItemIsMovable)
         self.setTransformationMode(QtCore.Qt.SmoothTransformation)
         # self.setPos(pixmap.width()*-.5, pixmap.height()*-.5)

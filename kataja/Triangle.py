@@ -74,10 +74,10 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
         else:
             # We want node's shape class and its properties so that the triangle can be drawn in similar style.
             edge_type = self._host.edge_type()
-            shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
+            shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=edge_type)
             path_class = SHAPE_PRESETS[shape_name]
             path, lpath, foo, bar = path_class.path((center, top), (right, bottom), [], g.BOTTOM, g.TOP)
-            fill = path_class.fillable and ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
+            fill = path_class.fillable and ctrl.forest.settings.get_for_edge_shape('fill', shape_name)
             if fill:
                 painter.fillPath(path, c)
             else:

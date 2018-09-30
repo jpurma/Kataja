@@ -31,7 +31,7 @@ class HiConstituent(BaseConstituent):
         :return:
         """
 
-        html = node.label_as_html(peek_into_synobj=False)
+        html = node.label_as_html()
         html += ', hi: ' + self.hi
         return html
 

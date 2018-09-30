@@ -32,12 +32,12 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.actions
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
-import kataja.ui_widgets.buttons.OverlayButton as OverlayButtons
 import kataja.ui_widgets.buttons.OverlayButton as ob
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, MediatingAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
+from kataja.saved.movables.Arrow import Arrow
 from kataja.singletons import ctrl, prefs, qt_prefs, log
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
@@ -113,11 +113,10 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                          'prev_derivation_step'])),
                               ('drawing_menu', ('&Drawing', ['$set_visualization',
                                                              '---',
-                                                             'select_node_shape',
+                                                             'select_cn_shape',
                                                              'select_trace_strategy',
                                                              'select_feature_display_mode',
                                                              'switch_syntax_view_mode',
-                                                             'switch_view_mode',
                                                              'toggle_semantics_view'])),
                               ('view_menu', ('&View', ['zoom_to_fit',
                                                        'auto_zoom',
@@ -390,16 +389,11 @@ class UIManager:
                 self.update_buttons_for_selected_node(item)
                 if item.node_type == g.CONSTITUENT_NODE:
                     item.toggle_halo(True)
-                if ctrl.settings.get('show_c_command') and not self.active_embed:
-                    if item.node_type == g.CONSTITUENT_NODE and item.syntactic_object:
-                        dominated_synobjs = ctrl.syntax.get_dominated_nodes(
-                            item)
-                        for synobj in dominated_synobjs:
-                            node = ctrl.forest.get_node(synobj)
-                            if node and node.is_visible():
+                    if not active_embed and ctrl.forest.settings.get('highlight_dominated_nodes_on_selection'):
+                        for node in item.get_sorted_nodes():
+                            if node.node_type == g.CONSTITUENT_NODE and node.is_visible():
                                 node.toggle_halo(True, small=True)
-                if isinstance(active_embed, (ConstituentNodeEditEmbed, NodeEditEmbed)):
-                    self.start_editing_node(item, active_embed)
+                self.start_editing_node(item, active_embed)
             elif isinstance(item, Group):
                 self.selection_group = item
                 self.add_buttons_for_group(item)
@@ -424,7 +418,7 @@ class UIManager:
                     self.selection_group = Group(
                         selection=nodes,
                         persistent=False,
-                        color_key=ctrl.free_drawing.get_group_color_suggestion())
+                        color_key=ctrl.drawing.get_group_color_suggestion())
                     self.add_ui(self.selection_group)
                 self.add_buttons_for_group(self.selection_group)
             else:
@@ -502,16 +496,16 @@ class UIManager:
     # ### Actions and Menus
     # ####################################################
 
-    def _load_actions(self, mod_path:str, seek_only=False):
+    def load_actions_from_module(self, mod, added=None, replaced=None):
         """ Seek and import actions from a module. Lower level operation, called from
         create_actions and when initialising plugins.
-        :param mod_path: working module path
-        :param seek_only: instead of instantiating and putting actions to dict, we can return a
-            list of found action classes. This is useful when removing actions added by a plugin.
+        :param mod: Python module
+        :param added: if a list is provided, these keys were added to a dict from this module. Useful when unloading a
+            plugin module.
+        :param replaced: if a dict is provided, store an existing action replaced by a new action here.
+            Useful for restoring the original state when a plugin has overrode actions.
         :return: list of found action classes
         """
-        found = []
-        mod = importlib.import_module(mod_path)
         for class_name in vars(mod):
             if class_name.startswith(
                     '_') or class_name == 'KatajaAction':
@@ -522,12 +516,17 @@ class UIManager:
             if not a_class.k_action_uid:  # Ignore abstract classes, they are there only to
                 # reduce amount of copied code across e.g. different node types.
                 continue
-            found.append(a_class)
-            if not seek_only:
-                action = a_class()
-                self.actions[action.key] = action
-                #self.main.addAction(action)
-        return found
+            action = a_class()
+            if added is not None:
+                added.append(action.key)
+            if replaced is not None and action.key in self.actions:
+                replaced[action.key] = self.actions[action.key]
+            self.actions[action.key] = action
+
+    def unload_actions_from_module(self, added, replaced):
+        for action_key in added:
+            del self.actions[action_key]
+        self.actions.update(replaced)
 
     def create_actions(self):
         """ KatajaActions define user commands and interactions. They are loaded from modules in
@@ -538,7 +537,8 @@ class UIManager:
             if module == '__init__.py' or module[-3:] != '.py':
                continue
             mod_path = 'kataja.actions.' + module[:-3]
-            self._load_actions(mod_path)
+            mod = importlib.import_module(mod_path)
+            self.load_actions_from_module(mod)
         self.arrow_actions = [a for a in self.actions.values() if a.k_shortcut in ['Left', 'Right', 'Up', 'Down']]
         log.info('Prepared %s actions.' % len(self.actions))
 
@@ -911,10 +911,7 @@ class UIManager:
         miminimise panels jumping around.
         """
         self.close_active_embed()
-        if node.node_type == g.CONSTITUENT_NODE:
-            self.active_embed = ConstituentNodeEditEmbed(self.main.graph_view, node)
-        else:
-            self.active_embed = NodeEditEmbed(self.main.graph_view, node)
+        self.active_embed = node.embed_edit(self.main.graph_view, node)
         if previous_embed:
             self.active_embed.move(previous_embed.pos())
             self.active_embed.update_position()
@@ -975,12 +972,7 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        print('update_touch_areas_for_selected_edge')
-        #if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
-        #    self.get_or_create_touch_area(edge, 'LeftAddInnerSibling',
-        #                                  self.get_action('inner_add_sibling_left'))
-        #    self.get_or_create_touch_area(edge, 'RightAddInnerSibling',
-        #                                  self.get_action('inner_add_sibling_right'))
+        pass
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """ Show connection points for dragged nodes.
@@ -1048,13 +1040,6 @@ class UIManager:
         """
         log.log(level, msg)
 
-    # Mode HUD
-    def update_edit_mode(self):
-        free_drawing = ctrl.free_drawing_mode
-        self.top_bar_buttons.edit_mode_button.setChecked(not free_drawing)
-        if free_drawing and ctrl.settings.get('syntactic_mode', level=g.DOCUMENT):
-            ctrl.forest.change_view_mode(False)
-        self.top_bar_buttons.view_mode_button.setVisible(not free_drawing)
 
     # ### Embedded buttons ############################
 
@@ -1066,7 +1051,6 @@ class UIManager:
         #     item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
-        self.update_edit_mode()
 
     def add_button(self, button, action):
         button.update_position()
@@ -1104,8 +1088,7 @@ class UIManager:
         :param group:
         :return:
         """
-        for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton,
-                             ob.DeleteGroupButton]:
+        for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton]:
             if button_class.condition(group):
                 button = self.get_or_create_button(group, button_class)
                 group.add_button(button)
@@ -1244,3 +1227,96 @@ class UIManager:
     def clear_and_refresh_heading(self):
         self.clear_items()
         self.refresh_heading()
+
+
+    # Active settings ###########################
+
+    def get_active_setting(self, key):
+        if self.scope_is_selection or self.active_scope == g.FOREST:
+            return ctrl.forest.settings.get(key)
+        elif self.active_scope == g.DOCUMENT and ctrl.document:
+            return ctrl.doc_settings.get(key)
+        else:
+            return prefs.get(key)
+
+    def set_active_setting(self, key, value):
+        if self.scope_is_selection or self.active_scope == g.FOREST:
+            return ctrl.forest.settings.set(key, value)
+        elif self.active_scope == g.DOCUMENT and ctrl.document:
+            return ctrl.doc_settings.set(key, value)
+        else:
+            return prefs.set(key, value)
+
+    def get_active_node_setting(self, key, node_type, skip_selection=False):
+        if self.scope_is_selection:
+            if not skip_selection:
+                nodes = ctrl.get_selected_nodes()
+                if nodes:
+                    for node in nodes:
+                        if key in node._settings:
+                            return node._settings[key]
+                    return nodes[0].settings.get(key)
+            return ctrl.forest.settings.get_for_node_type(key, node_type)
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.get_for_node_type(key, node_type)
+        elif self.active_scope == g.DOCUMENT and ctrl.document:
+            return ctrl.doc_settings.get_for_node_type(key, node_type)
+        else:
+            return prefs.get_for_node_type(key, node_type)
+
+    def set_active_node_setting(self, key, value, node_type):
+        if self.scope_is_selection:
+            nodes = ctrl.get_selected_nodes()
+            if nodes:
+                for node in nodes:
+                    if node.node_type == node_type:
+                        node.settings.set(key, value)
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.set_for_node_type(key, value, node_type)
+        elif self.active_scope == g.DOCUMENT:
+            return ctrl.doc_settings.set_for_node_type(key, value, node_type)
+        else:
+            return prefs.set_for_node_type(key, value, node_type)
+
+    def get_active_edge_setting(self, key, edge_type, skip_selection=False):
+        if self.scope_is_selection:
+            if not skip_selection:
+                edges = ctrl.get_selected_edges()
+                if edges:
+                    for edge in edges:
+                        if key in edge._settings:
+                            return edge._settings[key]
+                    return edges[0].settings.get(key)
+            return ctrl.forest.settings.get_for_edge_type(key, edge_type)
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.get_for_edge_type(key, edge_type)
+        elif self.active_scope == g.DOCUMENT and ctrl.document:
+            return ctrl.doc_settings.get_for_edge_type(key, edge_type)
+        else:
+            return prefs.get_for_edge_type(key, edge_type)
+
+    def set_active_edge_setting(self, key, value, edge_type):
+        if self.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if edge.edge_type == edge_type:
+                        edge.settings.set(key, value)
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.set_for_edge_type(key, value, edge_type)
+        elif self.active_scope == g.DOCUMENT:
+            return ctrl.doc_settings.set_for_edge_type(key, value, edge_type)
+        else:
+            return prefs.set_for_edge_type(key, value, edge_type)
+
+    def reset_active_edge_setting(self, edge_type):
+        if self.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if edge.edge_type == edge_type:
+                        edge.settings.reset()
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.reset_edge_type(edge_type)
+        elif self.active_scope == g.DOCUMENT:
+            return ctrl.doc_settings.reset_edge_type(edge_type)

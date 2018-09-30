@@ -33,7 +33,7 @@ class SavedObject(object):
     """
     uid = SavedField("uid")
     class_name = SavedField("class_name")
-    settings = SavedField("settings")
+    _settings = SavedField("_settings")
     syntactic_object = False
     unique = False
     dont_copy = []
@@ -48,7 +48,7 @@ class SavedObject(object):
         self._saved = {}
         self._history = {}
         self.uid = uid
-        self.settings = {}
+        self._settings = {}
         self.class_name = class_name
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
@@ -305,7 +305,7 @@ class SavedObject(object):
 
         #    @time_me
 
-    def load_objects(self, data, kataja_main):
+    def load_objects(self, data):
         """ Load and restore objects starting from given obj (probably Forest
         or KatajaMain instance)
         :param data:
@@ -341,17 +341,19 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        print('full map: ', full_map)
-        print(len(full_map))
-        self.restore(self.uid, data, full_map, {}, kataja_main, root=True)
+        # print('full map: ', full_map)
+        # print(len(full_map))
+        restored = {}
+        self.restore(self.uid, data, full_map, restored)
+        # objects need to be finalized after setting values, do this only once per load.
+        for item in restored.values():
+            if hasattr(item, 'after_init'):
+                #print('restoring item, calling after_init for ', type(item), item)
+                item.after_init()
 
-    def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):
+    def restore(self, obj_key, full_data, full_map, restored):
         """ Recursively restore objects inside the scope of current obj. Used
-        for loading kataja files.
-        :param obj_key:
-        :param root:
-        :return:
-        """
+        for loading kataja files. """
 
         if isinstance(obj_key, str):
             if obj_key.isdigit():
@@ -371,32 +373,21 @@ class SavedObject(object):
         new_data = full_data.get(obj_key, None)
         if not new_data:
             return obj
+        # if obj:
+        #    print('Putting new data to existing obj:', new_data)
         class_key = new_data['class_name']
 
         if not obj:
-            # print('Creating obj with class_key: ', class_key, obj_key)
+            # print('Creating obj with key: ', obj_key)
             obj = classes.create(class_key)
-        # when creating/modifying values inside forests, they may refer back
-        # to ctrl.forest. That has to be the current
-
-        # forest, or otherwise things go awry
-        if class_key == 'Forest':
-            kataja_main.document.forest = obj
-
+        # print('object data: ', new_data)
         # keep track of which objects have been restored
         restored[obj_key] = obj
 
-        obj.inflate_from_data(new_data, full_data, full_map, restored, kataja_main)
-
-        # objects need to be finalized after setting values, do this only once per load.
-        if root:
-            for item in restored.values():
-                if hasattr(item, 'after_init'):
-                    # print('restoring item, calling after_init for ', type(item), item)
-                    item.after_init()
+        obj.inflate_from_data(new_data, full_data, full_map, restored)
         return obj
 
-    def inflate_from_data(self, data, full_data, full_map, restored, kataja_main):
+    def inflate_from_data(self, data, full_data, full_map, restored):
         def inflate(data):
             """ Recursively turn QObject descriptions back into actual
             objects and object references
@@ -418,13 +409,14 @@ class SavedObject(object):
                 result = []
                 for item in data:
                     result.append(inflate(item) if item else item)
+                # print('inflated list ', result)
+                # print('from data: ', data)
                 return result
             elif isinstance(data, str):
                 if data.startswith('*r*'):
                     r, uid = data.split('|', 1)
-                    return self.restore(uid, full_data, full_map, restored, kataja_main)
-                else:
-                    return data
+                    return self.restore(uid, full_data, full_map, restored)
+                return data
             elif isinstance(data, tuple):
                 if data and isinstance(data[0], str):
                     data_type = data[0]
@@ -446,18 +438,11 @@ class SavedObject(object):
                         return f
                     elif data_type.startswith('Q'):
                         raise SaveError('unknown QObject: %s' % str(data))
-                    else:
-                        result = []
-                        for item in data:
-                            result.append(inflate(item) if item else item)
-                        result = tuple(result)
-                        return result
-                else:
-                    result = []
-                    for item in data:
-                        result.append(inflate(item) if item else item)
-                    result = tuple(result)
-                    return result
+                result = []
+                for item in data:
+                    result.append(inflate(item) if item else item)
+                result = tuple(result)
+                return result
             elif isinstance(data, set):
                 result = set()
                 for item in data:

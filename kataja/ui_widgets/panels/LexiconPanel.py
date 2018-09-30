@@ -1,6 +1,5 @@
-from PyQt5 import QtWidgets
-from kataja.singletons import ctrl, qt_prefs
-from kataja.globals import CONSOLE_FONT
+from PyQt5 import QtCore
+from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
@@ -22,9 +21,11 @@ class LexiconPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         ctrl.main.forest_changed.connect(self.prepare_lexicon)
         layout = self.vlayout
+        self.preferred_size = QtCore.QSize(320, 320)
         tt = 'Editable lexicon'
         self.lextext = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Lexicon')
         self.lextext.setMinimumHeight(200)
+
         tt = 'Sentence to parse'
         self.input_text = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Input sentence')
         self.input_text.setMaximumHeight(36)

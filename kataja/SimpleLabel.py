@@ -28,7 +28,7 @@ from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, \
     CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
-from kataja.utils import combine_dicts, time_me, open_symbol_data
+from kataja.utils import open_symbol_data
 from kataja.uniqueness_generator import next_available_type_id
 
 style_sheet = """
@@ -66,8 +66,6 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
-        self.editable = {}
-        self.prepare_template()  # !<----
         self.editable_doc = LabelDocument()
         self._fresh_focus = False
         self.setDocument(self.editable_doc)
@@ -124,15 +122,6 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
 
     def string_width(self, string):
         return self._font_metrics.width(string)
-
-    def prepare_template(self):
-        my_class = self._host.__class__
-        if self._host.syntactic_object:
-            synclass = self._host.syntactic_object.__class__
-            syn_editable = getattr(synclass, 'editable', {})
-            self.editable = combine_dicts(syn_editable, my_class.editable)
-        else:
-            self.editable = my_class.editable
 
     def is_empty(self) -> bool:
         """ Turning this node into label would result in an empty label.

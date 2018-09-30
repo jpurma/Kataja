@@ -69,4 +69,5 @@ class Constituent(BaseConstituent or object):
         else:
             return self.inherited_features
 
-    has_raised = SavedField('has_raised')
+    if in_kataja:
+        has_raised = SavedField('has_raised')

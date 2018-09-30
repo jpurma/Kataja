@@ -63,8 +63,7 @@ class DerivationStep(SavedObject):
             self.iteration = 0
 
     def __str__(self):
-        return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(
-            self.other) + ", '" + str(self.msg) + "')"
+        return "DS(" + str(self.tree_roots) + ", " + str(self.numeration) + ", " + str(self.msg) + "')"
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
@@ -143,7 +142,7 @@ class DerivationStepManager(SavedObject):
         if self.derivation_steps:
             uid, frozen_data, msg, i = self.derivation_steps[self.derivation_step_index]
             d_step = DerivationStep(None, uid=uid)
-            d_step.load_objects(frozen_data, ctrl.main)
+            d_step.load_objects(frozen_data)
             self.activated = True
             self.current = d_step
             syntactic_state_to_nodes(self.forest, d_step.to_syn_state())

@@ -23,50 +23,48 @@
 # ############################################################################
 import string
 
-import time
+import random
 from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.errors import ForestError
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
+from kataja.saved.movables.Arrow import Arrow
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Image import Image
 from kataja.singletons import ctrl, classes, log
-from kataja.nodes_to_synobjs import figure_out_syntactic_label
-from kataja.utils import time_me
 
 
-class FreeDrawing:
+class ForestDrawing:
     """ This is a class purely for legibility and code organisation. This operates on Forest data
-    and each instance is inside a Forest-instance. FreeDrawing contains all graph-building
-    operations related to Forest -- it manipulates Nodes and Edges and totally ignores syntactic
-    objects. Node graphs created by FreeDrawing can then try to build matching syntactic objects,
-    but it is not responsibility of methods here.
+    and each instance is inside a Forest-instance. ForestDrawing contains all graph-building
+    operations related to Forest. It manipulates Nodes and Edges and mostly ignores syntactic
+    objects, assuming that corresponding syntactic relations are already created.
      """
 
     def __init__(self, forest):
         """ attach free drawing to specific forest. FreeDrawing can have non-permanent instance
         data, e.g. caches or helper dicts, but nothing here is saved.
         """
-        self.f = forest
+        self.forest = forest
         self._marked_for_deletion = set()
         self.label_rotator = 0
 
     @property
     def nodes(self):
-        return self.f.nodes
+        return self.forest.nodes
 
     @property
     def edges(self):
-        return self.f.edges
+        return self.forest.edges
 
     @property
     def groups(self):
-        return self.f.groups
+        return self.forest.groups
 
     def poke(self, attribute):
-        self.f.poke(attribute)
+        self.forest.poke(attribute)
 
     @staticmethod
     def copy_node_position(source, target):
@@ -103,33 +101,15 @@ class FreeDrawing:
         """ Add comment item to forest
         :param comment: comment item
         """
-        self.f.comments.append(comment)
+        self.forest.comments.append(comment)
 
     def remove_comment(self, comment):
         """ Remove comment item from forest
         :param comment: comment item
         :return:
         """
-        if comment in self.f.comments:
-            self.f.comments.remove(comment)
-
-    def remove_intertree_relations(self):
-        """ After disconnections there may be multidominated nodes whose
-        parents are in different trees.
-        In most of syntaxes these shouldn't happen: there is no disconnection
-        activity to create such things.
-
-        When user disconnects a node, it is to work with branches separately:
-        a multidominated node should get its own
-        copy.
-
-        However there is a remote possibility for creating them by merging
-        non-root node from another trees to
-        construction, so the option should be there.
-
-        :return:
-        """
-        pass
+        if comment in self.forest.comments:
+            self.forest.comments.remove(comment)
 
     def next_free_label(self):
         self.label_rotator += 1
@@ -139,7 +119,7 @@ class FreeDrawing:
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, label='', relative=None, pos=None, node_type=1, **kw):
+    def create_node(self, label='', relative=None, pos=None, node_type=1, synobj=None, **kw):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param label: label text for node, behaviour depends on node type, usually main text content
@@ -147,23 +127,26 @@ class FreeDrawing:
         given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
+        :param synobj:
         :return:
         """
         node_class = classes.nodes.get(node_type)
-        node = node_class(label=label, **kw)
+        node = node_class(label=label, forest=self.forest, **kw)
+        if synobj:
+            node.set_syntactic_object(synobj)
         node.after_init()
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
         # then lock this node.
-        if self.f.visualization:
-            self.f.visualization.reset_node(node)
+        if self.forest.visualization:
+            self.forest.visualization.reset_node(node)
         # it should however inherit settings from relative, if such are given
         if relative:
             self.copy_node_position(source=relative, target=node)
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
-        self.f.add_to_scene(node)
+        self.forest.add_to_scene(node)
         node.update_visibility(fade_in=False, fade_out=False)
         return node
 
@@ -198,11 +181,11 @@ class FreeDrawing:
         :param alpha:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type, alpha=alpha)
+        rel = Edge(self.forest, start=start, end=end, edge_type=edge_type, alpha=alpha)
         rel.after_init()
-        self.f.store(rel)
-        self.f.add_to_scene(rel)
-        if fade and self.f.in_display and start.is_visible() and end.is_visible():
+        self.forest.store(rel)
+        self.forest.add_to_scene(rel)
+        if fade and self.forest.in_display and start.is_visible() and end.is_visible():
             rel.fade_in()
         return rel
 
@@ -214,8 +197,8 @@ class FreeDrawing:
         :return:
         """
         im = Image(image_path)
-        self.f.others[im.uid] = im
-        self.f.add_to_scene(im)
+        self.forest.others[im.uid] = im
+        self.forest.add_to_scene(im)
         return im
 
     def create_trace_for(self, node):
@@ -226,7 +209,7 @@ class FreeDrawing:
         """
         index = node.index
         if not index:
-            index = self.f.chain_manager.next_free_index()
+            index = self.forest.chain_manager.next_free_index()
             node.index = index
         trace = self.create_node(label='t', relative=node)
         trace.is_trace = True
@@ -234,12 +217,13 @@ class FreeDrawing:
         trace.update_label()
         return trace
 
-    def create_arrow(self, start=None, end=None, text=None):
+    def create_arrow(self, p1, p2, text=None, fade=True):
         """ Create an arrow (Edge) using the default arrow style
 
         :param p1: start point
         :param p2: end point
         :param text: explanatory text associated with the arrow
+        :param fade: fade in or appear instantly
         :return:
         """
         start_point = None
@@ -262,9 +246,9 @@ class FreeDrawing:
             end = None
         arrow = Arrow(start=start, end=end, start_point=start_point,
                       end_point=end_point, text=text)
-        self.f.store(arrow)
-        self.f.add_to_scene(arrow)
-        if fade and self.f.in_display:
+        self.forest.store(arrow)
+        self.forest.add_to_scene(arrow)
+        if fade and self.forest.in_display:
             arrow.fade_in()
         ctrl.select(arrow)
         return arrow
@@ -317,10 +301,10 @@ class FreeDrawing:
             self.poke('nodes')
             del self.nodes[node.uid]
         if node.syntactic_object:
-            if node.syntactic_object.uid in self.f.nodes_from_synobs:
-                del self.f.nodes_from_synobs[node.syntactic_object.uid]
+            if node.syntactic_object.uid in self.forest.nodes_from_synobs:
+                del self.forest.nodes_from_synobs[node.syntactic_object.uid]
 
-        assert (node.uid not in self.f.nodes)
+        assert (node.uid not in self.forest.nodes)
 
         # if fading out, item scene position has to remain same during the fade. If disappear
         # instantly, it doesnt matter
@@ -335,7 +319,7 @@ class FreeDrawing:
         if hasattr(node, 'on_delete'):
             node.on_delete()
         # -- scene --
-        self.f.remove_from_scene(node, fade_out=fade)
+        self.forest.remove_from_scene(node, fade_out=fade)
         # -- undo stack --
         node.announce_deletion()
         # -- remove from selection
@@ -394,7 +378,7 @@ class FreeDrawing:
             self.poke('edges')
             del self.edges[edge.uid]
         # -- scene --
-        self.f.remove_from_scene(edge, fade_out=fade)
+        self.forest.remove_from_scene(edge, fade_out=fade)
         # -- undo stack --
         edge.announce_deletion()
         # -- remove circularity block
@@ -447,9 +431,6 @@ class FreeDrawing:
         edge.connect_end_points(edge.start, new_end)
         new_end.poke('edges_up')
         new_end.edges_up.append(edge)
-
-    def add_feature_to_node(self, feature, node):
-        self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):
         """ Comments are connected the other way around compared to
@@ -643,201 +624,7 @@ class FreeDrawing:
             # old_node.update_visibility(active=False, fade=True)
             self.delete_node(old_node, touch_edges=False)
 
-    # ########### Complex node operations ##############################
-
-    def delete_unnecessary_merger(self, node):
-        """
-
-        :param node:
-        :raise ForestError:
-        """
-        if node.node_type != g.CONSTITUENT_NODE:
-            raise ForestError("Trying to treat wrong kind of node as ConstituentNode and "
-                              "forcing it to binary merge")
-
-        i = node.index or ''
-        children = list(node.get_children(similar=True, visible=False))
-        for child in list(children):
-            parents = node.get_parents(similar=True, visible=False)
-            bad_parents = []
-            good_parents = []
-            for parent in list(parents):
-                if child in parent.get_children(similar=True, visible=False):
-                    bad_parents.append(parent)
-                else:
-                    good_parents.append(parent)
-            if not (bad_parents or good_parents):
-                self.disconnect_node(node, child)
-            else:
-                if bad_parents:
-                    # more complex case
-                    m = "Removing node would make parent to have same node as " \
-                        "both left and right child. " + "Removing parent too."
-                    log.info(m)
-                    self.disconnect_node(node, child)
-                    for parent in list(bad_parents):
-                        for grandparent in list(parent.get_parents()):
-                            self.disconnect_node(grandparent, parent)
-                            self.disconnect_node(parent, child)
-                            self.connect_node(grandparent, child)
-
-                if good_parents:
-                    # normal case
-                    self.disconnect_node(node, child)
-                    for parent in list(good_parents):
-                        edge = parent.get_edge_to(node)
-                        direction = edge.direction()
-                        self.disconnect_node(parent, node)
-                        self.connect_node(parent, child, direction=direction)
-            if i:
-                child.set_index(i)
-            self.delete_node(node)
-            for parent in list(bad_parents):
-                self.delete_node(parent)
-
-    def unary_add_child_for_constituentnode(self, new_node, old_node, add_left=True):
-        """
-        :param new_node:
-        :param old_node:
-        :param add_left:
-        :return:
-        """
-        children = old_node.get_children(similar=True, visible=False)
-
-        if len(children) != 1:
-            return
-        child = children[0]
-        old_edge = old_node.get_edge_to(child)
-        if add_left:
-            self.connect_node(parent=old_node, child=new_node, direction=g.LEFT, fade_in=True)
-        else:
-            self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
-
-    def add_sibling_for_constituentnode(self, new_node, old_node, add_left=True):
-        """ Create a new merger node to top of this node and have this node and new node as its
-        children.
-        :param new_node:
-        :param old_node:
-        :param add_left: adding node to left or right -- if binary nodes, this marks which one
-        will be projecting.
-        :return:
-        """
-        new_node.heads = [new_node]
-
-        if add_left:
-            left = new_node
-            right = old_node
-        else:
-            left = old_node
-            right = new_node
-        parent_info = [(e.start, e.direction()) for e in
-                       old_node.get_edges_up(similar=True, visible=False)]
-
-        for op, align in parent_info:
-            self.disconnect_node(parent=op, child=old_node)
-
-        merger_node = self.create_merger_node(left=left, right=right, new=new_node)
-
-        for group in self.groups.values():
-            if old_node in group:
-                group.add_node(merger_node)
-
-        for op, align in parent_info:
-            self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
-        merger_node.heads = list(old_node.heads)
-
-    def merge_to_top(self, top, new, merge_to_left=True):
-        """
-        :param top:
-        :param new:
-        :param merge_to_left:
-        :param pos:
-        :return:
-        """
-        if merge_to_left:
-            left = new
-            right = top
-        else:
-            left = top
-            right = new
-        self.create_merger_node(left=left, right=right, new=new, heads=top.heads)
-
-    def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
-        """ This is an insertion action into a trees: a new merge is created
-        and inserted between two existing constituents. One connection is
-        removed, but three are created.
-        This happens when touch area in edge going up from node N is clicked,
-        or if a node is dragged there.
-
-        :param parent:
-        :param child:
-        :param inserted:
-        :param merge_to_left:
-        :param insertion_pos:
-        """
-        edge = parent.get_edge_to(child)
-        # store the projection and alignment info before disconnecting the edges
-        heads = []
-        if parent.node_type == g.CONSTITUENT_NODE:
-            heads = parent.heads
-
-        direction = edge.direction()
-        self.disconnect_edge(edge)
-        if merge_to_left:
-            left = inserted
-            right = child
-        else:
-            left = child
-            right = inserted
-
-        # connections
-        merger_node = self.create_merger_node(left=left, right=right, new=inserted)
-        self.connect_node(parent, merger_node, direction=direction)
-
-        # groups
-        for group in self.groups.values():
-            if parent in group:
-                group.add_node(merger_node)
-
-        # projections
-        merger_node.set_heads(heads)
-
-    def create_merger_node(self, left=None, right=None, new=None, heads=None):
-        """ Gives a merger node of two nodes. Doesn't try to fix their edges
-        upwards
-        :param left:
-        :param right:
-        :param new: which one is the new node to add. This connection is animated in.
-        :param heads: which one is head?
-        """
-        if new is left:
-            old = right
-        else:
-            old = left
-        lx, ly = left.current_scene_position
-        rx, ry = right.current_scene_position
-        pos = (lx + rx) / 2, (ly + ry) / 2 - ctrl.settings.get('edge_height')
-
-        label = ''
-        if heads:
-            if isinstance(heads, Node):
-                label = figure_out_syntactic_label(heads)
-            elif isinstance(heads, list):
-                if len(heads) == 1:
-                    label = figure_out_syntactic_label(heads[0])
-                if len(heads) == 2:
-                    l1 = figure_out_syntactic_label(heads[0])
-                    l2 = figure_out_syntactic_label(heads[1])
-                    label = f"({l1}, {l2})"
-
-        merger_node = self.create_node(label=label, relative=old)
-        merger_node.current_position = pos
-        self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
-        self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
-        merger_node.set_heads(heads)
-        return merger_node
-
-    # ######## Groups (Amoebas) ################################
+    # ######## Groups ################################
 
     def turn_selection_group_to_group(self, selection_group):
         """ Take a temporary group into persistent group. Store it in forest. Remember to remove
@@ -852,13 +639,13 @@ class FreeDrawing:
 
     def create_group(self):
         group = Group(selection=[], persistent=True)
-        self.f.add_to_scene(group)
+        self.forest.add_to_scene(group)
         self.poke('groups')
         self.groups[group.uid] = group
         return group
 
     def remove_group(self, group):
-        self.f.remove_from_scene(group)
+        self.forest.remove_from_scene(group)
         ctrl.ui.remove_ui_for(group)
         if group.uid in self.groups:
             self.poke('groups')
@@ -875,9 +662,9 @@ class FreeDrawing:
     def definitions_to_nodes(self, defstring):
 
         leaves = {}
-        for node in self.f.nodes.values():
+        for node in self.forest.nodes.values():
             if node.is_leaf(only_similar=True, only_visible=False):
-                leaves[self.f.parser.get_root_word(node.label)] = node
+                leaves[self.forest.parser.get_root_word(node.label)] = node
         for line in defstring.splitlines():
             if '::' not in line:
                 continue

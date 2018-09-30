@@ -81,7 +81,7 @@ class DisconnectArrow(EmbedAction):
         except KeyError:
             log.error(f'No such edge: {edge_uid}.')
             return
-        ctrl.free_drawing.disconnect_edge(edge)
+        ctrl.drawing.disconnect_edge(edge)
         ctrl.ui.update_selections()
         ctrl.forest.forest_edited()
 
@@ -103,7 +103,7 @@ class NewArrow(EmbedAction):
     def method(self, focus_point, end_point, text):
         """ Create a new arrow into embed menu's location
         """
-        ctrl.free_drawing.create_arrow(focus_point, end_point, text)
+        ctrl.drawing.create_arrow(focus_point, end_point, text)
         ctrl.ui.close_active_embed()
         ctrl.forest.forest_edited()
 
@@ -131,7 +131,7 @@ class StartArrowFromNode(EmbedAction):
             return
         ex, ey = node.bottom_center_magnet()
         end_pos = QtCore.QPointF(ex + 20, ey + 40)
-        ctrl.free_drawing.create_arrow(start=node, end=end_pos)
+        ctrl.drawing.create_arrow(start=node, end=end_pos)
 
 
 class SetArrowStart(KatajaAction):

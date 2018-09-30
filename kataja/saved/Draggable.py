@@ -245,7 +245,7 @@ class Draggable(Movable):
         for edge in self.edges_up:
             edge.crossed_out_flag = False
             if shift_down:
-                ctrl.free_drawing.disconnect_node(edge=edge)
+                ctrl.drawing.disconnect_node(edge=edge)
         if recipient and recipient.accepts_drops(self):
             self.release()
             recipient.drop(self)

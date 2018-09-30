@@ -21,15 +21,17 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from collections import Iterable
+
 from PyQt5 import QtCore, QtGui
 
 from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
-from kataja.parser.INodes import ITextNode, ICommandNode, as_text, extract_triangle, join_lines, \
-    as_html
+from kataja.parser.INodes import as_text, as_html
 from kataja.saved.movables.Node import Node
 import kataja.ui_graphicsitems.TouchArea as TA
 import kataja.ui_widgets.buttons.OverlayButton as OB
+from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import coords_as_str
@@ -49,9 +51,9 @@ class ConstituentNode(Node):
     width = 20
     height = 20
     is_constituent = True
+    quick_editable = False
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
-    editable = {}  # Uses custom ConstituentNodeEmbed instead of template-based NodeEditEmbed
 
     default_style = {
         'plain': {
@@ -70,7 +72,7 @@ class ConstituentNode(Node):
     }
 
     default_edge = g.CONSTITUENT_EDGE
-    allowed_child_types = [g.CONSTITUENT_NODE, g.FEATURE_NODE, g.GLOSS_NODE, g.COMMENT_NODE]
+    allowed_child_types = [g.GLOSS_NODE, g.COMMENT_NODE]
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the
@@ -84,25 +86,20 @@ class ConstituentNode(Node):
     # check if this is an appropriate toucharea to draw for given node or edge.
     # format.
 
-    touch_areas_when_dragging = [TA.LeftAddTop, TA.LeftAddSibling, TA.RightAddSibling,
-                                 TA.AddBelowTouchArea]
-    touch_areas_when_selected = [TA.LeftAddTop, TA.RightAddTop, TA.MergeToTop,
-                                 TA.LeftAddInnerSibling, TA.RightAddInnerSibling,
-                                 TA.LeftAddUnaryChild, TA.RightAddUnaryChild, TA.LeftAddLeafSibling,
-                                 TA.RightAddLeafSibling, TA.AddTriangleTouchArea,
+    touch_areas_when_dragging = []
+    touch_areas_when_selected = [TA.AddTriangleTouchArea,
                                  TA.RemoveTriangleTouchArea]
 
-    buttons_when_selected = [OB.RemoveMergerButton, OB.NodeEditorButton, OB.RemoveNodeButton,
-                             OB.NodeUnlockButton]
+    buttons_when_selected = [OB.NodeEditorButton, OB.NodeUnlockButton]
 
-    def __init__(self, label=''):
+    embed_edit = ConstituentNodeEditEmbed
+
+    def __init__(self, label='', forest=None):
         """ Most of the initiation is inherited from Node """
-        super().__init__()
+        super().__init__(forest=forest)
         self.label_object = ComplexLabel(parent=self)
-        self.heads = []
 
         self.index = ''
-        self.label = label
         self.gloss = ''
 
         self.use_lexical_color = False
@@ -114,6 +111,18 @@ class ConstituentNode(Node):
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
 
+    # Creating constituent nodes will happen in coarsely three different circumstances. There are different
+    # presuppositions in each about the forest context in that creation.
+    #
+    # 1. Creating nodes because of user's drawing action or because the treeloader parsed a node into existence.
+    #    Here the node is addition to existing and can immediately join into the necessary relations.
+    # 2. Restoring nodes into forest from derivation step or from undo.
+    #    Here there are bundle of nodes that are removed or added at once, so when they are sequently created, they may
+    #    have relations to nodes that are not yet created -- handling of such relations has to be delayed until all
+    #    nodes, edges etc. are there.
+    # 3. Loading nodes into forests that are not currently visible. Same limitations as with 2, but also restoring of
+    #    relations shouldn't refer to currently active forest -- it should point to the real originating forest.
+
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
         1st wave creates the objects and calls __init__, and then iterates through and sets the
@@ -122,30 +131,36 @@ class ConstituentNode(Node):
         :return: None
         """
         self.update_gloss()
-        self.update_node_shape()
+        self.update_cn_shape()
         self.update_label()
         self.update_visibility()
         self.update_tooltip()
         self.announce_creation()
         if prefs.glow_effect:
             self.toggle_halo(True)
-        ctrl.forest.store(self)
+        self.forest.store(self)
 
     def update_label(self):
         self.get_lexical_color(refresh=True)
         super().update_label()
 
-    @staticmethod
-    def create_synobj(label, forest):
-        """ ConstituentNodes are wrappers for Constituents. Exact
-        implementation/class of constituent is defined in ctrl.
-        :return:
-        """
-        if not label:
-            label = forest.get_first_free_constituent_name()
-        c = ctrl.syntax.Constituent(label)
-        c.after_init()
-        return c
+    @property
+    def label(self):
+        return self.syntactic_object.label if self.syntactic_object else ''
+
+    @label.setter
+    def label(self, value):
+        if self.syntactic_object:
+            self.syntactic_object.label = value
+
+    def set_gloss(self, text):
+        self.gloss = text
+        self.update_gloss()
+        if self.gloss_node:
+            self.gloss_node.text = text
+        else:
+            # create gloss node
+            pass
 
     def is_card(self) -> bool:
         return self.label_object and self.label_object.is_card()
@@ -154,10 +169,9 @@ class ConstituentNode(Node):
         """
         :return:
         """
-        if self.get_node_shape() == g.FEATURE_SHAPE and self.has_merged_features():
-            return ctrl.settings.get_node_setting('font_id', node_type=g.FEATURE_NODE)
-
-        return ctrl.settings.get_node_setting('font_id', node=self)
+        if self.get_cn_shape() == g.FEATURE_SHAPE and self.has_merged_features():
+            return self.forest.settings.get_for_node_type('font_id', node_type=g.FEATURE_NODE)
+        return self.settings.get('font_id')
 
     def preferred_z_value(self) -> int:
         if self.is_card():
@@ -165,48 +179,11 @@ class ConstituentNode(Node):
         else:
             return 20
 
-    def load_values_from_parsernode(self, parsernode):
-        """ Update constituentnode with values from parsernode
-        :param parsernode:
-        :return:
-        """
-
-        def remove_dot_label(inode, row_n):
-            for i, part in enumerate(list(inode.parts)):
-                if isinstance(part, str):
-                    if part.startswith('.'):
-                        inode.parts[i] = part[1:]
-                    return True
-                else:
-                    return remove_dot_label(part, row_n)
-
-        extract_triangle(self.label, remove_from_original=True)
-
-        if parsernode.index:
-            self.index = parsernode.index
-        rows = parsernode.label_rows
-
-        # Remove dotlabel
-        for i, row in enumerate(list(rows)):
-            if isinstance(row, str):
-                if row.startswith('.'):
-                    rows[i] = row[1:]
-                break
-            stop = remove_dot_label(row, i)
-            if stop:
-                break
-
-        self.label = join_lines(rows)
-        if self.index:
-            base = as_html(self.label)
-            if base.strip().startswith('t<sub>'):
-                self.is_trace = True
-
-    def get_syntactic_label(self):
-        if self.syntactic_object:
-            return self.syntactic_object.label
-
     # Other properties
+
+    @property
+    def label_text_mode(self):
+        return self.forest.settings.get('label_text_mode')
 
     @property
     def gloss_node(self):
@@ -221,7 +198,7 @@ class ConstituentNode(Node):
         return self.syntactic_object and getattr(self.syntactic_object, 'word_edge', False)
 
     def has_ordered_children(self):
-        mode = ctrl.settings.get('linearization_mode')
+        mode = self.forest.settings.get('linearization_mode')
         if mode == g.NO_LINEARIZATION or mode == g.RANDOM_NO_LINEARIZATION:
             return False
         elif mode == g.USE_LINEARIZATION:
@@ -265,8 +242,8 @@ class ConstituentNode(Node):
         self.can_cascade_edges()
         super().reindex_edges()
 
-    def update_node_shape(self):
-        self.label_object.node_shape = ctrl.settings.get('node_shape')
+    def update_cn_shape(self):
+        self.label_object.cn_shape = self.forest.settings.get('cn_shape')
 
     def update_tooltip(self) -> None:
         """ Hovering status tip """
@@ -328,50 +305,11 @@ class ConstituentNode(Node):
             lines.append(ui_style % 'Click to select, drag to move')
         self.k_tooltip = '<br/>'.join(lines)
 
-    def short_str(self):
-        label = as_text(self.label)
-        if label:
-            lines = label.splitlines()
-            if len(lines) > 3:
-                label = f'{lines[0]} ...\n{lines[-1]}'
-        syn_label = as_text(self.get_syn_label())
-        if label and syn_label:
-            return f'{label} ({syn_label})'
-        else:
-            return label or syn_label or "no label"
-
-    def set_string(self):
-        """ This can be surprisingly expensive to calculate
-        :return: 
-        """
-        if self.syntactic_object and hasattr(self.syntactic_object, 'set_string'):
-            return self.syntactic_object.set_string()
-        else:
-            return self._set_string()
-
-    def _set_string(self):
-        parts = []
-        for child in self.get_children(similar=True, visible=False):
-            parts.append(str(child._set_string()))
-        if parts:
-            return '{%s}' % ', '.join(parts)
-        else:
-            return self.label
-
     def __str__(self):
         label = as_text(self.label, single_line=True)
-        syn_label = as_text(self.get_syn_label(), single_line=True)
-        if label and syn_label:
-            return f'CN {label} ({syn_label})'
-        else:
-            return f'CN {label or syn_label or "no label"}'
+        return f'CN {label}'
 
-    def get_syn_label(self):
-        if self.syntactic_object:
-            return self.syntactic_object.label
-        return ''
-
-    def label_as_html(self, peek_into_synobj=True):
+    def label_as_html(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
         'label_as_html' -method. This is so that it is easier to create custom
@@ -380,49 +318,40 @@ class ConstituentNode(Node):
         Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
 
-        :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
-        needs the result from this implementation (e.g. to append something to it), you have to
-        turn this off to avoid infinite loop. See example plugins.
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if peek_into_synobj and hasattr(self.syntactic_object, 'label_as_html'):
+        if hasattr(self.syntactic_object, 'label_as_html'):
             return self.syntactic_object.label_as_html(self)
 
         html = []
 
-        label_text_mode = self.allowed_label_text_mode()
+        label_text_mode = self.label_text_mode
         include_index = False
         l = ''
         if label_text_mode == g.NODE_LABELS:
-            if self.label:
-                l = self.label
-            elif self.syntactic_object:
-                l = self.syntactic_object.label
+            l = self.label
         elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-            if self.label:
+            if self.is_leaf(only_similar=True, only_visible=False):
                 l = self.label
-            elif self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
-                l = self.syntactic_object.label
-        elif label_text_mode == g.SYN_LABELS:
-            if self.syntactic_object:
-                l = self.syntactic_object.label
-        elif label_text_mode == g.SYN_LABELS_FOR_LEAVES:
-            if self.syntactic_object and self.is_leaf(only_similar=True, only_visible=False):
-                l = self.syntactic_object.label
         elif label_text_mode == g.CHECKED_FEATURES:
-            if self.syntactic_object:
-                if self.syntactic_object.parts and self.syntactic_object.checked_features:
-                    l = ' '.join([str(x) for x in self.syntactic_object.checked_features])
-                else:
-                    l = self.syntactic_object.label
+            if self.syntactic_object.parts and self.syntactic_object.checked_features:
+                fl = []
+                for f in self.syntactic_object.checked_features:
+                    if isinstance(f, tuple):
+                        fl.append(' '.join([str(x) for x in f]))
+                    else:
+                        fl.append(str(f))
+                l = ' '.join(fl)
+            else:
+                l = self.label
 
         l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
 
-        if self.gloss and ctrl.settings.get('lock_glosses_to_label') == 1:
+        if self.gloss and self.forest.settings.get('lock_glosses_to_label') == 1:
             if html:
                 html.append('<br/>')
             html.append(as_html(self.gloss))
@@ -440,65 +369,16 @@ class ConstituentNode(Node):
         :return:
         """
 
-        # Allow custom syntactic objects to override this
-        if self.syntactic_object and hasattr(self.syntactic_object, 'label_as_editable_html'):
-            return self.syntactic_object.label_as_editable_html(self)
-        label_text_mode = self.allowed_label_text_mode()
-        if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-            if self.label:
-                return 'node label', as_html(self.label)
-            elif self.syntactic_object:
-                return 'syntactic label', as_html(self.syntactic_object.label)
-            else:
-                return '', '', ''
-        elif label_text_mode == g.SYN_LABELS or label_text_mode == g.SYN_LABELS_FOR_LEAVES:
-            if self.syntactic_object:
-                return 'syntactic label', as_html(self.syntactic_object.label)
-            else:
-                return '', ''
-        else:
-            return '', ''
-
-    def parse_edited_label(self, label_name, value):
-        success = False
-        if self.syntactic_object and hasattr(self.syntactic_object, 'parse_edited_label'):
-            success = self.syntactic_object.parse_edited_label(label_name, value)
-        if not success:
-            if label_name == 'node label':
-                self.poke('label')
-                self.label = value
-                return True
-            elif label_name == 'syntactic label':
-                self.syntactic_object.label = value
-                return True
-            elif label_name == 'index':
-                self.index = value
-        return False
+        return None
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
-        if self.label:
-            children = list(self.get_children(similar=True, visible=False))
-            if children:
-                return '[.%s %s ]' % (
-                    self.label, ' '.join((c.as_bracket_string() for c in children)))
-            else:
-                return str(self.label)
+        children = list(self.get_children(similar=True, visible=False))
+        if children:
+            return '[.%s %s ]' % (
+                self.label, ' '.join((c.as_bracket_string() for c in children)))
         else:
-            inside = ' '.join(
-                (x.as_bracket_string() for x in self.get_children(similar=True, visible=False)))
-            if inside:
-                return '[ ' + inside + ' ]'
-            elif self.syntactic_object:
-                return str(self.syntactic_object)
-            else:
-                return '-'
-
-    def is_unnecessary_merger(self):
-        """ This merge can be removed, if it has only one child
-        :return:
-        """
-        return len(list(self.get_children(similar=True, visible=False))) == 1
+            return str(self.label)
 
     def can_cascade_edges(self):
         """ Cascading edges is a visual effect for nodes that try to display many similar edges
@@ -518,61 +398,23 @@ class ConstituentNode(Node):
                     break
             return self._can_cascade_edges
 
-    def get_node_shape(self):
+    def get_cn_shape(self):
         """ Node shapes are based on settings-stack, but also get_shape_setting in label.
         Return this get_shape_setting value.
         :return:
         """
-        return self.label_object.node_shape
-
-    # Conditions ##########################
-    # These are called from templates with getattr, and may appear unused for IDE's analysis.
-    # Check their real usage with string search before removing these.
-
-    def inner_add_sibling(self):
-        """ Node has child and it is not unary child. There are no other reasons preventing
-        adding siblings
-        :return: bool
-        """
-        return self.get_children(similar=True, visible=False) and not self.is_unary()
-
-    def has_one_child(self):
-        return len(self.get_children(similar=True, visible=False)) == 1
+        return self.label_object.cn_shape
 
     def get_heads(self):
-        if self.syntactic_object:
-            res = []
-            for head in self.syntactic_object.get_heads():
-                if head is self.syntactic_object:
-                    res.append(self)
-                else:
-                    node = ctrl.forest.get_node(head)
-                    if node:
-                        res.append(node)
-                    else:
-                        print('missing head for CN %s, %s %s' % (self.syntactic_object.uid,
-                                                                 head.uid, self.syntactic_object))
-                        raise hell
-            return res
-        return self.heads
-
-    def get_syntactic_heads(self):
-        return self.syntactic_object.get_heads()
-
-    def set_heads(self, head):
-        """ Set projecting head to be Node, list of Nodes or empty. Notice that this doesn't
-        affect syntactic objects.
-        :param head:
-        :return:
-        """
-        if isinstance(head, list):
-            self.heads = list(head)
-        elif isinstance(head, Node):
-            self.heads = [head]
-        elif not head:
-            self.heads = []
-        else:
-            raise ValueError
+        res = []
+        for head in self.syntactic_object.get_heads():
+            if head is self.syntactic_object:
+                res.append(self)
+            else:
+                node = self.forest.get_node(head)
+                if node:
+                    res.append(node)
+        return res
 
     def get_lexical_color(self, refresh=True):
         if self.is_fading_out:
@@ -583,10 +425,7 @@ class ConstituentNode(Node):
                 if heads[0]:
                     self._lexical_color = heads[0].get_lexical_color()
                     return self._lexical_color
-            if self.syntactic_object:
-                l = ' '.join([str(f) for f in self.syntactic_object.features])
-            else:
-                l = self.label or ''
+            l = ' '.join([str(f) for f in self.syntactic_object.features])
             if l:
                 hue = hash(l) % 360
             else:
@@ -622,22 +461,18 @@ class ConstituentNode(Node):
 
     # ### Features #########################################
 
-    def update_gloss(self, value=None):
+    def update_gloss(self):
         """
 
 
         """
-        if not self.syntactic_object:
-            return
-        syn_gloss = self.gloss
         gloss_node = self.gloss_node
-        if not ctrl.undo_disabled:
-            if gloss_node and not syn_gloss:
-                ctrl.free_drawing.delete_node(gloss_node)
-            elif syn_gloss and not gloss_node:
-                ctrl.free_drawing.create_gloss_node(host=self)
-            elif syn_gloss and gloss_node:
-                gloss_node.update_label()
+        if gloss_node and not self.gloss:
+            ctrl.drawing.delete_node(gloss_node)
+        elif self.gloss and not gloss_node:
+            ctrl.drawing.create_gloss_node(host=self)
+        elif self.gloss and gloss_node:
+            gloss_node.update_label()
 
     def gather_children(self, position, shape):
         """ If there are other Nodes that are childItems for this node, arrange them to their 
@@ -683,7 +518,7 @@ class ConstituentNode(Node):
                     fnode.move_to(left_margin + x, y)
         elif position == g.TWO_COLUMNS:  # card layout, two columns
             self._can_cascade_edges = False
-            in_card = ctrl.settings.get('node_shape') == g.CARD
+            in_card = self.forest.settings.get('cn_shape') == g.CARD
             cw, ch = self.label_object.card_size
             center_x = self.boundingRect().center().x()
             top_y = 22
@@ -740,18 +575,6 @@ class ConstituentNode(Node):
         worries """
         return (not (self.syntactic_object or self.label or self.index)) and self.is_leaf()
 
-    # ## Indexes and chains ###################################
-
-    def is_chain_head(self):
-        """
-
-
-        :return:
-        """
-        if self.index:
-            return not (self.is_leaf() and self.label == 't')
-        return False
-
     ### UI support
 
     def dragging_constituent(self):
@@ -765,7 +588,7 @@ class ConstituentNode(Node):
     def get_features(self):
         """ Returns FeatureNodes """
         if self.syntactic_object:
-            getnode = ctrl.forest.get_node
+            getnode = self.forest.get_node
             return [getnode(f) for f in self.syntactic_object.get_features()]
         else:
             return [f for f in self.get_children(visible=True, of_type=g.FEATURE_EDGE) if
@@ -782,13 +605,19 @@ class ConstituentNode(Node):
 
     def get_merged_features(self):
         if self.syntactic_object:
-            syn_feats = getattr(self.syntactic_object, 'checked_features', [])
+            checked_feats = getattr(self.syntactic_object, 'checked_features', [])
             nodes = []
-            if syn_feats:
-                for f in syn_feats:
-                    n = ctrl.forest.get_node(f)
-                    if n:
-                        nodes.append(n)
+            if checked_feats:
+                for f in checked_feats:
+                    if isinstance(f, tuple):
+                        for ff in f:
+                            n = self.forest.get_node(ff)
+                            if n:
+                                nodes.append(n)
+                    else:
+                        n = self.forest.get_node(f)
+                        if n:
+                            nodes.append(n)
             return nodes
 
     def has_merged_features(self):
@@ -796,16 +625,7 @@ class ConstituentNode(Node):
 
     def first_feature(self):
         if self.syntactic_object and self.syntactic_object.features:
-            return ctrl.forest.get_node(self.syntactic_object.features[0])
-
-
-    # ### Checks for callable actions ####
-
-    def can_top_merge(self):
-        """
-        :return:
-        """
-        return bool(self.get_parents())
+            return self.forest.get_node(self.syntactic_object.features[0])
 
     # ### Dragging #####################################################################
 
@@ -832,8 +652,8 @@ class ConstituentNode(Node):
     # ### Paint overrides
 
     def _calculate_inner_rect(self, extra_w=0, extra_h=0):
-        if self.label_object.node_shape == g.BRACKETED or self.label_object.node_shape == g.SCOPEBOX:
-            extra_w = ctrl.forest.width_map.get(self.uid, 0)
+        if self.label_object.cn_shape == g.BRACKETED or self.label_object.cn_shape == g.SCOPEBOX:
+            extra_w = self.forest.width_map.get(self.uid, 0)
         return super()._calculate_inner_rect(extra_w=extra_w)
 
     def paint(self, painter, option, widget=None):
@@ -843,7 +663,7 @@ class ConstituentNode(Node):
         :param option:
         :param widget:
          """
-        shape = self.label_object.node_shape
+        shape = self.label_object.cn_shape
         if shape == g.CARD:
             xr = 4
             yr = 8
@@ -936,39 +756,11 @@ class ConstituentNode(Node):
             painter.setPen(p)
             painter.drawLine(r.topLeft().toPoint(), r.topRight().toPoint())
 
-
-    @staticmethod
-    def allowed_label_text_mode():
-        mode = ctrl.settings.get('label_text_mode')
-        if not ctrl.settings.get('syntactic_mode'):
-            return mode
-        if mode == g.NODE_LABELS:
-            return g.SYN_LABELS
-        elif mode == g.NODE_LABELS_FOR_LEAVES:
-            return g.SYN_LABELS_FOR_LEAVES
-
-    @staticmethod
-    def allowed_label_text_modes():
-        """
-        SYN_LABELS = 0
-        SYN_LABELS_FOR_LEAVES = 1
-        NODE_LABELS = 2
-        NODE_LABELS_FOR_LEAVES = 3
-        NO_LABELS = 6
-        :return:
-        """
-        if ctrl.settings.get('syntactic_mode'):
-            return [0, 1, 5, 6]
-        else:
-            return [0, 1, 2, 3, 5, 6]
-
     # ############## #
     #                #
     #  Save support  #
     #                #
     # ############## #
 
-    label = SavedField("label")
     index = SavedField("index")
-    gloss = SavedField("gloss", if_changed=update_gloss)
-    heads = SavedField("heads")
+    gloss = SavedField("gloss")

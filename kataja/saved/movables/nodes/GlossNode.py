@@ -43,7 +43,7 @@ class GlossNode(Node):
     display = True
     is_syntactic = False
 
-    editable = {
+    editable_fields = {
         'label': dict(name='Gloss', prefill='gloss', tooltip='translation (optional)')
     }
 
@@ -64,8 +64,8 @@ class GlossNode(Node):
 
     default_edge = g.GLOSS_EDGE
 
-    def __init__(self, label=''):
-        Node.__init__(self)
+    def __init__(self, label='', forest=None):
+        Node.__init__(self, forest=forest)
         if not label:
             label = 'gloss'
         self.label = label

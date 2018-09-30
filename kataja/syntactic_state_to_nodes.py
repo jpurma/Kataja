@@ -23,8 +23,6 @@
 # ############################################################################
 
 
-import collections
-import random
 import time
 
 import kataja.globals as g
@@ -42,7 +40,7 @@ def syntactic_state_to_nodes(forest, syn_state):
     :return:
     """
     t = time.time()
-    free_drawing = forest.free_drawing
+    drawing = forest.drawing
 
     if forest.syntax.display_modes:
         syn_state = forest.syntax.update_display_mode(syn_state)
@@ -101,9 +99,6 @@ def syntactic_state_to_nodes(forest, syn_state):
         if node:
             found_nodes.add(node.uid)
             node.syntactic_object = me
-            node.name = getattr(me, 'name', '')
-            node.value = getattr(me, 'value', '')
-            node.family = getattr(me, 'family', '')
         else:
             fns_to_create.append(me)
         # we usually don't have feature structure, but lets assume that possibility
@@ -117,6 +112,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     recursive_add_feature_node(feat)
         if hasattr(me, 'checked_features'):
             for feat in me.checked_features:
+                print(feat)
                 if isinstance(feat, tuple):
                     x, y = feat
                     if x.uid not in done_nodes:
@@ -150,9 +146,8 @@ def syntactic_state_to_nodes(forest, syn_state):
                     break
         if not pos:
             pos = (sc_center, sc_middle)
-        node = free_drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos)
-        node.set_syntactic_object(syn_bare)
-        node.label = syn_bare.label
+        #print('creating node for ', repr(syn_bare))
+        drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos, synobj=syn_bare)
 
     for syn_feat in fns_to_create:
         host = forest.get_node(syn_feat.host)
@@ -161,11 +156,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         else:
             print('missing host for created feature: ', syn_feat, syn_feat.host)
             pos = (0, 0)
-        fnode = free_drawing.create_node(node_type=g.FEATURE_NODE, pos=pos)
-        fnode.set_syntactic_object(syn_feat)
-        fnode.name = getattr(syn_feat, 'name', '')
-        fnode.value = getattr(syn_feat, 'value', '')
-        fnode.family = getattr(syn_feat, 'family', '')
+        drawing.create_node(node_type=g.FEATURE_NODE, pos=pos, synobj=syn_feat)
 
     # ################ Edges ###################################
 
@@ -174,14 +165,14 @@ def syntactic_state_to_nodes(forest, syn_state):
     def connect_if_necessary(parent, child, edge_type):
         edge = parent.get_edge_to(child, edge_type)
         if not edge:
-            free_drawing.connect_node(parent, child, edge_type=edge_type)
+            drawing.connect_node(parent, child, edge_type=edge_type)
         else:
             found_edges.add(edge.uid)
 
     def connect_feature_if_necessary(parent, child, feature):
         edge = parent.get_edge_to(child, g.FEATURE_EDGE, alpha=feature)
         if not edge:
-            free_drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, alpha=feature)
+            drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, alpha=feature)
         else:
             found_edges.add(edge.uid)
 
@@ -231,6 +222,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             checked_features = getattr(synobj, 'checked_features', [])
             if checked_features:
                 for xy in checked_features:
+                    # print('adding checked features: ', xy)
                     if isinstance(xy, tuple):
                         x, y = xy
                         features.append(x)
@@ -273,11 +265,11 @@ def syntactic_state_to_nodes(forest, syn_state):
     for key in node_keys_to_validate:
         node = forest.nodes.get(key, None)
         if node:
-            free_drawing.delete_node(node, touch_edges=False, fade=animate)
+            drawing.delete_node(node, touch_edges=False, fade=animate)
     for key in edge_keys_to_validate:
         edge = forest.edges.get(key, None)
         if edge:
-            free_drawing.delete_edge(edge, fade=animate)
+            drawing.delete_edge(edge, fade=animate)
 
     # ############# Groups #######################################
 
@@ -305,7 +297,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         if new_groups:
             if not old_groups:
                 for selection in new_groups:
-                    new_g = free_drawing.create_group()
+                    new_g = drawing.create_group()
                     new_g.set_label_text('Transfer')
                     # new_g.fill = False
                     # new_g.outline = True
@@ -325,7 +317,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                         for item in selection:
                             group_to_add.add_node(item)
                     else:
-                        new_g = free_drawing.create_group()
+                        new_g = drawing.create_group()
                         new_g.set_label_text('Transfer')
                         # new_g.fill = False
                         # new_g.outline = True
@@ -361,7 +353,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             old_group.clear(remove=False)
             group = old_group
         else:
-            group = free_drawing.create_group()
+            group = drawing.create_group()
             group.purpose = 'mover'
             #group.set_label_text('Next mover')
             group.include_children = False
@@ -374,7 +366,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             old_group.clear(remove=True)
 
     # ---------
-    strat = ctrl.settings.get('gloss_strategy')
+    strat = forest.settings.get('gloss_strategy')
     if strat and strat == 'message':
         forest.heading_text = syn_state.msg
 

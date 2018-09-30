@@ -10,10 +10,10 @@ from PoP2.ForestKeeper import PoPDocument
 # classes. The classes themselves should follow the format of Kataja classes (see
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
-# them here, you have to put class definitions *before* the plugin_parts -line.
+# them here, you have to put class definitions *before* the plugin_classes -line.
 
-# plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Feature, Generate, PoPDocument]
+# plugin_classes = [PythonClass,...]
+plugin_classes = [Constituent, Feature, Generate, PoPDocument]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -26,8 +26,8 @@ plugin_preferences = {'play_nice': True}
 # These are additional preferences added by plugin. They extend the bottom layer of preferences
 # hierarchy and can have an UI elements in 'Preferences' panel. You can have custom panels or
 # code to make them editable in document-, forest- or node/edge-level, or just programmatically
-# store values there. They will be stored in prefs, document.settings, forest.settings,
-# node.settings or edge.settings, managed by ctrl.settings -object. They compete for namespace with
+# store values there. They will be stored in prefs, doc_settings. forest.settings,
+# node.settings or edge.settings. They compete for namespace with
 # existing settings, so see kataja.Preferences to find out what is already there and use unique
 # names.
 
@@ -41,8 +41,6 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled, after new classes are initialised. This can be
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
-    ctrl.free_drawing_mode = False
-    ctrl.ui.update_edit_mode()
 
 
 def tear_down_plugin(main, ctrl, prefs):

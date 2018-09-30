@@ -57,7 +57,8 @@ class HeadDownTree(BaseVisualization):
 
     """
     name = 'Head down trees'
-    banned_node_shapes = (g.BRACKETED,)
+    banned_cn_shapes = (g.BRACKETED,)
+    use_rotation = True
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -77,7 +78,7 @@ class HeadDownTree(BaseVisualization):
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
-        self.validate_node_shapes()
+        self.validate_cn_shapes()
 
     def reset_node(self, node):
         """
@@ -97,15 +98,6 @@ class HeadDownTree(BaseVisualization):
             if node.isVisible() and (node.physics_x or node.physics_y):
                 return True
         return True
-
-    def reselect(self):
-        """ Rotate between drawing multidominated elements close to their various parents
-        """
-        self.set_data('rotation', self.get_data('rotation', 0) - 1)
-
-    def prepare_draw(self):
-        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
-        self.set_data('rotation', new_rotation)
 
     # @time_me
     def draw_tree(self, tree_top):
@@ -193,10 +185,10 @@ class HeadDownTree(BaseVisualization):
             :param node:
             :return:
             """
-            sx = 0
-            size = 0
+            x = 0
             nleft, ntop, nw, nh = _get_grid_size(node)
             children = node.get_children(similar=True, visible=True)
+            heads = node.get_heads()
             if len(children) == 1:
                 cleft, ctop, cw, ch = _get_grid_size(children[0])
                 cx, cy = grid.find_in_grid(children[0])
@@ -208,12 +200,12 @@ class HeadDownTree(BaseVisualization):
                         grid.insert_columns(-x)
                         nleft -= x
                         x = 0
-            elif hasattr(node, 'heads'):
+            elif heads:
                 projecting_child = None
                 for child in children:
                     if not hasattr(child, 'heads'):
                         continue
-                    if child in node.heads:  # fixme!
+                    if child in heads:
                         projecting_child = child
                 if not projecting_child:
                     projecting_child = children[0]

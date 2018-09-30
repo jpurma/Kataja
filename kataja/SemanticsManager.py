@@ -13,7 +13,7 @@ class SemanticsManager:
         self.arrays_list = []
         self.total_height = 0
         self.total_length = 0
-        self.visible = ctrl.settings.get('show_semantics')
+        self.visible = self.forest.settings.get('show_semantics')
 
     def hide(self):
         self.visible = False
@@ -27,7 +27,7 @@ class SemanticsManager:
             item.show()
 
     def prepare_semantics(self, syn_state):
-        self.visible = ctrl.settings.get('show_semantics')
+        self.visible = self.forest.settings.get('show_semantics')
         self.models = syn_state.semantic_hierarchies
         self.colors = {}
         c = 1

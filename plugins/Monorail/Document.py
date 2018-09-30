@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.singletons import ctrl, running_environment
+from kataja.singletons import running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
@@ -71,6 +71,7 @@ class Document(KatajaDocument):
         print('loaded shared_lexicon: ', shared_lexicon)
 
         if has_nltk:
+            print(f"reading trees {NLTK_TREE_RANGE[0]}-{NLTK_TREE_RANGE[1]} from NLTK's treebank")
             for i in range(*NLTK_TREE_RANGE):  # 199
                 trees = treebank.parsed_sents(f'wsj_0{str(i).rjust(3, "0")}.mrg')
                 for j, tree in enumerate(trees):

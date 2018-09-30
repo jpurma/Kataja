@@ -39,22 +39,19 @@ import traceback
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-import time
 
 import kataja.globals as g
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
-from kataja.Settings import Settings
 from kataja.ViewManager import ViewManager
 from kataja.UIManager import UIManager
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.ui_support.ErrorDialog import ErrorDialog
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.Recorder import Recorder
-from kataja.utils import time_me, find_free_filename
+from kataja.utils import find_free_filename
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.LogWidgetPusher import capture_stdout
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -128,7 +125,6 @@ class KatajaMain(QtWidgets.QMainWindow):
     ui_font_changed = QtCore.pyqtSignal()
     viewport_moved = QtCore.pyqtSignal()
     viewport_resized = QtCore.pyqtSignal()
-    view_mode_changed = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
     def __init__(self, kataja_app, no_prefs=False, reset_prefs=False):
@@ -160,18 +156,13 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.save_prefs = not no_prefs
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager(self)
-        self.settings_manager = Settings()
-        self.document_changed.connect(self.settings_manager.update_document)
-        self.forest_changed.connect(self.settings_manager.update_forest)
         self.document = None
-        ctrl.late_init(self)  # sets ctrl.main and ctrl.settings
+        ctrl.late_init(self)  # sets ctrl.main
         #capture_stdout(log, self.log_stdout_as_debug, ctrl)
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
-        self.settings_manager.set_prefs(prefs)
-        self.color_manager.update_custom_colors()
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.view_manager = ViewManager()
@@ -180,11 +171,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_view = GraphView(self.graph_scene)
         self.view_manager.late_init(self.graph_scene, self.graph_view)
         self.ui_manager = UIManager(self)
-        self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
         self.create_default_document()
+        self.color_manager.update_custom_colors()
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
@@ -275,7 +266,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         os.makedirs(plugins_path, exist_ok=True)
         sys.path.append(plugins_path)
         base_ends = len(plugins_path.split('/'))
-        for root, dirs, files in os.walk(plugins_path):
+        for root, dirs, files in os.walk(plugins_path, followlinks=True):
             path_parts = root.split('/')
             if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
                     '__') and 'plugin.json' in files:
@@ -332,8 +323,8 @@ class KatajaMain(QtWidgets.QMainWindow):
                 importlib.reload(sys.modules[mod_name])
                 log.info('reloaded module %s' % mod_name)
 
-        if hasattr(self.active_plugin_setup, 'plugin_parts'):
-            for classobj in self.active_plugin_setup.plugin_parts:
+        if hasattr(self.active_plugin_setup, 'plugin_classes'):
+            for classobj in self.active_plugin_setup.plugin_classes:
                 base_class = classes.find_base_model(classobj)
                 if base_class:
                     classes.add_mapping(base_class, classobj)
@@ -341,6 +332,13 @@ class KatajaMain(QtWidgets.QMainWindow):
                 else:
                     m = "adding %s " % classobj.__name__
                 log.info(m)
+        actions_module = getattr(self.active_plugin_setup, 'plugin_actions', None)
+        if actions_module:
+            classes.replaced_actions = {}
+            classes.added_actions = []
+            ctrl.ui.load_actions_from_module(actions_module,
+                                             added=classes.added_actions,
+                                             replaced=classes.replaced_actions)
         if hasattr(self.active_plugin_setup, 'help_file'):
             dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
             print(dir_path)
@@ -349,6 +347,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.create_default_document()
         self.enable_signaling()
+        print(sys.modules)
         prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):
@@ -363,6 +362,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_document()
+        ctrl.ui.unload_actions_from_module(classes.added_actions, classes.replaced_actions)
+        classes.added_actions = []
+        classes.replaced_actions = {}
         classes.restore_default_classes()
         self.create_default_document()
         self.enable_signaling()
@@ -414,8 +416,8 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # Document / Project #########################
 
-    def start_new_document(self, name, uid=None):
-        document = classes.KatajaDocument(name=name, uid=uid)
+    def start_new_document(self, name='Example'):
+        document = classes.KatajaDocument(name=name)
         self.set_document(document)
         return document
 
@@ -434,9 +436,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         plugins have changed the classes that implement these.
         :return:
         """
-        self.start_new_document('Example')
-        if self.signalsBlocked():
-            self.settings_manager.update_document()
+        self.start_new_document()
 
     def clear_document(self):
         """ Empty everything - maybe necessary before changing plugin """
@@ -525,11 +525,10 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         :param mode:
         """
-        if mode != ctrl.settings.get('color_theme') or force:
-            if self.document:
-                ctrl.settings.set('color_theme', mode, level=g.DOCUMENT)
-            ctrl.settings.set('color_theme', mode, level=g.PREFS)
-            self.update_colors()
+        if self.document:
+            if mode != self.document.settings.get('color_theme') or force:
+                self.document.settings.set('color_theme', mode)
+                self.update_colors()
 
     # Printing ###################################
 

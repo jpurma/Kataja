@@ -31,7 +31,7 @@ from kataja.KatajaAction import KatajaAction
 
 
 class SelectLabelShape(KatajaAction):
-    k_action_uid = 'select_node_shape'
+    k_action_uid = 'select_cn_shape'
     k_command = 'Rotate between node shapes'
     k_shortcut = 'b'
     k_checkable = True
@@ -39,11 +39,11 @@ class SelectLabelShape(KatajaAction):
     def method(self):
         """ Brackets are visible always for non-leaves, never or for important parts
         """
-        bs = ctrl.settings.get_active_setting('node_shape')
+        bs = ctrl.ui.get_active_setting('cn_shape')
         bs += 1
         if bs > 5:
             bs = 0
-        while bs in ctrl.forest.visualization.banned_node_shapes:
+        while bs in ctrl.forest.visualization.banned_cn_shapes:
             bs += 1
             if bs > 5:
                 bs = 0
@@ -57,11 +57,11 @@ class SelectLabelShape(KatajaAction):
             m = 'Node shape: Boxes'
         elif bs == g.CARD:
             m = 'Node shape: Cards'
-            ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
+            ctrl.ui.set_active_setting('feature_check_display', 2)
         elif bs == g.FEATURE_SHAPE:
             m = 'Node shape: Feature'
 
-        ctrl.settings.set('node_shape', bs, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('cn_shape', bs)
         return m
 
     def enabler(self):
@@ -69,63 +69,63 @@ class SelectLabelShape(KatajaAction):
 
 
 class ActivatePlainNodeShape(KatajaAction):
-    k_action_uid = 'set_no_frame_node_shape'
+    k_action_uid = 'set_no_frame_cn_shape'
     k_command = 'Borderless nodes'
     k_checkable = True
     shape = g.NORMAL
 
     def method(self):
-        ctrl.settings.set('node_shape', self.shape, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('cn_shape', self.shape)
         return f'{self.k_command} ({SelectLabelShape.k_shortcut})'
 
     def getter(self):
-        return ctrl.settings.get_active_setting('node_shape') == self.shape
+        return ctrl.ui.get_active_setting('cn_shape') == self.shape
 
     def enabler(self):
         return ctrl.forest and self.not_selection() and ctrl.forest.visualization and \
-               self.shape not in ctrl.forest.visualization.banned_node_shapes
+               self.shape not in ctrl.forest.visualization.banned_cn_shapes
 
 
 class ActivateScopeboxNodeShape(ActivatePlainNodeShape):
-    k_action_uid = 'set_scopebox_node_shape'
+    k_action_uid = 'set_scopebox_cn_shape'
     k_command = "Box showing node's scope"
     k_checkable = True
     shape = g.SCOPEBOX
 
 
-class ActivateBracketedNodeShape(KatajaAction):
-    k_action_uid = 'set_bracketed_node_shape'
+class ActivateBracketedNodeShape(ActivatePlainNodeShape):
+    k_action_uid = 'set_bracketed_cn_shape'
     k_command = 'Bracketed nodes'
     k_checkable = True
     shape = g.BRACKETED
 
 
-class ActivateBoxShape(KatajaAction):
-    k_action_uid = 'set_box_node_shape'
+class ActivateBoxShape(ActivatePlainNodeShape):
+    k_action_uid = 'set_box_cn_shape'
     k_command = 'Framed nodes'
     k_checkable = True
     shape = g.BOX
 
 
-class ActivateCardNodeShape(KatajaAction):
-    k_action_uid = 'set_card_node_shape'
+class ActivateCardNodeShape(ActivatePlainNodeShape):
+    k_action_uid = 'set_card_cn_shape'
     k_command = 'Nodes as cards'
     k_checkable = True
     shape = g.CARD
 
     def method(self):
-        ctrl.settings.set('feature_check_display', 2, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('feature_check_display', 2)
         return super().method()
 
 
-class ActivateFeatureNodeShape(KatajaAction):
-    k_action_uid = 'set_feature_node_shape'
+class ActivateFeatureNodeShape(ActivatePlainNodeShape):
+    k_action_uid = 'set_feature_cn_shape'
     k_command = 'Node takes shape of its prominent feature'
     k_checkable = True
     shape = g.FEATURE_SHAPE
 
     def method(self):
-        ctrl.settings.set('feature_check_display', 0, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('feature_check_display', 0)
         return super().method()
 
 
@@ -151,17 +151,17 @@ class SelectTraceMode(KatajaAction):
         """
 
         if trace_mode is None:
-            trace_mode = ctrl.settings.get('trace_strategy', level=ctrl.ui.active_scope)
+            trace_mode = ctrl.ui.get_active_setting('trace_strategy')
             trace_mode += 1
             if trace_mode == 3:
                 trace_mode = 0
-        ctrl.settings.set('trace_strategy', trace_mode, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('trace_strategy', trace_mode)
         ctrl.forest.forest_edited()
         mode_text = prefs.get_ui_text_for_choice(trace_mode, 'trace_strategy')
         return f'Set trace strategy to: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get_active_setting('trace_strategy')
+        return ctrl.ui.get_active_setting('trace_strategy')
 
     def enabler(self):
         return ctrl.forest and self.not_selection()
@@ -187,17 +187,17 @@ class SelectLinearizationMode(KatajaAction):
         :return: None
         """
         if linearization_mode is None:
-            linearization_mode = ctrl.settings.get('linearization_mode', level=ctrl.ui.active_scope)
+            linearization_mode = ctrl.ui.get_active_setting('linearization_mode')
             linearization_mode += 1
             if linearization_mode == 3:
                 linearization_mode = 0
-        ctrl.settings.set('linearization_mode', linearization_mode, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('linearization_mode', linearization_mode)
         ctrl.forest.forest_edited()
         mode_text = prefs.get_ui_text_for_choice(linearization_mode, 'linearization_mode')
         return f'Set linearization mode: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get_active_setting('linearization_mode')
+        return ctrl.ui.get_active_setting('linearization_mode')
 
     def enabler(self):
         return ctrl.forest and self.not_selection()
@@ -221,8 +221,8 @@ class SetVisibleLabel(KatajaAction):
     def method(self, label_mode=None):
         """ """
         if label_mode is None:
-            label_mode = ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
-            syn_mode = ctrl.settings.get('syntactic_mode')
+            label_mode = ctrl.ui.get_active_setting('label_text_mode')
+            syn_mode = ctrl.doc_settings.get('syntactic_mode')
             # some labels are not allowed in syn mode. If called without arguments, rotate to
             # next available mode.
             ok = False
@@ -237,12 +237,12 @@ class SetVisibleLabel(KatajaAction):
                     label_mode = -1
                 else:
                     ok = True
-        ctrl.settings.set('label_text_mode', label_mode, level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_setting('label_text_mode', label_mode)
         mode_text = prefs.get_ui_text_for_choice(label_mode, 'label_text_mode')
         return f'Set labeling strategy to: {mode_text}'
 
     def getter(self):
-        return ctrl.settings.get('label_text_mode', level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_setting('label_text_mode')
 
     def enabler(self):
         return ctrl.forest and self.not_selection()

@@ -21,30 +21,27 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import string
-import time
 import itertools
-from typing import Generator
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 
 import kataja.globals as g
 from kataja.Triangle import Triangle
 from kataja.globals import ViewUpdateReason
 from kataja.ChainManager import ChainManager
-from kataja.FreeDrawing import FreeDrawing
+from kataja.ForestDrawing import ForestDrawing
 from kataja.ProjectionManager import ProjectionManager
 from kataja.SemanticsManager import SemanticsManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.UndoManager import UndoManager
+from kataja.settings.ForestSettings import ForestSettings
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, classes, prefs
-from kataja.utils import time_me
-from kataja.saved.Arrow import Arrow
+from kataja.singletons import ctrl, classes
+from kataja.saved.movables.Arrow import Arrow
 from syntax.SyntaxState import SyntaxState
 
 
@@ -79,9 +76,10 @@ class Forest(SavedObject):
         self.parser = None
         self.undo_manager = None
         self.chain_manager = None
-        self.free_drawing = None
+        self.drawing = None
         self.semantics_manager = None
         self.projection_manager = None
+        self.settings = None
         self.derivation_steps = DerivationStepManager(self)
 
         self.old_label_mode = 0
@@ -110,10 +108,11 @@ class Forest(SavedObject):
         display. When there are hundreds of trees, initialising them at once is slow.
         :return:
         """
+        self.settings = ForestSettings(self)
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.free_drawing = FreeDrawing(self)
+        self.drawing = ForestDrawing(self)
         self.semantics_manager = SemanticsManager(self)
         self.projection_manager = ProjectionManager(self)
 
@@ -144,6 +143,7 @@ class Forest(SavedObject):
         # print('created a forest %s , its traces should be visible: %s ' % (
         # self, self.traces_are_visible()))
         print('after_init for forest: ', self)
+        print(self.nodes)
         self.is_parsed = False
         # for node in self.nodes.values():
         # if node.syntactic_object:
@@ -188,6 +188,7 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
+        print('retiring from display ', self)
         for item in self.get_all_objects():
             self.remove_from_scene(item, fade_out=False)
         self.in_display = False
@@ -210,7 +211,7 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.free_drawing = FreeDrawing(self)
+        self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.derivation_steps = DerivationStepManager(self)
         self.trees = []
@@ -249,10 +250,6 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-        if ctrl.free_drawing_mode:
-            #print('doing nodes to synobjs in forest_edited')
-            self.syntax.nodes_to_synobjs(self, self.trees)
-
     def add_step(self, syn_state: SyntaxState):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.
@@ -288,15 +285,13 @@ class Forest(SavedObject):
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(name, vs.get(ctrl.settings.get('visualization'), None))
+            self.visualization = vs.get(name, vs.get(self.settings.get('visualization'), None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
-            ctrl.settings.set('hide_edges_if_nodes_overlap',
-                              self.visualization.hide_edges_if_nodes_overlap, level=g.FOREST)
         ctrl.view_manager.update_viewport(ViewUpdateReason.MAJOR_REDRAW)
 
     def restore_visualization(self):
-        name = self.vis_data.get('name', ctrl.settings.get('visualization'))
+        name = self.vis_data.get('name', None) or self.settings.get('visualization')
         if (not self.visualization) or name != self.visualization.say_my_name():
             v = self.main.visualizations.get(name, None)
             if v:
@@ -309,7 +304,7 @@ class Forest(SavedObject):
         the vis_data (saved visualization state)
         :return: None
         """
-        name = self.vis_data.get('name', ctrl.settings.get('visualization'))
+        name = self.vis_data.get('name', None) or self.settings.get('visualization')
         if (not self.visualization) or name != self.visualization.say_my_name():
             self.set_visualization(name)
 
@@ -458,7 +453,17 @@ class Forest(SavedObject):
         """ Returns a node corresponding to a constituent """
         if not constituent:
             return None
+        if not self.nodes_from_synobs:
+            self.rebuild_synobj_dict()
         return self.nodes_from_synobs.get(constituent.uid, None)
+
+    def rebuild_synobj_dict(self):
+        if not self.nodes:
+            return
+        self.nodes_from_synobs = {}
+        for node in self.nodes.values():
+            if node.syntactic_object:
+                self.nodes_from_synobs[node.syntactic_object.uid] = node
 
     # Drawing and updating --------------------------------------------
 
@@ -503,7 +508,7 @@ class Forest(SavedObject):
             return
         self.update_feature_ordering()
         self.update_forest_gloss()
-        self.update_node_shapes()
+        self.update_cn_shapes()
         if self.visualization:
             self.visualization.prepare_draw()
             self.free_movers = self.visualization.has_free_movers()
@@ -594,15 +599,6 @@ class Forest(SavedObject):
                 if node.triangle_stack:
                     node.label_object.update_label(force_update=True)
 
-    def simple_parse(self, text):
-        return self.parser.simple_parse(text)
-
-    def create_node_from_string(self, text):
-        """
-        :param text:
-        """
-        return self.parser.string_into_forest(text)
-
     def order_edge_visibility_check(self):
         """ Make sure that all edges are checked to update their visibility.
         This can be called multiple
@@ -640,22 +636,22 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    def update_node_shapes(self):
+    def update_cn_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
         :return: 
         """
-        shape = ctrl.settings.get('node_shape')
+        shape = self.settings.get('cn_shape')
         cnodes = [cn for cn in self.nodes.values() if cn.node_type == g.CONSTITUENT_NODE]
-        position = ctrl.settings.get('feature_positioning')
-        checking_mode = ctrl.settings.get('feature_check_display')
+        position = self.settings.get('feature_positioning')
+        checking_mode = self.settings.get('feature_check_display')
         fnodes = [f for f in self.nodes.values() if f.node_type == g.FEATURE_NODE]
         for fnode in fnodes:
             fnode.update_label()
         for fnode in fnodes:
             fnode.update_checking_display(shape=shape, position=position, checking_mode=checking_mode)
         for cnode in cnodes:
-            cnode.label_object.node_shape = shape
+            cnode.label_object.cn_shape = shape
             cnode.update_label()
             cnode.setZValue(cnode.preferred_z_value())
             if cnode.is_triangle_host():
@@ -667,7 +663,7 @@ class Forest(SavedObject):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        strat = ctrl.settings.get('gloss_strategy')
+        strat = self.settings.get('gloss_strategy')
         if strat:
             if strat == 'linearisation':
                 gts = []
@@ -730,37 +726,6 @@ class Forest(SavedObject):
                 else:
                     cn.cached_sorted_feature_edges = [e for e in cn.edges_down
                                                       if e.edge_type == g.FEATURE_EDGE]
-
-        for edge in self.edges.values():
-            edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)
-            edge.cached_edge_end_index = edge.edge_end_index(from_cache=False)
-            if edge.path:
-                edge.path.cached_shift_for_start = None
-                edge.path.cached_shift_for_end = None
-
-    def update_feature_ordering_old(self):
-
-        for cn in self.nodes.values():
-            if cn.node_type == g.CONSTITUENT_NODE:
-                if cn.syntactic_object:
-                    syn_feats = list(cn.syntactic_object.inherited_features)
-                    if cn.syntactic_object.checked_features:
-                        syn_feats = [feat for feat in cn.syntactic_object.checked_features if
-                                     feat not in syn_feats] + syn_feats
-                    if syn_feats is not None:
-                        feats = [self.get_node(syn_f) for syn_f in syn_feats]
-                        sorted_edges = []
-                        edges = set(cn.edges_down)
-                        for feat in feats:
-                            for edge in edges:
-                                if edge.alpha is feat or edge.end is feat:
-                                    edges.remove(edge)
-                                    sorted_edges.append(edge)
-                                    break
-                        cn.cached_sorted_feature_edges = sorted_edges
-                else:
-                    cn.cached_sorted_feature_edges = [e for e in cn.edges_down if e.edge_type
-                                                      == g.FEATURE_EDGE]
 
         for edge in self.edges.values():
             edge.cached_edge_start_index = edge.edge_start_index(from_cache=False)
@@ -874,36 +839,6 @@ class Forest(SavedObject):
         for tree_top in self:
             recursive_width(tree_top)
         return self.width_map
-
-    # ### Minor updates for forest elements
-    # #######################################################################
-
-    def reform_constituent_node_from_string(self, text, node):
-        """
-
-        :param text:
-        :param node:
-        """
-        new_nodes = self.parser.string_into_forest(text)
-        if new_nodes:
-            self.free_drawing.replace_node(node, new_nodes[0])
-
-    # View mode
-    def change_view_mode(self, syntactic_mode):
-        ctrl.settings.set('syntactic_mode', syntactic_mode, level=g.DOCUMENT)
-        nodes = list(self.nodes.values())
-        for node in nodes:
-            node.update_label()
-            node.update_visibility(skip_label=True)
-        ctrl.main.view_mode_changed.emit()
-        if syntactic_mode:
-            if ctrl.main.color_manager.paper().value() < 100:
-                ctrl.settings.set('temp_color_theme', 'dk_gray', level=g.FOREST)
-            else:
-                ctrl.settings.set('temp_color_theme', 'gray', level=g.FOREST)
-        else:
-            ctrl.settings.set('temp_color_theme', '', level=g.FOREST)
-        ctrl.main.update_colors()
 
     def others_update_colors(self):
         for other in self.others.values():

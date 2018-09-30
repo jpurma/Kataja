@@ -311,20 +311,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 data = open_symbol_data(event.mimeData())
                 if data and 'char' in data:
                     event.acceptProposedAction()
-                    if ctrl.free_drawing_mode:
-                        node = ctrl.free_drawing.create_node(pos=event.scenePos(),
-                                                             node_type=CONSTITUENT_NODE,
-                                                             label=data['char'])
-                        node.current_position = event.scenePos().x(), event.scenePos().y()
-                        node.lock()
-                        message = 'Created constituent "%s"' % node
-                    else:
-                        node = ctrl.free_drawing.create_comment_node(text=data['char'])
-                        node.current_position = event.scenePos().x(), event.scenePos().y()
-                        node.lock()
-                        message = 'Added "%s" as comment since we are in derivation mode and ' \
-                                  'cannot change trees' % data['char']
-
+                    text = data['char']
+                    node = ctrl.forest.drawing.create_node_from_text(text)
+                    node.current_position = event.scenePos().x(), event.scenePos().y()
+                    message = f'Added node "{node}"'
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
                 command_identifier, *args = data.text().split(':')
@@ -336,8 +326,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             node_type = int(node_type)
                         except TypeError:
                             pass
-                        node = ctrl.free_drawing.create_node(pos=event.scenePos(),
-                                                             node_type=node_type)
+                        node = ctrl.drawing.create_node(pos=event.scenePos(),
+                                                        node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         if node_type != CONSTITUENT_NODE:
                             node.lock()
@@ -346,18 +336,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         print('received unknown command:', command, args)
                 else:
                     text = data.text().strip()
-                    if ctrl.free_drawing_mode:
-                        node = ctrl.forest.simple_parse(text)
-                        message = 'Added tree based on "%s".' % text
-                    else:
-                        node = ctrl.free_drawing.create_comment_node(text=text)
-                        message = 'Added text as comment node since we are in derivation mode ' \
-                                  'and cannot change trees.'
+                    node = ctrl.forest.drawing.create_node_from_text(text)
+                    message = f'Added node "{node}"'
             elif data.hasUrls():
                 for url in data.urls():
                     path = url.toString()
                     if path.endswith(('png', 'jpg', 'pdf')):
-                        node = ctrl.free_drawing.create_comment_node(pixmap_path=url.toLocalFile())
+                        node = ctrl.drawing.create_comment_node(pixmap_path=url.toLocalFile())
                         message = 'Added image'
 
         ctrl.ui.remove_touch_areas()

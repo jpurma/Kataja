@@ -50,7 +50,7 @@ class SetActiveColorMode(KatajaAction):
         ctrl.main.change_color_theme(theme)
 
     def getter(self):
-        return ctrl.settings.get('color_theme', level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_setting('color_theme')
 
 
 class RandomisePalette(KatajaAction):

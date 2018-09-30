@@ -4,7 +4,7 @@ import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.singletons import log, ctrl, qt_prefs
+from kataja.singletons import log, ctrl, qt_prefs, prefs
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
@@ -157,7 +157,7 @@ class LogPanel(Panel):
         self.log_browser.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
 
     def rebuild_log(self):
-        min_level = ctrl.settings.get('log_level', level=g.PREFS)
+        min_level = prefs.log_level
         self.log_browser.clear()
         for handler in log.handlers:
             if hasattr(handler, 'everything'):

@@ -43,39 +43,11 @@ class AbstractAddNode(KatajaAction):
         """
         ntype = self.__class__.node_type
         pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
-        label = ctrl.free_drawing.next_free_label()
-        node = ctrl.free_drawing.create_node(label=label, pos=pos, node_type=ntype)
+        label = ctrl.drawing.next_free_label()
+        node = ctrl.drawing.create_node(label=label, pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
         log.info('Added new %s.' % nclass.display_name[0])
         ctrl.forest.forest_edited()
-
-
-class AddConstituentNode(AbstractAddNode):
-    k_action_uid = 'add_constituent_node'
-    k_command = 'Add constituent node'
-    k_tooltip = 'Create new constituent node'
-    node_type = g.CONSTITUENT_NODE
-
-    def enabler(self):
-        if ctrl.free_drawing_mode:
-            self.active_tooltip = self.tip0
-        else:
-            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
-        return ctrl.free_drawing_mode
-
-
-class AddFeatureNode(AbstractAddNode):
-    k_action_uid = 'add_feature_node'
-    k_command = 'Add feature node'
-    k_tooltip = 'Create new feature node'
-    node_type = g.FEATURE_NODE
-
-    def enabler(self):
-        if ctrl.free_drawing_mode:
-            self.active_tooltip = self.tip0
-        else:
-            self.active_tooltip = self.k_tooltip + ' (only in Free drawing mode)'
-        return ctrl.free_drawing_mode
 
 
 class AddGlossNode(AbstractAddNode):
@@ -109,8 +81,7 @@ class AbstractToggleVisibility(KatajaAction):
         :return: None
         """
         node_type = self.__class__.node_type
-        ctrl.settings.set_node_setting('visible', checked, node_type=node_type,
-                                       level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_node_setting('visible', checked, node_type=node_type)
         for node in ctrl.forest.nodes.values():
             node.update_visibility()
 
@@ -119,7 +90,7 @@ class AbstractToggleVisibility(KatajaAction):
 
     def getter(self):
         node_type = self.__class__.node_type
-        return ctrl.settings.get_node_setting('visible', node_type=node_type)
+        return ctrl.ui.get_active_node_setting('visible', node_type=node_type)
 
 
 class ToggleConstituentNodeVisibility(AbstractToggleVisibility):
@@ -167,15 +138,14 @@ class AbstractToggleEdgeVisibility(KatajaAction):
         :return: None
         """
         edge_type = self.__class__.edge_type
-        ctrl.settings.set_edge_setting('visible', checked, edge_type=edge_type,
-                                       level=ctrl.ui.active_scope)
+        ctrl.ui.set_active_edge_setting('visible', checked, edge_type=edge_type)
 
     def enabler(self):
         return not ctrl.ui.scope_is_selection
 
     def getter(self):
         edge_type = self.__class__.edge_type
-        return ctrl.settings.get_edge_setting('visible', edge_type=edge_type)
+        return ctrl.ui.get_active_edge_setting('visible', edge_type=edge_type)
 
 
 class ToggleConstituentEdgeVisibility(AbstractToggleEdgeVisibility):
@@ -228,14 +198,9 @@ class AbstractSelectFont(KatajaAction):
         :return: None
         """
         node_type = self.__class__.node_type
-        if ctrl.ui.scope_is_selection:
-            for node in ctrl.get_selected_nodes(of_type=node_type):
-                ctrl.settings.set_node_setting('font_id', font_id, node=node)
-                node.update_label()
-        else:
-            ctrl.settings.set_node_setting('font_id', font_id, node_type=node_type,
-                                           level=ctrl.ui.active_scope)
-            for node in ctrl.forest.nodes.values():
+        ctrl.ui.set_active_node_setting('font_id', font_id, node_type)
+        for node in ctrl.forest.nodes.values():
+            if node.node_type == node_type:
                 node.update_label()
         np = ctrl.ui.get_panel_by_node_type(node_type)
         if np:
@@ -247,12 +212,7 @@ class AbstractSelectFont(KatajaAction):
 
     def getter(self):
         my_type = self.__class__.node_type
-        if ctrl.ui.scope_is_selection:
-            for node in ctrl.get_selected_nodes(of_type=my_type):
-                if 'font_id' in node.settings:
-                    return node.settings['font_id']
-        return ctrl.settings.get_node_setting('font_id', node_type=my_type,
-                                              level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_node_setting('font_id', my_type)
 
 
 class SelectConstituentFont(AbstractSelectFont):
@@ -318,17 +278,9 @@ class AbstractChangeNodeColor(KatajaAction):
 
         # Update color for selected nodes
         node_type = self.__class__.node_type
-        if ctrl.ui.scope_is_selection:
-            for node in ctrl.get_selected_nodes(of_type=node_type):
-                ctrl.settings.set_node_setting('color_key', color_key, node=node)
-                node.color_key = color_key
-                node.update_label()
-        # ... or update color for all nodes of this type
-        else:
-            ctrl.settings.set_node_setting('color_key', color_key,
-                                           node_type=node_type,
-                                           level=ctrl.ui.active_scope)
-            for node in ctrl.forest.nodes.values():
+        ctrl.ui.set_active_node_setting('color_key', color_key, node_type)
+        for node in ctrl.forest.nodes.values():
+            if node.node_type == node_type:
                 node.update_label()
         panel = ctrl.ui.get_panel_by_node_type(node_type)
         if panel:
@@ -339,12 +291,7 @@ class AbstractChangeNodeColor(KatajaAction):
 
     def getter(self):
         my_type = self.__class__.node_type
-        if ctrl.ui.scope_is_selection:
-            for node in ctrl.get_selected_nodes(of_type=my_type):
-                if 'color_key' in node.settings:
-                    return node.settings['color_key']
-        return ctrl.settings.get_node_setting('color_key', node_type=my_type,
-                                              level=ctrl.ui.active_scope)
+        return ctrl.ui.get_active_node_setting('color_key', node_type=my_type)
 
 
 class ChangeConstituentColor(AbstractChangeNodeColor):
@@ -423,20 +370,8 @@ class ChangeEdgeShape(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        level = level or ctrl.ui_active_scope
-        if level == g.SELECTION:
-            for edge in ctrl.get_selected_edges(of_type=edge_type):
-                edge.shape_name = shape_name
-                edge.update_shape()
-                edge.flatten_settings()
-        else:
-            ctrl.settings.set_edge_setting('shape_name', shape_name,
-                                           edge_type=edge_type, level=level)
-            ctrl.settings.flatten_shape_settings(edge_type)
-            for edge in ctrl.forest.edges.values():
-                if edge.edge_type == edge_type:
-                    edge.flatten_settings()
-            ctrl.forest.redraw_edges()
+        ctrl.ui.set_active_edge_setting('shape_name', shape_name, edge_type)
+        ctrl.forest.redraw_edges()
         if self.panel:
             self.panel.update_panel()
 
@@ -446,17 +381,7 @@ class ChangeEdgeShape(PanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return self.panel.get_active_edge_setting('shape_name')
-
-    def getter(self):
-        if self.__class__.edge_type:
-            if ctrl.ui.scope_is_selection:
-                for edge in ctrl.get_selected_edges(of_type=self.__class__.edge_type):
-                    return ctrl.settings.get_edge_setting('shape_name', edge=edge)
-            return ctrl.settings.get_edge_setting('shape_name', edge_type=self.__class__.edge_type,
-                                                  level=ctrl.ui.active_scope)
-        else:
-            return self.panel.get_active_edge_setting('shape_name')
+        return ctrl.ui.get_active_edge_setting('shape_name', self.__class__.edge_type)
 
 
 class ChangeConstituentEdgeShape(ChangeEdgeShape):

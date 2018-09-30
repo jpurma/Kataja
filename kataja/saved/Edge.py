@@ -31,6 +31,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl, prefs
+from kataja.settings.EdgeSettings import EdgeSettings
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, add_xy, time_me
 from kataja.FadeInOut import FadeInOut
@@ -44,7 +45,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, start=None, end=None, edge_type='', alpha=None):
+    def __init__(self, forest=None, start=None, end=None, edge_type='', alpha=None):
         """
         :param Node start:
         :param Node end:
@@ -54,6 +55,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
+        self.forest = forest
+        self.settings = EdgeSettings(self)
         self.edge_type = edge_type
         self.start = start
         self.start_links_to = None
@@ -68,7 +71,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.k_tooltip = ''
         self.k_action = None
         self._is_moving = False
-        self.flattened_settings = {}
 
         self._local_drag_handle_position = None
 
@@ -110,22 +112,17 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         self.connect_end_points(self.start, self.end)
-        self.flatten_settings()
-        self.setZValue(self.flattened_settings['z_value'])
+        self.setZValue(self.settings.get('z_value'))
         # self.update_end_points()
         self.update_visibility()
         self.announce_creation()
 
-    def flatten_settings(self):
-        """ Create a local, flat dict for all settings related to this edge. Make sure that this
-        gets called after settings have changed.
-        :return:
-        """
-        shape_settings = dict(ctrl.settings.flat_shape_settings[self.edge_type])
-        edge_settings = ctrl.settings.edge_type_chains[self.edge_type]
-        shape_settings.update(edge_settings)
-        shape_settings.update(self.settings)
-        self.flattened_settings = shape_settings
+    @property
+    def forest(self):
+        if self.start:
+            return self.start.forest
+        elif self.end:
+            return self.end.forest
 
     def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
@@ -134,10 +131,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: None
         """
         if transition_type == g.CREATED:
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
+            self.forest.store(self)
+            self.forest.add_to_scene(self)
         elif transition_type == g.DELETED:
-            ctrl.free_drawing.delete_edge(self, fade=False)
+            ctrl.drawing.delete_edge(self, fade=False)
             return
         self.connect_end_points(self.start, self.end)
         self.update_visibility()
@@ -150,34 +147,34 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         self.connect_end_points(self.start if self.start in others else None,
                                 self.end if self.end in others else None)
-        ctrl.forest.remove_from_scene(self)
+        self.forest.remove_from_scene(self)
         return self
 
     @property
     def color_key(self) -> str:
-        return self.flattened_settings['color_key']
+        return self.settings.get('color_key')
 
     @color_key.setter
     def color_key(self, value):
         self.path.changed = True
-        ctrl.settings.set_edge_setting('color_key', value, edge=self)
+        self.settings.set('color_key', value)
 
     @property
     def shape_name(self) -> str:
-        return self.flattened_settings['shape_name']
+        return self.settings.get('shape_name')
 
     @shape_name.setter
     def shape_name(self, value):
         self.path.changed = True
-        ctrl.settings.set_edge_setting('shape_name', value, edge=self)
+        self.settings.set('shape_name', value)
 
     @property
     def pull(self) -> float:
-        return self.flattened_settings['pull']
+        return self.settings.get('pull')
 
     @pull.setter
     def pull(self, value):
-        ctrl.settings.set_edge_setting('pull', value, edge=self)
+        self.settings.set('pull', value)
 
     @property
     def start_point(self) -> tuple:
@@ -246,7 +243,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         start = self.start
         end = self.end
         if not (start and end):
-            ctrl.free_drawing.delete_edge(self)
+            ctrl.drawing.delete_edge(self)
             return False
         lv = True
         if self._nodes_overlap:
@@ -257,14 +254,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             lv = False
         elif self.alpha and not self.alpha.is_visible():
             lv = False
-        elif not self.flattened_settings['visible']:
+        elif not self.settings.get('visible'):
             lv = False
         else:
             if self.edge_type == g.CONSTITUENT_EDGE:
                 if end.locked_to_node:
                     lv = False
-                elif (ctrl.forest.visualization and
-                      not ctrl.forest.visualization.show_edges_for(start)):
+                elif (self.forest.visualization and
+                      not self.forest.visualization.show_edges_for(start)):
                     lv = False
             elif self.edge_type == g.FEATURE_EDGE:
                 if (start.node_type == g.CONSTITUENT_NODE and
@@ -275,7 +272,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     #        ((not end.adjustment) or end.adjustment == (0, 0)):
                     #    lv = False
             elif self.edge_type == g.CHECKING_EDGE:
-                if ctrl.settings.get('feature_check_display') == 0:
+                if self.forest.settings.get('feature_check_display') == 0:
                     lv = False
 
         self._visible_by_logic = lv
@@ -331,7 +328,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :param node:
         """
-        ctrl.free_drawing.set_edge_start(self, node)
+        ctrl.drawing.set_edge_start(self, node)
         self.update_shape()
 
     def connect_end_to(self, node):
@@ -339,7 +336,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :param node:
         """
-        ctrl.free_drawing.set_edge_end(self, node)
+        ctrl.drawing.set_edge_end(self, node)
         self.update_shape()
 
     def __lt__(self, other):
@@ -429,7 +426,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         # overlap detection is costly, so do checks for cases that make it unnecessary
         if self.edge_type == g.FEATURE_EDGE or self.edge_type == g.CHECKING_EDGE:
             self._nodes_overlap = False
-        elif not ctrl.settings.get('hide_edges_if_nodes_overlap'):
+        elif self.forest.visualization and not self.forest.visualization.hide_edges_if_nodes_overlap:
             self._nodes_overlap = False
         elif self.start and self.end and False:
             if self.end.locked_to_node:
@@ -456,9 +453,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         return self.path.shape()
 
     def reset_settings(self):
-        self.settings = {}
+        self._settings = {}
         self.path.my_shape = SHAPE_PRESETS[self.shape_name]()
-        self.flatten_settings()
         self.curve_adjustment = [(0, 0)] * len(self.path.control_points)
         self.update_shape()
 
@@ -561,7 +557,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         elif (not value) and self._indirect_hovering:
             self._indirect_hovering = False
             self.prepareGeometryChange()
-            self.setZValue(self.flattened_settings['z_value'])
+            self.setZValue(self.settings.get('z_value'))
             self.update()
 
     def hoverEnterEvent(self, event):
@@ -627,7 +623,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             dpath = self.path.draw_path
             if self.has_outline():
-                thickness = self.flattened_settings['thickness']
+                thickness = self.settings.get_shape('thickness')
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
@@ -713,57 +709,56 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         return getattr(self.path.my_shape, key)
 
     def set_leaf_width(self, value):
-        ctrl.settings.set_edge_setting('leaf_x', value, edge=self)
+        self.settings.set('leaf_x', value)
         self.path.changed = True
         self.update_shape()
 
     def set_leaf_height(self, value):
-        ctrl.settings.set_edge_setting('leaf_y', value, edge=self)
+        self.settings.set('leaf_y', value)
         self.path.changed = True
         self.update_shape()
 
     def change_edge_relative_curvature_x(self, value):
-        print('change_edge_relative_curvature_x ', value, value * .01)
-        ctrl.settings.set_edge_setting('rel_dx', value * .01, edge=self)
+        self.settings.set('rel_dx', value * .01)
         self.path.changed = True
         self.update_shape()
 
     def change_edge_relative_curvature_y(self, value):
-        ctrl.settings.set_edge_setting('rel_dy', value * .01, edge=self)
+        self.settings.set('rel_dy', value * .01)
         self.path.changed = True
         self.update_shape()
 
     def change_edge_fixed_curvature_x(self, value):
-        ctrl.settings.set_edge_setting('fixed_dx', value, edge=self)
+        self.settings.set('fixed_dx', value)
         self.path.changed = True
         self.update_shape()
 
     def change_edge_fixed_curvature_y(self, value):
-        ctrl.settings.set_edge_setting('fixed_dy', value, edge=self)
+        self.settings.set('fixed_dy', value)
         self.path.changed = True
         self.update_shape()
 
     def set_thickness(self, value):
-        ctrl.settings.set_shape_setting('thickness', value, edge=self)
+        self.settings.set('thickness', value)
         self.path.changed = True
         self.update_shape()
 
     def is_filled(self) -> bool:
-        return self.get_shape_property('fillable') and self.flattened_settings['fill']
+        return self.get_shape_property('fillable') and self.settings.get_shape('fill')
 
     def has_outline(self) -> int:
-        return self.flattened_settings['outline']
+        return self.settings.get_shape('outline')
 
     def is_fillable(self):
         return self.get_shape_property('fillable')
 
     def set_fill(self, value):
-        ctrl.settings.set_shape_setting('fill', value, edge=self)
+        self.settings.set('fill', value)
         self.path.changed = True
         self.update_shape()
 
     def set_outline(self, value):
-        ctrl.settings.set_shape_setting('outline', value, edge=self)
+        self.settings.set('outline', value)
         self.path.changed = True
         self.update_shape()
 
