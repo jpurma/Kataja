@@ -210,7 +210,8 @@ class FeatureNode(Node):
                 if self.locked_to_node == checked_by:
                     self.release_from_locked_position()
                 edge = self.get_edge_to(checked_by, g.CHECKING_EDGE)
-                edge.hide()
+                if edge:
+                    edge.hide()
 
             elif checking_mode == g.PUT_CHECKED_TOGETHER:
                 locked_to_another_feature = True

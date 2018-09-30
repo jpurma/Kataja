@@ -41,6 +41,7 @@ class SyntaxAPI(SavedObject):
         self.features = {}
         self.lexicon = {}
         self.rules = {}
+        self.parser = None
         self.input_text = ''
         self.input_tree = []
         self.display_mode = 0
@@ -197,11 +198,11 @@ class SyntaxAPI(SavedObject):
         If a forest is provided, derivation steps are created there.
         :return:
         """
-        self._prepare_derivation_parameters(input_text, lexicon, semantics)
-        if self.input_tree:
-            roots = self.parser.string_into_forest(str(self.input_tree))
-            forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
-            self.nodes_to_synobjs(forest, roots)
+        # self._prepare_derivation_parameters(input_text, lexicon, semantics)
+        # if self.input_tree:
+        #     roots = forest.parser.string_into_forest(str(self.input_tree))
+        #     forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
+        #     self.nodes_to_synobjs(forest, roots)
 
     def set_display_mode(self, i):
         self.display_mode = i
