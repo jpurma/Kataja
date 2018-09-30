@@ -591,6 +591,8 @@ class Preferences(object):
                 settings.endGroup()
             for data_key in settings.childKeys():
                 value = string_keys_to_ints(settings.value(data_key))
+                if isinstance(value, str) and (value == 'false' or value == 'true'):
+                    value = bool(value == 'true')
                 if data_key.isdigit():
                     result[int(data_key)] = value
                 else:
@@ -608,9 +610,11 @@ class Preferences(object):
         print('loading preferences from ', settings.fileName())
         ldict = pythonify_prefs(settings)
         for key, default_value in list(vars(self).items()):
+            # print(f'setting {key}: {default_value}')
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
             if key in ldict:
+                # print(f'set to {repr(ldict[key])}')
                 setattr(self, key, ldict[key])
 
     # Support settings-interface ########################

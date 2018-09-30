@@ -265,14 +265,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         plugins_path = os.path.normpath(plugins_path)
         os.makedirs(plugins_path, exist_ok=True)
         sys.path.append(plugins_path)
-        base_ends = len(plugins_path.split('/'))
+        base_ends = len(plugins_path.split(running_environment.path_separator))
         for root, dirs, files in os.walk(plugins_path, followlinks=True):
-            path_parts = root.split('/')
+            path_parts = root.split(running_environment.path_separator)
             if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
                     '__') and 'plugin.json' in files:
                 success = False
                 try:
-                    plugin_file = open(root + '/plugin.json', 'r')
+                    plugin_file = open(root + running_environment.path_separator +'plugin.json', 'r')
                     data = json.load(plugin_file)
                     plugin_file.close()
                     success = True
@@ -544,12 +544,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         # Prepare file and path
         path = prefs.userspace_path or \
                running_environment.default_userspace_path
-        if not path.endswith('/'):
-            path += '/'
+        if not path.endswith(running_environment.path_separator):
+            path += running_environment.path_separator
         if not os.path.exists(path):
             print("bad path for printing (userspace_path in preferences) , "
                   "using '.' instead.")
-            path = './'
+            path = '.' + running_environment.path_separator
         filename = prefs.print_file_name
         if filename.endswith(('.pdf', '.png')):
             filename = filename[:-4]

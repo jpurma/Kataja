@@ -94,6 +94,10 @@ This will take ~10 seconds, and end with `------ Done ------` if everything is r
 
 The build script will build Kataja.app to `dist/` and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with `create_dmg` -variable in `setup.py`. 
 
+cd C:\Users\Jukka\Documents\Github\Kataja\plugins
+mklink /J Monorail2 C:\Users\Jukka\Dropbox\PCB_parser_Jukka\Jukka\Monorail2
+mklink /J PCBPlugin C:\Users\Jukka\Dropbox\PCB_parser_Jukka\Jukka\PCBPlugin
+
  
 3rd party resources
 -------------------

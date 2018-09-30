@@ -26,7 +26,7 @@ linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier'
                CUSTOM_FONT2: ['Asana Math', 'Normal', 12],
                CUSTOM_FONT3: ['Asana Math', 'Normal', 12]}
 
-windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 11], CONSOLE_FONT: ['Consolas', 'Normal', 10],
+windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 11], CONSOLE_FONT: ['Consolas', 'Normal', 11],
                  UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Cambria', 'Italic', 10],
                  BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 9],
                  SMALL_FEATURE: ['Lao MN', 'Normal', 7],
@@ -63,6 +63,10 @@ class Environment:
             self.cmd_or_ctrl = '⌘'
         else:
             self.cmd_or_ctrl = 'Ctrl'
+        if self.platform == 'win':
+            self.path_separator = '\\'
+        else:
+            self.path_separator = '/'
 
         if self.code_mode == 'test':
             self.init_test_paths()
@@ -94,9 +98,9 @@ class Environment:
         based on the kataja code base.
         This is easier for development and active 'bold' use."""
         prefs_code = os.path.realpath(__file__)
-        filename = __file__.split('/')[-1]
-        kataja_root = prefs_code[:-len('kataja/' + filename)]
-        self.resources_path = kataja_root + 'resources/'
+        filename = __file__.split(self.path_separator)[-1]
+        kataja_root = prefs_code[:-len('kataja' + self.path_separator + filename)]
+        self.resources_path = kataja_root + 'resources' + self.path_separator
         self.plugins_path = kataja_root + 'plugins'
         self.default_userspace_path = kataja_root + 'workspace'
 
@@ -106,7 +110,7 @@ class Environment:
         """
         # my_path = Path(sys.argv[0]).parts
         self.plugins_path = 'plugins'
-        self.resources_path = 'resources/'
+        self.resources_path = 'resources\\'
         self.default_userspace_path = 'workspace'
 
     def init_mac_app_paths(self):
