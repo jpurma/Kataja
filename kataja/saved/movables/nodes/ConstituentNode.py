@@ -150,7 +150,8 @@ class ConstituentNode(Node):
 
     @label.setter
     def label(self, value):
-        pass
+        if self.syntactic_object:
+            self.syntactic_object.label = value
 
     def set_gloss(self, text):
         self.gloss = text

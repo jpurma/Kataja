@@ -21,7 +21,7 @@
 #
 # ############################################################################
 
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import prefs
 from kataja.settings.ForestSettings import ForestSettings
 
 

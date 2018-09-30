@@ -67,7 +67,7 @@ class ForestSettings:
             st = sc.get(subtype, None)
             if st:
                 v = st.get(key, None)
-                if v:
+                if v is not None:
                     return v
 
     def get_for_node_type(self, key, node_type):

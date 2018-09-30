@@ -26,7 +26,6 @@ class INodeToKatajaConstituent:
 
     # @time_me
 
-
     def string_into_forest(self, string):
         """ Parse the text as new nodes in the current forest.
         :param string:
@@ -68,6 +67,7 @@ class INodeToKatajaConstituent:
         :param node:
         :return:
         """
+        print('tnode: ', tnode)
         cn = self.forest.drawing.create_node(label=tnode, node_type=g.CONSTITUENT_NODE)
         cn.update_label()
         return cn
@@ -78,6 +78,7 @@ class INodeToKatajaConstituent:
         :param inode: should be IParserNode.
         :return: the root ConstituentNode
         """
+        print('inode: ', repr(parsernode))
         f = self.forest
         children = []
         if parsernode.parts:

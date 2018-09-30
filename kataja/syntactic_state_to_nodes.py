@@ -23,8 +23,6 @@
 # ############################################################################
 
 
-import collections
-import random
 import time
 
 import kataja.globals as g
@@ -148,6 +146,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     break
         if not pos:
             pos = (sc_center, sc_middle)
+        #print('creating node for ', repr(syn_bare))
         drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos, synobj=syn_bare)
 
     for syn_feat in fns_to_create:

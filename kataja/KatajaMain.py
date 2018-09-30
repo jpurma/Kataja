@@ -266,7 +266,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         os.makedirs(plugins_path, exist_ok=True)
         sys.path.append(plugins_path)
         base_ends = len(plugins_path.split('/'))
-        for root, dirs, files in os.walk(plugins_path):
+        for root, dirs, files in os.walk(plugins_path, followlinks=True):
             path_parts = root.split('/')
             if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
                     '__') and 'plugin.json' in files:
