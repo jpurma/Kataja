@@ -29,12 +29,17 @@ import sys
 import time
 import os
 import traceback
+from html import escape as str_escape
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from PyQt5.QtCore import QPointF, QPoint
 
 import kataja.globals as g
+
+
+def escape(text):
+    return str_escape(str(text))
 
 
 def colored_image(color, base_image):

@@ -44,10 +44,30 @@ class AbstractAddNode(KatajaAction):
         ntype = self.__class__.node_type
         pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
         label = ctrl.drawing.next_free_label()
-        node = ctrl.drawing.create_node(label=label, pos=pos, node_type=ntype)
+        ctrl.drawing.create_node(label=label, pos=pos, node_type=ntype)
         nclass = classes.nodes[ntype]
         log.info('Added new %s.' % nclass.display_name[0])
         ctrl.forest.forest_edited()
+
+
+class AddConstituentNode(AbstractAddNode):
+    k_action_uid = 'add_constituent_node'
+    k_command = 'Add constituent node'
+    k_tooltip = 'Create new constituent node'
+    node_type = g.CONSTITUENT_NODE
+
+    def enabler(self):
+        return False
+
+
+class AddFeatureNode(AbstractAddNode):
+    k_action_uid = 'add_feature_node'
+    k_command = 'Add feature node'
+    k_tooltip = 'Create new feature node'
+    node_type = g.FEATURE_NODE
+
+    def enabler(self):
+        return False
 
 
 class AddGlossNode(AbstractAddNode):

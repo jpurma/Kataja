@@ -34,10 +34,9 @@ import kataja.ui_widgets.buttons.OverlayButton as OB
 from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import coords_as_str
+from kataja.utils import coords_as_str, escape
 import kataja.globals as g
 
-from html import escape
 __author__ = 'purma'
 
 
@@ -407,25 +406,29 @@ class ConstituentNode(Node):
 
     def get_heads(self):
         res = []
-        for head in self.syntactic_object.get_heads():
-            if head is self.syntactic_object:
-                res.append(self)
-            else:
-                node = self.forest.get_node(head)
-                if node:
-                    res.append(node)
+        if self.syntactic_object:
+            for head in self.syntactic_object.get_heads():
+                if head is self.syntactic_object:
+                    res.append(self)
+                else:
+                    node = self.forest.get_node(head)
+                    if node:
+                        res.append(node)
         return res
 
     def get_lexical_color(self, refresh=True):
         if self.is_fading_out:
             return ctrl.cm.get('content1')
         if refresh or not self._lexical_color:
-            heads = self.get_heads()
-            if heads and heads[0] is not self:
-                if heads[0]:
-                    self._lexical_color = heads[0].get_lexical_color()
-                    return self._lexical_color
-            l = ' '.join([str(f) for f in self.syntactic_object.features])
+            if self.syntactic_object:
+                heads = self.get_heads()
+                if heads and heads[0] is not self:
+                    if heads[0]:
+                        self._lexical_color = heads[0].get_lexical_color()
+                        return self._lexical_color
+                l = ' '.join([str(f) for f in self.syntactic_object.features])
+            else:
+                l = str(self.label)
             if l:
                 hue = hash(l) % 360
             else:

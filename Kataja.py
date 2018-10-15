@@ -43,7 +43,10 @@ def launch_kataja():
                         help='reset the current preferences file to default')
     parser.add_argument('--no_prefs', action='store_true', default=False,
                         help="don't use preferences file -- don't save it either")
-
+    #parser.add_argument('--no_plugin', action='store_true', default=False,
+    #                    help="disable plugin set by preferences")
+    parser.add_argument('tree', type=str, nargs='?',
+                        help='bracket tree')
     kwargs = vars(parser.parse_args())
 
     print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))

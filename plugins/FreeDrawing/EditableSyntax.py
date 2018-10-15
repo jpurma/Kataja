@@ -178,6 +178,7 @@ class EditableSyntax(SyntaxAPI):
         """
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
         if self.input_tree:
+            print('calling string into forest in FreeDrawing: ', self.input_tree)
             roots = forest.parser.string_into_forest(str(self.input_tree))
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
             self.nodes_to_synobjs(forest, roots)

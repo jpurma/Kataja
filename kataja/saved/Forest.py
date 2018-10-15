@@ -714,7 +714,7 @@ class Forest(SavedObject):
                 sorted_syn_feats = const.features
 
             sortable_edges = [(sorted_syn_feats.index(e.alpha.syntactic_object)
-                               if e.alpha else i + 100, e) for i, e in
+                               if e.alpha and e.alpha.syntactic_object in sorted_syn_feats else i + 100, e) for i, e in
                               enumerate(node.edges_down) if e.edge_type == g.FEATURE_EDGE]
 
             return [e for i, e in sorted(sortable_edges)]

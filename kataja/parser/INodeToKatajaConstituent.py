@@ -25,6 +25,9 @@ class INodeToKatajaConstituent:
         self.temp_tree = None
 
     # @time_me
+    IParserNode(parts=[
+        IParserNode(parts=[IParserNode(parts=[IParserNode(label_rows=['Cynth']), IParserNode(label_rows=['Daff'])])],
+                    label_rows=['Boris'])], label_rows=['Adolf'])
 
     def string_into_forest(self, string):
         """ Parse the text as new nodes in the current forest.
@@ -36,6 +39,7 @@ class INodeToKatajaConstituent:
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
         self.parser = SuperParser(string)
+        print('got nodes: ', self.parser.nodes)
         result = [self.inode_to_constituentnode(inode) for inode in self.parser.nodes]
         self.should_add_to_scene = old_should_add
         return result

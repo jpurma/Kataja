@@ -113,8 +113,10 @@ def join_lines(lines):
     if not lines:
         return ''
     elif len(lines) == 1:
+        print('returning single line: ', lines[0])
         return lines[0]
     else:
+        lines = list(lines)
         last_row = None
         while lines:
             row = lines.pop()
@@ -419,7 +421,8 @@ class ITextNode:
         return ''.join((str(x) for x in self.parts))
 
     def __repr__(self):
-        return f'ITextNode(parts={self.parts})'
+        parts = f'parts={self.parts}' if self.parts else ''
+        return f'ITextNode({parts})'
 
 
 class ICommandNode(ITextNode):
@@ -674,5 +677,11 @@ class IParserNode(ITextNode):
         return False
 
     def __repr__(self):
-        return f'IParserNode(parts={self.parts}, label_rows={self.label_rows}, ' \
-               f'index={repr(self.index)})'
+        p = []
+        if self.parts:
+            p.append(f'parts={self.parts}')
+        if self.label_rows:
+            p.append(f'label_rows={self.label_rows}')
+        if self.index:
+            p.append(f'index={repr(self.index)}')
+        return f"IParserNode({', '.join(p)})"

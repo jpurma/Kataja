@@ -29,8 +29,9 @@ class NodePanel(Panel):
         node_type_name = classes.node_info[node_type]['name'].lower()
         color_key = ctrl.ui.get_active_node_setting('color_key', node_type=node_type)
 
+        action_name = 'add_%s_node' % node_type_name
         self.add_button = PanelButton(parent=self, pixmap=qt_prefs.add_icon,
-                                      action='add_%s_node' % node_type_name, size=20,
+                                      action=action_name, size=20,
                                       color_key=color_key)
         self.add_button.data = node_type
         self.prefix_for_title(self.add_button)

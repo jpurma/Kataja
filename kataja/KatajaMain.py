@@ -127,7 +127,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     viewport_resized = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
-    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False):
+    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False, tree=None, plugin=''):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. Receives launch arguments:
         :param no_prefs: bool, don't load or save preferences
@@ -188,13 +188,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         kataja_app.processEvents()
         self.activateWindow()
         # self.status_bar = self.statusBar()
-        self.install_plugins()
-        self.document.load_default_forests()
+        self.install_plugins(activate=plugin or 'FreeDrawing' if tree else '')
+        self.document.load_default_forests(tree=tree)
         self.enable_signaling()
 
         self.viewport_resized.emit()
         self.forest_changed.emit()
-        log.info('Welcome to Kataja! (h) for help')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -341,13 +340,11 @@ class KatajaMain(QtWidgets.QMainWindow):
                                              replaced=classes.replaced_actions)
         if hasattr(self.active_plugin_setup, 'help_file'):
             dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
-            print(dir_path)
             self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.create_default_document()
         self.enable_signaling()
-        print(sys.modules)
         prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):
@@ -390,13 +387,14 @@ class KatajaMain(QtWidgets.QMainWindow):
                     setup = None
         return setup
 
-    def install_plugins(self):
+    def install_plugins(self, activate=''):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
-        if prefs.active_plugin_name:
-            log.info('Installing plugin %s...' % prefs.active_plugin_name)
-            self.enable_plugin(prefs.active_plugin_name, reload=False)
+        plugin = activate or prefs.active_plugin_name
+        if plugin:
+            log.info('Installing plugin %s...' % plugin)
+            self.enable_plugin(plugin, reload=False)
         self.ui_manager.update_plugin_menu()
 
     # Preferences ###################################
@@ -429,7 +427,8 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.document_changed.emit()
             if document:
                 document.update_forest()
-                self.setWindowTitle(f'Kataja — {document.name}')
+                plug = f'{prefs.active_plugin_name} — ' if prefs.active_plugin_name else ''
+                self.setWindowTitle(f'Kataja — {plug}{document.name}')
 
     def create_default_document(self):
         """ Put empty Kataja document in place -- you want to do this after

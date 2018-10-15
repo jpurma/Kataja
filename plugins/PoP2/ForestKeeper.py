@@ -38,7 +38,7 @@ class PoPDocument(KatajaDocument):
     default_treeset_file = running_environment.plugins_path + '/PoP2/POP.txt'
 
     @staticmethod
-    def create_forests(filename=None, clear=False):
+    def create_forests(filename=None, treelist=None, clear=False):
         """ This will read example sentences in form used by Ginsburg / Fong parser
 
         1 Tom read a book. (Chomsky 2015:10) ['C','Tpres',['D','n','Tom'],'v*','read','a','n',
@@ -52,7 +52,7 @@ class PoPDocument(KatajaDocument):
         """
         if clear:
             treelist = []
-        else:
+        elif not treelist:
             treelist = PoPDocument.load_treelist_from_text_file(PoPDocument.default_treeset_file) or []
 
         forests = []

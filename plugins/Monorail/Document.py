@@ -56,7 +56,7 @@ class Document(KatajaDocument):
     default_lexicon_file = running_environment.plugins_path + '/Monorail/lexicon.txt'
 
     @staticmethod
-    def create_forests(filename=None, clear=False):
+    def create_forests(filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
 
         :param filename: not used
@@ -69,8 +69,9 @@ class Document(KatajaDocument):
 
         shared_lexicon = load_lexicon(Document.default_lexicon_file)
         print('loaded shared_lexicon: ', shared_lexicon)
-
-        if has_nltk:
+        if treelist:
+            input_trees = treelist
+        elif has_nltk:
             print(f"reading trees {NLTK_TREE_RANGE[0]}-{NLTK_TREE_RANGE[1]} from NLTK's treebank")
             for i in range(*NLTK_TREE_RANGE):  # 199
                 trees = treebank.parsed_sents(f'wsj_0{str(i).rjust(3, "0")}.mrg')

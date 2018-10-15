@@ -41,7 +41,6 @@ class EditableConstituentNode(ConstituentNode):
         super().__init__(label, *args, **kwargs)
         self.heads = []
         self.syntactic_object = classes.Constituent(label)
-        print('label: ', label, ' synobj: ', self.syntactic_object, self.syntactic_object.label)
 
     def label_as_editable_html(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -56,7 +55,6 @@ class EditableConstituentNode(ConstituentNode):
             if self.label:
                 return 'node label', as_html(self.label)
         else:
-            print('naah')
             return 'node label', ''
 
     def parse_edited_label(self, label_name, value):
@@ -99,14 +97,14 @@ class EditableConstituentNode(ConstituentNode):
             stop = remove_dot_label(row, i)
             if stop:
                 break
-        print('load_values_from_parsernode: ', repr(parsernode.label_rows))
+        #print('load_values_from_parsernode: ', repr(parsernode.label_rows))
 
         self.label = join_lines(rows)
-        print(join_lines(rows))
         if self.index:
             base = as_html(self.label)
             if base.strip().startswith('t<sub>'):
                 self.is_trace = True
+
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.

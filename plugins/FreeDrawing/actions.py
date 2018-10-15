@@ -232,6 +232,9 @@ class AddConstituentNode(AbstractAddNode):
     k_tooltip = 'Create new constituent node'
     node_type = g.CONSTITUENT_NODE
 
+    def enabler(self):
+        return True
+
 
 class AddFeatureNode(AbstractAddNode):
     k_action_uid = 'add_feature_node'
@@ -239,6 +242,8 @@ class AddFeatureNode(AbstractAddNode):
     k_tooltip = 'Create new feature node'
     node_type = g.FEATURE_NODE
 
+    def enabler(self):
+        return True
 
 class SetProjectingNode(KatajaAction):
     k_action_uid = 'set_projecting_node'

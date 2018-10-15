@@ -38,7 +38,7 @@ class Document(KatajaDocument):
     default_treeset_file = running_environment.plugins_path + '/mgtdbpE/sentences.txt'
 
     @staticmethod
-    def create_forests(filename=None, clear=False):
+    def create_forests(filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
 
         :param filename: not used
