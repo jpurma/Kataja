@@ -240,6 +240,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         false for scene visibility.
         :return:
         """
+        fade_in = fade_in and ctrl.play
+        fade_out = fade_out and ctrl.play
         start = self.start
         end = self.end
         if not (start and end):

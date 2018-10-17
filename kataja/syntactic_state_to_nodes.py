@@ -51,7 +51,7 @@ def syntactic_state_to_nodes(forest, syn_state):
     node_keys_to_validate = set(forest.nodes.keys())
     edge_keys_to_validate = set(forest.edges.keys())
 
-    animate = True
+    animate = ctrl.play
 
     # if numeration:
     #    num_tree = forest.get_numeration()

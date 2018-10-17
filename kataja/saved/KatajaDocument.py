@@ -21,7 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from collections import OrderedDict
+import os
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
@@ -42,8 +42,6 @@ class KatajaDocument(SavedObject):
 
     unique = True
 
-    default_treeset_file = running_environment.resources_path + 'trees.txt'
-
     def __init__(self, name=None, uid=None):
         super().__init__(uid=uid)
         self.name = name or 'New project'
@@ -56,6 +54,14 @@ class KatajaDocument(SavedObject):
         self.lexicon = {}
         self.play = True
         self.has_filename = False
+
+    @staticmethod
+    def get_default_treeset_file():
+        return os.path.join(ctrl.main.active_plugin_path, 'sentences.txt')
+
+    @staticmethod
+    def get_default_lexicon_file():
+        return os.path.join(ctrl.main.active_plugin_path, 'lexicon.txt')
 
     def retire_from_display(self):
         if self.forest:
@@ -180,7 +186,7 @@ class KatajaDocument(SavedObject):
         if clear:
             treelist = []
         elif not treelist:
-            treelist = KatajaDocument.load_treelist_from_text_file(KatajaDocument.default_treeset_file) or []
+            treelist = KatajaDocument.load_treelist_from_text_file(KatajaDocument.get_default_treeset_file()) or []
 
         forests = []
 

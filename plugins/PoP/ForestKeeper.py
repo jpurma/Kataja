@@ -22,6 +22,7 @@
 #
 # ############################################################################
 
+import os
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
@@ -34,7 +35,7 @@ class PoPDocument(KatajaDocument):
 
     # unique = True
     #
-    default_treeset_file = running_environment.plugins_path + '/PoP/POP.txt'
+    default_treeset_file = os.path.join(running_environment.plugins_path, 'PoP/POP.txt')
 
     @staticmethod
     def create_forests(filename=None, treelist=None, clear=False):

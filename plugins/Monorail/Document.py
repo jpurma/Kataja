@@ -28,6 +28,7 @@ from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
 from Monorail.Parser import load_lexicon
 import ast
+import os
 
 try:
     from nltk.corpus import treebank
@@ -52,9 +53,6 @@ class Document(KatajaDocument):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions
      in here, as scope of undo should be a single Forest. """
 
-    default_treeset_file = running_environment.plugins_path + '/Monorail/sentences.txt'
-    default_lexicon_file = running_environment.plugins_path + '/Monorail/lexicon.txt'
-
     @staticmethod
     def create_forests(filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
@@ -62,12 +60,12 @@ class Document(KatajaDocument):
         :param filename: not used
         :param clear: start with empty
         """
-        filename = filename or Document.default_treeset_file
+        filename = filename or Document.get_default_treeset_file()
 
         forests = []
         input_trees = []
 
-        shared_lexicon = load_lexicon(Document.default_lexicon_file)
+        shared_lexicon = load_lexicon(Document.get_default_lexicon_file())
         print('loaded shared_lexicon: ', shared_lexicon)
         if treelist:
             input_trees = treelist

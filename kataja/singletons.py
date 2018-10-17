@@ -1,13 +1,20 @@
 import logging
+import sys
 from kataja.settings.Preferences import Preferences, QtPreferences
 from kataja.Controller import Controller
-from kataja.Environment import Environment
+from kataja.environments.Base import Base
+from kataja.environments.Mac import Mac
+from kataja.environments.Win import Win
 from kataja.KatajaFactory import KatajaFactory
 from kataja.LogWidgetPusher import LogWidgetPusher
 
-__author__ = 'purma'
+if sys.platform == 'darwin':
+    running_environment = Mac()
+elif sys.platform.startswith('win'):
+    running_environment = Win()
+else:
+    running_environment = Base()
 
-running_environment = Environment()
 prefs = Preferences(running_environment)
 qt_prefs = QtPreferences()
 ctrl = Controller(prefs)  # Controller()

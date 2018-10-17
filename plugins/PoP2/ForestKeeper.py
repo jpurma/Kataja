@@ -27,7 +27,7 @@ from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from PoP2.PoPDeriveK import Generate
 import ast
-
+import os
 
 class PoPDocument(KatajaDocument):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
@@ -35,7 +35,7 @@ class PoPDocument(KatajaDocument):
 
     # unique = True
     #
-    default_treeset_file = running_environment.plugins_path + '/PoP2/POP.txt'
+    default_treeset_file = os.path.join(running_environment.plugins_path, 'PoP2/POP.txt')
 
     @staticmethod
     def create_forests(filename=None, treelist=None, clear=False):

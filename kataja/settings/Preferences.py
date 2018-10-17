@@ -28,6 +28,7 @@ from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
 from kataja.Shapes import SHAPE_PRESETS
+import os
 
 # Disable these if necessary for debugging
 enable_loading_preferences = True
@@ -749,7 +750,7 @@ class QtPreferences:
         :param preferences:
         :param fontdb:
         """
-        iconpath = running_environment.resources_path + 'icons/'
+        iconpath = os.path.join(running_environment.resources_path, 'icons')
 
         def pixmap(path, width=0):
             """
@@ -758,7 +759,7 @@ class QtPreferences:
             :param width:
             :return:
             """
-            p = QtGui.QPixmap(iconpath + path)
+            p = QtGui.QPixmap(os.path.join(iconpath, path))
             if width:
                 p = p.scaledToWidth(width)
             return p
@@ -769,7 +770,7 @@ class QtPreferences:
             :param path:
             :return:
             """
-            p = QtGui.QIcon(iconpath + path)
+            p = QtGui.QIcon(os.path.join(iconpath, path))
             return p
 
         # print("get_font families:", QtGui.QFontDatabase().families())
@@ -789,10 +790,10 @@ class QtPreferences:
         self.fold_pixmap = pixmap('less24.png')
         self.more_pixmap = pixmap('more24.png')
         self.pin_drop_icon = icon('pin_drop24.png')
-        self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
-        self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
-        self.down_arrow = extract_bitmaps(iconpath + 'down_2c.gif')
-        self.up_arrow = extract_bitmaps(iconpath + 'up_2c.gif')
+        self.left_arrow = extract_bitmaps(os.path.join(iconpath, 'left_2c.gif'))
+        self.right_arrow = extract_bitmaps(os.path.join(iconpath, 'right_2c.gif'))
+        self.down_arrow = extract_bitmaps(os.path.join(iconpath, 'down_2c.gif'))
+        self.up_arrow = extract_bitmaps(os.path.join(iconpath, 'up_2c.gif'))
         self.add_icon = icon('add_box48.png')
         self.leaf_pixmap = pixmap('leaf.png')
         self.add_box_icon = icon('add_box24.png')
@@ -894,7 +895,7 @@ class QtPreferences:
         """
         self.fonts = {}
         asana_math = self.fontdb.addApplicationFont(
-            running_environment.resources_path + "Asana-Math.otf")
+            os.path.join(running_environment.resources_path, "Asana-Math.otf"))
         if asana_math == -1:
             log.warning("Failed to load 'Asana-Math.otf' from %s, if it is not provided by "
                         "system, things can get ugly.")

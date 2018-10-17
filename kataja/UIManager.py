@@ -272,6 +272,8 @@ class UIManager:
         :param item:
         :param fade:
         """
+        if fade and not ctrl.play:
+            fade = False
         if item.ui_key in self._items:
             del self._items[item.ui_key]
         if item.host:
@@ -569,7 +571,9 @@ class UIManager:
         return menu_items
 
     def update_plugin_menu(self):
-        plugin_menu = self._top_menus['plugin_menu']
+        plugin_menu = self._top_menus.get('plugin_menu', None)
+        if not plugin_menu:
+            return
         for action in list(plugin_menu.actions()):
             if isinstance(action, MediatingAction):
                 action.host_menu = None

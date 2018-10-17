@@ -113,7 +113,6 @@ def join_lines(lines):
     if not lines:
         return ''
     elif len(lines) == 1:
-        print('returning single line: ', lines[0])
         return lines[0]
     else:
         lines = list(lines)

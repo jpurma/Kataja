@@ -50,7 +50,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classe
 from kataja.ui_support.ErrorDialog import ErrorDialog
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.Recorder import Recorder
-from kataja.utils import find_free_filename
+from kataja.utils import find_free_filename, quit
 from kataja.visualizations.available import VISUALIZATIONS
 
 # only for debugging (Apple-m, memory check), can be commented
@@ -127,7 +127,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     viewport_resized = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
-    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False, tree=None, plugin=''):
+    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False, tree=None, plugin='', image_out=''):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. Receives launch arguments:
         :param no_prefs: bool, don't load or save preferences
@@ -135,6 +135,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         """
         QtWidgets.QMainWindow.__init__(self)
+        silent = bool(image_out)
         self.init_done = False
         self._stored_init_state = True
         self.disable_signaling()
@@ -171,7 +172,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_view = GraphView(self.graph_scene)
         self.view_manager.late_init(self.graph_scene, self.graph_view)
         self.ui_manager = UIManager(self)
-        self.ui_manager.populate_ui_elements()
+        if not silent:
+            self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
         self.create_default_document()
@@ -180,20 +182,28 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
         self.graph_scene.late_init()
-        self.setCentralWidget(self.graph_view)
-        self.setGeometry(x, y, w, h)
         self.print_started = False
-        self.show()
-        self.raise_()
-        kataja_app.processEvents()
-        self.activateWindow()
+        if not silent:
+            self.setCentralWidget(self.graph_view)
+            self.setGeometry(x, y, w, h)
+            self.show()
+            self.raise_()
+            kataja_app.processEvents()
+            self.activateWindow()
         # self.status_bar = self.statusBar()
         self.install_plugins(activate=plugin or 'FreeDrawing' if tree else '')
         self.document.load_default_forests(tree=tree)
-        self.enable_signaling()
+        self.document.play = not silent
+        if not silent:
+            self.enable_signaling()
 
-        self.viewport_resized.emit()
-        self.forest_changed.emit()
+            self.viewport_resized.emit()
+            self.forest_changed.emit()
+            self.action_finished(undoable=False, play=True)
+            if self.forest:
+                self.forest.undo_manager.flush_pile()
+        else:
+            self.action_finished(undoable=False, play=False)
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -201,9 +211,10 @@ class KatajaMain(QtWidgets.QMainWindow):
         #            QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         # for gesture in gestures:
         #    self.grabGesture(gesture)
-        self.action_finished(undoable=False, play=True)
-        if self.forest:
-            self.forest.undo_manager.flush_pile()
+
+        if image_out:
+            self.print_to_file('', image_out)
+            quit()
 
 
     @property
@@ -253,6 +264,10 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # Plugins ################################
 
+    @property
+    def active_plugin_path(self):
+        return os.path.join(running_environment.plugins_path, prefs.active_plugin_name)
+
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
         Don't try to load actual python code yet
@@ -264,14 +279,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         plugins_path = os.path.normpath(plugins_path)
         os.makedirs(plugins_path, exist_ok=True)
         sys.path.append(plugins_path)
-        base_ends = len(plugins_path.split(running_environment.path_separator))
+        base_ends = len(plugins_path.split(os.sep))
         for root, dirs, files in os.walk(plugins_path, followlinks=True):
-            path_parts = root.split(running_environment.path_separator)
+            path_parts = root.split(os.sep)
             if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
                     '__') and 'plugin.json' in files:
                 success = False
                 try:
-                    plugin_file = open(root + running_environment.path_separator +'plugin.json', 'r')
+                    plugin_file = open(os.path.join(root, 'plugin.json'), 'r')
                     data = json.load(plugin_file)
                     plugin_file.close()
                     success = True
@@ -541,20 +556,19 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.print_started = False
         self.killTimer(event.timerId())
         # Prepare file and path
-        path = prefs.userspace_path or \
-               running_environment.default_userspace_path
-        if not path.endswith(running_environment.path_separator):
-            path += running_environment.path_separator
+        path = prefs.userspace_path or running_environment.default_userspace_path
         if not os.path.exists(path):
             print("bad path for printing (userspace_path in preferences) , "
                   "using '.' instead.")
-            path = '.' + running_environment.path_separator
-        filename = prefs.print_file_name
-        if filename.endswith(('.pdf', '.png')):
-            filename = filename[:-4]
+            path = '.'
         # Prepare image
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
+        self.print_to_file(path, prefs.print_file_name)
+
+    def print_to_file(self, path, filename):
+        if filename.endswith(('.pdf', '.png')):
+            filename = filename[:-4]
         # Prepare printer
         png = prefs.print_format == 'png'
         source = self.view_manager.print_rect()
@@ -573,7 +587,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
 
     def _write_png(self, source, path, filename):
-        full_path = find_free_filename(path + filename, '.png', 0)
+        full_path = find_free_filename(os.path.join(path, filename), '.png', 0)
         scale = 4
         target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
         writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
@@ -592,7 +606,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def _write_pdf(self, source, path, filename):
         dpi = 25.4
-        full_path = find_free_filename(path + filename, '.pdf', 0)
+        full_path = find_free_filename(os.path.join(path, filename), '.pdf', 0)
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
 
         writer = QtGui.QPdfWriter(full_path)

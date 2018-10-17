@@ -97,8 +97,6 @@ class EditableConstituentNode(ConstituentNode):
             stop = remove_dot_label(row, i)
             if stop:
                 break
-        #print('load_values_from_parsernode: ', repr(parsernode.label_rows))
-
         self.label = join_lines(rows)
         if self.index:
             base = as_html(self.label)

@@ -27,15 +27,12 @@ from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from mgtdbp.Parser import sentences
 from kataja.singletons import classes
+import os
 
 
 class Document(KatajaDocument):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions
      in here, as scope of undo should be a single Forest. """
-
-    # unique = True
-    #
-    default_treeset_file = running_environment.plugins_path + '/mgtdbpE/sentences.txt'
 
     @staticmethod
     def create_forests(filename=None, treelist=None, clear=False):

@@ -594,7 +594,7 @@ class ForestDrawing:
 
         if old_node.pos():
             self.copy_node_position(source=old_node, target=new_node)
-        new_node.update_visibility(fade_in=True)  # active=True,
+        new_node.update_visibility(fade_in=ctrl.play)  # active=True,
 
         # add new node to relevant groups
         # and remove old node from them

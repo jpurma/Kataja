@@ -65,6 +65,8 @@ def nodes_to_synobjs(forest, syntax, roots: list):
     checking_features = set()
 
     def define_label(node):
+        if node.label:
+            return node.label
         n = len(node.heads)
         if n == 0:
             return ''
