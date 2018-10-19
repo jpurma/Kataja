@@ -4,18 +4,16 @@ Visualizing Biolinguistics
 
 [Main site](http://www.kataja.purma.fi)
 
-Kataja is an open source visualization tool for minimalist grammars of human languages. 
-Kataja helps you to:
+Kataja is an open source visualisation tool for minimalist grammars of human languages. 
+Kataja aims to help you with:
 
- - **DRAW** syntax trees
- - **PRESENT** syntactic phenomena
- - **EXPERIMENT** with your own syntactic models
+ - **EXPERIMENTING** with your own syntactic models
+ - **DRAWING** syntax trees
+ - **PRESENTING** syntactic phenomena
 
+Kataja is published under GPL3 license. See COPYING. It is designed and developed by Jukka Purma as a part for PhD (Doctor of Arts) research in Aalto University School of Art, Design and Architecture, supervised by doc. Saara Huhmarniemi (University of Helsinki, prev. supervised by Pauli Brattico) and prof. Teemu Leinonen (Aalto ARTS). 
 
-Kataja is designed and developed by Jukka Purma and it is published under GPL3 license. See COPYING.
-The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Saara Huhmarniemi (University of Helsinki, prev. supervised by Pauli Brattico) and prof. Teemu Leinonen (Aalto ARTS). 
-
-Kataja is built on Qt5 and Python3, using Riverbank Software's PyQt5 to provide Qt bridge for Python.
+Kataja is built on Qt5, PyQt5, and Python3.
 
 # About current version
 
@@ -47,11 +45,11 @@ Then activate virtualenv. While virtualenv is active, 'python' refers to virtual
 
 Install requirements defined here in ./requirements.txt:
 
-    pip installpip install -r requirements.txt
+    pip install -r requirements.txt
 
 Then you should be able to run Kataja:
 
-    python Kataja.py
+    python -m kataja
 
 When you want to deactivate virtualenv, use:
 
@@ -74,7 +72,7 @@ Or if installation fails because of `PermissionError: permission denied`, try ag
 
 Then run Kataja with:
 
-    python3 Kataja.py
+    python3 -m kataja
 
 
 ### Building Kataja as runnable app in MacOS (deprecated)
@@ -93,10 +91,6 @@ Once py2app is installed, go to Kataja folder and run
 This will take ~10 seconds, and end with `------ Done ------` if everything is right. At first try, it `setup.py` may ask you to edit its `qt_mac` -variable to provide a path to your Qt installation.
 
 The build script will build Kataja.app to `dist/` and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with `create_dmg` -variable in `setup.py`. 
-
-cd C:\Users\Jukka\Documents\Github\Kataja\plugins
-mklink /J Monorail2 C:\Users\Jukka\Dropbox\PCB_parser_Jukka\Jukka\Monorail2
-mklink /J PCBPlugin C:\Users\Jukka\Dropbox\PCB_parser_Jukka\Jukka\PCBPlugin
 
  
 3rd party resources

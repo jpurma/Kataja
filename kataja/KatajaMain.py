@@ -144,6 +144,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.use_tooltips = True
         self.available_plugins = {}
         self.active_plugin_setup = {}
+        self.active_plugin_path = ''
         self.setWindowTitle("Kataja")
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
@@ -191,7 +192,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             kataja_app.processEvents()
             self.activateWindow()
         # self.status_bar = self.statusBar()
-        self.install_plugins(activate=plugin or 'FreeDrawing' if tree else '')
+        self.install_plugins(activate=plugin or 'FreeDrawing')
         self.document.load_default_forests(tree=tree)
         self.document.play = not silent
         if not silent:
@@ -263,10 +264,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         # ----------------------
 
     # Plugins ################################
-
-    @property
-    def active_plugin_path(self):
-        return os.path.join(running_environment.plugins_path, prefs.active_plugin_name)
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.
@@ -353,13 +350,15 @@ class KatajaMain(QtWidgets.QMainWindow):
             ctrl.ui.load_actions_from_module(actions_module,
                                              added=classes.added_actions,
                                              replaced=classes.replaced_actions)
+        dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
         if hasattr(self.active_plugin_setup, 'help_file'):
-            dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
+
             self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         self.create_default_document()
         self.enable_signaling()
+        self.active_plugin_path = dir_path
         prefs.active_plugin_name = plugin_key
 
     def disable_current_plugin(self):

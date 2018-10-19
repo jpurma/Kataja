@@ -25,9 +25,8 @@
 from kataja.singletons import ctrl, log
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.utils import time_me
 from kataja.syntactic_state_to_nodes import syntactic_state_to_nodes
-from syntax.SyntaxState import SyntaxState
+from kataja.syntax.SyntaxState import SyntaxState
 
 
 # Thinking about undo system. It should be a common class Undoable inherited

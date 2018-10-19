@@ -57,9 +57,9 @@ class KatajaFactory:
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
         from kataja.saved.KatajaDocument import KatajaDocument
-        from syntax.SyntaxAPI import SyntaxAPI
-        from syntax.BaseFeature import BaseFeature
-        from syntax.ConfigurableConstituent import BaseConstituent
+        from kataja.syntax.SyntaxAPI import SyntaxAPI
+        from kataja.syntax.BaseFeature import BaseFeature
+        from kataja.syntax.BaseConstituent import BaseConstituent
 
         self.default_models = {ConstituentNode, FeatureNode,
                                GlossNode, CommentNode, Edge, Forest, DerivationStep,

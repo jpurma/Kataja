@@ -16,7 +16,7 @@ class Base:
     """ Default fonts and resource paths. These are used when running in Linux and as a base for Mac/Win """
 
     def __init__(self, test_mode=False):
-        self.resources_path = ''
+        self.resources_path = 'resources'
         self.plugins_path = 'plugins'
         self.default_userspace_path = 'workspace'
         if test_mode:
@@ -49,8 +49,13 @@ class Base:
         This is easier for development and active 'bold' use."""
         full_path_to_this_file = os.path.realpath(__file__)
         filename = os.path.basename(__file__)
-        cut = os.path.join('kataja', 'environments', filename)
-        kataja_root = full_path_to_this_file[:-len(cut)]
-        self.resources_path = os.path.join(kataja_root, 'resources')
-        self.plugins_path = os.path.join(kataja_root, 'plugins')
-        self.default_userspace_path = os.path.join(kataja_root, 'workspace')
+        package_cut = os.path.join('environments', filename)
+        dist_cut = os.path.join('kataja', package_cut)
+        package_root = full_path_to_this_file[:-len(package_cut)]
+        dist_root = full_path_to_this_file[:-len(dist_cut)]
+        self.resources_path = os.path.join(package_root, 'resources')
+        self.plugins_path = os.path.join(package_root, 'plugins')
+        self.default_userspace_path = os.path.join(dist_root, 'workspace')
+        print('resources_path: ', self.resources_path)
+        print('plugins_path: ', self.plugins_path)
+        print('default_userspace_path: ', self.default_userspace_path)

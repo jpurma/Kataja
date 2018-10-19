@@ -42,7 +42,7 @@ from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
 from kataja.saved.movables.Arrow import Arrow
-from syntax.SyntaxState import SyntaxState
+from kataja.syntax.SyntaxState import SyntaxState
 
 
 class Forest(SavedObject):
