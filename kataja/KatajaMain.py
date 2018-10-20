@@ -127,7 +127,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     viewport_resized = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
-    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False, tree=None, plugin='', image_out=''):
+    def __init__(self, kataja_app, tree='', plugin='FreeDrawing', image_out='', no_prefs=False, reset_prefs=False):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. Receives launch arguments:
         :param no_prefs: bool, don't load or save preferences
@@ -192,7 +192,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             kataja_app.processEvents()
             self.activateWindow()
         # self.status_bar = self.statusBar()
-        self.install_plugins(activate=plugin or 'FreeDrawing')
+        self.install_plugins(activate=plugin)
         self.document.load_default_forests(tree=tree)
         self.document.play = not silent
         if not silent:
@@ -214,7 +214,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         #    self.grabGesture(gesture)
 
         if image_out:
-            self.print_to_file('', image_out)
+            self.print_to_file(running_environment.default_userspace_path, image_out)
             quit()
 
 
@@ -600,8 +600,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         painter.end()
         iwriter = QtGui.QImageWriter(full_path)
         iwriter.write(writer)
-        log.info("printed to %s as PNG (%spx x %spx, %sx size)." % (
-            full_path, int(target.width()), int(target.height()), scale))
+        msg = f"printed to {full_path} as PNG ({int(target.width())}px x {int(target.height())}px, {scale}x size)."
+        print(msg)
+        log.info(msg)
 
     def _write_pdf(self, source, path, filename):
         dpi = 25.4
@@ -620,7 +621,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.render(painter, target=target, source=source)
         painter.end()
         ctrl.printing = False
-        log.info("printed to %s as PDF with %s dpi." % (full_path, dpi))
+        msg = f"printed to {full_path} as PDF with {dpi} dpi."
+        print(msg)
+        log.info(msg)
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
