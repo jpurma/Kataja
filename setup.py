@@ -2,11 +2,52 @@
 See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
+
+Building a new version:
+1. bump version number in VERSION
+2.
+python3 setup.py sdist bdist_wheel
+
+3.
+python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
 """
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-from os import path
+from os import path, walk
+
+
+def plugin_files(directory):
+    paths = []
+    for (fpath, directories, filenames) in walk(directory):
+        for dir in directories:
+            dir_path = path.join(fpath, dir)
+            if dir.startswith('.') or path.islink(dir_path):
+                continue
+            paths += plugin_files(dir_path)
+        for filename in filenames:
+            if filename.startswith('.') or filename.endswith('.pyc') or filename.endswith('.py'):
+                continue
+            paths.append(path.join(fpath, filename)[7:])
+    return paths
+
+
+def find_symlinks(directory):
+    paths = []
+    for (fpath, directories, filenames) in walk(directory, followlinks=True):
+        for dir in directories:
+            dir_path = path.join(fpath, dir)
+            if path.islink(dir_path):
+                paths.append(dir_path)
+            else:
+                paths += find_symlinks(dir_path)
+        for filename in filenames:
+            f_path = path.join(fpath, filename)
+            if path.islink(f_path):
+                paths.append(f_path)
+    return [x.replace('/', '.') for x in paths]
+
 
 here = path.abspath(path.dirname(__file__))
 
@@ -16,6 +57,10 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 with open(path.join(here, 'VERSION')) as version_file:
     version = version_file.read().rsplit('|', 1)[-1].strip()
+
+plugin_data_files = plugin_files('kataja/plugins')
+# at the moment we want to EXCLUDE symlinked plugins, as these are unpublished attempts
+symlinked_plugins = find_symlinks('kataja/plugins')
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
@@ -94,11 +139,12 @@ setup(
         'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Visualization',
+        'Topic :: Text Processing :: Linguistic',
 
         # Pick your license as you wish
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
@@ -121,7 +167,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'venv']),  # Required
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'venv', '.git'] + symlinked_plugins),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -152,6 +198,9 @@ setup(
     # package_data={  # Optional
     #     'sample': ['package_data.dat'],
     # },
+    package_data={
+        'kataja': ['resources/*'] + plugin_data_files
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
@@ -186,3 +235,5 @@ setup(
         'Kataja site': 'https://purma.fi/kataja'
     },
 )
+
+print('excluded plugins: ', symlinked_plugins)

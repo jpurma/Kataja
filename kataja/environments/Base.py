@@ -23,7 +23,11 @@ class Base:
             self.run_mode = 'test'
             self.default_userspace_path = tempfile.gettempdir()
         else:
-            self.run_mode = 'source'
+            parent = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            if parent.endswith('Kataja') and os.path.isfile(os.path.join(parent, 'VERSION')):
+                self.run_mode = 'source'
+            else:
+                self.run_mode = 'dist'
             self.default_userspace_path = '.'
         self.fonts = linux_fonts
         self.cmd_or_ctrl = 'Ctrl'
