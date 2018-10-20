@@ -11,7 +11,7 @@ class Win(Base):
     def __init__(self, test_mode=False):
         super().__init__(test_mode=test_mode)
         if not test_mode and Path(sys.argv[0]).parts[-1].endswith('.exe'):
-            self.code_mode = 'build'
+            self.run_mode = 'build'
             self.init_win_exe_paths()
 
         self.fonts = {

@@ -18,13 +18,13 @@ class Base:
     def __init__(self, test_mode=False):
         self.resources_path = 'resources'
         self.plugins_path = 'plugins'
-        self.default_userspace_path = 'workspace'
+        self.init_multiplatform_python_paths()
         if test_mode:
-            self.code_mode = 'test'
-            self.init_test_paths()
+            self.run_mode = 'test'
+            self.default_userspace_path = tempfile.gettempdir()
         else:
-            self.code_mode = 'python'
-            self.init_multiplatform_python_paths()
+            self.run_mode = 'source'
+            self.default_userspace_path = '.'
         self.fonts = linux_fonts
         self.cmd_or_ctrl = 'Ctrl'
 
@@ -32,16 +32,8 @@ class Base:
         """ Retroactively switch to test mode.
         :return:
         """
-        self.code_mode = 'test'
-        self.init_test_paths()
-
-    def init_test_paths(self):
-        """ Call this when building a test environment, afte
-        :return:
-        """
-        self.init_multiplatform_python_paths()
+        self.run_mode = 'test'
         self.default_userspace_path = tempfile.gettempdir()
-        print('---- writing to tempdir %s ' % self.default_userspace_path)
 
     def init_multiplatform_python_paths(self):
         """ When runnins as a python script, plugins, resources and default save location are
@@ -50,12 +42,8 @@ class Base:
         full_path_to_this_file = os.path.realpath(__file__)
         filename = os.path.basename(__file__)
         package_cut = os.path.join('environments', filename)
-        dist_cut = os.path.join('kataja', package_cut)
         package_root = full_path_to_this_file[:-len(package_cut)]
-        dist_root = full_path_to_this_file[:-len(dist_cut)]
         self.resources_path = os.path.join(package_root, 'resources')
         self.plugins_path = os.path.join(package_root, 'plugins')
-        self.default_userspace_path = os.path.join(dist_root, 'workspace')
         print('resources_path: ', self.resources_path)
         print('plugins_path: ', self.plugins_path)
-        print('default_userspace_path: ', self.default_userspace_path)

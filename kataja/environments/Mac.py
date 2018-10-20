@@ -15,7 +15,7 @@ class Mac(Base):
         super().__init__(test_mode=test_mode)
         self.cmd_or_ctrl = '⌘'
         if not test_mode and 'Kataja.app' in Path(sys.argv[0]).parts:
-            self.code_mode = 'build'
+            self.run_mode = 'build'
             self.init_mac_app_paths()
         self.fonts = {
             MAIN_FONT: ['Asana Math', 'Normal', 12],

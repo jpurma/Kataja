@@ -18,14 +18,47 @@ import sys
 import argparse
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-
+import kataja
 from kataja.singletons import running_environment, log
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
 # libqcocoa.dynlib requires QtPrintSupport. <-- not needed anymore?
 
 
+def load_version():
+    if running_environment.run_mode == 'source':
+        parent = os.path.dirname(os.path.dirname(__file__))
+        try:
+            with open(os.path.join(parent, 'VERSION')) as version_file:
+                version = version_file.read().strip()
+        except FileNotFoundError:
+            date = str(datetime.datetime.now())
+            build_number = 1
+            version_name = '0.1'
+            version = ' | '.join([date, build_number, version_name])
+    else:
+        import pkg_resources
+        version = pkg_resources.get_distribution('kataja').version
+
+    return version
+
+
+def bump_and_save_version(version_str):
+    old_date, build_number, version_name = version_str.split(' | ', 2)
+    build_number = int(build_number)
+    date = str(datetime.datetime.now())
+    build_number += 1
+    new_version_str = ' | '.join([date, str(build_number), version_name])
+    try:
+        parent = os.path.dirname(os.path.dirname(__file__))
+        with open(os.path.join(parent, 'VERSION'), 'w') as version_file:
+            version_file.write(new_version_str)
+            version_file.write('\n')
+    except IOError:
+        print('write failed')
+    return new_version_str
+
+
 def launch_kataja():
-    rp = running_environment.resources_path
     author = 'Jukka Purma'
     parser = argparse.ArgumentParser(description='Launch Kataja visualisation environment.')
     parser.add_argument('--reset_prefs', action='store_true', default=False,
@@ -42,49 +75,25 @@ def launch_kataja():
                         help='bracket tree')
     kwargs = vars(parser.parse_args())
     silent = True if kwargs['image_out'] else False
-    print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
+    print(f"Launching Kataja {kataja.__version__} with Python {sys.version_info.major}.{sys.version_info.minor}")
     app = prepare_app()
     log.info('Starting Kataja...')
     if not silent:
         splash_color = QtGui.QColor(238, 232, 213)
-        splash_pix = QtGui.QPixmap(os.path.join(rp, 'katajalogo.png'))
+        splash_pix = QtGui.QPixmap(os.path.join(running_environment.resources_path, 'katajalogo.png'))
         splash = QtWidgets.QSplashScreen(splash_pix)
         splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
                               QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
-        splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom |
+        splash.showMessage(f'{author} | Fetching version...', QtCore.Qt.AlignBottom |
                            QtCore.Qt.AlignHCenter, splash_color)
         app.processEvents()
         splash.show()
         app.processEvents()
-        # Update version number in file
-        version = None
-        if running_environment.code_mode == 'python':
-            try:
-                version_file = open(os.path.join(rp, 'version.txt'), 'r')
-                version = version_file.readlines()
-                version_file.close()
-            except FileNotFoundError:
-                pass
-        if version:
-            date, running_number, version_name = version[0].split(' | ', 2)
-            running_number = int(running_number[2:])
-            date = str(datetime.datetime.now())
-            running_number += 1
-        else:
-            date = str(datetime.datetime.now())
-            running_number = 1
-            version_name = ''
+        version_str = load_version()
+        if running_environment.run_mode == 'source':
+            version_str = bump_and_save_version(version_str)
 
-        if running_environment.code_mode == 'python':
-            try:
-                version_file = open(os.path.join(rp, 'version.txt'), 'w')
-                version_file.write('%s | v. %s | %s' % (date, running_number, version_name.strip()))
-                version_file.close()
-            except IOError:
-                print('write failed')
-                pass
-
-        splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name.strip()),
+        splash.showMessage(f'{author} | {version_str}',
                            QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
         splash.repaint()
         app.processEvents()
