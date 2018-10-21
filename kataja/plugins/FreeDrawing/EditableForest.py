@@ -1,8 +1,19 @@
 from kataja.parser.SuperParser import SuperParser
 from kataja.saved.Forest import Forest
-
+from kataja.plugins.FreeDrawing.FreeDrawing import FreeDrawing
 
 class EditableForest(Forest):
+
+    def __init__(self, heading_text='', comments=None, syntax=None):
+        Forest.__init__(self, heading_text=heading_text, comments=comments, syntax=syntax)
+
+    def init_factories(self):
+        super().init_factories()
+        self.drawing = FreeDrawing(self)
+
+    def clear(self):
+        super().clear()
+        self.drawing = FreeDrawing(self)
 
     def forest_edited(self):
         super().forest_edited()

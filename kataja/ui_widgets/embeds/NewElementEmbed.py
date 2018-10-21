@@ -32,10 +32,11 @@ class NewElementEmbed(UIEmbed):
 
         self.node_types = [(g.GUESS_FROM_INPUT, 'Guess from input')]
         for key in classes.node_types_order:
-            node_class = classes.nodes.get(key, None)
-            if (not node_class) or (not node_class.editable):
-                continue
-            self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
+            add_action_name = f'add_{key}_node'
+            add_action = add_action_name in ctrl.ui.actions and ctrl.ui.get_action(add_action_name)
+            if add_action and add_action.enabler():
+                node_class = classes.nodes.get(key, None)
+                self.node_types.append((key, 'New %s' % node_class.display_name[0].lower()))
         self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
         hlayout.addStretch(0)

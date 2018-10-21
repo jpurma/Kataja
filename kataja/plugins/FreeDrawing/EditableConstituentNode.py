@@ -4,7 +4,7 @@ from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.SavedField import SavedField
 import kataja.plugins.FreeDrawing.TouchAreas as TA
 import kataja.plugins.FreeDrawing.OverlayButtons as OB
-from kataja.plugins.FreeDrawing import ConstituentNodeEditEmbed
+from kataja.plugins.FreeDrawing.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 import kataja.globals as g
 from kataja.singletons import classes
 from kataja.parser.INodes import as_html, extract_triangle, join_lines
