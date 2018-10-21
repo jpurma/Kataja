@@ -27,23 +27,24 @@ from kataja.KatajaAction import KatajaAction
 #
 
 
-class DeriveFromLexicon(KatajaAction):
-    k_action_uid = 'derive_from_lexicon'
-    k_command = 'Derive again from lexicon'
+class DeriveFromInput(KatajaAction):
+    k_action_uid = 'derive_from_input'
+    k_command = 'Derive structure'
     k_undoable = False
-    k_tooltip = 'Derive current sentence again with this lexicon'
+    k_tooltip = 'Derive sentence or structure again with the current lexicon'
     k_shortcut = 'Ctrl+r'
 
     def enabler(self):
         return ctrl.syntax and ctrl.syntax.supports_editable_lexicon
 
     def method(self):
-        panel = ctrl.ui.get_panel('LexiconPanel')
-        if panel:
-            input_text = panel.input_text.text()
+        lex_panel = ctrl.ui.get_panel('LexiconPanel')
+        in_panel = ctrl.ui.get_panel('InputPanel')
+        if lex_panel and in_panel:
+            input_text = in_panel.input_text.text()
             print('input text: ', repr(input_text))
-            lexicon = panel.lextext.text()
-            semantics = panel.semantics_text.text()
+            lexicon = lex_panel.lextext.text()
+            semantics = lex_panel.semantics_text.text()
             forest = ctrl.forest
             forest.clear()
             ctrl.syntax.create_derivation(input_text=input_text,
