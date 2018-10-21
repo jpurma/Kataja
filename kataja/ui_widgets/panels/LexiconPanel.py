@@ -26,16 +26,10 @@ class LexiconPanel(Panel):
         self.lextext = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Lexicon')
         self.lextext.setMinimumHeight(200)
 
-        tt = 'Sentence to parse'
-        self.input_text = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Input sentence')
-        self.input_text.setMaximumHeight(36)
-
         tt = 'Optional semantic data. Use depends on plugin.'
         self.semantics_text = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Semantics')
         self.semantics_text.setMaximumHeight(36)
 
-        self.derive_button = PushButtonBase(parent=self, text='Derive again',
-                                            action='derive_from_lexicon').to_layout(layout)
         self.widget().setAutoFillBackground(True)
         self.prepare_lexicon()
         self.finish_init()
@@ -47,18 +41,9 @@ class LexiconPanel(Panel):
             return
         if not ctrl.syntax:
             return
-        text = ctrl.syntax.get_editable_lexicon()
-        sentence = ctrl.syntax.get_editable_sentence()
+        lexicon = ctrl.syntax.get_editable_lexicon()
         semantics = ctrl.syntax.get_editable_semantics()
-        self.lextext.setText(text)
-        self.input_text.setText(sentence)
-        if len(sentence) > 150:
-            self.input_text.setMaximumHeight(200)
-            self.input_text.setMinimumHeight(200)
-        else:
-            self.input_text.setMinimumHeight(48)
-            self.input_text.setMaximumHeight(48)
-        self.input_text.update()
+        self.lextext.setText(lexicon)
         self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 

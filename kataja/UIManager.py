@@ -38,7 +38,7 @@ from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Arrow import Arrow
-from kataja.singletons import ctrl, prefs, qt_prefs, log
+from kataja.singletons import ctrl, prefs, log
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_support.FloatingTip import FloatingTip
@@ -47,11 +47,9 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
 from kataja.ui_widgets.buttons.TopBarButtons import TopBarButtons
-from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.ui_widgets.embeds.ArrowLabelEmbed import ArrowLabelEmbed
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
-from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.CommentPanel import CommentPanel
@@ -60,6 +58,7 @@ from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
 from kataja.ui_widgets.panels.FeaturePanel import FeaturePanel
 from kataja.ui_widgets.panels.GlossPanel import GlossPanel
 from kataja.ui_widgets.panels.HelpPanel import HelpPanel
+from kataja.ui_widgets.panels.InputPanel import InputPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
@@ -99,6 +98,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
+          {'class': InputPanel, 'name': 'Input tree', 'position': 'bottom', 'closed': False},
           {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': False},
           {'class': HelpPanel, 'name': 'Help', 'position': 'float', 'closed': True}]
 
