@@ -167,7 +167,7 @@ class SuperParser:
         return current
 
     def stringify_and_split(self, charlist):
-        """ Stringify and split tries to extract strings that form the labels or and
+        """ Stringify and split tries to extract strings that form the labels or
         other information about the node. Depending on tree style, a word end (space) means end
         of the label and then there are various ways around the rule.
         :param charlist:
@@ -241,9 +241,8 @@ class SuperParser:
                         return found
 
         node = IParserNode()
-        deep = any([isinstance(part, list) for part in parts_list])
-
         for part in parts_list:
+            print(repr(part), type(part))
             if isinstance(part, list):
                 node.parts.append(self.parse_parts(part, tidy_up=False))
             else:
@@ -257,20 +256,19 @@ class SuperParser:
                         if found:
                             found_triangle = found
                     tidy_rows.append(row)
-                if rows_of_words and self.dot_label and str(tidy_rows[0]).startswith('.'):
+
+                # In LaTeX bracket trees '.D the' => c('D', parts=[c('the')])
+                # In treebank-style trees there are no 'dot labels', but the first label is label of this constituent,
+                # rest are labels of its children
+                if (rows_of_words and self.dot_label and str(tidy_rows[0]).startswith('.')) or (  # it's a dot label:
+                        self.treebank and tidy_rows and not node.label_rows):  # it's first label in a treebank
                     node.label_rows = tidy_rows
-                    if found_triangle:
-                        node.has_triangle = found_triangle
-                elif (not node.label_rows) and tidy_rows and (self.treebank or deep):
-                    node.label_rows = tidy_rows
-                    if found_triangle:
-                        node.has_triangle = found_triangle
+                    node.has_triangle = found_triangle
                 else:
                     new_part = IParserNode()
                     new_part.label_rows = tidy_rows
                     new_part.check_for_index()
-                    if found_triangle:
-                        new_part.has_triangle = found_triangle
+                    new_part.has_triangle = found_triangle
                     node.parts.append(new_part)
         if tidy_up:
             node = node.tidy(keep_node=True)

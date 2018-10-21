@@ -1,3 +1,5 @@
+[ A [ B C ] ]
+
 [.S [.S-TPC-1
     [.NP-SBJ
      [.NP
@@ -122,7 +124,6 @@ alila = 'servant'
 ni Maria = 'NG Maria'
 ang tubig = 'ANG water'
 'Maria's grandmother's servant drank the water'
-
 
 [.{FP} t_i [.{F'} t_j [.{TP} t_i [.{T'} t_j [.{AuxP} on_j [.{PrtP} t_k [.{VP} {Graham Greene_i} [.{V'} kirjoittanut_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
 kirjoittanut = 3rd:person, perf:tense

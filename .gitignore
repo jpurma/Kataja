@@ -240,9 +240,9 @@ kataja_print*.png
 
 postsetup.py
 
-plugins/myplugin*
-plugins/mgtdbp/versions
-plugins/mgtdbp/original
+kataja/plugins/myplugin*
+kataja/plugins/mgtdbp/versions
+kataja/plugins/mgtdbp/original
 
 profile
 profiler_results.log
@@ -264,5 +264,5 @@ kataja_clip.gif
 kataja_clip.webp
 o_kataja_clip.gif
 workspace/*.*
-plugins/PCBPlugin
-plugins/Monorail2
+kataja/plugins/PCBPlugin
+kataja/plugins/Monorail2
