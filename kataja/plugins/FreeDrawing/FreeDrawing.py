@@ -21,22 +21,18 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import string
 
 
 import kataja.globals as g
 from kataja.errors import ForestError
-from kataja.singletons import log
+from kataja.singletons import log, prefs
 from kataja.ForestDrawing import ForestDrawing
 from kataja.parser.INodes import as_text, extract_triangle
+from kataja.saved.movables.Node import Node
 
 
 class FreeDrawing(ForestDrawing):
-    """ This is a class purely for legibility and code organisation. This operates on Forest data
-    and each instance is inside a Forest-instance. ForestDrawing contains all graph-building
-    operations related to Forest. It manipulates Nodes and Edges and mostly ignores syntactic
-    objects, assuming that corresponding syntactic relations are already created.
-     """
+    """ These are additional drawing operations attached to forest """
 
     # ########### Complex node operations ##############################
 
@@ -196,6 +192,41 @@ class FreeDrawing(ForestDrawing):
 
         # projections
         merger_node.set_heads(heads)
+
+    def create_merger_node(self, left=None, right=None, new=None, heads=None):
+        """ Gives a merger node of two nodes. Doesn't try to fix their edges
+        upwards
+        :param left:
+        :param right:
+        :param new: which one is the new node to add. This connection is animated in.
+        :param heads: which one is head?
+        """
+        if new is left:
+            old = right
+        else:
+            old = left
+        lx, ly = left.current_scene_position
+        rx, ry = right.current_scene_position
+        pos = (lx + rx) / 2, (ly + ry) / 2 - prefs.edge_height
+
+        label = ''
+        if heads:
+            if isinstance(heads, Node):
+                label = figure_out_syntactic_label(heads)
+            elif isinstance(heads, list):
+                if len(heads) == 1:
+                    label = figure_out_syntactic_label(heads[0])
+                if len(heads) == 2:
+                    l1 = figure_out_syntactic_label(heads[0])
+                    l2 = figure_out_syntactic_label(heads[1])
+                    label = f"({l1}, {l2})"
+
+        merger_node = self.create_node(label=label, relative=old)
+        merger_node.current_position = pos
+        self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
+        self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
+        merger_node.set_heads(heads)
+        return merger_node
 
 
 def figure_out_syntactic_label(cn):
