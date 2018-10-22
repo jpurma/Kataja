@@ -380,13 +380,13 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         if adding:
             if ctrl.is_selected(self):
                 print('selected group (adding=True), calling remove_from_selection for it')
-                ctrl.ui.get_action('remove_from_selection').run_command([self.uid], has_params=True)
+                ctrl.ui.get_action('remove_from_selection').run_command([self.uid])
             else:
                 print('selected group (adding=True), calling add_to_selection for it')
-                ctrl.ui.get_action('add_to_selection').run_command([self.uid], has_params=True)
+                ctrl.ui.get_action('add_to_selection').run_command([self.uid])
         else:
             print('selected group, calling select for it')
-            ctrl.ui.get_action('select').run_command([self.uid], has_params=True)
+            ctrl.ui.get_action('select').run_command([self.uid])
         return self.uid
 
     def update_selection_status(self, value):

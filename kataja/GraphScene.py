@@ -242,7 +242,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if ctrl.graph_view.selection_mode:
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
-            # take edges
+            # select edges
             selection = set()
             for item in self.selectedItems():
                 if hasattr(item, 'select'):
@@ -260,12 +260,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         nodes.add(item)
                 if nodes:
                     selection = nodes
-            select.run_command(sorted([x.uid for x in selection]), has_params=True)
+            select.run_command(sorted([x.uid for x in selection]))
 
         # click on empty place means select nothing, unless we are shift+selecting
         elif event.modifiers() != Qt.ShiftModifier:
             select = ctrl.ui.get_action('select')
-            select.run_command(None, has_params=True)
+            select.run_command(None)
 
     def dragEnterEvent(self, event):
         """ Dragging new nodes from UI items or text snippets from desktop/other programs should

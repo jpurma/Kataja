@@ -599,10 +599,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 action = ctrl.ui.get_action('remove_from_selection')
             else:
                 action = ctrl.ui.get_action('add_to_selection')
-            action.run_command(self.uid, has_params=True)
+            action.run_command(self.uid)
         else:
             action = ctrl.ui.get_action('select')
-            action.run_command(self.uid, has_params=True)
+            action.run_command(self.uid)
         return self
 
     # ## Qt paint method override

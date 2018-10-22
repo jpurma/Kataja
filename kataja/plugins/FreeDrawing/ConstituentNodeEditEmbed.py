@@ -100,7 +100,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
 
     def synlabel_finished(self):
         text = self.synlabel.text()
-        self.host.parse_edited_label('syntactic label', text)
+        self.host.parse_edited_label('node label', text)
         ctrl.forest.forest_edited()
         self.update_fields()
 

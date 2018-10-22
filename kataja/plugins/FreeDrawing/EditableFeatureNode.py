@@ -47,6 +47,7 @@ class EditableFeatureNode(FeatureNode):
                                        'phi-features)',
                                syntactic=True)
                 }
+    quick_editable = True
 
     def __init__(self, label='', sign='', value='', family='', forest=None):
         super().__init__(forest=forest)

@@ -252,11 +252,11 @@ class Draggable(Movable):
         else:
             if self.use_physics():
                 drop_action = ctrl.ui.get_action('move_node')
-                drop_action.run_command(self.uid, x, y, has_params=True)
+                drop_action.run_command(self.uid, x, y)
             else:
                 adj_x, adj_y = self.adjustment
                 drop_action = ctrl.ui.get_action('adjust_node')
-                drop_action.run_command(self.uid, adj_x, adj_y, has_params=True)
+                drop_action.run_command(self.uid, adj_x, adj_y)
         self.update_position()
         self.finish_dragging()
 
