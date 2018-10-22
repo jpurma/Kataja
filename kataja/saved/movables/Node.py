@@ -258,17 +258,13 @@ class Node(Draggable, Movable):
         return 'label', as_html(self.label)
 
     def parse_edited_label(self, label_name, value):
-        success = False
         if self.syntactic_object and hasattr(self.syntactic_object, 'parse_edited_label'):
-            success = self.syntactic_object.parse_edited_label(label_name, value)
-        if not success:
-            if label_name == 'node label':
-                self.label = value
-                return True
-            elif label_name == 'syntactic label':
-                self.syntactic_object.label = value
-                return True
-        return False
+            self.syntactic_object.parse_edited_label(label_name, value)
+        elif label_name == 'node label':
+            self.label = value
+        elif label_name == 'syntactic label':
+            self.syntactic_object.label = value
+        print('**** parse edited label at generic node ****')
 
     def is_empty(self):
         return self.label_object.is_empty()
@@ -1089,17 +1085,17 @@ class Node(Draggable, Movable):
                 action = ctrl.ui.get_action('remove_from_selection')
             else:
                 action = ctrl.ui.get_action('add_to_selection')
-            action.run_command(self.uid, has_params=True)
+            action.run_command(self.uid)
         elif self.selected:
             if len(ctrl.selected) > 1:
                 action = ctrl.ui.get_action('select')
-                action.run_command(self.uid, has_params=True)
+                action.run_command(self.uid)
             else:
                 if self.quick_editable and not prefs.single_click_editing:
                     self.label_object.set_quick_editing(True)
         else:
             action = ctrl.ui.get_action('select')
-            action.run_command(self.uid, has_params=True)
+            action.run_command(self.uid)
         return self
 
     def has_ordered_children(self):

@@ -351,7 +351,7 @@ class UIManager:
     def get_actions_as_python_commands(self):
         d = {}
         for key, item in self.actions.items():
-            d[key] = item.manual_run_command
+            d[key] = item.manual_run
         return d
 
     def update_selections(self):
@@ -393,7 +393,6 @@ class UIManager:
                         for node in item.get_sorted_nodes():
                             if node.node_type == g.CONSTITUENT_NODE and node.is_visible():
                                 node.toggle_halo(True, small=True)
-                self.start_editing_node(item, active_embed)
             elif isinstance(item, Group):
                 self.selection_group = item
                 self.add_buttons_for_group(item)

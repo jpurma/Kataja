@@ -185,7 +185,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
 
         elif self._quick_editing:
             if self.editable_doc.isModified():
-                self.parse_document_to_field()
+                self.do_label_edit_action()
                 self.editable_doc.setModified(False)
             self.setAcceptHoverEvents(False)
             ctrl.text_editor_focus = None
@@ -202,7 +202,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         if self._quick_editing:
             ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
 
-    def parse_document_to_field(self):
+    def do_label_edit_action(self):
         """ Parse edited QDocument into rows of INodes and into receptable
         field in host object
 

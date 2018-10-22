@@ -158,7 +158,7 @@ class KatajaAction(QtWidgets.QAction):
         self.tip1 = self.k_tooltip_alt or self.command_alt or self.tip0
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
-        self.triggered.connect(self.run_command)
+        self.triggered.connect(self.run)
         shortcut = self.k_shortcut
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
@@ -201,16 +201,19 @@ class KatajaAction(QtWidgets.QAction):
     def getter(self):
         return None
 
-    def manual_run_command(self, *args, **kwargs):
-        return self.run_command(*args, has_params=True, did_feedback=True, **kwargs)
-
     def set_active_tooltip(self, checked):
         if checked and self.tip1:
             self.active_tooltip = self.tip1
         else:
             self.active_tooltip = self.tip0
 
-    def run_command(self, *args, has_params=False, did_feedback=False, **kwargs):
+    def run_command(self, *args, **kwargs):
+        self.run(*args, fetch_params=False, print_command=True, **kwargs)
+
+    def manual_run(self, *args, **kwargs):
+        return self.run(*args, has_params=True, print_command=False, **kwargs)
+
+    def run(self, *args, fetch_params=True, print_command=True, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI
         element
         :return: None
@@ -237,10 +240,10 @@ class KatajaAction(QtWidgets.QAction):
         # is logged and made available in command prompt so that the user has better grasp of
         # inner workings of Kataja.
 
-        if not has_params:
+        if fetch_params:
             args, kwargs = self.prepare_parameters(args, kwargs)
 
-        if not did_feedback:
+        if print_command:
             # Print the command into console
             m = super(self.__class__, self)
             if m.method == self.method and m.k_action_uid:
@@ -314,7 +317,7 @@ class KatajaAction(QtWidgets.QAction):
         if ctrl.main.init_done:
             ctrl.disable_undo()
             self.disable_undo_and_message = True
-            self.run_command(*args, **kwargs)
+            self.run(*args, **kwargs)
             self.disable_undo_and_message = False
             ctrl.resume_undo()
 
@@ -351,7 +354,7 @@ class KatajaAction(QtWidgets.QAction):
             if connect_slot is element:
                 connect_slot = None
         if connect_slot:
-            connect_slot.connect(self.run_command)
+            connect_slot.connect(self.run)
         continuous_action_slot_name = getattr(element, 'continuous_action_slot', '')
         if continuous_action_slot_name:
             continuous_action_slot = getattr(element, continuous_action_slot_name)

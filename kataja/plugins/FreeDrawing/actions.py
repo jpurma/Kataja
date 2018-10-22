@@ -261,7 +261,7 @@ class SetProjectingNode(KatajaAction):
         host = self.get_host()
         return [host.uid, [x.uid for x in heads]], kwargs
 
-    def method(self, node_uid: int, projecting_uids: list):
+    def method(self, node_uid, projecting_uids):
         """ Set which child constituent projects to this constituent
         :param node_uid: int or string, node's unique identifier
         :param projecting_uids: list of uids, projecting nodes' unique identifiers
@@ -276,3 +276,22 @@ class SetProjectingNode(KatajaAction):
         if embed:
             embed.update_fields()
 
+
+class SetLabel(KatajaAction):
+    k_action_uid = 'set_label'
+    k_command = 'Set label'
+
+    def method(self, node_uid, label):
+        node = ctrl.forest.nodes[node_uid]
+        if node and node.syntactic_object:
+            node.syntactic_object.label = label
+
+
+class SetIndex(KatajaAction):
+    k_action_uid = 'set_index'
+    k_command = 'Set index'
+
+    def method(self, node_uid, index):
+        node = ctrl.forest.nodes[node_uid]
+        if node:
+            node.index = index

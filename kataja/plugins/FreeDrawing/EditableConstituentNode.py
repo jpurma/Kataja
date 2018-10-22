@@ -6,7 +6,7 @@ import kataja.plugins.FreeDrawing.TouchAreas as TA
 import kataja.plugins.FreeDrawing.OverlayButtons as OB
 from kataja.plugins.FreeDrawing.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 import kataja.globals as g
-from kataja.singletons import classes
+from kataja.singletons import classes, ctrl
 from kataja.parser.INodes import as_html, extract_triangle, join_lines
 
 
@@ -36,6 +36,7 @@ class EditableConstituentNode(ConstituentNode):
         [OB.RemoveMergerButton, OB.RemoveNodeButton]
 
     embed_edit = ConstituentNodeEditEmbed
+    quick_editable = True
 
     def __init__(self, label, *args, **kwargs):
         super().__init__(label, *args, **kwargs)
@@ -58,14 +59,13 @@ class EditableConstituentNode(ConstituentNode):
             return 'node label', ''
 
     def parse_edited_label(self, label_name, value):
-        success = False
-        if not success:
-            if label_name == 'node label':
-                self.syntactic_object.label = value
-                return True
-            elif label_name == 'index':
-                self.index = value
-        return False
+        action = None
+        if label_name == 'node label':
+            action = ctrl.ui.get_action('set_label')
+        elif label_name == 'index':
+            action = ctrl.ui.get_action('set_index')
+        if action:
+            action.run_command(self.uid, value)
 
     def load_values_from_parsernode(self, parsernode):
         """ Update constituentnode with values from parsernode
