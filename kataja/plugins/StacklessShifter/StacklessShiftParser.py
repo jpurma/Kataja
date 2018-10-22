@@ -61,33 +61,33 @@ class StacklessShiftParser:
             return merged
         return _tree_to_monorail(tree, None), recipe
 
-    def fast_find_movable(self, node, excluded):
-        # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
-        # node was merged with.
-        # probably not enough when there is a series of raises that should be done.
-        if node not in excluded and not getattr(node, 'has_raised', None):
-            return node
-        for part in node.parts:
-            n = self.fast_find_movable(part, excluded)
-            if n:
-                return n
-        return None
-
     def build_from_recipe(self, recipe):
+
+        def _fast_find_movable(node, excluded):
+            # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
+            # node was merged with.
+            if node is not excluded and not getattr(node, 'has_raised', None) and node.parts:
+                return node
+            for part in node.parts:
+                n = _fast_find_movable(part, excluded)
+                if n:
+                    return n
+            return None
+
         tree = None
         for item in recipe:
-            item = str(item)
-            print(item)
             if not tree:
                 tree = Constituent(item)
             elif item == '|':
-                mover = self.fast_find_movable(tree, {tree, tree.left})
+                mover = _fast_find_movable(tree, tree)
+                if not mover:
+                    mover = tree.right
                 mover.has_raised = True
                 tree = Constituent(parts=[mover, tree])
             else:
                 node = Constituent(item)
                 tree = Constituent(parts=[node, tree])
-            print(repr(tree))
+            self.export_to_kataja(tree, item)
         return tree
 
     def parse(self, sentence):
@@ -102,7 +102,6 @@ class StacklessShiftParser:
             self.export_to_kataja(tree, str(recipe))
             # Third step reconstructs the tree from bottom up
             tree = self.build_from_recipe(recipe)
-            self.export_to_kataja(tree, str(recipe))
             return tree
 
     def export_to_kataja(self, tree, message):
