@@ -88,6 +88,36 @@ class BaseConstituent(SavedObject, IConstituent):
         else:
             return False
 
+    @property
+    def left(self):
+        if self.parts:
+            return self.parts[0]
+
+    @left.setter
+    def left(self, value):
+        if self.parts:
+            self.poke('parts')
+            self.parts[0] = value
+            if not value and not self.parts[1]:
+                self.parts = []
+        else:
+            self.parts = [value, None]
+
+    @property
+    def right(self):
+        if self.parts:
+            return self.parts[1]
+
+    @right.setter
+    def right(self, value):
+        if self.parts:
+            self.poke('parts')
+            self.parts[1] = value
+            if not value and not self.parts[0]:
+                self.parts = []
+        else:
+            self.parts = [None, value]
+
     def get_features(self):
         """ Getter for features, redundant for BaseConstituent (you could use c.features ) but it
         is better to use this consistently for compatibility with other implementations for
