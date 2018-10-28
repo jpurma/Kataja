@@ -30,11 +30,6 @@
 # Classnames are in camelcase.
 
 import gc
-import importlib
-import json
-import os.path
-import sys
-import traceback
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -44,13 +39,14 @@ import kataja.globals as g
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.PaletteManager import PaletteManager
+from kataja.PluginManager import PluginManager
+from kataja.PrintManager import PrintManager
 from kataja.ViewManager import ViewManager
 from kataja.UIManager import UIManager
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
-from kataja.ui_support.ErrorDialog import ErrorDialog
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.Recorder import Recorder
-from kataja.utils import find_free_filename, quit
+from kataja.utils import quit
 from kataja.visualizations.available import VISUALIZATIONS
 
 # only for debugging (Apple-m, memory check), can be commented
@@ -103,12 +99,6 @@ TwoStateIconButton:hover {border: 1px solid %(ui)s; background-color: %(paper)s;
 HeadingWidget QLabel {font-family: "%(main_font)s"; 
                font-size: %(heading_font_size)spx;}
 """
-# EyeButton {border: 1px solid %(ui_darker)s;}
-# EyeButton:checked {border: 1px solid %(ui)s; border-radius: 3}
-
-
-# ProjectionButtons QPushButton:checked {border: 2px solid %(ui)s; border-radius: 3}
-
 
 class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
@@ -127,7 +117,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     viewport_resized = QtCore.pyqtSignal()
     visualisation_changed = QtCore.pyqtSignal()
 
-    def __init__(self, kataja_app, tree='', plugin='FreeDrawing', image_out='', no_prefs=False, reset_prefs=False):
+    def __init__(self, kataja_app, tree='', plugin='', image_out='', no_prefs=False, reset_prefs=False):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. Receives launch arguments:
         :param no_prefs: bool, don't load or save preferences
@@ -142,9 +132,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         kataja_app.processEvents()
 
         self.use_tooltips = True
-        self.available_plugins = {}
-        self.active_plugin_setup = {}
-        self.active_plugin_path = ''
         self.setWindowTitle("Kataja")
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
@@ -158,6 +145,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.save_prefs = not no_prefs
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager(self)
+        self.plugin_manager = PluginManager()
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main
         #capture_stdout(log, self.log_stdout_as_debug, ctrl)
@@ -165,8 +153,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
-        self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
+        self.plugin_manager.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
+        self.print_manager = PrintManager()
         self.view_manager = ViewManager()
         self.graph_scene = GraphScene()
         self.recorder = Recorder(self.graph_scene)
@@ -183,7 +172,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.change_color_theme(prefs.color_theme, force=True)
         self.update_style_sheet()
         self.graph_scene.late_init()
-        self.print_started = False
         if not silent:
             self.setCentralWidget(self.graph_view)
             self.setGeometry(x, y, w, h)
@@ -191,13 +179,15 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.raise_()
             kataja_app.processEvents()
             self.activateWindow()
-        # self.status_bar = self.statusBar()
-        self.install_plugins(activate=plugin)
+        if tree:
+            plugin = plugin or 'FreeDrawing'
+        else:
+            plugin = plugin or prefs.active_plugin_name
+        self.plugin_manager.enable_plugin(plugin)
         self.document.load_default_forests(tree=tree)
         self.document.play = not silent
         if not silent:
             self.enable_signaling()
-
             self.viewport_resized.emit()
             self.forest_changed.emit()
             self.action_finished(undoable=False, play=True)
@@ -205,16 +195,13 @@ class KatajaMain(QtWidgets.QMainWindow):
                 self.forest.undo_manager.flush_pile()
         else:
             self.action_finished(undoable=False, play=False)
-        # toolbar = QtWidgets.QToolBar()
-        # toolbar.setFixedSize(480, 40)
-        # self.addToolBar(toolbar)
         #gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
         #            QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         # for gesture in gestures:
         #    self.grabGesture(gesture)
 
         if image_out:
-            self.print_to_file(running_environment.default_userspace_path, image_out)
+            self.print_manager.print_to_file(running_environment.default_userspace_path, image_out)
             quit()
 
 
@@ -263,153 +250,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.init_done = self._stored_init_state
         # ----------------------
 
-    # Plugins ################################
-
-    def find_plugins(self, plugins_path):
-        """ Find the plugins dir for the running configuration and read the metadata of plugins.
-        Don't try to load actual python code yet
-        :return: None
-        """
-        if not plugins_path:
-            return
-        self.available_plugins = {}
-        plugins_path = os.path.normpath(plugins_path)
-        os.makedirs(plugins_path, exist_ok=True)
-        sys.path.append(plugins_path)
-        base_ends = len(plugins_path.split(os.sep))
-        for root, dirs, files in os.walk(plugins_path, followlinks=True):
-            path_parts = root.split(os.sep)
-            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
-                    '__') and 'plugin.json' in files:
-                success = False
-                try:
-                    plugin_file = open(os.path.join(root, 'plugin.json'), 'r')
-                    data = json.load(plugin_file)
-                    plugin_file.close()
-                    success = True
-                except:
-                    log.error(sys.exc_info())
-                    print(sys.exc_info())
-                if success:
-                    mod_name = path_parts[base_ends]
-                    data['module_name'] = mod_name
-                    data['module_path'] = root
-                    self.available_plugins[mod_name] = data
-
-    def set_active_plugin(self, plugin_key, enable):
-        if enable:
-            if prefs.active_plugin_name:
-                self.disable_current_plugin()
-            self.enable_plugin(plugin_key)
-            self.document.load_default_forests()
-            return "Enabled plugin '%s'" % plugin_key
-        elif plugin_key == prefs.active_plugin_name:
-            self.disable_current_plugin()
-            self.document.load_default_forests()
-            return "Disabled plugin '%s'" % plugin_key
-        return ""
-
-    def enable_plugin(self, plugin_key, reload=False):
-        """ Start one plugin: save data, replace required classes with plugin classes, load data.
-
-        """
-        self.active_plugin_setup = self.load_plugin(plugin_key)
-        if not self.active_plugin_setup:
-            return
-
-        self.disable_signaling()
-
-        self.clear_document()
-
-        if reload:
-            available = []
-            for key in sys.modules:
-                if key.startswith(plugin_key):
-                    available.append(key)
-            if getattr(self.active_plugin_setup, 'reload_order', None):
-                to_reload = [x for x in self.active_plugin_setup.reload_order if x in available]
-            else:
-                to_reload = sorted(available)
-            for mod_name in to_reload:
-                importlib.reload(sys.modules[mod_name])
-                log.info('reloaded module %s' % mod_name)
-
-        if hasattr(self.active_plugin_setup, 'plugin_classes'):
-            for classobj in self.active_plugin_setup.plugin_classes:
-                base_class = classes.find_base_model(classobj)
-                if base_class:
-                    classes.add_mapping(base_class, classobj)
-                    m = "replacing %s with %s " % (base_class.__name__, classobj.__name__)
-                else:
-                    m = "adding %s " % classobj.__name__
-                log.info(m)
-        actions_module = getattr(self.active_plugin_setup, 'plugin_actions', None)
-        if actions_module:
-            classes.replaced_actions = {}
-            classes.added_actions = []
-            ctrl.ui.load_actions_from_module(actions_module,
-                                             added=classes.added_actions,
-                                             replaced=classes.replaced_actions)
-        dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
-        if hasattr(self.active_plugin_setup, 'help_file'):
-
-            self.ui_manager.set_help_source(dir_path, self.active_plugin_setup.help_file)
-        if hasattr(self.active_plugin_setup, 'start_plugin'):
-            self.active_plugin_setup.start_plugin(self, ctrl, prefs)
-        self.create_default_document()
-        self.enable_signaling()
-        self.active_plugin_path = dir_path
-        prefs.active_plugin_name = plugin_key
-
-    def disable_current_plugin(self):
-        """ Disable the current plugin and load the default trees instead.
-        :param clear: if True, have empty treeset, if False, try to load default kataja treeset."""
-        if not self.active_plugin_setup:
-            print('bailing out disable plugin: no active plugin recognised')
-            return
-
-        self.disable_signaling()
-
-        if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
-            self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
-        self.clear_document()
-        ctrl.ui.unload_actions_from_module(classes.added_actions, classes.replaced_actions)
-        classes.added_actions = []
-        classes.replaced_actions = {}
-        classes.restore_default_classes()
-        self.create_default_document()
-        self.enable_signaling()
-
-        prefs.active_plugin_name = ''
-
-    def load_plugin(self, plugin_module):
-        setup = None
-        importlib.invalidate_caches()
-        if plugin_module in self.available_plugins:
-            retry = True
-            while retry:
-                try:
-                    setup = importlib.import_module(plugin_module + ".setup")
-                    retry = False
-                except:
-                    e = sys.exc_info()
-                    error_dialog = ErrorDialog(self)
-                    error_dialog.set_error('%s, line %s\n%s: %s' % (
-                        plugin_module + ".setup.py", e[2].tb_lineno, e[0].__name__, e[1]))
-                    error_dialog.set_traceback(traceback.format_exc())
-                    retry = error_dialog.exec_()
-                    setup = None
-        return setup
-
-    def install_plugins(self, activate=''):
-        """ If there are plugins defined in preferences to be used, activate them now.
-        :return: None
-        """
-        plugin = activate or prefs.active_plugin_name
-        if plugin:
-            log.info('Installing plugin %s...' % plugin)
-            self.enable_plugin(plugin, reload=False)
-        self.ui_manager.update_plugin_menu()
 
     # Preferences ###################################
 
@@ -543,87 +383,6 @@ class KatajaMain(QtWidgets.QMainWindow):
                 self.document.settings.set('color_theme', mode)
                 self.update_colors()
 
-    # Printing ###################################
-
-    def timerEvent(self, event):
-        """ Timer event only for printing, for 'snapshot' effect
-        :param event:
-        """
-        if not self.print_started:
-            return
-        else:
-            self.print_started = False
-        self.killTimer(event.timerId())
-        # Prepare file and path
-        path = prefs.userspace_path or running_environment.default_userspace_path
-        if not os.path.exists(path):
-            print("bad path for printing (userspace_path in preferences) , "
-                  "using '.' instead.")
-            path = '.'
-        # Prepare image
-        self.graph_scene.removeItem(self.graph_scene.photo_frame)
-        self.graph_scene.photo_frame = None
-        self.print_to_file(path, prefs.print_file_name)
-
-    def print_to_file(self, path, filename):
-        if filename.endswith(('.pdf', '.png')):
-            filename = filename[:-4]
-        # Prepare printer
-        png = prefs.print_format == 'png'
-        source = self.view_manager.print_rect()
-
-        for node in self.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
-
-        if png:
-            self._write_png(source, path, filename)
-        else:
-            self._write_pdf(source, path, filename)
-
-        # Restore image
-        for node in self.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
-        self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
-
-    def _write_png(self, source, path, filename):
-        full_path = find_free_filename(os.path.join(path, filename), '.png', 0)
-        scale = 4
-        target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
-        writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
-        writer.fill(QtCore.Qt.transparent)
-        painter = QtGui.QPainter()
-        painter.begin(writer)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-
-        self.graph_scene.render(painter, target=target, source=source)
-        painter.end()
-        iwriter = QtGui.QImageWriter(full_path)
-        iwriter.write(writer)
-        msg = f"printed to {full_path} as PNG ({int(target.width())}px x {int(target.height())}px, {scale}x size)."
-        print(msg)
-        log.info(msg)
-
-    def _write_pdf(self, source, path, filename):
-        dpi = 25.4
-        full_path = find_free_filename(os.path.join(path, filename), '.pdf', 0)
-        target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
-
-        writer = QtGui.QPdfWriter(full_path)
-        writer.setResolution(dpi)
-        writer.setPageSizeMM(target.size())
-        writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
-        ctrl.printing = True
-        painter = QtGui.QPainter()
-        painter.begin(writer)
-        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        # painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-        self.graph_scene.render(painter, target=target, source=source)
-        painter.end()
-        ctrl.printing = False
-        msg = f"printed to {full_path} as PDF with {dpi} dpi."
-        print(msg)
-        log.info(msg)
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
@@ -639,6 +398,12 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # ## Other window events
     ###################################################
+
+    def timerEvent(self, event):
+        """ Timer event only for printing, for 'snapshot' effect
+        :param event:
+        """
+        self.print_manager.snapframe_timer(event)
 
     def closeEvent(self, event):
         """ Shut down the program, give some debug info

@@ -63,13 +63,13 @@ class StacklessShiftParser:
 
     def build_from_recipe(self, recipe):
 
-        def _fast_find_movable(node, excluded):
-            # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
-            # node was merged with.
-            if node is not excluded and not getattr(node, 'has_raised', None) and node.parts:
+        def _fast_find_movable(node, skip_first=False, depth=0):
+            # finds the uppermost result of external merge element (this is recognized by it having flag 'has_raised')
+            if not skip_first and not getattr(node, 'has_raised', None) and node.parts:
+                print('found, depth: ', depth)
                 return node
             for part in node.parts:
-                n = _fast_find_movable(part, excluded)
+                n = _fast_find_movable(part, depth=depth + 1)
                 if n:
                     return n
             return None
@@ -79,7 +79,7 @@ class StacklessShiftParser:
             if not tree:
                 tree = Constituent(item)
             elif item == '|':
-                mover = _fast_find_movable(tree, tree)
+                mover = _fast_find_movable(tree, skip_first=True)
                 if not mover:
                     mover = tree.right
                 mover.has_raised = True

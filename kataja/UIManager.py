@@ -561,7 +561,7 @@ class UIManager:
     def prepare_plugin_menus(self):
         menu_items = []
         base_action = self.actions['toggle_plugin']
-        for key in sorted(self.main.available_plugins):
+        for key in sorted(self.main.plugin_manager.available_plugins):
             action = MediatingAction(text=key, target=base_action, key=key)
             action.setChecked(key == prefs.active_plugin_name)
             menu_items.append(action)

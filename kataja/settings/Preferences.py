@@ -416,7 +416,7 @@ class Preferences(object):
         }
 
         self.plugins_path = ''
-        self.active_plugin_name = ''
+        self.active_plugin_name = 'FreeDrawing'
         self._active_plugin_name_ui = {
             'tab': 'Plugins',
             'special': 'plugins',
