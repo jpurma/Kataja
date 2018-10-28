@@ -274,27 +274,7 @@ class PrintToFile(KatajaAction):
     k_tooltip = 'Capture as image'
 
     def method(self):
-        """ Starts the printing process.
-         1st step is to clean the scene for a printing and display the printed
-         area -frame.
-         2nd step: after 50ms remove printed area -frame and prints to pdf,
-         and write the file.
-
-         2nd step is triggered by a timer in main window.
-         :return: None
-        """
-        sc = ctrl.graph_scene
-        # hide unwanted components
-        no_brush = QtGui.QBrush(Qt.NoBrush)
-        sc.setBackgroundBrush(no_brush)
-        sc.photo_frame = sc.addRect(ctrl.view_manager.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
-        sc.update()
-        for node in ctrl.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
-        ctrl.graph_view.repaint()
-        ctrl.main.print_started = True  # to avoid a bug where other timers end up triggering main's
-        ctrl.main.startTimer(50)
-
+        ctrl.main.print_manager.start_printing()
 
 #
 # class RenderInBlender(KatajaAction):
@@ -317,7 +297,6 @@ class PrintToFile(KatajaAction):
 #                       prefs.blender_env_path)
 #         args = shlex.split(command)
 #         subprocess.Popen(args)  # , cwd =prefs.blender_env_path)
-
 
 
 class OpenPreferences(KatajaAction):

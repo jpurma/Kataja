@@ -113,7 +113,7 @@ class PluginSelector(QtWidgets.QWidget):
         self.on_change_method = method
 
     def refresh_plugin_selection(self):
-        ctrl.main.find_plugins(prefs.plugins_path or running_environment.plugins_path)
+        ctrl.main.plugin_manager.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.inner_widget = self.prepare_plugins_selection_widget()
         self.inner_widget.show()
         self.scroll_area.setWidget(self.inner_widget)

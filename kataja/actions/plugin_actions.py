@@ -72,8 +72,8 @@ class ReloadPlugin(KatajaAction):
         key = prefs.active_plugin_name
         if key:
             ctrl.main.init_done = False
-            ctrl.main.disable_current_plugin()
-            ctrl.main.enable_plugin(key, reload=True)
+            ctrl.main.plugin_manager.disable_current_plugin()
+            ctrl.main.plugin_manager.enable_plugin(key, reload=True)
             ctrl.main.document.load_default_forests()
             ctrl.main.init_done = True
 
@@ -106,7 +106,7 @@ class TogglePlugin(KatajaAction):
         :param plugin_key: str
         :param value: bool
         """
-        m = ctrl.main.set_active_plugin(plugin_key, value)
+        m = ctrl.main.plugin_manager.set_active_plugin(plugin_key, value)
         if self.sender():
             parent = self.sender().parentWidget()
             while parent and not hasattr(parent, 'refresh_plugin_selection'):

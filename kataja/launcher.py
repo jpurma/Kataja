@@ -84,8 +84,8 @@ def launch_from_command_line():
                         help="don't use preferences file -- don't save it either")
     parser.add_argument('-image_out', type=str,
                         help="draw tree into given file (name.pdf or name.png) and exit")
-    parser.add_argument('-plugin', type=str, default='FreeDrawing',
-                        help="start with the given plugin (default: 'FreeDrawing'")
+    parser.add_argument('-plugin', type=str, default='',
+                        help="start with the given plugin")
     parser.add_argument('tree', type=str, nargs='?',
                         help='bracket tree or source tree filename')
     kwargs = vars(parser.parse_args())

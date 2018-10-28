@@ -25,7 +25,7 @@ import os
 
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl, running_environment, classes, prefs
+from kataja.singletons import ctrl, classes, prefs
 from kataja.settings.DocumentSettings import DocumentSettings
 
 
@@ -57,11 +57,11 @@ class KatajaDocument(SavedObject):
 
     @staticmethod
     def get_default_treeset_file():
-        return os.path.join(ctrl.main.active_plugin_path, 'sentences.txt')
+        return os.path.join(ctrl.main.plugin_manager.active_plugin_path, 'sentences.txt')
 
     @staticmethod
     def get_default_lexicon_file():
-        return os.path.join(ctrl.main.active_plugin_path, 'lexicon.txt')
+        return os.path.join(ctrl.main.plugin_manager.active_plugin_path, 'lexicon.txt')
 
     def retire_from_display(self):
         if self.forest:
