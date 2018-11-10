@@ -742,6 +742,7 @@ class QtPreferences:
         self.pause_pixmap = None
         self.record_pixmap = None
         self.stop_pixmap = None
+        self.trash_icon = None
 
     def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
@@ -847,6 +848,7 @@ class QtPreferences:
         self.pause_pixmap = pixmap('pause72.png')
         self.record_pixmap = pixmap('record48.png')
         self.stop_pixmap = pixmap('stop36.png')
+        self.trash_icon = icon('trash24.svg')
 
     def update(self, preferences, running_environment, log):
         """

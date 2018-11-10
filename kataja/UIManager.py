@@ -144,7 +144,6 @@ class UIManager:
         self.top_bar_buttons = None
         self._edit_mode_button = None
         self.quick_edit_buttons = None
-        self.command_prompt = None
         self._items = {}
         self._items_by_host = {}
         self._timer_id = 0

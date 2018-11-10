@@ -38,6 +38,7 @@ import PyQt5.QtWidgets as QtWidgets
 import kataja.globals as g
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
+from kataja.LogWidgetPusher import capture_stdout
 from kataja.PaletteManager import PaletteManager
 from kataja.PluginManager import PluginManager
 from kataja.PrintManager import PrintManager
@@ -148,7 +149,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.plugin_manager = PluginManager()
         self.document = None
         ctrl.late_init(self)  # sets ctrl.main
-        #capture_stdout(log, self.log_stdout_as_debug, ctrl)
+        capture_stdout(log, self.log_stdout_as_debug, ctrl)
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         prefs.load_preferences(disable=reset_prefs or no_prefs)

@@ -31,7 +31,7 @@ class SetLogLevel(KatajaAction):
     k_action_uid = 'set_log_level'
     k_command = 'Set log level'
     k_undoable = False
-    k_tooltip = 'Messages of lesser importance are filtered out'
+    k_tooltip = 'Set minimum priority for visible messages'
 
     def prepare_parameters(self, args, kwargs):
         value = self.sender().currentData()
@@ -50,7 +50,7 @@ class ClearLog(KatajaAction):
     k_action_uid = 'clear_log'
     k_command = 'Clear log'
     k_undoable = False
-    k_tooltip = 'Clear the entire log. Cannot be restored.'
+    k_tooltip = 'Clear log'
 
     def method(self):
         panel = ctrl.ui.get_panel('LogPanel')
