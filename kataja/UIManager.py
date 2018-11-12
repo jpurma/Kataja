@@ -347,12 +347,6 @@ class UIManager:
         """
         self.actions[key].update_action()
 
-    def get_actions_as_python_commands(self):
-        d = {}
-        for key, item in self.actions.items():
-            d[key] = item.manual_run
-        return d
-
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection groups has to be handled somewhere. """

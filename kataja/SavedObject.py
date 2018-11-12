@@ -33,6 +33,7 @@ class SavedObject(object):
     """
     uid = SavedField("uid")
     class_name = SavedField("class_name")
+    short_name = ""
     _settings = SavedField("_settings")
     syntactic_object = False
     unique = False
@@ -44,7 +45,7 @@ class SavedObject(object):
         if self.unique:
             uid = class_name
         elif uid is None:
-            uid = class_name + str(next_available_uid())
+            uid = (self.short_name or class_name) + str(next_available_uid())
         self._saved = {}
         self._history = {}
         self.uid = uid

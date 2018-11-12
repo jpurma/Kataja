@@ -55,7 +55,7 @@ class BaseFeature(SavedObject):
 
     syntactic_object = True
     role = "Feature"
-
+    short_name = "F"
     editable = {}
     addable = {}
 

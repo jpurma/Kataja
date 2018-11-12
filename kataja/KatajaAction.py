@@ -210,8 +210,9 @@ class KatajaAction(QtWidgets.QAction):
     def run_command(self, *args, **kwargs):
         self.run(*args, fetch_params=False, print_command=True, **kwargs)
 
-    def manual_run(self, *args, **kwargs):
-        return self.run(*args, has_params=True, print_command=False, **kwargs)
+    # Manual run is related to 'command line console' in LogPanel, it is disabled until there is real use for it.
+    # def manual_run(self, *args, **kwargs):
+    #    return self.run(*args, fetch_params=False, print_command=False, **kwargs)
 
     def run(self, *args, fetch_params=True, print_command=True, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI
@@ -255,7 +256,6 @@ class KatajaAction(QtWidgets.QAction):
             command_string = action_name + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
             log.info('>>> ' + command_string)
             log.log_handler.add_to_command_backlog(command_string)
-
         try:
             message = self.method(*args, **kwargs)
             error = None

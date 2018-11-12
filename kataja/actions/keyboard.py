@@ -77,7 +77,10 @@ class KeyUp(KatajaAction):
     def method(self):
         if not ctrl.ui_focus:
             ctrl.graph_scene.move_selection('up')
-        else:  # This is stupid but I haven't found a better solution that works
+        else:
+        #elif not getattr(ctrl.ui_focus, 'grab_cursor', False):
+            # This is stupid but I haven't found a better solution that works
+            print('key_up -action')
             key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Up,
                                         QtCore.Qt.NoModifier)
             ctrl.ui_focus.keyPressEvent(key_event)

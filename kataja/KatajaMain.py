@@ -130,6 +130,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.init_done = False
         self._stored_init_state = True
         self.disable_signaling()
+        self.outgoing = []
         kataja_app.processEvents()
 
         self.use_tooltips = True
@@ -307,8 +308,10 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.draw()
 
     def log_stdout_as_debug(self, text):
-        if text.strip():
-            log.debug(text)
+        self.outgoing.append(text)
+        if text.endswith('\n') or text.endswith('\r'):
+            log.debug((''.join(self.outgoing)).strip())
+            self.outgoing = []
 
     def attach_widget_to_log_handler(self, browserwidget):
         """ This has to be done once: we have a logger set up before there is any output widget,

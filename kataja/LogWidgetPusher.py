@@ -144,6 +144,5 @@ class LogWidgetPusher(logging.Handler):
                 levelname = modname
             else:
                 levelname = f'<b>{modname}{record.levelname}:</b> '
-
             self.widget.append(tag + levelname + msg + end_tag)
-            self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+            #self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)

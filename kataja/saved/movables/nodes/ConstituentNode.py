@@ -46,6 +46,7 @@ class ConstituentNode(Node):
     """
     __qt_type_id__ = next_available_type_id()
     display_name = ('Constituent', 'Constituents')
+    short_name = "CN"
     display = True
     width = 20
     height = 20

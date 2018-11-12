@@ -486,7 +486,7 @@ class Preferences(object):
                     'linearisation or parser output',
             'order': 40
         }
-        self.log_level = 10
+        self.log_level = 20
 
     def import_node_classes(self, classes):
         node_classes = classes.nodes

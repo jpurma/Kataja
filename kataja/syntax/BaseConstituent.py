@@ -48,6 +48,7 @@ class BaseConstituent(SavedObject, IConstituent):
     # info for kataja engine
     syntactic_object = True
     role = "Constituent"
+    short_name = "C"
 
     editable = {}
     addable = {'features': {'condition': 'can_add_feature', 'add': 'add_feature', 'order': 20}
@@ -105,7 +106,7 @@ class BaseConstituent(SavedObject, IConstituent):
 
     @property
     def right(self):
-        if self.parts:
+        if len(self.parts) > 1:
             return self.parts[1]
 
     @right.setter
