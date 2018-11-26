@@ -46,7 +46,7 @@ class StacklessShiftParser:
         recipe = []
 
         def _tree_to_monorail(lnode, spine):
-            if lnode.parts:
+            if len(lnode.parts) == 2:
                 left = _tree_to_monorail(lnode.left, spine)
                 right = _tree_to_monorail(lnode.right, left)
                 merged = Constituent(label='', parts=[left, right])

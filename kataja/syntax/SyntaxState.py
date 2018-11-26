@@ -13,7 +13,7 @@ class SyntaxState:
     """
 
     def __init__(self, tree_roots=None, numeration=None, msg=None, gloss=None,
-                 transferred=None, marked=None, iteration=0, semantic_hierarchies=None):
+                 transferred=None, marked=None, iteration=0, semantic_hierarchies=None, log=None):
         self.tree_roots = tree_roots or []
         self.numeration = numeration or []
         self.msg = msg or ''
@@ -22,6 +22,7 @@ class SyntaxState:
         self.marked = marked or []
         self.iteration = iteration
         self.semantic_hierarchies = semantic_hierarchies or []
+        self.log = log or []
 
 
 

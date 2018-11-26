@@ -129,7 +129,6 @@ def report(function):
     return wrap
 
 
-
 def to_tuple(p):
     """ PySide's to_tuple-helper method for PyQt
     :param p:

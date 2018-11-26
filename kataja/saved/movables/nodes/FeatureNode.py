@@ -302,6 +302,26 @@ class FeatureNode(Node):
 
     @staticmethod
     def draw_feature_shape(painter, rect, left, right, color):
+
+        def triangle(path, x, y, mid, dx=1, dy=1):
+            path.lineTo(x, y + mid - 4 * dy)
+            path.lineTo(x - 4 * dx, y + mid)
+            path.lineTo(x, y + mid + 4 * dy)
+            path.lineTo(x, y + mid + mid * dy)
+
+        def square(path, x, y, mid, dx=1, dy=1):
+            path.lineTo(x, y + mid - 4 * dy)
+            path.lineTo(x - 4 * dx, y + mid - 4 * dy)
+            path.lineTo(x - 4 * dx, y + mid + 4 * dy)
+            path.lineTo(x, y + mid + 4 * dy)
+            path.lineTo(x, y + mid + mid * dy)
+
+        def roundish(path, x, y, mid, dx=1, dy=1):
+            path.lineTo(x, y + mid - 2 * dy)
+            path.cubicTo(x - 3 * dx, y + mid - 2 * dy, x - 3 * dx, y + mid - 6 * dy, x - 6 * dx, y + mid)
+            path.cubicTo(x - 3 * dx, y + mid + 6 * dy, x - 3 * dx, y + mid + 2 * dy, x, y + mid + 2 * dy)
+            path.lineTo(x, y + mid + mid * dy)
+
         old_pen = painter.pen()
         painter.setPen(QtCore.Qt.NoPen)
         if left or right:  # square, triangular or round knob
@@ -312,45 +332,38 @@ class FeatureNode(Node):
             path.lineTo(base_shape.topRight())
             mid = base_shape.height() / 2
             x, y = to_tuple(base_shape.topRight())
-            if right == 2:  # triangle
-                path.lineTo(x, y + mid - 4)
-                path.lineTo(x - 4, y + mid)
-                path.lineTo(x, y + mid + 4)
-                path.lineTo(x, y + mid + mid)
-            elif right == 3:  # square
-                path.lineTo(x, y + mid - 4)
-                path.lineTo(x - 4, y + mid - 4)
-                path.lineTo(x - 4, y + mid + 4)
-                path.lineTo(x, y + mid + 4)
-                path.lineTo(x, y + mid + mid)
-            elif right == 4:  # roundish
-                path.lineTo(x, y + mid - 2)
-                path.cubicTo(x - 3, y + mid - 2, x - 3, y + mid - 6, x - 6, y + mid)
-                path.cubicTo(x - 3, y + mid + 6, x - 3, y + mid + 2, x, y + mid + 2)
-                path.lineTo(x, y + mid + mid)
+            if right == 2:  # triangle plug
+                triangle(path, x, y, mid, -1, 1)
+            elif right == -2:  # triangle hole
+                triangle(path, x, y, mid, 1, 1)
+            elif right == 3:  # square plug
+                square(path, x, y, mid, -1, 1)
+            elif right == -3:  # square hole
+                square(path, x, y, mid, 1, 1)
+            elif right == 4:  # roundish plug
+                roundish(path, x, y, mid, -1, 1)
+            elif right == -4:  # roundish hole
+                roundish(path, x, y, mid, 1, 1)
             else:
                 path.quadTo(x + 8, y + mid, x, y + mid + mid)
             path.lineTo(base_shape.bottomLeft())
             x, y = to_tuple(base_shape.topLeft())
-            if left == 2:  # triangle
-                path.lineTo(x, y + mid + 4)
-                path.lineTo(x - 4, y + mid)
-                path.lineTo(x, y + mid - 4)
-                path.lineTo(x, y)
-            elif left == 3:  # square
-                path.lineTo(x, y + mid + 4)
-                path.lineTo(x - 4, y + mid + 4)
-                path.lineTo(x - 4, y + mid - 4)
-                path.lineTo(x, y + mid - 4)
-                path.lineTo(x, y)
-            elif left == 4:  # roundish
-                path.lineTo(x, y + mid + 2)
-                path.cubicTo(x - 3, y + mid + 2, x - 3, y + mid + 6, x - 6, y + mid)
-                path.cubicTo(x - 3, y + mid - 6, x - 3, y + mid - 2, x, y + mid - 2)
-                path.lineTo(x, y)
+            if left == 2:  # triangle plug
+                triangle(path, x, y, mid, 1, -1)
+            elif left == -2:  # triangle hole
+                triangle(path, x, y, mid, -1, -1)
+            elif left == 3:  # square plug
+                square(path, x, y, mid, 1, -1)
+            elif left == -3:  # square hole
+                square(path, x, y, mid, -1, -1)
+            elif left == 4:  # roundish plug
+                roundish(path, x, y, mid, 1, -1)
+            elif left == -4:  # roundish hole
+                roundish(path, x, y, mid, -1, -1)
             else:
                 path.quadTo(x - 8, y + mid, x, y)
             painter.fillPath(path, color)
+            painter.drawPath(path)
         else:  # solid rect
             painter.drawRect(rect)
         painter.setPen(old_pen)
@@ -361,8 +374,11 @@ class FeatureNode(Node):
         :param option:
         :param widget:
         """
-        left = self.fshape if self.valuing() else 0
-        right = self.fshape if self.is_needy() or self.is_satisfied() else 0
+        if self.syntactic_object and hasattr(self.syntactic_object, 'get_shape'):
+            left, right = self.syntactic_object.get_shape()
+        else:
+            left = self.fshape if self.valuing() else 0
+            right = self.fshape if self.is_needy() or self.is_satisfied() else 0
 
         if self.fshape:
             self.draw_feature_shape(painter, self.inner_rect, left, right,

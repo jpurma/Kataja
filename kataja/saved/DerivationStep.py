@@ -51,6 +51,7 @@ class DerivationStep(SavedObject):
             self.marked = syn_state.marked
             self.semantic_hierarchies = syn_state.semantic_hierarchies
             self.iteration = syn_state.iteration
+            self.log = syn_state.log
         else:
             self.tree_roots = []
             self.numeration = []
@@ -60,6 +61,7 @@ class DerivationStep(SavedObject):
             self.marked = []
             self.semantic_hierarchies = []
             self.iteration = 0
+            self.log = []
 
     def __str__(self):
         return "DS(" + str(self.tree_roots) + ", " + str(self.numeration) + ", " + str(self.msg) + "')"
@@ -68,7 +70,7 @@ class DerivationStep(SavedObject):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
                            gloss=self.gloss, transferred=self.transferred, marked=self.marked,
                            semantic_hierarchies=self.semantic_hierarchies,
-                           iteration=self.iteration)
+                           iteration=self.iteration, log=self.log)
 
     # ############## #
     #                #
@@ -84,6 +86,7 @@ class DerivationStep(SavedObject):
     marked = SavedField("marked")
     semantic_hierarchies = SavedField("semantic_hierarchies")
     iteration = SavedField("iteration")
+    log = SavedField("log")
 
 
 class DerivationStepManager(SavedObject):
@@ -146,7 +149,11 @@ class DerivationStepManager(SavedObject):
             self.current = d_step
             syntactic_state_to_nodes(self.forest, d_step.to_syn_state())
             if d_step.msg:
-                log.info(d_step.msg)
+                log.info(f'<b>msg: {d_step.msg}</b>')
+            for log_msg in d_step.log:
+                if log_msg.strip():
+                    log_msg = log_msg.replace("\t", "&nbsp;&nbsp;")
+                    log.info(f'<font color="#859900">{log_msg}</font>')
 
     def next_derivation_step(self):
         """

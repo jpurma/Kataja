@@ -338,17 +338,14 @@ def syntactic_state_to_nodes(forest, syn_state):
     # ---------
     # Update or create mover group
     old_group = None
-    if syn_state.marked:
-        mover = syn_state.marked[0]
-    else:
-        mover = None
+    movers = syn_state.marked
 
     for group in forest.groups.values():
         if group.purpose == 'mover':
             old_group = group
             break
-    if mover:
-        mover = forest.get_node(mover)
+    if movers:
+        mover_nodes = [forest.get_node(mover) for mover in movers if mover]
         if old_group:
             old_group.clear(remove=False)
             group = old_group
@@ -357,10 +354,10 @@ def syntactic_state_to_nodes(forest, syn_state):
             group.purpose = 'mover'
             #group.set_label_text('Next mover')
             group.include_children = False
-            group.fill = False
-            group.outline = True
-            group.set_color_key('accent8')
-        group.update_selection([mover])
+            group.fill = True
+            group.outline = False
+            group.set_color_key('accent8tr')
+        group.update_selection(mover_nodes)
     else:
         if old_group:
             old_group.clear(remove=True)
