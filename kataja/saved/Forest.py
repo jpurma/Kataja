@@ -81,6 +81,7 @@ class Forest(SavedObject):
         self.projection_manager = None
         self.settings = None
         self.derivation_steps = DerivationStepManager(self)
+        self.starting_index = None
 
         self.old_label_mode = 0
         self.trees = []
@@ -170,7 +171,10 @@ class Forest(SavedObject):
             self.after_model_update('nodes', 0)
             self.is_parsed = True
             ds = self.derivation_steps
-            ds.derivation_step_index = len(ds.derivation_steps) - 1
+            if self.starting_index is not None:
+                ds.derivation_step_index = self.starting_index
+            else:
+                ds.derivation_step_index = len(ds.derivation_steps) - 1
             ds.jump_to_derivation_step(ds.derivation_step_index)
             self.forest_edited()
 
@@ -257,6 +261,12 @@ class Forest(SavedObject):
         :return:
         """
         self.derivation_steps.save_and_create_derivation_step(syn_state)
+
+    def set_starting_derivation(self, index=None):
+        """ Mark the current latest derivation step as the starting step, or provide an index """
+        if index is None:
+            index = len(self.derivation_steps.derivation_steps) - 1
+        self.starting_index = index
 
     def remove_iterations(self, iterations):
         """
