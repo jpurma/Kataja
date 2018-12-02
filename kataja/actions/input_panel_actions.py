@@ -40,11 +40,11 @@ class DeriveFromInput(KatajaAction):
     def method(self):
         lex_panel = ctrl.ui.get_panel('LexiconPanel')
         in_panel = ctrl.ui.get_panel('InputPanel')
+        sem_panel = ctrl.ui.get_panel('SemanticsPanel')
         if lex_panel and in_panel:
             input_text = in_panel.input_text.text()
-            print('input text: ', repr(input_text))
             lexicon = lex_panel.lextext.text()
-            semantics = lex_panel.semantics_text.text()
+            semantics = sem_panel.semantics_text.text() if sem_panel else None
             forest = ctrl.forest
             forest.clear()
             ctrl.syntax.create_derivation(input_text=input_text,
