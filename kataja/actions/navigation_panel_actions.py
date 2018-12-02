@@ -80,12 +80,8 @@ class JumpToForest(KatajaAction):
 
     def prepare_parameters(self, args, kwargs):
         if not args:
-            args = [ctrl.document.current_index + 1]
-        try:
-            i = int(args[0])
-            args = [i]
-        except ValueError:
-            args = [ctrl.document.current_index + 1]
+            i = self.fetch_spinbox_value()
+            args = [i if i is not None else ctrl.document.current_index + 1]
         return args, kwargs
 
     def method(self, n):
@@ -143,12 +139,8 @@ class JumpToDerivation(KatajaAction):
 
     def prepare_parameters(self, args, kwargs):
         if not args:
-            args = [ctrl.forest.derivation_steps.derivation_step_index + 1]
-        try:
-            i = int(args[0])
-            args = [i]
-        except ValueError:
-            args = [ctrl.forest.derivation_steps.derivation_step_index + 1]
+            i = self.fetch_spinbox_value()
+            args = [i if i is not None else ctrl.forest.derivation_steps.derivation_step_index + 1]
         return args, kwargs
 
     def method(self, n):

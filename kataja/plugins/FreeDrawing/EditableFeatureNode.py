@@ -31,17 +31,17 @@ from kataja.singletons import classes
 class EditableFeatureNode(FeatureNode):
 
     editable = {}
-    viewable = {'name': dict(name='Name', prefill='name',
+    viewable = {'name': dict(name='Name', prefill='X',
                              tooltip='Name of the feature, used as identifier',
                              syntactic=True),
                 'value': dict(name='Value',
-                              prefill='value',
+                              prefill='',
                               tooltip='Value given to this feature',
                               syntactic=True),
                 'sign': dict(name='Sign',
-                             prefill='sign',
+                             prefill='',
                              tooltip='Sign of this feature, e.g. +, -, u, =...'),
-                'family': dict(name='Family', prefill='family',
+                'family': dict(name='Family', prefill='',
                                tooltip='Several distinct features can be '
                                        'grouped under one family (e.g. '
                                        'phi-features)',

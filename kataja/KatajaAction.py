@@ -219,7 +219,6 @@ class KatajaAction(QtWidgets.QAction):
         element
         :return: None
         """
-
         if not self.isEnabled():
             return
         # Prepare to use alt_command in feedback if the action supports it
@@ -438,6 +437,11 @@ class KatajaAction(QtWidgets.QAction):
         :return:
         """
         return ctrl.ui.active_scope != SELECTION
+
+    def fetch_spinbox_value(self):
+        sender = self.sender()
+        if sender and hasattr(sender, 'value'):
+            return sender.value()
 
 
 class MediatingAction(QtWidgets.QAction):
