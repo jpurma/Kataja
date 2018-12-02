@@ -102,6 +102,8 @@ class FeatureNode(Node):
         self.repulsion = 0.25
         self._gravity = 3.0
         self.fshape = 2
+        self.left_shape = 0
+        self.right_shape = 0
         self.invert_colors = True
 
     @property
@@ -280,10 +282,33 @@ class FeatureNode(Node):
             x_offset = label.x_offset
             y_offset = label.y_offset
             self.label_rect = label_rect
-        if 1 < self.fshape < 4:
+        # offset is offset for the surrounding box around the text.
+        if 1 < self.left_shape < 4:
+            # plug at left, box is wider to left so box has to start more left
             w += 4
-        elif self.fshape == 4:
+            x_offset -= 4
+        elif -4 < self.left_shape < -1:
+            # hole at left, box is wider to left so box has to start more left
+            w += 4
+            x_offset -= 4
+        elif self.left_shape == 4:
             w += 8
+            x_offset -= 4
+        elif self.left_shape == -4:
+            w += 8
+            x_offset -= 8
+        if 1 < self.right_shape < 4:
+            w += 4
+            x_offset += 2
+        elif -4 < self.right_shape < -1:
+            w += 4
+            x_offset += 2
+        elif self.right_shape == 4:
+            w += 8
+            x_offset += 6
+        elif self.right_shape == -4:
+            w += 8
+            x_offset += 6
         if w < FeatureNode.width:
             w = FeatureNode.width
         if h < FeatureNode.height:
@@ -368,6 +393,11 @@ class FeatureNode(Node):
             painter.drawRect(rect)
         painter.setPen(old_pen)
 
+    def update_label(self):
+        super().update_label()
+        self.left_shape, self.right_shape = self.get_shape()
+
+
     def get_shape(self):
         if self.syntactic_object and hasattr(self.syntactic_object, 'get_shape'):
             return self.syntactic_object.get_shape()
@@ -382,10 +412,8 @@ class FeatureNode(Node):
         :param option:
         :param widget:
         """
-        left, right = self.get_shape()
-
         if self.fshape:
-            self.draw_feature_shape(painter, self.inner_rect, left, right,
+            self.draw_feature_shape(painter, self.inner_rect, self.left_shape, self.right_shape,
                                     self.contextual_color())
         else:
             Node.paint(self, painter, option, widget)
