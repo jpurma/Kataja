@@ -38,11 +38,7 @@ class LineOptionsPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         layout = self.vlayout
-        layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
-        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                                 QtWidgets.QSizePolicy.MinimumExpanding))
-        self.setMaximumWidth(220)
-        self.setMaximumHeight(160)
+        widget = self.widget()
         self.active_node_type = g.CONSTITUENT_NODE
         self.shape_selector = None
 
@@ -52,7 +48,7 @@ class LineOptionsPanel(Panel):
         spac = 8
         hlayout = box_row(layout)
 
-        self.edge_type_selector = SelectionBox(parent=self, data=[],
+        self.edge_type_selector = SelectionBox(parent=widget, data=[],
                                                action='set_edge_type_for_editing'
                                            ).to_layout(hlayout, with_label='Style for')
         self.edge_type_selector.setFixedWidth(148)
@@ -61,25 +57,24 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.shape_selector = ShapeSelector(parent=self,
+        self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape',
                                             ).to_layout(hlayout, with_label='Shape')
         self.shape_selector.for_edge_type = self.active_edge_type
 
-        self.edge_color_selector = ColorSelector(parent=self,
+        self.edge_color_selector = ColorSelector(parent=widget,
                                                  action='change_edge_color',
                                                  role='edge').to_layout(hlayout, with_label='Color')
-
         # Line thickness
         hlayout = box_row(layout)
-        self.fill_button = KatajaCheckBox(parent=self,
+        self.fill_button = KatajaCheckBox(parent=widget,
                                           action='edge_shape_fill'
                                           ).to_layout(hlayout, with_label='Fill')
 
-        self.line_button = KatajaCheckBox(parent=self,
+        self.line_button = KatajaCheckBox(parent=widget,
                                           action='edge_shape_line'
                                           ).to_layout(hlayout, with_label='Outline')
-        self.thickness_spinbox = KatajaDecimalSpinbox(parent=self,
+        self.thickness_spinbox = KatajaDecimalSpinbox(parent=widget,
                                                       range_min=0.0,
                                                       range_max=10.0,
                                                       step=0.1,
@@ -90,11 +85,11 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.arrowhead_start_button = KatajaCheckBox(parent=self,
+        self.arrowhead_start_button = KatajaCheckBox(parent=widget,
                                                      action='edge_arrowhead_start'
                                                      ).to_layout(hlayout,
                                                                  with_label='Arrowheads at start')
-        self.arrowhead_end_button = KatajaCheckBox(parent=self,
+        self.arrowhead_end_button = KatajaCheckBox(parent=widget,
                                                    action='edge_arrowhead_end'
                                                    ).to_layout(hlayout, with_label='at end')
         layout.addWidget(hdivider())
@@ -103,37 +98,37 @@ class LineOptionsPanel(Panel):
         hlayout = box_row(layout)
         hlayout.addWidget(QtWidgets.QLabel('Curvature'))
         hlayout.setAlignment(QtCore.Qt.AlignRight)
-        self.arc_rel_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+        self.arc_rel_dx_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_x',
                                                 suffix='%'
                                                 ).to_layout(hlayout, with_label='X')
-        self.arc_rel_dy_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+        self.arc_rel_dy_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_y',
                                                 suffix='%'
                                                 ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
         hlayout.setAlignment(QtCore.Qt.AlignRight)
-        self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+        self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_x',
                                                   suffix=' px'
                                                   ).to_layout(hlayout, with_label='X')
 
-        self.arc_fixed_dy_spinbox = KatajaSpinbox(parent=self, range_min=-200, range_max=200,
+        self.arc_fixed_dy_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_y',
                                                   suffix=' px'
                                                   ).to_layout(hlayout, with_label='Y')
 
         # Leaf size
         hlayout = box_row(layout)
-        self.leaf_x_spinbox = KatajaDecimalSpinbox(parent=self,
+        self.leaf_x_spinbox = KatajaDecimalSpinbox(parent=widget,
                                                    range_min=-20.0,
                                                    range_max=20.0,
                                                    step=0.5,
                                                    action='leaf_shape_x',
                                                    suffix=' px'
                                                    ).to_layout(hlayout, with_label='Brush spread X')
-        self.leaf_y_spinbox = KatajaDecimalSpinbox(parent=self,
+        self.leaf_y_spinbox = KatajaDecimalSpinbox(parent=widget,
                                                    range_min=-20.0,
                                                    range_max=20.0,
                                                    step=0.5,
@@ -144,11 +139,11 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
 
         hlayout = box_row(layout)
-        self.reset_all = PanelButton(parent=self, text='Reset edge settings',
+        self.reset_all = PanelButton(parent=widget, text='Reset edge settings',
                                      action='reset_edge_settings').to_layout(hlayout)
         self.reset_all.setMaximumHeight(20)
 
-        self.reset_adjustment = PanelButton(parent=self,
+        self.reset_adjustment = PanelButton(parent=widget,
                                             text='Reset curves',
                                             action='reset_control_points').to_layout(hlayout)
         self.reset_adjustment.setMaximumHeight(20)

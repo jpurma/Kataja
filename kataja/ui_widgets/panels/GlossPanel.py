@@ -26,19 +26,20 @@ class GlossPanel(NodePanel):
 
         NodePanel.__init__(self, name, g.GLOSS_NODE, default_position, parent, folded)
         hlayout = box_row(self.vlayout)
+        widget = self.widget()
         label = KatajaInfoLabel('Edge',
                                 tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
-                                parent=self)
+                                parent=widget)
         hlayout.addWidget(label)
 
         hlayout.addStretch(24)
-        self.shape_selector = ShapeSelector(parent=self,
+        self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape_for_glosses',
                                             for_edge_type=g.GLOSS_EDGE
                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_visible = EyeButton(action='toggle_gloss_edge_visibility', height=22,
                                       width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)
-        self.edge_options = PanelButton(parent=self,
+        self.edge_options = PanelButton(parent=widget,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options',
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)

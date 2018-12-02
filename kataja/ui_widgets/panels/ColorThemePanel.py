@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -11,28 +11,29 @@ from kataja.ui_support.panel_utils import box_row
 __author__ = 'purma'
 
 
-def color_theme_fragment(panel, layout):
+def color_theme_fragment(panel, inner, layout):
     hlayout = box_row(layout)
     f = qt_prefs.get_font(g.MAIN_FONT)
-    panel.selector = SelectionBox(parent=panel, action='set_active_color_theme').to_layout(hlayout)
+    panel.selector = SelectionBox(parent=inner, action='set_active_color_theme').to_layout(hlayout)
     panel.selector.setMaximumWidth(120)
     panel.selector_items = ctrl.cm.list_available_themes()
     panel.selector.add_items(panel.selector_items)
 
-    panel.randomise = RandomiseButton(parent=panel, text='', size=(40, 20),
+    panel.randomise = RandomiseButton(parent=inner, text='', size=(40, 20),
                                       action='randomise_palette'
                                       ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
 
-    panel.remove_theme = TwoColorButton(parent=panel, text='Remove', action='remove_color_theme',
+    panel.remove_theme = TwoColorButton(parent=inner, text='Remove', action='remove_color_theme',
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
     panel.remove_theme.hide()
 
-    panel.store_favorite = UnicodeIconButton(parent=panel, text='★', size=(26, 20),
+    panel.store_favorite = UnicodeIconButton(parent=inner, text='★', size=(26, 20),
                                              action='remember_palette'
                                              ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
     panel.store_favorite.setStyleSheet(
         'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
     panel.store_favorite.setEnabled(False)
+    panel.store_favorite.setMaximumWidth(26)
 
 
 class UnicodeIconButton(PushButtonBase):
@@ -69,13 +70,10 @@ class ColorPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        widget = self.widget()
-        widget.setMinimumWidth(160)
-        widget.setMaximumWidth(220)
-        widget.setMaximumHeight(60)
+        self.preferred_size = QtCore.QSize(220, 48)
         ctrl.main.palette_changed.connect(self.update_available_themes)
         ctrl.main.color_themes_changed.connect(self.update_available_themes)
-        color_theme_fragment(self, self.vlayout)
+        color_theme_fragment(self, self.widget(), self.vlayout)
         self.finish_init()
 
     def update_available_themes(self):

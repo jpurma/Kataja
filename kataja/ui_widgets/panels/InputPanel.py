@@ -21,13 +21,16 @@ class InputPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         ctrl.main.forest_changed.connect(self.prepare_input)
         layout = self.vlayout
+        widget = self.widget()
 
         tt = 'Sentence to parse'
-        self.input_text = KatajaTextarea(self, tooltip=tt).to_layout(layout)
+        self.input_text = KatajaTextarea(widget, tooltip=tt).to_layout(layout)
+        self.preferred_size = QtCore.QSize(220, 96)
+        self.preferred_floating_size = QtCore.QSize(220, 200)
 
-        self.derive_button = PushButtonBase(parent=self, text='Derive again',
+        self.derive_button = PushButtonBase(parent=widget, text='Derive again',
                                             action='derive_from_input').to_layout(layout)
-        self.widget().setAutoFillBackground(True)
+        widget.setAutoFillBackground(True)
         self.finish_init()
         self.prepare_input()
         ctrl.graph_view.activateWindow()

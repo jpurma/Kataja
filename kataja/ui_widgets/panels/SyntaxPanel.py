@@ -23,28 +23,24 @@ class SyntaxPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
-        inner.setMinimumHeight(40)
-        inner.setMaximumHeight(50)
-        inner.preferred_size = QtCore.QSize(220, 40)
-        inner.sizeHint = self.sizeHint
+        self.preferred_size = QtCore.QSize(220, 40)
         inner.setAutoFillBackground(True)
 
         layout = self.vlayout
         hlayout = box_row(layout)
 
-        self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
+        self.selector = SelectionBox(inner, action='set_visualization').to_layout(hlayout)
         for key, item in []:
             self.selector.addItem('%s (%s)' % (key, item.shortcut), key)
 
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
                                           tooltip='Visualization settings',
-                                          parent=self, size=20,
+                                          parent=inner, size=20,
                                           action='toggle_panel_%s' % g.VIS_OPTIONS
                                           ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
         ctrl.main.forest_changed.connect(self.update_treeset_counter)
-        self.preferred_size = inner.preferred_size
         self.finish_init()
 
     def update_treeset_counter(self):

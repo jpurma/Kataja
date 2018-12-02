@@ -23,22 +23,18 @@ class VisualizationPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
-        inner.preferred_size = QtCore.QSize(200, 70)
-        inner.setMaximumWidth(220)
-        inner.setMaximumHeight(80)
-        inner.sizeHint = self.sizeHint
+        self.preferred_size = QtCore.QSize(200, 70)
         inner.setAutoFillBackground(True)
-        self.preferred_size = inner.preferred_size
         layout = self.vlayout
         hlayout = box_row(layout)
 
-        self.selector = SelectionBox(self, action='set_visualization').to_layout(hlayout)
+        self.selector = SelectionBox(inner, action='set_visualization').to_layout(hlayout)
         self.selector.add_items([(key, '%s (%s)' % (key, item.shortcut)) for key, item in
                                  VISUALIZATIONS.items()])
 
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
                                           action='toggle_panel',
-                                          parent=self,
+                                          parent=inner,
                                           size=20).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
@@ -63,7 +59,3 @@ class VisualizationPanel(Panel):
         if data and 'name' in data:
             index = list(VISUALIZATIONS.keys()).index(data['name'])
             self.selector.setCurrentIndex(index)
-
-    def sizeHint(self):
-        #print("VisualizationPanel asking for sizeHint, ", self.preferred_size)
-        return self.preferred_size

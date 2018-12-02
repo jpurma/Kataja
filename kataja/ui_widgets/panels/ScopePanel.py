@@ -24,25 +24,22 @@ class ScopePanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded, foldable=False)
-        self.scope_selector = SelectionBox(parent=self, data=choices_when_not_selection,
+        widget = self.widget()
+        self.scope_selector = SelectionBox(parent=widget, data=choices_when_not_selection,
                                            action='set_editing_scope')
         self.was_selection = False
         self.scope_selector.setMaximumWidth(128)
         self.push_to_title(self.scope_selector)
-        self.reset_button = PanelButton(text='reset', action='reset_settings')
+        self.reset_button = PanelButton(parent=widget, text='reset', action='reset_settings')
         self.reset_button.setMinimumHeight(14)
         self.reset_button.setMaximumHeight(14)
         self.push_to_title(self.reset_button)
-        inner = self.widget()
-        inner.setMaximumHeight(40)
-        inner.setMinimumWidth(160)
-        inner.setMaximumWidth(220)
-        inner.setAutoFillBackground(True)
+        widget.setAutoFillBackground(True)
         self.finish_init()
 
     def prepare_selections(self):
         selection = ctrl.ui.active_scope == g.SELECTION
-        if (selection and self.was_selection) or ((not selection) and (not self.was_selection)):
+        if (selection and self.was_selection) or (not selection) and (not self.was_selection):
             return
         if selection:
             self.scope_selector.rebuild_choices(choices_when_selection)

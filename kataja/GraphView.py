@@ -28,9 +28,8 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
-from kataja.singletons import ctrl, prefs
-import kataja.globals as g
-from kataja.utils import time_me
+from kataja.singletons import ctrl
+from kataja.utils import caller
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -46,7 +45,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setScene(graph_scene)
         self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
-        #self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        # self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
@@ -58,9 +57,9 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
         self.setOptimizationFlag(QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
-        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
-        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
+        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(False)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         # self.setAcceptDrops(True)
@@ -70,18 +69,12 @@ class GraphView(QtWidgets.QGraphicsView):
         self.selection_mode = True
         self._suppressed_drag_mode = self.dragMode()
 
-
     def scrollContentsBy(self, x, y):
         ctrl.main.viewport_moved.emit()
         QtWidgets.QGraphicsView.scrollContentsBy(self, x, y)
 
     def resizeEvent(self, event):
-        """
-
-        :param event:
-        """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
-        # self._last_rect = self.mapToScene(self.rect()).boundingRect()
         ctrl.main.viewport_resized.emit()
 
     def mousePressEvent(self, event):

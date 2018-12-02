@@ -33,39 +33,26 @@ class ConstituentPanel(NodePanel):
         """
 
         NodePanel.__init__(self, name, g.CONSTITUENT_NODE, default_position, parent, folded)
-        widget = self.widget()
         layout = self.vlayout
+        widget = self.widget()
 
         hlayout = box_row(layout)
-        #label = KatajaInfoLabel('Shape', tooltip='How constituent nodes are displayed',
-        # parent=self)
-        #hlayout.addWidget(label)
-        w = 32
-        b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24,
-                         action='set_no_frame_cn_shape').to_layout(hlayout)
-        b1.setFixedWidth(w)
-        b2 = PanelButton(pixmap=qt_prefs.shape_icon_scope, parent=self, size=24,
-                         action='set_scopebox_cn_shape').to_layout(hlayout)
-        b2.setFixedWidth(w)
-        b3 = PanelButton(pixmap=qt_prefs.shape_icon_brackets, parent=self, size=24,
-                         action='set_bracketed_cn_shape').to_layout(hlayout)
-        b3.setFixedWidth(w)
-        b4 = PanelButton(pixmap=qt_prefs.shape_icon_box, parent=self, size=24,
-                         action='set_box_cn_shape').to_layout(hlayout)
-        b4.setFixedWidth(w)
-        b5 = PanelButton(pixmap=qt_prefs.shape_icon_card, parent=self, size=24,
-                         action='set_card_cn_shape').to_layout(hlayout)
-        b5.setFixedWidth(w)
-        b6 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=self, size=24,
-                         action='set_feature_cn_shape').to_layout(hlayout)
-        b6.setFixedWidth(w)
+        hlayout.setSpacing(0)
+        shape_buttons = [(qt_prefs.shape_icon_plain, 'set_no_frame_cn_shape'),
+                         (qt_prefs.shape_icon_scope, 'set_scopebox_cn_shape'),
+                         (qt_prefs.shape_icon_brackets, 'set_bracketed_cn_shape'),
+                         (qt_prefs.shape_icon_box, 'set_box_cn_shape'),
+                         (qt_prefs.shape_icon_card, 'set_card_cn_shape'),
+                         (qt_prefs.features_locked_icon, 'set_feature_cn_shape')]
+        for pixmap, action in shape_buttons:
+            PanelButton(pixmap=pixmap, parent=widget, size=24, action=action).to_layout(hlayout)
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge', tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
-                                parent=self)
+                                parent=widget)
         hlayout.addWidget(label)
         hlayout.addStretch(24)
-        self.shape_selector = ShapeSelector(parent=self,
+        self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape_for_constituents',
                                             for_edge_type=g.CONSTITUENT_EDGE
                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
@@ -73,7 +60,7 @@ class ConstituentPanel(NodePanel):
                                       height=22,
                                       width=24
                                       ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
-        self.edge_options = PanelButton(parent=self,
+        self.edge_options = PanelButton(parent=widget,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options'
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
@@ -83,25 +70,22 @@ class ConstituentPanel(NodePanel):
         data = prefs.get_display_choices('label_text_mode')
         data = [(choice, text) for (choice, text) in data]
 
-        self.label_selector = SelectionBox(parent=self, action='set_visible_label',
+        self.label_selector = SelectionBox(parent=widget, action='set_visible_label',
                                            data=data).to_layout(hlayout, with_label='Visible label')
-        #hlayout = box_row(layout)
-        #data = prefs.get_display_choices('projection_style')
-        #self.projection_selector = SelectionBox(parent=self, action='select_projection_style',
-        #                                        data=data).to_layout(hlayout,
-        #                                                             with_label='Projection style')
-
+        self.label_selector.setMaximumWidth(160)
         hlayout = box_row(layout)
         data = prefs.get_display_choices('linearization_mode')
-        self.linearization_mode = SelectionBox(parent=self, action='select_linearization_mode',
+        self.linearization_mode = SelectionBox(parent=widget, action='select_linearization_mode',
                                                data=data).to_layout(hlayout,
                                                                     with_label='Linearization')
+        self.linearization_mode.setMaximumWidth(160)
 
         hlayout = box_row(layout)
         data = prefs.get_display_choices('trace_strategy')
-        self.trace_selector = SelectionBox(parent=self, action='select_trace_strategy',
+        self.trace_selector = SelectionBox(parent=widget, action='select_trace_strategy',
                                            data=data).to_layout(hlayout,
                                                                 with_label='Trace strategy')
+        self.trace_selector.setMaximumWidth(160)
 
         self.finish_init()
 

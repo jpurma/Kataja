@@ -368,17 +368,21 @@ class FeatureNode(Node):
             painter.drawRect(rect)
         painter.setPen(old_pen)
 
+    def get_shape(self):
+        if self.syntactic_object and hasattr(self.syntactic_object, 'get_shape'):
+            return self.syntactic_object.get_shape()
+        else:
+            left = self.fshape if self.valuing() else 0
+            right = self.fshape if self.is_needy() or self.is_satisfied() else 0
+            return left, right
+
     def paint(self, painter, option, widget=None):
         """ FeatureNodes can have shapes that suggest which features can value each other.
         :param painter:
         :param option:
         :param widget:
         """
-        if self.syntactic_object and hasattr(self.syntactic_object, 'get_shape'):
-            left, right = self.syntactic_object.get_shape()
-        else:
-            left = self.fshape if self.valuing() else 0
-            right = self.fshape if self.is_needy() or self.is_satisfied() else 0
+        left, right = self.get_shape()
 
         if self.fshape:
             self.draw_feature_shape(painter, self.inner_rect, left, right,
@@ -464,10 +468,26 @@ class FeatureNode(Node):
         elif edge_type == CHECKING_EDGE:
             br = self.boundingRect()
             left, top, right, bottom = (int(x * .8) for x in br.getCoords())
+            shape_left, shape_right = self.get_shape()
             if start:
-                return (sx + right, sy), RIGHT_SIDE
+                if shape_left < 0:
+                    return (sx + left + 4, sy), LEFT_SIDE  # hole on the left side
+                elif shape_right < 0:
+                    return (sx + right - 4, sy), RIGHT_SIDE  # hole on the right side
+                elif sx < ex:
+                    return (sx + right, sy), RIGHT_SIDE
+                else:
+                    return (sx + left, sy), LEFT_SIDE
+
             else:
-                return (ex + left, ey), LEFT_SIDE
+                if shape_left < 0:
+                    return (ex + left + 4, ey), LEFT_SIDE  # hole on the left side
+                elif shape_right < 0:
+                    return (ex + right - 4, ey), RIGHT_SIDE  # hole on the right side
+                elif sx < ex:
+                    return (ex + left, ey), LEFT_SIDE
+                else:
+                    return (ex + right, ey), RIGHT_SIDE
 
     def __str__(self):
         if self.syntactic_object:

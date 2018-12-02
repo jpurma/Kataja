@@ -30,6 +30,7 @@ from kataja.ui_support.panel_utils import label
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
 from kataja.KatajaAction import KatajaAction
+from kataja.utils import caller
 
 ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
 
@@ -62,17 +63,16 @@ class PanelTitle(QtWidgets.QWidget):
         :return:
         """
         QtWidgets.QWidget.__init__(self, parent=panel)
-        # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
+        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                                 QtWidgets.QSizePolicy.Preferred))
         self.panel = panel
-        self.preferred_size = QtCore.QSize(220, 22)
+        self.preferred_size = QtCore.QSize(200, 22)
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
-        self.setMinimumSize(self.preferred_size)
         self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 2, 8, 2)
         layout.setSpacing(0)
-        layout.minimumSize = self.sizeHint
 
         self.close_button = PanelButton(parent=self,
                                         pixmap=qt_prefs.close_icon,
@@ -115,6 +115,9 @@ class PanelTitle(QtWidgets.QWidget):
     def sizeHint(self):
         return self.preferred_size
 
+    def minimumSizeHint(self):
+        return self.preferred_size
+
     def update_font(self, font_key):
         f = qt_prefs.get_font(font_key)
         self.title.setStyleSheet(ss % {
@@ -142,6 +145,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.name = name
         self._last_position = None
         self.resize_grip = None
+        self.preferred_size = QtCore.QSize(200, 200)
+        self.preferred_floating_size = QtCore.QSize(220, 220)
         self.default_position = default_position
 
         if default_position == 'bottom':
@@ -160,9 +165,10 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.setContentsMargins(0, 0, 0, 0)
         self.title_widget = PanelTitle(name, self, foldable=foldable)
         self.setTitleBarWidget(self.title_widget)
-        self.report_top_level(self.isFloating())
+        self.report_top_level()
         inner = QtWidgets.QWidget(self)
         self.vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout.sizeHint = self.inner_size_hint
         inner.setLayout(self.vlayout)
         self.setWidget(inner)
 
@@ -174,14 +180,13 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :return:
         """
         self.set_folded(self.folded)
+        inner = self.widget()
+        inner.setLayout(self.vlayout)
         if self.isFloating():
             self.move(self.initial_position())
-
-    # def dockLocationChanged(self, area):
-    # print 'UIPanel %s docked: %s' % (self, area)
-
-    # def topLevelChanged(self, floating):
-    # print 'UIPanel %s floating: %s' % (self, floating)
+        self.updateGeometry()
+        if self.size() != self.widget().sizeHint():
+            self.resize(self.widget().sizeHint())
 
     def push_to_title(self, widget):
         self.title_widget.push_to_layout(widget)
@@ -198,6 +203,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         """
         pass
 
+    def set_size(self, x, y):
+        self.preferred_size = QtCore.QSize(x, y)
+
     def set_title(self, title):
         self.titleBarWidget().title.setText(title)
 
@@ -207,11 +215,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         widget = self.widget()
         if widget:
             if folded:
-                widget.hide()
+                widget.setMaximumHeight(0)
             else:
-                widget.show()
-        self.resize(self.sizeHint())
-        # self.setFixedSize(self.sizeHint())
+                widget.setMaximumHeight(1200)
         self.updateGeometry()
 
     def report_dock_location(self, area):
@@ -221,58 +227,28 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         """
         pass
 
-    def report_top_level(self, floating):
+    def report_top_level(self):
         """
 
         :param floating:
         """
-        if floating:
-            if hasattr(self, 'preferred_size'):
-                self.resize(self.preferred_size)
+        if self.isFloating():
+            if self.size() != self.sizeHint():
+                self.resize(self.sizeHint())
             if self.resize_grip:
                 self.resize_grip.show()
-        else:
-            if self.resize_grip:
-                self.resize_grip.hide()
+        elif self.resize_grip:
+            self.resize_grip.hide()
 
-    def update_field(self, field_key, field, value):
-        """
-
-        :param field_key:
-        :param field:
-        :param value:
-        """
-        field.setText(value)
-
-    def minimumSizeHint(self):
-        if self.folded or not self.widget():
-            return self.titleBarWidget().sizeHint()
-        else:
-            ws = self.widget().sizeHint()
-            ts = self.titleBarWidget().sizeHint()
-            return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
-
-    def sizeHint(self):
-        """
-
-
-        :return:
-        """
-        if self.folded:
-            return self.titleBarWidget().sizeHint()
-        elif self.widget():
-            ws = self.widget().sizeHint()
-            ts = self.titleBarWidget().sizeHint()
-            return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
+    def inner_size_hint(self):
+        if self.isFloating() and (self.preferred_floating_size or self.preferred_size):
+            return self.preferred_floating_size or self.preferred_size
+        elif self.preferred_size:
+            return self.preferred_size
         else:
             return QtCore.QSize(100, 100)
 
     def initial_position(self, next_to=''):
-        """
-
-
-        :return:
-        """
         self.update_panel()
         if next_to:
             dp = self.ui_manager.get_panel(next_to)

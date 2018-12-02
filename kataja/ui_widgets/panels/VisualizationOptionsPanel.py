@@ -19,12 +19,6 @@ class VisualizationOptionsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        self.vlayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
-        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                                 QtWidgets.QSizePolicy.MinimumExpanding))
-        self.setMaximumWidth(220)
-        self.setMaximumHeight(140)
-
         self.finish_init()
 
     def finish_init(self):

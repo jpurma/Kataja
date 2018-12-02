@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
@@ -27,56 +26,57 @@ class FeaturePanel(NodePanel):
 
         NodePanel.__init__(self, name, g.FEATURE_NODE, default_position, parent, folded)
         layout = self.vlayout
+        widget = self.widget()
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Checking',
                                 tooltip='How the checking relation is displayed',
-                                parent=self)
+                                parent=widget)
         hlayout.addWidget(label)
         w = 32
-        b1 = PanelButton(pixmap=qt_prefs.features_apart_icon, parent=self, size=24,
+        b1 = PanelButton(pixmap=qt_prefs.features_apart_icon, parent=widget, size=24,
                          action='set_features_apart').to_layout(hlayout)
         b1.setFixedWidth(w)
-        b2 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=self, size=24,
+        b2 = PanelButton(pixmap=qt_prefs.features_locked_icon, parent=widget, size=24,
                          action='set_features_locked').to_layout(hlayout)
         b2.setFixedWidth(w)
-        b3 = PanelButton(pixmap=qt_prefs.features_connected_icon, parent=self, size=24,
+        b3 = PanelButton(pixmap=qt_prefs.features_connected_icon, parent=widget, size=24,
                          action='set_features_connected').to_layout(hlayout)
         b3.setFixedWidth(w)
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Arrangement',
                                 tooltip='How features are arranged around the constituent',
-                                parent=self)
+                                parent=widget)
         hlayout.addWidget(label)
         w = 32
-        b1 = PanelButton(pixmap=qt_prefs.feature_row_icon, parent=self, size=24,
+        b1 = PanelButton(pixmap=qt_prefs.feature_row_icon, parent=widget, size=24,
                          action='set_features_as_row').to_layout(hlayout)
         b1.setFixedWidth(w)
-        b2 = PanelButton(pixmap=qt_prefs.feature_column_icon, parent=self, size=24,
+        b2 = PanelButton(pixmap=qt_prefs.feature_column_icon, parent=widget, size=24,
                          action='set_features_as_column').to_layout(hlayout)
         b2.setFixedWidth(w)
-        b3 = PanelButton(pixmap=qt_prefs.feature_2_columns_icon, parent=self, size=24,
+        b3 = PanelButton(pixmap=qt_prefs.feature_2_columns_icon, parent=widget, size=24,
                          action='set_features_as_2_columns').to_layout(hlayout)
         b3.setFixedWidth(w)
-        b4 = PanelButton(pixmap=qt_prefs.feature_hanging_icon, parent=self, size=24,
+        b4 = PanelButton(pixmap=qt_prefs.feature_hanging_icon, parent=widget, size=24,
                          action='set_features_hanging').to_layout(hlayout)
         b4.setFixedWidth(w)
 
         hlayout = box_row(layout)
         label = KatajaInfoLabel('Edge',
                                 tooltip=ctrl.ui.get_action('change_edge_shape').k_tooltip,
-                                parent=self)
+                                parent=widget)
         hlayout.addWidget(label)
 
         hlayout.addStretch(24)
-        self.shape_selector = ShapeSelector(parent=self,
+        self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape_for_features',
                                             for_edge_type=g.FEATURE_EDGE
                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_visible = EyeButton(action='toggle_feature_edge_visibility', height=22,
                                       width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)
-        self.edge_options = PanelButton(parent=self,
+        self.edge_options = PanelButton(parent=widget,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options',
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)

@@ -32,10 +32,11 @@ class HelpPanel(Panel):
         inner = self.widget()
         inner.setContentsMargins(4, 4, 4, 4)
         layout = self.vlayout
-        self.browser = QtWidgets.QTextBrowser()
+        self.browser = QtWidgets.QTextBrowser(parent=inner)
         layout.setContentsMargins(0, 0, 0, 0)
         self.browser.setContentsMargins(0, 0, 0, 0)
-        self.browser.setMinimumWidth(200)
+        self.preferred_size = QtCore.QSize(220, 260)
+        self.preferred_floating_size = QtCore.QSize(260, 320)
         self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.browser.palette()
         p.setColor(QtGui.QPalette.Base, QtCore.Qt.transparent)

@@ -2,7 +2,6 @@ from PyQt5 import QtCore
 from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 __author__ = 'purma'
 
@@ -21,16 +20,12 @@ class LexiconPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         ctrl.main.forest_changed.connect(self.prepare_lexicon)
         layout = self.vlayout
-        self.preferred_size = QtCore.QSize(320, 320)
+        widget = self.widget()
+        self.preferred_size = QtCore.QSize(240, 200)
+        self.preferred_floating_size = QtCore.QSize(320, 320)
         tt = 'Editable lexicon'
-        self.lextext = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Lexicon')
-        self.lextext.setMinimumHeight(200)
-
-        tt = 'Optional semantic data. Use depends on plugin.'
-        self.semantics_text = KatajaTextarea(self, tooltip=tt).to_layout(layout, with_label='Semantics')
-        self.semantics_text.setMaximumHeight(36)
-
-        self.widget().setAutoFillBackground(True)
+        self.lextext = KatajaTextarea(widget, tooltip=tt).to_layout(layout)
+        widget.setAutoFillBackground(True)
         self.prepare_lexicon()
         self.finish_init()
         ctrl.graph_view.activateWindow()
@@ -42,9 +37,7 @@ class LexiconPanel(Panel):
         if not ctrl.syntax:
             return
         lexicon = ctrl.syntax.get_editable_lexicon()
-        semantics = ctrl.syntax.get_editable_semantics()
         self.lextext.setText(lexicon)
-        self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
 
     def showEvent(self, event):
@@ -55,4 +48,3 @@ class LexiconPanel(Panel):
         """
         self.prepare_lexicon()
         super().showEvent(event)
-

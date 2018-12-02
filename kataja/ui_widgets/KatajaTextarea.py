@@ -21,6 +21,7 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
         self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
+        self.setMinimumHeight(24)
         self.changed = False
         self.textChanged.connect(self.flag_as_changed)
         # if a font is provided here, it has to be updated manually. Default font (console) will get updated through
@@ -61,12 +62,12 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
     def focusInEvent(self, event):
         self.grabKeyboard()
         ctrl.suppress_arrow_shortcuts()
-        super().focusInEvent(event)
+        return QtWidgets.QPlainTextEdit.focusInEvent(self, event)
 
     def focusOutEvent(self, event):
         self.releaseKeyboard()
         ctrl.allow_arrow_shortcuts()
-        super().focusOutEvent(event)
+        return QtWidgets.QPlainTextEdit.focusOutEvent(self, event)
 
     def text(self):
         return self.toPlainText()
@@ -76,3 +77,15 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
 
     def flag_as_changed(self):
         self.changed = True
+
+    def enterEvent(self, event):
+        UIWidget.enterEvent(self, event)
+        return QtWidgets.QPlainTextEdit.enterEvent(self, event)
+
+    def mouseMoveEvent(self, event):
+        UIWidget.mouseMoveEvent(self, event)
+        return QtWidgets.QPlainTextEdit.mouseMoveEvent(self, event)
+
+    def leaveEvent(self, event):
+        UIWidget.leaveEvent(self, event)
+        return QtWidgets.QPlainTextEdit.leaveEvent(self, event)

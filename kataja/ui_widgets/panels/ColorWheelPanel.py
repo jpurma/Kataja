@@ -8,6 +8,7 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.panels.ColorThemePanel import color_theme_fragment
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 from kataja.ui_support.panel_utils import box_row
+from kataja.utils import get_parent_panel
 import random
 
 __author__ = 'purma'
@@ -52,9 +53,9 @@ class ColorWheelPanel(Panel):
         # ### Color wheel
         layout = self.vlayout
         widget = self.widget()
-        widget.preferred_size = QtCore.QSize(220, 300)
+        self.preferred_size = QtCore.QSize(220, 300)
         # From ColorThemePanel
-        color_theme_fragment(self, layout)
+        color_theme_fragment(self, widget, layout)
 
         the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
@@ -63,14 +64,14 @@ class ColorWheelPanel(Panel):
                           the_rest
 
         self.role_label = QtWidgets.QLabel("Picking color for role: ")
-        self.role_selector = QtWidgets.QComboBox(parent=self)
+        self.role_selector = QtWidgets.QComboBox(parent=widget)
         self.role_selector.addItems(self.editable_colors)
         self.role_selector.currentTextChanged.connect(self.set_color_role)
         hlayout = box_row(layout)
         hlayout.addWidget(self.role_label)
         hlayout.addWidget(self.role_selector)
 
-        self.color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(self.selected_hsv), self)
+        self.color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(self.selected_hsv), widget)
         layout.addWidget(self.color_name)
 
         self.color_wheel = ColorWheelInner(widget)
@@ -92,10 +93,10 @@ class ColorWheelPanel(Panel):
                      "for other roles."
         self.match_l = QtWidgets.QLabel("Auto-match palette:")
         self.match_l.setToolTip(match_help)
-        self.match_l.setParent(self)
+        self.match_l.setParent(self.widget())
         self.match_cb = KatajaCheckBox()
         self.match_cb.setToolTip(match_help)
-        self.match_cb.setParent(self)
+        self.match_cb.setParent(widget)
         self.match_cb.setChecked(self.try_to_match)
         self.match_cb.stateChanged.connect(self.set_palette_matching)
         self.match_l.setBuddy(self.match_cb)
@@ -104,7 +105,7 @@ class ColorWheelPanel(Panel):
         chelp = "Contrast for auto-matched palettes"
         self.contrast_label = QtWidgets.QLabel("Contrast:")
         self.contrast_label.setToolTip(chelp)
-        self.contrast_label.setParent(self)
+        self.contrast_label.setParent(widget)
         hlayout.addWidget(self.contrast_label)
         self.contrast_spin = spinner(self, hlayout, self.contrast_changed, vmin=30, vmax=99)
         self.contrast_spin.setToolTip(chelp)
@@ -273,13 +274,13 @@ class ColorWheelInner(QtWidgets.QWidget):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        self.suggested_size = 160
+        self.preferred_size = QtCore.QSize(160, 160)
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0
         self._flag_area = 0, 0, 0, 0
         self.setAutoFillBackground(True)
         self.show()
-        self.outer = self.parentWidget().parentWidget()
+        self.outer = get_parent_panel(self)
         self._radius = 0
         self._top_corner = 0
         self._lum_box_width = 0
@@ -321,9 +322,6 @@ class ColorWheelInner(QtWidgets.QWidget):
         self._flag_height = x * 0.04
         self._gradient = QtGui.QLinearGradient(0, self._lum_box_y, 0, self._lum_box_y +
                                                self._lum_box_height)
-
-    def sizeHint(self):
-        return QtCore.QSize(self.suggested_size, self.suggested_size)
 
     def paintEvent(self, event):
         """

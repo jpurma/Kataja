@@ -23,17 +23,15 @@
 # ############################################################################
 
 
-import time
 from PyQt5 import QtCore, QtGui, QtWidgets
-from collections import ChainMap
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl
 from kataja.settings.EdgeSettings import EdgeSettings
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, add_xy, time_me
+from kataja.utils import to_tuple
 from kataja.FadeInOut import FadeInOut
 from kataja.EdgePath import EdgePath
 from kataja.Shapes import SHAPE_PRESETS

@@ -23,14 +23,14 @@ class NodePanel(Panel):
         """
 
         Panel.__init__(self, name, default_position, parent, folded)
+        widget = self.widget()
         ctrl.main.palette_changed.connect(self.update_colors)
-        self.setMaximumWidth(220)
         self.node_type = node_type
         node_type_name = classes.node_info[node_type]['name'].lower()
         color_key = ctrl.ui.get_active_node_setting('color_key', node_type=node_type)
 
         action_name = 'add_%s_node' % node_type_name
-        self.add_button = PanelButton(parent=self, pixmap=qt_prefs.add_icon,
+        self.add_button = PanelButton(parent=widget, pixmap=qt_prefs.add_icon,
                                       action=action_name, size=20,
                                       color_key=color_key)
         self.add_button.data = node_type
@@ -40,21 +40,19 @@ class NodePanel(Panel):
                                            height=20, width=26)
         self.push_to_title(self.node_type_visible)
 
-        self.font_selector = FontSelector(parent=self,
+        self.font_selector = FontSelector(parent=widget,
                                           action='select_%s_font' % node_type_name)
         self.push_to_title(self.font_selector)
 
-        self.node_color_selector = ColorSelector(parent=self,
+        self.node_color_selector = ColorSelector(parent=widget,
                                                  action='change_%s_color' % node_type_name)
         self.push_to_title(self.node_color_selector)
 
         f = ctrl.ui.get_active_node_setting('font_id', node_type=node_type)
         self.update_title_font(f)
 
-        container = self.widget()
-        container.setContentsMargins(0, 0, 0, 0)
+        widget.setContentsMargins(0, 0, 0, 0)
         self.vlayout.setContentsMargins(4, 4, 4, 8)
-        container.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         self.finish_init()
 
     def update_colors(self):

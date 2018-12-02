@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
+from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 
 __author__ = 'purma'
 
@@ -19,12 +20,24 @@ class SemanticsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded, foldable=False)
+        widget = self.widget()
         self.semantics_visible = EyeButton(action='toggle_semantics_view', width=26, height=20)
         self.push_to_title(self.semantics_visible)
+        layout = self.vlayout
+        tt = 'Optional semantic data. Use depends on plugin.'
+        self.semantics_text = KatajaTextarea(widget, tooltip=tt).to_layout(layout, with_label='Semantics')
+        self.semantics_text.setMaximumHeight(36)
+
         inner = self.widget()
-        inner.setMaximumHeight(40)
-        inner.setMinimumWidth(160)
-        inner.setMaximumWidth(220)
         inner.setAutoFillBackground(True)
         self.finish_init()
+
+    def prepare_lexicon(self):
+        if ctrl.main.signalsBlocked():
+            return
+        if not ctrl.syntax:
+            return
+        semantics = ctrl.syntax.get_editable_semantics()
+        self.semantics_text.setText(semantics)
+        ctrl.graph_view.activateWindow()
 

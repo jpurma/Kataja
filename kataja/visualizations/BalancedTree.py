@@ -82,6 +82,8 @@ class BalancedTree(BaseVisualization):
                     continue
                 elif node.physics_x and node.physics_y:
                     continue
+                elif not node.isVisible():
+                    continue
                 left_nodes.add(node)
                 br = node.boundingRect()
                 tx, ty = node.target_position

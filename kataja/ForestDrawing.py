@@ -680,7 +680,7 @@ class ForestDrawing:
                             part.startswith('"') and part.endswith('"')):
                     # gloss node
                     label = part[1:-1]
-                    gloss = self.create_gloss_node(label=label, host=node)
+                    self.create_gloss_node(label=label, host=node)
                 elif part:
                     if ':' in part:
                         fparts = part.split(':')
@@ -692,5 +692,5 @@ class ForestDrawing:
                         family = fparts[2]
                     if len(fparts) > 1:
                         value = fparts[1]
-                    feature = self.create_feature_node(label=fparts[0], value=value, family=family,
+                    self.create_feature_node(label=fparts[0], value=value, family=family,
                                                        host=node)

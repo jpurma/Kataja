@@ -117,6 +117,7 @@ class LogPanel(Panel):
         # self.command_edit = CommandEdit(title_widget)
         # tlayout.addWidget(self.command_edit)
         # tlayout.addStretch(1)
+        # self.command_edit.setStyleSheet(ss)
 
         log_levels = SelectionBox(parent=title_widget, data=levels,
                                   action='set_log_level', mini=True).to_layout(tlayout, with_label='log level:')
@@ -124,37 +125,23 @@ class LogPanel(Panel):
         clear_log = PanelButton(parent=title_widget, action='clear_log', pixmap=qt_prefs.trash_icon).to_layout(tlayout)
         clear_log.setFlat(False)
         clear_log.setMaximumHeight(20)
-
-        self.log_browser = QtWidgets.QTextBrowser()
+        widget = self.widget()
+        self.preferred_floating_size = QtCore.QSize(480, 480)
+        self.log_browser = QtWidgets.QTextBrowser(parent=widget)
         self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.vlayout.addWidget(self.log_browser)
-        self.log_browser.setMinimumHeight(48)
-        self.log_browser.preferred_size = QtCore.QSize(940, 64)
+        self.preferred_size = QtCore.QSize(940, 96)
         f = qt_prefs.get_font(g.CONSOLE_FONT)
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
         self.log_browser.setStyleSheet(ss)
-        # self.command_edit.setStyleSheet(ss)
         self.log_browser.setAutoFillBackground(True)
-        self.log_browser.sizeHint = self.sizeHint
         self.log_browser.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.resize_grip = QtWidgets.QSizeGrip(self)
+        self.resize_grip = QtWidgets.QSizeGrip(widget)
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
         self.vlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
-        self.preferred_size = self.log_browser.preferred_size
         self.finish_init()
         log.log_handler.set_widget(self.log_browser)
-
-    def sizeHint(self):
-        if self.isFloating():
-            return QtCore.QSize(480, 640)
-        else:
-            return self.preferred_size
-
-    def report_top_level(self, floating):
-        super().report_top_level(floating)
-        if floating:
-            self.resize(QtCore.QSize(480, 480))
 
     def closeEvent(self, event):
         if getattr(log, 'watcher_thread', None):

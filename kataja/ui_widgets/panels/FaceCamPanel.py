@@ -52,7 +52,6 @@ class FaceCamPanel(Panel):
         self.viewfinder.setFixedWidth(self.camera_width)
         self.viewfinder.setFixedHeight(self.camera_width / self.aspect)
 
-
     def showEvent(self, event):
         self.camera.start()
         Panel.showEvent(self, event)

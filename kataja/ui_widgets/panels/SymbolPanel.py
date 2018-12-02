@@ -123,19 +123,15 @@ class SymbolPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        inner = self.widget()
-        # inner.preferred_size = QtCore.QSize(220, 130)
-        inner.setMinimumSize(160, 130)
-        inner.setMaximumSize(220, 400)
-        inner.setMinimumWidth(160)
-
+        self.preferred_floating_size = QtCore.QSize(240, 360)
+        widget = self.widget()
         layout = self.vlayout
-        self.selector = SelectionBox(parent=self)
+        self.selector = SelectionBox(parent=widget)
         self.selector.add_items([(table_dict[item], item) for item in table_names])
         self.selector.activated.connect(self.change_symbol_set)
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
         layout.addWidget(self.selector)
-        self.symlist = QtWidgets.QListWidget()
+        self.symlist = QtWidgets.QListWidget(parent=widget)
         self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.symlist.setSpacing(8)
         self.symlist.setMouseTracking(True)
@@ -150,7 +146,7 @@ class SymbolPanel(Panel):
         hlayout = box_row(layout)
         self.info = QtWidgets.QLabel('')
         hlayout.addWidget(self.info)
-        self.resize_grip = QtWidgets.QSizeGrip(self)
+        self.resize_grip = QtWidgets.QSizeGrip(widget)
         self.resize_grip.hide()
         hlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         self.tables = {}

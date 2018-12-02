@@ -23,9 +23,6 @@ class NavigationPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
-        inner.setMaximumHeight(140)
-        inner.setMinimumWidth(160)
-        inner.setMaximumWidth(220)
         inner.setAutoFillBackground(True)
         ctrl.main.forest_changed.connect(self.update_tree_counter)
         layout = self.vlayout
@@ -34,39 +31,39 @@ class NavigationPanel(Panel):
 
         hlayout = box_row(layout)
         self.current_treeset = KatajaSpinbox(
-            parent=self, range_min=1, range_max=5, wrapping=True, action='jump_to_forest'
+            parent=inner, range_min=1, range_max=5, wrapping=True, action='jump_to_forest'
         ).to_layout(hlayout, with_label='Tree set')
         self.current_treeset.setKeyboardTracking(False)
-        self.treeset_counter = QtWidgets.QLabel('0', self)
+        self.treeset_counter = QtWidgets.QLabel('0', inner)
         hlayout.addWidget(self.treeset_counter)
 
         hlayout = box_row(layout)
         action = ctrl.ui.get_action('previous_forest')
-        self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=self,
+        self.prev_tree = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=inner,
                                         action=action).to_layout(hlayout)
         self.prev_tree.setMinimumWidth(72)
         action = ctrl.ui.get_action('next_forest')
-        self.next_tree = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow, parent=self,
+        self.next_tree = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow, parent=inner,
                                         action=action).to_layout(hlayout)
         self.next_tree.setMinimumWidth(72)
 
         hlayout = box_row(layout)
         self.current_derivation = KatajaSpinbox(
-            parent=self, range_min=1, range_max=5,
+            parent=inner, range_min=1, range_max=5,
             wrapping=True,
             action='jump_to_derivation').to_layout(hlayout, with_label='Derivation step')
         self.current_derivation.setKeyboardTracking(False)
-        self.derivation_counter = QtWidgets.QLabel('0', self)
+        self.derivation_counter = QtWidgets.QLabel('0', inner)
         hlayout.addWidget(self.derivation_counter)
 
         hlayout = box_row(layout)
         action = ctrl.ui.get_action('prev_derivation_step')
-        self.prev_der = TwoColorButton(text='Previous', bitmaps=qt_prefs.down_arrow, parent=self,
+        self.prev_der = TwoColorButton(text='Previous', bitmaps=qt_prefs.down_arrow, parent=inner,
                                        action=action).to_layout(hlayout)
         self.prev_der.setMaximumHeight(20)
 
         action = ctrl.ui.get_action('next_derivation_step')
-        self.next_der = TwoColorButton(text='Next', bitmaps=qt_prefs.up_arrow, parent=self,
+        self.next_der = TwoColorButton(text='Next', bitmaps=qt_prefs.up_arrow, parent=inner,
                                        action=action).to_layout(hlayout)
         self.next_der.setMaximumHeight(20)
         self.finish_init()
