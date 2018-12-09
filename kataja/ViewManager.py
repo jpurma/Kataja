@@ -126,17 +126,16 @@ class ViewManager:
         # if self.zoom_anim:
         #    self.zoom_anim.stop()
         # expand the logical scene rect when necessary
-        if target_rect.right() > sr.right():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 0))
-        if target_rect.bottom() > sr.bottom():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 0, 0, 500))
-        if target_rect.left() < sr.left():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(500, 0, 0, 0))
-        if target_rect.top() < sr.top():
-            self.view.setSceneRect(sr + QtCore.QMarginsF(0, 500, 0, 0))
+        rm = 1000 if target_rect.right() > sr.right() else 0
+        bm = 500 if target_rect.bottom() > sr.bottom() else 0
+        lm = 1000 if target_rect.left() < sr.left() else 0
+        tm = 500 if target_rect.top() < sr.top() else 0
+        if rm or bm or lm or tm:
+            self.view.setSceneRect(sr + QtCore.QMarginsF(500, 500, 500, 500))
         self.view.fitInView(target_rect, 1)
         self._fit_scale = self.view.transform().m11()
         ctrl.main.viewport_moved.emit()
+        self.view.centerOn(target_rect.center())
 
     def scale_view_by(self, delta):
         """
@@ -193,21 +192,20 @@ class ViewManager:
         self.did_manual_zoom = True
 
     def _new_visible_rect(self):
-        #print('cached view rect: ', self._cached_visible_rect)
         vr = self._calculate_visible_rect() + self.margins()
-        #print('new visible rect: ', vr)
         if (not self._cached_visible_rect) or vr != self._cached_visible_rect:
             self._cached_visible_rect = vr
-            #print('recalculated view rect: ', vr)
             return vr
 
-    def fit_to_window(self):
+    def fit_to_window(self, force=False):
         """ Fit all visible items to view window. """
         self.did_manual_zoom = False
+        before = self._cached_visible_rect
         vr = self._new_visible_rect()
-        if not vr:
-            return
-        self._fit_to_view(vr)
+        if vr:
+            self._fit_to_view(vr)
+        elif force and before:
+            self._fit_to_view(before)
 
     def fit_if_expanding(self):
         """ Refit to viewport if new graph is larger than previous """
@@ -243,7 +241,8 @@ class ViewManager:
                 self.fit_to_window()
         elif reason == ViewUpdateReason.FIT_IN_TRIGGERED:
             #print('------ FIT_IN_TRIGGERED')
-            self.fit_to_window()
+            self.fit_to_window(force=True)
+
         elif reason == ViewUpdateReason.MAJOR_REDRAW:
             #print('------ MAJOR_REDRAW')
             if self.auto_zoom:
@@ -294,25 +293,12 @@ class ViewManager:
                 continue
             empty = False
             left, top, right, bottom = node.scene_rect_coordinates(use_current_position)
-            #if left < rect_left:
-            #    leftmost = node
-            #if right > rect_right:
-            #    rightmost = node
-            #if top < rect_top:
-            #    topmost = node
-            #if bottom > rect_bottom:
-            #    bottommost = node
             rect_left = left if left < rect_left else rect_left
             rect_right = right if right > rect_right else rect_right
             rect_top = top if top < rect_top else rect_top
             rect_bottom = bottom if bottom > rect_bottom else rect_bottom
         if empty:
             return QtCore.QRectF(0, 0, 320, 240)
-        #print('use_current_position:', use_current_position)
-        #print('leftmost:', leftmost, leftmost.scene_rect_coordinates(use_current_position))
-        #print('rightmost:', rightmost, rightmost.scene_rect_coordinates(use_current_position))
-        #print('topmost:', topmost, topmost.scene_rect_coordinates(use_current_position))
-        #print('bottommost:', bottommost, bottommost.scene_rect_coordinates(use_current_position))
         sm = ctrl.forest.semantics_manager
         if sm.visible:
             for item in sm.all_items:
@@ -321,7 +307,6 @@ class ViewManager:
                 rect_right = right if right > rect_right else rect_right
                 rect_top = top if top < rect_top else rect_top
                 rect_bottom = bottom if bottom > rect_bottom else rect_bottom
-        #print('finally: ', rect_left, rect_top, rect_right, rect_bottom)
         width = rect_right - rect_left
         if width < min_width:
             rect_left -= (min_width - width) / 2
@@ -330,7 +315,6 @@ class ViewManager:
         if height < min_height:
             rect_top -= (min_height - height) / 2
             height = min_height
-        #print('rect: ', rect_left, rect_top, width, height)
         r = QtCore.QRectF(rect_left, rect_top, width, height)
         return r
 

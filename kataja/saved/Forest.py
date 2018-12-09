@@ -170,12 +170,7 @@ class Forest(SavedObject):
             self.syntax.create_derivation(forest=self)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-            ds = self.derivation_steps
-            if self.starting_index is not None:
-                ds.derivation_step_index = self.starting_index
-            else:
-                ds.derivation_step_index = len(ds.derivation_steps) - 1
-            ds.jump_to_derivation_step(ds.derivation_step_index)
+            self.jump_to_starting_derivation()
             self.forest_edited()
 
         ctrl.main.update_colors()
@@ -267,6 +262,14 @@ class Forest(SavedObject):
         if index is None:
             index = len(self.derivation_steps.derivation_steps) - 1
         self.starting_index = index
+
+    def jump_to_starting_derivation(self):
+        ds = self.derivation_steps
+        if self.starting_index is not None:
+            ds.derivation_step_index = self.starting_index
+        else:
+            ds.derivation_step_index = len(ds.derivation_steps) - 1
+        ds.jump_to_derivation_step(ds.derivation_step_index)
 
     def remove_iterations(self, iterations):
         """

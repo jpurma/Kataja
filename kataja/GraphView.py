@@ -70,8 +70,8 @@ class GraphView(QtWidgets.QGraphicsView):
         self._suppressed_drag_mode = self.dragMode()
 
     def scrollContentsBy(self, x, y):
-        ctrl.main.viewport_moved.emit()
         QtWidgets.QGraphicsView.scrollContentsBy(self, x, y)
+        ctrl.main.viewport_moved.emit()
 
     def resizeEvent(self, event):
         QtWidgets.QGraphicsView.resizeEvent(self, event)
