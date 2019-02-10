@@ -94,6 +94,7 @@ class Controller:
         self.unassigned_objects = {}
         self.items_moving = False
         self.multiselection_delay = False
+        self.plugin_settings = None
         self.latex_field_parser = LatexFieldToINode()
         self.html_field_parser = HTMLToINode(rows_mode=False)
         self.plain_field_parser = PlainTextToINode(rows_mode=False)

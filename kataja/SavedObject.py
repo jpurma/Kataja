@@ -14,7 +14,7 @@ from kataja.utils import to_tuple, time_me
 from kataja.uniqueness_generator import next_available_uid
 
 __author__ = 'purma'
-ALLOW_SETS = False
+ALLOW_SETS = True
 
 
 class SaveError(Exception):
@@ -250,7 +250,7 @@ class SavedObject(object):
                 result = tuple(result)
                 return result
             elif isinstance(data, set):
-                log.warn('attempting to simplify a set -- sets are not compatible with JSON:', data)
+                #log.warn(f'attempting to simplify a set -- sets are not compatible with JSON: {data}')
                 if ALLOW_SETS:
                     result = set()
                     for o in data:

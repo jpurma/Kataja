@@ -71,7 +71,16 @@ class KatajaDocument(SavedObject):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         """
-        forests = self.create_forests(clear=False, treelist=[tree] if tree else None)
+        filename = ''
+        treelist = None
+        if isinstance(tree, str):
+            if tree.strip().startswith('['):
+                treelist = [tree]
+            else:
+                filename = tree
+        elif isinstance(tree, list):
+            treelist = tree
+        forests = self.create_forests(filename=filename, clear=False, treelist=treelist if tree else None)
         if forests:
             self.forests = forests
             self.set_forest(forests[0])
@@ -156,8 +165,7 @@ class KatajaDocument(SavedObject):
         return treelist
 
 
-    @staticmethod
-    def create_forests(filename=None, treelist=None, clear=False):
+    def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
         This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.
 
@@ -183,7 +191,9 @@ class KatajaDocument(SavedObject):
         examples
         """
 
-        if clear:
+        if filename:
+            treelist = KatajaDocument.load_treelist_from_text_file(filename)
+        elif clear:
             treelist = []
         elif not treelist:
             treelist = KatajaDocument.load_treelist_from_text_file(KatajaDocument.get_default_treeset_file()) or []

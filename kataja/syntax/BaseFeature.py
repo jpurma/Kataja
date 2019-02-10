@@ -161,7 +161,6 @@ class BaseFeature(SavedObject):
 
     @staticmethod
     def from_string(s):
-        print('using from_string -method from BaseFeature')
         if not s:
             return
         if s[0] in simple_signs:

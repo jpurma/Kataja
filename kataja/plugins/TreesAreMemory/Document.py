@@ -25,7 +25,7 @@
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
-
+from TreesAreMemory.TreesAreMemoryParser import load_lexicon
 
 class Document(KatajaDocument):
     """ This class is required for Kataja compatibility. KatajaDocument defines what is loaded as a set of trees
@@ -51,6 +51,8 @@ class Document(KatajaDocument):
 
         forests = []
 
+        shared_lexicon = load_lexicon(open(Document.get_default_lexicon_file()).readlines())
+
         if treelist:
             sentences = treelist
         else:
@@ -63,6 +65,7 @@ class Document(KatajaDocument):
 
         for sentence in sentences:
             syn = classes.SyntaxAPI()
+            syn.lexicon = shared_lexicon
             syn.input_text = sentence
             forest = Forest(heading_text=sentence, syntax=syn)
             forests.append(forest)

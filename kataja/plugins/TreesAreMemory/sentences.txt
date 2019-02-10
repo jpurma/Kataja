@@ -1,0 +1,31 @@
+# List of sentences given to the parser for testing purposes. Sentence per line.
+teoria kumoutui
+Pekka sanoi että teoria kumoutui
+Pekka sanoi että Merja sanoi että teoria kumoutui
+se väite että teoria kumoutui kumoutui
+se väite että Pekka sanoi että teoria kumoutui
+Pekka sanoi että se väite että teoria kumoutui kumoutui
+
+
+the old lady sent the nice letter to the lady
+the old lady sent the nice letter
+the nice letter the lady sent me was nice
+the nice letter
+the nice letter the lady sent
+the lady sent the nice letter
+the nice letter from the lady
+the nice letter from the smart lady of the lake
+
+[ the [ [ nice letter ] [ from [ the [ smart lady ] ] ] ] ]
+[ [ the [ nice letter ] ] [ from [ the [ smart lady ] ] ] ]
+
+
+the nice letter from the smart lady
+the smart letter from the lady
+the smart lady
+the very smart lady
+the smart lady sleeps
+the smart lady likes smart London
+the man admires the smart lady
+who the man admires
+who did you see

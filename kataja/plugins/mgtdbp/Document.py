@@ -34,8 +34,7 @@ class Document(KatajaDocument):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions
      in here, as scope of undo should be a single Forest. """
 
-    @staticmethod
-    def create_forests(filename=None, treelist=None, clear=False):
+    def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
 
         :param filename: not used

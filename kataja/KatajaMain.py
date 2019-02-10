@@ -203,7 +203,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         #    self.grabGesture(gesture)
 
         if image_out:
-            self.print_manager.print_to_file(running_environment.default_userspace_path, image_out)
+            self.print_manager.print_all(running_environment.default_userspace_path, image_out)
             quit()
 
 

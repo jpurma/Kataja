@@ -64,6 +64,7 @@ class PluginManager:
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 
         """
+        ctrl.plugin_settings = {}
         self.active_plugin_setup = self.load_plugin(plugin_key)
         if not self.active_plugin_setup:
             return
@@ -122,6 +123,7 @@ class PluginManager:
         ctrl.main.disable_signaling()
         if hasattr(self.active_plugin_setup, 'tear_down_plugin'):
             self.active_plugin_setup.tear_down_plugin(self, ctrl, prefs)
+        ctrl.plugin_settings = {}
         ctrl.main.clear_document()
         ctrl.ui.unload_actions_from_module(classes.added_actions, classes.replaced_actions)
         classes.added_actions = []

@@ -1,0 +1,44 @@
+# ======================================================================================
+#   Lexicon
+# ======================================================================================
+
+# ======== Polarity and headedness  ========
+# (no sign) = positive feature, matches with a negative feature with same name
+# = = negative feature, matches with a positive feature with the same name, once satisfied this becomes head
+# - = negative feature, matches with a positive feature with the same name, once satisfied the other becomes head
+# ======== Feature expiration ========
+# default = feature expires when used in feature match
+# . = the other feature in feature match is not spent
+# + = this feature is not spent when used in feature match
+# ======== Blocking ========
+# | = this feature has to be satisfied before next features (in list) become available
+# € = this feature has to be satisfied before next features (in list) become available
+# ======== Initiating movement ========
+# default = positive feature in feature match initiates the movement
+# ! = this feature can initiate movement (for negative features)
+# ======== Direction ========
+# default = branch with positive feature goes left, branch with negative feature goes right
+# ← = branch with this feature goes left (for negative features)
+# ======== Feature value ========
+# fname:val = feature gives or requires this value, depending on its sign (eg. -N:Nom matches only with N:Nom )
+
+# feature description should have this structure: {other}{polarity}name{:value}
+
+se :: )=N D !-Arg ←C
+väite :: D N !-Arg ←C
+Pekka :: D N !-Arg ←C
+Merja :: D N !-Arg ←C
+sanoi :: |←Arg ←CArg !=C ←T
+että :: |=CArg !-T
+teoria :: D N !-Arg ←C
+kumoutui :: |←Arg |!=C CArg
+
+# lady :: +A N -A
+# letter :: +A N -A
+# me :: D )-acc
+# nice :: +A N -A
+# old :: +A N -A
+# sent :: V ←acc |←Arg ←Arg !=C !-C =P
+# the :: |)=N ←C D !-Arg !=D =P
+# to :: |=D P
+# was :: V ←Arg ←Arg =N !=C !-C

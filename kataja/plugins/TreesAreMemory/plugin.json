@@ -1,0 +1,7 @@
+{
+	"name": "TreesAreMemory",
+	"description": "1-lookahead bottom up parser",
+	"author": "Jukka Purma",
+	"version": "0.1",
+	"setup": "setup.py"
+}
