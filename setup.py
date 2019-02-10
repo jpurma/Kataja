@@ -17,10 +17,19 @@ python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 from setuptools import setup, find_packages
 from os import path, walk
 
+manually_excluded = ['kataja.plugins.PCBPlugin3', 'kataja.plugins.PCBPlugin4']
+
 
 def plugin_files(directory):
     paths = []
     for (fpath, directories, filenames) in walk(directory):
+        if fpath.replace('/', '.') in manually_excluded or fpath in symlinked_plugins:
+            break
+        elif fpath.strip().endswith('__pycache__'):
+            break
+        elif fpath.strip().endswith('versions'):
+            break
+
         for dir in directories:
             dir_path = path.join(fpath, dir)
             if dir.startswith('.') or path.islink(dir_path):
@@ -58,9 +67,10 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 with open(path.join(here, 'VERSION')) as version_file:
     version = version_file.read().rsplit('|', 1)[-1].strip()
 
-plugin_data_files = plugin_files('kataja/plugins')
 # at the moment we want to EXCLUDE symlinked plugins, as these are unpublished attempts
 symlinked_plugins = find_symlinks('kataja/plugins')
+
+plugin_data_files = plugin_files('kataja/plugins')
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
@@ -167,7 +177,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'venv', '.git'] + symlinked_plugins),  # Required
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'venv', '.git'] + symlinked_plugins + manually_excluded),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -236,4 +246,4 @@ setup(
     },
 )
 
-print('excluded plugins: ', symlinked_plugins)
+print('excluded plugins: ', symlinked_plugins + manually_excluded)
