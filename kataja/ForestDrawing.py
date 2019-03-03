@@ -86,9 +86,6 @@ class ForestDrawing:
                 nsp = target.mapFromScene(nsp)
             target.current_position = nsp.x(), nsp.y()
             target.target_position = nsp.x(), nsp.y()
-        if target.current_scene_position != source.current_scene_position:
-            print('copy position led to different positions: ', target.current_scene_position,
-                  source.current_scene_position)
         target.locked = source.locked
         target.use_adjustment = source.use_adjustment
         target.adjustment = source.adjustment
@@ -161,6 +158,9 @@ class ForestDrawing:
         gn = self.create_node(label=label, relative=host, node_type=g.GLOSS_NODE)
         if host:
             self.connect_node(host, child=gn)
+            gn.lock_to_node(host)
+
+        gn.update_label()
         return gn
 
     def create_comment_node(self, text=None, host=None, pixmap_path=None):

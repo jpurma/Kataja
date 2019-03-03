@@ -55,7 +55,7 @@ class BaseConstituent(SavedObject, IConstituent):
                }
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
-    def __init__(self, label='', parts=None, uid='', features=None, lexical_heads=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, lexical_heads=None, adjunct=False, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is
         easily dumped to file. Extending this needs to take account if new elements should also
@@ -68,17 +68,22 @@ class BaseConstituent(SavedObject, IConstituent):
         self.inherited_features = features or []
         self.checked_features = []
         self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
+        self.adjunct = adjunct
+        self.gloss = ''
         for feature in self.features:
             feature.host = self
 
     def __str__(self):
+        if self.adjunct:
+            return f'<{self.label}>'
         return str(self.label)
 
     def __repr__(self):
         if self.is_leaf():
-            return 'Constituent(label=%s)' % self.label
-        else:
-            return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
+            if self.adjunct:
+                return 'Constituent(label=%r, adjunct=True)' % self.label
+            return 'Constituent(label=%r)' % self.label
+        return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
 
     def __contains__(self, c):
         if self == c:
@@ -275,7 +280,8 @@ class BaseConstituent(SavedObject, IConstituent):
         new_features = [f.copy() for f in self.features]
         nc = self.__class__(label=self.label,
                             parts=new_parts,
-                            features=new_features)
+                            features=new_features,
+                            adjunct=self.adjunct)
         #nc.checked_features = checked_features
         return nc
 
@@ -293,4 +299,6 @@ class BaseConstituent(SavedObject, IConstituent):
     checked_features = SavedField("checked_features")
     inherited_features = SavedField("inherited_features")
     lexical_heads = SavedField("lexical_heads")
+    adjunct = SavedField("adjunct")
+    gloss = SavedField("gloss")
 

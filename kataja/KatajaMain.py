@@ -184,7 +184,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if tree:
             plugin = plugin or 'FreeDrawing'
         else:
-            plugin = plugin or prefs.active_plugin_name
+            plugin = plugin or prefs.active_plugin_name or 'FreeDrawing'
         self.plugin_manager.enable_plugin(plugin)
         self.document.load_default_forests(tree=tree)
         self.document.play = not silent

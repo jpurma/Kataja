@@ -257,7 +257,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         elif not self.settings.get('visible'):
             lv = False
         else:
-            if self.edge_type == g.CONSTITUENT_EDGE:
+            if self.edge_type == g.CONSTITUENT_EDGE or self.edge_type == g.ADJUNCT_EDGE:
                 if end.locked_to_node:
                     lv = False
                 elif (self.forest.visualization and
@@ -482,14 +482,18 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
         :return:
         """
-        if self.edge_type == g.CONSTITUENT_EDGE:
+        if self.edge_type == g.CONSTITUENT_EDGE or self.edge_type == g.ADJUNCT_EDGE:
             tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
 
             s_uid = self.start.uid if self.start else ''
             e_uid = self.end.uid if self.end else ''
             sx, sy = self.start_point
             ex, ey = self.end_point
-            self.k_tooltip = f"""<strong>Constituent relation</strong><br/>
+            if self.edge_type == g.ADJUNCT_EDGE:
+                rname = "Adjunct relation"
+            else:
+                rname = "Constituent relation"
+            self.k_tooltip = f"""<strong>{rname}</strong><br/>
             from {tt_style % s_uid} (x:{int(sx)}, y:{int(sy)})<br/>
              to {tt_style % e_uid} (x:{int(ex)}, y:{int(ey)}) <br/> 
             uid:{tt_style % self.uid}"""

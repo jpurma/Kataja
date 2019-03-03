@@ -80,6 +80,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             found_nodes.add(node.uid)
             node.syntactic_object = me
             node.label = me.label
+            node.index = ''
         else:
             cns_to_create.append((me, parent_synobj))
         for part in me.parts:
@@ -212,7 +213,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         for part in synobj.parts:
             child = recursive_create_edges_for_constituent(part)
             if child:
-                connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
+                connect_if_necessary(node, child, child.edge_type())
         if synobj.parts:
             features = list(synobj.get_features())
             semantics = getattr(synobj, 'semantics', None)
@@ -383,13 +384,13 @@ def verify_edge_order_for_constituent_nodes(node):
         #  we assume that if parts use lists, then they are implicitly ordered.
         correct_order = node.syntactic_object.sorted_parts()
         current_order = [edge.end.syntactic_object for edge in node.edges_down if
-                         edge.end and edge.edge_type == g.CONSTITUENT_EDGE]
+                         edge.end and edge.end.node_type == g.CONSTITUENT_NODE]
         if correct_order != current_order:
             new_order = []
             passed = []
             for edge in node.edges_down:
-                if edge.edge_type == g.CONSTITUENT_EDGE and edge.end and \
-                                edge.end.syntactic_object in node.syntactic_object.parts:
+                if (edge.end and edge.end.node_type == g.CONSTITUENT_NODE and edge.end.syntactic_object in
+                   node.syntactic_object.parts):
                     new_order.append((correct_order.index(edge.end.syntactic_object), edge))
                 else:
                     passed.append(edge)

@@ -283,8 +283,8 @@ class EdgePath:
             #if connection_style == CONNECT_TO_BORDER and start.is_empty():
             #    connection_style = CONNECT_TO_SIMILAR
             if connection_style == SPECIAL:
-                csp = start.special_connection_point(sx, sy, ex, ey, start=True,
-                                                     edge_type=self.edge.edge_type)
+                csp = start.get_special_connection_point(sx, sy, ex, ey, start=True,
+                                                         edge_type=self.edge.edge_type)
                 self.computed_start_point, self.curve_dir_start = csp
                 self.abstract_start_point = self.computed_start_point
             elif connection_style == CONNECT_TO_CENTER:
@@ -303,8 +303,8 @@ class EdgePath:
                 connection_style = CONNECT_TO_SIMILAR
 
             if connection_style == SPECIAL:
-                cep = end.special_connection_point(sx, sy, ex, ey, start=False,
-                                                   edge_type=self.edge.edge_type)
+                cep = end.get_special_connection_point(sx, sy, ex, ey, start=False,
+                                                       edge_type=self.edge.edge_type)
                 self.computed_end_point, self.curve_dir_end = cep
                 self.abstract_end_point = self.computed_end_point
             elif connection_style == CONNECT_TO_CENTER:

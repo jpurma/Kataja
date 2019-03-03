@@ -66,10 +66,20 @@ master_styles = {
             'shape_name': 'cubic',
             'color_key': '',
             'pull': .40,
-            'visible': True,
+            'visible': False,
             'arrowheads': 0,
             'start_connects_to': BORDER,
             'end_connects_to': BORDER,
+            'z_value': 5
+        },
+        ADJUNCT_EDGE: {
+            'shape_name': 'linear',
+            'color_key': 'content1tr',
+            'pull': .10,
+            'visible': True,
+            'arrowheads': 0,
+            'start_connects_to': MAGNETS,
+            'end_connects_to': MAGNETS,
             'z_value': 5
         }
     },
@@ -116,7 +126,7 @@ master_styles = {
             'shape_name': 'linear',
             'color_key': '',
             'pull': .40,
-            'visible': True,
+            'visible': False,
             'arrowheads': 0,
             'start_connects_to': BOTTOM_CENTER,
             'end_connects_to': BOTTOM_CENTER
@@ -129,6 +139,16 @@ master_styles = {
             'arrowheads': 0,
             'start_connects_to': BORDER,
             'end_connects_to': BORDER
+        },
+        ADJUNCT_EDGE: {
+            'shape_name': 'linear',
+            'color_key': 'content1tr',
+            'pull': .10,
+            'visible': True,
+            'arrowheads': 0,
+            'start_connects_to': BOTTOM_CENTER,
+            'end_connects_to': BOTTOM_CENTER,
+            'z_value': 5
         }
     }
 }

@@ -15,6 +15,7 @@ ARROW = 'r'
 ABSTRACT_EDGE = 'z'
 DIVIDER = 'd'
 COMMENT_EDGE = '!'
+ADJUNCT_EDGE = 'a'
 
 # Node types
 ABSTRACT_NODE = 7

@@ -600,7 +600,7 @@ class Forest(SavedObject):
                 if edge.edge_type == edge_type:
                     edge.path.changed = True
                     edge.update_shape()
-            if edge_type == g.CONSTITUENT_EDGE:
+            if edge_type == g.CONSTITUENT_EDGE or edge_type == g.ADJUNCT_EDGE:
                 for node in self.nodes.values():
                     if node.triangle_stack:
                         node.label_object.update_label(force_update=True)

@@ -56,7 +56,9 @@ class Projection:
                 return []
             child = chain[0]
             for parent in chain[1:]:
-                edge = child.get_edge_to(parent, edge_type=g.CONSTITUENT_EDGE)
+                edge = child.get_edge_to(parent,
+                                         edge_type=g.ADJUNCT_EDGE if child.syntactic_node.adjunct
+                                         else g.CONSTITUENT_EDGE)
                 if edge:
                     res.add(edge)
                 child = parent

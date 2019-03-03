@@ -122,8 +122,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def next_selectable_from_edge(edge, direction):
         if direction == 'left':
             all_siblings = []
-            for child_edge in edge.start.get_edges_down(visible=True):
-                all_siblings.append(child_edge)
+            for child_edge in edge.start.edges_down:
+                if child_edge.is_visible():
+                    all_siblings.append(child_edge)
             i = all_siblings.index(edge)
             if i:
                 return all_siblings[i - 1]
@@ -131,8 +132,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 return edge
         if direction == 'right':
             all_siblings = []
-            for child_edge in edge.start.get_edges_down(visible=True):
-                all_siblings.append(child_edge)
+            for child_edge in edge.start.edges_down:
+                if child_edge.is_visible():
+                    all_siblings.append(child_edge)
             i = all_siblings.index(edge)
             if i < len(all_siblings) - 1:
                 return all_siblings[i + 1]

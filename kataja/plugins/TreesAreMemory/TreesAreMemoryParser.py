@@ -47,7 +47,7 @@ class TreesAreMemoryParser:
 
         # Check if new node has immediate justification for merging with tree.
         next_will_match = self.find_matching_features_for(next_const, tree, deep=False)
-        if next_will_match:
+        if next_will_match and False:
             # ...if match is found a pile of nodes in wrong order is put at the top of the tree
             msg = f'Merge because "{next_const}" fits into ongoing phrase. "{tree.label}", {next_will_match[0]}' \
                 f' & {next_will_match[2]}'

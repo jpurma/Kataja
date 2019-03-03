@@ -175,7 +175,7 @@ class FeatureNode(Node):
           (field_name, html).
         :return:
         """
-        return None
+        return 'label', ''
 
     def hidden_in_triangle(self):
         """ If features are folded into triangle, they are always hidden. 
@@ -246,7 +246,7 @@ class FeatureNode(Node):
     def is_needy(self):
         return self.syntactic_object.is_needy()
 
-    def valuing(self):
+    def is_valuing(self):
         return not (self.syntactic_object.unvalued() or self.syntactic_object.checked_by)
 
     def can_satisfy(self):
@@ -265,9 +265,8 @@ class FeatureNode(Node):
         return []
 
     def get_host(self):
-        for parent in self.get_parents():
-            if parent.node_type == g.CONSTITUENT_NODE:
-                return parent
+        for parent in self.get_parents(of_type=g.CONSTITUENT_NODE):
+            return parent
 
     def _calculate_inner_rect(self, extra_w=0, extra_h=0):
         label = self.label_object
@@ -397,12 +396,11 @@ class FeatureNode(Node):
         super().update_label()
         self.left_shape, self.right_shape = self.get_shape()
 
-
     def get_shape(self):
         if self.syntactic_object and hasattr(self.syntactic_object, 'get_shape'):
             return self.syntactic_object.get_shape()
         else:
-            left = self.fshape if self.valuing() else 0
+            left = self.fshape if self.is_valuing() else 0
             right = self.fshape if self.is_needy() or self.is_satisfied() else 0
             return left, right
 
@@ -435,6 +433,8 @@ class FeatureNode(Node):
         """
         if 'color_key' in self._settings:
             ck = self.settings.get('color_key')
+        elif hasattr(self.syntactic_object, 'get_color_key'):
+            ck = self.syntactic_object.get_color_key()
         elif self.name in self.forest.semantics_manager.colors:
             ck = self.forest.semantics_manager.colors[self.name]
         elif self.name:
@@ -446,11 +446,11 @@ class FeatureNode(Node):
                 ck = 'accent' + str(c_id)
         else:
             ck = self.settings.get('color_key')
-        if self.syntactic_object.is_inactive():
+        if not ck.endswith('tr') and self.syntactic_object.is_inactive():
             ck += 'tr'
         return ck
 
-    def special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
+    def get_special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
         if edge_type == g.FEATURE_EDGE: # not used atm.
             f_align = self.forest.settings.get('feature_positioning')
             br = self.boundingRect()

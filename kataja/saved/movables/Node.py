@@ -312,22 +312,17 @@ class Node(Draggable, Movable):
             # some syntactic sense.
         else:
             edges_down = self.edges_down
+        if not of_type and similar:
+            of_type = self.node_type
         if visible:
-            if similar:
-                et = self.edge_type()
+            if of_type:
                 return [edge.end for edge in edges_down if
-                        edge.edge_type == et and edge.end and edge.end.is_visible()]
-            elif of_type:
-                return [edge.end for edge in edges_down if
-                        edge.edge_type == of_type and edge.end and edge.end.is_visible()]
+                        edge.end and edge.end.node_type == of_type and edge.end.is_visible()]
             else:
                 return [edge.end for edge in edges_down if edge.end and edge.end.is_visible()]
         else:
-            if similar:
-                et = self.edge_type()
-                return [edge.end for edge in edges_down if edge.edge_type == et and edge.end]
-            elif of_type:
-                return [edge.end for edge in edges_down if edge.edge_type == of_type and edge.end]
+            if of_type:
+                return [edge.end for edge in edges_down if edge.end and edge.end.node_type == of_type]
             else:
                 return [edge.end for edge in edges_down if edge.end]
 
@@ -337,20 +332,20 @@ class Node(Draggable, Movable):
         :param similar: boolean, only return nodes of same type (eg.
         ConstituentNodes)
         :param visible: boolean, only return visible nodes
-        :param of_type: int, only return Edges of certain subclass.
+        :param of_type: int, only return parents of certain node_type
         :return: list of Nodes
         """
         if not self.edges_up:
             return []
-        if similar or of_type is not None:
-            if of_type is None:
-                of_type = self.edge_type()
+        if not of_type and similar:
+            of_type = self.node_type
+        if of_type:
             if visible:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == of_type and edge.start and edge.start.is_visible()]
+                        edge.start and edge.start.node_type == of_type and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == of_type and edge.start]
+                        edge.start and edge.start.node_type == of_type]
         else:
             if visible:
                 return [edge.start for edge in self.edges_up if
@@ -440,35 +435,17 @@ class Node(Draggable, Movable):
         :param visible:
         """
 
-        def filter_func(rel):
-            """
-            :param rel:
-            :return: bool """
-            if similar and rel.edge_type != self.edge_type():
-                return False
-            if visible and not rel.is_visible():
-                return False
-            return True
-
-        return filter(filter_func, self.edges_up)
-
-    def get_edges_down(self, similar=True, visible=False):
-        """ Returns edges down, filtered
-        :param similar:
-        :param visible:
-        """
-
         def filter_func(edge):
             """
             :param edge:
             :return: bool """
-            if similar and edge.edge_type != self.edge_type():
+            if similar and edge.start.node_type != self.node_type:
                 return False
             if visible and not edge.is_visible():
                 return False
             return True
 
-        return filter(filter_func, self.edges_down)
+        return filter(filter_func, self.edges_up)
 
     def list_descendants_once(self):
         """

@@ -31,7 +31,7 @@ from kataja.Shapes import SHAPE_PRESETS
 import os
 
 # Disable these if necessary for debugging
-enable_loading_preferences = True
+enable_loading_preferences = False
 enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',

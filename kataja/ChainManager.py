@@ -119,7 +119,8 @@ class ChainManager:
         for index, original in originals.items():
             my_parents = parents[index]
             if len(my_parents) > 1:
-                for foo, parent in my_parents[1:]:
+                # for foo, parent in my_parents[1:]:
+                for foo, parent in my_parents[:-1]:
                     trace = self.forest.drawing.create_trace_for(original)
                     self.forest.drawing.replace_node(original, trace, only_for_parent=parent)
 

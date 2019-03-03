@@ -153,14 +153,17 @@ class ConstituentNode(Node):
         if self.syntactic_object:
             self.syntactic_object.label = value
 
+    def get_gloss(self):
+        if self.syntactic_object:
+            return self.syntactic_object.gloss
+        return self.gloss
+
     def set_gloss(self, text):
-        self.gloss = text
-        self.update_gloss()
-        if self.gloss_node:
-            self.gloss_node.text = text
+        if self.syntactic_object:
+            self.syntactic_object.gloss = text
         else:
-            # create gloss node
-            pass
+            self.gloss = text
+        self.update_gloss()
 
     def is_card(self) -> bool:
         return self.label_object and self.label_object.is_card()
@@ -190,7 +193,7 @@ class ConstituentNode(Node):
         """
         :return:
         """
-        gs = self.get_children(visible=True, of_type=g.GLOSS_EDGE)
+        gs = self.get_children(visible=True, of_type=g.GLOSS_NODE)
         if gs:
             return gs[0]
 
@@ -280,6 +283,7 @@ class ConstituentNode(Node):
             lines.append(f"<strong>Syntactic object: {synobj.__class__.__name__}</strong>")
             lines.append(f'uid: {tt_style % synobj.uid}')
             lines.append(f"label: '{escape(synobj.label)}'")
+            lines.append(f"adjunct: {synobj.adjunct}")
             heads = synobj.get_heads()
             heads_str = ["itself" if h is synobj
                          else f'{escape(h.label)}, {tt_style % h.uid}'
@@ -309,6 +313,12 @@ class ConstituentNode(Node):
         label = as_text(self.label, single_line=True)
         return f'CN {label}'
 
+    def edge_type(self):
+        if self.syntactic_object and self.syntactic_object.adjunct:
+            return g.ADJUNCT_EDGE
+        else:
+            return g.CONSTITUENT_EDGE
+
     def label_as_html(self):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
@@ -328,7 +338,7 @@ class ConstituentNode(Node):
         html = []
 
         label_text_mode = self.label_text_mode
-        include_index = False
+        include_index = True
         l = ''
         if label_text_mode == g.NODE_LABELS:
             l = self.label
@@ -346,7 +356,6 @@ class ConstituentNode(Node):
                 l = ' '.join(fl)
             else:
                 l = self.label
-
         l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
@@ -470,12 +479,13 @@ class ConstituentNode(Node):
 
 
         """
+        gloss_text = self.get_gloss()
         gloss_node = self.gloss_node
-        if gloss_node and not self.gloss:
+        if gloss_node and not gloss_text:
             ctrl.drawing.delete_node(gloss_node)
-        elif self.gloss and not gloss_node:
+        elif gloss_text and not gloss_node:
             ctrl.drawing.create_gloss_node(host=self)
-        elif self.gloss and gloss_node:
+        elif gloss_text and gloss_node:
             gloss_node.update_label()
 
     def gather_children(self, position, shape):
@@ -488,23 +498,21 @@ class ConstituentNode(Node):
         """
         children = [fn for fn in self.get_children(visible=True, similar=False) if
                     fn.node_type == g.FEATURE_NODE]
-        if not children:
+        if not (children or self.gloss_node):
             return
-
+        bottom_y = self.boundingRect().bottom()
+        y = bottom_y
         if shape == g.CARD:
             position = g.TWO_COLUMNS  # only two column arrangement looks good on cards
 
         if position == g.VERTICAL_COLUMN:
             center_x = self.boundingRect().center().x()
-            bottom_y = self.boundingRect().bottom()
-            y = bottom_y
             for fnode in children:
                 if fnode.locked_to_node is self:
                     fbr = fnode.future_children_bounding_rect()
                     fnode.move_to(center_x, y - fbr.y())
                     y += fbr.height() + 2
         elif position == g.HORIZONTAL_ROW:  # horizontal
-            bottom_y = self.boundingRect().bottom()
             nods = []
             total_width = 0
             max_height = 0
@@ -520,6 +528,7 @@ class ConstituentNode(Node):
                 y = bottom_y + (max_height / 2)
                 for fnode, x in nods:
                     fnode.move_to(left_margin + x, y)
+            y = bottom_y + max_height + 2
         elif position == g.TWO_COLUMNS:  # card layout, two columns
             self._can_cascade_edges = False
             in_card = self.forest.settings.get('cn_shape') == g.CARD
@@ -560,11 +569,15 @@ class ConstituentNode(Node):
                     fbr = fnode.future_children_bounding_rect()
                     fnode.move_to(left_margin + fbr.width() / 2, y)
                     y += fbr.height() + 2
-                y = top_y
+                yr = top_y
                 for fnode in right_nods:
                     fbr = fnode.future_children_bounding_rect()
-                    fnode.move_to(right_margin - fbr.width() / 2, y)
-                    y += fbr.height() + 2
+                    fnode.move_to(right_margin - fbr.width() / 2, yr)
+                    yr += fbr.height() + 2
+                y = max(y, yr)
+        if self.gloss_node:
+            self.gloss_node.lock_to_node(self, (0, y + self.gloss_node.height / 2 + 2))
+            #self.gloss_node.move_to(0, y)
 
     # ### Labels #############################################
     # things to do with traces:
@@ -595,8 +608,7 @@ class ConstituentNode(Node):
             getnode = self.forest.get_node
             return [getnode(f) for f in self.syntactic_object.get_features()]
         else:
-            return [f for f in self.get_children(visible=True, of_type=g.FEATURE_EDGE) if
-                    f.node_type != g.FEATURE_NODE]
+            return self.get_children(visible=True, of_type=g.FEATURE_NODE)
 
     def get_features_as_string(self):
         """
@@ -722,7 +734,7 @@ class ConstituentNode(Node):
                 y = self.inner_rect.top()
                 h = self.inner_rect.height()
                 for feat in feats:
-                    left = feat.fshape if feat.valuing() else 0
+                    left = feat.fshape if feat.is_valuing() else 0
                     right = feat.fshape if feat.is_needy() or feat.is_satisfied() else 0
                     color = feat.get_host_color()
                     w = feat.compute_piece_width(self.label_object.string_width, left, right)

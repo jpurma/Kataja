@@ -24,14 +24,15 @@
 
 # feature description should have this structure: {other}{polarity}name{:value}
 
-se :: )=N D !-Arg ←C
-väite :: D N !-Arg ←C
-Pekka :: D N !-Arg ←C
 Merja :: D N !-Arg ←C
-sanoi :: |←Arg ←CArg !=C ←T
+Pekka :: D N !-Arg ←C
 että :: |=CArg !-T
-teoria :: D N !-Arg ←C
-kumoutui :: |←Arg |!=C CArg
+kumoutui :: !=D:nom v T
+sanoi :: |←Arg ←CArg !=C ←T
+se :: )=N D !-Arg ←C
+teoria :: ←D:nom N
+tämä :: ←D:nom N -N
+väite :: D N !-Arg ←C
 
 # lady :: +A N -A
 # letter :: +A N -A

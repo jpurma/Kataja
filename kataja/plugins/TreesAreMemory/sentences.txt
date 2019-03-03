@@ -1,5 +1,5 @@
 # List of sentences given to the parser for testing purposes. Sentence per line.
-teoria kumoutui
+tämä teoria kumoutui
 Pekka sanoi että teoria kumoutui
 Pekka sanoi että Merja sanoi että teoria kumoutui
 se väite että teoria kumoutui kumoutui

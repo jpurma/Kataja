@@ -27,7 +27,7 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. changing settings
     or adding new data to main, ctrl or prefs without reclassing them."""
     import kataja.globals as g
-    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS)
+    ctrl.doc_settings.set('label_text_mode', g.NODE_LABELS_FOR_LEAVES)
     ctrl.doc_settings.set('feature_positioning', g.VERTICAL_COLUMN)
     ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
     ctrl.doc_settings.set_for_edge_type('visible', True, g.CONSTITUENT_EDGE)

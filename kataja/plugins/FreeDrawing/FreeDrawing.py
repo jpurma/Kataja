@@ -291,11 +291,9 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                 converted_nodes.add(node)
                 return
             children = node.get_children(visible=False, similar=True)
-            feature_nodes = node.get_children(visible=False, similar=False, of_type=g.FEATURE_EDGE)
+            feature_nodes = node.get_children(visible=False, similar=False, of_type=g.FEATURE_NODE)
             features = []
             for fnode in feature_nodes:
-                if fnode.node_type != g.FEATURE_NODE:
-                    continue
                 if fnode in converted_nodes:
                     features.append(fnode.syntactic_object)
                 else:

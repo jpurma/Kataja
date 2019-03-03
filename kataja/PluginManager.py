@@ -4,7 +4,9 @@ from kataja.singletons import ctrl, prefs, log, classes
 import os
 import sys
 import json
+
 import importlib
+import importlib.util
 import traceback
 
 # Plugins ################################
@@ -103,10 +105,14 @@ class PluginManager:
                                              added=classes.added_actions,
                                              replaced=classes.replaced_actions)
         dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
+        print(self.active_plugin_setup)
+        print(dir_path)
+        print(dir(self.active_plugin_setup))
         if hasattr(self.active_plugin_setup, 'help_file'):
 
             ctrl.ui.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
+            print('start plugin exists')
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         ctrl.main.create_default_document()
         ctrl.main.enable_signaling()
@@ -135,6 +141,8 @@ class PluginManager:
 
     def load_plugin(self, plugin_module):
         setup = None
+        if not plugin_module:
+            return
         importlib.invalidate_caches()
         if plugin_module in self.available_plugins:
             retry = True
@@ -150,4 +158,15 @@ class PluginManager:
                     error_dialog.set_traceback(traceback.format_exc())
                     retry = error_dialog.exec_()
                     setup = None
+        else:
+            plugin_path = os.path.join(plugin_module)
+
+            if not os.path.exists(plugin_path):
+                print('Plugin not found: ', plugin_path)
+                raise FileNotFoundError
+
+            module_name = os.path.basename(plugin_path)
+            spec = importlib.util.spec_from_file_location(f"{module_name}.setup", os.path.join(plugin_path, "setup.py"))
+            setup = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(setup)
         return setup

@@ -78,7 +78,7 @@ class GlossNode(Node):
 
         :return:
         """
-        return self.get_parents(visible=False, of_type=GLOSS_EDGE)
+        return self.get_parents(visible=False, of_type=GLOSS_NODE)
 
     def if_changed_label(self, value):
         for host in self.hosts:
@@ -91,7 +91,20 @@ class GlossNode(Node):
 
     @text.setter
     def text(self, value):
+        host = self.get_host()
         self.label = value
+        if host:
+            host.set_gloss = value
+
+    def get_host(self):
+        for parent in self.get_parents(of_type=g.CONSTITUENT_NODE):
+            return parent
+
+    def update_label(self):
+        host = self.get_host()
+        if host:
+            self.label = host.get_gloss()
+        super().update_label()
 
     def __str__(self):
         return 'gloss "%s"' % self.label

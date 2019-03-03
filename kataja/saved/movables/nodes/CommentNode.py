@@ -91,7 +91,7 @@ class CommentNode(Node):
         'hosts' is a shortcut to get the nodes.
         :return: list of Nodes
         """
-        return self.get_parents(visible=False, of_type=g.COMMENT_EDGE)
+        return self.get_parents(visible=False, of_type=g.COMMENT_NODE)
 
 
     @property
