@@ -105,14 +105,10 @@ class PluginManager:
                                              added=classes.added_actions,
                                              replaced=classes.replaced_actions)
         dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
-        print(self.active_plugin_setup)
-        print(dir_path)
-        print(dir(self.active_plugin_setup))
         if hasattr(self.active_plugin_setup, 'help_file'):
 
             ctrl.ui.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
-            print('start plugin exists')
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
         ctrl.main.create_default_document()
         ctrl.main.enable_signaling()

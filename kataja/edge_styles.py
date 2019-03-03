@@ -74,7 +74,7 @@ master_styles = {
         },
         ADJUNCT_EDGE: {
             'shape_name': 'linear',
-            'color_key': 'content1tr',
+            'color_key': 'accent7',
             'pull': .10,
             'visible': True,
             'arrowheads': 0,

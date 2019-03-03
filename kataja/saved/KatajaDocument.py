@@ -50,7 +50,6 @@ class KatajaDocument(SavedObject):
         self.forests = []
         self.current_index = 0
         self.forest = None
-        self.use_shared_lexicon = False
         self.lexicon = {}
         self.play = True
         self.has_filename = False
@@ -304,4 +303,3 @@ class KatajaDocument(SavedObject):
     current_index = SavedField("current_index")
     forest = SavedField("forest")
     lexicon = SavedField("lexicon")
-    use_shared_lexicon = SavedField("use_shared_lexicon")

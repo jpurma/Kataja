@@ -28,10 +28,11 @@ from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
 from kataja.Shapes import SHAPE_PRESETS
+import kataja
 import os
 
 # Disable these if necessary for debugging
-enable_loading_preferences = False
+enable_loading_preferences = True
 enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -87,6 +88,7 @@ class Preferences(object):
 
     def __init__(self, running_environment):
         self.save_key = 'preferences'
+        self.version = None
         self._tab_order = ['General', 'Drawing', 'Printing', 'Animation', 'Syntax', 'Node styles',
                            'Performance', 'Plugins', 'Advanced']
 
@@ -607,9 +609,14 @@ class Preferences(object):
             print('skipping loading preferences because command line argument')
             return
 
+        self.version = kataja.__version__
         settings = QtCore.QSettings()
         print('loading preferences from ', settings.fileName())
         ldict = pythonify_prefs(settings)
+        if ldict.get('version', '') != self.version:
+            print("Skipping possibly mismatching preferences from a previous version."
+                  f"Now: {ldict.get('version', '')} Saved prefs: {self.version}")
+            return
         for key, default_value in list(vars(self).items()):
             # print(f'setting {key}: {default_value}')
             if key.startswith('_') or key in Preferences.not_saved:

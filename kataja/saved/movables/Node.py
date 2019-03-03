@@ -559,6 +559,8 @@ class Node(Draggable, Movable):
         """
         :return:
         """
+        if self.syntactic_object and self.syntactic_object.adjunct:
+            return 'accent7'
         return self.settings.get('color_key')
 
     def set_color_key(self, value):
