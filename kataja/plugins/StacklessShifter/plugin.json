@@ -1,7 +1,0 @@
-{
-	"name": "StacklessShifter",
-	"description": "Proof-of-concept that deep branching structures can be built by just merging on to the top of the structure. Elements merged are either simple constituents (external merge) or elements already in the structure (internal merge). The examples here replicate some treebank trees.",
-	"author": "Jukka Purma",
-	"version": "0.8",
-	"setup": "setup.py"
-}

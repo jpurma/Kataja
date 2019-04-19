@@ -69,6 +69,7 @@ class BaseConstituent(SavedObject, IConstituent):
         self.checked_features = []
         self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
         self.adjunct = adjunct
+        self.head = None
         self.gloss = ''
         for feature in self.features:
             feature.host = self
@@ -266,7 +267,7 @@ class BaseConstituent(SavedObject, IConstituent):
         """
         return self.lexical_heads
 
-    def copy(self):
+    def copy_old(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent
         """
@@ -285,6 +286,22 @@ class BaseConstituent(SavedObject, IConstituent):
         #nc.checked_features = checked_features
         return nc
 
+    def copy(self, done=None):
+        if not done:
+            done = {}
+        if self.uid in done:
+            return done[self.uid]
+        other = self.__class__(self.label)
+        #other.uid = self.uid
+        done[self.uid] = other
+        other.parts = [x.copy(done=done) for x in self.parts]
+        other.features = [f.copy(done=done) for f in self.features]
+        for feat in other.features:
+            feat.host = other
+        if self.head:
+            other.head = self.head.copy(done=done)
+        return other
+
 
     # ############## #
     #                #
@@ -301,4 +318,6 @@ class BaseConstituent(SavedObject, IConstituent):
     lexical_heads = SavedField("lexical_heads")
     adjunct = SavedField("adjunct")
     gloss = SavedField("gloss")
+    head = SavedField("head")
+    num = SavedField("num")
 

@@ -285,7 +285,7 @@ class ConstituentNode(Node):
             lines.append(f"label: '{escape(synobj.label)}'")
             lines.append(f"adjunct: {synobj.adjunct}")
             heads = synobj.get_heads()
-            heads_str = ["itself" if h is synobj
+            heads_str = [f"itself, {tt_style % h.uid}" if h is synobj
                          else f'{escape(h.label)}, {tt_style % h.uid}'
                          for h in heads]
             heads_str = '; '.join(heads_str)
@@ -294,10 +294,15 @@ class ConstituentNode(Node):
             elif len(heads) > 1:
                 lines.append(f'heads: {heads_str}')
 
-            lines.append(f'inherited features: '
-                         f'{synobj.inherited_features}')
-            lines.append(f'checked features: '
-                         f'{synobj.checked_features}')
+            if synobj.inherited_features:
+                lines.append(f'inherited features: '
+                             f'{synobj.inherited_features}')
+            if synobj.checked_features:
+                lines.append(f'checked features: '
+                             f'{synobj.checked_features}')
+            if synobj.features:
+                lines.append(f'features: '
+                             f'{synobj.features}')
             lines.append('')
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')

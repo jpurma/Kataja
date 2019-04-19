@@ -1,7 +1,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 import kataja.globals as g
-from kataja.singletons import classes
+from kataja.singletons import classes, ctrl
 from kataja.plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
 
 
@@ -39,7 +39,7 @@ class SyntaxAPI(SavedObject):
         self.trees = []
         self.constituents = {}
         self.features = {}
-        self.lexicon = {}
+        self.lexicon = ctrl.document.lexicon
         self.rules = {}
         self.parser = None
         self.input_text = ''
@@ -59,7 +59,9 @@ class SyntaxAPI(SavedObject):
         return self.trees
 
     def read_lexicon(self, lexdata):
-        lex = {}
+        lexicon = ctrl.document.lexicon
+        if lexicon:
+            lexicon.clear()
         lines = lexdata.splitlines()
 
         for line in lines:
@@ -74,8 +76,8 @@ class SyntaxAPI(SavedObject):
                 lexem = ''
             features = [self.Feature.from_string(fstr) for fstr in features.split()]
             node = self.Constituent(label=lexem, features=features)
-            lex[lexem] = node
-        return lex
+            lexicon[lexem] = node
+        return lexicon
 
     def normalised_input_text(self):
         string = self.input_text.lower()

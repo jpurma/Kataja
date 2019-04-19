@@ -153,7 +153,7 @@ class EditableSyntax(SyntaxAPI):
             if isinstance(lexicon, dict):
                 self.lexicon = lexicon
             else:
-                self.lexicon = self.read_lexicon(lexicon)
+                self.lexicon = self.read_lexicon(lexicon, self.lexicon)
         if input_text is not None:
             if isinstance(input_text, list):
                 self.input_tree = input_text

@@ -8,18 +8,22 @@ class SyntaxState:
     kept separate because SyntaxState is only about syntactic objects and shouldn't depend on
     or refer to Nodes and other Kataja visualisation objects.
 
+    There is a corresponding DerivationStep -object in kataja/saved.
+
     Objects in Kataja's side of syntax/Kataja -division should be able to rely that SyntaxState
-    has at least the fields defined here, otherwise basic functionality may break down, badly.
+    has at least the fields defined here (though they can remain empty), otherwise basic functionality may break down,
+    badly.
     """
 
     def __init__(self, tree_roots=None, numeration=None, msg=None, gloss=None,
-                 transferred=None, marked=None, iteration=0, semantic_hierarchies=None, log=None):
+                 transferred=None, marked=None, marked2=None, iteration=0, semantic_hierarchies=None, log=None):
         self.tree_roots = tree_roots or []
         self.numeration = numeration or []
         self.msg = msg or ''
         self.gloss = gloss or ''
         self.transferred = transferred or []
         self.marked = marked or []
+        self.marked2 = marked2 or []
         self.iteration = iteration
         self.semantic_hierarchies = semantic_hierarchies or []
         self.log = log or []

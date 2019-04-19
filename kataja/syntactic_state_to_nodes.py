@@ -132,7 +132,8 @@ def syntactic_state_to_nodes(forest, syn_state):
     done_nodes = set()
     found_nodes = set()
     for tree_root in syn_state.tree_roots:
-        recursive_add_const_node(tree_root, None)
+        if tree_root:
+            recursive_add_const_node(tree_root, None)
     node_keys_to_validate -= found_nodes
     for syn_bare, syn_parent in cns_to_create:
         host = forest.get_node(syn_parent)
@@ -253,7 +254,8 @@ def syntactic_state_to_nodes(forest, syn_state):
     done_nodes = set()
     found_edges = set()
     for tree_root in syn_state.tree_roots:
-        recursive_create_edges_for_constituent(tree_root)
+        if tree_root:
+            recursive_create_edges_for_constituent(tree_root)
     edge_keys_to_validate -= found_edges
 
     # for item in numeration:
@@ -339,34 +341,38 @@ def syntactic_state_to_nodes(forest, syn_state):
     # ---------
     # Update or create mover group
     old_group = None
-    movers = syn_state.marked
+    for i, movers in enumerate([syn_state.marked, syn_state.marked2]):
+        purpose = f'mover{i}'
+        for group in forest.groups.values():
+            if group.purpose == purpose:
+                old_group = group
+                break
+        if movers:
+            mover_nodes = [forest.get_node(mover) for mover in movers if mover]
+            if old_group:
+                old_group.clear(remove=False)
+                group = old_group
+            else:
+                group = drawing.create_group()
+                group.purpose = purpose
+                group.include_children = False
+                group.fill = True
+                group.outline = False
+                if i == 0:
+                    group.set_color_key('accent5tr')
+                else:
+                    group.set_color_key('accent2tr')
 
-    for group in forest.groups.values():
-        if group.purpose == 'mover':
-            old_group = group
-            break
-    if movers:
-        mover_nodes = [forest.get_node(mover) for mover in movers if mover]
-        if old_group:
-            old_group.clear(remove=False)
-            group = old_group
+            group.update_selection(mover_nodes)
         else:
-            group = drawing.create_group()
-            group.purpose = 'mover'
-            #group.set_label_text('Next mover')
-            group.include_children = False
-            group.fill = True
-            group.outline = False
-            group.set_color_key('accent8tr')
-        group.update_selection(mover_nodes)
-    else:
-        if old_group:
-            old_group.clear(remove=True)
+            if old_group:
+                old_group.clear(remove=True)
 
     # ---------
     strat = forest.settings.get('gloss_strategy')
     if strat and strat == 'message':
         forest.heading_text = syn_state.msg
+    forest.trees = [forest.get_node(tree_root) for tree_root in syn_state.tree_roots if tree_root]
 
 
 def verify_edge_order_for_constituent_nodes(node):

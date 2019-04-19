@@ -167,7 +167,8 @@ class Forest(SavedObject):
         self.connect_main()
         if not self.is_parsed:
             self.init_factories()
-            self.syntax.create_derivation(forest=self)
+            print('prepare for drawing, lexicon id: ', id(ctrl.document.lexicon), id(ctrl.document))
+            self.syntax.create_derivation(forest=self, lexicon=ctrl.document.lexicon)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
             self.jump_to_starting_derivation()
@@ -187,7 +188,6 @@ class Forest(SavedObject):
          some other forest is occupying the scene now.
         :return:
         """
-        print('retiring from display ', self)
         for item in self.get_all_objects():
             self.remove_from_scene(item, fade_out=False)
         self.in_display = False

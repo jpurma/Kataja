@@ -49,6 +49,7 @@ class DerivationStep(SavedObject):
             self.gloss = syn_state.gloss
             self.transferred = syn_state.transferred
             self.marked = syn_state.marked
+            self.marked2 = syn_state.marked2
             self.semantic_hierarchies = syn_state.semantic_hierarchies
             self.iteration = syn_state.iteration
             self.log = syn_state.log
@@ -59,6 +60,7 @@ class DerivationStep(SavedObject):
             self.gloss = ''
             self.transferred = []
             self.marked = []
+            self.marked2 = []
             self.semantic_hierarchies = []
             self.iteration = 0
             self.log = []
@@ -68,7 +70,7 @@ class DerivationStep(SavedObject):
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
-                           gloss=self.gloss, transferred=self.transferred, marked=self.marked,
+                           gloss=self.gloss, transferred=self.transferred, marked=self.marked, marked2=self.marked2,
                            semantic_hierarchies=self.semantic_hierarchies,
                            iteration=self.iteration, log=self.log)
 
@@ -84,6 +86,7 @@ class DerivationStep(SavedObject):
     gloss = SavedField("gloss")
     transferred = SavedField("transferred")
     marked = SavedField("marked")
+    marked2 = SavedField("marked2")
     semantic_hierarchies = SavedField("semantic_hierarchies")
     iteration = SavedField("iteration")
     log = SavedField("log")

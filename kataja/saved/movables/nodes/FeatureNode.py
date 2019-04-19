@@ -225,8 +225,13 @@ class FeatureNode(Node):
                         compensate = 8
                     else:
                         compensate = 4
-                    x = checked_by.future_children_bounding_rect().right() - \
-                        self.future_children_bounding_rect().x() - compensate
+                    if self.left_shape < 0:
+                        x = checked_by.future_children_bounding_rect().right() - \
+                            self.future_children_bounding_rect().x() - compensate
+                    else:
+                        x = checked_by.future_children_bounding_rect().left() + \
+                            self.future_children_bounding_rect().x() + compensate
+
                     self.lock_to_node(checked_by, move_to=(x, 0))
 
             elif checking_mode == g.SHOW_CHECKING_EDGE and self.locked_to_node == checked_by:
@@ -401,7 +406,7 @@ class FeatureNode(Node):
             return self.syntactic_object.get_shape()
         else:
             left = self.fshape if self.is_valuing() else 0
-            right = self.fshape if self.is_needy() or self.is_satisfied() else 0
+            right = -self.fshape if self.is_needy() or self.is_satisfied() else 0
             return left, right
 
     def paint(self, painter, option, widget=None):
@@ -571,9 +576,9 @@ class FeatureNode(Node):
         lines.append(f"value: '{synobj.value}' ")
         if self.family:
             lines.append(f"family: '{synobj.family}'")
-        host = self.get_host()
+        host = self.syntactic_object.host if self.syntactic_object else self.get_host()
         if host:
-            lines.append(f"belonging to: '{host}'")
+            lines.append(f"host: '{host}', {tt_style % host.uid}")
 
         if synobj.checks:
             lines.append(f"checks: '{synobj.checks}' ({tt_style % synobj.checks.uid})")

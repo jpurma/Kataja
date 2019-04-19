@@ -26,7 +26,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 
-simple_signs = ('+', '-', '=', 'u', '_', '≤')
+simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>')
 
 
 class BaseFeature(SavedObject):
@@ -35,7 +35,7 @@ class BaseFeature(SavedObject):
     What is generally understood as value of feature in literature is split into two:
     sign and value.
     Sign is used to signify if the feature should be treated as unvalued,
-    valued or as some other manner. Common signs are 'u', '=', or '-' to signify feature being
+    valued or as some other manner. Common signs are '=', or '-' to signify feature being
     unvalued or '+' or '' for feature to have value. (I have parsers that
     have >6 signs, e.g. to mark features that are unvalued, but won't get satisfied by one valued
     feature, or unvalued, but whose host becomes head if satisfied etc.)
@@ -94,7 +94,7 @@ class BaseFeature(SavedObject):
         return self.unvalued()
 
     def unvalued(self):
-        return self.sign == 'u' or self.sign == '=' or self.sign == '-'
+        return self.sign in '=≈-~_'
 
     def would_satisfy(self, feature):
         return (
@@ -119,9 +119,30 @@ class BaseFeature(SavedObject):
         self.checked_by = None
         self.used = False
 
-    def copy(self):
-        return self.__class__(name=self.name, sign=self.sign, value=self.value,
-                              family=self.family, strong=self.strong)
+    def copy(self, done=None):
+        if done is None:
+            done = {}
+        if self.uid in done:
+            return done[self.uid]
+        other = self.__class__(name=self.name, sign=self.sign, value=self.value,
+                               family=self.family, strong=self.strong)
+        done[self.uid] = other
+        if self.checked_by:
+            other.checked_by = self.checked_by.copy(done=done)
+        if self.checks:
+            other.checks = self.checks.copy(done=done)
+        return other
+
+    def get_shape(self):
+        if not self.sign:
+            return 2, 2
+        elif self.sign == '-':
+            return -2, 1
+        elif self.sign == '=':
+            return 1, -2
+        elif self.sign == '>':
+            return 1, -2
+
 
     def __str__(self):
         s = '✓' if self.checks or self.is_satisfied() else ''

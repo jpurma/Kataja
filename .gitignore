@@ -266,3 +266,5 @@ o_kataja_clip.gif
 workspace/*.*
 kataja/plugins/PCBPlugin*
 kataja/plugins/Monorail2
+kataja/plugins/StacklessShifter
+kataja/plugins/MultiTree
