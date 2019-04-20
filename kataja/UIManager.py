@@ -1212,7 +1212,8 @@ class UIManager:
         heading = ctrl.forest.heading_text or ''
         if not self.heading:
             self.heading = HeadingWidget(ctrl.graph_view)
-            self.heading.move(50, 100)
+            self.heading.move(30, 500)
+            self.heading.show()
         self.heading.set_text(heading)
 
     def toggle_heading(self):

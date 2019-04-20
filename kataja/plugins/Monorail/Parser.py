@@ -40,8 +40,8 @@ def next_letter(char):
 
 
 # The first matching feature pair is returned (start to look from positive features at right).
-def find_checking_features_1(left, right):
-    checking_features = []
+def find_checked_features_1(left, right):
+    checked_features = []
     for feat in right.inherited_features:
         if feat.used:
             continue
@@ -52,13 +52,13 @@ def find_checking_features_1(left, right):
                 if (feat_to_check.name == feat.name and
                    feat_to_check.sign and
                    feat_to_check.sign in '=-_≤'):
-                    checking_features.append((feat_to_check, feat))
-    return checking_features
+                    checked_features.append((feat_to_check, feat))
+    return checked_features
 
 
 # Strictly match features, match has to be from the first unused feature in both left and right
-def find_checking_features_2(left, right):
-    checking_features = []
+def find_checked_features_2(left, right):
+    checked_features = []
     for feat in right.inherited_features:
         if feat.used:
             continue
@@ -69,16 +69,16 @@ def find_checking_features_2(left, right):
                 if (feat_to_check.name == feat.name and
                    feat_to_check.sign and
                    feat_to_check.sign in '=-_≤'):
-                    checking_features.append((feat_to_check, feat))
+                    checked_features.append((feat_to_check, feat))
                     continue
                 break
         break
-    return checking_features
+    return checked_features
 
 
 # Strictly match positive features, the feature must be the first unused positive in the right
-def find_checking_features_3(left, right):
-    checking_features = []
+def find_checked_features_3(left, right):
+    checked_features = []
     for feat in right.inherited_features:
         if feat.used:
             continue
@@ -90,17 +90,17 @@ def find_checking_features_3(left, right):
                 if (feat_to_check.name == feat.name and
                    feat_to_check.sign and
                    feat_to_check.sign in '=-_≤'):
-                    checking_features.append((feat_to_check, feat))
+                    checked_features.append((feat_to_check, feat))
                     found = True
             print('tried to find match for ', feat, ' in ', left.inherited_features)
             if not found:
                 break
-    return checking_features
+    return checked_features
 
 
 # Strictly match negative feature, the feature must be the first unused negative in the left
-def find_checking_features_4(left, right):
-    checking_features = []
+def find_checked_features_4(left, right):
+    checked_features = []
     for feat in right.inherited_features:
         if feat.used:
             continue
@@ -109,10 +109,10 @@ def find_checking_features_4(left, right):
                 if feat_to_check.used or feat_to_check.sign not in '=-_≤':
                     continue
                 if feat_to_check.name == feat.name and feat_to_check.sign:
-                    checking_features.append((feat_to_check, feat))
+                    checked_features.append((feat_to_check, feat))
                 else:
                     break
-    return checking_features
+    return checked_features
 
 
 def mark_used_1(feat_to_check, feat):
@@ -134,7 +134,7 @@ def mark_used_1(feat_to_check, feat):
         raise ValueError
 
 
-find_checking_features = find_checking_features_3
+find_checked_features = find_checked_features_3
 mark_used = mark_used_1
 
 
@@ -149,11 +149,11 @@ def inherit_features(head):
 
 def check_features(merged):
     left, right = merged.parts
-    checking_features = find_checking_features(left, right)
-    for feat_to_check, feat in checking_features:
+    checked_features = find_checked_features(left, right)
+    for feat_to_check, feat in checked_features:
         mark_used(feat_to_check, feat)
         feat.check(feat_to_check)
-    merged.checked_features = checking_features
+    merged.checked_features = checked_features
 
 
 def deduce_head(merged):
@@ -407,7 +407,7 @@ def parse(sentence, lexicon, forest):
         deduce_head(tree)
         raising_node = fast_find_movable(tree)
         export_to_kataja(tree, 'em: %s' % lexem, raising_node, forest)
-        checking = find_checking_features(raising_node, tree) if raising_node else None
+        checking = find_checked_features(raising_node, tree) if raising_node else None
         # Do Internal Merges as long as possible
         while checking:
             tree = merge(raising_node, tree)
@@ -416,7 +416,7 @@ def parse(sentence, lexicon, forest):
             raising_node.has_raised = True
             raising_node = fast_find_movable(tree)
             export_to_kataja(tree, 'internal merge, ' + str(checking), raising_node, forest)
-            checking = find_checking_features(raising_node, tree) if raising_node else None
+            checking = find_checked_features(raising_node, tree) if raising_node else None
     return tree
 
 

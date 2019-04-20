@@ -32,7 +32,7 @@ class Constituent(BaseConstituent or object):
             feature.host = self
 
         self.inherited_features = self.features
-        self.checking_features = []
+        self.checked_features = []
         self.phase = False
         self.phase_barrier = False
         self.head = self

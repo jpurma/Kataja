@@ -62,7 +62,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
 
     visited_nodes = set()
     converted_nodes = set()
-    checking_features = set()
+    checked_features = set()
 
     def define_label(node):
         if node.label:
@@ -110,7 +110,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                     converted_nodes.add(fnode)
                     fnode.set_syntactic_object(fobj)
                     for checked in fnode.get_children(visible=False, similar=True):
-                        checking_features.add((fnode, checked))
+                        checked_features.add((fnode, checked))
             if len(children) == 2:
                 for child in children:
                     convert_node(child)
@@ -160,7 +160,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
 
     for root in roots:
         convert_node(root)
-        for checker, checked in checking_features:
+        for checker, checked in checked_features:
             checker.syntactic_object.checks = checked.syntactic_object
 
     print('visited %s nodes, converted %s nodes to synobjs' % (

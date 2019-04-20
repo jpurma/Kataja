@@ -28,7 +28,6 @@ import time
 import kataja.globals as g
 
 from kataja.singletons import ctrl
-from kataja.utils import time_me
 
 
 def syntactic_state_to_nodes(forest, syn_state):
@@ -113,7 +112,6 @@ def syntactic_state_to_nodes(forest, syn_state):
                     recursive_add_feature_node(feat)
         if hasattr(me, 'checked_features'):
             for feat in me.checked_features:
-                print(feat)
                 if isinstance(feat, tuple):
                     x, y = feat
                     if x.uid not in done_nodes:

@@ -115,13 +115,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update_visibility()
         self.announce_creation()
 
-    @property
-    def forest(self):
-        if self.start:
-            return self.start.forest
-        elif self.end:
-            return self.end.forest
-
     def after_model_update(self, updated_fields, transition_type):
         """ Compute derived effects of updated values in sensible order.
         :param updated_fields: field keys of updates

@@ -53,9 +53,9 @@ class PluginSelector(QtWidgets.QWidget):
         inner_widget.setMaximumWidth(self.preferred_width - 20)
         inner_widget.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
                                    QtWidgets.QSizePolicy.MinimumExpanding)
-
-        for key in sorted(ctrl.main.available_plugins.keys()):
-            item = ctrl.main.available_plugins[key]
+        available_plugins = ctrl.main.plugin_manager.available_plugins
+        for key in sorted(available_plugins.keys()):
+            item = available_plugins[key]
             activated = key == prefs.active_plugin_name
             plugin_frame = QtWidgets.QFrame(inner_widget)
             if activated:
