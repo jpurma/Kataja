@@ -1,0 +1,5 @@
+MultiTree
+---------
+Jukka Purma, 2019
+
+This is a version of Stackless Shifter which follows 'no tampering'-principle in a more rigorous way. When a constituent or a branch is used as a part of another constituent, nothing that happens to parent constituent can modify its children or their features. Unlike Stackless Shifter, features don't use internal state of being checked or checking another feature. The benefit of no tampering is that the same partial structure can be used in many attempted derivations without having to make copies of it. The child structure doesn't know about its parent structure, so one structure can branch into many possible derivations when built from bottom up. The information about each feature check are stored in the node that was a result of merge justified by that feature check. Also pointers to those features that are not checked and available after the merge 'travel up', and movers are not sought by traversing the tree, but by inheriting a list of movers from children.

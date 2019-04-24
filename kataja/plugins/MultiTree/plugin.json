@@ -1,0 +1,7 @@
+{
+	"name": "MultiTree",
+	"description": "Version of stackless shifter where multiple trees can be built from the same numeration without resorting to copying of partial trees.",
+	"author": "Jukka Purma",
+	"version": "0.8",
+	"setup": "setup.py"
+}
