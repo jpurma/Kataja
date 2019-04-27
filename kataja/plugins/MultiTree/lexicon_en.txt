@@ -19,13 +19,13 @@ eagerly :: >a
 faintly :: >a
 flowing :: D -P
 found :: C T v -D -D
-gave :: T -D -D v C F -D -P -by =RelB
+gave :: T _D _D v C F _D _P _by =RelB
 hill :: n =n
 his :: D =n
 lady :: n a >n
-like :: C F T -D -D v =P
-likes :: T -D C F -D -P -by
-live :: C F T -D v =P
+like :: C F T _D _D v =P
+likes :: T _D C F _D -P -by
+live :: C F T _D v =P
 ocean :: n =n
 of :: P -D h =P
 party :: n =n

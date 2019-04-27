@@ -136,12 +136,13 @@ class BaseFeature(SavedObject):
     def get_shape(self):
         if not self.sign:
             return 2, 2
-        elif self.sign == '-':
+        elif self.sign == '-' or self.sign == '_':
             return -2, 1
         elif self.sign == '=':
             return 1, -2
         elif self.sign == '>':
             return 1, -2
+        return -2, 2
 
 
     def __str__(self):

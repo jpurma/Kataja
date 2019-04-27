@@ -101,8 +101,6 @@ class Parser:
     def _justify_external_merge(pos_head, neg_head):
         if not pos_head and neg_head:
             return
-        if _final_head(neg_head) is _final_head(pos_head):
-            return
         for plus_feature in pos_head.features:
             if plus_feature.sign == '':
                 # print('finding match for ', plus_feature, ' in ', mover.head.features)
@@ -121,33 +119,45 @@ class Parser:
             #            return plus_feature, neg_feature
 
     @staticmethod
-    def _find_checked_features_for_im(pos_head, neg_head, doing_reverse=False):
+    def _find_checked_features_for_im(pos_head, neg_head):
         for plus_feature in pos_head.features:
             if plus_feature.sign == '':
-                # print('finding match for ', plus_feature, ' in ', mover.head.features)
                 for neg_feature in neg_head.features:
                     if neg_feature.name == plus_feature.name:
-                        if neg_feature.sign == '':
-                            continue
-                        elif neg_feature.sign == '-':
+                        if neg_feature.sign == '-':
                             return plus_feature, neg_feature, neg_head
-                        elif neg_feature.sign == '>' and not doing_reverse:
+                        elif neg_feature.sign == '_':
+                            return plus_feature, neg_feature, neg_head
+                        elif neg_feature.sign == '>':
                             return plus_feature, neg_feature, pos_head
-                        elif neg_feature.sign == '=' and not doing_reverse:
+                        elif neg_feature.sign == '=':
                             return plus_feature, neg_feature, pos_head
+            else:
+                break
+
+    @staticmethod
+    def _find_checked_features_for_im2(pos_head, neg_head):
+        for plus_feature in pos_head.features:
+            if plus_feature.sign == '':
+                for neg_feature in neg_head.features:
+                    if neg_feature.name == plus_feature.name:
+                        if neg_feature.sign == '-':
+                            return plus_feature, neg_feature, neg_head
+                        elif neg_feature.sign == '_':
+                            return plus_feature, neg_feature, neg_head
             else:
                 break
 
     def _justify_internal_merge(self, tree):
         mover = None
-        if tree.movers:
-            mover = tree.movers[0]
         internal_merge_is_possible = None
-        if mover:
+        for mover in tree.movers:
             internal_merge_is_possible = self._find_checked_features_for_im(tree, mover)
             if internal_merge_is_possible:
                 return mover, internal_merge_is_possible
-            internal_merge_is_possible = self._find_checked_features_for_im(mover, tree, doing_reverse=True)
+            internal_merge_is_possible = self._find_checked_features_for_im2(mover, tree)
+            if internal_merge_is_possible:
+                return mover, internal_merge_is_possible
         return mover, internal_merge_is_possible
 
     def _process_const(self, next_const, const, old_tree, remaining, branch_path):
@@ -162,22 +172,21 @@ class Parser:
                            head=const,
                            features=const.features[:]) if old_tree else const
 
-        external_merge_is_possible = self._justify_external_merge(next_const, tree)
-        # Do Internal merge as many times as possible
-        mover, internal_merge_is_possible = self._justify_internal_merge(tree)
         self.export_to_kataja([next_const, tree], f"External merge '{const.label}'", tree.movers, tree,
                               branch_path=branch_path)
-        if internal_merge_is_possible and external_merge_is_possible:
-            self.export_to_kataja([next_const, tree], "Split because EM and IM both possible, first do EM.",
-                                  tree, next_const, branch_path=branch_path)
-            self._split_and_continue(tree, remaining, branch_path)
-            branch_path += 'i'
-        elif external_merge_is_possible:
-            self.export_to_kataja([next_const, tree], f"Eager EM for '{next_const.label}'", tree, next_const,
-                                  branch_path=branch_path)
-            return tree, branch_path
-        while internal_merge_is_possible:
+
+        # Do Internal merge as many times as possible
+        while True:
+            mover, internal_merge_is_possible = self._justify_internal_merge(tree)
+            external_merge_is_possible = self._justify_external_merge(next_const, tree)
+            if not internal_merge_is_possible:
+                break
             self.ticks += 1
+            if external_merge_is_possible:
+                self.export_to_kataja([next_const, tree], "Split because EM and IM both possible, first do EM.",
+                                      tree, next_const, branch_path=branch_path)
+                self._split_and_continue(tree, remaining, branch_path)
+                branch_path += 'i'
             tree_feat, mover_feat, head = internal_merge_is_possible
             movers = mover.movers + [m for m in tree.movers if m is not mover and m not in mover.movers]
             checks = mover_feat
@@ -189,19 +198,11 @@ class Parser:
                                features=[f for f in head.features if f is not checks and f is not checked_by],
                                checks=checks,
                                checked_by=checked_by)
-            external_merge_is_possible = self._justify_external_merge(next_const, tree)
-            mover, internal_merge_is_possible = self._justify_internal_merge(tree)
             self.export_to_kataja([next_const, tree], f"Internal merge '{head.label}'", tree.movers, tree,
                                   branch_path=branch_path)
-            if internal_merge_is_possible and external_merge_is_possible:
-                self.export_to_kataja([next_const, tree], "Split because EM and IM both possible, first do EM.",
-                                      tree, next_const, branch_path=branch_path)
-                self._split_and_continue(tree, remaining, branch_path)
-                branch_path += 'i'
-            elif external_merge_is_possible:
-                self.export_to_kataja([next_const, tree], f"Eager EM for '{next_const.label}'", tree,
-                                      next_const, branch_path=branch_path)
-                break
+        if external_merge_is_possible:
+            self.export_to_kataja([next_const, tree], f"Eager EM for '{next_const.label}'", tree,
+                                  next_const, branch_path=branch_path)
         return tree, branch_path
 
     def _split_and_continue(self, tree, remaining, branch_path):
