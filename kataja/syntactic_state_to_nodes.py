@@ -338,8 +338,8 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     # ---------
     # Update or create mover group
-    old_group = None
     for i, movers in enumerate([syn_state.marked, syn_state.marked2]):
+        old_group = None
         purpose = f'mover{i}'
         for group in forest.groups.values():
             if group.purpose == purpose:
@@ -360,11 +360,9 @@ def syntactic_state_to_nodes(forest, syn_state):
                     group.set_color_key('accent5tr')
                 else:
                     group.set_color_key('accent2tr')
-
             group.update_selection(mover_nodes)
-        else:
-            if old_group:
-                old_group.clear(remove=True)
+        elif old_group:
+            old_group.clear(remove=True)
 
     # ---------
     strat = forest.settings.get('gloss_strategy')

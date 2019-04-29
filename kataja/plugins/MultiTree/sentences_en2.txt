@@ -1,8 +1,18 @@
+specX X specY Y compY
+
+who did not Mary like
+
+Pekka who did not like Mary sleeps
+
+which lady did John like
+
+which lady did like John
+
+who did John like a picture of
+
 which lady did John like a picture of at the party
 
 who did John like a picture of at the party
-
-who did John like a picture of
 
 John sleeps
 

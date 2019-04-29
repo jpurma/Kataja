@@ -11,7 +11,7 @@ except ImportError:
 class Constituent(BaseConstituent):
     """This defines the basic linguistic competence, i.e. phrase structures and operations on phrase structure """
 
-    def __init__(self, label='', parts=None, features=None, head=None, movers=None, checks=None, checked_by=None):
+    def __init__(self, label='', parts=None, features=None, head=None, movers=None, checked=None, checker=None):
         parts = parts or []
         features = features or []
         if in_kataja:
@@ -23,8 +23,8 @@ class Constituent(BaseConstituent):
             self.uid = id(self)
         self.movers = movers or []
         self.head = head or self
-        self.checks = checks
-        self.checked_by = checked_by
+        self.checked = checked
+        self.checker = checker
 
     def copy(self, done=None):
         if not done:
@@ -57,18 +57,18 @@ class Constituent(BaseConstituent):
 
     @property
     def checked_features(self):
-        if self.checks and self.checked_by:
-            return [(self.checks, self.checked_by)]
+        if self.checked and self.checker:
+            return [(self.checker, self.checker)]
         else:
             return []
 
     @checked_features.setter
     def checked_features(self, value):
         if value:
-            self.checks, self.checked_by = value[0]
+            self.checked, self.checker = value[0]
         else:
-            self.checks = None
-            self.checked_by = None
+            self.checked = None
+            self.checker = None
 
     def poke(self, prop):
         pass
@@ -81,8 +81,8 @@ class Constituent(BaseConstituent):
 
     if in_kataja:
         # Announce Kataja that these fields should be saved with the constituent:
-        checks = SavedField('checks')
-        checked_by = SavedField('checked_by')
+        checked = SavedField('checked')
+        checker = SavedField('checker')
         has_raised = SavedField('has_raised')
         head = SavedField('head')
         movers = SavedField('movers')

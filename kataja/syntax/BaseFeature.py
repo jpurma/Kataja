@@ -26,7 +26,7 @@
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 
-simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>')
+simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>', '*')
 
 
 class BaseFeature(SavedObject):
@@ -134,7 +134,7 @@ class BaseFeature(SavedObject):
         return other
 
     def get_shape(self):
-        if not self.sign:
+        if not self.sign or self.sign == '*':
             return 2, 2
         elif self.sign == '-' or self.sign == '_':
             return -2, 1
@@ -143,7 +143,6 @@ class BaseFeature(SavedObject):
         elif self.sign == '>':
             return 1, -2
         return -2, 2
-
 
     def __str__(self):
         s = '✓' if self.checks or self.is_satisfied() else ''
