@@ -267,4 +267,6 @@ workspace/*.*
 kataja/plugins/PCBPlugin*
 kataja/plugins/Monorail2
 kataja/plugins/StacklessShifter
+kataja/plugins/AmbiTree
+
 

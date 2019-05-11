@@ -52,11 +52,9 @@ class EditableConstituentNode(ConstituentNode):
         :return:
         """
         label_text_mode = self.label_text_mode
-        if label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-            if self.label:
-                return 'node label', as_html(self.label)
-        else:
-            return 'node label', ''
+        if (label_text_mode == g.NODE_LABELS or label_text_mode == g.NODE_LABELS_FOR_LEAVES) and self.label:
+            return 'node label', as_html(self.label)
+        return 'node label', ''
 
     def parse_edited_label(self, label_name, value):
         action = None

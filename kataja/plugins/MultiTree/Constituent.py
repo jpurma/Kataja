@@ -11,7 +11,7 @@ except ImportError:
 class Constituent(BaseConstituent):
     """This defines the basic linguistic competence, i.e. phrase structures and operations on phrase structure """
 
-    def __init__(self, label='', parts=None, features=None, head=None, movers=None, checked=None, checker=None):
+    def __init__(self, label='', parts=None, features=None, head=None, movers=None, checked=None, checker=None, Q=None):
         parts = parts or []
         features = features or []
         if in_kataja:
@@ -22,6 +22,7 @@ class Constituent(BaseConstituent):
             self.features = features
             self.uid = id(self)
         self.movers = movers or []
+        self.Q = Q
         self.head = head or self
         self.checked = checked
         self.checker = checker
@@ -86,3 +87,4 @@ class Constituent(BaseConstituent):
         has_raised = SavedField('has_raised')
         head = SavedField('head')
         movers = SavedField('movers')
+        Q = SavedField('Q')

@@ -277,7 +277,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
 
         da = ctrl.ui.get_action(self.drop_action)
         if da:
-            da.run_command(self.host, **drop_args)
+            da.run_command(self.host.uid, **drop_args)
         ctrl.deselect_objects()
 
 

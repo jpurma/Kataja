@@ -29,6 +29,7 @@ import kataja.globals as g
 
 from kataja.singletons import ctrl
 
+# Nonnii. Tehdään kokeilu erilaisesta nostamisen muistipaikasta.
 
 def syntactic_state_to_nodes(forest, syn_state):
     """ This is a big important function to ensure that Nodes on display are only those that

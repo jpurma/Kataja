@@ -1,4 +1,5 @@
 # coding=utf-8
+from kataja.plugins.MultiTree.Feature import Feature
 from kataja.plugins.MultiTree.Constituent import Constituent
 from kataja.plugins.MultiTree.Document import Document
 from kataja.plugins.MultiTree.SyntaxAPI import SyntaxAPI
@@ -10,7 +11,7 @@ from kataja.plugins.MultiTree.SyntaxAPI import SyntaxAPI
 # HiConstituent.py for example) to tell which Kataja class they aim to replace.
 
 # plugin_classes = [PythonClass,...]
-plugin_classes = [Constituent, Document, SyntaxAPI]
+plugin_classes = [Feature, Constituent, Document, SyntaxAPI]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes.
 # Before the rebuild, 'start_plugin' is called, which can initialize things that are not replacements of existing
@@ -20,7 +21,7 @@ plugin_classes = [Constituent, Document, SyntaxAPI]
 # When the plugin is ordered to reload, we have to manually list here which modules we want to reload. Otherwise their
 # code changes are not recognized. After reload the plugin is initialized again, so data files will probably be reloaded
 # without explicitly telling. Also the module reload order may be sensitive, so here you can set it.
-reload_order = ['MultiTree.Constituent', 'MultiTree.SyntaxAPI', 'MultiTree.Document', 'MultiTree.StacklessShiftParser',
+reload_order = ['MultiTree.Feature', 'MultiTree.Constituent', 'MultiTree.SyntaxAPI', 'MultiTree.Document', 'MultiTree.StacklessShiftParser',
                 'MultiTree.setup']
 
 

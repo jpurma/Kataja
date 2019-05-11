@@ -295,14 +295,13 @@ class ConstituentNode(Node):
                 lines.append(f'heads: {heads_str}')
 
             if synobj.inherited_features:
-                lines.append(f'inherited features: '
-                             f'{synobj.inherited_features}')
+                lines.append(f'inherited features: {synobj.inherited_features}')
             if synobj.checked_features:
-                lines.append(f'checked features: '
-                             f'{synobj.checked_features}')
+                lines.append(f'checked features: {synobj.checked_features}')
             if synobj.features:
-                lines.append(f'features: '
-                             f'{synobj.features}')
+                lines.append(f'features: {synobj.features}')
+            if hasattr(synobj, 'Q'):
+                lines.append(f'Q: {synobj.Q}')
             lines.append('')
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')
@@ -382,8 +381,7 @@ class ConstituentNode(Node):
           (field_name, setter, html).
         :return:
         """
-
-        return None
+        return None, ''
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

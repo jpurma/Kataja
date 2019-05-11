@@ -51,10 +51,10 @@ that :: -C Rel =F
 the :: =n D -of =Rel RelB
 to :: -D P Rel
 towards :: P -D
-what :: Rel D Q =n
-which :: Rel D Q =n
-who :: Rel -D *D Q
-who's :: D -n
-whom :: -C Rel D Q
+what :: Rel D Q =n *wh
+which :: Rel D Q =n *wh
+who :: Rel D Q *wh
+who's :: D -n *wh
+whom :: -C Rel D Q *wh
 with :: P -D
 wonders :: C -C T -D =Rel

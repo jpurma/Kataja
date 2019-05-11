@@ -1,6 +1,6 @@
 try:
     from MultiTree.Constituent import Constituent
-    from kataja.syntax.BaseFeature import BaseFeature as Feature
+    from MultiTree.Feature import Feature
     from kataja.syntax.SyntaxState import SyntaxState
 except ImportError:
     from Constituent import Constituent
@@ -153,6 +153,23 @@ class Parser:
             elif strict:
                 break
 
+    def _q_raising_is_possible(self, tree, strict=True):
+        mover = tree and tree.Q
+        if not mover:
+            return
+        for plus_feature in mover.features:
+            if plus_feature.sign == '':
+                for neg_feature in tree.features:
+                    if neg_feature.name == plus_feature.name and (neg_feature.sign == '-' or neg_feature.sign == '='):
+                            return plus_feature, neg_feature
+            elif strict:
+                break
+
+    def _is_q_raiser(self, const):
+        for feature in const.features:
+            if feature.sign == '*':
+                return True
+
     def _find_mover(self, tree):
         for mover in tree.movers:
             return mover
@@ -167,7 +184,10 @@ class Parser:
                            parts=[const, old_tree],
                            movers=[old_tree] + old_tree.movers,
                            head=const,
-                           features=const.features[:]) if old_tree else const
+                           features=const.features[:],
+                           Q=old_tree.Q) if old_tree else const
+        if self._is_q_raiser(const):
+            tree.Q = const
 
         self.export_to_kataja([next_const, tree], f"External merge '{const.label}'", tree.movers, tree,
                               branch_path=branch_path)
@@ -177,12 +197,19 @@ class Parser:
             mover = self._find_mover(tree)
             if not mover:
                 break
+            # Priorities:
+
             print('movers for tree: ', tree.label, tree.movers)
             print('movers for mover:', mover.label, mover.movers)
             spec_merge_is_possible = self._justify_spec_merge(mover, tree)
             self.export_to_kataja([next_const, tree], f"Evaluating spec merge '{tree.label}'", tree, mover,
                                   branch_path=branch_path)
             print(mover.features, tree.features)
+            external_merge_is_possible = self._justify_external_merge(next_const, tree)
+            if external_merge_is_possible:
+                self.export_to_kataja([next_const, tree], f"Eager to EM next const '{next_const.label}'", tree,
+                                      next_const, branch_path=branch_path)
+                break
             if spec_merge_is_possible:
                 checker, checked = spec_merge_is_possible
                 print('doing spec merge, movers before: ', mover.movers, tree.movers)
@@ -194,11 +221,13 @@ class Parser:
                                    head=tree,
                                    features=[f for f in tree.features if f is not checked],
                                    checker=checker,
-                                   checked=checked)
+                                   checked=checked,
+                                   Q=tree.Q or mover.Q)
                 print('features after: ', tree.features)
                 self.export_to_kataja([next_const, tree], f"Spec merge '{tree.label}'",
                                       branch_path=branch_path)
                 continue
+
             comp_merge_is_possible = self._justify_comp_merge(mover, tree)
             self.export_to_kataja([next_const, tree], f"Evaluating comp merge '{tree.label}'", mover, tree,
                                   branch_path=branch_path)
@@ -215,16 +244,26 @@ class Parser:
                                    head=mover,
                                    features=[f for f in mover.features if f is not checked],
                                    checker=checker,
-                                   checked=checked)
+                                   checked=checked,
+                                   Q=mover.Q or tree.Q)
                 print('features after: ', tree.features)
                 self.export_to_kataja([next_const, tree], f"Comp merge '{tree.label}'", mover, tree,
                                       branch_path=branch_path)
                 continue
-            external_merge_is_possible = self._justify_external_merge(next_const, tree)
-            if external_merge_is_possible:
-                self.export_to_kataja([next_const, tree], f"Eager to EM next const '{next_const.label}'", tree,
-                                      next_const, branch_path=branch_path)
-                break
+
+            q_raising_is_possible = self._q_raising_is_possible(tree)
+            if q_raising_is_possible:
+                checker, checked = q_raising_is_possible
+                tree = Constituent(label=tree.label,
+                                   parts=[tree.Q, tree],
+                                   movers=tree.movers, # not sure...
+                                   head=tree,
+                                   features=[f for f in tree.features if f is not checked],
+                                   checker=checker,
+                                   checked=checked)
+                self.export_to_kataja([next_const, tree], f"Q raising to spec '{tree.label}'",
+                                      branch_path=branch_path)
+                continue
             else:
                 break
             # mover, internal_merge_is_possible = self._justify_internal_merge(tree)

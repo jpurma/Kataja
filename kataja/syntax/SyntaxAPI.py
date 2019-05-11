@@ -58,10 +58,13 @@ class SyntaxAPI(SavedObject):
         """
         return self.trees
 
-    def read_lexicon(self, lexdata):
-        lexicon = ctrl.document.lexicon
-        if lexicon:
-            lexicon.clear()
+    def read_lexicon(self, lexdata, lexicon=None):
+        if lexicon is None:
+            if ctrl.document.lexicon is not None:
+                lexicon = ctrl.document.lexicon
+            else:
+                lexicon = {}
+        lexicon.clear()
         lines = lexdata.splitlines()
 
         for line in lines:

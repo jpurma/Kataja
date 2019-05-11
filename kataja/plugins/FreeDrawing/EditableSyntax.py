@@ -57,8 +57,11 @@ class EditableSyntax(SyntaxAPI):
         """
         return self.trees
 
-    def read_lexicon(self, lexdata):
-        lex = {}
+    def read_lexicon(self, lexdata, lexicon=None):
+        if lexicon is None:
+            lexicon = {}
+        else:
+            lexicon.clear()
         lines = lexdata.splitlines()
 
         for line in lines:
@@ -73,8 +76,8 @@ class EditableSyntax(SyntaxAPI):
                 lexem = ''
             features = [self.Feature.from_string(fstr) for fstr in features.split()]
             node = self.Constituent(label=lexem, features=features)
-            lex[lexem] = node
-        return lex
+            lexicon[lexem] = node
+        return lexicon
 
     def normalised_input_text(self):
         string = self.input_text.lower()

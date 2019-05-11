@@ -1,13 +1,24 @@
+
+try:
+    from kataja.SavedField import SavedField
+    from kataja.syntax.BaseFeature import BaseFeature
+    in_kataja = True
+except ImportError:
+    BaseFeature = object
+    in_kataja = False
+
 simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*')
 
 
-class Feature:
+class Feature(BaseFeature):
 
     def __init__(self, name='Feature', sign='', value=None):
-        super().__init__()
-        self.name = str(name)
-        self.value = value
-        self.sign = sign
+        if in_kataja:
+            super().__init__(name=name, sign=sign, value=value)
+        else:
+            self.name = str(name)
+            self.value = value
+            self.sign = sign
         # It is useful to have a fast route from a feature to lexical element where it is used.
         self.host = None
         # checks and checked_by are computed relatively from the surroundings when creating derivations, but they can
@@ -21,13 +32,16 @@ class Feature:
                    self.name == other.name
         return False
 
-    def copy(self):
+    def copy(self, done=None):
         return Feature(name=self.name, sign=self.sign, value=self.value)
 
     def __repr__(self):
         c = '✓' if self.checks or self.checked_by else ''
         val = ':' + self.value if self.value else ''
         return c + self.sign + self.name + val
+
+    def __hash__(self):
+        return id(self)
 
     @staticmethod
     def from_string(s):

@@ -127,8 +127,11 @@ class ConnectNode(KatajaAction):
             'child_left',
             'child_right'
         """
-
-        target = ctrl.forest.nodes[target_uid]
+        if target_uid in ctrl.forest.nodes:
+            target = ctrl.forest.nodes[target_uid]
+        elif target_uid in ctrl.forest.edges:
+            edge = ctrl.forest.edges[target_uid]
+            target = edge.end
         if node_uid:
             new_node = ctrl.forest.nodes[node_uid]
         else:
