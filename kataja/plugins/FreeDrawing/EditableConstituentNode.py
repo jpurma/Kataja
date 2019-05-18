@@ -33,7 +33,7 @@ class EditableConstituentNode(ConstituentNode):
          TA.LeftAddUnaryChild, TA.RightAddUnaryChild, TA.LeftAddLeafSibling, TA.RightAddLeafSibling]
 
     buttons_when_selected = ConstituentNode.buttons_when_selected + \
-        [OB.RemoveMergerButton, OB.RemoveNodeButton]
+        [OB.RemoveMergerButton, OB.RemoveNodeButton, OB.RotateButton]
 
     embed_edit = ConstituentNodeEditEmbed
     quick_editable = True
@@ -139,5 +139,8 @@ class EditableConstituentNode(ConstituentNode):
             self.heads = []
         else:
             raise ValueError
+
+    def rotate_children(self):
+        self.edges_down = list(reversed(self.edges_down))
 
     heads = SavedField("heads")

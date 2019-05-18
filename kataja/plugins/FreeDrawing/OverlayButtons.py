@@ -1,6 +1,7 @@
 
 from kataja.ui_widgets.buttons.OverlayButton import OverlayButton, NodeOverlayButton, GroupButton
 from kataja.singletons import ctrl, qt_prefs
+from PyQt5 import QtCore
 import kataja.globals as g
 
 
@@ -59,4 +60,27 @@ class DeleteGroupButton(GroupButton):
         super().__init__(host=host, parent=parent, size=16, color_key='accent3',
                          pixmap=qt_prefs.delete_icon, action='delete_group_items')
         self.priority = 24
+
+
+class RotateButton(NodeOverlayButton):
+    """ Button to rotate node """
+
+    def __init__(self, host, parent):
+        super().__init__(host=host, parent=parent, size=16,
+                         pixmap=qt_prefs.h_refresh_small_icon, action='rotate_children')
+        self.priority = 100
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(9, 16)
+        x, y = self.host.centered_scene_position
+        p = QtCore.QPointF(x + (self.host.width / 2), y)
+        p = ctrl.main.graph_view.mapFromScene(p) + adjust
+        p = p.toPoint()
+        p = self.avoid_overlaps(p, 8, 0)
+        self.move(p)
+
+    @classmethod
+    def condition(cls, host):
+        return host.node_type == g.CONSTITUENT_NODE and not host.triangle_stack and len(host.get_children(similar=True)) > 1
 

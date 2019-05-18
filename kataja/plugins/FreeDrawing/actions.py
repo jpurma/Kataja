@@ -298,3 +298,26 @@ class SetIndex(KatajaAction):
         node = ctrl.forest.nodes[node_uid]
         if node:
             node.index = index
+
+
+class RotateChildren(KatajaAction):
+    k_action_uid = 'rotate_children'
+    k_command = 'Switch left and right children'
+    k_tooltip = "Switch the order of children for this node"
+
+    def prepare_parameters(self, args, kwargs):
+        node = self.get_host()
+        return [node.uid], kwargs
+
+    def method(self, node_uid):
+        """ In cases where there another part of binary merge is removed,
+        and a stub edge is left dangling, there is an option to remove the unnecessary
+        merge -- this is the triggering host.
+        :param node_uid: int or string, node's unique identifier
+        :return: None
+        """
+        ctrl.release_editor_focus()
+        node = ctrl.forest.nodes[node_uid]
+        node.rotate_children()
+        ctrl.forest.forest_edited()
+

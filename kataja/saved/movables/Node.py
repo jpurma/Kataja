@@ -121,7 +121,6 @@ class Node(Draggable, Movable):
         self.edges_up = []
         self.edges_down = []
         self.triangle_stack = []  # you can always unfold only the outermost triangle, so stack
-        self.cached_edge_ordering = {}
         self.color_key = None
         self.invert_colors = False
 
