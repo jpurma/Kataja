@@ -54,7 +54,6 @@ from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
 from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_widgets.panels.CommentPanel import CommentPanel
 from kataja.ui_widgets.panels.ConstituentPanel import ConstituentPanel
-from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
 from kataja.ui_widgets.panels.FeaturePanel import FeaturePanel
 from kataja.ui_widgets.panels.GlossPanel import GlossPanel
 from kataja.ui_widgets.panels.HelpPanel import HelpPanel
@@ -93,7 +92,6 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': LineOptionsPanel, 'name': 'Edge drawing', 'position': 'float',
            'closed': True},
           {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right', 'folded': True},
-          {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
           {'class': InputPanel, 'name': 'Input tree', 'position': 'bottom', 'closed': False},
@@ -107,6 +105,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
                                                        'paste'])),
                               ('trees_menu', ('&Trees', ['next_forest', 'previous_forest',
+                                                         'next_parse', 'previous_parse',
                                                          'next_derivation_step',
                                                          'prev_derivation_step'])),
                               ('drawing_menu', ('&Drawing', ['$set_visualization',

@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
 from kataja.ui_support.panel_utils import box_row
@@ -24,7 +23,7 @@ class NavigationPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
         inner.setAutoFillBackground(True)
-        ctrl.main.forest_changed.connect(self.update_tree_counter)
+        ctrl.main.forest_changed.connect(self.update_counters)
         layout = self.vlayout
         # self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
         #                               ).to_layout(layout)
@@ -48,6 +47,26 @@ class NavigationPanel(Panel):
         self.next_tree.setMinimumWidth(72)
 
         hlayout = box_row(layout)
+        self.current_parse = KatajaSpinbox(
+            parent=inner, range_min=1, range_max=5,
+            wrapping=True,
+            action='jump_to_parse').to_layout(hlayout, with_label='Parse tree')
+        self.current_parse.setKeyboardTracking(False)
+        self.parse_counter = QtWidgets.QLabel('0', inner)
+        hlayout.addWidget(self.parse_counter)
+
+        hlayout = box_row(layout)
+        action = ctrl.ui.get_action('previous_parse')
+        self.prev_parse = TwoColorButton(text='Previous', bitmaps=qt_prefs.left_arrow, parent=inner,
+                                         action=action).to_layout(hlayout)
+        self.prev_parse.setMaximumHeight(20)
+
+        action = ctrl.ui.get_action('next_parse')
+        self.next_parse = TwoColorButton(text='Next', bitmaps=qt_prefs.right_arrow, parent=inner,
+                                         action=action).to_layout(hlayout)
+        self.next_parse.setMaximumHeight(20)
+
+        hlayout = box_row(layout)
         self.current_derivation = KatajaSpinbox(
             parent=inner, range_min=1, range_max=5,
             wrapping=True,
@@ -68,17 +87,21 @@ class NavigationPanel(Panel):
         self.next_der.setMaximumHeight(20)
         self.finish_init()
 
-    def update_tree_counter(self):
+    def update_counters(self):
         keeper = ctrl.document
         if keeper is not None:
             max_index = len(keeper.forests)
             self.current_treeset.setMaximum(max_index)
             self.treeset_counter.setText('/ %s' % max_index)
-            dm = ctrl.forest.derivation_steps if ctrl.forest else 0
-            if dm:
+            if ctrl.forest:
+                dm = ctrl.forest.get_derivation_steps() if ctrl.forest else 0
                 max_der_step = len(dm.derivation_steps)
                 self.current_derivation.setMaximum(max_der_step)
-                self.derivation_counter.setText('/ %s' % (max_der_step))
+                self.derivation_counter.setText('/ %s' % max_der_step)
+                parses = ctrl.forest.parse_trees
+                if parses:
+                    self.current_parse.setMaximum(len(parses))
+                    self.parse_counter.setText('/ %s' % len(parses))
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
@@ -86,5 +109,5 @@ class NavigationPanel(Panel):
         :param event:
         :return:
         """
-        self.update_tree_counter()
+        self.update_counters()
         super().showEvent(event)

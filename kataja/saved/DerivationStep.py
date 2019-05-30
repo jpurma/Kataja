@@ -64,9 +64,28 @@ class DerivationStep(SavedObject):
             self.semantic_hierarchies = []
             self.iteration = 0
             self.log = []
+        self.frozen = None
 
     def __str__(self):
         return "DS(" + str(self.tree_roots) + ", " + str(self.numeration) + ", " + str(self.msg) + "')"
+
+    def freeze(self):
+        data = {}
+        open_references = {}
+        self.save_object(data, open_references)
+        c = 0
+        max_depth = 100  # constituent trees can be surprisingly deep, and we don't have any
+        # general dict about them.
+        while open_references and c < max_depth:
+            c += 1
+            for obj in list(open_references.values()):
+                if hasattr(obj, 'uid'):
+                    # print('saving obj ', obj.uid)
+                    obj.save_object(data, open_references)
+                else:
+                    print('cannot save open reference object ', obj)
+        assert (c < max_depth)  # please raise the max depth if this is reached
+        self.frozen = (self.uid, data, self.msg, self.iteration)
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
@@ -113,22 +132,13 @@ class DerivationStepManager(SavedObject):
         d_step = DerivationStep(syn_state)
         # Use Kataja's save system to freeze objects into form where they can be stored and restored
         # without further changes affecting them.
-        savedata = {}
-        open_references = {}
-        d_step.save_object(savedata, open_references)
-        c = 0
-        max_depth = 100  # constituent trees can be surprisingly deep, and we don't have any
-        # general dict about them.
-        while open_references and c < max_depth:
-            c += 1
-            for obj in list(open_references.values()):
-                if hasattr(obj, 'uid'):
-                    # print('saving obj ', obj.uid)
-                    obj.save_object(savedata, open_references)
-                else:
-                    print('cannot save open reference object ', obj)
-        assert (c < max_depth)  # please raise the max depth if this is reached
-        self.derivation_steps.append((d_step.uid, savedata, d_step.msg, d_step.iteration))
+        d_step.freeze()
+        self.derivation_steps.append(d_step.frozen)
+
+    def save_derivation_step(self, derivation_step: DerivationStep):
+        if not derivation_step.frozen:
+            derivation_step.freeze()
+        self.derivation_steps.append(derivation_step.frozen)
 
     def remove_iterations(self, iterations):
         """ There may be derivation steps that have been created during the parse but are
@@ -137,7 +147,7 @@ class DerivationStepManager(SavedObject):
         :param iterations: list of iterations, all of these will be removed if found.
         :return:
         """
-        print('removing iterations ', iterations)
+        print(f'removing {len(iterations)} iterations.')
         self.derivation_steps = [(uid, data, msg, i) for uid, data, msg, i
                                  in self.derivation_steps
                                  if i not in iterations]

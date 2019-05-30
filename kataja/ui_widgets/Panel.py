@@ -275,9 +275,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         w = self.width()
         h = self.height()
         screen_rect = ctrl.main.app.desktop().availableGeometry()
-        if x + w > screen_rect.right():
+        if x > screen_rect.right():
             x = screen_rect.right() - w
-        if y + h > screen_rect.bottom():
+        if y > screen_rect.bottom():
             y = screen_rect.bottom() - h
         return QtCore.QPoint(x, y)
 

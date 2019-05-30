@@ -140,7 +140,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-        x, y, w, h = (50, 50, 1152, 720)
+        x, y, w, h = (50, 50, 1024, 800)
         self.setMinimumSize(w, h)
         self.app = kataja_app
         self.classes = classes
@@ -205,7 +205,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         if image_out:
             self.print_manager.print_all(running_environment.default_userspace_path, image_out)
             quit()
-
 
     @property
     def forest(self):

@@ -37,7 +37,7 @@ from kataja.SavedObject import SavedObject
 from kataja.UndoManager import UndoManager
 from kataja.settings.ForestSettings import ForestSettings
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.saved.DerivationStep import DerivationStepManager
+from kataja.saved.ParseTree import ParseTree
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
@@ -80,10 +80,10 @@ class Forest(SavedObject):
         self.semantics_manager = None
         self.projection_manager = None
         self.settings = None
-        self.derivation_steps = DerivationStepManager(self)
-        self.starting_index = None
 
         self.old_label_mode = 0
+        self.parse_trees = [ParseTree(self)]
+        self.current_parse_index = 0
         self.trees = []
         self.nodes = {}
         self.edges = {}
@@ -171,7 +171,7 @@ class Forest(SavedObject):
             self.syntax.create_derivation(forest=self, lexicon=ctrl.document.lexicon)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-            self.jump_to_starting_derivation()
+            self.show_parse(0)
             self.forest_edited()
 
         ctrl.main.update_colors()
@@ -212,7 +212,7 @@ class Forest(SavedObject):
         self.chain_manager = ChainManager(self)
         self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
-        self.derivation_steps = DerivationStepManager(self)
+        self.parse_trees = [ParseTree(self)]
         self.trees = []
         self.nodes = {}
         self.edges = {}
@@ -249,34 +249,35 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-    def add_step(self, syn_state: SyntaxState):
+    def add_step(self, syn_state: SyntaxState, tree_index: int):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.
         :param syn_state: SyntaxState object
+        :param tree_index: int
         :return:
         """
-        self.derivation_steps.save_and_create_derivation_step(syn_state)
+        while tree_index >= len(self.parse_trees):
+            self.parse_trees.append(ParseTree(self))
+        self.parse_trees[tree_index].add_step(syn_state)
 
-    def set_starting_derivation(self, index=None):
-        """ Mark the current latest derivation step as the starting step, or provide an index """
-        if index is None:
-            index = len(self.derivation_steps.derivation_steps) - 1
-        self.starting_index = index
+    def get_derivation_steps(self):
+        return self.parse_trees[self.current_parse_index].derivation_steps
 
-    def jump_to_starting_derivation(self):
-        ds = self.derivation_steps
-        if self.starting_index is not None:
-            ds.derivation_step_index = self.starting_index
+    def next_parse(self):
+        if self.current_parse_index + 1 < len(self.parse_trees):
+            self.show_parse(self.current_parse_index + 1)
         else:
-            ds.derivation_step_index = len(ds.derivation_steps) - 1
-        ds.jump_to_derivation_step(ds.derivation_step_index)
+            self.show_parse(0)
 
-    def remove_iterations(self, iterations):
-        """
-        :param iterations: list of iteration indices to remove from steps
-        :return:
-        """
-        self.derivation_steps.remove_iterations(iterations)
+    def previous_parse(self):
+        if self.current_parse_index == 0:
+            self.show_parse(len(self.parse_trees) - 1)
+        else:
+            self.show_parse(self.current_parse_index - 1)
+
+    def show_parse(self, parse_index):
+        self.current_parse_index = parse_index
+        self.parse_trees[parse_index].jump_to_starting_derivation()
 
     def get_nodes_by_index(self, index) -> (Node, set):
         head = None
@@ -864,13 +865,13 @@ class Forest(SavedObject):
     # ############## #
 
     trees = SavedField("trees")  # the current line of trees
+    parse_trees = SavedField("parse_trees")  # Available parses
     nodes = SavedField("nodes")
-    edges = SavedField("edges")  #, if_changed=reserve_update_for_trees)
+    edges = SavedField("edges")
     arrows = SavedField("arrows")
     groups = SavedField("groups")
     others = SavedField("others")
     vis_data = SavedField("vis_data", watcher=ctrl.main.visualisation_changed)
-    derivation_steps = SavedField("derivation_steps")
     comments = SavedField("comments")
     heading_text = SavedField("heading_text")
     syntax = SavedField("syntax")

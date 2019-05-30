@@ -130,7 +130,7 @@ class LogPanel(Panel):
         self.log_browser = QtWidgets.QTextBrowser(parent=widget)
         self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.vlayout.addWidget(self.log_browser)
-        self.preferred_size = QtCore.QSize(940, 96)
+        self.preferred_size = QtCore.QSize(940, 160)
         f = qt_prefs.get_font(g.CONSOLE_FONT)
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
         self.log_browser.setStyleSheet(ss)

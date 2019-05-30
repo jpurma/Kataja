@@ -155,7 +155,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         if host:
             pos = host.scenePos()
         else:
-            print('missing host for created feature: ', syn_feat, syn_feat.host)
+            print(f"missing host for created feature: '{syn_feat}' at '{syn_feat.host}'")
             pos = (0, 0)
         drawing.create_node(node_type=g.FEATURE_NODE, pos=pos, synobj=syn_feat)
 

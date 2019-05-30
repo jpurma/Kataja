@@ -52,7 +52,7 @@ class DeriveFromInput(KatajaAction):
                                           semantics=semantics,
                                           forest=forest)
             forest.is_parsed = True
-            forest.jump_to_starting_derivation()
+            forest.show_parse(0)
             forest.forest_edited()
             forest.prepare_for_drawing()
             ctrl.graph_view.setFocus()
