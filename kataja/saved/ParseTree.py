@@ -57,6 +57,8 @@ class ParseTree(SavedObject):
 
     def jump_to_starting_derivation(self):
         ds = self.derivation_steps
+        if ds.derivation_step_index is None:
+            ds.derivation_step_index = len(ds.derivation_steps) - 1
         ds.jump_to_derivation_step(ds.derivation_step_index)
 
     def remove_iterations(self, iterations):

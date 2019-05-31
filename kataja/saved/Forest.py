@@ -213,6 +213,7 @@ class Forest(SavedObject):
         self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
         self.parse_trees = [ParseTree(self)]
+        self.current_parse_index = 0
         self.trees = []
         self.nodes = {}
         self.edges = {}

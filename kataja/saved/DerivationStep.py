@@ -121,7 +121,7 @@ class DerivationStepManager(SavedObject):
         self.activated = False
         self.current = None
         self.derivation_steps = []
-        self.derivation_step_index = 0
+        self.derivation_step_index = None
 
     def save_and_create_derivation_step(self, syn_state: SyntaxState):
         """ Derivation steps store syntax states. Nodes etc. will be
@@ -172,7 +172,7 @@ class DerivationStepManager(SavedObject):
         """
         :return:
         """
-        if self.derivation_step_index + 1 >= len(self.derivation_steps):
+        if self.derivation_step_index is None or self.derivation_step_index + 1 >= len(self.derivation_steps):
             self.derivation_step_index = 0
         else:
             self.derivation_step_index += 1
@@ -182,7 +182,7 @@ class DerivationStepManager(SavedObject):
         """
         :return:
         """
-        if self.derivation_step_index == 0:
+        if self.derivation_step_index is None or self.derivation_step_index == 0:
             self.derivation_step_index = len(self.derivation_steps) - 1
         else:
             self.derivation_step_index -= 1
@@ -194,13 +194,6 @@ class DerivationStepManager(SavedObject):
         """
         self.derivation_step_index = i
         self.restore_derivation_step()
-
-    def is_first(self):
-        return self.derivation_step_index == 0 or not self.derivation_steps
-
-    def is_last(self):
-        return (not self.derivation_steps) or (
-            self.derivation_step_index == len(self.derivation_steps) - 1)
 
     # ############## #
     #                #
