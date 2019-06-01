@@ -143,8 +143,6 @@ class Forest(SavedObject):
         """
         # print('created a forest %s , its traces should be visible: %s ' % (
         # self, self.traces_are_visible()))
-        print('after_init for forest: ', self)
-        print(self.nodes)
         self.is_parsed = False
         # for node in self.nodes.values():
         # if node.syntactic_object:
@@ -167,7 +165,6 @@ class Forest(SavedObject):
         self.connect_main()
         if not self.is_parsed:
             self.init_factories()
-            print('prepare for drawing, lexicon id: ', id(ctrl.document.lexicon), id(ctrl.document))
             self.syntax.create_derivation(forest=self, lexicon=ctrl.document.lexicon)
             self.after_model_update('nodes', 0)
             self.is_parsed = True
@@ -206,6 +203,7 @@ class Forest(SavedObject):
         if self.in_display:
             for item in self.get_all_objects():
                 self.remove_from_scene(item, fade_out=False)
+        self.is_parsed = False
         self.nodes_from_synobs = {}
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
@@ -279,6 +277,7 @@ class Forest(SavedObject):
     def show_parse(self, parse_index):
         self.current_parse_index = parse_index
         self.parse_trees[parse_index].jump_to_starting_derivation()
+        ctrl.main.parse_changed.emit()
 
     def get_nodes_by_index(self, index) -> (Node, set):
         head = None

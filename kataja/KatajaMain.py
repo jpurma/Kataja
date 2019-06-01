@@ -110,6 +110,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     color_themes_changed = QtCore.pyqtSignal()
     document_changed = QtCore.pyqtSignal()
     forest_changed = QtCore.pyqtSignal()
+    parse_changed = QtCore.pyqtSignal()
     palette_changed = QtCore.pyqtSignal()
     scope_changed = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal()

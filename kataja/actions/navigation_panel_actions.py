@@ -39,9 +39,8 @@ class NewStructure(KatajaAction):
         """ Create new Forest, insert it after the current one and select it.
         :return: None
         """
-        i, forest = ctrl.document.new_forest()
-        ctrl.document.set_forest(forest)
-        log.info('(Cmd-n) New forest, n.%s' % (i + 1))
+        ctrl.document.new_forest()
+        log.info('(Cmd-n) New forest, n.%s' % (ctrl.document.current_index + 1))
 
 
 class NextForest(KatajaAction):
@@ -55,8 +54,8 @@ class NextForest(KatajaAction):
         """ Show the next 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
-        i, forest = ctrl.document.next_forest()
-        return f'Next forest: {i + 1}: {forest.textual_form()}'
+        ctrl.document.next_forest()
+        return f'Next forest: {ctrl.document.current_index + 1}: {ctrl.forest.textual_form()}'
 
 
 class PreviousForest(KatajaAction):
@@ -70,8 +69,8 @@ class PreviousForest(KatajaAction):
         """ Show the previous 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
-        i, forest = ctrl.document.prev_forest()
-        return f'Previous forest: {i + 1}: {forest.textual_form()}'
+        ctrl.document.prev_forest()
+        return f'Previous forest: {ctrl.document.current_index + 1}: {ctrl.forest.textual_form()}'
 
 
 class JumpToForest(KatajaAction):
@@ -85,8 +84,8 @@ class JumpToForest(KatajaAction):
         return args, kwargs
 
     def method(self, n):
-        i, forest = ctrl.document.set_forest_by_index(n - 1)
-        return f'Jump to tree set: {i + 1}: {forest.textual_form()}'
+        ctrl.document.set_forest_by_index(n - 1)
+        return f'Jump to tree set: {ctrl.document.current_index + 1}: {ctrl.forest.textual_form()}'
 
     def getter(self):
         return ctrl.document.current_index + 1
@@ -142,11 +141,11 @@ class JumpToParse(KatajaAction):
         return args, kwargs
 
     def method(self, n):
-        i, tree = ctrl.forest.show_parse(n - 1)
-        return f'Jump to tree set: {i + 1}: {tree.textual_form()}'
+        ctrl.forest.show_parse(n - 1)
+        return f'Jump to tree set: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
 
     def getter(self):
-        return ctrl.forest.current_parse_index + 1
+        return ctrl.forest.current_parse_index + 1 if ctrl.forest.current_parse_index is not None else 0
 
     def enabler(self):
         return ctrl.forest and len(ctrl.forest.parse_trees) > 1

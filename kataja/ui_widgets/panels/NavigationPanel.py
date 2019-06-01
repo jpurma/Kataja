@@ -24,6 +24,7 @@ class NavigationPanel(Panel):
         inner = self.widget()
         inner.setAutoFillBackground(True)
         ctrl.main.forest_changed.connect(self.update_counters)
+        ctrl.main.parse_changed.connect(self.update_counters)
         layout = self.vlayout
         # self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
         #                               ).to_layout(layout)

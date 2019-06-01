@@ -93,21 +93,20 @@ class KatajaDocument(SavedObject):
         self.poke('forests')  # <-- announce change in watched list-like attribute
         self.forests.insert(self.current_index + 1, forest)
         self.set_forest_by_index(self.current_index + 1)
-        return self.current_index, self.forest
 
     def next_forest(self):
         """ Select the next forest in the list of forests. The list loops at end.
         :return: tuple (current_index (int), selected forest (Forest)
         """
         i = self.current_index + 1 if self.current_index < len(self.forests) - 1 else 0
-        return self.set_forest_by_index(i)
+        self.set_forest_by_index(i)
 
     def prev_forest(self):
         """ Select the previous forest in the list of forests. The list loops at -1.
         :return: tuple (current_index (int), selected forest (Forest)
         """
         i = self.current_index - 1 if self.current_index > 0 else len(self.forests) - 1
-        return self.set_forest_by_index(i)
+        self.set_forest_by_index(i)
 
     def set_forest_by_index(self, i):
         """ Jump to forest with given index,
@@ -120,7 +119,7 @@ class KatajaDocument(SavedObject):
         elif i >= len(self.forests):
             i = len(self.forests) - 1
         new_forest = self.forests[i]
-        return self.set_forest(new_forest)
+        self.set_forest(new_forest)
 
     def set_forest(self, forest, force=False):
         if (not forest) or (forest is self.forest and not force):
@@ -136,7 +135,6 @@ class KatajaDocument(SavedObject):
         forest.prepare_for_drawing()
         ctrl.resume_undo()
         ctrl.main.forest_changed.emit()
-        return self.current_index, forest
 
     def update_forest(self):
         self.set_forest(self.forest, force=True)
