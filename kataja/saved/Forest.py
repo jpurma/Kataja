@@ -233,7 +233,7 @@ class Forest(SavedObject):
         # Update list of trees
         new_tops = []
         for top in self.trees:
-            if top.is_top_node(only_similar=True, only_visible=True):
+            if top.is_top_node(visible=True):
                 if top not in new_tops:
                     new_tops.append(top)
             else:
@@ -242,7 +242,7 @@ class Forest(SavedObject):
                         new_tops.append(nt)
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE and \
-                    node.is_top_node(only_similar=True, only_visible=True) and \
+                    node.is_top_node(visible=True) and \
                     node not in new_tops:
                 new_tops.append(node)
 
@@ -776,7 +776,7 @@ class Forest(SavedObject):
             for node in ltree:
                 if not hasattr(node, 'index'):
                     continue
-                parents = node.get_parents(visible=True, similar=True)
+                parents = node.get_parents(visible=True)
                 if len(parents) > 1:
                     node_key = node.uid
                     required_keys.add(node_key)
@@ -818,7 +818,7 @@ class Forest(SavedObject):
             return True
         elif not self.traces_to_draw:
             return True
-        elif hasattr(node, 'index') and len(node.get_parents(similar=True, visible=True)) > 1:
+        elif hasattr(node, 'index') and len(node.get_parents(visible=True)) > 1:
             key = node.uid
             if key in self.traces_to_draw:
                 if parent.uid != self.traces_to_draw[key]:
@@ -836,14 +836,14 @@ class Forest(SavedObject):
             if node in done:
                 return 0
             done.add(node)
-            if node.is_leaf(only_similar=True, only_visible=True):
+            if node.is_leaf(visible=True):
                 if node.is_visible():
                     w = node.label_object.width
                 else:
                     w = 0
             else:
                 w = node.label_object.left_bracket_width() + node.label_object.right_bracket_width()
-                for n in node.get_children(similar=True, visible=True):
+                for n in node.get_children(visible=True):
                     if self.should_we_draw(n, node):
                         w += recursive_width(n)
             self.width_map[node.uid] = w

@@ -47,13 +47,13 @@ class FreeDrawing(ForestDrawing):
                               "forcing it to binary merge")
 
         i = node.index or ''
-        children = list(node.get_children(similar=True, visible=False))
+        children = list(node.get_children())
         for child in list(children):
-            parents = node.get_parents(similar=True, visible=False)
+            parents = node.get_parents()
             bad_parents = []
             good_parents = []
             for parent in list(parents):
-                if child in parent.get_children(similar=True, visible=False):
+                if child in parent.get_children():
                     bad_parents.append(parent)
                 else:
                     good_parents.append(parent)
@@ -93,7 +93,7 @@ class FreeDrawing(ForestDrawing):
         :param add_left:
         :return:
         """
-        children = old_node.get_children(similar=True, visible=False)
+        children = old_node.get_children()
 
         if len(children) != 1:
             return
@@ -290,8 +290,8 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                 node.syntactic_object = head.syntactic_object
                 converted_nodes.add(node)
                 return
-            children = node.get_children(visible=False, similar=True)
-            feature_nodes = node.get_children(visible=False, similar=False, of_type=g.FEATURE_NODE)
+            children = node.get_children()
+            feature_nodes = node.get_children(of_type=g.FEATURE_NODE)
             features = []
             for fnode in feature_nodes:
                 if fnode in converted_nodes:
@@ -308,7 +308,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                     features.append(fobj)
                     converted_nodes.add(fnode)
                     fnode.set_syntactic_object(fobj)
-                    for checked in fnode.get_children(visible=False, similar=True):
+                    for checked in fnode.get_children():
                         checked_features.add((fnode, checked))
             if len(children) == 2:
                 for child in children:

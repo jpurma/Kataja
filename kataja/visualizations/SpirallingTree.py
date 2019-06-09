@@ -192,8 +192,7 @@ class SpirallingTree(BaseVisualization):
                 print("Reached 500 iterations, quit trying")
                 return None
             if not layer.focus.is_triangle_host():
-                ch = [x for x in layer.focus.get_children(similar=True, visible=True) if
-                      not x.locked_to_node]
+                ch = [x for x in layer.focus.get_children(visible=True) if not x.locked_to_node]
                 layer.layers = []
                 for i, child_node in enumerate(ch):
                     if self.forest.should_we_draw(child_node, layer.focus):
@@ -228,7 +227,7 @@ class SpirallingTree(BaseVisualization):
         for node in tree_top.get_sorted_nodes():
             if node.is_triangle_host():
                 continue
-            my_sides = len([x for x in node.get_children(visible=True, similar=True) if
+            my_sides = len([x for x in node.get_children(visible=True) if
                             not x.locked_to_node]) + 1
             if my_sides > sides:
                 sides = my_sides

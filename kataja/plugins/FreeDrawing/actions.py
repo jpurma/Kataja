@@ -66,7 +66,7 @@ class RemoveMerger(KatajaAction):
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
-        children = node.get_children(similar=True)
+        children = node.get_children()
         if len(children) != 1:
             log.warn('Trying to remove an intermediate monobranch node, but node "%s" '
                      'is not such node.' % node)

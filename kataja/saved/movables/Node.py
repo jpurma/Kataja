@@ -272,7 +272,7 @@ class Node(Draggable, Movable):
         return bool(self.triangle_stack and self.triangle_stack[-1] is self)
 
     def can_have_triangle(self):
-        return (not self.triangle_stack) and not self.is_leaf(only_similar=True, only_visible=False)
+        return (not self.triangle_stack) and not self.is_leaf()
 
     def if_changed_font(self, value):
         self.label_object.set_font(qt_prefs.get_font(value))
@@ -301,56 +301,65 @@ class Node(Draggable, Movable):
     # ### Children and parents
     # ####################################################
 
-    def get_children(self, visible=False, similar=False, reverse=False, of_type=None) -> list:
+    def get_children(self, visible=False, of_type=None) -> list:
         """
         Get child nodes of this node
         :return: iterator of Nodes
         """
-        if reverse:
-            edges_down = reversed(self.edges_down)  # edges_down has to be list where order makes
-            # some syntactic sense.
-        else:
-            edges_down = self.edges_down
-        if not of_type and similar:
-            of_type = self.node_type
+        of_type = of_type or self.node_type
         if visible:
-            if of_type:
-                return [edge.end for edge in edges_down if
+            if of_type == g.FEATURE_NODE:
+                return [edge.end for edge in self.edges_down if
                         edge.end and edge.end.node_type == of_type and edge.end.is_visible()]
             else:
-                return [edge.end for edge in edges_down if edge.end and edge.end.is_visible()]
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.end.node_type == of_type and (not edge.alpha) and edge.end.is_visible()]
         else:
-            if of_type:
-                return [edge.end for edge in edges_down if edge.end and edge.end.node_type == of_type]
+            if of_type == g.FEATURE_NODE:
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.end.node_type == of_type]
             else:
-                return [edge.end for edge in edges_down if edge.end]
+                return [edge.end for edge in self.edges_down if
+                        edge.end and (not edge.alpha) and edge.end.node_type == of_type]
 
-    def get_parents(self, similar=True, visible=False, of_type=None) -> list:
+    def get_all_children(self, visible=False) -> list:
         """
-        Get parent nodes of this node.
-        :param similar: boolean, only return nodes of same type (eg.
-        ConstituentNodes)
+        Get child nodes of this node
+        :return: iterator of Nodes
+        """
+        if visible:
+            return list(set(edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()))
+        else:
+            return list(set(edge.end for edge in self.edges_down if edge.end))
+
+    def get_parents(self, visible=False, of_type=None) -> list:
+        """
         :param visible: boolean, only return visible nodes
         :param of_type: int, only return parents of certain node_type
         :return: list of Nodes
         """
         if not self.edges_up:
             return []
-        if not of_type and similar:
-            of_type = self.node_type
-        if of_type:
-            if visible:
-                return [edge.start for edge in self.edges_up if
-                        edge.start and edge.start.node_type == of_type and edge.start.is_visible()]
-            else:
-                return [edge.start for edge in self.edges_up if
-                        edge.start and edge.start.node_type == of_type]
+        of_type = of_type or self.node_type
+        if visible:
+            return [edge.start for edge in self.edges_up if
+                    edge.start and edge.start.node_type == of_type and (not edge.alpha) and edge.start.is_visible()]
         else:
-            if visible:
-                return [edge.start for edge in self.edges_up if
-                        edge.start and edge.start.is_visible()]
-            else:
-                return [edge.start for edge in self.edges_up if edge.start]
+            return [edge.start for edge in self.edges_up if
+                    edge.start and edge.start.node_type == of_type and not edge.alpha]
+
+    def get_all_parents(self, visible=False) -> list:
+        """
+        :param visible: boolean, only return visible nodes
+        :return: list of Nodes
+        """
+        if not self.edges_up:
+            return []
+        if visible:
+            return list(set(edge.start for edge in self.edges_up if
+                        edge.start and edge.start.is_visible()))
+        else:
+            return list(set(edge.start for edge in self.edges_up if edge.start))
 
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
@@ -366,26 +375,24 @@ class Node(Draggable, Movable):
         return False
 
     def is_unary(self):
-        for parent in self.get_parents(similar=True, visible=False):
-            if len(parent.get_children(visible=False, similar=True)) == 1:
+        for parent in self.get_parents():
+            if len(parent.get_children()) == 1:
                 return True
         return False
 
-    def is_leaf(self, only_similar=True, only_visible=False):
+    def is_leaf(self, visible=False):
         """
 
-        :param only_similar:
-        :param only_visible:
+        :param visible:
         :return:
         """
-        return not self.get_children(visible=only_visible, similar=only_similar)
+        return not self.get_children(visible=visible)
 
-    def is_top_node(self, only_similar=True, only_visible=False):
+    def is_top_node(self, visible=False):
         """ Root node is the topmost node of a trees
-        :param only_similar:
-        :param only_visible:
+        :param visible:
         """
-        return not self.get_parents(similar=only_similar, visible=only_visible)
+        return not self.get_parents(visible=visible)
 
     def get_edge_to(self, other, edge_type='', alpha=None) -> QtWidgets.QGraphicsItem or None:
         """ Returns edge object, not the related node. There should be only
@@ -484,7 +491,7 @@ class Node(Draggable, Movable):
         else:
             other_type = other.node_type
         if other_type in self.allowed_child_types:
-            return other not in self.get_children(similar=False, visible=False) if other else True
+            return other not in self.get_all_children(visible=False) if other else True
         return False
 
     def get_sorted_nodes(self):
@@ -498,7 +505,7 @@ class Node(Draggable, Movable):
             if node not in used:
                 used.add(node)
                 sorted_nodes.append(node)
-                for child in node.get_children(similar=False, visible=False):
+                for child in node.get_all_children(visible=False):
                     add_children(child)
 
         add_children(self)
@@ -515,7 +522,7 @@ class Node(Draggable, Movable):
         def go_up(node):
             if node not in used:
                 used.add(node)
-                parents = node.get_parents(similar=False, visible=False)
+                parents = node.get_all_parents(visible=False)
                 if parents:
                     for parent in parents:
                         go_up(parent)
@@ -909,8 +916,7 @@ class Node(Draggable, Movable):
         should be hidden. 
         :return: 
         """
-        return self.triangle_stack and self.triangle_stack[-1] is not self and not self.is_leaf(
-            only_similar=True, only_visible=False)
+        return self.triangle_stack and self.triangle_stack[-1] is not self and not self.is_leaf()
 
     # ## Magnets
     # ######################################################################
@@ -966,7 +972,7 @@ class Node(Draggable, Movable):
         return int(x1 + x2), int(y1 + y2)
 
     def _angle_to_parent(self, x1, y1, x2, y2):
-        parents = self.get_parents(similar=True, visible=True)
+        parents = self.get_parents(visible=True)
         # We don't want to rotate multidominated or top nodes
         if len(parents) == 1:
             # Compute angle to parent

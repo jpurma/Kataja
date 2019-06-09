@@ -118,7 +118,7 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
             triangle.setY(top)
 
         def remove_children(bad_node):
-            for child in bad_node.get_children(similar=False, visible=False):
+            for child in bad_node.get_all_children(visible=False):
                 if child in folded:
                     folded.remove(child)
                     remove_children(child)

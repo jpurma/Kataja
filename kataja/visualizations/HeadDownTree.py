@@ -154,7 +154,7 @@ class HeadDownTree(BaseVisualization):
             elif self.forest.should_we_draw(node, parent):
                 grids = []
                 if not node.is_triangle_host():
-                    children = node.get_children(visible=True, similar=True)
+                    children = node.get_children(visible=True)
                     for child in children:
                         grid = _build_grid(child, parent=node)
                         if grid:
@@ -187,7 +187,7 @@ class HeadDownTree(BaseVisualization):
             """
             x = 0
             nleft, ntop, nw, nh = _get_grid_size(node)
-            children = node.get_children(similar=True, visible=True)
+            children = node.get_children(visible=True)
             heads = node.get_heads()
             if len(children) == 1:
                 cleft, ctop, cw, ch = _get_grid_size(children[0])

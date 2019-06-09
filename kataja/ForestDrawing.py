@@ -663,7 +663,7 @@ class ForestDrawing:
 
         leaves = {}
         for node in self.forest.nodes.values():
-            if node.is_leaf(only_similar=True, only_visible=False):
+            if node.is_leaf():
                 leaves[self.forest.parser.get_root_word(node.label)] = node
         for line in defstring.splitlines():
             if '::' not in line:

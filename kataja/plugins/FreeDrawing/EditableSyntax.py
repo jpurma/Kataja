@@ -128,7 +128,7 @@ class EditableSyntax(SyntaxAPI):
         def _pick_leaves(n):
             if n not in passed:
                 passed.add(n)
-                children = n.get_children(visible=False, similar=True)
+                children = n.get_children()
                 if children:
                     for c in children:
                         _pick_leaves(c)

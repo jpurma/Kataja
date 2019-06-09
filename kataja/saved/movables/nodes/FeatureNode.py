@@ -270,8 +270,9 @@ class FeatureNode(Node):
         return []
 
     def get_host(self):
-        for parent in self.get_parents(of_type=g.CONSTITUENT_NODE):
-            return parent
+        for edge in self.edges_up:
+            if edge.start.node_type == g.CONSTITUENT_NODE:
+                return edge.start
 
     def _calculate_inner_rect(self, extra_w=0, extra_h=0):
         label = self.label_object

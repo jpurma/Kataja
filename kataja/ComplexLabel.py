@@ -65,10 +65,10 @@ class ComplexLabel(SimpleLabel):
             print(self._host, self._host.node_type, self._host.syntactic_object)
 
         if self.cn_shape == SCOPEBOX:
-            if not self._host.is_leaf(only_similar=True, only_visible=True):
+            if not self._host.is_leaf(visible=True):
                 html = '<sub>' + html + '</sub>'
         elif self.cn_shape == BRACKETED:
-            if not self._host.is_leaf(only_similar=True, only_visible=True):
+            if not self._host.is_leaf(visible=True):
                 html = '[<sub>' + html + '</sub>'
 
         if force_update or (self.cn_shape, html, is_card) != self._previous_values:
@@ -94,7 +94,7 @@ class ComplexLabel(SimpleLabel):
             return True
         elif self._host.is_triangle_host():
             return True
-        elif self._host.is_leaf(only_similar=True, only_visible=True):
+        elif self._host.is_leaf(visible=True):
             return True
         return False
 

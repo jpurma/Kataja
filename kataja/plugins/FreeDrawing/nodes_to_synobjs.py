@@ -91,8 +91,8 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                 node.syntactic_object = head.syntactic_object
                 converted_nodes.add(node)
                 return
-            children = node.get_children(visible=False, similar=True)
-            feature_nodes = node.get_children(visible=False, similar=False, of_type=g.FEATURE_NODE)
+            children = node.get_children()
+            feature_nodes = node.get_children(of_type=g.FEATURE_NODE)
             features = []
             for fnode in feature_nodes:
                 if fnode in converted_nodes:
@@ -109,7 +109,7 @@ def nodes_to_synobjs(forest, syntax, roots: list):
                     features.append(fobj)
                     converted_nodes.add(fnode)
                     fnode.set_syntactic_object(fobj)
-                    for checked in fnode.get_children(visible=False, similar=True):
+                    for checked in fnode.get_children():
                         checked_features.add((fnode, checked))
             if len(children) == 2:
                 for child in children:

@@ -87,8 +87,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def next_selectable_from_node(node, direction):
         if direction == 'left':
             all_siblings = []
-            for parent in node.get_parents(similar=False, visible=True):
-                for child in parent.get_children(visible=True, similar=False):
+            for parent in node.get_all_parents(visible=True):
+                for child in parent.get_all_children(visible=True):
                     all_siblings.append(child)
             if node in all_siblings:
                 i = all_siblings.index(node)
@@ -97,8 +97,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return node
         if direction == 'right':
             all_siblings = []
-            for parent in node.get_parents(similar=False, visible=True):
-                for child in parent.get_children(visible=True, similar=False):
+            for parent in node.get_all_parents(visible=True):
+                for child in parent.get_all_children(visible=True):
                     all_siblings.append(child)
             if node in all_siblings:
                 i = all_siblings.index(node)
@@ -106,13 +106,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     return all_siblings[i + 1]
             return node
         if direction == 'up':
-            all_parents = node.get_parents(similar=False, visible=True)
+            all_parents = node.get_all_parents(visible=True)
             if all_parents:
                 return node.get_edge_to(all_parents[-1])
             else:
                 return node
         if direction == 'down':
-            all_children = list(node.get_children(visible=True, similar=False))
+            all_children = node.get_all_children(visible=True)
             if all_children:
                 return node.get_edge_to(all_children[0])
             else:

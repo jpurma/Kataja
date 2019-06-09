@@ -82,5 +82,5 @@ class RotateButton(NodeOverlayButton):
 
     @classmethod
     def condition(cls, host):
-        return host.node_type == g.CONSTITUENT_NODE and not host.triangle_stack and len(host.get_children(similar=True)) > 1
+        return host.node_type == g.CONSTITUENT_NODE and not host.triangle_stack and len(host.get_children()) > 1
 

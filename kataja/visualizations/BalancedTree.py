@@ -121,7 +121,7 @@ class BalancedTree(BaseVisualization):
         def recursive_position(node, x, y, largest_x):
             if node.locked_to_node:
                 return x, y, largest_x
-            children = node.get_children(visible=True, similar=True, reverse=True)
+            children = reversed(node.get_children(visible=True))
             if children and not node.is_triangle_host():
                 smallest_y = y
                 largest_x = x

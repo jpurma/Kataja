@@ -114,7 +114,7 @@ class Block:
             block.trigger_move()
 
     def include_children(self, done):
-        children = self.node.get_children(similar=True, visible=True)
+        children = self.node.get_children(visible=True)
         width_sum = 0
         max_height = 0
         prev_sibling = None

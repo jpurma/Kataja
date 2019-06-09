@@ -94,23 +94,23 @@ def launch_from_command_line():
     app = prepare_app()
     log.info('Starting Kataja...')
     if not silent:
-        splash_color = QtGui.QColor(238, 232, 213)
-        splash_pix = QtGui.QPixmap(os.path.join(running_environment.resources_path, 'katajalogo.png'))
-        splash = QtWidgets.QSplashScreen(splash_pix)
-        splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
-                              QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
-        splash.showMessage(f'{kataja.__author__} | Fetching version...', QtCore.Qt.AlignBottom |
-                           QtCore.Qt.AlignHCenter, splash_color)
-        app.processEvents()
-        splash.show()
-        app.processEvents()
+        #splash_color = QtGui.QColor(238, 232, 213)
+        #splash_pix = QtGui.QPixmap(os.path.join(running_environment.resources_path, 'katajalogo.png'))
+        #splash = QtWidgets.QSplashScreen(splash_pix)
+        #splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
+        #                      QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
+        #splash.showMessage(f'{kataja.__author__} | Fetching version...', QtCore.Qt.AlignBottom |
+        #                   QtCore.Qt.AlignHCenter, splash_color)
+        #app.processEvents()
+        #splash.show()
+        #app.processEvents()
         version_str = load_version()
         if running_environment.run_mode == 'source':
             version_str = bump_and_save_version(version_str)
 
-        splash.showMessage(f'{kataja.__author__} | {version_str}',
-                           QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
-        splash.repaint()
+        #splash.showMessage(f'{kataja.__author__} | {version_str}',
+        #                   QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+        #splash.repaint()
         app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up
@@ -118,7 +118,7 @@ def launch_from_command_line():
 
     window = KatajaMain(app, **kwargs)
     if not silent:
-        splash.finish(window)
+        #splash.finish(window)
         app.setActiveWindow(window)
     app.processEvents()
     app.exec_()

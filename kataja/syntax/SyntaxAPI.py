@@ -131,7 +131,7 @@ class SyntaxAPI(SavedObject):
         def _pick_leaves(n):
             if n not in passed:
                 passed.add(n)
-                children = n.get_children(visible=False, similar=True)
+                children = n.get_children()
                 if children:
                     for c in children:
                         _pick_leaves(c)
@@ -154,14 +154,14 @@ class SyntaxAPI(SavedObject):
             if n not in passed:
                 passed.add(n)
                 leaves.append(n)
-                children = n.get_children(visible=False, similar=True)
+                children = n.get_children()
                 if children:
                     for c in children:
                         _pick_leaves(c)
         leaves = []
         passed = set()
         passed.add(node)
-        for child in node.get_children(visible=False, similar=True):
+        for child in node.get_children():
             _pick_leaves(child)
         return [l.syntactic_object for l in leaves]
 

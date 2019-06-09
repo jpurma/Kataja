@@ -78,7 +78,7 @@ class GlossNode(Node):
 
         :return:
         """
-        return self.get_parents(visible=False, of_type=GLOSS_NODE)
+        return self.get_parents(of_type=GLOSS_NODE)
 
     def if_changed_label(self, value):
         for host in self.hosts:

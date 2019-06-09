@@ -2,10 +2,7 @@
 import string
 from collections import defaultdict
 
-from kataja.globals import FOREST, CONSTITUENT_NODE, USE_MULTIDOMINATION, USE_TRACES, \
-    TRACES_GROUPED_TOGETHER
-from kataja.singletons import ctrl
-from kataja.utils import time_me
+from kataja.globals import CONSTITUENT_NODE, USE_MULTIDOMINATION, USE_TRACES, TRACES_GROUPED_TOGETHER
 
 
 class ChainManager:
@@ -28,16 +25,16 @@ class ChainManager:
         for node in self.forest.nodes.values():
             if node.node_type == CONSTITUENT_NODE and \
                     not node.index and \
-                    len(node.get_parents(similar=True, visible=False)) > 1:
+                    len(node.get_parents()) > 1:
                 node.index = self.next_free_index()
         # Then implement the rules
         strat = self.forest.settings.get('trace_strategy')
         if strat == USE_MULTIDOMINATION:
-            self.traces_to_multidomination()
+            self._traces_to_multidomination()
         elif strat == USE_TRACES:
-            self.multidomination_to_traces()
+            self._multidomination_to_traces()
         elif strat == TRACES_GROUPED_TOGETHER:
-            self.multidomination_to_traces()
+            self._multidomination_to_traces()
 
     def after_draw_update(self):
         """ Grouping traces to one point has to happen after the visualisation algorithm has tried
@@ -45,13 +42,7 @@ class ChainManager:
         :return:
         """
         if self.forest.settings.get('trace_strategy') == TRACES_GROUPED_TOGETHER:
-            self.group_traces_to_chain_head()
-
-    def traces_are_visible(self):
-        """ Helper method for checking if we need to deal with chains
-        :return:
-        """
-        return self.forest.settings.get('trace_strategy') != USE_MULTIDOMINATION
+            self._group_traces_to_chain_head()
 
     def _get_heads_and_traces(self):
         heads = {}
@@ -66,7 +57,7 @@ class ChainManager:
                     heads[node.index] = node
         return heads, traces
 
-    def group_traces_to_chain_head(self):
+    def _group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
         heads, traces = self._get_heads_and_traces()
         print(heads, traces)
@@ -82,7 +73,7 @@ class ChainManager:
                     dx += 10
                     dy += trace.height
 
-    def traces_to_multidomination(self):
+    def _traces_to_multidomination(self):
         """Switch traces to multidominant originals, as they are in syntax """
 
         heads, traces = self._get_heads_and_traces()
@@ -92,9 +83,9 @@ class ChainManager:
                 for trace in traces:
                     self.forest.drawing.replace_node(trace, original)
 
-    def multidomination_to_traces(self):
+    def _multidomination_to_traces(self):
         def _find_paths_up(n, depth):
-            pars = n.get_parents(similar=True, visible=False)
+            pars = n.get_parents()
             if pars:
                 for par in pars:
                     _find_paths_up(par, depth + 1)
@@ -109,7 +100,7 @@ class ChainManager:
                 continue
             if node.index:
                 originals[node.index] = node
-                for parent in node.get_parents(similar=True, visible=False):
+                for parent in node.get_parents():
                     paths_up = []
                     _find_paths_up(parent, 0)
                     parents[node.index].append((max(paths_up), parent))

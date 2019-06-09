@@ -217,7 +217,7 @@ class ConstituentNode(Node):
             if node not in used:
                 used.add(node)
                 sorted_constituents.append(node)
-                for child in node.get_children(similar=True, visible=False):
+                for child in node.get_children():
                     add_children(child)
 
         add_children(self)
@@ -230,7 +230,7 @@ class ConstituentNode(Node):
         def add_children(node):
             if node not in used:
                 used.add(node)
-                children = node.get_children(similar=True, visible=False)
+                children = node.get_children()
                 if not children:
                     sorted_constituents.append(node)
                 else:
@@ -347,7 +347,7 @@ class ConstituentNode(Node):
         if label_text_mode == g.NODE_LABELS:
             l = self.label
         elif label_text_mode == g.NODE_LABELS_FOR_LEAVES:
-            if self.is_leaf(only_similar=True, only_visible=False):
+            if self.is_leaf():
                 l = self.label
         elif label_text_mode == g.CHECKED_FEATURES:
             if self.syntactic_object.parts and self.syntactic_object.checked_features:
@@ -385,7 +385,7 @@ class ConstituentNode(Node):
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
-        children = list(self.get_children(similar=True, visible=False))
+        children = self.get_children()
         if children:
             return '[.%s %s ]' % (
                 self.label, ' '.join((c.as_bracket_string() for c in children)))
@@ -499,8 +499,7 @@ class ConstituentNode(Node):
         them in three possible ways. 
         :return: 
         """
-        children = [fn for fn in self.get_children(visible=True, similar=False) if
-                    fn.node_type == g.FEATURE_NODE]
+        children = self.get_children(visible=True, of_type=g.FEATURE_NODE)
         if not (children or self.gloss_node):
             return
         bottom_y = self.boundingRect().bottom()
@@ -721,7 +720,7 @@ class ConstituentNode(Node):
         if rect:
             painter.setBrush(brush)
             painter.drawRoundedRect(self.inner_rect, xr, yr)
-        if shape == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
+        if shape == g.BRACKETED and not self.is_leaf(visible=True):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
 

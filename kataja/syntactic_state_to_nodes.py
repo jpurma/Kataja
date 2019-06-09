@@ -210,11 +210,12 @@ def syntactic_state_to_nodes(forest, syn_state):
         if synobj.uid in done_nodes:
             return node
         done_nodes.add(synobj.uid)
-        for part in synobj.parts:
-            child = recursive_create_edges_for_constituent(part)
-            if child:
-                connect_if_necessary(node, child, child.edge_type())
         if synobj.parts:
+            for part in synobj.parts:
+                child = recursive_create_edges_for_constituent(part)
+                if child:
+                    connect_if_necessary(node, child, child.edge_type())
+
             features = list(synobj.get_features())
             semantics = getattr(synobj, 'semantics', None)
             if semantics:
@@ -223,7 +224,6 @@ def syntactic_state_to_nodes(forest, syn_state):
             checked_features = getattr(synobj, 'checked_features', [])
             if checked_features:
                 for xy in checked_features:
-                    # print('adding checked features: ', xy)
                     if isinstance(xy, tuple):
                         x, y = xy
                         features.append(x)
@@ -388,6 +388,7 @@ def verify_edge_order_for_constituent_nodes(node):
         correct_order = node.syntactic_object.sorted_parts()
         current_order = [edge.end.syntactic_object for edge in node.edges_down if
                          edge.end and edge.end.node_type == g.CONSTITUENT_NODE]
+        print([n.end for n in node.edges_down if n.end.node_type == g.CONSTITUENT_NODE])
         if correct_order != current_order:
             new_order = []
             passed = []

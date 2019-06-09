@@ -90,7 +90,7 @@ class LeftFirstTree(BaseVisualization):
         grid.set(x, y, node)
         if node.is_triangle_host():
             return
-        children = [x for x in node.get_children(similar=True, visible=True) if
+        children = [x for x in node.get_children(visible=True) if
                     not x.locked_to_node]
         if not children:
             return
@@ -106,7 +106,7 @@ class LeftFirstTree(BaseVisualization):
 
         for child in children:
             blocked = True
-            grandchildren = [x for x in child.get_children(similar=True, visible=True) if
+            grandchildren = [x for x in child.get_children(visible=True) if
                              not x.locked_to_node]
             count = 0
             while blocked and count < 10:

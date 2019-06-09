@@ -126,7 +126,10 @@ class DivideAndConquerTree(BalancedTree):
                 nleft, ntop, nw, nh = _get_grid_size(node)
                 grids = []
                 if not node.is_triangle_host():
-                    children = node.get_children(similar=only_similar, visible=True)
+                    if only_similar:
+                        children = node.get_children(visible=True)
+                    else:
+                        children = node.get_all_children(visible=True)
                     last_drawn_child = None
                     for child in children:
                         grid = _build_grid(child, parent=node, done=done)
@@ -160,7 +163,10 @@ class DivideAndConquerTree(BalancedTree):
                     size = 0
                     nleft, ntop, nw, nh = _get_grid_size(node)
                     if not node.is_triangle_host():
-                        children = node.get_children(similar=only_similar, visible=True)
+                        if only_similar:
+                            children = node.get_children(visible=True)
+                        else:
+                            children = node.get_all_children(visible=True)
                         for child in children:
                             size += 1
                             nx, ny = g.find_in_grid(child)

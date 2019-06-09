@@ -111,16 +111,16 @@ class EditableConstituentNode(ConstituentNode):
         adding siblings
         :return: bool
         """
-        return self.get_children(similar=True, visible=False) and not self.is_unary()
+        return self.get_children() and not self.is_unary()
 
     def has_one_child(self):
-        return len(self.get_children(similar=True, visible=False)) == 1
+        return len(self.get_children()) == 1
 
     def is_unnecessary_merger(self):
         """ This merge can be removed, if it has only one child
         :return:
         """
-        return len(list(self.get_children(similar=True, visible=False))) == 1
+        return len(self.get_children()) == 1
 
     def get_heads(self):
         return self.heads

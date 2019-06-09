@@ -169,7 +169,7 @@ class BaseVisualization:
         """
         def find_old_node(node):
             if node.unmoved or node.locked_to_node:
-                children = node.get_children(visible=True, similar=True, reverse=True)
+                children = reversed(node.get_children(visible=True))
                 for child in children:
                     f = find_old_node(child)
                     if f:

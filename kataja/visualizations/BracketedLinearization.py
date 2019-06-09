@@ -113,7 +113,7 @@ class BracketedLinearization(BaseVisualization):
             nw = width_map[node.uid]
             node.move_to(left_edge, y, valign=g.TOP, align=g.LEFT_ALIGN)
             le = left_edge + node.label_object.left_bracket_width()
-            for child in node.get_children(visible=True, similar=True):
+            for child in node.get_children(visible=True):
                 if child.locked_to_node:
                     continue
                 elif ctrl.forest.should_we_draw(child, node):
