@@ -130,6 +130,50 @@ class PreviousParse(KatajaAction):
         return ctrl.forest and len(ctrl.forest.parse_trees) > 1
 
 
+class NextMatchingParse(KatajaAction):
+    k_action_uid = 'next_matching_parse'
+    k_command = 'Next matching parse tree'
+    k_shortcut = '>'
+    k_undoable = False
+    k_tooltip = 'Switch to next parse tree with similar state'
+
+    def method(self):
+        """ Show the next possible parse, if there are more than one.
+        :return: None
+        """
+        found = ctrl.forest.find_next_matching_parse()
+        if found:
+            if isinstance(found, tuple):
+                return f'Next matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+            return found
+        return 'No matching tree found'
+
+    def enabler(self):
+        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+
+
+class PreviousMatchingParse(KatajaAction):
+    k_action_uid = 'previous_matching_parse'
+    k_command = 'Previous matching parse tree'
+    k_shortcut = '<'
+    k_undoable = False
+    k_tooltip = 'Switch to previous parse tree with similar state'
+
+    def method(self):
+        """ Show the previous parse, if there are more than one
+        :return: None
+        """
+        found = ctrl.forest.find_previous_matching_parse()
+        if found:
+            if isinstance(found, tuple):
+                return f'Previous matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+            return found
+        return 'No matching tree found'
+
+    def enabler(self):
+        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+
+
 class JumpToParse(KatajaAction):
     k_action_uid = 'jump_to_parse'
     k_command = 'Jump to parse tree'

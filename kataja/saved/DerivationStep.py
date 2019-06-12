@@ -168,6 +168,13 @@ class DerivationStepManager(SavedObject):
                     log_msg = log_msg.replace("\t", "&nbsp;&nbsp;")
                     log.info(f'<font color="#859900">{log_msg}</font>')
 
+    def get_derivation_step(self, index):
+        if self.derivation_steps:
+            uid, frozen_data, msg, i = self.derivation_steps[index]
+            d_step = DerivationStep(None, uid=uid)
+            d_step.load_objects(frozen_data)
+            return d_step
+
     def next_derivation_step(self):
         """
         :return:

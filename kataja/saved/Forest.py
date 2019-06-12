@@ -279,6 +279,33 @@ class Forest(SavedObject):
         self.parse_trees[parse_index].jump_to_starting_derivation()
         ctrl.main.parse_changed.emit()
 
+    def _find_matching_parse(self, reverse=False):
+        tree_roots = [x.syntactic_object for x in self.trees if x.node_type == g.CONSTITUENT_NODE]
+        if (not tree_roots) or not hasattr(tree_roots[0].syntactic_object, 'eq'):
+            return "Cannot compare trees. Either no tree or constituents don't have 'eq'-comparison method."
+        if reverse:
+            tree_indices = range(self.current_parse_index - 1, -1, -1)
+        else:
+            tree_indices = range(self.current_parse_index + 1, len(self.parse_trees))
+        for tree_index in tree_indices:
+            parse_tree = self.parse_trees[tree_index]
+            ds = parse_tree.derivation_steps
+            for i in range(0, len(ds.derivation_steps)):
+                step_data = ds.get_derivation_step(i)
+                if (len(step_data.tree_roots) == len(tree_roots) and
+                        all([a.eq(b) for a, b in zip(step_data.tree_roots, tree_roots)])):
+                    self.current_parse_index = tree_index
+                    ds.derivation_step_index = i
+                    ds.jump_to_derivation_step(i)
+                    ctrl.main.parse_changed.emit()
+                    return self.current_parse_index, ds.derivation_step_index
+
+    def find_next_matching_parse(self):
+        return self._find_matching_parse()
+
+    def find_previous_matching_parse(self):
+        return self._find_matching_parse(reverse=True)
+
     def get_nodes_by_index(self, index) -> (Node, set):
         head = None
         traces = set()

@@ -388,7 +388,6 @@ def verify_edge_order_for_constituent_nodes(node):
         correct_order = node.syntactic_object.sorted_parts()
         current_order = [edge.end.syntactic_object for edge in node.edges_down if
                          edge.end and edge.end.node_type == g.CONSTITUENT_NODE]
-        print([n.end for n in node.edges_down if n.end.node_type == g.CONSTITUENT_NODE])
         if correct_order != current_order:
             new_order = []
             passed = []
