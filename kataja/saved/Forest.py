@@ -281,7 +281,7 @@ class Forest(SavedObject):
 
     def _find_matching_parse(self, reverse=False):
         tree_roots = [x.syntactic_object for x in self.trees if x.node_type == g.CONSTITUENT_NODE]
-        if (not tree_roots) or not hasattr(tree_roots[0].syntactic_object, 'eq'):
+        if (not tree_roots) or not hasattr(tree_roots[0], 'eq'):
             return "Cannot compare trees. Either no tree or constituents don't have 'eq'-comparison method."
         if reverse:
             tree_indices = range(self.current_parse_index - 1, -1, -1)

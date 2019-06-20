@@ -29,7 +29,8 @@ import kataja.globals as g
 
 from kataja.singletons import ctrl
 
-# Nonnii. Tehdään kokeilu erilaisesta nostamisen muistipaikasta.
+group_colors = ['accent5tr', 'accent2tr', 'accent7tr', 'accent4tr', 'accent3tr', 'accent1tr', 'accent6tr', 'accent8tr']
+
 
 def syntactic_state_to_nodes(forest, syn_state):
     """ This is a big important function to ensure that Nodes on display are only those that
@@ -147,7 +148,7 @@ def syntactic_state_to_nodes(forest, syn_state):
                     break
         if not pos:
             pos = (sc_center, sc_middle)
-        #print('creating node for ', repr(syn_bare))
+        # print('creating node for ', repr(syn_bare))
         drawing.create_node(node_type=g.CONSTITUENT_NODE, pos=pos, synobj=syn_bare)
 
     for syn_feat in fns_to_create:
@@ -275,95 +276,18 @@ def syntactic_state_to_nodes(forest, syn_state):
 
     # ############# Groups #######################################
 
-    def rec_add_item(item, result_set):
-        result_set.append(forest.get_node(item))
-        for part in item.get_parts():
-            result_set = rec_add_item(part, result_set)
-        return result_set
+    for group in list(forest.groups.values()):
+        ctrl.drawing.remove_group(group)
 
-    # Update or create groups of transferred items
-    old_groups = [gr for gr in forest.groups.values() if gr.get_label_text().startswith('Transfer')]
-    all_new_items = set()
-    all_old_items = set()
-    if old_groups:
-        for group in old_groups:
-            all_old_items.update(set(group.selection))
-
-    if syn_state.transferred:
-        new_groups = []
-        for transfer_top in syn_state.transferred:
-            this_group = rec_add_item(transfer_top, [])
-            new_groups.append(this_group)
-            all_new_items.update(set(this_group))
-        # Put items to groups if they aren't there
-        if new_groups:
-            if not old_groups:
-                for selection in new_groups:
-                    new_g = drawing.create_group()
-                    new_g.set_label_text('Transfer')
-                    # new_g.fill = False
-                    # new_g.outline = True
-                    new_g.set_color_key('accent5')
-                    new_g.update_selection(selection)
-            else:
-                # find partially matching group
-                for selection in new_groups:
-                    group_to_add = None
-                    for item in selection:
-                        for group in old_groups:
-                            if item in group.selection:
-                                group_to_add = group
-                                break
-                        break
-                    if group_to_add:
-                        for item in selection:
-                            group_to_add.add_node(item)
-                    else:
-                        new_g = drawing.create_group()
-                        new_g.set_label_text('Transfer')
-                        # new_g.fill = False
-                        # new_g.outline = True
-                        new_g.set_color_key('accent5')
-                        new_g.update_selection(selection)
-
-    if old_groups:
-        # Remove items from groups where they don't belong
-        items_to_remove = all_old_items - all_new_items
-        to_remove = [[] for x in old_groups]
-        for item in items_to_remove:
-            for i, group in enumerate(old_groups):  # we can ignore newly created groups
-                if item in group.selection:
-                    to_remove[i].append(item)
-        for old_group, remove_list in zip(old_groups, to_remove):
-            old_group.remove_nodes(remove_list)
-
-    # ---------
-    # Update or create mover group
-    for i, movers in enumerate([syn_state.marked, syn_state.marked2]):
-        old_group = None
-        purpose = f'mover{i}'
-        for group in forest.groups.values():
-            if group.purpose == purpose:
-                old_group = group
-                break
-        if movers:
-            mover_nodes = [forest.get_node(mover) for mover in movers if mover]
-            if old_group:
-                old_group.clear(remove=False)
-                group = old_group
-            else:
-                group = drawing.create_group()
-                group.purpose = purpose
-                group.include_children = False
-                group.fill = True
-                group.outline = False
-                if i == 0:
-                    group.set_color_key('accent5tr')
-                else:
-                    group.set_color_key('accent2tr')
-            group.update_selection(mover_nodes)
-        elif old_group:
-            old_group.clear(remove=True)
+    for i, (title, members) in enumerate(syn_state.groups):
+        if members:
+            new_g = drawing.create_group()
+            new_g.include_children = False
+            new_g.fill = True
+            new_g.outline = False
+            new_g.set_label_text(title)
+            new_g.set_color_key(group_colors[i % len(group_colors)])
+            new_g.update_selection([forest.get_node(synobj) for synobj in members])
 
     # ---------
     strat = forest.settings.get('gloss_strategy')

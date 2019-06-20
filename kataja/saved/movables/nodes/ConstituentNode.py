@@ -294,14 +294,18 @@ class ConstituentNode(Node):
             elif len(heads) > 1:
                 lines.append(f'heads: {heads_str}')
 
+            if hasattr(synobj, 'mover'):
+                lines.append(f'mover: {synobj.mover}')
+            if hasattr(synobj, 'result_of_em'):
+                lines.append(f'result of external merge: {synobj.result_of_em}')
             if synobj.inherited_features:
                 lines.append(f'inherited features: {synobj.inherited_features}')
             if synobj.checked_features:
                 lines.append(f'checked features: {synobj.checked_features}')
             if synobj.features:
                 lines.append(f'features: {synobj.features}')
-            if hasattr(synobj, 'Q'):
-                lines.append(f'Q: {synobj.Q}')
+            if hasattr(synobj, 'sticky'):
+                lines.append(f'sticky: {synobj.sticky}')
             lines.append('')
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')

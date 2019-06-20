@@ -587,7 +587,8 @@ class FeatureNode(Node):
             lines.append(f"checked by: '{synobj.checked_by}' "
                          f"({tt_style % synobj.checked_by.uid})")
         lines.append(f"active: {not synobj.is_inactive()}")
-
+        if hasattr(synobj, 'required'):
+            lines.append(f"required: {synobj.required}")
         lines.append("")
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')

@@ -16,14 +16,12 @@ class SyntaxState:
     """
 
     def __init__(self, tree_roots=None, numeration=None, msg=None, gloss=None,
-                 transferred=None, marked=None, marked2=None, iteration=0, semantic_hierarchies=None, log=None):
+                 groups=None, iteration=0, semantic_hierarchies=None, log=None):
         self.tree_roots = tree_roots or []
         self.numeration = numeration or []
         self.msg = msg or ''
         self.gloss = gloss or ''
-        self.transferred = transferred or []
-        self.marked = marked or []
-        self.marked2 = marked2 or []
+        self.groups = groups or []
         self.iteration = iteration
         self.semantic_hierarchies = semantic_hierarchies or []
         self.log = log or []
