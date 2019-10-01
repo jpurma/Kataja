@@ -59,7 +59,7 @@ class ResetAdjustment(KatajaAction):
 
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
-    k_command = 'Turn node and its children into triangle'
+    k_command = 'Fold node and its children into triangle'
 
     def prepare_parameters(self, args, kwargs):
         node = self.get_host()

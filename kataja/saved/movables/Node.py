@@ -328,9 +328,9 @@ class Node(Draggable, Movable):
         :return: iterator of Nodes
         """
         if visible:
-            return list(set(edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()))
+            return [edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()]
         else:
-            return list(set(edge.end for edge in self.edges_down if edge.end))
+            return [edge.end for edge in self.edges_down if edge.end]
 
     def get_parents(self, visible=False, of_type=None) -> list:
         """

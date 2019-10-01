@@ -480,6 +480,9 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
         self._direct_hovering = True
+        if ctrl.hovering:
+            ctrl.hovering._stop_direct_hover()
+        ctrl.hovering = self
         self.update_tooltip()
 
     def _start_indirect_hover(self):
@@ -496,6 +499,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
         self._direct_hovering = False
+        ctrl.hovering = None
 
     def _stop_indirect_hover(self):
         """ Stop hovering effects that were caused by hover over some other object or this item

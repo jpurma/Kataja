@@ -310,6 +310,10 @@ class ConstituentNode(Node):
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')
                 lines.append('')
+            if False and self.syntactic_object.parts:  # fixme: for debugging ordering problems
+                lines.append(f'Children: {[c.label for c in self.syntactic_object.parts]}')
+                lines.append(f'Child nodes: {[f"{cn.uid}-{cn.label}" for cn in self.get_all_children()]}')
+                lines.append(f'Edge ends: {[f"{e.end.uid}-{e.end.label}" for e in self.edges_down]}')
 
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')
@@ -364,6 +368,9 @@ class ConstituentNode(Node):
                 l = ' '.join(fl)
             else:
                 l = self.label
+        # fixme: remove this hack after use
+        i = self.get_highest()[0].get_sorted_nodes().index(self)
+        html.append(f'{i} ')
         l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)

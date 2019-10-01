@@ -73,6 +73,7 @@ class Controller:
         self.pointing_data = {}
         self.pressed = None  # set() # prepare for multitouch
         self.ui_pressed = None  # set() # different coordinates to pressed set
+        self.hovering = None
         self.text_editor_focus = None
         self.dragged_focus = None
         self.dragged_text = None

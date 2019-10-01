@@ -56,7 +56,7 @@ class BaseConstituent(SavedObject, IConstituent):
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
     def __init__(self, label='', parts=None, uid='', features=None, lexical_heads=None, adjunct=False, set_hosts=True,
-                 **kw):
+                 head=None, checked_features=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is
         easily dumped to file. Extending this needs to take account if new elements should also
@@ -67,10 +67,10 @@ class BaseConstituent(SavedObject, IConstituent):
         self.features = features or []
         self.parts = parts or []
         self.inherited_features = features or []
-        self.checked_features = []
+        self.checked_features = checked_features or []
         self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
         self.adjunct = adjunct
-        self.head = None
+        self.head = head
         self.gloss = ''
         if set_hosts:
             for feature in self.features:

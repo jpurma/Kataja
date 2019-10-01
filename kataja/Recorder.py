@@ -65,6 +65,7 @@ class Recorder:
         self.recording = False
         max_w = 0
         max_h = 0
+        final_rest_frames = 30
         self.frames = [self.frames[0]] + self.frames + [self.frames[-1]]
         log.info(f'  Writing {len(self.frames)} animation frames...')
         fname = ''
@@ -88,20 +89,29 @@ class Recorder:
                     iw = max_w / w
                     ih = max_h / h
                     r = iw if iw < ih else ih
-                    new_image = image.resize((int(r * w), int(r * h)))
+                    new_w = int(r * w)
+                    new_h = int(r * h)
+                    top_left = (int((new_w - max_w) / 2), int((new_h - max_h) / 2))
+                    log.info(f'resizing frame: {(new_w, new_h)}, top_left: {top_left}')
+                    new_image = image.resize((new_w, new_h))
                     background = Image.new('RGBA', (max_w, max_h), ctrl.cm.paper().getRgb())
-                    background.paste(new_image)
+                    background.paste(new_image, top_left)
                     background = background.quantize(64)
                     resized.append(background)
                 else:
                     resized.append(image.quantize(64))
+            if resized:
+                log.info(f'Adding {final_rest_frames} frames to end.')
+                last_image = resized[-1]
+                for i in range(0, final_rest_frames):
+                    resized.append(last_image)
             if self.gif:
                 fname = outfile + '.gif'
                 resized[0].save(fname,
                                 save_all=True,
                                 append_images=resized[1:],
-                                delay=0.1,
-                                loop=0,
+                                delay=0.3,
+                                loop=1,
                                 optimize=True)
                 log.info(f'  Gif recorded as {repr(fname)}')
             if self.webp:
@@ -109,8 +119,8 @@ class Recorder:
                 resized[0].save(fname_w,
                                 save_all=True,
                                 append_images=resized[1:],
-                                delay=0.1,
-                                loop=0,
+                                delay=0.3,
+                                loop=1,
                                 optimize=True)
                 log.info(f'  WebP recorded as {repr(fname_w)}')
         if self.gif:
@@ -128,7 +138,20 @@ class Recorder:
             self.stop_recording()
 
     def _write_frame(self, source):
-        target = QtCore.QRectF(0, 0, self.width, self.height)
+        sw = source.width()
+        sh = source.height()
+        max_w = self.width
+        max_h = self.height
+        iw = max_w / sw
+        ih = max_h / sh
+        r = iw if iw < ih else ih
+        new_w = int(r * sw)
+        new_h = int(r * sh)
+        left = int((max_w - new_w) / 2)
+        top = int((max_h - new_h) / 2)
+
+        target = QtCore.QRectF(left, top, max_w, max_h)
+
         image = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
         image.fill(ctrl.cm.paper())
         painter = QtGui.QPainter()

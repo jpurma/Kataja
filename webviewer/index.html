@@ -119,7 +119,7 @@ var tree_words = [];
 //var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 for (const nd of graph.nodes) {
-  nd.rx = nd.id.length * 4.5; 
+  nd.rx = nd.label.length * 4.5;
   nd.ry = 12;
   switch (nd.group) {
     case 0: // root    
@@ -147,7 +147,6 @@ for (const nd of graph.nodes) {
   nd.color = nd.baseColor;
 } 
 const pullLinks = graph.links.filter(l => l.value == 1 || true);
-
 
 var link = svg.append("g")
     .attr("class", "link")
@@ -185,7 +184,6 @@ function initLinks(simulation) {
       .id(d => d.id)
       .strength(l => l.weight || 0.3));
 }
-
 
 var simulation = d3.forceSimulation()
     .nodes(graph.nodes)

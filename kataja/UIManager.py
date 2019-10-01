@@ -1213,7 +1213,7 @@ class UIManager:
         heading = ctrl.forest.heading_text or ''
         if not self.heading:
             self.heading = HeadingWidget(ctrl.graph_view)
-            self.heading.move(30, 500)
+            self.heading.move(10, 570)
             self.heading.show()
         self.heading.set_text(heading)
 

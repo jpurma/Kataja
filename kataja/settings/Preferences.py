@@ -217,6 +217,13 @@ class Preferences(object):
             'order': 32
         }
 
+        self.edge_visibility_rule = 0
+        self._edge_visibility_rule = {
+            'tab': 'Drawing',
+            'choices': [(0, "No special rules"), (1, "Hide unjustified edges")],
+            'help': "Plugins may use special rules to hide superfluous edges."
+        }
+
         self.edge_width = 16  # 20
         self._edge_width_ui = {
             'tab': 'Drawing',

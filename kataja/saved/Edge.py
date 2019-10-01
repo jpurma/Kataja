@@ -256,6 +256,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 elif (self.forest.visualization and
                       not self.forest.visualization.show_edges_for(start)):
                     lv = False
+                # fixme: ad hoc hack to hide extra edges in FunkyParser
+                elif self.forest.settings.get('edge_visibility_rule') == g.HIDE_UNJUSTIFIED_EDGES and \
+                        end.syntactic_object.head != start.syntactic_object.head and \
+                        getattr(start.syntactic_object, 'argument') != end.syntactic_object:
+                    lv = False
             elif self.edge_type == g.FEATURE_EDGE:
                 if (start.node_type == g.CONSTITUENT_NODE and
                    start.is_card() and

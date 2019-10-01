@@ -248,7 +248,7 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-    def add_step(self, syn_state: SyntaxState, tree_index: int):
+    def add_step(self, syn_state: SyntaxState, tree_index=0):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.
         :param syn_state: SyntaxState object
@@ -800,7 +800,7 @@ class Forest(SavedObject):
         for tree_top in self:
             sortable_parents = []
             ltree = tree_top.get_sorted_nodes()
-            for node in ltree:
+            for n_index, node in enumerate(ltree):
                 if not hasattr(node, 'index'):
                     continue
                 parents = node.get_parents(visible=True)
@@ -810,8 +810,11 @@ class Forest(SavedObject):
                     my_parents = []
                     for parent in parents:
                         if parent in ltree:
+                            # vanhemman indeksi on hyvä vain jos on vasemmanpuolimmaisin lapsi. Muuten pitää ottaa
+                            # edellisen sisaren oikealta viimeinen lapsi ja sen indeksi. Olkoon se sitten n_index - 1
+                            # tee numeroitu versio puusta ja mieti sen avulla.
                             i = ltree.index(parent)
-                            my_parents.append((i, node_key, parent, True))
+                            my_parents.append((max((i, n_index - 1)), node_key, parent, True))
                     if my_parents:
                         my_parents.sort()
                         a, b, c, d = my_parents[-1]  # @UnusedVariable
@@ -819,6 +822,7 @@ class Forest(SavedObject):
                         sortable_parents += my_parents
             sortable_parents.sort()
             sorted_parents += sortable_parents
+
         if rotator < 0:
             rotator = len(sorted_parents) - len(required_keys)
         skips = 0

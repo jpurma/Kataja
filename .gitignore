@@ -268,5 +268,9 @@ kataja/plugins/PCBPlugin*
 kataja/plugins/Monorail2
 kataja/plugins/StacklessShifter
 kataja/plugins/AmbiTree
+kataja/plugins/FunkyParser
+kataja/plugins/SpreadTree
+kataja/plugins/SpreadNet
+kataja/plugins/OrderlessTree
 
 

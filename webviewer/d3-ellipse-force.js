@@ -37,6 +37,11 @@ var ellipseForce = function (padding, innerRepulsion, outerRepulsion) {
 
     for (i = 0; i < n; ++i) {
       node = nodes[i];
+      if (node.fixed) {
+        node.vx = 0;
+        node.vy = 0;
+        continue;
+      }
       myPadding = +padding(node, i, nodes);
       myW = node.rx + myPadding;
       myH = node.ry + myPadding;

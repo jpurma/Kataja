@@ -138,6 +138,9 @@ EDGE_CAN_INSERT = 5
 EDGE_OPEN_DOMINANT = 6
 EDGE_RECEIVING_NOW_DOMINANT = 7
 
+# Extra edge visibility rules
+NONE = 0
+HIDE_UNJUSTIFIED_EDGES = 1
 
 class ViewUpdateReason(Enum):
     """ Reasons for updating viewport """
