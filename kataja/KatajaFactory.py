@@ -53,7 +53,8 @@ class KatajaFactory:
         from kataja.saved.movables.nodes.GlossNode import GlossNode
         from kataja.saved.movables.Node import Node
         from kataja.saved.Group import Group
-        from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
+        from kataja.saved.DerivationStep import DerivationStep
+        from kataja.saved.DerivationBranch import DerivationBranch
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
         from kataja.saved.KatajaDocument import KatajaDocument
@@ -63,7 +64,7 @@ class KatajaFactory:
 
         self.default_models = {ConstituentNode, FeatureNode,
                                GlossNode, CommentNode, Edge, Forest, DerivationStep,
-                               DerivationStepManager, BaseConstituent, BaseFeature,
+                               DerivationBranch, BaseConstituent, BaseFeature,
                                Group, KatajaDocument, SyntaxAPI}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,

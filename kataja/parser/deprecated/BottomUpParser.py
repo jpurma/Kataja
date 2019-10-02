@@ -105,7 +105,7 @@ class BottomUpParser(BaseParser):
             if right:
                 self.forest.connect_node(parent=node, child=right, direction=g.RIGHT)
             node.update_label()
-            f.derivation_steps.save_and_create_derivation_step()
+            f.get_derivation_branch().save_and_create_derivation_step()
             return node
 
         def merge_curlies(s):

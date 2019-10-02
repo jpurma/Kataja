@@ -109,7 +109,7 @@ class NextParse(KatajaAction):
         return f'Next tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class PreviousParse(KatajaAction):
@@ -127,7 +127,7 @@ class PreviousParse(KatajaAction):
         return f'Previous tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class NextMatchingParse(KatajaAction):
@@ -149,7 +149,7 @@ class NextMatchingParse(KatajaAction):
         return 'No matching tree found'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class PreviousMatchingParse(KatajaAction):
@@ -171,7 +171,7 @@ class PreviousMatchingParse(KatajaAction):
         return 'No matching tree found'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class JumpToParse(KatajaAction):
@@ -192,7 +192,7 @@ class JumpToParse(KatajaAction):
         return ctrl.forest.current_parse_index + 1 if ctrl.forest.current_parse_index is not None else 0
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.parse_trees) > 1
+        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class NextStep(KatajaAction):
@@ -204,15 +204,15 @@ class NextStep(KatajaAction):
 
     def method(self):
         """ User action "step forward", Move to next derivation step """
-        dsm = ctrl.forest.get_derivation_steps()
-        dsm.next_derivation_step()
-        i = dsm.derivation_step_index
-        max_i = len(dsm.derivation_steps)
+        db = ctrl.forest.get_derivation_branch()
+        db.next_derivation_step()
+        i = db.derivation_step_index
+        max_i = len(db.derivation_steps)
         ctrl.forest.forest_edited()
         return f'Next derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_steps().derivation_steps
+        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
 
 
 class PreviousStep(KatajaAction):
@@ -224,15 +224,15 @@ class PreviousStep(KatajaAction):
 
     def method(self):
         """ User action "step backward" , Move backward in derivation steps """
-        dsm = ctrl.forest.get_derivation_steps()
-        dsm.previous_derivation_step()
-        i = dsm.derivation_step_index
-        max_i = len(dsm.derivation_steps)
+        db = ctrl.forest.get_derivation_branch()
+        db.previous_derivation_step()
+        i = db.derivation_step_index
+        max_i = len(db.derivation_steps)
         ctrl.forest.forest_edited()
         return f'Previous derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_steps().derivation_steps
+        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
 
 
 class JumpToDerivation(KatajaAction):
@@ -242,18 +242,18 @@ class JumpToDerivation(KatajaAction):
     def prepare_parameters(self, args, kwargs):
         if not args:
             i = self.fetch_spinbox_value()
-            args = [i if i is not None else ctrl.forest.get_derivation_steps().derivation_step_index + 1]
+            args = [i if i is not None else ctrl.forest.get_derivation_branch().derivation_step_index + 1]
         return args, kwargs
 
     def method(self, n):
-        dsm = ctrl.forest.get_derivation_steps()
-        if dsm.derivation_steps:
-            dsm.jump_to_derivation_step(n - 1)
+        db = ctrl.forest.get_derivation_branch()
+        if db.derivation_steps:
+            db.jump_to_derivation_step(n - 1)
             ctrl.forest.forest_edited()
-            return f'Jump to derivation step: {n}: {dsm.current.msg}'
+            return f'Jump to derivation step: {n}: {db.current.msg}'
 
     def getter(self):
-        return ctrl.forest.get_derivation_steps().derivation_step_index + 1
+        return ctrl.forest.get_derivation_branch().derivation_step_index + 1
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_steps().derivation_steps
+        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
