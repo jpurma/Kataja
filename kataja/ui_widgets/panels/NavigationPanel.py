@@ -95,11 +95,11 @@ class NavigationPanel(Panel):
             self.current_treeset.setMaximum(max_index)
             self.treeset_counter.setText('/ %s' % max_index)
             if ctrl.forest:
-                dm = ctrl.forest.get_derivation_steps() if ctrl.forest else 0
+                dm = ctrl.forest.get_derivation_branch() if ctrl.forest else 0
                 max_der_step = len(dm.derivation_steps)
                 self.current_derivation.setMaximum(max_der_step)
                 self.derivation_counter.setText('/ %s' % max_der_step)
-                parses = ctrl.forest.parse_trees
+                parses = ctrl.forest.derivation_branches
                 if parses:
                     self.current_parse.setMaximum(len(parses))
                     self.parse_counter.setText('/ %s' % len(parses))

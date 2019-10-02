@@ -194,7 +194,7 @@ def syntactic_state_to_nodes(forest, syn_state):
             child = recursive_create_edges_for_feature(part)
             if child and child.node_type == g.FEATURE_NODE:
                 connect_if_necessary(fnode, child, g.CHECKING_EDGE)
-        if synobj.checks:
+        if synobj.checks and synobj.checks is not synobj:
             checking_fnode = forest.get_node(synobj.checks)
             if checking_fnode:
                 connect_if_necessary(checking_fnode, fnode, g.CHECKING_EDGE)

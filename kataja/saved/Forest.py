@@ -37,7 +37,7 @@ from kataja.SavedObject import SavedObject
 from kataja.UndoManager import UndoManager
 from kataja.settings.ForestSettings import ForestSettings
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.saved.ParseTree import ParseTree
+from kataja.saved.DerivationBranch import DerivationBranch
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
@@ -82,7 +82,7 @@ class Forest(SavedObject):
         self.settings = None
 
         self.old_label_mode = 0
-        self.parse_trees = [ParseTree(self)]
+        self.derivation_branches = [DerivationBranch(self)]
         self.current_parse_index = 0
         self.trees = []
         self.nodes = {}
@@ -210,7 +210,7 @@ class Forest(SavedObject):
         self.chain_manager = ChainManager(self)
         self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
-        self.parse_trees = [ParseTree(self)]
+        self.derivation_branches = [DerivationBranch(self)]
         self.current_parse_index = 0
         self.trees = []
         self.nodes = {}
@@ -255,28 +255,28 @@ class Forest(SavedObject):
         :param tree_index: int
         :return:
         """
-        while tree_index >= len(self.parse_trees):
-            self.parse_trees.append(ParseTree(self))
-        self.parse_trees[tree_index].add_step(syn_state)
+        while tree_index >= len(self.derivation_branches):
+            self.derivation_branches.append(DerivationBranch(self))
+        self.derivation_branches[tree_index].add_step(syn_state)
 
-    def get_derivation_steps(self):
-        return self.parse_trees[self.current_parse_index].derivation_steps
+    def get_derivation_branch(self):
+        return self.derivation_branches[self.current_parse_index]
 
     def next_parse(self):
-        if self.current_parse_index + 1 < len(self.parse_trees):
+        if self.current_parse_index + 1 < len(self.derivation_branches):
             self.show_parse(self.current_parse_index + 1)
         else:
             self.show_parse(0)
 
     def previous_parse(self):
         if self.current_parse_index == 0:
-            self.show_parse(len(self.parse_trees) - 1)
+            self.show_parse(len(self.derivation_branches) - 1)
         else:
             self.show_parse(self.current_parse_index - 1)
 
     def show_parse(self, parse_index):
         self.current_parse_index = parse_index
-        self.parse_trees[parse_index].jump_to_starting_derivation()
+        self.derivation_branches[parse_index].jump_to_starting_derivation()
         ctrl.main.parse_changed.emit()
 
     def _find_matching_parse(self, reverse=False):
@@ -286,9 +286,9 @@ class Forest(SavedObject):
         if reverse:
             tree_indices = range(self.current_parse_index - 1, -1, -1)
         else:
-            tree_indices = range(self.current_parse_index + 1, len(self.parse_trees))
+            tree_indices = range(self.current_parse_index + 1, len(self.derivation_branches))
         for tree_index in tree_indices:
-            parse_tree = self.parse_trees[tree_index]
+            parse_tree = self.derivation_branches[tree_index]
             ds = parse_tree.derivation_steps
             for i in range(0, len(ds.derivation_steps)):
                 step_data = ds.get_derivation_step(i)
@@ -896,7 +896,7 @@ class Forest(SavedObject):
     # ############## #
 
     trees = SavedField("trees")  # the current line of trees
-    parse_trees = SavedField("parse_trees")  # Available parses
+    derivation_branches = SavedField("derivation_branches")  # Available parses
     nodes = SavedField("nodes")
     edges = SavedField("edges")
     arrows = SavedField("arrows")
