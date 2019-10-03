@@ -105,11 +105,13 @@ class NextParse(KatajaAction):
         """ Show the next possible parse, if there are more than one.
         :return: None
         """
-        ctrl.forest.next_parse()
-        return f'Next tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+        dt = ctrl.forest.derivation_tree
+        dt.next_parse()
+        return f'Next tree: {dt.current_branch_index + 1}: {ctrl.forest.textual_form()}'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
+        dt = ctrl.forest.derivation_tree
+        return ctrl.forest and len(dt.branches) > 1
 
 
 class PreviousParse(KatajaAction):
@@ -123,55 +125,57 @@ class PreviousParse(KatajaAction):
         """ Show the previous parse, if there are more than one
         :return: None
         """
-        ctrl.forest.previous_parse()
-        return f'Previous tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+        dt = ctrl.forest.derivation_tree
+        dt.previous_parse()
+        return f'Previous tree: {dt.current_branch_index + 1}: {ctrl.forest.textual_form()}'
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
+        dt = ctrl.forest.derivation_tree
+        return ctrl.forest and len(dt.branches) > 1
 
-
-class NextMatchingParse(KatajaAction):
-    k_action_uid = 'next_matching_parse'
-    k_command = 'Next matching parse tree'
-    k_shortcut = '>'
-    k_undoable = False
-    k_tooltip = 'Switch to next parse tree with similar state'
-
-    def method(self):
-        """ Show the next possible parse, if there are more than one.
-        :return: None
-        """
-        found = ctrl.forest.find_next_matching_parse()
-        if found:
-            if isinstance(found, tuple):
-                return f'Next matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
-            return found
-        return 'No matching tree found'
-
-    def enabler(self):
-        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
-
-
-class PreviousMatchingParse(KatajaAction):
-    k_action_uid = 'previous_matching_parse'
-    k_command = 'Previous matching parse tree'
-    k_shortcut = '<'
-    k_undoable = False
-    k_tooltip = 'Switch to previous parse tree with similar state'
-
-    def method(self):
-        """ Show the previous parse, if there are more than one
-        :return: None
-        """
-        found = ctrl.forest.find_previous_matching_parse()
-        if found:
-            if isinstance(found, tuple):
-                return f'Previous matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
-            return found
-        return 'No matching tree found'
-
-    def enabler(self):
-        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
+#
+# class NextMatchingParse(KatajaAction):
+#     k_action_uid = 'next_matching_parse'
+#     k_command = 'Next matching parse tree'
+#     k_shortcut = '>'
+#     k_undoable = False
+#     k_tooltip = 'Switch to next parse tree with similar state'
+#
+#     def method(self):
+#         """ Show the next possible parse, if there are more than one.
+#         :return: None
+#         """
+#         found = ctrl.forest.find_next_matching_parse()
+#         if found:
+#             if isinstance(found, tuple):
+#                 return f'Next matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+#             return found
+#         return 'No matching tree found'
+#
+#     def enabler(self):
+#         return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
+#
+#
+# class PreviousMatchingParse(KatajaAction):
+#     k_action_uid = 'previous_matching_parse'
+#     k_command = 'Previous matching parse tree'
+#     k_shortcut = '<'
+#     k_undoable = False
+#     k_tooltip = 'Switch to previous parse tree with similar state'
+#
+#     def method(self):
+#         """ Show the previous parse, if there are more than one
+#         :return: None
+#         """
+#         found = ctrl.forest.find_previous_matching_parse()
+#         if found:
+#             if isinstance(found, tuple):
+#                 return f'Previous matching tree: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+#             return found
+#         return 'No matching tree found'
+#
+#     def enabler(self):
+#         return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
 
 
 class JumpToParse(KatajaAction):
@@ -179,20 +183,23 @@ class JumpToParse(KatajaAction):
     k_command = 'Jump to parse tree'
 
     def prepare_parameters(self, args, kwargs):
+        dt = ctrl.forest.derivation_tree
         if not args:
             i = self.fetch_spinbox_value()
-            args = [i if i is not None else ctrl.forest.current_parse_index + 1]
+            args = [i if i is not None else dt.current_branch_index + 1]
         return args, kwargs
 
     def method(self, n):
-        ctrl.forest.show_parse(n - 1)
-        return f'Jump to tree set: {ctrl.forest.current_parse_index + 1}: {ctrl.forest.textual_form()}'
+        dt = ctrl.forest.derivation_tree
+        dt.show_parse(n - 1)
+        return f'Jump to tree set: {dt.current_branch_index + 1}: {ctrl.forest.textual_form()}'
 
     def getter(self):
-        return ctrl.forest.current_parse_index + 1 if ctrl.forest.current_parse_index is not None else 0
+        dt = ctrl.forest.derivation_tree
+        return dt.current_branch_index + 1 if dt.current_branch_index is not None else 0
 
     def enabler(self):
-        return ctrl.forest and len(ctrl.forest.derivation_branches) > 1
+        return ctrl.forest and ctrl.forest.derivation_tree
 
 
 class NextStep(KatajaAction):
@@ -204,15 +211,15 @@ class NextStep(KatajaAction):
 
     def method(self):
         """ User action "step forward", Move to next derivation step """
-        db = ctrl.forest.get_derivation_branch()
-        db.next_derivation_step()
-        i = db.derivation_step_index
-        max_i = len(db.derivation_steps)
+        dt = ctrl.forest.derivation_tree
+        dt.next_derivation_step()
+        i = dt.current_step_index
+        max_i = len(dt.branch)
         ctrl.forest.forest_edited()
         return f'Next derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_tree.branch
 
 
 class PreviousStep(KatajaAction):
@@ -224,15 +231,15 @@ class PreviousStep(KatajaAction):
 
     def method(self):
         """ User action "step backward" , Move backward in derivation steps """
-        db = ctrl.forest.get_derivation_branch()
-        db.previous_derivation_step()
-        i = db.derivation_step_index
-        max_i = len(db.derivation_steps)
+        dt = ctrl.forest.derivation_tree
+        dt.previous_derivation_step()
+        i = dt.current_step_index
+        max_i = len(dt.branch)
         ctrl.forest.forest_edited()
         return f'Previous derivation step: {i + 1}/{max_i}'
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_tree.branch
 
 
 class JumpToDerivation(KatajaAction):
@@ -242,18 +249,18 @@ class JumpToDerivation(KatajaAction):
     def prepare_parameters(self, args, kwargs):
         if not args:
             i = self.fetch_spinbox_value()
-            args = [i if i is not None else ctrl.forest.get_derivation_branch().derivation_step_index + 1]
+            args = [i if i is not None else ctrl.forest.derivation_tree.current_step_index + 1]
         return args, kwargs
 
     def method(self, n):
-        db = ctrl.forest.get_derivation_branch()
-        if db.derivation_steps:
-            db.jump_to_derivation_step(n - 1)
+        dt = ctrl.forest.derivation_tree
+        if dt.branch:
+            dt.jump_to_derivation_step(n - 1)
             ctrl.forest.forest_edited()
-            return f'Jump to derivation step: {n}: {db.current.msg}'
+            return f'Jump to derivation step: {n}'
 
     def getter(self):
-        return ctrl.forest.get_derivation_branch().derivation_step_index + 1
+        return ctrl.forest.derivation_tree.current_step_index + 1
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_tree.branch

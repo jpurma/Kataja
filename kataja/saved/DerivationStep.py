@@ -38,31 +38,32 @@ class DerivationStep(SavedObject):
     """ Saveable SyntaxState.
      """
 
-    def __init__(self, syn_state, uid=None, parent_uid=None):
+    def __init__(self, syn_state, uid=None):
         super().__init__(uid=uid)
         if syn_state:
+            self.state_id = syn_state.state_id
             self.tree_roots = syn_state.tree_roots
             self.numeration = syn_state.numeration
             self.msg = syn_state.msg
             self.gloss = syn_state.gloss
             self.groups = syn_state.groups
             self.semantic_hierarchies = syn_state.semantic_hierarchies
-            self.iteration = syn_state.iteration
             self.log = syn_state.log
+            self.parent_id = syn_state.parent_id
         else:
+            self.state_id = 0
             self.tree_roots = []
             self.numeration = []
             self.msg = ''
             self.gloss = ''
             self.groups = []
             self.semantic_hierarchies = []
-            self.iteration = 0
             self.log = []
-        self.parent_uid = parent_uid
+            self.parent_id = None
         self.frozen = None
 
     def __str__(self):
-        return "DS(" + str(self.tree_roots) + ", " + str(self.numeration) + ", " + str(self.msg) + "')"
+        return f"DS({self.tree_roots}, {self.numeration}, '{self.msg}', {self.state_id}, {self.parent_id})"
 
     def freeze(self):
         data = {}
@@ -80,13 +81,14 @@ class DerivationStep(SavedObject):
                 else:
                     print('cannot save open reference object ', obj)
         assert (c < max_depth)  # please raise the max depth if this is reached
-        self.frozen = (self.uid, data, self.msg, self.iteration, self.parent_uid)
+        self.frozen = (self.uid, data, self.msg, self.state_id, self.parent_id)
+        return self.frozen
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
                            gloss=self.gloss, groups=self.groups,
                            semantic_hierarchies=self.semantic_hierarchies,
-                           iteration=self.iteration, log=self.log)
+                           state_id=self.state_id, parent_id=self.parent_id, log=self.log)
 
     # ############## #
     #                #
@@ -100,5 +102,6 @@ class DerivationStep(SavedObject):
     gloss = SavedField("gloss")
     groups = SavedField("groups")
     semantic_hierarchies = SavedField("semantic_hierarchies")
-    iteration = SavedField("iteration")
+    state_id = SavedField("state_id")
+    parent_id = SavedField("parent_id")
     log = SavedField("log")

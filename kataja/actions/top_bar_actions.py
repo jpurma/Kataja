@@ -120,7 +120,7 @@ class SwitchSyntaxViewMode(KatajaAction):
         :return:
         """
         mode_name = ctrl.syntax.next_display_mode()
-        ctrl.forest.get_derivation_branch().restore_derivation_step()
+        ctrl.forest.derivation_tree.restore_derivation_step()
         return mode_name
 
     def getter(self):
