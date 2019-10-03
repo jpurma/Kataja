@@ -51,8 +51,9 @@ class DeriveFromInput(KatajaAction):
                                           lexicon=lexicon,
                                           semantics=semantics,
                                           forest=forest)
+            forest.derivation_tree.update_dimensions()
             forest.is_parsed = True
-            forest.show_parse(0)
+            forest.derivation_tree.show_parse(0)
             forest.forest_edited()
             forest.prepare_for_drawing()
             ctrl.graph_view.setFocus()
