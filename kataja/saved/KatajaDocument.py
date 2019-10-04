@@ -131,7 +131,7 @@ class KatajaDocument(SavedObject):
         self.forest = forest
         ctrl.disable_undo()
         if forest.is_parsed:
-            forest.show_parse(forest.current_parse_index)
+            forest.derivation_tree.show_parse(forest.derivation_tree.current_branch_index)
         forest.prepare_for_drawing()
         ctrl.resume_undo()
         ctrl.main.forest_changed.emit()

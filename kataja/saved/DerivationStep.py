@@ -38,27 +38,27 @@ class DerivationStep(SavedObject):
     """ Saveable SyntaxState.
      """
 
-    def __init__(self, syn_state, uid=None, parent_uid=None):
+    def __init__(self, syn_state, uid=None):
         super().__init__(uid=uid)
         if syn_state:
+            self.state_id = syn_state.state_id
             self.tree_roots = syn_state.tree_roots
             self.numeration = syn_state.numeration
             self.msg = syn_state.msg
             self.gloss = syn_state.gloss
             self.groups = syn_state.groups
             self.semantic_hierarchies = syn_state.semantic_hierarchies
-            self.iteration = syn_state.iteration
             self.log = syn_state.log
             self.parent_id = syn_state.parent_id
             self.state_type = syn_state.state_type
         else:
+            self.state_id = 0
             self.tree_roots = []
             self.numeration = []
             self.msg = ''
             self.gloss = ''
             self.groups = []
             self.semantic_hierarchies = []
-            self.iteration = 0
             self.log = []
             self.parent_id = None
             self.state_type = 0
@@ -104,5 +104,6 @@ class DerivationStep(SavedObject):
     gloss = SavedField("gloss")
     groups = SavedField("groups")
     semantic_hierarchies = SavedField("semantic_hierarchies")
-    iteration = SavedField("iteration")
+    state_id = SavedField("state_id")
+    parent_id = SavedField("parent_id")
     log = SavedField("log")

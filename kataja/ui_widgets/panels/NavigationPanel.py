@@ -94,15 +94,13 @@ class NavigationPanel(Panel):
             max_index = len(keeper.forests)
             self.current_treeset.setMaximum(max_index)
             self.treeset_counter.setText('/ %s' % max_index)
-            if ctrl.forest:
-                dm = ctrl.forest.get_derivation_branch() if ctrl.forest else 0
-                max_der_step = len(dm.derivation_steps)
-                self.current_derivation.setMaximum(max_der_step)
-                self.derivation_counter.setText('/ %s' % max_der_step)
-                parses = ctrl.forest.derivation_branches
-                if parses:
-                    self.current_parse.setMaximum(len(parses))
-                    self.parse_counter.setText('/ %s' % len(parses))
+            if ctrl.forest and ctrl.forest.derivation_tree:
+                dt = ctrl.forest.derivation_tree
+                self.current_derivation.setMaximum(len(dt.branch))
+                self.derivation_counter.setText('/ %s' % len(dt.branch))
+                if dt.branches:
+                    self.current_parse.setMaximum(len(dt.branches))
+                    self.parse_counter.setText('/ %s' % len(dt.branches))
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all

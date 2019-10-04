@@ -80,10 +80,9 @@ class Forest(SavedObject):
         self.semantics_manager = None
         self.projection_manager = None
         self.settings = None
+        self.derivation_tree = None
 
         self.old_label_mode = 0
-        self.derivation_branches = [DerivationBranch(self)]
-        self.current_parse_index = 0
         self.trees = []
         self.nodes = {}
         self.edges = {}
@@ -109,6 +108,7 @@ class Forest(SavedObject):
         display. When there are hundreds of trees, initialising them at once is slow.
         :return:
         """
+        self.derivation_tree = DerivationTree(self)
         self.settings = ForestSettings(self)
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
@@ -166,9 +166,10 @@ class Forest(SavedObject):
         if not self.is_parsed:
             self.init_factories()
             self.syntax.create_derivation(forest=self, lexicon=ctrl.document.lexicon)
+            self.derivation_tree.update_dimensions()
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-            self.show_parse(0)
+            self.derivation_tree.show_parse(0)
             self.forest_edited()
 
         ctrl.main.update_colors()
@@ -210,8 +211,7 @@ class Forest(SavedObject):
         self.chain_manager = ChainManager(self)
         self.drawing = ForestDrawing(self)
         self.projection_manager = ProjectionManager(self)
-        self.derivation_branches = [DerivationBranch(self)]
-        self.current_parse_index = 0
+        self.derivation_tree = DerivationTree(self)
         self.trees = []
         self.nodes = {}
         self.edges = {}
@@ -248,63 +248,13 @@ class Forest(SavedObject):
 
         self.trees = new_tops
 
-    def add_step(self, syn_state: SyntaxState, tree_index=0):
+    def add_step(self, syn_state: SyntaxState):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.
         :param syn_state: SyntaxState object
-        :param tree_index: int
         :return:
         """
-        while tree_index >= len(self.derivation_branches):
-            self.derivation_branches.append(DerivationBranch(self))
-        self.derivation_branches[tree_index].add_step(syn_state)
-
-    def get_derivation_branch(self):
-        return self.derivation_branches[self.current_parse_index]
-
-    def next_parse(self):
-        if self.current_parse_index + 1 < len(self.derivation_branches):
-            self.show_parse(self.current_parse_index + 1)
-        else:
-            self.show_parse(0)
-
-    def previous_parse(self):
-        if self.current_parse_index == 0:
-            self.show_parse(len(self.derivation_branches) - 1)
-        else:
-            self.show_parse(self.current_parse_index - 1)
-
-    def show_parse(self, parse_index):
-        self.current_parse_index = parse_index
-        self.derivation_branches[parse_index].jump_to_starting_derivation()
-        ctrl.main.parse_changed.emit()
-
-    def _find_matching_parse(self, reverse=False):
-        tree_roots = [x.syntactic_object for x in self.trees if x.node_type == g.CONSTITUENT_NODE]
-        if (not tree_roots) or not hasattr(tree_roots[0], 'eq'):
-            return "Cannot compare trees. Either no tree or constituents don't have 'eq'-comparison method."
-        if reverse:
-            tree_indices = range(self.current_parse_index - 1, -1, -1)
-        else:
-            tree_indices = range(self.current_parse_index + 1, len(self.derivation_branches))
-        for tree_index in tree_indices:
-            parse_tree = self.derivation_branches[tree_index]
-            ds = parse_tree.derivation_steps
-            for i in range(0, len(ds.derivation_steps)):
-                step_data = ds.get_derivation_step(i)
-                if (len(step_data.tree_roots) == len(tree_roots) and
-                        all([a.eq(b) for a, b in zip(step_data.tree_roots, tree_roots)])):
-                    self.current_parse_index = tree_index
-                    ds.derivation_step_index = i
-                    ds.jump_to_derivation_step(i)
-                    ctrl.main.parse_changed.emit()
-                    return self.current_parse_index, ds.derivation_step_index
-
-    def find_next_matching_parse(self):
-        return self._find_matching_parse()
-
-    def find_previous_matching_parse(self):
-        return self._find_matching_parse(reverse=True)
+        self.derivation_tree.add_step(syn_state)
 
     def get_nodes_by_index(self, index) -> (Node, set):
         head = None
@@ -896,7 +846,7 @@ class Forest(SavedObject):
     # ############## #
 
     trees = SavedField("trees")  # the current line of trees
-    derivation_branches = SavedField("derivation_branches")  # Available parses
+    derivation_tree = SavedField("derivation_tree")  # Available parses
     nodes = SavedField("nodes")
     edges = SavedField("edges")
     arrows = SavedField("arrows")
