@@ -37,7 +37,7 @@ from kataja.SavedObject import SavedObject
 from kataja.UndoManager import UndoManager
 from kataja.settings.ForestSettings import ForestSettings
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.saved.DerivationBranch import DerivationBranch
+from kataja.saved.DerivationTree import DerivationTree
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes

@@ -256,4 +256,19 @@ class JumpToDerivation(KatajaAction):
         return ctrl.forest.get_derivation_branch().derivation_step_index + 1
 
     def enabler(self):
-        return ctrl.forest and ctrl.forest.get_derivation_branch().derivation_steps
+        return ctrl.forest and ctrl.forest.derivation_tree.branch
+
+
+class JumpToDerivationById(KatajaAction):
+    k_action_uid = 'jump_to_derivation_by_id'
+    k_command = 'Jump to derivation step by id'
+
+    def prepare_parameters(self, args, kwargs):
+        return args, kwargs
+
+    def method(self, state_id):
+        dt = ctrl.forest.derivation_tree
+        if dt.branch:
+            dt.jump_to_derivation_step_by_id(state_id)
+            ctrl.forest.forest_edited()
+        return f'Jump to derivation step: {state_id}'

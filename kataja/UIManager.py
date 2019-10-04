@@ -62,6 +62,7 @@ from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui_widgets.panels.LogPanel import LogPanel
 from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.ParseTreePanel import ParseTreePanel
 from kataja.ui_widgets.panels.ScopePanel import ScopePanel
 from kataja.ui_widgets.panels.SemanticsPanel import SemanticsPanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
@@ -96,6 +97,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
            'position': 'float', 'closed': True},
           {'class': InputPanel, 'name': 'Input tree', 'position': 'bottom', 'closed': False},
           {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': False},
+          {'class': ParseTreePanel, 'name': 'Parses', 'position': 'float', 'closed': False},
           {'class': HelpPanel, 'name': 'Help', 'position': 'float', 'closed': True}]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
@@ -1134,14 +1136,13 @@ class UIManager:
 
     def add_control_points_for_arrow(self, arrow):
 
-        self._add_cp(arrow, i, g.MIDDLE_POINT)
+        self._add_cp(arrow, 0, g.CURVE_ADJUSTMENT)
         if not arrow.start:
             self._add_cp(arrow, -1, g.START_POINT)
         if not arrow.end:
             self._add_cp(arrow, -1, g.END_POINT)
         if arrow.label_item:
             self._add_cp(arrow, -1, g.LABEL_START)
-
 
     def update_control_points(self):
         """ Create all necessary control points
@@ -1154,7 +1155,6 @@ class UIManager:
             elif isinstance(item, Arrow):
                 self.add_control_points_for_arrow(item)
 
-
     def remove_control_points(self):
         """ Remove all control points
         :return:
@@ -1162,7 +1162,6 @@ class UIManager:
         for item in list(self._items.values()):
             if isinstance(item, ControlPoint):
                 self.remove_ui(item)
-
 
     # ### Drag info ###################################################
 
