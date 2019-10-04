@@ -16,7 +16,7 @@ class SyntaxState:
     """
 
     def __init__(self, tree_roots=None, numeration=None, msg=None, gloss=None,
-                 groups=None, state_id=0, parent_id=None, semantic_hierarchies=None, log=None):
+                 groups=None, state_id=0, parent_id=None, semantic_hierarchies=None, log=None, state_type=0):
         self.tree_roots = tree_roots or []
         self.numeration = numeration or []
         self.msg = msg or ''
@@ -26,6 +26,7 @@ class SyntaxState:
         self.parent_id = parent_id
         self.semantic_hierarchies = semantic_hierarchies or []
         self.log = log or []
+        self.state_type = state_type
 
 
 

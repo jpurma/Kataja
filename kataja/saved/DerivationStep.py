@@ -50,6 +50,7 @@ class DerivationStep(SavedObject):
             self.semantic_hierarchies = syn_state.semantic_hierarchies
             self.log = syn_state.log
             self.parent_id = syn_state.parent_id
+            self.state_type = syn_state.state_type
         else:
             self.state_id = 0
             self.tree_roots = []
@@ -60,10 +61,11 @@ class DerivationStep(SavedObject):
             self.semantic_hierarchies = []
             self.log = []
             self.parent_id = None
+            self.state_type = 0
         self.frozen = None
 
     def __str__(self):
-        return f"DS({self.tree_roots}, {self.numeration}, '{self.msg}', {self.state_id}, {self.parent_id})"
+        return f"DS({self.tree_roots}, {self.numeration}, '{self.msg}', {self.state_id}, {self.parent_id}, {self.state_type})"
 
     def freeze(self):
         data = {}
@@ -81,14 +83,14 @@ class DerivationStep(SavedObject):
                 else:
                     print('cannot save open reference object ', obj)
         assert (c < max_depth)  # please raise the max depth if this is reached
-        self.frozen = (self.uid, data, self.msg, self.state_id, self.parent_id)
+        self.frozen = (self.uid, data, self.msg, self.state_id, self.parent_id, self.state_type)
         return self.frozen
 
     def to_syn_state(self):
         return SyntaxState(tree_roots=self.tree_roots, numeration=self.numeration, msg=self.msg,
                            gloss=self.gloss, groups=self.groups,
                            semantic_hierarchies=self.semantic_hierarchies,
-                           state_id=self.state_id, parent_id=self.parent_id, log=self.log)
+                           state_id=self.state_id, parent_id=self.parent_id, log=self.log, state_type=self.state_type)
 
     # ############## #
     #                #

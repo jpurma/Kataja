@@ -350,9 +350,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param kwargs: keyword parameters
         :return:
         """
-        if self.init_done:
-            action = self.ui_manager.actions[name]
-            action.run_command(*args, **kwargs)
+        action = self.ui_manager.actions[name]
+        action.run_command(*args, **kwargs)
 
     def trigger_but_suppress_undo(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)

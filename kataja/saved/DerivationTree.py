@@ -60,23 +60,29 @@ class DerivationTree(SavedObject):
         self.d[derivation_step.state_id] = derivation_step.frozen
 
     def build_active_branch(self):
+        self.branch = self.build_branch(self.current_branch_id)
+
+    def build_branch(self, branch_id):
         b = []
-        step = self.d.get(self.current_branch_id, None)
+        step = self.d.get(branch_id, None)
         while step:
-            uid, data, msg, state_id, parent_id = step
+            uid, data, msg, state_id, parent_id, state_type = step
             b.append(state_id)
             step = self.d.get(parent_id, None)
-        self.branch = list(reversed(b))
+        return list(reversed(b))
 
     def build_branches(self):
         nodes = set(self.d.keys())
-        parents = {parent_id for uid, data, msg, state_id, parent_id in self.d.values()}
+        parents = {parent_id for uid, data, msg, state_id, parent_id, state_type in self.d.values()}
         self.branches = list(nodes - parents)
         self.branches.sort()
-        print('nodes: ', nodes)
-        print('parents: ', parents)
-        print('nodes - parents: ', nodes - parents)
-        print('created branches:', self.branches)
+
+    def iterate_branch(self, branch_id):
+        step = self.d.get(branch_id, None)
+        while step:
+            uid, data, msg, state_id, parent_id, state_type = step
+            yield state_id
+            step = self.d.get(parent_id, None)
 
     def update_dimensions(self):
         self.build_branches()
@@ -92,16 +98,35 @@ class DerivationTree(SavedObject):
                 if log_msg.strip():
                     log_msg = log_msg.replace("\t", "&nbsp;&nbsp;")
                     log.info(f'<font color="#859900">{log_msg}</font>')
+        ctrl.main.parse_changed.emit()
 
     def get_derivation_step_by_index(self, index):
         state_id = self.branch[index]
         return self.get_derivation_step_by_id(state_id)
 
     def get_derivation_step_by_id(self, state_id):
-        uid, frozen_data, msg, state_id, parent_id = self.d[state_id]
+        uid, frozen_data, msg, state_id, parent_id, state_type = self.d[state_id]
         d_step = DerivationStep(None, uid=uid)
         d_step.load_objects(frozen_data)
         return d_step
+
+    def _find_branch_for(self, state_id):
+        for i, branch in enumerate(self.branches):
+            for step_id in self.iterate_branch(branch):
+                if step_id == state_id:
+                    return branch
+        return 0
+
+    def jump_to_derivation_step_by_id(self, state_id):
+        self.current_step_id = state_id
+        if state_id in self.branch:
+            self.current_step_index = self.branch.index(state_id)
+        else:
+            self.current_branch_id =  self._find_branch_for(state_id)
+            self.current_branch_index = self.branches.index(self.current_branch_id)
+            self.build_active_branch()
+            self.current_step_index = self.branch.index(state_id)
+        self.restore_derivation_step()
 
     def next_derivation_step(self):
         """
