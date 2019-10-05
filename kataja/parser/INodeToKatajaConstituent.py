@@ -42,7 +42,8 @@ class INodeToKatajaConstituent:
         self.should_add_to_scene = old_should_add
         return result
 
-    def get_root_word(self, inode):
+    @staticmethod
+    def get_root_word(inode):
         if not inode:
             return ''
         if isinstance(inode, ITextNode):
@@ -52,11 +53,6 @@ class INodeToKatajaConstituent:
             return str(inode)
 
     def inode_to_constituentnode(self, inode):
-        """
-
-        :param inode:
-        :return:
-        """
         cnode = None
         if isinstance(inode, IParserNode):
             cnode = self.parsernodes_to_constituentnodes(inode)

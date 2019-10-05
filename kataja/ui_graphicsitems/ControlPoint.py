@@ -125,7 +125,8 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         relative_rad = adj_rad - line_rad
         return relative_dist, relative_rad
 
-    def click(self, event=None):
+    @staticmethod
+    def click(event=None):
         """ Clicking a control point usually does nothing. These are more for dragging.
         :param event: some kind of mouse event
         :return: bool

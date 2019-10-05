@@ -510,10 +510,6 @@ class Preferences(object):
         qt_prefs.update(self, running_environment, log)
 
     def update(self, update_dict):
-        """
-
-        :param update_dict:
-        """
         for key, value in update_dict.items():
             setattr(self, key, value)
 
@@ -652,7 +648,8 @@ class Preferences(object):
     def get_for_edge_type(self, key, edge_type):
         return self.edges[edge_type][key]
 
-    def get_for_edge_shape(self, key, edge_shape):
+    @staticmethod
+    def get_for_edge_shape(key, edge_shape):
         return SHAPE_PRESETS[edge_shape].defaults[key]
 
     def set(self, key, value):
@@ -740,6 +737,8 @@ class QtPreferences:
         self.left_align_icon = None
         self.center_align_icon = None
         self.right_align_icon = None
+        self.down_arrow = None
+        self.up_arrow = None
         self.remove_styles_icon = None
         self.shape_icon_card = None
         self.shape_icon_plain = None
@@ -766,23 +765,12 @@ class QtPreferences:
         iconpath = os.path.join(running_environment.resources_path, 'icons')
 
         def pixmap(path, width=0):
-            """
-
-            :param path:
-            :param width:
-            :return:
-            """
             p = QtGui.QPixmap(os.path.join(iconpath, path))
             if width:
                 p = p.scaledToWidth(width)
             return p
 
         def icon(path):
-            """
-
-            :param path:
-            :return:
-            """
             p = QtGui.QIcon(os.path.join(iconpath, path))
             return p
 

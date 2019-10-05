@@ -108,7 +108,8 @@ class DynamicWidthTree(DivideAndConquerTree):
 
         return round(x_vel * heat), 0
 
-    def calculate_movement_old(self, node, other_nodes):
+    @staticmethod
+    def calculate_movement_old(node, other_nodes):
         cbr = node.future_children_bounding_rect()
         node_x, node_y = centered_node_position(node, cbr)
         old_x = node_x

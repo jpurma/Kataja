@@ -6,9 +6,9 @@ try:  # When this is imported in Kataja context
     from kataja.syntax.SyntaxState import SyntaxState
     from kataja.plugins.TreesAreMemory.utils import simple_bracket_tree_parser
 except ImportError:  # this is run as a standalone, from command line
-    from .Constituent import Constituent
-    from .Feature import Feature
-    from .utils import simple_bracket_tree_parser
+    from Constituent import Constituent
+    from Feature import Feature
+    from utils import simple_bracket_tree_parser
 
     SyntaxState = None
 

@@ -108,25 +108,15 @@ class Controller:
         self.undo_pile = set()
         # ---------------------------
 
-    def late_init(self, main):
-        """
-
-        :param main: KatajaMain
-        """
+    def late_init(self, main: 'KatajaMain'):
         self.main = main
 
     @property
     def syntax(self) -> 'kataja.syntax.SyntaxAPI':
-        """
-        :return: SyntaxAPI
-        """
         return self.main.forest and self.main.forest.syntax
 
     @property
     def ui(self) -> 'kataja.UIManager':
-        """
-        :return: UIManager
-        """
         return self.main.ui_manager  # getattr(self.main, 'ui_manager', None)
 
     @property
@@ -143,9 +133,6 @@ class Controller:
 
     @property
     def forest(self) -> 'kataja.saved.Forest':
-        """ Shortcut to active forest
-        :return: Forest
-        """
         return self.main.document and self.main.document.forest
 
     @property
@@ -183,11 +170,6 @@ class Controller:
     # not necessary apply to them.
 
     def single_selection(self) -> bool:
-        """
-
-
-        :return:
-        """
         return len(self.selected) == 1
 
     def multiselection_start(self):
@@ -203,17 +185,10 @@ class Controller:
         self.ui.add_message(f'selected {len(self.selected)} objects')
 
     def multiple_selection(self):
-        """
-
-
-        :return:
-        """
         return len(self.selected) > 1
 
     def get_single_selected(self):
-        """ Return as one object
-        :return:
-        """
+        """ Return as one object """
 
         if len(self.selected) == 1:
             return self.selected[-1]
@@ -221,11 +196,6 @@ class Controller:
             return None
 
     def is_selected(self, obj) -> bool:
-        """
-
-        :param obj:
-        :return:
-        """
         return obj in self.selected
 
     def deselect_objects(self):
@@ -256,10 +226,6 @@ class Controller:
         self.main.selection_changed.emit()
 
     def add_to_selection(self, objs):
-        """
-
-        :param objs:
-        """
         if not objs:
             return
         if not isinstance(objs, abc.Sequence):
@@ -274,10 +240,6 @@ class Controller:
             self.main.selection_changed.emit()
 
     def remove_from_selection(self, objs):
-        """
-
-        :param objs:
-        """
         if not objs:
             return
         found = False
@@ -339,11 +301,6 @@ class Controller:
             item.hovering = True
 
     def add_my_group_to_dragged_groups(self, item):
-        """
-
-        :param item:
-        :return:
-        """
         for group in self.forest.groups.values():
             if item in group:
                 self.dragged_groups.add(group)
@@ -355,11 +312,6 @@ class Controller:
     # one ui_support object or its part can have focus
 
     def get_focus_object(self):
-        """
-
-
-        :return:
-        """
         return self.main.app.focusWidget()
 
     # ******** /focus *******

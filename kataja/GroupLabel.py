@@ -135,27 +135,18 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
     @label_angle.setter
     def label_angle(self, value):
-        """
-        label's angle to group blob
-        :param value:
-        """
-
+        """ label's angle to group blob """
         if self.set_label_data('angle', value):
             self.update_position()
 
     @property
     def label_dist(self):
-        """
-        label's distance from group
-        """
+        """ label's distance from group """
         return self._host.label_data.get('dist', 12)
 
     @label_dist.setter
     def label_dist(self, value):
-        """
-        label's distance from group
-        :param value:
-        """
+        """ label's distance from group """
         if self.set_label_data('dist', value):
             self.update_position()
 

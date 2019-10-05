@@ -4,7 +4,7 @@
 
 import time
 
-from .TreesAreMemoryParser import TreesAreMemoryParser
+from TreesAreMemoryParser import TreesAreMemoryParser
 
 t = time.time()
 

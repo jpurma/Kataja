@@ -49,7 +49,8 @@ class UndoManager:
     def can_redo(self):
         return self._current < len(self._stack) - 1
 
-    def flush_pile(self):
+    @staticmethod
+    def flush_pile():
         """ Clear undo_pile for non-undoable big changes (e.g. loading new document) """
         for obj in ctrl.undo_pile:
             obj.flush_history()

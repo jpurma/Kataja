@@ -257,10 +257,6 @@ class KatajaMain(QtWidgets.QMainWindow):
     # Preferences ###################################
 
     def reset_preferences(self):
-        """
-
-        :return:
-        """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes, log)
         self.color_themes_changed.emit()
         if self.ui_manager.preferences_dialog:
@@ -388,11 +384,6 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
-        """
-
-        :param kw:
-        :return:
-        """
         for node in ctrl.get_selected_nodes():
             node.release()
         self.action_finished()
@@ -453,7 +444,8 @@ class KatajaMain(QtWidgets.QMainWindow):
     # preference should have immediate consequences. They are hosted here because they need to
     # have access to prefs, qt_prefs, main etc.
 
-    def prepare_easing_curve(self):
+    @staticmethod
+    def prepare_easing_curve():
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
 
     def update_color_theme(self):

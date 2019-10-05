@@ -231,7 +231,6 @@ class Node(Draggable, Movable):
 
         Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
-        :return:
         """
 
         # Allow custom syntactic objects to override this
@@ -246,9 +245,7 @@ class Node(Draggable, Movable):
         either label or synobj's label. This can be overridden in syntactic object by having
         'label_as_editable_html' -method there. The method returns a tuple,
           (field_name, setter, html).
-        :return:
         """
-
         # Allow custom syntactic objects to override this
         if hasattr(self.syntactic_object, 'label_as_editable_html'):
             return self.syntactic_object.label_as_editable_html(self)
@@ -380,11 +377,6 @@ class Node(Draggable, Movable):
         return False
 
     def is_leaf(self, visible=False):
-        """
-
-        :param visible:
-        :return:
-        """
         return not self.get_children(visible=visible)
 
     def is_top_node(self, visible=False):
@@ -435,15 +427,9 @@ class Node(Draggable, Movable):
         return None
 
     def get_edges_up(self, similar=True, visible=False):
-        """ Returns edges up, filtered
-        :param similar:
-        :param visible:
-        """
+        """ Returns edges up, filtered"""
 
         def filter_func(edge):
-            """
-            :param edge:
-            :return: bool """
             if similar and edge.start.node_type != self.node_type:
                 return False
             if visible and not edge.is_visible():
@@ -474,8 +460,6 @@ class Node(Draggable, Movable):
         """ Check, usually when dragging objects, if parent -- child relationship is possible in
         current state. This can be affected by the editing mode, properties of child and parent
         and if they already have this relationship.
-        :param other:
-        :return:
         """
 
         if other is None:

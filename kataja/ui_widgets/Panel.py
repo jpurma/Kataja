@@ -126,12 +126,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     unique = True
 
     def __init__(self, name, default_position='bottom', parent=None, folded=False, foldable=True):
-        """
-
-        :param name:
-        :param default_position:
-        :param parent:
-        """
         UIWidget.__init__(self)
         QtWidgets.QDockWidget.__init__(self, name)
         self.setParent(parent)

@@ -142,10 +142,12 @@ class SyntaxAPI(KatajaSyntaxAPI):
             return syn_state
         return syn_state
 
-    def to_constituent(self, synobj):
+    @staticmethod
+    def to_constituent(synobj):
         return synobj
 
-    def to_feature_constituent(self, synobj):
+    @staticmethod
+    def to_feature_constituent(synobj):
         # if synobj.parts:
         #    synobj.label = ' '.join([str(x) for x in synobj.checked_features])
         #    for part in synobj.parts:

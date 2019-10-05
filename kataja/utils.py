@@ -64,18 +64,8 @@ def print_rect(rect):
 
 
 def caller(function):
-    """
-
-    :param function:
-    :return:
-    """
 
     def wrap(*arg, **kwargs):
-        """
-
-        :param arg:
-        :return:
-        """
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
             print("%s was called by %s l.%s at %s" % (function.__name__, cmd, line, mod))
@@ -87,17 +77,9 @@ def caller(function):
 def time_me(function):
     """ Print out the duration in ms it takes to run this function.
     You know, for debugging!
-    :param function:
-    :return:
     """
 
     def wrap(*arg, **kwargs):
-        """
-
-        :param arg:
-        :param kwargs:
-        :return:
-        """
         start = time.time()
         r = function(*arg, **kwargs)
         end = time.time()
@@ -110,17 +92,9 @@ def time_me(function):
 def report(function):
     """ Print out the name of function and representation (__repr__) of its returned value.
     You know, for debugging!
-    :param function:
-    :return:
     """
 
     def wrap(*arg, **kwargs):
-        """
-
-        :param arg:
-        :param kwargs:
-        :return:
-        """
         r = function(*arg, **kwargs)
         print("%s: %r" % (function.__name__, r))
         return r
@@ -156,20 +130,8 @@ def load_features(obj, key, d):
 
 # not used
 def save_features(obj, saved, d):
-    """
-
-    :param obj:
-    :param saved:
-    :param d:
-    :return:
-    """
 
     def _save_feature(feat):
-        """
-
-        :param feat:
-        :return:
-        """
         fval = getattr(obj, feat)
         try:
             return fval.save(d)
@@ -265,10 +227,6 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
     """
 
     def print_path(path):
-        """
-
-        :param path:
-        """
         for i, step in enumerate(path):
             # next "wraps around"
             next = path[(i + 1) % len(path)]
@@ -292,13 +250,6 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
         outstream.write("\n")
 
     def recurse(obj, start, all, current_path):
-        """
-
-        :param obj:
-        :param start:
-        :param all:
-        :param current_path:
-        """
         if show_progress:
             outstream.write("%d\r" % len(all))
 

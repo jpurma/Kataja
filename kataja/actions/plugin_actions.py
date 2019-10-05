@@ -65,9 +65,7 @@ class ReloadPlugin(KatajaAction):
     k_undoable = False
 
     def method(self):
-        """ Reload currently active plugin
-        :return: None
-        """
+        """ Reload currently active plugin """
 
         key = prefs.active_plugin_name
         if key:

@@ -49,9 +49,9 @@ try:
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from .Constituent import Constituent
-    from .Feature import Feature
-    from .LexNode import LexNode
+    from Constituent import Constituent
+    from Feature import Feature
+    from LexNode import LexNode
 
     SyntaxState = object
 
@@ -198,7 +198,8 @@ class DerivationPrinter:
             self.outfile.write(str(idtree.to_dtree()) + '\n')
             self.outfile.write('\n')
 
-    def build_id_tree_from_dnodes(self, dnodes):
+    @staticmethod
+    def build_id_tree_from_dnodes(dnodes):
         """ build the derivation tree that has parent as its root, and return it """
         build = {}
         top = None
@@ -233,7 +234,8 @@ class DerivationPrinter:
         not_circular(top, [])
         return top
 
-    def build_kataja_tree_from_dnodes(self, dnodes):
+    @staticmethod
+    def build_kataja_tree_from_dnodes(dnodes):
         """ build the derivation tree that has parent as its root, and return it """
 
         done = set()
@@ -337,7 +339,8 @@ class DerivationPrinter:
         assert top
         return top
 
-    def print_lexicon(self, lex_trees):
+    @staticmethod
+    def print_lexicon(lex_trees):
         s = []
 
         def walk_nodes(route, node):

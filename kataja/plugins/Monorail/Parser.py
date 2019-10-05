@@ -27,7 +27,7 @@ try:
     from kataja.syntax.SyntaxState import SyntaxState
     from kataja.syntax.BaseFeature import BaseFeature as Feature
 except ImportError:
-    from .Constituent import Constituent
+    from Constituent import Constituent
 
     Feature = None
     SyntaxState = None

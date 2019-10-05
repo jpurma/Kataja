@@ -50,10 +50,10 @@ try:
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from .Constituent import Constituent
-    from .Feature import Feature
-    from .LexNode import LexNode
-    from .Output import DerivationPrinter, write_lexicon_graph_json
+    from Constituent import Constituent
+    from Feature import Feature
+    from LexNode import LexNode
+    from Output import DerivationPrinter, write_lexicon_graph_json
 
     running_environment = None
 
@@ -263,7 +263,8 @@ class Parser:
         sen_str = ' '.join(self.active_parse.input_words)
         return f"{sen_str}\nStep {self.c}, exp. {len(self.expansions) + 1}, movers: {mover_keys}\n"
 
-    def find_matching_subtree(self, node, target):
+    @staticmethod
+    def find_matching_subtree(node, target):
         for tree in node.parts:
             if tree.feat and tree.feat.name == target.feat.name:
                 return tree

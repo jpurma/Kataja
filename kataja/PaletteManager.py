@@ -557,15 +557,18 @@ class PaletteManager:
         else:
             return color.darker(160)
 
-    def lighter(self, color: QColor) -> QColor:
+    @staticmethod
+    def lighter(color: QColor) -> QColor:
         return color.lighter(110)
 
-    def transparent(self, color: QColor, opacity=128) -> QColor:
+    @staticmethod
+    def transparent(color: QColor, opacity=128) -> QColor:
         c = QColor(color)
         c.setAlpha(opacity)
         return c
 
-    def inactive(self, color) -> QColor:
+    @staticmethod
+    def inactive(color) -> QColor:
         """
 
         :param color:
@@ -575,7 +578,8 @@ class PaletteManager:
         nc.setAlphaF(0.5)
         return nc
 
-    def hovering(self, color) -> QColor:
+    @staticmethod
+    def hovering(color) -> QColor:
         """
 
         :param color:

@@ -74,6 +74,7 @@ class ColorPanel(Panel):
         ctrl.main.palette_changed.connect(self.update_available_themes)
         ctrl.main.color_themes_changed.connect(self.update_available_themes)
         color_theme_fragment(self, self.widget(), self.vlayout)
+        self.selector_items = None
         self.finish_init()
 
     def update_available_themes(self):

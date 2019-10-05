@@ -321,18 +321,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         return self._visible_by_logic
 
     def connect_start_to(self, node):
-        """
-
-        :param node:
-        """
         ctrl.drawing.set_edge_start(self, node)
         self.update_shape()
 
     def connect_end_to(self, node):
-        """
-
-        :param node:
-        """
         ctrl.drawing.set_edge_end(self, node)
         self.update_shape()
 
@@ -463,21 +455,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update()
 
     def connect_end_points(self, start, end):
-        """
-
-        :param start:
-        :param end:
-        """
         self.start = start
         self.end = end
         self.path.computed_start_point = start.current_scene_position if start else (0, 0)
         self.path.computed_end_point = end.current_scene_position if end else (0, 0)
 
     def update_tooltip(self):
-        """
-
-        :return:
-        """
         if self.edge_type == g.CONSTITUENT_EDGE or self.edge_type == g.ADJUNCT_EDGE:
             tt_style = f'<tt style="background:{ctrl.cm.paper2().name()};">%s</tt>'
 
@@ -605,13 +588,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # ## Qt paint method override
     def paint(self, painter, option, widget=None):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :return:
-        """
         c = self.contextual_color()
         sx, sy = self.start_point
         ex, ey = self.end_point
@@ -763,21 +739,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update_shape()
 
     def prepare_adjust_array(self, index):
-        """
-
-        :param index:
-        """
         if self.curve_adjustment is None:
             self.curve_adjustment = [(0, 0)]
         while index >= len(self.curve_adjustment):
             self.curve_adjustment.append((0, 0))
 
     def adjust_control_point(self, index, dist=None, rad=None):
-        """ Called from UI, when dragging
-        :param index:
-        :param dist:
-        :param rad:
-        """
+        """ Called from UI, when dragging """
         self.poke('curve_adjustment')
         self.prepare_adjust_array(index)
         odist, orad = self.curve_adjustment[index]
@@ -791,10 +759,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.update()
 
     def reset_control_points(self):
-        """
-        Set adjustments back to zero
-        :return:
-        """
+        """ Set adjustments back to zero """
 
         n = self.get_shape_property('control_points_n')
         self.poke('curve_adjustment')

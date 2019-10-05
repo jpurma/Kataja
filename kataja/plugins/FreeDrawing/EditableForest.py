@@ -7,6 +7,7 @@ class EditableForest(Forest):
 
     def __init__(self, heading_text='', comments=None, syntax=None):
         Forest.__init__(self, heading_text=heading_text, comments=comments, syntax=syntax)
+        self.should_add_to_scene = False
 
     def init_factories(self):
         super().init_factories()

@@ -146,7 +146,8 @@ class SyntaxAPI(SavedObject):
             _pick_leaves(parent)
         return [l.syntactic_object for l in leaves]
 
-    def get_dominated_nodes(self, node):
+    @staticmethod
+    def get_dominated_nodes(node):
         """ General solution works on level of nodes, not constituents, so this shouldn't be used
         to determine how nodes relate to each others.
         :param node:

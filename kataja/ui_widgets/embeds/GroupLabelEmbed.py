@@ -55,10 +55,6 @@ class GroupLabelEmbed(UIEmbed):
         self.setEnabled(True)
 
     def update_fields(self):
-        """
-
-        :return:
-        """
         a = self.host
         self.input_line_edit.setText(a.get_label_text())
         self.outline_checkbox.setChecked(a.outline)

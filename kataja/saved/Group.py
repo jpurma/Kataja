@@ -368,7 +368,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         node can be included
         :returns: int or str, uid of node if node is selectable
         """
-        self.hovering = False
         # if we are selecting an area, select actions are not called here, but once for all
         # objects. In this case return only uid of this object.
         if select_area:
@@ -388,11 +387,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         return self.uid
 
     def update_selection_status(self, value):
-        """
-
-        :param value:
-        :return:
-        """
         self._selected = value
 
     def paint(self, painter, style, QWidget_widget=None):

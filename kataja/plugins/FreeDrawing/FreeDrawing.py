@@ -37,11 +37,6 @@ class FreeDrawing(ForestDrawing):
     # ########### Complex node operations ##############################
 
     def delete_unnecessary_merger(self, node):
-        """
-
-        :param node:
-        :raise ForestError:
-        """
         if node.node_type != g.CONSTITUENT_NODE:
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and "
                               "forcing it to binary merge")

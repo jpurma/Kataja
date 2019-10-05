@@ -102,7 +102,8 @@ class Open(KatajaAction):
         )
         return filename
 
-    def load_data_from_file(self, filename):
+    @staticmethod
+    def load_data_from_file(filename):
         save_format, zipped = deduce_format(filename)
         data = None
         if zipped:

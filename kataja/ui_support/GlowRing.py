@@ -35,17 +35,9 @@ class GlowRing(QtWidgets.QGraphicsEllipseItem):
         return self.__qt_type_id__
 
     def grow(self):
-        """
-
-
-        """
         self._radius += self._step_size
         self.setRect(-self._radius, -self._radius, 2 * self._radius, 2 * self._radius)
 
     def shrink(self):
-        """
-
-
-        """
         self.radius -= self.step_size
         self.setRect(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)

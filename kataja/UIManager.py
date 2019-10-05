@@ -242,11 +242,6 @@ class UIManager:
                 panel.browser.setSearchPaths([])
 
     def add_ui(self, item, show=True):
-        """
-
-        :param item:
-        :param show: by default, show it. Easy to forget otherwise.
-        """
         if item.ui_key in self._items:
             print('ui_key ', item.ui_key, ' already exists')
             raise KeyError
@@ -328,10 +323,6 @@ class UIManager:
         return self._items_by_host.get(obj.uid, [])
 
     def resize_ui(self, size):
-        """
-
-        :param size:
-        """
         self.update_positions()
 
     def update_actions(self):
@@ -844,10 +835,6 @@ class UIManager:
     # #########################################################
 
     def create_creation_dialog(self, scene_pos):
-        """
-
-        :param scene_pos:
-        """
         self.close_active_embed()
         self.active_embed = NewElementEmbed(self.main.graph_view)
         self.add_ui(self.active_embed, show=False)
@@ -955,7 +942,8 @@ class UIManager:
                         ta = ta_class(host)
                         self.add_ui(ta)
 
-    def is_dragging_this_type(self, dtype):
+    @staticmethod
+    def is_dragging_this_type(dtype):
         """ Check if the currently dragged item is in principle compatible with
         self.
         :return:
@@ -970,17 +958,14 @@ class UIManager:
     # ################################################################
 
     def show_anchor(self, node):
-        """
-
-        :param node:
-        """
         anchor = self.get_or_create_button(node, ob.LockButton)
         anchor.fade_out()
 
     # ### Messages
     # ####################################################################
 
-    def add_message(self, msg, level=logging.INFO):
+    @staticmethod
+    def add_message(msg, level=logging.INFO):
         """ Insert new row of text to log
         possible logger levels are those from logging library:
         CRITICAL	50
@@ -1005,7 +990,8 @@ class UIManager:
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
 
-    def add_button(self, button, action):
+    @staticmethod
+    def add_button(button, action):
         button.update_position()
         button.show()
         return button

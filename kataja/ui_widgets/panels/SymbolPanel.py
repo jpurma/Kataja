@@ -190,7 +190,8 @@ class SymbolPanel(Panel):
         self.info.setText(item.data(55)['description'])
         self.info.update()
 
-    def item_clicked(self, item):
+    @staticmethod
+    def item_clicked(item):
         """ Clicked on a symbol: launch activity that tries to insert it to focused text field
         :param item:
         :return:

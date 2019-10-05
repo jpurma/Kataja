@@ -72,11 +72,6 @@ class GlossNode(Node):
 
     @property
     def hosts(self):
-        """
-
-
-        :return:
-        """
         return self.get_parents(of_type=GLOSS_NODE)
 
     def if_changed_label(self, value):

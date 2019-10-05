@@ -146,10 +146,6 @@ class BaseVisualization:
         return self.forest.vis_data.get(key, null)
 
     def reset_node(self, node):
-        """
-
-        :param node:
-        """
         node.physics_x = True
         node.physics_y = True
         node.adjustment = (0, 0)
@@ -161,9 +157,7 @@ class BaseVisualization:
 
     def prepare_to_normalise(self, tree):
         """ Store the current tree top node position so that the new arrangement can keep that
-        point fixed during change.
-        :return:
-        """
+        point fixed during change."""
 
         def find_old_node(node):
             if node.unmoved or node.locked_to_node:
@@ -290,7 +284,8 @@ class BaseVisualization:
     # if node.is_visible() != vis:
     # print 'V node hidden: ', node
 
-    def edge_pull(self, node, node_x, node_y, pull_factor=.7):
+    @staticmethod
+    def edge_pull(node, node_x, node_y, pull_factor=.7):
         # attract
         cbr = node.future_children_bounding_rect()
         cbr_w = cbr.width()
@@ -326,7 +321,8 @@ class BaseVisualization:
             y_vel += node_y * -0.009
         return x_vel, y_vel
 
-    def elliptic_repulsion(self, node, node_x, node_y, other_nodes: list, inner_repulsion=.5,
+    @staticmethod
+    def elliptic_repulsion(node, node_x, node_y, other_nodes: list, inner_repulsion=.5,
                            outer_repulsion=4, min_push=1, max_push=4):
 
         # Sum up all forces pushing this item away.
@@ -435,7 +431,8 @@ class BaseVisualization:
 
         return xvel, yvel
 
-    def feature_sliding(self, node, x_push, y_push):
+    @staticmethod
+    def feature_sliding(node, x_push, y_push):
         if node.node_type == g.FEATURE_NODE:
             if x_push > 0:
                 x_push = 0
@@ -449,7 +446,8 @@ class BaseVisualization:
             return 0, self.gravity
         return 0, 0
 
-    def speed_noise(self, node, x_vel, y_vel):
+    @staticmethod
+    def speed_noise(node, x_vel, y_vel):
         if abs(x_vel) > 3:
             y_vel += (random.random() * -4) + 2
         if abs(y_vel) > 3:

@@ -65,10 +65,7 @@ class EditableConstituentNode(ConstituentNode):
             action.run_command(self.uid, value)
 
     def load_values_from_parsernode(self, parsernode):
-        """ Update constituentnode with values from parsernode
-        :param parsernode:
-        :return:
-        """
+        """ Update constituentnode with values from parsernode """
 
         def remove_dot_label(inode, row_n):
             for i, part in enumerate(list(inode.parts)):

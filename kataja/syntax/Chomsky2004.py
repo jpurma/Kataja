@@ -15,36 +15,18 @@ class ComputationalSystem:
         self._pf = pf
         self._lf = lf
 
-    def Merge(self, X, Y):
-        """
-
-        :param X:
-        :param Y:
-        :return:
-        """
+    @staticmethod
+    def Merge(X, Y):
         SO = SyntacticObject(X.label.copy(), (X, Y))
         return SO
 
     def Select(self, label):
-        """
-
-        :param label:
-        """
         pass
 
     def Agree(self, probe, goal):
-        """
-
-        :param probe:
-        :param goal:
-        """
         pass
 
     def derive(self, N):
-        """
-
-        :param N:
-        """
         pass
 
 

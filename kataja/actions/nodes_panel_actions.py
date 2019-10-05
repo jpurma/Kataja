@@ -286,7 +286,6 @@ class AbstractChangeNodeColor(KatajaAction):
 
         :param color_key: str, where color keys are 'content1-3', 'background1-2', 'accent1-8',
          'accent1-8tr' and 'custom1-n'
-        :return: None
         """
 
         # Update color for selected nodes

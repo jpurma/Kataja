@@ -178,10 +178,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
             self.text_area.setPlainText(self.parsed_html)
 
     def inode_text(self):
-        """
-        :return:
-        """
-
         if self.changed:
             if self.parsing_mode == 1:
                 parser = ctrl.latex_field_parser
