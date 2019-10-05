@@ -23,23 +23,15 @@
 # ############################################################################
 
 import itertools
-import math
-from collections import defaultdict
-import time
+
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-from kataja.ComplexLabel import ComplexLabel
-from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
-# from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.saved.movables import Node
+from kataja.singletons import ctrl
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
-from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, create_shadow_effect, add_xy, time_me, create_blur_effect
-from kataja.parser.INodes import as_html
-import kataja.ui_widgets.buttons.OverlayButton as Buttons
+from kataja.utils import to_tuple
 
 call_counter = [0]
 
@@ -76,6 +68,7 @@ class Draggable(Movable):
     """ Basic class for any visualization elements that can be connected to
     each other """
 
+    # noinspection PyMissingConstructor
     def __init__(self: Movable):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify
@@ -369,8 +362,7 @@ class Draggable(Movable):
         else:
             QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
-    def dropEvent(self, event: 'QGraphicsSceneDragDropEvent'):
+    def dropEvent(self, event: QtWidgets.QGraphicsSceneDragDropEvent):
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
                 or event.mimeData().hasFormat("text/plain"):
             self.label_object.dropEvent(event)
-

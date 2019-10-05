@@ -1,4 +1,3 @@
-
 # coding=utf-8
 # ############################################################################
 #
@@ -27,9 +26,7 @@ from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.singletons import classes
 
 
-
 class EditableFeatureNode(FeatureNode):
-
     editable = {}
     viewable = {'name': dict(name='Name', prefill='X',
                              tooltip='Name of the feature, used as identifier',

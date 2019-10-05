@@ -29,7 +29,6 @@ from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, RIGHT_
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
 
-
 inner_cards = False
 
 
@@ -160,4 +159,3 @@ class ComplexLabel(SimpleLabel):
             return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
         else:
             return super().boundingRect()
-

@@ -22,10 +22,11 @@
 #
 # ############################################################################
 
+from kataja.plugins.TreesAreMemory.TreesAreMemoryParser import load_lexicon
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
-from TreesAreMemory.TreesAreMemoryParser import load_lexicon
+
 
 class Document(KatajaDocument):
     """ This class is required for Kataja compatibility. KatajaDocument defines what is loaded as a set of trees
@@ -43,9 +44,6 @@ class Document(KatajaDocument):
 
     def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
-
-        :param filename: not used
-        :param clear: start with empty
         """
         filename = filename or Document.get_default_treeset_file()
 

@@ -1,8 +1,8 @@
-
-from kataja.ui_widgets.buttons.OverlayButton import OverlayButton, NodeOverlayButton, GroupButton
-from kataja.singletons import ctrl, qt_prefs
 from PyQt5 import QtCore
+
 import kataja.globals as g
+from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_widgets.buttons.OverlayButton import OverlayButton, NodeOverlayButton, GroupButton
 
 
 class CutEdgeButton(OverlayButton):
@@ -83,4 +83,3 @@ class RotateButton(NodeOverlayButton):
     @classmethod
     def condition(cls, host):
         return host.node_type == g.CONSTITUENT_NODE and not host.triangle_stack and len(host.get_children()) > 1
-

@@ -1,17 +1,16 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtCore
-from kataja.ui_widgets.buttons.OverlayButton import TopRowButton, VisButton
 
-import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs, prefs
-from kataja.visualizations.available import VISUALIZATIONS
-from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
-from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
-from kataja.utils import time_me
+from kataja.ui_widgets.buttons.OverlayButton import TopRowButton, VisButton
+from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
+from kataja.visualizations.available import VISUALIZATIONS
+
 
 class TopBarButtons(QtWidgets.QFrame):
     def __init__(self, parent, ui):
+        # noinspection PyArgumentList
         QtWidgets.QFrame.__init__(self, parent=parent)
         layout = QtWidgets.QHBoxLayout()
         self.show()
@@ -36,6 +35,7 @@ class TopBarButtons(QtWidgets.QFrame):
         layout.addStretch(0)
 
         view_label = QtWidgets.QLabel("Visualisation:")
+        # noinspection PyArgumentList
         layout.addWidget(view_label)
 
         default_vis = prefs.visualization

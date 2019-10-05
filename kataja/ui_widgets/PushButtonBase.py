@@ -1,8 +1,7 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl
-
 
 __author__ = 'purma'
 
@@ -17,8 +16,9 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
     action_slot = 'clicked'
 
     def __init__(self, parent=None, text=None, size=None, **kwargs):
-        QtWidgets.QPushButton.__init__(self, parent=parent)
+        QtWidgets.QPushButton.__init__(self)
         UIWidget.__init__(self, **kwargs)
+        self.setParent(parent)
         if text:
             self.setText(text)
         if size:
@@ -45,4 +45,3 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
     def leaveEvent(self, event):
         UIWidget.leaveEvent(self, event)
         return QtWidgets.QPushButton.leaveEvent(self, event)
-

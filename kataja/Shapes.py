@@ -1,11 +1,9 @@
+import math
 from collections import OrderedDict
 from math import sin, cos, pi, acos, sqrt
 
-import math
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
-
-from kataja.globals import LEFT, RIGHT
 
 __author__ = 'purma'
 
@@ -844,6 +842,7 @@ def draw_triangle(painter, x, y, r=10):
 SHAPE_PRESETS = OrderedDict([(od.shape_name, od) for od in available_shapes])
 
 low_arc = QuadraticPath.defaults.copy()
+# noinspection PyTypeChecker
 low_arc['shape_name'] = 'low_arc'
 low_arc['rel_dx'] = 1.0
 low_arc['rel_dy'] = 0.5

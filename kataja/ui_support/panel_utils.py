@@ -9,14 +9,17 @@ __author__ = 'purma'
 class KnobDial(QtWidgets.QWidget):
 
     def __init__(self, ui_manager, parent, layout, label='', suffix='', action=''):
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         hlayout = QtWidgets.QHBoxLayout()
         self.label = QtWidgets.QLabel(label, self)
+        # noinspection PyArgumentList
         hlayout.addWidget(self.label)
         self.dial = QtWidgets.QDial(self)
         self.dial.setFixedSize(28, 28)
         self.dial.setWrapping(True)
         self.dial.setRange(-180, 180)
+        # noinspection PyArgumentList
         hlayout.addWidget(self.dial)
         self.spinbox = QtWidgets.QSpinBox(self)
         self.spinbox.setAccelerated(True)
@@ -27,6 +30,7 @@ class KnobDial(QtWidgets.QWidget):
         self.spinbox.setWrapping(True)
         self.spinbox.setFixedWidth(50)
         self.label.setBuddy(self.spinbox)
+        # noinspection PyArgumentList
         hlayout.addWidget(self.spinbox)
         self.setLayout(hlayout)
         ui_manager.connect_element_to_action(self, action)
@@ -98,7 +102,3 @@ def set_value(field, value):
             field.setChecked(value)
         field.cached_value = value
     field.blockSignals(False)
-
-
-
-

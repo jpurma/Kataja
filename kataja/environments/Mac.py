@@ -2,10 +2,11 @@ import os
 import shutil
 import sys
 from pathlib import Path
+
 from PyQt5 import QtCore
 
-from kataja.globals import *
 from kataja.environments.Base import Base
+from kataja.globals import *
 
 
 class Mac(Base):
@@ -54,5 +55,5 @@ class Mac(Base):
                     shutil.copytree(local_plugin_path, self.plugins_path)
 
         dir_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-        # noinspection PyTypeChecker,PyCallByClass
+        # noinspection PyTypeChecker,PyCallByClass,PyArgumentList
         QtCore.QCoreApplication.addLibraryPath(f'{dir_path}/../plugins')

@@ -23,8 +23,8 @@
 from collections import ChainMap
 
 from kataja.Shapes import SHAPE_PRESETS
-from kataja.singletons import ctrl
 from kataja.edge_styles import master_styles
+from kataja.singletons import ctrl
 
 
 class ForestSettings:
@@ -53,7 +53,7 @@ class ForestSettings:
 
     @property
     def data(self):
-        return self.host._settings
+        return self.host.get_settings()
 
     def get(self, key):
         v = self.data.get(key, None)

@@ -25,7 +25,6 @@
 # ############################################################################
 import pprint
 
-from kataja.utils import time_me
 from kataja.singletons import ctrl, log
 
 # Creation/Deletion flags
@@ -56,7 +55,7 @@ class UndoManager:
             obj.flush_history()
         ctrl.undo_pile = set()
 
-#    @time_me
+    #    @time_me
     def take_snapshot(self, msg=''):
         """ Store changes from ctrl.undo_pile and put them here into undo_stack.
         :param msg: str = msg to
@@ -68,7 +67,7 @@ class UndoManager:
         for obj in ctrl.undo_pile:
             transitions, transition_type = obj.transitions()
             if transitions or transition_type:
-                #print(obj, '----', transition_type, '----',  transitions)
+                # print(obj, '----', transition_type, '----',  transitions)
                 snapshot[obj.uid] = (obj, transitions, transition_type)
             obj.flush_history()
         # ...
@@ -81,9 +80,9 @@ class UndoManager:
             self._stack.pop(0)
             self._current -= 1
 
-        #log.info('took snapshot of size: %s, undo stack size: %s items %s chars' % (
+        # log.info('took snapshot of size: %s, undo stack size: %s items %s chars' % (
         #    len(str(snapshot)), len(self._stack), len(str(self._stack))))
-        #print('stack len:', len(str(self._stack)))
+        # print('stack len:', len(str(self._stack)))
 
     def undo(self):
         """ Move backward in the undo stack
@@ -91,7 +90,7 @@ class UndoManager:
         """
         if not self._stack:
             return
-        #if self._current == 0:
+        # if self._current == 0:
         #    log.info('undo [%s]: Cannot undo further' % self._current)
         #    return
         ctrl.disable_undo()

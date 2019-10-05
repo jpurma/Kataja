@@ -21,11 +21,10 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import prefs
 
 
 class BalancedTree(BaseVisualization):
@@ -112,7 +111,6 @@ class BalancedTree(BaseVisualization):
             node.target_position = node.target_position[0] + dist, node.target_position[1]
             node.start_moving()
 
-
     # @time_me
     def draw_tree(self, tree_top):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
@@ -145,4 +143,3 @@ class BalancedTree(BaseVisualization):
                 return x + leaf_rect.left(), y + leaf_rect.top(), largest_x
 
         recursive_position(tree_top, 0, 0, 0)
-

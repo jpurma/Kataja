@@ -1,7 +1,4 @@
-
-
 from PyQt5 import QtCore
-from kataja.singletons import ctrl, prefs
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")

@@ -1,5 +1,3 @@
-
-
 lines = open('sentences.txt').readlines()
 
 

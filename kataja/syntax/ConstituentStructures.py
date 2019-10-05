@@ -24,12 +24,12 @@
 # ############################################################################
 
 
-from configparser import ConfigParser
 import re
-from BaseConstituent import BaseConstituent as Constituent
+from configparser import ConfigParser
+from functools import cmp_to_key
 
+from kataja.syntax.BaseConstituent import BaseConstituent as Constituent
 from kataja.syntax.utils import time_me
-
 
 DEFAULT = """
 
@@ -66,7 +66,7 @@ class ConstituentStructures:
         self.config.read(config_path)
         self.Constituent = Constituent
         # self.Feature=feature
-        # self.lexicon=load_lexicon(lexicon, constituent, feature)
+        self.lexicon = {}  # load_lexicon(lexicon, constituent, feature)
         # self.structure=None
 
         self.dominates = self.undefined
@@ -100,7 +100,7 @@ class ConstituentStructures:
         """
         return self.dominates(dom, sub) and dom != sub
 
-    def is_top_node(self, a: Constituent, structure: Constituent) -> bool:
+    def is_top_node(self, a: Constituent, structure) -> bool:
         """ (5a) Root node: the node that dominates everything, but is dominated by nothing except itself
         (Carnie 2010, p. 29)
         This is a bit stupid way of doing this, since by giving the structure where the evaluation is done we are
@@ -135,7 +135,6 @@ class ConstituentStructures:
                 return True
         return False
 
-
     # ## Dominance Axioms
 
     def check_dominance_axioms(self, structure):
@@ -157,7 +156,6 @@ class ConstituentStructures:
             if not self.dominates(node, node):
                 return False
         return True
-
 
     def single_root_axiom(self, structure):
         """ (A2) exists:x, all:y belonging to N that x dominates y. (Carnie 2010, p. 31)
@@ -199,7 +197,6 @@ class ConstituentStructures:
                 if x != y:
                     return False
         return True
-
 
     def no_multiple_mothers_axiom(self, structure):
         """ (A5) all: x,y,z belonging to N: (x dominates y) & (y dominates z) -> (x dominates y) or (y dominates x)
@@ -250,7 +247,6 @@ class ConstituentStructures:
                 return False
         return True
 
-
     immediate_dominance = immediate_dominance_carnie
     immediately_dominates = immediate_dominance_carnie
 
@@ -292,7 +288,7 @@ class ConstituentStructures:
         # needs to be checked, I'm not sure if this is correct
         for C in structure:
             if (self.immediate_dominance(C, A, structure) and self.dominates(C, B)) or (
-                        self.dominates(C, A) and self.immediate_dominance(C, B, structure)):
+                    self.dominates(C, A) and self.immediate_dominance(C, B, structure)):
                 return True
         return False
 
@@ -355,7 +351,7 @@ class ConstituentStructures:
         for M in structure:
             if self.immediate_dominance(M, A, structure) and self.immediate_dominance(M, B,
                                                                                       structure) and self.is_left_edge(
-                    A, B, M):
+                A, B, M):
                 return True
         return False
 
@@ -395,7 +391,6 @@ class ConstituentStructures:
         return True
 
     precedes = precedence
-
 
     # ## Precedence axioms
 
@@ -471,7 +466,6 @@ class ConstituentStructures:
                                     if not self.precedes(y, z, structure):
                                         return False
         return True
-
 
     # ## C-Command and Government
 
@@ -621,6 +615,9 @@ class ConstituentStructures:
                     factors.append(s)
         return factors
 
+    def is_maximal_category(self, node, structure):
+        return NotImplemented
+
     def m_command(self, A, B, structure):
         """ (30) M-command: Node A c-commands node B if every maximal category (XP) node properly dominating A also
         dominates B and neither A nor B dominate the other. (Carnie 2010, p.59)
@@ -748,7 +745,6 @@ class ConstituentStructures:
 
         return self.general_command_edge(A, P4, structure)
 
-
     def barker_pullum_c_command(self, A, structure):
         """ C-command is the command edge C_P5, where P5 is given by:
         P5 = { a | exists xy [ x != y & M(a,x) & M(a, y)]}
@@ -777,7 +773,6 @@ class ConstituentStructures:
 
         return self.general_command_edge(A, P5, structure)
 
-
     def immediate_dominance_c_command(self, A, structure):
         """ C-command is the command edge C_P6, where P6 is given by: P6 = N (N the set of nodes)  (Carnie 2010, p.62)
         I'm using P:s as function that checks if something is part of the set, Carnie uses P as a set.
@@ -797,7 +792,6 @@ class ConstituentStructures:
 
         return self.general_command_edge(A, P6, structure)
 
-
     def governs(self, A, B, structure):
         """ (45) Government: A governs B iff
         a) A c-commands B;
@@ -814,7 +808,6 @@ class ConstituentStructures:
                     return False
 
                     # #### Bare phrase structure, preliminaries
-
 
     def projection_path_bottom_up(self, bottom, structure):
         """ (2) Pi is a projection path if Pi is a sequence of nodes N = (n_1, ... n_n)
@@ -841,6 +834,9 @@ class ConstituentStructures:
                         break
         # this will behave strangely with multidominated structures
         return path
+
+    def bar_level(self, node, structure):
+        return NotImplemented
 
     def projection_path_top_down(self, top, structure):
         """ (2) Pi is a projection path if Pi is a sequence of nodes N = (n_1, ... n_n)
@@ -937,7 +933,6 @@ class ConstituentStructures:
                 return False
         return True
 
-
     def asymmetric_immediate_dominance_c_command(self, A, structure):
         """ Used for Kayne's LCA: Some node A only c-commands B if the node immediately dominating A,
         dominates (not necessarily immediately) B. (Carnie 2010, p. 146) Add asymmetry, and return all suitable targets.
@@ -980,7 +975,6 @@ class ConstituentStructures:
                     terminals.append(t)
             return terminals
 
-
         T = set()
         for t in structure:
             if self.is_terminal_node(t, structure):
@@ -1021,11 +1015,10 @@ class ConstituentStructures:
             raise ValueError
 
         try:
-            result = sorted(T, sort_func)
+            result = sorted(T, key=cmp_to_key(sort_func))
         except ValueError:
             result = []
         return result
-
 
     def excludes(self, X, Y, structure):
         """ (32) X excludes Y iff no segment of X dominates Y.
@@ -1043,7 +1036,6 @@ class ConstituentStructures:
             if self.dominates(s, Y):
                 return False
         return True
-
 
     def excluding_c_command(self, A, B, structure):
         """ (31) A c-commands B iff
@@ -1066,7 +1058,6 @@ class ConstituentStructures:
                         return False
         return True
 
-
     # #### Bare phrase structure, Merge and other important parts
 
     def set_merge(self, alpha, beta):
@@ -1087,7 +1078,6 @@ class ConstituentStructures:
         except ValueError:
             print('Labeling problem')
         return delta
-
 
     def head_is_label(self, candidates):
         """ Chomsky's minimalist labeling function: head projects: one that is head is label.
@@ -1134,6 +1124,12 @@ class ConstituentStructures:
         delta.setLabel((gamma, gamma))
         return delta
 
+    def is_terminal(self, node, structure):
+        return NotImplemented
+
+    def is_silent(self, node, structure):
+        return NotImplemented
+
     def bare_phrase_lca(self, structure):
         """
 
@@ -1162,13 +1158,12 @@ class ConstituentStructures:
             return 0
 
         T = [n for n in structure if self.is_terminal(n, structure)]
-        T.sort(sorting_function)
+        T.sort(key=cmp_to_key(sorting_function))
         # make sure that if elements are symmetrically commanded at least another of them is silent anyways
         for x, y in equals:
-            if not (self.isSilent(x, structure) or self.isSilent(y, structure)):
+            if not (self.is_silent(x, structure) or self.is_silent(y, structure)):
                 raise ValueError
         return T
-
 
     def feature_check(self, left, right):
         """
@@ -1197,7 +1192,7 @@ class ConstituentStructures:
         """
         id = left.label
         # remove index (_i, _j ...) from Merged id so that indexing won't get broken
-        res = re.search(r'[^\\]_\{(.*)\}', id) or re.search(r'[^\\]_(.)', id)
+        res = re.search(r'[^\\]_{(.*)\}', id) or re.search(r'[^\\]_(.)', id)
         if res:
             id = id[:id.rindex('_')]
         new = self.Constituent(id, left, right)
@@ -1296,7 +1291,6 @@ class ConstituentStructures:
             print('Finished: %s' % self.structure)
         return self.structure
 
-
     def Linearize(self, structure):
         """
 
@@ -1315,12 +1309,12 @@ class ConstituentStructures:
 
         return _lin(structure, [])
 
-
     @time_me
     def CLinearize(self, structure):
         """ Bare phrase structure linearization. Like Kayne's, but allows ambiguous cases to exist. It is assumed that phonology deals with them, usually by having null element in ambiguous pair.
         :param structure:
         """
+
         # returns asymmetric c-command status between two elements
         def _asymmetric_c(A, B):
             AC = self.CCommands(A, B, structure)
@@ -1376,14 +1370,11 @@ class ConstituentStructures:
         print(linear)
         return linear
 
-
     # ############## #
     #                #
     #  Save support  #
     #                #
     # ############## #
-
-
 
 
 def _closest_parents(A, context, is_not=None, parent_list=None):
@@ -1396,5 +1387,3 @@ def _closest_parents(A, context, is_not=None, parent_list=None):
     if context.right and not context.right == is_not:
         parent_list = _closest_parents(A, context.right, is_not=is_not, parent_list=parent_list)
     return parent_list
-
-

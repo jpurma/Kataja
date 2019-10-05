@@ -1,11 +1,8 @@
 # coding=utf-8
 import random
 
-import kataja.globals as g
-from kataja.globals import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
-from kataja.singletons import ctrl, prefs, log, qt_prefs
-from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl
 
 
 # ==== Class variables for KatajaActions:
@@ -130,5 +127,3 @@ class RememberPalette(KatajaAction):
 
     def enabler(self):
         return ctrl.cm.can_randomise()
-
-

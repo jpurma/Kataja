@@ -41,7 +41,7 @@ class HiConstituent(BaseConstituent):
         html += ', hi: ' + self.hi
         return html
 
-    def copy(self):
+    def copy(self, done=None):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: HiConstituent
         """

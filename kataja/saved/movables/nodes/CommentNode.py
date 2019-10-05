@@ -28,9 +28,8 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
-import kataja.ui_graphicsitems.TouchArea as ta
+from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -93,7 +92,6 @@ class CommentNode(Node):
         """
         return self.get_parents(of_type=g.COMMENT_NODE)
 
-
     @property
     def text(self):
         """ The text of the comment. Uses the generic node.label as storage.
@@ -115,6 +113,7 @@ class CommentNode(Node):
         if pixmap_path and (self.image_path != pixmap_path or not self.image):
             self.image_path = pixmap_path
             self.image = QtGui.QPixmap()
+            # noinspection PyArgumentList
             success = self.image.load(pixmap_path)
             if success:
                 if self.image_object:
@@ -143,7 +142,7 @@ class CommentNode(Node):
                                        QtCore.Qt.SmoothTransformation)
             self.image_object.prepareGeometryChange()
             self.image_object.setPixmap(scaled)
-            self.image_object.setPos(-scaled.width()/2, -scaled.height()/2)
+            self.image_object.setPos(-scaled.width() / 2, -scaled.height() / 2)
             # Update ui items around the label (or node hosting the label)
             ctrl.ui.update_position_for(self)
 
@@ -158,15 +157,15 @@ class CommentNode(Node):
     def __str__(self):
         return 'comment: %s' % self.text
 
-    def _calculate_inner_rect(self):
+    def _calculate_inner_rect(self, min_w=0, min_h=0):
         user_width, user_height = self.user_size if self.user_size is not None else (0, 0)
         label = self.image_object or self.label_object
         label_rect = label.boundingRect()
         label_w = label_rect.width()
         label_h = label_rect.height()
         self.label_rect = label_rect
-        w = max((label_w, CommentNode.width, user_width))
-        h = max((label_h, CommentNode.height, user_height))
+        w = max((min_w, label_w, CommentNode.width, user_width))
+        h = max((min_h, label_h, CommentNode.height, user_height))
         x = w / -2
         y = h / -2
         self.width = w
@@ -184,7 +183,7 @@ class CommentNode(Node):
         p.setWidth(1)
         if self.drag_data:
             painter.setPen(p)
-            #painter.setBrush(self.drag_data.background)
+            # painter.setBrush(self.drag_data.background)
             painter.drawRect(self.inner_rect)
             painter.setBrush(QtCore.Qt.NoBrush)
 
@@ -217,13 +216,6 @@ class CommentNode(Node):
             return super().move(other_nodes, heat)
 
     def drop_to(self, x, y, recipient=None, shift_down=False):
-        """
-
-        :param recipient:
-        :param x:
-        :param y:
-        :return: action finished -message (str)
-        """
         super().drop_to(x, y, recipient=recipient, shift_down=shift_down)
         if self.preferred_host:
             x, y = self.preferred_host.current_scene_position
@@ -258,7 +250,6 @@ class CommentNode(Node):
         :return:
         """
         return self.is_dragging_this_type(g.COMMENT_NODE)
-
 
     # ############## #
     #                #

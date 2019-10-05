@@ -122,7 +122,7 @@ def is_syntactic_object(x):
     """Definition 7: X is a syntactic object iff (i) X is a lexical item token, or (ii) X is a
     set of syntactic objects """
     return isinstance(x, LIToken) or (
-        isinstance(x, set) and all([isinstance(y, LIToken) for y in x]))
+            isinstance(x, set) and all([isinstance(y, LIToken) for y in x]))
 
 
 def immediately_contains(a, b):
@@ -182,6 +182,7 @@ def position(a, in_b):
             return True
         elif isinstance(item, set):
             path.append(item.copy())
+            found = False
             for i in item:
                 if add_path(i):
                     found = True
@@ -230,7 +231,6 @@ class Derivation:
         """ Definition 14: A derivation from lexicon L is a finite sequence of stages (S_1,
         ... S_n), for n >= 1, where each S_i = (LA_i, W_i)
         I hope this is kind of checking is not necessary. Uncertain if I got this right.
-        :param UG:
         :return:
         """
         # (i) For all LI and k such that (LI. k) \in LA_1, LI \in L
@@ -245,6 +245,7 @@ class Derivation:
             return False
         # (iii) for all i, such that 1 =< i < n, either
         # (derive-by-Select) for some A \in LA_i, (LA_i+1, W_i+1) = Select(A, (LA_i, W_i)), or
+        prev_stage = None
         for stage in self.stages:
             if not prev_stage:
                 prev_stage = stage
@@ -262,6 +263,7 @@ class Derivation:
                 # (c) W_i+1 = (W_i - {A, B}) \cup {Merge(A, B)}.
                 if prev_stage.la != stage.la:
                     return False
+                B = None
                 for A in prev_stage.w:
                     for B in prev_stage.w:
                         if A is not B and self.ug.Merge(A, B) in stage.w:

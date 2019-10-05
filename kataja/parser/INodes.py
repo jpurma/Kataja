@@ -1,6 +1,7 @@
+import html
+
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.parser.mappings import command_to_latex, command_to_html
-import html
 
 __author__ = 'purma'
 """ INodes can be used to represent strings that have formatting commands and
@@ -23,9 +24,9 @@ def as_html(item, omit_triangle=False, include_index='') -> str:
     elif isinstance(item, ITextNode):
         h = item.as_html(omit_triangle=omit_triangle)
     else:
-        h = html.escape(item).\
-            replace('\n', '<br/>\n').\
-            replace('\r', '<br/>\r').\
+        h = html.escape(item). \
+            replace('\n', '<br/>\n'). \
+            replace('\r', '<br/>\r'). \
             replace('  ', ' &nbsp;')
     if include_index:
         index_html = f'<sub>{include_index}</sub>'
@@ -80,7 +81,7 @@ def as_text(item, omit_triangle=False, omit_index=False, omit_outmost=False, sin
     if isinstance(item, ITextNode):
         if omit_outmost:
             r = []
-            ITextNode._as_plain(item, r, omit_triangle=omit_triangle, omit_index=omit_index)
+            ITextNode.as_plain_parts(item, r, omit_triangle=omit_triangle, omit_index=omit_index)
             return ''.join(r)
         s = item.as_plain(omit_triangle=omit_triangle, omit_index=omit_index)
     else:
@@ -370,8 +371,6 @@ class ITextNode:
         """ Return contents of a complex text field as html, but \n instead of
         <br/> and no escaping. This is friendlier to edit and br:s can be added when interpreting
         the result.
-        :param item:
-        :return:
         """
         s = []
         self._as_editable_html(s)
@@ -404,16 +403,16 @@ class ITextNode:
         self._as_editable_latex(s)
         return ''.join(s)
 
-    def _as_plain(self, s, omit_triangle=False, omit_index=False):
+    def as_plain_parts(self, s, omit_triangle=False, omit_index=False):
         for part in self.parts:
             if isinstance(part, ITextNode):
-                part._as_plain(s, omit_triangle=omit_triangle, omit_index=omit_index)
+                part.as_plain_parts(s, omit_triangle=omit_triangle, omit_index=omit_index)
             else:
                 s.append(str(part))
 
     def as_plain(self, omit_triangle=False, omit_index=False):
         r = []
-        self._as_plain(r, omit_triangle=omit_triangle, omit_index=omit_index)
+        self.as_plain_parts(r, omit_triangle=omit_triangle, omit_index=omit_index)
         return ''.join(r)
 
     def __str__(self):
@@ -526,7 +525,7 @@ class ICommandNode(ITextNode):
         else:
             ITextNode._as_editable_latex(self, s)
 
-    def _as_plain(self, s, omit_triangle=False, omit_index=False):
+    def as_plain_parts(self, s, omit_triangle=False, omit_index=False):
         if not self.parts:
             unic = latex_to_unicode.get(self.command, None)
             if unic:
@@ -545,7 +544,7 @@ class ICommandNode(ITextNode):
                 s.append('^')
             for part in self.parts:
                 if isinstance(part, ITextNode):
-                    part._as_plain(s, omit_triangle=omit_triangle, omit_index=omit_index)
+                    part.as_plain_parts(s, omit_triangle=omit_triangle, omit_index=omit_index)
                 else:
                     s.append(str(part))
 

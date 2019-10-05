@@ -111,6 +111,7 @@ class PhonologicalSystem:
         """
         pass
 
+
 CI = ConceptualIntentionalSystem()
 SM = PhonologicalSystem()
 L = Lexicon()

@@ -22,9 +22,9 @@
 #
 # ############################################################################
 
+from kataja.plugins.TreesAreMemory.TreesAreMemoryParser import TreesAreMemoryParser
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
-from TreesAreMemory.TreesAreMemoryParser import TreesAreMemoryParser
-from kataja.singletons import ctrl
+
 
 class SyntaxAPI(KatajaSyntaxAPI):
     """ This is required for Kataja compatibility. SyntaxAPI tells how each forest instance should access their parser
@@ -56,10 +56,10 @@ class SyntaxAPI(KatajaSyntaxAPI):
         self.parser.read_lexicon(lexicon)
         self.lexicon = self.parser.lexicon
 
-    def read_lexicon(self, lexdata):
+    def read_lexicon(self, lexdata, lexicon=None):
         if isinstance(lexdata, str):
             lexdata = lexdata.splitlines()
-        self.parser.read_lexicon(lexdata, ctrl.document.lexicon)
+        self.parser.read_lexicon(lexdata)
         return self.parser.lexicon
 
     def _prepare_derivation_parameters(self, input_text, lexicon, semantics):
@@ -88,4 +88,3 @@ class SyntaxAPI(KatajaSyntaxAPI):
         print('input_text: ', self.input_text)
         print('lexicon: ', self.parser.lexicon)
         self.parser.parse(self.input_text)
-

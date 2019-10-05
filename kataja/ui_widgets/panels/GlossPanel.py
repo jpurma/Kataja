@@ -45,4 +45,3 @@ class GlossPanel(NodePanel):
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_options.data = self.node_type
         self.finish_init()
-

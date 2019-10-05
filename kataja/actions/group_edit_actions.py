@@ -1,10 +1,9 @@
 # coding=utf-8
 
-from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
-from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, log, classes
+from kataja.singletons import ctrl, log
+from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 
 
 # ==== Class variables for KatajaActions:
@@ -57,10 +56,8 @@ class MakeSelectionGroupPersistent(KatajaAction):
     k_command = 'Save this selection as a group'
 
     def method(self):
-        """ Open group editing embed.
-        :type group_uid: object
-        """
-        new_group = ctrl.forest.drawing.turn_selection_group_to_group(ctrl.ui.selection_group)
+        """ Open group editing embed."""
+        ctrl.forest.drawing.turn_selection_group_to_group(ctrl.ui.selection_group)
 
 
 class ToggleGroupPersistence(KatajaAction):
@@ -86,9 +83,6 @@ class DeleteGroupItems(KatajaAction):
     k_command = 'Delete nodes in this selection'
 
     def method(self):
-        """ Open group editing embed.
-        :type group_uid: object
-        """
         for item in ctrl.selected:
             if isinstance(item, Node):
                 ctrl.drawing.delete_node(item, touch_edges=True, fade=True)
@@ -109,12 +103,13 @@ class ChangeGroupColor(KatajaAction):
         return [group_uid, color_key], kwargs
 
     def method(self, group_uid, color_key):
-        """ """
+        group = None
         if ctrl.ui.selection_group and ctrl.ui.selection_group.uid == group_uid:
             group = ctrl.ui.selection_group
         elif group_uid in ctrl.forest.groups:
             group = ctrl.forest.groups[group_uid]
-        group.set_color_key(color_key)
+        if group:
+            group.set_color_key(color_key)
         log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
     def getter(self):

@@ -6,7 +6,6 @@ from kataja.singletons import ctrl
 
 
 class DragInfo(UIWidget, QtWidgets.QLabel):
-
     unique = True
 
     def __init__(self, host, parent):
@@ -38,4 +37,3 @@ class DragInfo(UIWidget, QtWidgets.QLabel):
         br = self.host.sceneBoundingRect().topRight()
         pos = self.par.mapFromScene(br)
         self.move(pos.x() + 8, pos.y() - 16)
-

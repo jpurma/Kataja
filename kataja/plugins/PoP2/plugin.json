@@ -1,7 +1,0 @@
-{
-  "name": "Problems of Projection, v.K",
-  "description": "Further modifications for Jason Ginsburg's computer model for Chomsky 2013, 2015 PoP-model. Features are more complex: instead of rewriting and replacing features, Features can 'link' other features to value them. Doesn't use separate stack. Constituents are never copied, they just appear in several places.",
-  "author": "Jukka Purma",
-  "version": "0.8",
-  "setup": "setup.py"
-}

@@ -24,8 +24,8 @@
 
 from PyQt5 import QtGui, QtCore
 
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.singletons import ctrl
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
 class TwoColorIconEngine(QtGui.QIconEngine):
@@ -73,8 +73,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             self.filter2 = None
             self.mask = self.bitmap.mask()
 
-
-    #@time_me
+    # @time_me
     def paint(self, painter, rect, mode, state):
         """
 

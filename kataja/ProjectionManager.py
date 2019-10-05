@@ -1,7 +1,5 @@
 import itertools
 
-from kataja.singletons import ctrl
-
 
 class ProjectionManager:
     def __init__(self, forest):
@@ -27,5 +25,5 @@ class ProjectionManager:
         :return:
         """
         highlight = self.forest.settings.get('highlight_projections')
-        #for projection in self.projections.values():
+        # for projection in self.projections.values():
         #    projection.set_visuals(projection_style)

@@ -1,9 +1,7 @@
-from PyQt5 import QtWidgets, QtCore
-
-from kataja.singletons import qt_prefs, ctrl
+from kataja.singletons import ctrl
+from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
-from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 
 __author__ = 'purma'
 
@@ -40,4 +38,3 @@ class SemanticsPanel(Panel):
         semantics = ctrl.syntax.get_editable_semantics()
         self.semantics_text.setText(semantics)
         ctrl.graph_view.activateWindow()
-

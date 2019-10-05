@@ -1,9 +1,9 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl, prefs, running_environment
 from kataja.KatajaAction import KatajaAction
-from kataja.globals import DOCUMENT, SELECTION
+from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import PanelAction
+
 
 # ==== Class variables for KatajaActions:
 #
@@ -68,4 +68,3 @@ class ResetSettings(KatajaAction):
         :param level: int, level enum: 66 = SELECTED, 2 = FOREST, 3 = DOCUMENT, 4 = PREFS.
         """
         log.warning('not implemented: reset_settings')
-

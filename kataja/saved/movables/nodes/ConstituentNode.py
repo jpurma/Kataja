@@ -21,21 +21,20 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from collections import Iterable
 
 from PyQt5 import QtCore, QtGui
 
+import kataja.globals as g
+import kataja.ui_graphicsitems.TouchArea as TA
+import kataja.ui_widgets.buttons.OverlayButton as OB
 from kataja.ComplexLabel import ComplexLabel
 from kataja.SavedField import SavedField
 from kataja.parser.INodes import as_text, as_html
 from kataja.saved.movables.Node import Node
-import kataja.ui_graphicsitems.TouchArea as TA
-import kataja.ui_widgets.buttons.OverlayButton as OB
-from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.ui_widgets.embeds.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import coords_as_str, escape
-import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -533,7 +532,7 @@ class ConstituentNode(Node):
                 if fnode.locked_to_node is self:
                     fbr = fnode.future_children_bounding_rect()
                     nods.append((fnode, total_width - fbr.x()))
-                    total_width += fbr.width() # + 4
+                    total_width += fbr.width()  # + 4
                     if fnode.height > max_height:
                         max_height = fbr.height()
             if nods:
@@ -590,7 +589,7 @@ class ConstituentNode(Node):
                 y = max(y, yr)
         if self.gloss_node:
             self.gloss_node.lock_to_node(self, (0, y + self.gloss_node.height / 2 + 2))
-            #self.gloss_node.move_to(0, y)
+            # self.gloss_node.move_to(0, y)
 
     # ### Labels #############################################
     # things to do with traces:
@@ -680,10 +679,10 @@ class ConstituentNode(Node):
 
     # ### Paint overrides
 
-    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
+    def _calculate_inner_rect(self, min_w=0, min_h=0):
         if self.label_object.cn_shape == g.BRACKETED or self.label_object.cn_shape == g.SCOPEBOX:
-            extra_w = self.forest.width_map.get(self.uid, 0)
-        return super()._calculate_inner_rect(extra_w=extra_w)
+            min_w = self.forest.width_map.get(self.uid, 0)
+        return super()._calculate_inner_rect(min_w=min_w)
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with nodes it is

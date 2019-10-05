@@ -22,12 +22,11 @@
 #
 # ############################################################################
 
-import math
-
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
+
 from kataja.singletons import ctrl
 
 

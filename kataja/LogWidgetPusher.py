@@ -1,8 +1,8 @@
 import logging
 import queue
-
 import sys
-from PyQt5 import QtGui, QtCore
+
+from PyQt5 import QtCore
 
 MAX_LOG_SIZE = 20000
 
@@ -30,7 +30,7 @@ class MyReceiver(QtCore.QObject):
         QtCore.QObject.__init__(self, *args, **kwargs)
         self.queue = queue
 
-    @QtCore.pyqtSlot()
+    @QtCore.pyqtSlot(name='run')
     def run(self):
         while True:
             text = self.queue.get()
@@ -145,4 +145,4 @@ class LogWidgetPusher(logging.Handler):
             else:
                 levelname = f'<b>{modname}{record.levelname}:</b> '
             self.widget.append(tag + levelname + msg + end_tag)
-            #self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+            # self.widget.moveCursor(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)

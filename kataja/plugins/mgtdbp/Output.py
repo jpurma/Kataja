@@ -45,12 +45,15 @@ try:
     from mgtdbp.Feature import Feature
     from kataja.syntax.SyntaxState import SyntaxState
     from mgtdbp.LexNode import LexNode
+
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from Constituent import Constituent
-    from Feature import Feature
-    from LexNode import LexNode
+    from .Constituent import Constituent
+    from .Feature import Feature
+    from .LexNode import LexNode
+
+    SyntaxState = object
 
 DISCARD_DEAD_ENDS = True
 
@@ -70,18 +73,18 @@ class DerivationPrinter:
 
     def show_results(self, active_parse):
         if self.forest:
-            #if not self.kataja_lex_tree:
+            # if not self.kataja_lex_tree:
             #    self.kataja_lex_tree = self.prepare_kataja_lex_tree(self.lex_trees)
             ktree = self.build_kataja_tree_from_dnodes(active_parse.tree)
             syn_state = SyntaxState(tree_roots=[ktree],
                                     msg=active_parse.msg,
-                                    iteration=self.parse_count)
+                                    state_id=self.parse_count)
             self.forest.add_step(syn_state)
         else:
             idtree = self.build_id_tree_from_dnodes(active_parse.tree)
             self.add_derivation_step(idtree)
 
-            #print('dtree:', idtree.to_dtree())
+            # print('dtree:', idtree.to_dtree())
         active_parse.count = self.parse_count
         self.parse_count += 1
 
@@ -113,7 +116,7 @@ class DerivationPrinter:
             return p_key
 
         def add_edge(node):
-            if node.parent_lex_key: # it's leaf
+            if node.parent_lex_key:  # it's leaf
                 word = node.lex_key
             else:
                 word = None
@@ -148,11 +151,11 @@ class DerivationPrinter:
                     }
                     edges[r_key].append(d)
                     if r_key != right.lex_key:
-                        print('intermed. edge %s agrees w. %s' % r_key)
+                        print('intermed. edge %s agrees w. %s' % (r_key, right.lex_key))
                         print(node)
                 else:
                     print(fl)
-                    raise hell
+                    sys.exit()
 
             for i, part in enumerate(node.parts):
                 child_word = add_edge(part)
@@ -199,7 +202,7 @@ class DerivationPrinter:
         """ build the derivation tree that has parent as its root, and return it """
         build = {}
         top = None
-        #print('build_id_tree_from_dnodes: ', dnodes)
+        # print('build_id_tree_from_dnodes: ', dnodes)
         for node in dnodes:
             key = ''.join([str(p) for p in node.path])
             if key not in build:
@@ -351,7 +354,6 @@ class DerivationPrinter:
 
 
 def prepare_kataja_lex_tree(lex_trees):
-
     def as_feature(node):
         feat = node.feat or Feature('√' + (node.word or ''))
         feat.parts = [as_feature(part) for part in node.parts]
@@ -363,7 +365,6 @@ def prepare_kataja_lex_tree(lex_trees):
 
 
 def write_lexicon_graph_json(lex_trees, lex_file_name):
-
     filename = lex_file_name.rsplit('.', 1)[0] + '.js'
     nodes = []
     edges = []
@@ -392,7 +393,7 @@ def write_lexicon_graph_json(lex_trees, lex_file_name):
              'value': node.feat.name if node.feat else '',
              'sign': node.feat.sign if node.feat else None,
              'group': group
-        }
+             }
         nodes.append(n)
         for part in node.parts:
             p_id = as_json_node(part)
@@ -404,6 +405,7 @@ def write_lexicon_graph_json(lex_trees, lex_file_name):
             }
             edges.append(e)
         return node.key
+
     root = LexNode(parts=list(lex_trees.values()), key='center')
     as_json_node(root)
 

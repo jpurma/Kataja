@@ -133,4 +133,3 @@ class ChainManager:
             return string.ascii_letters[string.ascii_letters.index(max_letter) + 1]
         else:
             return str(max_number + 1)
-

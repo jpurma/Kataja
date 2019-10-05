@@ -25,8 +25,6 @@
 
 import math
 
-import itertools
-
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization, centered_node_position
 
@@ -64,9 +62,6 @@ class EquidistantElasticTree(BaseVisualization):
     def calculate_movement(self, node, other_nodes, heat):
         """ Try to keep the edge between start_point and end_point at a certain length. This has 
         the effect that positioning of edge magnets ends up adjusting the form of the graph. 
-        :param node:
-        :param other_nodes:
-        :return:
         """
         assert (not node.locked_to_node)
         assert (node.is_visible() and node.isVisible())

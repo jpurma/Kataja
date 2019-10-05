@@ -49,4 +49,3 @@ class GlowRing(QtWidgets.QGraphicsEllipseItem):
         """
         self.radius -= self.step_size
         self.setRect(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
-

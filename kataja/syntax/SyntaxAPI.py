@@ -1,8 +1,8 @@
-from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
 import kataja.globals as g
-from kataja.singletons import classes, ctrl
+from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
 from kataja.plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
+from kataja.singletons import classes, ctrl
 
 
 class SyntaxAPI(SavedObject):
@@ -128,6 +128,7 @@ class SyntaxAPI(SavedObject):
         :param node:
         :return:
         """
+
         def _pick_leaves(n):
             if n not in passed:
                 passed.add(n)
@@ -137,9 +138,10 @@ class SyntaxAPI(SavedObject):
                         _pick_leaves(c)
                 else:
                     leaves.append(n)
+
         leaves = []
         passed = set()
-        #passed.add(node)
+        # passed.add(node)
         for parent in node.get_parents():
             _pick_leaves(parent)
         return [l.syntactic_object for l in leaves]
@@ -150,6 +152,7 @@ class SyntaxAPI(SavedObject):
         :param node:
         :return:
         """
+
         def _pick_leaves(n):
             if n not in passed:
                 passed.add(n)
@@ -158,6 +161,7 @@ class SyntaxAPI(SavedObject):
                 if children:
                     for c in children:
                         _pick_leaves(c)
+
         leaves = []
         passed = set()
         passed.add(node)
@@ -207,7 +211,7 @@ class SyntaxAPI(SavedObject):
         if self.input_tree:
             roots = forest.parser.string_into_forest(str(self.input_tree))
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
-            #self.nodes_to_synobjs(forest, roots)
+            # self.nodes_to_synobjs(forest, roots)
 
     def set_display_mode(self, i):
         self.display_mode = i
@@ -336,6 +340,7 @@ class SyntaxAPI(SavedObject):
         :param linearization_type: 'implicit', 'kayne' etc. if empty, use rules set for this FL
         :return: list of leaf constituents ?
         """
+
         def _implicit(const, result):
             """ Linearization that relies on parent-child nodes to be implicitly ordered by constituent
                 implementation:
@@ -362,6 +367,7 @@ class SyntaxAPI(SavedObject):
         :param linearization_type: 'implicit', 'kayne' etc. if empty, use rules set for this FL.
         :return: 1 if a precedes b, -1 if b precedes b, 0 if cannot say
         """
+
         def _implicit(const, i, j, found_i=None, found_j=None):
             """ Precedence that relies on parent-child nodes to be implicitly ordered by constituent
                 implementation:
@@ -398,22 +404,6 @@ class SyntaxAPI(SavedObject):
         else:
             raise NotImplementedError
 
-    def feature_check(self, suitor, bride):
-        """ Check if the features(?) match(?)
-        :param suitor:
-        :param bride:
-        :return: bool
-        """
-        raise NotImplementedError
-
-    def c_commands(self, A, B):
-        """ Evaluate if A C-commands B
-        :param A:
-        :param B:
-        :return: bool
-        """
-        raise NotImplementedError
-
     def parse(self, sentence, silent=False):
         """ Returns structure (constituent or list of constituents) if given sentence can be parsed. Not
         necessary to implement.
@@ -431,7 +421,6 @@ class SyntaxAPI(SavedObject):
             if yes:
                 return True
         return False
-
 
     # Direct editing of FL constructs ##########################
     # these methods don't belong to assumed capabilities of FL, they are to allow Kataja editing
@@ -459,16 +448,6 @@ class SyntaxAPI(SavedObject):
         :return:
         """
         return self.features.get(key, None)
-
-    def construct(self, parent, children, purge_existing=True):
-        """ Sets up connections between constituents without caring if there are syntactic
-        operations to allow that
-        :param parent:
-        :param children:
-        :param purge_existing:
-        :return:
-        """
-        raise NotImplementedError
 
     def connect(self, parent, child, align=None):
         """ Tries to set a parent-child connection. It may be necessary to
@@ -513,18 +492,6 @@ class SyntaxAPI(SavedObject):
             parents = [x for x in self.constituents.values() if old_c in x.parts]
             for parent in parents:
                 self.replace(old_c, new_c, under_parent=parent)
-
-    def linearization_types(self):
-        """ Return available options for linearization
-        :return:
-        """
-        raise NotImplementedError
-
-    def merge_types(self):
-        """ Provide available merge types
-        :return:
-        """
-        raise NotImplementedError
 
     def create_feature(self, **kw):
         """ Create feature with provided values and return it

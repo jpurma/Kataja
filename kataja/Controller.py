@@ -25,21 +25,20 @@
 import sys
 from collections import abc
 
-from PyQt5 import QtCore
-
-from kataja.utils import caller
-
-# gc.set_debug(gc.DEBUG_LEAK)
-
+import kataja
+from kataja.parser.HTMLToINode import HTMLToINode
 # flags = (gc.DEBUG_COLLECTABLE |
 # gc.DEBUG_UNCOLLECTABLE |
 # gc.DEBUG_OBJECTS
 # )
 # gc.set_debug(flags)
 from kataja.parser.LatexToINode import LatexFieldToINode
-from kataja.parser.HTMLToINode import HTMLToINode
 from kataja.parser.PlainTextToINode import PlainTextToINode
 from kataja.parser.QDocumentToINode import QDocumentToINode
+from kataja.utils import caller
+
+
+# gc.set_debug(gc.DEBUG_LEAK)
 
 
 class Controller:
@@ -176,6 +175,7 @@ class Controller:
     @property
     def play(self) -> bool:
         return self.main.document.play
+
     # ******* Selection *******
 
     # trees and edges can be selected.
@@ -229,10 +229,6 @@ class Controller:
         return obj in self.selected
 
     def deselect_objects(self):
-        """
-
-        :param update_ui:
-        """
         if not self.selected:
             return
         for obj in self.selected:
@@ -241,10 +237,6 @@ class Controller:
         self.main.selection_changed.emit()
 
     def select(self, objs):
-        """
-
-        :param objs:
-        """
         if objs == self.selected:
             return
         had_objs = bool(self.selected)

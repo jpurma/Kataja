@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from kataja.globals import UI_FONT
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import Panel
 
 __author__ = 'purma'
@@ -21,13 +20,6 @@ class HelpPanel(Panel):
     """
 
     def __init__(self, name, default_position='bottom', parent=None, folded=False):
-        """
-        All of the panel constructors follow the same format so that the construction can be automated.
-        :param name: Title of the panel and the key for accessing it
-        :param default_position: 'bottom', 'right'...
-        :param parent: self.main
-        :param ui_manager: pass a dictionary where buttons from this panel will be added
-        """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
         inner.setContentsMargins(4, 4, 4, 4)
@@ -52,4 +44,3 @@ class HelpPanel(Panel):
 
     def text(self):
         return self.browser.toHtml()
-

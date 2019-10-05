@@ -22,9 +22,7 @@
 #
 # ############################################################################
 import math
-import random
 
-import kataja.globals as g
 from kataja.Visualization import BaseVisualization, centered_node_position
 
 
@@ -41,32 +39,19 @@ class SymmetricElasticTree(BaseVisualization):
         self.use_gravity = False
 
     def prepare(self, forest, reset=True):
-        """ If loading a state, don't reset.
-        :param forest:Forest
-        :param reset:boolean
-        """
+        """ If loading a state, don't reset. """
         self.forest = forest
         if reset:
             self.reset_nodes()
         self.validate_cn_shapes()
 
     def reset_node(self, node):
-        """
-
-        :param node:
-        """
         node.update_label()
         node.update_visibility()
         node.physics_x = True
         node.physics_y = True
 
     def calculate_movement(self, node, other_nodes, heat):
-        """
-
-        :param node:
-        :param other_nodes:
-        :return:
-        """
 
         def similar_edges_up(edge):
             c = 0

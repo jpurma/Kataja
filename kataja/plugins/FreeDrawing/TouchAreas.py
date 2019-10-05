@@ -1,15 +1,14 @@
-
 import math
+from math import sqrt
 
 from PyQt5 import QtCore, QtGui
 
 import kataja.globals as g
 from kataja.Shapes import draw_plus, draw_leaf, SHAPE_PRESETS
 from kataja.singletons import ctrl, prefs
-from kataja.uniqueness_generator import next_available_type_id
 from kataja.ui_graphicsitems.TouchArea import TouchArea, AbstractBelowTouchArea
+from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple
-from math import sqrt
 
 symbol_radius = 10
 symbol_radius_sqr = sqrt(2) * symbol_radius
@@ -78,14 +77,7 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -137,14 +129,7 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
             self.end_point = ex, ey
         self.setPos(ex, ey)
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -213,14 +198,7 @@ class MergeToTop(AbstractBranchingTouchArea):
         else:
             return QtCore.QRectF(0, 0, dx, dy)
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -285,7 +263,6 @@ class AbstractJointedTouchArea(TouchArea):
             assert self.end_point
         return self._path.controlPointRect() | LEAF_BR | PLUS_BR.translated(1.2 * symbol_radius, 0)
 
-
     def shape(self):
         """ Shape is used for collisions and it shouldn't go over the originating node. So use
             only the last half, starting from the "knee" of the shape.
@@ -316,7 +293,6 @@ class AbstractJointedTouchArea(TouchArea):
         r = QtCore.QRectF(x, y, w, h)
         path.addRect(r)
         return path
-
 
     def drag(self, event):
         self._dragging = True
@@ -383,14 +359,7 @@ class LeftAddTop(AbstractJointedTouchArea):
             'position': 'top_left'
         })
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -476,7 +445,6 @@ class RightAddSibling(AbstractRightBranching):
         })
 
 
-
 class RightAddInnerSibling(AbstractRightBranching):
     __qt_type_id__ = next_available_type_id()
 
@@ -520,14 +488,7 @@ class RightAddTop(AbstractJointedTouchArea):
             'position': 'top_right'
         })
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -568,7 +529,7 @@ class AbstractChildTouchArea(TouchArea):
 
     def drag(self, event):
         self._dragging = True
-        self.update_end_points(end_point=to_tuple(event.scenePos()))
+        self.update_end_points()
 
 
 class AbstractLeftAddChild(AbstractChildTouchArea):
@@ -598,14 +559,7 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         adjust = []
         self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -699,14 +653,7 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         adjust = []
         self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()

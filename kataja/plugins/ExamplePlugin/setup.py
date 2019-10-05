@@ -1,5 +1,5 @@
 # coding=utf-8
-from ExamplePlugin.HiConstituent import HiConstituent
+from kataja.plugins.ExamplePlugin.HiConstituent import HiConstituent
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -11,6 +11,7 @@ from ExamplePlugin.HiConstituent import HiConstituent
 
 # plugin_classes = [PythonClass,...]
 plugin_classes = [HiConstituent]
+
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods

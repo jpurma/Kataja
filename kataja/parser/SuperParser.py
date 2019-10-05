@@ -1,8 +1,8 @@
 import ast
 
 from kataja.parser.HTMLToINode import HTMLToINode
-from kataja.parser.LatexToINode import LatexToINode
 from kataja.parser.INodes import IParserNode, ITextNode, ICommandNode
+from kataja.parser.LatexToINode import LatexToINode
 
 
 class SuperParser:
@@ -203,8 +203,8 @@ class SuperParser:
                 s += item
             elif isinstance(item, str):
                 if open_tags == 0 and (not open_bitag) and (
-                            (self.divider == ' ' and item.isspace()) or item == self.divider) and (
-                                max_splits == 0 or max_splits > splits):
+                        (self.divider == ' ' and item.isspace()) or item == self.divider) and (
+                        max_splits == 0 or max_splits > splits):
                     splits += 1
                     s = s.strip()
                     if s:
@@ -228,7 +228,7 @@ class SuperParser:
         """ Turn text into IParserNodes. IParserNodes are flexible pre-constituents that have
         the field texts converted to ITextNodes or ICommandNodes.
             :param parts_list: list of strings or lists
-            :tidy_up: tidy all contained inodes, do it once
+            :param tidy_up: tidy all contained inodes, do it once
         """
 
         def has_triangle(inode):

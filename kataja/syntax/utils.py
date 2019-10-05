@@ -148,6 +148,3 @@ def save_features(obj, saved, d):
         sob[feat] = save_feature(feat)
     d[key] = sob
     return key
-
-
-

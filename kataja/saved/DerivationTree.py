@@ -22,12 +22,12 @@
 #
 # ############################################################################
 
-from kataja.singletons import log, ctrl
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
+from kataja.saved.DerivationStep import DerivationStep
+from kataja.singletons import log, ctrl
 from kataja.syntactic_state_to_nodes import syntactic_state_to_nodes
 from kataja.syntax.SyntaxState import SyntaxState
-from kataja.saved.DerivationStep import DerivationStep
 
 
 class DerivationTree(SavedObject):
@@ -122,7 +122,7 @@ class DerivationTree(SavedObject):
         if state_id in self.branch:
             self.current_step_index = self.branch.index(state_id)
         else:
-            self.current_branch_id =  self._find_branch_for(state_id)
+            self.current_branch_id = self._find_branch_for(state_id)
             self.current_branch_index = self.branches.index(self.current_branch_id)
             self.build_active_branch()
             self.current_step_index = self.branch.index(state_id)
@@ -168,11 +168,6 @@ class DerivationTree(SavedObject):
             self.save_derivation_step(syn_state)
         else:
             self.save_and_create_derivation_step(syn_state)
-
-    def jump_to_starting_derivation(self):
-        if self.derivation_step_index is None:
-            self.derivation_step_index = len(self.derivation_steps) - 1
-        self.jump_to_derivation_step(self.derivation_step_index)
 
     def jump_to_first_step(self):
         self.jump_to_derivation_step(0)
@@ -226,7 +221,6 @@ class DerivationTree(SavedObject):
     #
     # def find_previous_matching_parse(self):
     #     return self._find_matching_parse(reverse=True)
-
 
     # ############## #
     #                #

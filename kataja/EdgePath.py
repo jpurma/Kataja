@@ -1,7 +1,9 @@
-from PyQt5 import QtCore, QtGui
-from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 import math
+
+from PyQt5 import QtCore, QtGui
+
 import kataja.globals as g
+from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW, \
     EDGE_OPEN_DOMINANT, EDGE_RECEIVING_NOW_DOMINANT
 
@@ -249,8 +251,10 @@ class EdgePath:
         lower = self.edge.end_links_to
         d = 0
         if lower and self.edge.end.can_cascade_edges():
-            dx = self.computed_start_point[0] - self.computed_end_point[0]
-            dy = self.computed_start_point[1] - self.computed_end_point[1]
+            cepx, cepy = self.computed_end_point
+            cspx, cspy = self.computed_start_point
+            dx = cspx - cepx
+            dy = cspy - cepy
             if dy != 0:
                 d = dx / abs(dy)
                 d = max(-1.4, min(1.4, d))
@@ -280,7 +284,7 @@ class EdgePath:
             if connection_style == CONNECT_TO_BORDER:
                 connection_style = CONNECT_TO_SIMILAR
 
-            #if connection_style == CONNECT_TO_BORDER and start.is_empty():
+            # if connection_style == CONNECT_TO_BORDER and start.is_empty():
             #    connection_style = CONNECT_TO_SIMILAR
             if connection_style == SPECIAL:
                 csp = start.get_special_connection_point(sx, sy, ex, ey, start=True,
@@ -366,7 +370,7 @@ class EdgePath:
             self.fat_path = self.draw_path
         self.cached_cp_rect = self.draw_path.controlPointRect().adjusted(-2, -2, 2, 2)
 
-    def get_point_at(self, d: float) -> 'QPointF':
+    def get_point_at(self, d: float) -> 'QtCore.QPointF':
         """ Get coordinates at the percentage of the length of the path.
         :param d: float
         :return: QPoint
@@ -412,7 +416,7 @@ class EdgePath:
             return
         symbol = self.edge.start_symbol
         x, y = self.computed_start_point
-        path = self.draw_path #QtGui.QPainterPath(QtCore.QPointF(x, y))
+        path = self.draw_path  # QtGui.QPainterPath(QtCore.QPointF(x, y))
         path.moveTo(x, y)
 
         if symbol == 1:
@@ -446,7 +450,7 @@ class EdgePath:
                     break
         elif symbol == EDGE_CAN_INSERT:
             path.lineTo(x, y - 4)
-        #self.draw_path += path
+        # self.draw_path += path
 
     def make_arrowhead_at_start(self, uses_pen):
         """ Assumes that the path exists already, creates arrowhead path to its beginning.

@@ -22,12 +22,13 @@
 #
 # ############################################################################
 
+import os
+import time
+
+from kataja.plugins.MultiTree.Parser import read_lexicon, linearize
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import ctrl, classes
-from kataja.plugins.MultiTree.Parser import read_lexicon, linearize
-import os
-import time
 
 
 class Document(KatajaDocument):
@@ -55,9 +56,6 @@ class Document(KatajaDocument):
 
     def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
-
-        :param filename: not used
-        :param clear: start with empty
         """
         filename = filename or Document.get_default_treeset_file()
 
@@ -90,6 +88,7 @@ class Document(KatajaDocument):
         parser.lexicon = self.lexicon
         succs = 0
         fails = 0
+        i = 0
         t = time.time()
         for i, sentence in enumerate(self._sentences, 1):
             print(f'{i}. "{sentence}"')

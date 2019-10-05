@@ -13,9 +13,10 @@ python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 """
 
+from os import path, walk
+
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-from os import path, walk
 
 manually_excluded = ['kataja.plugins.PCBPlugin3', 'kataja.plugins.PCBPlugin4']
 
@@ -177,7 +178,8 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'venv', '.git'] + symlinked_plugins + manually_excluded),  # Required
+    packages=find_packages(
+        exclude=['contrib', 'docs', 'tests', 'venv', '.git'] + symlinked_plugins + manually_excluded),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is

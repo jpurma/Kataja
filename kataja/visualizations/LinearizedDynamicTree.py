@@ -22,8 +22,8 @@
 #
 # ############################################################################
 
+from kataja.globals import TOP, CONSTITUENT_NODE
 from kataja.singletons import prefs, log
-from kataja.globals import NORMAL, TOP, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 

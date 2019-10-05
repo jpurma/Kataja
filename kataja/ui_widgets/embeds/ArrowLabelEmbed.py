@@ -1,11 +1,11 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtGui
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs
+from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -16,9 +16,7 @@ class ArrowLabelEmbed(UIEmbed):
         because there may be problems if the host item is not subclass of Saved. Use self.label
         to get access to edge.label_item.
         :param parent:
-        :param ui_manager:
         :param edge:
-        :param ui_key:
         """
 
         UIEmbed.__init__(self, parent, edge, 'Edit edge text')

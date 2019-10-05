@@ -1,5 +1,3 @@
-
-from kataja.singletons import ctrl, classes, qt_prefs
 from kataja.SemanticsItem import SemanticsItem
 
 

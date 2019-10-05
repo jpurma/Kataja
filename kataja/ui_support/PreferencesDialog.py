@@ -22,35 +22,35 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtWidgets
 
+from kataja.singletons import prefs, ctrl
 from kataja.ui_support.SettingsFields import FieldBuilder
-from kataja.singletons import prefs, qt_prefs, ctrl
 
 
 class PreferencesDialog(QtWidgets.QDialog):
-    """
-
-    """
-
     def __init__(self, main):
+        # noinspection PyArgumentList
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
         self.setWindowTitle('Preferences')
         self.main = main
+        # noinspection PyArgumentList
         self.left_area = QtWidgets.QWidget()
         left_layout = QtWidgets.QVBoxLayout()
         self.listwidget = QtWidgets.QListWidget()
         self.listwidget.setMaximumWidth(150)
+        # noinspection PyArgumentList
         left_layout.addWidget(self.listwidget)
         self.reset_button = QtWidgets.QPushButton('Reset to defaults')
         self.reset_button.clicked.connect(ctrl.main.reset_preferences)
+        # noinspection PyArgumentList
         left_layout.addWidget(self.reset_button)
         self.left_area.setLayout(left_layout)
 
         self.stackwidget = QtWidgets.QStackedLayout()
         self.pages = {}
 
-        for page in prefs._tab_order:
+        for page in prefs.tab_order:
             self.listwidget.addItem(page)
             widget, layout = self.get_page(page)
             self.stackwidget.addWidget(widget)
@@ -58,6 +58,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.listwidget.currentRowChanged.connect(self.stackwidget.setCurrentIndex)
         self.listwidget.setCurrentRow(0)
         lo = QtWidgets.QHBoxLayout()
+        # noinspection PyArgumentList
         lo.addWidget(self.left_area)
         lo.addLayout(self.stackwidget)
         self.setLayout(lo)
@@ -109,6 +110,7 @@ class PreferencesDialog(QtWidgets.QDialog):
     def get_page(self, key):
         if key in self.pages:
             return self.pages[key], self.pages[key].layout()
+        # noinspection PyArgumentList
         new_page = QtWidgets.QWidget()
         layout = QtWidgets.QFormLayout()
         self.pages[key] = new_page

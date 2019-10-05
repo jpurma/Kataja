@@ -21,9 +21,9 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import random
 import string
 
-import random
 from PyQt5 import QtCore
 
 import kataja.globals as g
@@ -31,8 +31,8 @@ from kataja.errors import ForestError
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Arrow import Arrow
-from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Image import Image
+from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes, log
 
 
@@ -70,8 +70,6 @@ class ForestDrawing:
     def copy_node_position(source, target):
         """ Helper method for newly created items. Takes other item and copies movement related
         attributes from it (physics settings, locks, adjustment etc).
-        :param other:
-        :return:
         """
         parent = target.parentItem()
         if parent is source.parentItem():
@@ -329,9 +327,6 @@ class ForestDrawing:
 
     def delete_edge(self, edge, touch_nodes=True, fade=True):
         """ remove from scene and remove references from nodes
-        :param edge:
-        :param ignore_consequences: don't try to fix things like connections,
-        just delete.
         """
         # block circular deletion calls
         if edge in self._marked_for_deletion:
@@ -677,7 +672,7 @@ class ForestDrawing:
             node = leaves[key]
             for part in parts:
                 if (part.startswith("'") and part.endswith("'")) or (
-                            part.startswith('"') and part.endswith('"')):
+                        part.startswith('"') and part.endswith('"')):
                     # gloss node
                     label = part[1:-1]
                     self.create_gloss_node(label=label, host=node)
@@ -693,4 +688,4 @@ class ForestDrawing:
                     if len(fparts) > 1:
                         value = fparts[1]
                     self.create_feature_node(label=fparts[0], value=value, family=family,
-                                                       host=node)
+                                             host=node)

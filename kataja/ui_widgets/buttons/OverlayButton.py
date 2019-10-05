@@ -24,9 +24,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_graphicsitems.TouchArea import TouchArea
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.utils import colored_image
 
@@ -73,7 +71,9 @@ class OverlayButton(PanelButton):
             image2 = self.colored_image_from_drawing(c.lighter())
         else:
             return
+        # noinspection PyArgumentList
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        # noinspection PyArgumentList
         self.hover_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image2))
         self.setIcon(self.normal_icon)
 
@@ -135,7 +135,7 @@ class VisButton(OverlayButton):
             self.setMaximumSize(size, size)
         self.sub_type = subtype
 
-    def update_colors(self):
+    def update_colors(self, color_key=None):
         pass
 
 
@@ -324,4 +324,3 @@ class LockButton(OverlayButton):
 
     def fade_out(self, s=600):
         super().fade_out(s=s)
-

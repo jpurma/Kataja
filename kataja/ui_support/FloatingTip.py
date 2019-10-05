@@ -1,7 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.singletons import qt_prefs
-
 stylesheet = """font-size: 10pt; padding: 4px;"""
 
 

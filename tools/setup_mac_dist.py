@@ -17,8 +17,9 @@ The same script can be used for Windows build ...todo...
 import os
 import shutil
 import sys
-from setuptools import setup
 from subprocess import call
+
+from setuptools import setup
 
 try:
     import postsetup
@@ -119,7 +120,6 @@ if sys.platform == 'darwin':
 
 
 elif sys.platform == 'win32':
-    import py2exe
     from distutils.core import setup
 
     OPTIONS = {

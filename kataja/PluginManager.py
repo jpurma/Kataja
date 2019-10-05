@@ -1,20 +1,20 @@
-
-from kataja.ui_support.ErrorDialog import ErrorDialog
-from kataja.singletons import ctrl, prefs, log, classes
-import os
-import sys
-import json
-
 import importlib
 import importlib.util
+import json
+import os
+import sys
 import traceback
+
+from kataja.singletons import ctrl, prefs, log, classes
+from kataja.ui_support.ErrorDialog import ErrorDialog
+
 
 # Plugins ################################
 
 class PluginManager:
     def __init__(self):
         self.available_plugins = {}
-        self.active_plugin_setup = {}
+        self.active_plugin_setup = None
         self.active_plugin_path = ''
 
     def find_plugins(self, plugins_path):
@@ -31,9 +31,11 @@ class PluginManager:
         base_ends = len(plugins_path.split(os.sep))
         for root, dirs, files in os.walk(plugins_path, followlinks=True):
             path_parts = root.split(os.sep)
-            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith(
-                    '__') and 'plugin.json' in files:
+            # noinspection PyTypeChecker
+            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith('__') \
+                    and 'plugin.json' in files:
                 success = False
+                data = {}
                 try:
                     plugin_file = open(os.path.join(root, 'plugin.json'), 'r')
                     data = json.load(plugin_file)
@@ -59,8 +61,6 @@ class PluginManager:
             self.disable_current_plugin()
             ctrl.document.load_default_forests()
             return "Disabled plugin '%s'" % plugin_key
-            return ""
-        pass
 
     def enable_plugin(self, plugin_key, reload=False):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
@@ -106,7 +106,6 @@ class PluginManager:
                                              replaced=classes.replaced_actions)
         dir_path = os.path.dirname(os.path.realpath(self.active_plugin_setup.__file__))
         if hasattr(self.active_plugin_setup, 'help_file'):
-
             ctrl.ui.set_help_source(dir_path, self.active_plugin_setup.help_file)
         if hasattr(self.active_plugin_setup, 'start_plugin'):
             self.active_plugin_setup.start_plugin(self, ctrl, prefs)
@@ -117,8 +116,7 @@ class PluginManager:
         ctrl.ui.update_plugin_menu()
 
     def disable_current_plugin(self):
-        """ Disable the current plugin and load the default trees instead.
-        :param clear: if True, have empty treeset, if False, try to load default kataja treeset."""
+        """ Disable the current plugin and load the default trees instead. """
         if not self.active_plugin_setup:
             print('bailing out disable plugin: no active plugin recognised')
             return

@@ -24,7 +24,6 @@
 
 import kataja.globals as g
 from kataja.saved.movables.Node import Node
-from kataja.utils import time_me
 
 
 class Grid:
@@ -146,7 +145,7 @@ class Grid:
                     self.set(nx, ny, 1)
             self.set(x, y, item)
         else:
-            #print('drawing point to ', x, y)
+            # print('drawing point to ', x, y)
             while x > self.width - 1:
                 for row in self.rows:
                     row.append(0)
@@ -222,7 +221,7 @@ class Grid:
         for i, item in enumerate(row):
             if item:
                 found = i
-        return found # - self.x_adjustment
+        return found  # - self.x_adjustment
 
     def first_filled_column(self, y):
         """
@@ -233,7 +232,7 @@ class Grid:
         row = self.raw_row(y)
         for i, item in enumerate(row):
             if item:
-                return i #- self.x_adjustment
+                return i  # - self.x_adjustment
         return None
 
     def insert_row(self):
@@ -265,7 +264,7 @@ class Grid:
         path = []
         dx = end_x - start_x
         dy = end_y - start_y
-        if dx == 0: # simple case, line straight up or down, but handled separately to avoid division by zero
+        if dx == 0:  # simple case, line straight up or down, but handled separately to avoid division by zero
             if dy < 0:
                 step = -1
             else:

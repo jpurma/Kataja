@@ -59,41 +59,43 @@ class SavedField(object):
         self.watcher = watcher
 
     def __get__(self, obj, objtype=None):
-        return obj._saved.get(self.name, None)
+        return obj.get_saved().get(self.name, None)
 
     def __set__(self, obj, value):
         if self.before_set:
             value = self.before_set(obj, value)
+        saved = obj.get_saved()
         if ctrl.undo_disabled:
-            if self.name in obj._saved:
-                old_value = obj._saved[self.name]
-                obj._saved[self.name] = value
+            if self.name in saved:
+                old_value = saved[self.name]
+                saved[self.name] = value
                 if old_value != value:
                     if self.if_changed:
                         self.if_changed(obj, value)
                     if self.watcher:
                         self.watcher.emit()
             else:
-                obj._saved[self.name] = value
+                saved[self.name] = value
                 if self.if_changed:
                     self.if_changed(obj, value)
                 if self.watcher:
                     self.watcher.emit()
-        elif self.name in obj._saved:
-            old = obj._saved[self.name]
+        elif self.name in saved:
+            old = saved[self.name]
             if old != value:
-                if not obj._history:
+                history = obj.get_history()
+                if not history:
                     ctrl.undo_pile.add(obj)
-                    obj._history[self.name] = old
-                elif self.name not in obj._history:
-                    obj._history[self.name] = old
-                obj._saved[self.name] = value
+                    history[self.name] = old
+                elif self.name not in history:
+                    history[self.name] = old
+                saved[self.name] = value
                 if self.if_changed:
                     self.if_changed(obj, value)
                 if self.watcher:
                     self.watcher.emit()
         else:
-            obj._saved[self.name] = value
+            saved[self.name] = value
             if self.if_changed:
                 self.if_changed(obj, value)
             if self.watcher:
@@ -111,9 +113,8 @@ class SavedFieldWithGetter(SavedField):
         self.getter = getter
 
     def __get__(self, obj, objtype=None):
-        value = obj._saved[self.name]
+        value = obj.get_saved()[self.name]
         if self.getter:
             return self.getter(obj, value)
         else:
             return value
-

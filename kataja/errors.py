@@ -19,4 +19,3 @@ class TouchAreaError(Exception):
 
 class UIError(Exception):
     pass
-

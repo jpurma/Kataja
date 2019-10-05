@@ -1,8 +1,8 @@
 # coding=utf-8
 from PyQt5 import QtGui
 
-from kataja.singletons import ctrl, prefs, running_environment, log
 from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl, log
 
 
 # ==== Class variables for KatajaActions:
@@ -132,6 +132,7 @@ class PreviousParse(KatajaAction):
     def enabler(self):
         dt = ctrl.forest.derivation_tree
         return ctrl.forest and len(dt.branches) > 1
+
 
 #
 # class NextMatchingParse(KatajaAction):

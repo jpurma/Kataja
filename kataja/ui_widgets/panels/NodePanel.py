@@ -1,5 +1,3 @@
-from PyQt5 import QtWidgets
-
 from kataja.singletons import ctrl, classes, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.buttons.EyeButton import EyeButton

@@ -7,7 +7,6 @@ class HiConstituent(BaseConstituent):
     """ HiConstituent is a slight modification from BaseConstituent.
     Everything that is not explicitly defined here is inherited from parent class."""
 
-
     def __init__(self, **kw):
         """
          """
@@ -35,7 +34,7 @@ class HiConstituent(BaseConstituent):
         html += ', hi: ' + self.hi
         return html
 
-    def copy(self):
+    def copy(self, done=None):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent
         """

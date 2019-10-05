@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl, prefs
 from kataja.KatajaAction import KatajaAction, MediatingAction
+from kataja.singletons import ctrl, prefs
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
@@ -53,7 +53,7 @@ class ManagePlugins(KatajaAction):
         if not ctrl.ui.preferences_dialog:
             ctrl.ui.preferences_dialog = PreferencesDialog(ctrl.main)
         ctrl.ui.preferences_dialog.open()
-        i = prefs._tab_order.index('Plugins')
+        i = prefs.tab_order.index('Plugins')
         ctrl.ui.preferences_dialog.listwidget.setCurrentRow(i)
         ctrl.ui.preferences_dialog.stackwidget.setCurrentIndex(i)
 

@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl, prefs, running_environment
 from kataja.KatajaAction import KatajaAction
-from kataja.globals import DOCUMENT, SELECTION
+from kataja.singletons import ctrl
+
 
 # ==== Class variables for KatajaActions:
 #

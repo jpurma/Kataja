@@ -1,8 +1,8 @@
-from kataja.syntax.SyntaxAPI import SyntaxAPI
-from kataja.SavedField import SavedField
 import kataja.globals as g
-from kataja.singletons import classes
+from kataja.SavedField import SavedField
 from kataja.plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
+from kataja.singletons import classes
+from kataja.syntax.SyntaxAPI import SyntaxAPI
 
 
 class EditableSyntax(SyntaxAPI):
@@ -125,6 +125,7 @@ class EditableSyntax(SyntaxAPI):
         :param node:
         :return:
         """
+
         def _pick_leaves(n):
             if n not in passed:
                 passed.add(n)
@@ -134,9 +135,10 @@ class EditableSyntax(SyntaxAPI):
                         _pick_leaves(c)
                 else:
                     leaves.append(n)
+
         leaves = []
         passed = set()
-        #passed.add(node)
+        # passed.add(node)
         for parent in node.get_parents():
             _pick_leaves(parent)
         return [l.syntactic_object for l in leaves]
@@ -312,6 +314,7 @@ class EditableSyntax(SyntaxAPI):
         :param linearization_type: 'implicit', 'kayne' etc. if empty, use rules set for this FL
         :return: list of leaf constituents ?
         """
+
         def _implicit(const, result):
             """ Linearization that relies on parent-child nodes to be implicitly ordered by constituent
                 implementation:
@@ -338,6 +341,7 @@ class EditableSyntax(SyntaxAPI):
         :param linearization_type: 'implicit', 'kayne' etc. if empty, use rules set for this FL.
         :return: 1 if a precedes b, -1 if b precedes b, 0 if cannot say
         """
+
         def _implicit(const, i, j, found_i=None, found_j=None):
             """ Precedence that relies on parent-child nodes to be implicitly ordered by constituent
                 implementation:
@@ -407,7 +411,6 @@ class EditableSyntax(SyntaxAPI):
             if yes:
                 return True
         return False
-
 
     # Direct editing of FL constructs ##########################
     # these methods don't belong to assumed capabilities of FL, they are to allow Kataja editing

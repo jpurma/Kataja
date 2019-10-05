@@ -49,15 +49,16 @@ button:active {
   color: rgb(147, 161, 161);
 }
 
+
 </style>
-<body >
+<body>
 <div class="buttons">
-  <button id="prev_tree" onclick="prevTree()">←</button>
-  <span id="tree_n">0</span>
-  <button id="next_tree" onclick="nextTree()">→</button>
-  <button id="prev_der" onclick="prevStep()">-</button>
-  <span id="step_n">0</span>
-  <button id="next_der" onclick="nextStep()">+</button>
+    <button id="prev_tree" onclick="prevTree()">←</button>
+    <span id="tree_n">0</span>
+    <button id="next_tree" onclick="nextTree()">→</button>
+    <button id="prev_der" onclick="prevStep()">-</button>
+    <span id="step_n">0</span>
+    <button id="next_der" onclick="nextStep()">+</button>
 </div>
 <svg width="2880" height="1920"></svg>
 </body>
@@ -461,5 +462,6 @@ function navKeys(e) {
 }
 
 document.onkeydown = navKeys;
+
 
 </script>

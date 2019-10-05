@@ -1,19 +1,11 @@
 from PyQt5 import QtWidgets
 
-from kataja.singletons import ctrl, qt_prefs
-from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
+from kataja.singletons import ctrl
+from kataja.utils import open_symbol_data
 
 
 class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
-    """
-
-    :param parent:
-    :param tip:
-    :param font:
-    :param prefill:
-    """
-
     def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None):
         UIWidget.__init__(self, tooltip=tooltip)
         QtWidgets.QPlainTextEdit.__init__(self, parent)

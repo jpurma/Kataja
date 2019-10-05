@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+
 from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
 from kataja.ui_widgets.Panel import Panel
@@ -11,13 +12,6 @@ class InputPanel(Panel):
     """ Enter the sentence or structure to parse """
 
     def __init__(self, name, default_position='bottom', parent=None, folded=False):
-        """
-        All of the panel constructors follow the same format so that the construction can be automated.
-        :param name: Title of the panel and the key for accessing it
-        :param default_position: 'bottom', 'right'...
-        :param parent: self.main
-        :param ui_manager: pass a dictionary where buttons from this panel will be added
-        """
         Panel.__init__(self, name, default_position, parent, folded)
         ctrl.main.forest_changed.connect(self.prepare_input)
         layout = self.vlayout

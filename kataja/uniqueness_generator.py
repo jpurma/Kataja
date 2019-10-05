@@ -1,4 +1,3 @@
-
 type_id = 65536
 uid = 0
 ui_key = 0

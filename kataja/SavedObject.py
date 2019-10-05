@@ -1,5 +1,4 @@
 import copy
-import sys
 import types
 from collections import Iterable
 
@@ -9,9 +8,9 @@ from PyQt5.QtCore import QPointF, QPoint
 from kataja.SavedField import SavedField
 from kataja.globals import CREATED, DELETED
 from kataja.parser.INodes import ITextNode
-from kataja.singletons import ctrl, classes, log
-from kataja.utils import to_tuple, time_me
+from kataja.singletons import ctrl, classes
 from kataja.uniqueness_generator import next_available_uid
+from kataja.utils import to_tuple
 
 __author__ = 'purma'
 ALLOW_SETS = True
@@ -60,6 +59,15 @@ class SavedObject(object):
 
     def __repr__(self):
         return super().__repr__() + f'(uid:{self.uid})'
+
+    def get_settings(self):
+        return self._settings
+
+    def get_saved(self):
+        return self._saved
+
+    def get_history(self):
+        return self._history
 
     def copy(self):
         """ Make a new object of same type and copy its attributes.
@@ -177,6 +185,7 @@ class SavedObject(object):
         """ Move to later version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old,
         new) -pairs
+        :param transition_type: create/delete/modify, some constants from globals
         :return: None
         """
         # print('--- move to later for ', self, ' ----------')
@@ -189,11 +198,8 @@ class SavedObject(object):
         self.after_model_update(transitions.keys(), transition_type)
 
     def after_model_update(self, changed_fields, transition_type):
-        """ Compute derived effects of updated values in sensible order.
-        :param updated_fields: field keys of updates
-        :param transition_type: 0:edit, 1:CREATED, -1:DELETED
-        :return: None
-        """
+        """ Compute derived effects of updated values in sensible order. """
+        pass
 
     def can_have_setting(self, key):
         return key in self.allowed_settings
@@ -250,7 +256,7 @@ class SavedObject(object):
                 result = tuple(result)
                 return result
             elif isinstance(data, set):
-                #log.warn(f'attempting to simplify a set -- sets are not compatible with JSON: {data}')
+                # log.warn(f'attempting to simplify a set -- sets are not compatible with JSON: {data}')
                 if ALLOW_SETS:
                     result = set()
                     for o in data:
@@ -309,9 +315,6 @@ class SavedObject(object):
     def load_objects(self, data):
         """ Load and restore objects starting from given obj (probably Forest
         or KatajaMain instance)
-        :param data:
-        :param kataja_main:
-        :param self:
         """
         full_map = {}
 
@@ -319,10 +322,7 @@ class SavedObject(object):
         #  existing objects.
         # This is to avoid recreating those objects. We just want to modify them
         def map_existing(obj):
-            """ Take note of existing objects, as undo? will overwrite these.
-            :param obj:
-            :return:
-            """
+            """ Take note of existing objects, as undo? will overwrite these. """
             if isinstance(obj, dict):
                 for item in obj.values():
                     map_existing(item)
@@ -336,7 +336,7 @@ class SavedObject(object):
             key = getattr(obj, 'uid', '')
             if key and key not in full_map:
                 full_map[key] = obj
-                for item in obj._saved.values():
+                for item in obj.get_saved().values():
                     map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object
@@ -349,7 +349,7 @@ class SavedObject(object):
         # objects need to be finalized after setting values, do this only once per load.
         for item in restored.values():
             if hasattr(item, 'after_init'):
-                #print('restoring item, calling after_init for ', type(item), item)
+                # print('restoring item, calling after_init for ', type(item), item)
                 item.after_init()
 
     def restore(self, obj_key, full_data, full_map, restored):
@@ -396,7 +396,7 @@ class SavedObject(object):
             :param data:
             :return:
             """
-            #print('inflating %s in %s' % (repr(data), self))
+            # print('inflating %s in %s' % (repr(data), self))
             if data is None:
                 return data
             elif isinstance(data, (int, float)):

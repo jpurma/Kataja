@@ -2,11 +2,11 @@ from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.SelectionBox import SelectionBox
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
-from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
 
 __author__ = 'purma'
 
@@ -101,4 +101,3 @@ class ColorPanel(Panel):
         """
         self.update_available_themes()
         super().showEvent(event)
-

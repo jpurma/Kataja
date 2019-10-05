@@ -31,7 +31,6 @@ GUESS_FROM_INPUT = 99
 # ## Our custom signals
 
 
-
 # Alignment of edges
 NO_ALIGN = 0  # default
 LEFT = 1  # ordered left edge
@@ -57,6 +56,7 @@ CUSTOM_FONT3 = 'custom3'
 # Control point roles
 START_POINT = 'start'
 END_POINT = 'end'
+MIDDLE_POINT = 'middle'
 LABEL_START = 'label_start'
 CURVE_ADJUSTMENT = 'adjust'
 
@@ -141,6 +141,7 @@ EDGE_RECEIVING_NOW_DOMINANT = 7
 # Extra edge visibility rules
 NONE = 0
 HIDE_UNJUSTIFIED_EDGES = 1
+
 
 class ViewUpdateReason(Enum):
     """ Reasons for updating viewport """

@@ -27,9 +27,9 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.singletons import ctrl, qt_prefs
-import kataja.utils as utils
 import kataja.globals as g
+import kataja.utils as utils
+from kataja.singletons import ctrl, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -45,7 +45,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         :param parent:
         :param placeholder:
         """
-        QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
+        QtWidgets.QGraphicsTextItem.__init__(self, text)
         self._host = self.parentItem()
         self.placeholder = placeholder
         w = self.document().idealWidth()
@@ -276,6 +276,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         dx = spx - epx
         dy = spy - epy
         angle = math.degrees(math.atan2(dy, dx)) + 180
+        i = 0
         if angle < 22.5 or angle >= 327.5:
             i = 3  # left middle
         elif 22.5 <= angle < 67.5:
@@ -313,10 +314,6 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
             return Pf(s.width() / 2, s.height())
 
     def compute_angle_for_pos(self, event_pos, adjustment):
-        """
-
-        :param top_left:
-        """
         edge = self._host
         start_pos, end_point = self.get_label_line_positions()
         # closest_magnet = self.find_closest_magnet(top_left, start_pos)

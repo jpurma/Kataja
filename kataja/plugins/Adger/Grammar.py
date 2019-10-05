@@ -1,4 +1,3 @@
-
 hierarchies = [
     ['V', 'v', 'Pass', 'Prog', 'Perf', 'Mod', 'Neg', 'T', 'Fin', 'C'],
     ['N', 'n', 'Poss', 'Num', 'D', 'Q']
@@ -13,6 +12,7 @@ lex = {
 }
 
 parts = ['kiss', 'him', 'v', 'he', 'T']
+
 
 class Feature:
     def __init__(self, name, value, family=''):
@@ -32,12 +32,13 @@ class Feature:
         self.union_with = other
         other.union_with = self
 
+
 class Constituent:
 
     def __init__(self, data_key='', copy_of=None):
         self.label = data_key
         self.category = None
-        self.selects = None            
+        self.selects = None
         self.feats = []
         self.parts = {}
         if data_key:
@@ -60,18 +61,18 @@ class Constituent:
                 l.append(self.selects)
             elif self.selects.union_with:
                 pass
-                #l.append(self.selects.union_with)
+                # l.append(self.selects.union_with)
             else:
                 l.append(self.selects)
         for f in self.feats:
             if f.value:
                 l.append(f)
-            elif f.union_with:                
+            elif f.union_with:
                 l.append(f.union_with)
             else:
                 l.append(f)
         s = ', '.join([str(p) for p in l])
-        return f'{self.label} = {{{s}}}' 
+        return f'{self.label} = {{{s}}}'
 
     def SelectMerge(self, selected):
         if self.selects and self.selects.value is None:
@@ -79,12 +80,12 @@ class Constituent:
                 selected = Constituent(selected)
             if self.selects.name == selected.category.name and selected.category is not None:
                 selected.category.satisfy(self.selects)
-                merged = Constituent(copy_of=self)                
+                merged = Constituent(copy_of=self)
                 merged.parts = {self, selected}
                 return merged, True
         return self, False
 
-    def HoPMerge(self, other):
+    def HoPMerge(self, other: str or Constituent) -> tuple:
         if isinstance(other, str):
             other = Constituent(other)
         my_cat = self.category.name
@@ -127,7 +128,7 @@ class Constituent:
         if self.selects and self.selects.value is None:
             mover = seek_value(self.selects.name, self)
             if mover:
-                #self.selects = mover.category
+                # self.selects = mover.category
                 merged = Constituent(copy_of=self)
                 mover.category.satisfy(self.selects)
                 merged.parts = {mover, self}
@@ -139,6 +140,7 @@ s = Constituent('kiss')
 print(s)
 s, ok = s.SelectMerge('him')
 print('SelectMerge: ', s, ok)
+# noinspection PyTypeChecker
 s, ok = s.HoPMerge('v')
 print('HoPMerge: ', s, ok)
 s, ok = s.Agree()
@@ -152,7 +154,7 @@ print('Agree: ', s, ok)
 s, ok = s.InternalMerge()
 print('InternalMerge: ', s, ok)
 print('------------Automatic for the people------------')
-
+part = None
 s = Constituent(parts[0])
 for part in parts[1:]:
     new = Constituent(part)
@@ -175,5 +177,3 @@ for part in parts[1:]:
 s, ok = s.InternalMerge()
 if ok:
     print(part, ' InternalMerge: ', s)
-
-

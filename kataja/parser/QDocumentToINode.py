@@ -1,8 +1,4 @@
-
-
-from html.parser import HTMLParser
-from kataja.parser.mappings import html_to_command
-from kataja.parser.INodes import ITextNode, ICommandNode, IParserNode
+from kataja.parser.INodes import ITextNode, ICommandNode
 
 
 class QDocumentToINode:
@@ -37,7 +33,7 @@ class QDocumentToINode:
             result = ITextNode()
             stack = [result]
             cf = b.charFormat()
-            #b.blockFormat().alignment(),
+            # b.blockFormat().alignment(),
             caps = cf.fontCapitalization()
             family = cf.fontFamily()
             italic = cf.fontItalic()
@@ -47,9 +43,9 @@ class QDocumentToINode:
             underline = cf.fontUnderline()
             vertalign = cf.verticalAlignment()
             for frange in b.textFormats():
-                #print('---- block %s ----' % count)
-                #print(b.text())
-                #print(frange.start, frange.length)
+                # print('---- block %s ----' % count)
+                # print(b.text())
+                # print(frange.start, frange.length)
                 cf = frange.format
                 if caps != cf.fontCapitalization():
                     caps = cf.fontCapitalization()
@@ -58,16 +54,16 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('cap: ', caps)
+                        # print('cap: ', caps)
                     else:
                         result = removed(stack, 'smallcaps')
                 if family != cf.fontFamily():
                     family = cf.fontFamily()
-                    #command = ICommandNode('paa')
-                    #stack.append(command)
-                    #result.append(command)
-                    #result = command
-                    #print('family: ', family)
+                    # command = ICommandNode('paa')
+                    # stack.append(command)
+                    # result.append(command)
+                    # result = command
+                    # print('family: ', family)
                 if italic != cf.fontItalic():
                     italic = cf.fontItalic()
                     if italic:
@@ -75,17 +71,17 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('italic: ', cf.fontItalic())
+                        # print('italic: ', cf.fontItalic())
                     else:
                         result = removed(stack, 'emph')
                         result = removed(stack, 'italic')
                 if overline != cf.fontOverline():
                     pass
-                    #command = ICommandNode('overline')
-                    #stack.append(command)
-                    #result.append(command)
-                    #result = command
-                    #print('overline: ', overline)
+                    # command = ICommandNode('overline')
+                    # stack.append(command)
+                    # result.append(command)
+                    # result = command
+                    # print('overline: ', overline)
                 if strikeout != cf.fontStrikeOut():
                     strikeout = cf.fontStrikeOut()
                     if strikeout:
@@ -93,7 +89,7 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('strikeout: ', strikeout)
+                        # print('strikeout: ', strikeout)
                     else:
                         result = removed(stack, 'strikeout')
                 if weight != cf.fontWeight():
@@ -103,7 +99,7 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('weight: ', weight)
+                        # print('weight: ', weight)
                     else:
                         result = removed(stack, 'bold')
                 if underline != cf.fontUnderline():
@@ -113,7 +109,7 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('underline: ', underline)
+                        # print('underline: ', underline)
                     else:
                         result = removed(stack, 'underline')
                 if vertalign != cf.verticalAlignment():
@@ -127,13 +123,13 @@ class QDocumentToINode:
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('vertical align: ', vertalign)
+                        # print('vertical align: ', vertalign)
                     elif vertalign == 2:
                         command = ICommandNode('sub')
                         stack.append(command)
                         result.append(command)
                         result = command
-                        #print('vertical align: ', vertalign)
+                        # print('vertical align: ', vertalign)
                 text_piece = b.text()[frange.start:frange.start + frange.length]
                 lines = text_piece.splitlines()
                 if len(lines) > 1:
@@ -148,7 +144,7 @@ class QDocumentToINode:
                     result.append(text_piece)
 
             base = stack[0].tidy(keep_node=False)
-            if base or b != end: # omit last empty line
+            if base or b != end:  # omit last empty line
                 rows.append(base)
             if b == end:
                 b = None
@@ -169,4 +165,3 @@ class QDocumentToINode:
             return ITextNode(parts=parts)
         else:
             return '\n'.join(rows)
-

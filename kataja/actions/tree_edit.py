@@ -1,17 +1,8 @@
 # coding=utf-8
-import random
 
-from PyQt5 import QtCore
-from PyQt5.QtGui import QKeySequence
-
-import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
 from kataja.Triangle import Triangle
-from kataja.singletons import ctrl, classes, log
-from kataja.utils import guess_node_type
-from kataja.saved.Edge import Edge
-from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
-from kataja.ui_widgets.UIEmbed import EmbedAction
+from kataja.singletons import ctrl
 
 
 # ==== Class variables for KatajaActions:
@@ -115,7 +106,6 @@ class FinishEditingNode(KatajaAction):
         ctrl.forest.forest_edited()
 
 
-
 # Floating buttons ##################################
 
 
@@ -176,4 +166,3 @@ class MoveNode(KatajaAction):
         node.current_position = node.from_scene_position(x, y)
         node.lock()
         node.update_position()
-

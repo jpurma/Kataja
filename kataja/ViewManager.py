@@ -23,11 +23,12 @@
 # ############################################################################
 
 import math
+from itertools import chain
 
 import PyQt5.QtCore as QtCore
-from kataja.singletons import ctrl, prefs
+
 from kataja.globals import ViewUpdateReason
-from itertools import chain
+from kataja.singletons import ctrl, prefs
 
 
 class ViewManager:
@@ -232,23 +233,23 @@ class ViewManager:
                 self.fit_to_window()
 
         elif reason == ViewUpdateReason.MANUAL_ZOOM:
-            #print('------ MANUAL_ZOOM')
+            # print('------ MANUAL_ZOOM')
             self.set_auto_zoom(False)
 
         elif reason == ViewUpdateReason.ACTION_FINISHED:
-            #print('------ ACTION_FINISHED')
+            # print('------ ACTION_FINISHED')
             if self.auto_zoom:
                 self.fit_to_window()
         elif reason == ViewUpdateReason.FIT_IN_TRIGGERED:
-            #print('------ FIT_IN_TRIGGERED')
+            # print('------ FIT_IN_TRIGGERED')
             self.fit_to_window(force=True)
 
         elif reason == ViewUpdateReason.MAJOR_REDRAW:
-            #print('------ MAJOR_REDRAW')
+            # print('------ MAJOR_REDRAW')
             if self.auto_zoom:
                 self.fit_to_window()
         elif reason == ViewUpdateReason.NEW_FOREST:
-            #print('------ NEW_FOREST')
+            # print('------ NEW_FOREST')
             self.set_auto_zoom(True)
             self.fit_to_window()
 

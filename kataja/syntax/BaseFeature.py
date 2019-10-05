@@ -23,8 +23,8 @@
 #
 # ############################################################################
 
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
 
 simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>', '*')
 
@@ -102,7 +102,7 @@ class BaseFeature(SavedObject):
                 feature.is_needy() and
                 feature.name == self.name and
                 self.can_satisfy()
-                )
+        )
 
     def check(self, other):
         self.checks = other

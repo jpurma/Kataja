@@ -22,18 +22,21 @@
 #
 # ############################################################################
 
-from kataja.singletons import running_environment
+import ast
+
+from kataja.plugins.Monorail.Parser import load_lexicon
+
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.singletons import classes
-from Monorail.Parser import load_lexicon
-import ast
-import os
 
 try:
+    # noinspection PyPackageRequirements
     from nltk.corpus import treebank
+
     has_nltk = True
 except ImportError:
+    treebank = None
     has_nltk = False
 
 
@@ -55,9 +58,6 @@ class Document(KatajaDocument):
 
     def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
-
-        :param filename: not used
-        :param clear: start with empty
         """
         filename = filename or Document.get_default_treeset_file()
 

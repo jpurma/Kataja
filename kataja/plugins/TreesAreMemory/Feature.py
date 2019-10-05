@@ -1,8 +1,10 @@
 try:
     from kataja.SavedField import SavedField
     from kataja.syntax.BaseFeature import BaseFeature
+
     in_kataja = True
 except ImportError:
+    SavedField = None
     BaseFeature = None
     in_kataja = False
 
@@ -99,7 +101,6 @@ class Feature(BaseFeature or object):
             return 1, -2
         else:
             return -2, 1
-
 
     @staticmethod
     def from_string(s):

@@ -3,16 +3,12 @@ import gzip
 import json
 import pickle
 import pprint
-import shlex
-import subprocess
 import time
 
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets
 from PyQt5.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction
-
 from kataja.singletons import ctrl, prefs, log
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
@@ -101,13 +97,14 @@ class Open(KatajaAction):
             ctrl.main,
             "Open Kataja trees",
             prefs.userspace_path,
-            file_help
+            file_help,
+            options=None
         )
         return filename
 
     def load_data_from_file(self, filename):
         save_format, zipped = deduce_format(filename)
-
+        data = None
         if zipped:
             if save_format == 'json' or save_format == 'dict':
                 f = gzip.open(filename, 'rt')
@@ -203,7 +200,8 @@ class Save(KatajaAction):
             ctrl.main,
             "Save Kataja trees",
             prefs.userspace_path,
-            file_help
+            file_help,
+            options=None
         )
         print('received filename from dialog: ', filename)
         return filename
@@ -275,6 +273,7 @@ class PrintToFile(KatajaAction):
 
     def method(self):
         ctrl.main.print_manager.start_printing()
+
 
 #
 # class RenderInBlender(KatajaAction):

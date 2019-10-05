@@ -21,8 +21,8 @@
 #
 # ############################################################################
 
-from kataja.singletons import prefs
 from kataja.settings.ForestSettings import ForestSettings
+from kataja.singletons import prefs
 
 
 class DocumentSettings(ForestSettings):
@@ -30,4 +30,3 @@ class DocumentSettings(ForestSettings):
     def __init__(self, document):
         super().__init__(document)
         self.next = prefs
-

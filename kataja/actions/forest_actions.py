@@ -1,18 +1,6 @@
-import ast
-import gzip
-import json
-import pickle
-import pprint
-import time
-
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
-
 from kataja.KatajaAction import KatajaAction
 
-from kataja.singletons import ctrl, prefs, log
-from kataja.ui_support.PreferencesDialog import PreferencesDialog
+from kataja.singletons import ctrl
 
 
 # ==== Class variables for KatajaActions:
@@ -110,5 +98,3 @@ class SelectObject(KatajaAction):
         else:
             obj = ctrl.forest.get_object_by_uid(object_uid)
             ctrl.select(obj)
-
-

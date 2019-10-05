@@ -22,12 +22,13 @@
 #
 # ############################################################################
 
-from kataja.SavedObject import SavedObject
+from kataja.plugins.mgtdbp.Parser import load_grammar, load_grammar_from_file, Parser
+
+import kataja.globals as g
 from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl, classes
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
-from mgtdbp.Parser import load_grammar, load_grammar_from_file, Parser
-import kataja.globals as g
 
 CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
@@ -129,13 +130,13 @@ class SyntaxAPI(KatajaSyntaxAPI):
         return synobj
 
     def to_feature_constituent(self, synobj):
-        #if synobj.parts:
+        # if synobj.parts:
         #    synobj.label = ' '.join([str(x) for x in synobj.checked_features])
         #    for part in synobj.parts:
         #        self.to_feature_constituent(part)
         return synobj
 
-    def read_lexicon(self, lexdata):
+    def read_lexicon(self, lexdata, lexicon=None):
         return load_grammar(lexdata)
 
     start = SavedField("start")

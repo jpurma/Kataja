@@ -4,11 +4,11 @@ import math
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
-from kataja.singletons import ctrl, qt_prefs
-from kataja.saved.movables.Node import Node
 from kataja.GroupLabel import GroupLabel
+from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
+from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id, next_available_ui_key
 
 points = 36
@@ -137,8 +137,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     def remove_node(self, node, delete_if_empty=True):
         """ Manual removal of single node, should be called e.g. when node is deleted.
-        :param node:
-        :return:
         """
         if node in self.selection:
             self.poke('selection')
@@ -303,7 +301,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         if True:
             for item in self.collidingItems():
                 if (isinstance(item, Node) and item.node_type == g.CONSTITUENT_NODE and item not
-                in self.selection_with_children):
+                        in self.selection_with_children):
                     x, y = item.current_scene_position
                     subshape = item.shape().translated(x, y)
                     subshape_points = []
@@ -375,8 +373,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         # objects. In this case return only uid of this object.
         if select_area:
             return self.uid
-        #items = [x.uid for x in self.selection]
-        #items.append(self.uid)
+        # items = [x.uid for x in self.selection]
+        # items.append(self.uid)
         if adding:
             if ctrl.is_selected(self):
                 print('selected group (adding=True), calling remove_from_selection for it')

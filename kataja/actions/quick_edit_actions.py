@@ -1,11 +1,9 @@
 # coding=utf-8
-import random
 
 from PyQt5 import QtGui
 from PyQt5.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction
-
 from kataja.singletons import ctrl
 
 
@@ -183,4 +181,3 @@ class RemoveStyles(KatajaAction):
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
         ctrl.ui.quick_edit_buttons.update_formats(fmt)
-

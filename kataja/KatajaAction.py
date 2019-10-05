@@ -26,13 +26,8 @@ import traceback
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from kataja.singletons import ctrl, log, running_environment
-from kataja.ui_graphicsitems.TouchArea import TouchArea
-from kataja.ui_widgets.SelectionBox import SelectionBox
-from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.ui_widgets.buttons.TwoStateButton import TwoStateButton
-from kataja.UIItem import UIWidget
 from kataja.globals import SELECTION
+from kataja.singletons import ctrl, log, running_environment
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -79,11 +74,6 @@ class ShortcutSolver(QtCore.QObject):
         return False
 
     def add_solvable_action(self, key_seq, element):
-        """
-
-        :param key_seq: QKeySequence
-        :return:
-        """
         key = key_seq.toString()
         if key not in self.clickable_actions:
             self.clickable_actions[key] = [element]

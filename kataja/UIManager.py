@@ -36,13 +36,14 @@ import kataja.ui_widgets.buttons.OverlayButton as ob
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter, MediatingAction
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
-from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Arrow import Arrow
+from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, prefs, log
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_support.FloatingTip import FloatingTip
 from kataja.ui_widgets.DragInfo import DragInfo
+from kataja.ui_widgets.HeadingWidget import HeadingWidget
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_widgets.buttons.QuickEditButtons import QuickEditButtons
@@ -69,8 +70,6 @@ from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
-from kataja.ui_widgets.HeadingWidget import HeadingWidget
-from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
 
 NOTHING = 0
@@ -102,7 +101,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
-                                              'save_as', '---', 'print_pdf', # 'blender_render'
+                                              'save_as', '---', 'print_pdf',  # 'blender_render'
                                               '---', 'preferences', '---', 'quit'])),
                               ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
                                                        'paste'])),
@@ -260,7 +259,7 @@ class UIManager:
                 self._items_by_host[key] = [item]
         if item.scene_item:
             self.scene.addItem(item)
-        #if show:
+        # if show:
         #    item.show()
 
     def remove_ui(self, item, fade=True):
@@ -528,7 +527,7 @@ class UIManager:
         self._action_groups = {}
         for module in os.listdir(os.path.dirname(kataja.actions.__file__)):
             if module == '__init__.py' or module[-3:] != '.py':
-               continue
+                continue
             mod_path = 'kataja.actions.' + module[:-3]
             mod = importlib.import_module(mod_path)
             self.load_actions_from_module(mod)
@@ -588,20 +587,9 @@ class UIManager:
             log.critical(f'get_action called with empty key')
 
     def create_menus(self):
-        """ Put actions to menus. Menu structure is defined at the top of this file.
-        :param additional_actions: dict where each key returns a list of action schemas. This way
-        programmatically generated actions and those coming from e.g. plugins can be added to
-        menus.
-        :return: None
-        """
+        """ Put actions to menus. Menu structure is defined at the top of this file."""
 
         def add_menu(parent, menu_label, menu_items):
-            """
-            :param parent:
-            :param menu_label:
-            :param menu_items:
-            :return:
-            """
             new_menu = QtWidgets.QMenu(menu_label, self.main)
             for item in menu_items:
                 if isinstance(item, tuple):
@@ -756,7 +744,6 @@ class UIManager:
         else:
             self.show_panel(panel_id)
 
-
     # Panel scopes
 
     def get_scope(self, scope_id):
@@ -769,11 +756,6 @@ class UIManager:
     # Action connections ###########################
 
     def connect_element_to_action(self, element, action, connect_slot=None):
-        """
-
-        :param element:
-        :param action:
-        """
         if isinstance(action, str):
             kataja_action = self.get_action(action)
             if not kataja_action:
@@ -787,11 +769,6 @@ class UIManager:
         """ Some shortcut become ambiguous as they are used for several
         buttons and menus at
         the same time and we need some extra information to solve these.
-
-        :param key_seq:
-        :param element:
-        :param action:
-        :return:
         """
         if not hasattr(element, 'setShortcut'):
             return
@@ -809,11 +786,6 @@ class UIManager:
 
     @staticmethod
     def get_element_value(element):
-        """
-
-        :param element:
-        :return:
-        """
         if not element:
             return []
         args = []
@@ -844,10 +816,6 @@ class UIManager:
     # #########################################################
 
     def start_arrow_label_editing(self, arrow):
-        """
-
-        :param edge:
-        """
         self.close_active_embed()
         self.active_embed = ArrowLabelEmbed(self.main.graph_view, arrow)
         self.add_ui(self.active_embed)
@@ -855,10 +823,6 @@ class UIManager:
         self.active_embed.wake_up()
 
     def toggle_group_label_editing(self, group):
-        """ Start group label editing or close it if it's already active.
-        :param group:
-        :return:
-        """
         if self.active_embed and self.active_embed.host == group:
             self.close_active_embed()
         else:
@@ -869,10 +833,7 @@ class UIManager:
             self.close_active_embed()
 
     def start_group_label_editing(self, group):
-        """ Start group label editing or close it if it's already active.
-        :param group:
-        :return:
-        """
+        """ Start group label editing or close it if it's already active. """
         self.close_active_embed()
         self.active_embed = GroupLabelEmbed(self.main.graph_view, group)
         self.add_ui(self.active_embed)
@@ -927,7 +888,6 @@ class UIManager:
         :return:
         """
         return self.get_ui_by_type(host=host, ui_type=subtype)
-
 
     def remove_touch_areas(self):
         """ Remove all touch areas from UI. Needs to be done when changing
@@ -1017,7 +977,6 @@ class UIManager:
         anchor = self.get_or_create_button(node, ob.LockButton)
         anchor.fade_out()
 
-
     # ### Messages
     # ####################################################################
 
@@ -1034,7 +993,6 @@ class UIManager:
         :param level:
         """
         log.log(level, msg)
-
 
     # ### Embedded buttons ############################
 
@@ -1183,7 +1141,7 @@ class UIManager:
         if not (item.k_tooltip or (item.k_action and item.k_action.active_tooltip)):
             if self.floating_tip and self.floating_tip.isVisible():
                 self.floating_tip.hide()
-            #print('item %s is missing k_tooltip.' % item)
+            # print('item %s is missing k_tooltip.' % item)
             return
         if not self.floating_tip:
             self.floating_tip = FloatingTip()
@@ -1221,7 +1179,6 @@ class UIManager:
         self.clear_items()
         self.refresh_heading()
 
-
     # Active settings ###########################
 
     def get_active_setting(self, key):
@@ -1246,8 +1203,9 @@ class UIManager:
                 nodes = ctrl.get_selected_nodes()
                 if nodes:
                     for node in nodes:
-                        if key in node._settings:
-                            return node._settings[key]
+                        ns = node.get_settings()
+                        if key in ns:
+                            return ns[key]
                     return nodes[0].settings.get(key)
             return ctrl.forest.settings.get_for_node_type(key, node_type)
         elif self.active_scope == g.FOREST:
@@ -1277,8 +1235,9 @@ class UIManager:
                 edges = ctrl.get_selected_edges()
                 if edges:
                     for edge in edges:
-                        if key in edge._settings:
-                            return edge._settings[key]
+                        es = edge.get_settings()
+                        if key in es:
+                            return es[key]
                     return edges[0].settings.get(key)
             return ctrl.forest.settings.get_for_edge_type(key, edge_type)
         elif self.active_scope == g.FOREST:

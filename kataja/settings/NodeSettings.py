@@ -20,6 +20,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import kataja
 
 
 class NodeSettings:
@@ -29,7 +30,7 @@ class NodeSettings:
 
     @property
     def data(self):
-        return self.node._settings
+        return self.node.get_settings()
 
     def get(self, key):
         v = self.data.get(key, None)

@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+
 from kataja.launcher import start, draw
 
 name = 'kataja'
@@ -11,4 +12,5 @@ try:
         __version__ = version_file.read().rsplit('|', 1)[-1].strip()
 except FileNotFoundError:
     import pkg_resources
+
     __version__ = pkg_resources.get_distribution('kataja').version

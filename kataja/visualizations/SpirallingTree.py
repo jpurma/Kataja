@@ -27,8 +27,7 @@ import math
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, log
-from kataja.utils import caller
+from kataja.singletons import prefs
 
 
 class Layer:

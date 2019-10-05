@@ -25,7 +25,7 @@
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, log, ctrl
+from kataja.singletons import prefs, ctrl
 
 
 class BracketedLinearization(BaseVisualization):
@@ -125,4 +125,3 @@ class BracketedLinearization(BaseVisualization):
         if tree_top.node_type == g.CONSTITUENT_NODE:
             start = draw_node(tree_top, left_edge=start)  # used=set(),
             start += prefs.edge_width
-

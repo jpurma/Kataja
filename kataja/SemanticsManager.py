@@ -1,5 +1,4 @@
 from kataja.SemanticsArray import SemanticsArray
-from kataja.singletons import ctrl
 
 
 class SemanticsManager:
@@ -58,6 +57,7 @@ class SemanticsManager:
         """
         if array_id not in self.arrays:
             model = None
+            model_type = 0
             for i, model in enumerate(self.models):
                 if label in model:
                     model_type = i
@@ -118,5 +118,3 @@ class SemanticsManager:
         self.all_items = []
         self.arrays = {}
         self.arrays_list = []
-
-

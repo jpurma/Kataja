@@ -23,11 +23,12 @@
 # ############################################################################
 
 import math
+
 import kataja.globals as g
-from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs
 from kataja.Grid import Grid
+from kataja.Visualization import BaseVisualization
 from kataja.saved.Movable import Movable
+from kataja.singletons import prefs
 
 
 def left_bottom_is_bottom_center(i):
@@ -62,7 +63,7 @@ class HeadDownTree(BaseVisualization):
 
     def __init__(self):
         BaseVisualization.__init__(self)
-        self.forest = []
+        self.forest = None
         self._directed = True
         self.grid_lines_y = {}
         self.grid_lines_x = {}
@@ -138,7 +139,7 @@ class HeadDownTree(BaseVisualization):
             if edge_height == 0:
                 height_in_rows = 1
             else:
-                height_in_rows = math.ceil(node_height / float(edge_height)) #+ 1
+                height_in_rows = math.ceil(node_height / float(edge_height))  # + 1
             start_height = max(int(relative_start_height * height_in_rows), 0)
 
             if edge_width == 0:
@@ -245,4 +246,3 @@ class HeadDownTree(BaseVisualization):
                 if node and isinstance(node, Movable):
                     node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width
-

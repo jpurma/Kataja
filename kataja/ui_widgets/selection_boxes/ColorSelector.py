@@ -32,20 +32,16 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
 
     def __init__(self, color_key, selector):
-        """
-        :param paint_method: a compatible drawing method
-        :param owner: an object that is queried for settings for paint_method
-        :return:
-        """
         QtGui.QIconEngine.__init__(self)
         self.color_key = color_key
         self.selector = selector
         self.grad = QtGui.QConicalGradient(8, 8, 0)
-        self.grad.setColorAt(0, QtGui.QColor.fromHsv(359, 255, 255))
-        self.grad.setColorAt(0.25, QtGui.QColor.fromHsv(270, 255, 255))
-        self.grad.setColorAt(0.5, QtGui.QColor.fromHsv(180, 255, 255))
-        self.grad.setColorAt(0.75, QtGui.QColor.fromHsv(90, 255, 255))
-        self.grad.setColorAt(1.0, QtGui.QColor.fromHsv(0, 255, 255))
+        color = QtGui.QColor()
+        self.grad.setColorAt(0, color.fromHsv(359, 255, 255))
+        self.grad.setColorAt(0.25, color.fromHsv(270, 255, 255))
+        self.grad.setColorAt(0.5, color.fromHsv(180, 255, 255))
+        self.grad.setColorAt(0.75, color.fromHsv(90, 255, 255))
+        self.grad.setColorAt(1.0, color.fromHsv(0, 255, 255))
 
     # @caller
     def paint(self, painter, rect, mode, state):
@@ -84,12 +80,6 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
 
 
 class LineColorIcon(QtGui.QIcon):
-    """
-
-    :param color_key:
-    :param model:
-    """
-
     def __init__(self, color_key, selector):
         QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_key, selector))
 
@@ -146,7 +136,7 @@ class ColorSelector(TableModelSelectionBox):
         """
         color_key = self.currentData()
         if not color_key:
-            return
+            ''
         color = ctrl.cm.get(color_key, allow_none=True)
         # launch a color dialog if color_key is unknown or clicking
         # already selected color
