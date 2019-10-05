@@ -35,9 +35,7 @@ class PrintManager:
         ctrl.main.startTimer(50)
 
     def snapframe_timer(self, event):
-        """ for 'snapshot' effect
-        :param event:
-        """
+        """ for 'snapshot' effect """
 
         if not self.print_started:
             return

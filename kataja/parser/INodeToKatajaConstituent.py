@@ -52,11 +52,6 @@ class INodeToKatajaConstituent:
             return str(inode)
 
     def inode_to_constituentnode(self, inode):
-        """
-
-        :param inode:
-        :return:
-        """
         cnode = None
         if isinstance(inode, IParserNode):
             cnode = self.parsernodes_to_constituentnodes(inode)

@@ -56,10 +56,6 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
         self.update_end_points(end_point=to_tuple(event.scenePos()))
 
     def update_end_points(self, end_point=None):
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
         e = self.host
         sx, sy = to_tuple(e.path.get_point_at(0.4))
         self.start_point = sx, sy
@@ -107,10 +103,6 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
         self.update_end_points(end_point=to_tuple(event.scenePos()))
 
     def update_end_points(self, end_point=None):
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
         e = self.host
         sx, sy = to_tuple(e.path.get_point_at(0.4))
         self.start_point = sx, sy
@@ -165,11 +157,6 @@ class MergeToTop(AbstractBranchingTouchArea):
         })
 
     def update_end_points(self, end_point=None):
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
-
         sx, sy = self.host.magnet(0)
         self.start_point = sx, sy
         if end_point:
@@ -299,10 +286,6 @@ class AbstractJointedTouchArea(TouchArea):
         self.update_end_points(end_point=to_tuple(event.scenePos()))
 
     def update_end_points(self, end_point=None):
-        """
-
-            :param end_point: End point can be given or it can be calculated.
-            """
         shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
         self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)
@@ -511,11 +494,6 @@ class AbstractChildTouchArea(TouchArea):
     add nodes to leaf nodes. """
 
     def boundingRect(self):
-        """
-
-
-        :return:
-        """
         if not self.end_point:
             self.update_end_points()
             assert self.end_point
@@ -537,10 +515,6 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
     add nodes to leaf nodes."""
 
     def update_end_points(self, end_point=None):
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
         shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
         self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)
@@ -630,10 +604,6 @@ class AbstractRightAddChild(AbstractChildTouchArea):
     k_tooltip = 'Add child node to right'
 
     def update_end_points(self, end_point=None):
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
         shape_name = ctrl.forest.settings.get_for_edge_type('shape_name', edge_type=g.CONSTITUENT_EDGE)
         shape = SHAPE_PRESETS[shape_name]
         self._fill_path = shape.fillable and ctrl.forest.settings.get_for_edge_shape('fill', edge_shape=shape_name)

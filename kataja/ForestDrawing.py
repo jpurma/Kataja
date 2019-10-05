@@ -170,15 +170,6 @@ class ForestDrawing:
         return cn
 
     def create_edge(self, start=None, end=None, edge_type='', fade=False, alpha=None):
-        """
-
-        :param start:
-        :param end:
-        :param edge_type:
-        :param fade:
-        :param alpha:
-        :return:
-        """
         rel = Edge(self.forest, start=start, end=end, edge_type=edge_type, alpha=alpha)
         rel.after_init()
         self.forest.store(rel)
@@ -189,22 +180,12 @@ class ForestDrawing:
 
     # not used
     def create_image(self, image_path):
-        """
-
-        :param image_path:
-        :return:
-        """
         im = Image(image_path)
         self.forest.others[im.uid] = im
         self.forest.add_to_scene(im)
         return im
 
     def create_trace_for(self, node):
-        """
-
-        :param node:
-        :return:
-        """
         index = node.index
         if not index:
             index = self.forest.chain_manager.next_free_index()
@@ -399,11 +380,6 @@ class ForestDrawing:
     # start and end points separately
 
     def set_edge_start(self, edge, new_start):
-        """
-
-        :param edge:
-        :param new_start:
-        """
         assert new_start.uid in self.nodes
         if edge.start:
             edge.start.poke('edges_down')
@@ -413,12 +389,6 @@ class ForestDrawing:
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
-        """
-
-        :param edge:
-        :param new_end:
-        """
-
         assert new_end.uid in self.nodes
         if edge.end:
             edge.end.poke('edges_up')
@@ -439,11 +409,6 @@ class ForestDrawing:
         self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
 
     def add_gloss_to_node(self, gloss, node):
-        """
-
-        :param gloss:
-        :param node:
-        """
         self.connect_node(parent=node, child=gloss)
         node.gloss = gloss.label
 

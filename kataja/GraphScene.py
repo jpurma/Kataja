@@ -149,8 +149,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 return edge
 
     def move_selection(self, direction, add_to_selection=False):
-        """ Move selection to best candidate
-        """
+        """ Move selection to best candidate """
 
         def edge_of_set(my_selectables):
             if direction == 'left':
@@ -434,10 +433,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
     start_animations = item_moved
 
     def stop_animations(self):
-        """ Stops the move animation timer
-        :return: None
-        """
-
+        """ Stops the move animation timer """
         self.killTimer(self._timer_id)
         self._timer_id = 0
 

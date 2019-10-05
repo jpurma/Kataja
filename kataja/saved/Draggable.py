@@ -212,11 +212,6 @@ class Draggable(Movable):
             edge.update()
 
     def accepts_drops(self, dragged):
-        """
-
-        :param dragged:
-        :return:
-        """
         if isinstance(dragged, ControlPoint):
             if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
                 return True
@@ -225,14 +220,6 @@ class Draggable(Movable):
         return False
 
     def drop_to(self, x, y, recipient=None, shift_down=False):
-        """
-
-        :param recipient:
-        :param x:
-        :param y:
-        :param shift_down:
-        :return: action finished -message (str)
-        """
         self.stop_moving()
         self.update()
         for edge in self.edges_up:

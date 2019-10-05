@@ -510,10 +510,6 @@ class Preferences(object):
         qt_prefs.update(self, running_environment, log)
 
     def update(self, update_dict):
-        """
-
-        :param update_dict:
-        """
         for key, value in update_dict.items():
             setattr(self, key, value)
 
@@ -766,23 +762,12 @@ class QtPreferences:
         iconpath = os.path.join(running_environment.resources_path, 'icons')
 
         def pixmap(path, width=0):
-            """
-
-            :param path:
-            :param width:
-            :return:
-            """
             p = QtGui.QPixmap(os.path.join(iconpath, path))
             if width:
                 p = p.scaledToWidth(width)
             return p
 
         def icon(path):
-            """
-
-            :param path:
-            :return:
-            """
             p = QtGui.QIcon(os.path.join(iconpath, path))
             return p
 

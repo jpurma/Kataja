@@ -338,8 +338,6 @@ class ConstituentNode(Node):
 
         Note that synobj's label_as_html receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
-
-        :return:
         """
 
         # Allow custom syntactic objects to override this
@@ -488,10 +486,6 @@ class ConstituentNode(Node):
     # ### Features #########################################
 
     def update_gloss(self):
-        """
-
-
-        """
         gloss_text = self.get_gloss()
         gloss_node = self.gloss_node
         if gloss_node and not gloss_text:

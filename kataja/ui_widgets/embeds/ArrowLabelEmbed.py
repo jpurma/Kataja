@@ -15,10 +15,7 @@ class ArrowLabelEmbed(UIEmbed):
         """ ArrowLabelEmbed is for editing arrow labels, but it takes Arrow as its host,
         because there may be problems if the host item is not subclass of Saved. Use self.label
         to get access to edge.label_item.
-        :param parent:
-        :param edge:
         """
-
         UIEmbed.__init__(self, parent, edge, 'Edit edge text')
         self.marker = None
         self.label = edge.label_item

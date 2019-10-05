@@ -198,13 +198,7 @@ class FeatureNode(Node):
         2: locked to another feature -- this is used to show feature checking
         the third option shouldn't happen:
         3: locked to triangle host like constituent nodes are locked to triangle host 
-        
-        :param shape:
-        :param position:
-        :param checking_mode:
-        :return:
         """
-
         checked_by = self.my_checking_feature()
         # First see if feature should be attached to another feature
         locked_to_another_feature = False

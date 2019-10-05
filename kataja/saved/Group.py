@@ -388,11 +388,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         return self.uid
 
     def update_selection_status(self, value):
-        """
-
-        :param value:
-        :return:
-        """
         self._selected = value
 
     def paint(self, painter, style, QWidget_widget=None):

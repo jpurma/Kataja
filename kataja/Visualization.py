@@ -146,10 +146,6 @@ class BaseVisualization:
         return self.forest.vis_data.get(key, null)
 
     def reset_node(self, node):
-        """
-
-        :param node:
-        """
         node.physics_x = True
         node.physics_y = True
         node.adjustment = (0, 0)
@@ -161,9 +157,7 @@ class BaseVisualization:
 
     def prepare_to_normalise(self, tree):
         """ Store the current tree top node position so that the new arrangement can keep that
-        point fixed during change.
-        :return:
-        """
+        point fixed during change."""
 
         def find_old_node(node):
             if node.unmoved or node.locked_to_node:

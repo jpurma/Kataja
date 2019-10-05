@@ -50,10 +50,10 @@ try:
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from .Constituent import Constituent
-    from .Feature import Feature
-    from .LexNode import LexNode
-    from .Output import DerivationPrinter, write_lexicon_graph_json
+    from Constituent import Constituent
+    from Feature import Feature
+    from LexNode import LexNode
+    from Output import DerivationPrinter, write_lexicon_graph_json
 
     running_environment = None
 

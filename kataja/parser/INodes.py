@@ -619,11 +619,6 @@ class IParserNode(ITextNode):
     """
 
     def __init__(self, parts=None, label_rows=None, indices=None):
-        """
-
-        :param parts:
-        :return:
-        """
         ITextNode.__init__(self, parts=parts)
         self.label_rows = label_rows or []
         self.index = None
@@ -633,9 +628,7 @@ class IParserNode(ITextNode):
         return not (self.label_rows or self.parts)
 
     def check_for_index(self):
-        """ Tries to find value for index from within this parsernode. Saves it to self.index
-        :return:
-        """
+        """ Tries to find value for index from within this parsernode. Saves it to self.index """
 
         def find_index(part):
             if isinstance(part, ICommandNode) and part.command == 'sub':

@@ -49,9 +49,9 @@ try:
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from .Constituent import Constituent
-    from .Feature import Feature
-    from .LexNode import LexNode
+    from Constituent import Constituent
+    from Feature import Feature
+    from LexNode import LexNode
 
     SyntaxState = object
 

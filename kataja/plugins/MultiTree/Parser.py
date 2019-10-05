@@ -3,8 +3,8 @@ try:
     from kataja.plugins.MultiTree.Feature import Feature
     from kataja.syntax.SyntaxState import SyntaxState
 except ImportError:
-    from .Constituent import Constituent
-    from .Feature import Feature
+    from Constituent import Constituent
+    from Feature import Feature
 
     SyntaxState = None
 import time

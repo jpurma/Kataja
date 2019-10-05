@@ -122,8 +122,6 @@ class EditableSyntax(SyntaxAPI):
     def get_c_commanded_leaves(self, node):
         """ By default we cheat on c-command and do it on node level, where we have a reliable
         access to parent of node.
-        :param node:
-        :return:
         """
 
         def _pick_leaves(n):

@@ -10,11 +10,7 @@ class UniversalGrammar:
     def __init__(self, phon_f=None, syn_f=None, sem_f=None):
         """ Definition 1: Universal Grammar is a 6-tuple: (PHON-F, SYN-F, SEM-F, Select, Merge,
         Transfer)
-        :param phon_f:
-        :param syn_f:
-        :param sem_f:
         """
-
         self.phon = phon_f or {}
         self.syn = syn_f or {}
         self.sem = sem_f or {}

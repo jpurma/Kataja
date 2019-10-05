@@ -257,10 +257,6 @@ class KatajaMain(QtWidgets.QMainWindow):
     # Preferences ###################################
 
     def reset_preferences(self):
-        """
-
-        :return:
-        """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes, log)
         self.color_themes_changed.emit()
         if self.ui_manager.preferences_dialog:
@@ -388,11 +384,6 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
-        """
-
-        :param kw:
-        :return:
-        """
         for node in ctrl.get_selected_nodes():
             node.release()
         self.action_finished()
