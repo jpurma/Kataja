@@ -3,8 +3,10 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 from kataja.uniqueness_generator import next_available_type_id
 
+
 def color_for(ds_type):
-    return ctrl.cm.d[f'accent{(ds_type + 1) % 8}']
+    return ctrl.cm.d[f'accent{ds_type % 8 + 1}']
+
 
 class DTNode(QtWidgets.QGraphicsEllipseItem):
     __qt_type_id__ = next_available_type_id()
@@ -13,7 +15,7 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
         super().__init__(x - 3, y - 3, 6, 6)
         self.state_id = state_id
         self.setPen(qt_prefs.no_pen)
-        self.k_tooltip = msg
+        self.k_tooltip = f'{state_id}: {msg}'
         self.ds_type = ds_type
         self.setAcceptHoverEvents(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
@@ -46,6 +48,32 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
     def mouseReleaseEvent(self, event):
         ctrl.main.trigger_action('jump_to_derivation_by_id', self.state_id)
         super().mouseReleaseEvent(event)
+
+
+class DTLine(QtWidgets.QGraphicsLineItem):
+    __qt_type_id__ = next_available_type_id()
+
+    def __init__(self, state_id, parent_id, x1, y1, x2, y2, ds_type):
+        super().__init__(x1, y1, x2, y2)
+        self.state_id = state_id
+        self.parent_id = parent_id
+        self.selected = False
+        self.ds_type = ds_type
+        self.set_selected(False)
+
+    def get_id(self):
+        return self.state_id, self.parent_id
+
+    def set_selected(self, value):
+        self.selected = value
+        if value:
+            pen = QtGui.QPen(color_for(self.ds_type))
+            pen.setWidth(3)
+            self.setPen(pen)
+        else:
+            pen = QtGui.QPen(ctrl.cm.d[f'accent{self.ds_type % 8 + 1}tr'])
+            pen.setWidth(1)
+            self.setPen(pen)
 
 
 class ParseTreePanel(Panel):
@@ -98,10 +126,10 @@ class ParseTreePanel(Panel):
                 else:
                     columns.append({node})
         self.columns = []
-        width = len(columns) + 2
+        width = len(columns) + 1
         for x, column in enumerate(columns, 1):
             ordered = sorted(list(column))
-            height = len(column) + 2
+            height = len(column) + 1
             self.columns.append(ordered)
             for y, node in enumerate(ordered, 1):
                 self.dt_data[node] = (1.0 / width) * x, (1.0 / height) * y
@@ -118,17 +146,28 @@ class ParseTreePanel(Panel):
         nodes = []
         for node_id, (x, y) in self.dt_data.items():
             uid, data, msg, state_id, parent_id, state_type = dt.d[node_id]
-            node = DTNode(node_id, x * width, y * height, msg, state_type)
+            nx = x * width
+            ny = y * height
+            node = DTNode(node_id, nx, ny, msg, state_type)
             nodes.append(node)
             if parent_id in self.dt_data:
                 parent_x, parent_y = self.dt_data[parent_id]
-                sc.addLine(x * width, y * height, parent_x * width, parent_y * height, ctrl.cm.d[f'accent{(state_type + 1) % 8}tr'])
+                px = parent_x * width
+                py = parent_y * height
+                line = DTLine(state_id, parent_id, nx, ny, px, py, state_type)
+                sc.addItem(line)
 
         for node in nodes:
             sc.addItem(node)
 
     def update_selected(self):
-        selected_id = ctrl.forest.derivation_tree.current_step_id
+        dt = ctrl.forest.derivation_tree
+        selected_id = dt.current_step_id
+        route_lines = set()
+        state_id = selected_id
+        for parent_id in dt.iterate_branch(selected_id):
+            route_lines.add((state_id, parent_id))
+            state_id = parent_id
         for item in self.scene.items():
             if isinstance(item, DTNode):
                 was_selected = item.selected
@@ -136,6 +175,14 @@ class ParseTreePanel(Panel):
                 if was_selected != selected:
                     item.set_selected(selected)
                     item.update()
+            elif isinstance(item, DTLine):
+                was_selected = item.selected
+                selected = item.get_id() in route_lines
+                if was_selected != selected:
+                    item.set_selected(selected)
+                    item.update()
+
+
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
