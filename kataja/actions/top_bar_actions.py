@@ -2,9 +2,9 @@
 from PyQt5 import QtWidgets, QtGui
 
 from kataja.KatajaAction import KatajaAction, MediatingAction
-from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
-from kataja.globals import DOCUMENT, PREFS, ViewUpdateReason
+from kataja.globals import ViewUpdateReason
 from kataja.singletons import ctrl, log, prefs
+from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 
 
 # ==== Class variables for KatajaActions:
@@ -103,7 +103,6 @@ class ToggleRecording(KatajaAction):
         return ctrl.main.recorder and ctrl.main.recorder.recording
 
 
-
 class SwitchSyntaxViewMode(KatajaAction):
     k_action_uid = 'switch_syntax_view_mode'
     k_command = 'Switch between view modes offered by syntax'
@@ -113,12 +112,7 @@ class SwitchSyntaxViewMode(KatajaAction):
     k_checkable = True
 
     def method(self):
-        """ Switch between showing only syntactic objects and showing richer representation
-        :param syntactic_mode: None to toggle between modes, True to hide other except syntactic
-        objects and values, False to show all items
-        syntactic only
-        :return:
-        """
+        """ Switch between showing only syntactic objects and showing richer representation """
         mode_name = ctrl.syntax.next_display_mode()
         ctrl.forest.derivation_tree.restore_derivation_step()
         return mode_name

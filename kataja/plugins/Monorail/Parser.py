@@ -23,14 +23,17 @@
 # ############################################################################
 
 try:
-    from Monorail.Constituent import Constituent
+    from kataja.plugins.Monorail.Constituent import Constituent
     from kataja.syntax.SyntaxState import SyntaxState
     from kataja.syntax.BaseFeature import BaseFeature as Feature
 except ImportError:
-    from Constituent import Constituent
+    from .Constituent import Constituent
 
-import string
+    Feature = None
+    SyntaxState = None
+
 import random
+import string
 
 punctuation = '.,!?*'
 
@@ -50,8 +53,8 @@ def find_checked_features_1(left, right):
                 if feat_to_check.used:
                     continue
                 if (feat_to_check.name == feat.name and
-                   feat_to_check.sign and
-                   feat_to_check.sign in '=-_≤'):
+                        feat_to_check.sign and
+                        feat_to_check.sign in '=-_≤'):
                     checked_features.append((feat_to_check, feat))
     return checked_features
 
@@ -67,8 +70,8 @@ def find_checked_features_2(left, right):
                 if feat_to_check.used:
                     continue
                 if (feat_to_check.name == feat.name and
-                   feat_to_check.sign and
-                   feat_to_check.sign in '=-_≤'):
+                        feat_to_check.sign and
+                        feat_to_check.sign in '=-_≤'):
                     checked_features.append((feat_to_check, feat))
                     continue
                 break
@@ -88,8 +91,8 @@ def find_checked_features_3(left, right):
                 if feat_to_check.used:
                     continue
                 if (feat_to_check.name == feat.name and
-                   feat_to_check.sign and
-                   feat_to_check.sign in '=-_≤'):
+                        feat_to_check.sign and
+                        feat_to_check.sign in '=-_≤'):
                     checked_features.append((feat_to_check, feat))
                     found = True
             print('tried to find match for ', feat, ' in ', left.inherited_features)
@@ -158,6 +161,7 @@ def check_features(merged):
 
 def deduce_head(merged):
     left, right = merged.parts
+    head = None
     if merged.checked_features:
         for feat_to_check, feat in merged.checked_features:
             if feat_to_check.sign == '=' or feat_to_check.sign == '≤':
@@ -212,17 +216,21 @@ def list_to_monorail(lnode, spine, recipe):
 
 
 def come_up_with_a_reason(needy_node, giving_node):
+    if not needy_node:
+        return
+    if not giving_node:
+        return
     needy_head = needy_node.lexical_heads[0]
     giving_head = giving_node.lexical_heads[0]
     for feat in needy_head.features:
         if feat.is_needy() and not feat.used:
             available_needy_feat = feat
             available_giving_feat = None
-            for feat in giving_head.features:
-                if feat.name == available_needy_feat.name and feat.sign == '':
-                    if feat.used:
+            for ofeat in giving_head.features:
+                if ofeat.name == available_needy_feat.name and ofeat.sign == '':
+                    if ofeat.used:
                         available_needy_feat = None
-                    available_giving_feat = feat
+                    available_giving_feat = ofeat
                     break
             if available_needy_feat and available_giving_feat:
                 return available_needy_feat, available_giving_feat
@@ -235,7 +243,7 @@ def come_up_with_a_reason(needy_node, giving_node):
     fname = string.ascii_letters[max([string.ascii_letters.index(f.name[0]) for f in
                                       combined]) + 1] if combined else 'a'
     if needy_node.parts:
-        if random.randint(1, 2) == 1: # and False:
+        if random.randint(1, 2) == 1:  # and False:
             needy_f = Feature(fname, sign='=')
         else:
             needy_f = Feature(fname, sign='-')
@@ -300,16 +308,13 @@ def fast_find_movable_1(node, excluded=None):
                 return n
     return None
 
+
 def fast_find_movable_2(node, excluded=None):
     # finds the uppermost external merged element and takes its sibling, e.g. the tree that EM
     # node was merged with.
     # probably not enough when there is a series of raises that should be done.
     if not excluded:
         excluded = node
-    if not done:
-        done = set()
-    if node in done:
-        return
     if node.parts:
         if node is not excluded:
             for part in node.parts:
@@ -362,6 +367,7 @@ def flatten(tree):
                 _flat(node)
         else:
             sentence.append(treelist)
+
     _flat(tree)
     return sentence
 
@@ -389,8 +395,8 @@ def parse_from_recipe(recipe, lexicon, forest):
 def export_to_kataja(tree, message, focus, forest):
     if forest:
         syn_state = SyntaxState(tree_roots=[tree], msg=message,
-                                iteration=Constituent.nodecount,
-                                marked=[focus] if focus else None)
+                                state_id=Constituent.nodecount,
+                                groups=[('', focus)] if focus else None)
         forest.add_step(syn_state)
 
 

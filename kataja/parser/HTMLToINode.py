@@ -1,7 +1,7 @@
-
 from html.parser import HTMLParser
+
+from kataja.parser.INodes import ITextNode, ICommandNode
 from kataja.parser.mappings import html_to_command
-from kataja.parser.INodes import ITextNode, ICommandNode, IParserNode
 
 
 class HTMLToINode(HTMLParser):

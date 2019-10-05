@@ -24,11 +24,8 @@
 import math
 import random
 
-from kataja.utils import caller, time_me
 import kataja.globals as g
-import sys
-
-from kataja.singletons import ctrl
+from kataja.saved.movables import Node
 
 LEFT = 1
 NO_ALIGN = 0
@@ -39,7 +36,7 @@ def centered_node_position(node, cbr):
     """ Return coordinates for center of current node. Nodes, especially with children
     included, are often offset in such way that we shouldn't use bounding_rect's 0,
     0 for their center point.
-
+    :param node:
     :param cbr: bounding_rect of node, includes children. QRect or QRectF
     :return:
     """
@@ -158,7 +155,7 @@ class BaseVisualization:
         node.adjustment = (0, 0)
         node.use_adjustment = False
         node.locked = False
-        #node.update_label()
+        # node.update_label()
         node.update_visibility()
         node.magnet_mapper = None
 
@@ -167,6 +164,7 @@ class BaseVisualization:
         point fixed during change.
         :return:
         """
+
         def find_old_node(node):
             if node.unmoved or node.locked_to_node:
                 children = reversed(node.get_children(visible=True))
@@ -178,6 +176,7 @@ class BaseVisualization:
                 return node.current_position
             else:
                 return node.target_position
+
         found = find_old_node(tree.top)
         if not found:
             found = (0, 0)
@@ -225,7 +224,7 @@ class BaseVisualization:
                 if rt > lb:
                     break
                 if right > left + dist and ((rt < lt < rb) or (rt < lb < rb) or (lt < rt < lb) or
-                        (lt < rb < lb)):
+                                            (lt < rb < lb)):
                     dist = right - left
 
         dist += 30
@@ -391,7 +390,6 @@ class BaseVisualization:
 
         return xvel, yvel
 
-
     @staticmethod
     def shape_aware_repulsion(node, other_nodes: list, inner_repulsion=.5, outer_repulsion=.5):
 
@@ -427,7 +425,7 @@ class BaseVisualization:
                     yvel += math.copysign(1.0, dist_y) * inner_repulsion * overlap_y
             else:
                 dist = math.hypot(dist_x - minimum_dx, dist_y - minimum_dy)
-                #a = minimum_dy / minimum_dx
+                # a = minimum_dy / minimum_dx
                 a = other_w / other_h
                 repulsion = outer_repulsion / dist
                 x_component = dist_x / dist
@@ -460,11 +458,7 @@ class BaseVisualization:
 
     def calculate_movement(self, node: 'Node', other_nodes: list, heat: float):
         """ Base force-directed graph calculation for nodes that are free to float around,
-        not given positions by visualisation algo.
-        :param node:
-        :param other_nodes:
-        :return:
-        """
+        not given positions by visualisation algo. """
         cbr = node.future_children_bounding_rect()
         node_x, node_y = centered_node_position(node, cbr)
 
@@ -481,7 +475,7 @@ class BaseVisualization:
             y_push = 0
 
         # Add gravity (set it 0 to disable it), but don't let unconnected nodes fall of the screen
-        #gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
+        # gx, gy = self.gravity_force(node, bool(x_pull or y_pull))
 
         x_vel = (x_push + x_pull) * heat
         y_vel = (y_push + y_pull) * heat
@@ -543,7 +537,3 @@ class BaseVisualization:
         :return:
         """
         return True
-
-
-
-

@@ -1,8 +1,8 @@
 # coding=utf-8
 import inspect
 
-from kataja.singletons import log, ctrl
 from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl
 
 
 # ==== Class variables for KatajaActions:

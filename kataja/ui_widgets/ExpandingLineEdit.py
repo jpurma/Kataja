@@ -1,21 +1,21 @@
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.singletons import ctrl
-from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
+from kataja.utils import open_symbol_data
 
 
 class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
 
     def __init__(self, parent, tooltip='', big_font=None, smaller_font=None, prefill='',
                  on_edit=None):
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         UIWidget.__init__(self, tooltip=tooltip)
         self.line_mode = True
         self.original_text = ''
         layout = QtWidgets.QVBoxLayout()
         self.line_edit = QtWidgets.QLineEdit(parent)
-        #self.command_prompt.setClearButtonEnabled(True)
+        # self.command_prompt.setClearButtonEnabled(True)
         self.text_area = QtWidgets.QPlainTextEdit(parent)
         self.text_area.setAutoFillBackground(True)
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
@@ -27,7 +27,9 @@ class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
         self.line_edit.setEnabled(True)
         self.cut_point = 24
         layout.setContentsMargins(0, 0, 0, 0)
+        # noinspection PyArgumentList
         layout.addWidget(self.line_edit)
+        # noinspection PyArgumentList
         layout.addWidget(self.text_area)
         self.setLayout(layout)
         self.line_edit.setMinimumHeight(26)

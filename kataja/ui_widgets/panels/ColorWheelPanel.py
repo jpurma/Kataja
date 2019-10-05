@@ -1,15 +1,15 @@
 import math
+import random
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl
-from kataja.utils import to_tuple
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.panels.ColorThemePanel import color_theme_fragment
-from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
-from kataja.ui_support.panel_utils import box_row
 from kataja.utils import get_parent_panel
-import random
+from kataja.utils import to_tuple
 
 __author__ = 'purma'
 
@@ -66,6 +66,7 @@ class ColorWheelPanel(Panel):
         self.role_label = QtWidgets.QLabel("Picking color for role: ")
         self.role_selector = QtWidgets.QComboBox(parent=widget)
         self.role_selector.addItems(self.editable_colors)
+        # noinspection PyUnresolvedReferences
         self.role_selector.currentTextChanged.connect(self.set_color_role)
         hlayout = box_row(layout)
         hlayout.addWidget(self.role_label)
@@ -98,6 +99,7 @@ class ColorWheelPanel(Panel):
         self.match_cb.setToolTip(match_help)
         self.match_cb.setParent(widget)
         self.match_cb.setChecked(self.try_to_match)
+        # noinspection PyUnresolvedReferences
         self.match_cb.stateChanged.connect(self.set_palette_matching)
         self.match_l.setBuddy(self.match_cb)
         hlayout.addWidget(self.match_l)
@@ -206,7 +208,7 @@ class ColorWheelPanel(Panel):
         self.h_spinner.setValue(h * 360)
         self.s_spinner.setValue(s * 255)
         self.v_spinner.setValue(v * 255)
-        color = QtGui.QColor.fromHsvF(h, s, v)
+        color = QtGui.QColor().fromHsvF(h, s, v)
         self.r_spinner.setValue(color.red())
         self.g_spinner.setValue(color.green())
         self.b_spinner.setValue(color.blue())
@@ -219,13 +221,13 @@ class ColorWheelPanel(Panel):
     def send_color(self, h, s, v):
         """ Replace color in palette with new color from hsvF (0.0-1.0)
         """
-        color = QtGui.QColor.fromHsvF(h, s, v)
+        color = QtGui.QColor().fromHsvF(h, s, v)
         ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
                           contrast=self.match_contrast)
 
     def send_color_rgb(self, r, g, b):
         """ Replace color in palette with new color from rgb (0-255) """
-        color = QtGui.QColor.fromRgb(r, g, b)
+        color = QtGui.QColor().fromRgb(r, g, b)
         ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
                           contrast=self.match_contrast)
 
@@ -263,18 +265,9 @@ class ColorWheelPanel(Panel):
 
 
 class ColorWheelInner(QtWidgets.QWidget):
-    """
-
-    """
-
     def __init__(self, parent):
-        """
-        All of the panel constructors follow the same format so that the construction can be automated.
-        :param name: Title of the panel and the key for accessing it
-        :param default_position: 'bottom', 'right'...
-        :param parent: self.main
-        """
         self.preferred_size = QtCore.QSize(160, 160)
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0
         self._flag_area = 0, 0, 0, 0
@@ -330,16 +323,17 @@ class ColorWheelInner(QtWidgets.QWidget):
         :return:
         """
         painter = QtGui.QPainter(self)
-        painter.setRenderHints(QtGui.QPainter.Antialiasing) # | QtGui.QPainter.TextAntialiasing)
+        painter.setRenderHints(QtGui.QPainter.Antialiasing)  # | QtGui.QPainter.TextAntialiasing)
         painter.setPen(QtCore.Qt.NoPen)
         r = self._radius
         v = self.outer.selected_hsv[2] * 255
         con_grad = QtGui.QConicalGradient(self._top_corner + r, self._top_corner + r, 0)
-        con_grad.setColorAt(0, QtGui.QColor.fromHsv(359, 255, v))
-        con_grad.setColorAt(0.25, QtGui.QColor.fromHsv(270, 255, v))
-        con_grad.setColorAt(0.5, QtGui.QColor.fromHsv(180, 255, v))
-        con_grad.setColorAt(0.75, QtGui.QColor.fromHsv(90, 255, v))
-        con_grad.setColorAt(1.0, QtGui.QColor.fromHsv(0, 255, v))
+        color = QtGui.QColor()
+        con_grad.setColorAt(0, color.fromHsv(359, 255, v))
+        con_grad.setColorAt(0.25, color.fromHsv(270, 255, v))
+        con_grad.setColorAt(0.5, color.fromHsv(180, 255, v))
+        con_grad.setColorAt(0.75, color.fromHsv(90, 255, v))
+        con_grad.setColorAt(1.0, color.fromHsv(0, 255, v))
         painter.setBrush(con_grad)
         painter.drawEllipse(self._top_corner - 4, self._top_corner - 4, r + r + 8, r + r + 8)
         painter.setBrush(ctrl.cm.paper())
@@ -390,9 +384,9 @@ class ColorWheelInner(QtWidgets.QWidget):
             self.clickable_areas.pop()  # dont want this to be twice there
 
         painter.setPen(ctrl.cm.ui())
-        light = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 1.0)
+        light = QtGui.QColor().fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 1.0)
         self._gradient.setColorAt(0, light)
-        dark = QtGui.QColor.fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 0)
+        dark = QtGui.QColor().fromHsvF(self.outer.selected_hsv[0], self.outer.selected_hsv[1], 0)
         self._gradient.setColorAt(1, dark)
         painter.setBrush(self._gradient)
 
@@ -447,7 +441,6 @@ class ColorWheelInner(QtWidgets.QWidget):
                     elif self._pressed.startswith('background'):
                         self.outer.set_color_role('background1', update_selector=True)
                     self._pressed = None  # prevent dragging weirdness
-
 
     def mouseMoveEvent(self, event):
         """

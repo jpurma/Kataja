@@ -1,7 +1,7 @@
 # coding=utf-8
-from Monorail.Constituent import Constituent
-from Monorail.Document import Document
-from Monorail.SyntaxAPI import SyntaxAPI
+from kataja.plugins.Monorail.Constituent import Constituent
+from kataja.plugins.Monorail.Document import Document
+from kataja.plugins.Monorail.SyntaxAPI import SyntaxAPI
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -24,6 +24,7 @@ plugin_classes = [Constituent, Document, SyntaxAPI]
 reload_order = ['Monorail.Constituent', 'Monorail.SyntaxAPI',
                 'Monorail.Document', 'Monorail.Parser', 'Monorail.setup']
 
+
 def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. loading
     lexicons or adding new data to main, ctrl or prefs without reclassing them."""
@@ -39,7 +40,6 @@ def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
     pass
-
 
 # Typical call stack when starting a plugin, or starting Kataja with plugin enabled:
 #
@@ -83,4 +83,3 @@ def tear_down_plugin(main, ctrl, prefs):
 #         of parse is written into forest's derivation steps. For command line use, the parse method can return results
 #         in a manner you want.
 #
-

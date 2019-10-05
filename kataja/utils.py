@@ -22,17 +22,16 @@
 #
 # ############################################################################
 
-from types import FrameType
 import gc
+import os
 import string
 import sys
 import time
-import os
 import traceback
 from html import escape as str_escape
+from types import FrameType
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-
 from PyQt5.QtCore import QPointF, QPoint
 
 import kataja.globals as g
@@ -412,7 +411,6 @@ def open_symbol_data(mimedata):
 
 
 def guess_node_type(text):
-
     text = text.strip()
     if text.startswith('['):
         return g.TREE

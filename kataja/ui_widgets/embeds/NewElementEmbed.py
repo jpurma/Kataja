@@ -2,12 +2,12 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl, classes
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.utils import guess_node_type
-from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -83,6 +83,7 @@ class NewElementEmbed(UIEmbed):
         return int(p.x()), int(p.y())
 
     def set_node_type(self, value):
+        # noinspection PyArgumentList
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
     def resizeEvent(self, event):

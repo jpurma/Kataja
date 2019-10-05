@@ -1,8 +1,9 @@
 # coding=utf-8
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.singletons import prefs, ctrl
+
 from kataja.UIItem import UIGraphicsItem
+from kataja.singletons import prefs, ctrl
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -64,14 +65,6 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
 
 
 class NewElementMarker(UIGraphicsItem, QtWidgets.QGraphicsItem):
-    """ Element marker is line drawn to graphics scene pointing from place where new element
-    should go to
-    embedded widget.
-
-    :param parent:
-    :param ui_manager:
-    :param scene_pos:
-    """
     __qt_type_id__ = next_available_type_id()
     unique = True
 

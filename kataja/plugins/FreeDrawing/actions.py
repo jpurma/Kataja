@@ -1,10 +1,10 @@
-from kataja.actions.nodes_panel_actions import AbstractAddNode
-from kataja.ui_widgets.UIEmbed import EmbedAction
-from kataja.singletons import ctrl, log
-from kataja.utils import guess_node_type
-from kataja.KatajaAction import KatajaAction
 import kataja.globals as g
+from kataja.KatajaAction import KatajaAction
+from kataja.actions.nodes_panel_actions import AbstractAddNode
 from kataja.saved.Edge import Edge
+from kataja.singletons import ctrl, log
+from kataja.ui_widgets.UIEmbed import EmbedAction
+from kataja.utils import guess_node_type
 
 
 class CreateNewNodeFromText(EmbedAction):
@@ -95,7 +95,6 @@ class RemoveNode(KatajaAction):
         ctrl.forest.forest_edited()
 
 
-
 # Actions for TouchAreas #######################################
 
 
@@ -116,17 +115,8 @@ class ConnectNode(KatajaAction):
     def method(self, target_uid: int, node_uid=0, position='child', new_label='', new_type=0):
         """ Connect a new or an existing node into an an existing node. By default the new node is
         set as a child of the target node, but other positions are possible too.
-        :param new_node_uid: int, uid for existing node or str that can be turned into new node.
-        :param target_uid: int, uid for existing node. The new node is attached to this node.
-        :param position: str, position must be one of the following:
-            'child',
-            'top_left',
-            'top_right',
-            'sibling_left',
-            'sibling_right',
-            'child_left',
-            'child_right'
         """
+        target = None
         if target_uid in ctrl.forest.nodes:
             target = ctrl.forest.nodes[target_uid]
         elif target_uid in ctrl.forest.edges:
@@ -137,7 +127,7 @@ class ConnectNode(KatajaAction):
         else:
             label = new_label or ctrl.drawing.next_free_label()
             new_node = ctrl.drawing.create_node(label=label, relative=target,
-                                                     node_type=new_type)
+                                                node_type=new_type)
         if position == 'child':
             ctrl.drawing.connect_node(parent=target, child=new_node)
         elif position == 'top_left':
@@ -168,7 +158,7 @@ class ConnectNode(KatajaAction):
             return
         # host is an edge
         ctrl.drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
-                                              self._align_left, self.start_point)
+                                         self._align_left, self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.end.adjustment
         message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
@@ -191,7 +181,6 @@ class MergeToTop(KatajaAction):
 
     def method(self, node_uid, left=True):
         """ Merge this node to left of topmost node of node's tree. It's internal merge!
-        :param node_uid: int or str, node_uid for node to merge.
         """
         ctrl.release_editor_focus()
         node = ctrl.forest.nodes[node_uid]
@@ -212,16 +201,14 @@ class InsertNodeBetween(KatajaAction):
     def method(self, node_uid):
         """
         Connect dropped node to host of this TouchArea.
-        Connection depends on which merge area this is:
-        top left, top right, left, right
-        :param dropped_node:
+        Connection depends on which merge area this is: top left, top right, left, right
         """
         dropped_node = ctrl.forest.nodes.get(node_uid, self.make_node_from_string(node_uid))
         assert (self.host.start and self.host.end)
         adjustment = self.host.end.adjustment
         # host is an edge
         ctrl.drawing.insert_node_between(dropped_node, self.host.start, self.host.end,
-                                              self._align_left, self.start_point)
+                                         self._align_left, self.start_point)
 
         for node in ctrl.dragged_set:
             node.adjustment = adjustment
@@ -247,6 +234,7 @@ class AddFeatureNode(AbstractAddNode):
 
     def enabler(self):
         return True
+
 
 class SetProjectingNode(KatajaAction):
     k_action_uid = 'set_projecting_node'
@@ -320,4 +308,3 @@ class RotateChildren(KatajaAction):
         node = ctrl.forest.nodes[node_uid]
         node.rotate_children()
         ctrl.forest.forest_edited()
-

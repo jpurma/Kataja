@@ -22,12 +22,11 @@
 #
 # ############################################################################
 import math
-import random
 
-from kataja.singletons import prefs, ctrl
-from kataja.Visualization import centered_node_position
-from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 import kataja.globals as g
+from kataja.Visualization import centered_node_position
+from kataja.saved.movables import Node
+from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 
 
 class DynamicWidthTree(DivideAndConquerTree):
@@ -54,12 +53,6 @@ class DynamicWidthTree(DivideAndConquerTree):
             node.physics_y = True
 
     def calculate_movement(self, node: 'Node', other_nodes: list, heat: float):
-        """
-
-        :param node:
-        :param other_nodes:
-        :return:
-        """
         cbr = node.future_children_bounding_rect()
         node_x, node_y = centered_node_position(node, cbr)
         x_vel = 0
@@ -116,14 +109,8 @@ class DynamicWidthTree(DivideAndConquerTree):
         return round(x_vel * heat), 0
 
     def calculate_movement_old(self, node, other_nodes):
-        """
-
-        :param node:
-        :return:
-        """
-
         cbr = node.future_children_bounding_rect()
-        node_x, node_y = self.centered_node_position(node, cbr)
+        node_x, node_y = centered_node_position(node, cbr)
         old_x = node_x
         old_y = node_y
         alpha = 0.2
@@ -138,7 +125,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             if other.is_visible():
                 other_cbr = other.future_children_bounding_rect()
                 close_ones.add(other)
-                other_x, other_y = self.centered_node_position(other, other_cbr)
+                other_x, other_y = centered_node_position(other, other_cbr)
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
 
@@ -157,7 +144,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             if other.is_visible():
                 close_ones.add(other)
                 other_cbr = other.future_children_bounding_rect()
-                other_x, other_y = self.centered_node_position(other, other_cbr)
+                other_x, other_y = centered_node_position(other, other_cbr)
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = ((other_cbr.width() + cbr.width()) / 2) * 1.4
@@ -177,7 +164,7 @@ class DynamicWidthTree(DivideAndConquerTree):
             if other.locked_to_node is node or node.locked_to_node is other:
                 continue
             other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
@@ -195,7 +182,7 @@ class DynamicWidthTree(DivideAndConquerTree):
         # repulse weakly
         for other in close_ones:
             other_cbr = other.future_children_bounding_rect()
-            other_x, other_y = self.centered_node_position(other, other_cbr)
+            other_x, other_y = centered_node_position(other, other_cbr)
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:

@@ -1,6 +1,7 @@
 from kataja.parser.SuperParser import SuperParser
-from kataja.saved.Forest import Forest
 from kataja.plugins.FreeDrawing.FreeDrawing import FreeDrawing
+from kataja.saved.Forest import Forest
+
 
 class EditableForest(Forest):
 
@@ -30,7 +31,7 @@ class EditableForest(Forest):
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
         self.parser = SuperParser(string)
-        result = [self.inode_to_constituentnode(inode) for inode in self.parser.nodes]
+        result = [self.parser.inode_to_constituentnode(inode) for inode in self.parser.nodes]
         if len(result) > 1:
             right = result.pop()
             while result:

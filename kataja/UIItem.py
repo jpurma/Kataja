@@ -1,8 +1,9 @@
 # coding=utf-8
-from kataja.singletons import ctrl
-from kataja.uniqueness_generator import next_available_ui_key
 from PyQt5 import QtWidgets, QtCore
+
+from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaLabel import KatajaBuddyLabel
+from kataja.uniqueness_generator import next_available_ui_key
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
@@ -72,7 +73,9 @@ class UIItem:
         if self.isVisible():
             print('unnecessary show for UIItem: ', self)
         else:
-            super().show()
+            s = super()
+            if hasattr(s, 'show'):
+                s.show()
 
     def fade_in(self, s=150):
         """ Simple fade effect. The object exists already when fade starts.

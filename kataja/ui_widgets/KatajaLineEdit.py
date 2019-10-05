@@ -1,19 +1,10 @@
 from PyQt5 import QtWidgets
 
-from kataja.singletons import ctrl
-from kataja.utils import open_symbol_data
 from kataja.UIItem import UIWidget
+from kataja.utils import open_symbol_data
 
 
 class KatajaLineEdit(QtWidgets.QLineEdit, UIWidget):
-    """
-
-    :param parent:
-    :param tip:
-    :param font:
-    :param prefill:
-    """
-
     def __init__(self, parent, tooltip='', font=None, prefill='', stretch=False, on_edit=None,
                  on_finish=None, on_return=None):
         QtWidgets.QLineEdit.__init__(self, parent)

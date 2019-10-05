@@ -25,6 +25,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
 
     def __init__(self, parent=None, ui=None):
         UIWidget.__init__(self)
+        # noinspection PyArgumentList
         QtWidgets.QFrame.__init__(self, parent=parent)
         layout = QtWidgets.QHBoxLayout()
         self.host_node = None  # find out if there are more benefits from connecting properly to
@@ -52,12 +53,14 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         ui.add_button(self.italic, action='toggle_italic')
         self.italic.setCheckable(True)
         self._left_buttons.append(self.italic)
+        # noinspection PyArgumentList
         layout.addWidget(self.italic)
 
         self.bold = QuickEditButton(action='toggle_bold', parent=self, pixmap=qt_prefs.bold_icon)
         ui.add_button(self.bold, action='toggle_bold')
         self.bold.setCheckable(True)
         self._left_buttons.append(self.bold)
+        # noinspection PyArgumentList
         layout.addWidget(self.bold)
 
         self.underline = QuickEditButton(action='toggle_underline', parent=self,
@@ -65,6 +68,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         ui.add_button(self.underline, action='toggle_underline')
         self.underline.setCheckable(True)
         self._left_buttons.append(self.underline)
+        # noinspection PyArgumentList
         layout.addWidget(self.underline)
 
         self.strikethrough = QuickEditButton(action='toggle_strikethrough', parent=self,
@@ -72,6 +76,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         ui.add_button(self.strikethrough, action='toggle_strikethrough')
         self.strikethrough.setCheckable(True)
         self._left_buttons.append(self.strikethrough)
+        # noinspection PyArgumentList
         layout.addWidget(self.strikethrough)
 
         self.subscript = QuickEditButton(action='toggle_subscript', parent=self,
@@ -79,6 +84,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         ui.add_button(self.subscript, action='toggle_subscript')
         self.subscript.setCheckable(True)
         self._left_buttons.append(self.subscript)
+        # noinspection PyArgumentList
         layout.addWidget(self.subscript)
 
         self.superscript = QuickEditButton(action='toggle_superscript', parent=self,
@@ -86,12 +92,14 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         ui.add_button(self.superscript, action='toggle_superscript')
         self.superscript.setCheckable(True)
         self._left_buttons.append(self.superscript)
+        # noinspection PyArgumentList
         layout.addWidget(self.superscript)
 
         self.no_style = QuickEditButton(action='remove_styles', parent=self,
                                         pixmap=qt_prefs.remove_styles_icon)
         ui.add_button(self.no_style, action='remove_styles')
         self._left_buttons.append(self.no_style)
+        # noinspection PyArgumentList
         layout.addWidget(self.no_style)
 
         layout.setContentsMargins(2, 0, 2, 0)

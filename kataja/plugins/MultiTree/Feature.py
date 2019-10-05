@@ -1,7 +1,7 @@
-
 try:
     from kataja.SavedField import SavedField
     from kataja.syntax.BaseFeature import BaseFeature
+
     in_kataja = True
 except ImportError:
     BaseFeature = object

@@ -24,13 +24,12 @@
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+from kataja.KatajaAction import KatajaAction
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_support.panel_utils import label
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
-from kataja.KatajaAction import KatajaAction
-from kataja.utils import caller
 
 ss = """font-family: "%(font)s"; font-size: %(font_size)spx;"""
 
@@ -55,13 +54,7 @@ class PanelTitle(QtWidgets.QWidget):
     """ Widget for displaying panel title and control buttons in a concise form """
 
     def __init__(self, name, panel, foldable=True):
-        """
-
-        :param name:
-        :param parent:
-        :param use_title:
-        :return:
-        """
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent=panel)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
                                                  QtWidgets.QSizePolicy.Preferred))
@@ -140,7 +133,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :param parent:
         """
         UIWidget.__init__(self)
-        QtWidgets.QDockWidget.__init__(self, name, parent=parent)
+        QtWidgets.QDockWidget.__init__(self, name)
+        self.setParent(parent)
         self.folded = folded
         self.name = name
         self._last_position = None
@@ -166,6 +160,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.title_widget = PanelTitle(name, self, foldable=foldable)
         self.setTitleBarWidget(self.title_widget)
         self.report_top_level()
+        # noinspection PyArgumentList
         inner = QtWidgets.QWidget(self)
         self.vlayout = QtWidgets.QVBoxLayout()
         self.vlayout.sizeHint = self.inner_size_hint
@@ -221,17 +216,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.updateGeometry()
 
     def report_dock_location(self, area):
-        """
-
-        :param area:
-        """
         pass
 
     def report_top_level(self):
-        """
-
-        :param floating:
-        """
         if self.isFloating():
             if self.size() != self.sizeHint():
                 self.resize(self.sizeHint())
@@ -280,7 +267,3 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         if y > screen_rect.bottom():
             y = screen_rect.bottom() - h
         return QtCore.QPoint(x, y)
-
-
-
-

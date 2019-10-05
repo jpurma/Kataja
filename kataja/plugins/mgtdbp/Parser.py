@@ -41,18 +41,21 @@ import heapq
 import time
 
 try:
-    from mgtdbp.Constituent import Constituent
-    from mgtdbp.Feature import Feature
-    from mgtdbp.LexNode import LexNode
+    from kataja.plugins.mgtdbp.Constituent import Constituent
+    from kataja.plugins.mgtdbp.Feature import Feature
+    from kataja.plugins.mgtdbp.LexNode import LexNode
     from kataja.singletons import running_environment
-    from mgtdbp.Output import DerivationPrinter, write_lexicon_graph_json
+    from kataja.plugins.mgtdbp.Output import DerivationPrinter, write_lexicon_graph_json
+
     in_kataja = True
 except ImportError:
     in_kataja = False
-    from Constituent import Constituent
-    from Feature import Feature
-    from LexNode import LexNode
-    from Output import DerivationPrinter, write_lexicon_graph_json
+    from .Constituent import Constituent
+    from .Feature import Feature
+    from .LexNode import LexNode
+    from .Output import DerivationPrinter, write_lexicon_graph_json
+
+    running_environment = None
 
 OUTFILE = 'parser_output.txt'
 COMPARISON_FILE = 'original_mgtdbp_output.txt'
@@ -108,6 +111,7 @@ def load_grammar(g=''):
         branch = lex_trees[key_feat.name]
         for feat in rest:
             found = False
+            node = None
             for node in branch.parts:
                 if node.feat == feat:
                     found = True
@@ -471,7 +475,7 @@ class Parser:
                 elif target.feat.sign == '≈':  # adjunct, selects but doesn't remove selected
                     leaves = [n for n in target.parts if not n.parts]
                     if leaves:
-                        self.merge1b(leaves)
+                        self.merge1b(target, leaves)
                 elif target.feat.sign == '>':  # insert
                     pass
                 else:
@@ -485,7 +489,7 @@ class Parser:
                     msg = self.step_info()
                     msg += f"Lexicon scan found ({target.word or '∅'}:: "
                     msg += f"...{self.active_category.node.feat})"
-                    #print('creating word expansion: word %s (%s), parent %s' % (
+                    # print('creating word expansion: word %s (%s), parent %s' % (
                     #      target.word, target.key, self.active_category.node))
                     self.expansions.append(
                         Expansion(msg,
@@ -552,7 +556,7 @@ class Parser:
                     new_prob = self.active_parse.probability / len(self.expansions)
                     if new_prob < self.min_probability:
                         self.insert_new_parses(new_prob)
-                        #print(self.active_parse.msg)
+                        # print(self.active_parse.msg)
                         if partial_results:
                             self.printer.show_results(self.active_parse)
                     else:
@@ -614,9 +618,9 @@ sentences = [
     ('mg0.txt', 'C', 'the king knows which queen prefers the wine'),
     ('mg0.txt', 'C', 'which queen says the king knows which wine the queen prefers'),
     ('mgxx.txt', 'T', 'a a')
-    #('mg3.txt', 'C', 'the senator that blip attack the reporter')
-            ]
-             #('mg3.txt', 'C', 'the reporter that the senator attack -ed admit -ed the error')]
+    # ('mg3.txt', 'C', 'the senator that blip attack the reporter')
+]
+# ('mg3.txt', 'C', 'the reporter that the senator attack -ed admit -ed the error')]
 
 if __name__ == '__main__':
     write_file = open(OUTFILE, 'w') if OUTFILE else None
@@ -625,7 +629,7 @@ if __name__ == '__main__':
     for gfile, start, sen in sentences:
         p = Parser(lex_items=gfile, min_p=0.0001, outfile=write_file)
         p.parse(sen.split(), start)
-        if gfile != prev_file: # don't write same file multiple times
+        if gfile != prev_file:  # don't write same file multiple times
             write_lexicon_graph_json(p.lex_trees, gfile)
             prev_file = gfile
 

@@ -1,5 +1,3 @@
-
-
 class SyntaxState:
     """ This is a simple class to provide a common format for syntactic objects when they are
     a) restored from stored/pickled data or
@@ -27,7 +25,3 @@ class SyntaxState:
         self.semantic_hierarchies = semantic_hierarchies or []
         self.log = log or []
         self.state_type = state_type
-
-
-
-

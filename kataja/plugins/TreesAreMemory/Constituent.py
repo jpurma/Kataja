@@ -1,8 +1,10 @@
 try:
     from kataja.SavedField import SavedField
     from kataja.syntax.BaseConstituent import BaseConstituent
+
     in_kataja = True
 except ImportError:
+    SavedField = None
     BaseConstituent = None
     in_kataja = False
 

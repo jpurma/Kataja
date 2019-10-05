@@ -23,15 +23,15 @@
 #
 # ############################################################################
 
+import subprocess
+import tempfile
+
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-
-from kataja.singletons import ctrl, prefs, log
 from PIL import Image
 
-import tempfile
-import subprocess
+from kataja.singletons import ctrl, prefs, log
 
 
 class Recorder:

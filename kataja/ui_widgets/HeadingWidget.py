@@ -1,10 +1,9 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
-from kataja.singletons import ctrl, qt_prefs, prefs
-from kataja.uniqueness_generator import next_available_type_id
+from kataja.singletons import qt_prefs
 from kataja.ui_widgets.buttons.TwoStateIconButton import TwoStateIconButton
-from kataja.KatajaAction import KatajaAction
+from kataja.uniqueness_generator import next_available_type_id
 
 __author__ = 'purma'
 
@@ -21,15 +20,13 @@ class HeadingWidget(UIWidget, QtWidgets.QWidget):
     UIEmbed implements the basic functions of all embeds: showing them,
     updating their positions, close buttons, updating colors. The approach is
     similar to UIPanels.
-
-    :param parent:
-    :param ui_manager:
     """
     __qt_type_id__ = next_available_type_id()
     unique = True
 
     def __init__(self, parent):
         UIWidget.__init__(self)
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         self.text = ''
         self.folded = False
@@ -44,6 +41,7 @@ class HeadingWidget(UIWidget, QtWidgets.QWidget):
         layout.setAlignment(QtCore.Qt.AlignLeft)
         layout.addSpacing(8)
         self.text_widget = QtWidgets.QLabel(self.text)
+        # noinspection PyArgumentList
         layout.addWidget(self.text_widget)
         self.setLayout(layout)
 
@@ -77,4 +75,3 @@ class HeadingWidget(UIWidget, QtWidgets.QWidget):
     def mouseReleaseEvent(self, event):
         self._drag_diff = None
         super().mouseReleaseEvent(event)
-

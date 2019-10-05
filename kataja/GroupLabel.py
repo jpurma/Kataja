@@ -25,11 +25,11 @@
 import math
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
+from PyQt5.QtCore import Qt
 
-from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 import kataja.utils as utils
+from kataja.singletons import ctrl, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 
 
@@ -44,7 +44,9 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         :param text:
         :param parent:
         """
-        QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
+        # noinspection PyArgumentList
+        QtWidgets.QGraphicsTextItem.__init__(self, text)
+        self.setParentItem(parent)
         self._host = self.parentItem()
         self.selected = False
         self.automatic_position = True
@@ -259,10 +261,6 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
             self._host.update_selection_status(ctrl.is_selected(self._host))
 
     def compute_angle_for_pos(self, event_pos, adjustment=None):
-        """
-
-        :param top_left:
-        """
         if adjustment:
             epos = event_pos - adjustment + QtCore.QPointF(self._w2, self._h2)
         else:

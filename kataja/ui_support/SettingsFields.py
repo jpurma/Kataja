@@ -2,8 +2,8 @@ from PyQt5 import QtCore, QtWidgets
 
 from kataja.PaletteManager import color_themes
 from kataja.singletons import prefs, ctrl
-from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.selection_boxes.PluginSelector import PluginSelector
+from kataja.visualizations.available import VISUALIZATIONS
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
@@ -32,9 +32,13 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
         self.spinbox.setValue(value)
         self.slider.setTickInterval(10)
         self.spinbox.setAccelerated(True)
+        # noinspection PyUnresolvedReferences
         self.slider.valueChanged.connect(self.slider_changed)
+        # noinspection PyUnresolvedReferences
         self.spinbox.valueChanged.connect(self.spinbox_changed)
+        # noinspection PyArgumentList
         self.addWidget(self.slider)
+        # noinspection PyArgumentList
         self.addWidget(self.spinbox)
 
     def buddy_target(self):
@@ -90,7 +94,9 @@ class CheckBox(QtWidgets.QHBoxLayout):
         self.on_change_method = None
         value = getattr(prefs, self.field_name)
         self.checkbox.setChecked(value)
+        # noinspection PyUnresolvedReferences
         self.checkbox.stateChanged.connect(self.checkbox_changed)
+        # noinspection PyArgumentList
         self.addWidget(self.checkbox)
 
     def buddy_target(self):
@@ -140,7 +146,9 @@ class FileChooser(QtWidgets.QVBoxLayout):
         self.folders_only = folders_only
         self.textbox = QtWidgets.QLineEdit()
         self.file_button = QtWidgets.QPushButton("Select Folder")
+        # noinspection PyArgumentList
         self.addWidget(self.textbox)
+        # noinspection PyArgumentList
         self.addWidget(self.file_button)
         self.field_name = field_name
         self.on_change_method = None

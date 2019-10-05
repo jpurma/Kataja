@@ -23,4 +23,3 @@ for field in fields:
     text = node.as_latex()
     print("Turned back: ", text)
     print("------------------")
-

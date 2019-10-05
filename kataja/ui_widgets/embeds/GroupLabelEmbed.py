@@ -1,14 +1,13 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_widgets.embeds.NodeEditEmbed import make_label
 from kataja.ui_widgets.selection_boxes.ColorSelector import ColorSelector
-from kataja.ui_widgets.ExpandingLineEdit import ExpandingLineEdit
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -88,4 +87,3 @@ class GroupLabelEmbed(UIEmbed):
         point_in_view = ctrl.graph_view.mapFromScene(focus_point)
         self.move(point_in_view.x() - (self.width() / 2), point_in_view.y() + 24)
         self.updateGeometry()
-

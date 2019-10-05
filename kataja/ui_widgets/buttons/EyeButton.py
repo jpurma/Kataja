@@ -24,8 +24,8 @@
 
 from PyQt5 import QtGui, QtCore
 
-from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.utils import colored_image
 
 
@@ -51,7 +51,9 @@ class EyeButton(PanelButton):
         c = ctrl.cm.get(self.color_key)
         image = colored_image(c, self.base_image)
         checked_image = colored_image(c, self.pixmap1)
+        # noinspection PyArgumentList
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        # noinspection PyArgumentList
         self.checked_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(checked_image))
         if self.isChecked():
             self.setIcon(self.checked_icon)

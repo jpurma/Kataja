@@ -28,14 +28,11 @@ import random
 from collections import OrderedDict
 
 import PyQt5.QtGui as QtGui
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QColor as c
 
-from kataja.globals import FOREST
 from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
-from kataja.globals import DOCUMENT, PREFS
 
 color_keys = [f'content{i}' for i in range(1, 4)] + \
              [f'content{n}tr' for n in range(1, 4)] + \
@@ -248,7 +245,6 @@ class PaletteManager:
         :param try_to_remember: bool -- try to restore the previous base color, effective only
         for randomising palettes.
         """
-
         self.theme_key = theme_key
         if theme_key in self.default_themes:
             data = self.default_themes[theme_key]
@@ -262,8 +258,7 @@ class PaletteManager:
         self.hsv = data.get('hsv', [0.00, 0.29, 0.35])  # dark rose)
         contrast = data.get('contrast', 55)
         faded = data.get('faded', False)
-        bw = data.get('bw', False)
-        colors = data.get('colors', None)
+        colors = data.get('colors', {})
 
         build = data.get('build', '')
         if build == 'solarized_lt':
@@ -283,12 +278,15 @@ class PaletteManager:
                 lu_min = data.get('lu_min', 25)
                 lu = 101
                 lu_max = data.get('lu_max', 95)
+                r = random.random()
+                g = random.random()
+                b = random.random()
                 while not (lu_min < lu < lu_max):
                     r = random.random()
                     g = random.random()
                     b = random.random()
                     hu, su, lu = rgb_to_husl(r, g, b)
-                key_color = c.fromRgbF(r, g, b)
+                key_color = c().fromRgbF(r, g, b)
                 self.hsv = list(key_color.getHsvF())[:3]
                 if ctrl.forest:
                     remembered = ctrl.forest.settings.get('last_key_colors')
@@ -301,7 +299,7 @@ class PaletteManager:
                     ctrl.forest.settings.set('last_key_colors', remembered)
         if colors:
             for key, (r, g, b, a) in colors.items():
-                color = c.fromRgbF(r, g, b)
+                color = c().fromRgbF(r, g, b)
                 color.setAlphaF(a)
                 self.d[key] = color
             color = self.d['content1']
@@ -318,13 +316,14 @@ class PaletteManager:
         data = self.default_themes.get(self.theme_key, None)
         return data and data.get('build', '') == 'random'
 
-    def accent_from_hue(self, hue):
+    @staticmethod
+    def accent_from_hue(hue):
         h2 = hue * hue
         h3 = h2 * hue
         # polynomial approximation of how saturation and value are related to hue in Solarized
         saturation = 0.0000132 * h3 - 0.0068 * h2 + 0.7769 * hue + 77.188
         value = -7.07E-6 * h3 + 0.0042 * h2 - 0.6383 * hue + 88.615
-        return QColor.fromHsv(hue, min(255, saturation * 2.55), min(255, value * 2.55))
+        return QColor().fromHsv(hue, min(255, saturation * 2.55), min(255, value * 2.55))
 
     def is_custom(self):
         return self.theme_key in self.custom_themes
@@ -383,8 +382,6 @@ class PaletteManager:
 
     def update_colors(self, randomise=False):
         """ Create/get root color and build palette around it
-        :param prefs:
-        :param settings:
         :param randomise: if color mode allows, generate new base color
         """
         if ctrl.forest:
@@ -439,7 +436,6 @@ class PaletteManager:
 
     def compute_palette(self, hsv, contrast=55, faded=False):
         """ Create/get root color and build palette around it.
-        :param hsv:
         Leaves custom colors as they are. """
 
         self.hsv = hsv
@@ -772,6 +768,7 @@ class PaletteManager:
         self.update_custom_themes()
         self.update_custom_colors()
         ctrl.main.color_themes_changed.emit()
+
 
 # HUSL colors and the code for creating them is from here:
 # https://github.com/husl-colors/husl-python

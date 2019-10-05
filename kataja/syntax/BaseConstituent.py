@@ -23,10 +23,10 @@
 # ############################################################################
 
 
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.syntax.IConstituent import IConstituent
+from kataja.SavedObject import SavedObject
 from kataja.syntax.BaseFeature import BaseFeature
+from kataja.syntax.IConstituent import IConstituent
 
 
 class BaseConstituent(SavedObject, IConstituent):
@@ -53,6 +53,7 @@ class BaseConstituent(SavedObject, IConstituent):
     editable = {}
     addable = {'features': {'condition': 'can_add_feature', 'add': 'add_feature', 'order': 20}
                }
+
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
     def __init__(self, label='', parts=None, uid='', features=None, lexical_heads=None, adjunct=False, set_hosts=True,
@@ -233,8 +234,6 @@ class BaseConstituent(SavedObject, IConstituent):
 
     def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
-        :param fname: str, the name for finding the feature or for convenience, a feature
-        instance to be removed
         """
         if isinstance(name, BaseFeature):
             if name in self.features:
@@ -277,15 +276,15 @@ class BaseConstituent(SavedObject, IConstituent):
         for part in self.parts:
             new = part.copy()
             new_parts.append(new)
-        #fmap = dict([(f.uid, f.copy()) for f in set(self.features + self.checked_features)])
-        #new_features = [fmap[f.uid] for f in self.features]
-        #checked_features = [fmap[f.uid] for f in self.checked_features]
+        # fmap = dict([(f.uid, f.copy()) for f in set(self.features + self.checked_features)])
+        # new_features = [fmap[f.uid] for f in self.features]
+        # checked_features = [fmap[f.uid] for f in self.checked_features]
         new_features = [f.copy() for f in self.features]
         nc = self.__class__(label=self.label,
                             parts=new_parts,
                             features=new_features,
                             adjunct=self.adjunct)
-        #nc.checked_features = checked_features
+        # nc.checked_features = checked_features
         return nc
 
     def copy(self, done=None):
@@ -294,7 +293,7 @@ class BaseConstituent(SavedObject, IConstituent):
         if self.uid in done:
             return done[self.uid]
         other = self.__class__(self.label)
-        #other.uid = self.uid
+        # other.uid = self.uid
         done[self.uid] = other
         other.parts = [x.copy(done=done) for x in self.parts]
         other.features = [f.copy(done=done) for f in self.features]
@@ -303,7 +302,6 @@ class BaseConstituent(SavedObject, IConstituent):
         if self.head:
             other.head = self.head.copy(done=done)
         return other
-
 
     # ############## #
     #                #
@@ -322,4 +320,3 @@ class BaseConstituent(SavedObject, IConstituent):
     gloss = SavedField("gloss")
     head = SavedField("head")
     num = SavedField("num")
-

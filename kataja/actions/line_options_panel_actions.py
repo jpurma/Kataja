@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import kataja.globals as g
-from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import PanelAction
+
 
 # ==== Class variables for KatajaActions:
 #
@@ -82,8 +82,8 @@ class ChangeEdgeColor(PanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return self.panel.get_active_edge_setting('color_key') or \
-            self.panel.get_active_node_setting('color_key')
+        return ctrl.ui.get_active_edge_setting('color_key', self.panel.active_edge_type) or \
+               self.panel.get_active_node_setting('color_key')
 
 
 class EdgeArrowheadStart(PanelAction):
@@ -107,7 +107,7 @@ class EdgeArrowheadStart(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        old_value = self.panel.get_active_edge_setting('arrowheads')
+        old_value = ctrl.ui.get_active_edge_setting('arrowheads', self.panel.active_edge_type)
         if old_value == g.AT_END and value:
             new_value = g.AT_BOTH
         elif old_value == g.AT_BOTH and not value:
@@ -126,7 +126,7 @@ class EdgeArrowheadStart(PanelAction):
 
     def getter(self):
         if self.panel:
-            arrowheads = self.panel.get_active_edge_setting('arrowheads')
+            arrowheads = ctrl.ui.get_active_edge_setting('arrowheads', self.panel.active_edge_type)
             return arrowheads == g.AT_START or arrowheads == g.AT_BOTH
 
 
@@ -151,7 +151,7 @@ class EdgeArrowheadEnd(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        old_value = self.panel.get_active_edge_setting('arrowheads')
+        old_value = ctrl.ui.get_active_edge_setting('arrowheads', self.panel.active_edge_type)
         if old_value == g.AT_START and value:
             new_value = g.AT_BOTH
         elif old_value == g.AT_BOTH and not value:
@@ -170,7 +170,7 @@ class EdgeArrowheadEnd(PanelAction):
 
     def getter(self):
         if self.panel:
-            arrowheads = self.panel.get_active_edge_setting('arrowheads')
+            arrowheads = ctrl.ui.get_active_edge_setting('arrowheads', self.panel.active_edge_type)
             return arrowheads == g.AT_END or arrowheads == g.AT_BOTH
 
 
@@ -250,7 +250,8 @@ class LeafShapeX(PanelAction):
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_x')
+        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting(
+            'leaf_x')
 
     def getter(self):
         return self.panel.get_active_shape_setting('leaf_x')
@@ -282,7 +283,8 @@ class LeafShapeY(PanelAction):
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
-        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting('leaf_y')
+        return self.panel and ctrl.ui.has_edges_in_scope() and self.panel.is_active_fillable() and self.panel.active_edge_has_setting(
+            'leaf_y')
 
     def getter(self):
         return self.panel.get_active_shape_setting('leaf_y')
@@ -507,5 +509,3 @@ class EdgeShapeLine(PanelAction):
 
     def getter(self):
         return self.panel.has_active_outline()
-
-

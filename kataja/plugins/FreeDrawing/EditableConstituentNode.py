@@ -1,17 +1,14 @@
-
-
-from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.SavedField import SavedField
-import kataja.plugins.FreeDrawing.TouchAreas as TA
-import kataja.plugins.FreeDrawing.OverlayButtons as OB
-from kataja.plugins.FreeDrawing.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
 import kataja.globals as g
-from kataja.singletons import classes, ctrl
+import kataja.plugins.FreeDrawing.OverlayButtons as OB
+import kataja.plugins.FreeDrawing.TouchAreas as TA
+from kataja.SavedField import SavedField
 from kataja.parser.INodes import as_html, extract_triangle, join_lines
+from kataja.plugins.FreeDrawing.ConstituentNodeEditEmbed import ConstituentNodeEditEmbed
+from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
+from kataja.singletons import classes, ctrl
 
 
 class EditableConstituentNode(ConstituentNode):
-
     allowed_child_types = [g.CONSTITUENT_NODE, g.FEATURE_NODE, g.GLOSS_NODE, g.COMMENT_NODE]
 
     # Touch areas are UI elements that scale with the trees: they can be
@@ -27,13 +24,15 @@ class EditableConstituentNode(ConstituentNode):
     # format.
 
     touch_areas_when_dragging = ConstituentNode.touch_areas_when_selected + \
-        [TA.LeftAddTop, TA.LeftAddSibling, TA.RightAddSibling, TA.AddBelowTouchArea]
+                                [TA.LeftAddTop, TA.LeftAddSibling, TA.RightAddSibling, TA.AddBelowTouchArea]
     touch_areas_when_selected = ConstituentNode.touch_areas_when_selected + \
-        [TA.LeftAddTop, TA.RightAddTop, TA.MergeToTop, TA.LeftAddInnerSibling, TA.RightAddInnerSibling,
-         TA.LeftAddUnaryChild, TA.RightAddUnaryChild, TA.LeftAddLeafSibling, TA.RightAddLeafSibling]
+                                [TA.LeftAddTop, TA.RightAddTop, TA.MergeToTop, TA.LeftAddInnerSibling,
+                                 TA.RightAddInnerSibling,
+                                 TA.LeftAddUnaryChild, TA.RightAddUnaryChild, TA.LeftAddLeafSibling,
+                                 TA.RightAddLeafSibling]
 
     buttons_when_selected = ConstituentNode.buttons_when_selected + \
-        [OB.RemoveMergerButton, OB.RemoveNodeButton, OB.RotateButton]
+                            [OB.RemoveMergerButton, OB.RemoveNodeButton, OB.RotateButton]
 
     embed_edit = ConstituentNodeEditEmbed
     quick_editable = True
@@ -100,7 +99,6 @@ class EditableConstituentNode(ConstituentNode):
             base = as_html(self.label)
             if base.strip().startswith('t<sub>'):
                 self.is_trace = True
-
 
     # Conditions ##########################
     # These are called from templates with getattr, and may appear unused for IDE's analysis.

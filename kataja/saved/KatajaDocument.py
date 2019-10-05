@@ -23,10 +23,10 @@
 # ############################################################################
 import os
 
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.singletons import ctrl, classes, prefs
+from kataja.SavedObject import SavedObject
 from kataja.settings.DocumentSettings import DocumentSettings
+from kataja.singletons import ctrl, classes, prefs
 
 
 def definitions_as_text(defs):
@@ -142,7 +142,7 @@ class KatajaDocument(SavedObject):
     def play_animations(self, value, from_button=False):
         self.play = value
         if not from_button:
-            action = self.ui.get_action('play_animations')
+            action = ctrl.ui.get_action('play_animations')
             action.update_ui_value()
 
     @staticmethod
@@ -157,7 +157,6 @@ class KatajaDocument(SavedObject):
         except FileNotFoundError:
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
-
 
     def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read list of strings where each line defines a trees or an element of trees.
@@ -208,7 +207,7 @@ class KatajaDocument(SavedObject):
         Forest = classes.Forest
         for line in treelist:
             line = line.strip()
-            #line.split('=', 1)
+            # line.split('=', 1)
             parts = line.split('=', 1)
             # comment line
             if line.startswith('#'):

@@ -24,11 +24,11 @@
 
 
 import kataja.globals as g
-from kataja.errors import ForestError
-from kataja.singletons import log, prefs
 from kataja.ForestDrawing import ForestDrawing
+from kataja.errors import ForestError
 from kataja.parser.INodes import as_text, extract_triangle
 from kataja.saved.movables.Node import Node
+from kataja.singletons import log, prefs
 
 
 class FreeDrawing(ForestDrawing):
@@ -138,13 +138,6 @@ class FreeDrawing(ForestDrawing):
         merger_node.heads = list(old_node.heads)
 
     def merge_to_top(self, top, new, merge_to_left=True):
-        """
-        :param top:
-        :param new:
-        :param merge_to_left:
-        :param pos:
-        :return:
-        """
         if merge_to_left:
             left = new
             right = top
@@ -159,12 +152,6 @@ class FreeDrawing(ForestDrawing):
         removed, but three are created.
         This happens when touch area in edge going up from node N is clicked,
         or if a node is dragged there.
-
-        :param parent:
-        :param child:
-        :param inserted:
-        :param merge_to_left:
-        :param insertion_pos:
         """
         edge = parent.get_edge_to(child)
         # store the projection and alignment info before disconnecting the edges

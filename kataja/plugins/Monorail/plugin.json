@@ -1,7 +1,7 @@
 {
-	"name": "Monorail",
-	"description": "An example where treebank examples are built in a single continuous workspace",
-	"author": "Jukka Purma",
-	"version": "0.1",
-	"setup": "setup.py"
+  "name": "Monorail",
+  "description": "An example where treebank examples are built in a single continuous workspace",
+  "author": "Jukka Purma",
+  "version": "0.1",
+  "setup": "setup.py"
 }

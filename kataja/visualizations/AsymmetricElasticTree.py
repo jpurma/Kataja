@@ -22,11 +22,8 @@
 #
 # ############################################################################
 
-
 import math
-import random
 
-import kataja.globals as g
 from kataja.Visualization import BaseVisualization, centered_node_position
 from kataja.singletons import prefs
 
@@ -98,11 +95,11 @@ def border_distance(n1x, n1y, n1w2, n1h2, n2x, n2y, n2w2, n2h2):
     # overlap detection
     if abs(dx) < abs(p1x) + abs(p2x) or abs(dy) < abs(p1y) + abs(p2y):
         # all overlaps are push equally hard
-        d = max(1, math.hypot(dx, dy))
+        d = max(1.0, math.hypot(dx, dy))
         return 1, dx / d, dy / d, True
     else:
         fdx, fdy = n2x + p2x - (n1x + p1x), n2y + p2y - (n1y + p1y)
-        d = max(1, math.hypot(fdx, fdy))
+        d = max(1.0, math.hypot(fdx, fdy))
         return d, fdx, fdy, False
 
 

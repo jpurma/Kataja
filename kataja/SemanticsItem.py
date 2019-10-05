@@ -1,10 +1,9 @@
+import math
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.globals import SMALL_FEATURE
 from kataja.singletons import ctrl, qt_prefs
-
-import math
 
 FREE = 0
 SENTENCE = 1
@@ -112,7 +111,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                     grad.setColorAt(0.6, ctrl.cm.get(self.color_key_tr))
                     grad.setColorAt(1, ctrl.cm.get(self.color_key))
                     painter.setBrush(grad)
-                    #painter.setBrush(ctrl.cm.get(self.color_key_tr))
+                    # painter.setBrush(ctrl.cm.get(self.color_key_tr))
                     # p.lineTo(px - x, py - y)
 
                     if py < y:
@@ -132,11 +131,11 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                                  + 2)
                         p.lineTo(0, mid_height + 2)
                     painter.drawPath(p)
-                else:
-                    p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
-                    p.lineTo((px - x) / 2, mid_height)
-                    p.quadTo(((px - x) / 4) * 3, mid_height, px - x, py - y)
-                    painter.drawPath(p)
+                # else:
+                #     p = QtGui.QPainterPath(QtCore.QPointF(0, mid_height))
+                #     p.lineTo((px - x) / 2, mid_height)
+                #     p.quadTo(((px - x) / 4) * 3, mid_height, px - x, py - y)
+                #     painter.drawPath(p)
             self.setBrush(ctrl.cm.paper())
             QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, *args, **kwargs)
         else:

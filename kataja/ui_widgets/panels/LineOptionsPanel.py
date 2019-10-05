@@ -1,12 +1,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.edge_styles import names as edge_names
 from kataja.Shapes import SHAPE_PRESETS
+from kataja.edge_styles import names as edge_names
 from kataja.singletons import ctrl, prefs, classes
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaCheckBox import KatajaCheckBox
-from kataja.ui_widgets.KatajaRadioButton import KatajaRadioButton
 from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox, KatajaDecimalSpinbox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
@@ -18,6 +17,7 @@ __author__ = 'purma'
 
 
 def hdivider():
+    # noinspection PyArgumentList
     hline = QtWidgets.QFrame()
     hline.setForegroundRole(QtGui.QPalette.AlternateBase)
     hline.setFrameShape(QtWidgets.QFrame.HLine)
@@ -50,7 +50,7 @@ class LineOptionsPanel(Panel):
 
         self.edge_type_selector = SelectionBox(parent=widget, data=[],
                                                action='set_edge_type_for_editing'
-                                           ).to_layout(hlayout, with_label='Style for')
+                                               ).to_layout(hlayout, with_label='Style for')
         self.edge_type_selector.setFixedWidth(148)
 
         layout.addWidget(hdivider())
@@ -196,13 +196,12 @@ class LineOptionsPanel(Panel):
 
     def update_selection(self):
         self.update_scope_selector_options()
-        #if ctrl.ui.scope_is_selection:
+        # if ctrl.ui.scope_is_selection:
         #    self.edge_type_selector.setEnabled(False)
-        #else:
+        # else:
         #    self.edge_type_selector.setEnabled(False)
         #    self.edge_type_selector.select_by_data(self.active_node_type)
-        #self.scope_selector.select_by_data(ctrl.ui.active_scope)
-
+        # self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
     def initial_position(self, next_to=''):
         """
@@ -250,8 +249,9 @@ class LineOptionsPanel(Panel):
             nodes = ctrl.get_selected_nodes()
             if nodes:
                 for node in nodes:
-                    if key in node._settings:
-                        return node._settings[key]
+                    ns = node.get_settings()
+                    if key in ns:
+                        return ns[key]
                 return nodes[0].settings.get(key)
             shape_name = ctrl.ui.get_active_edge_setting('shape_name', self.active_edge_type)
             return ctrl.forest.settings.get_for_edge_shape(key, shape_name)
@@ -275,7 +275,7 @@ class LineOptionsPanel(Panel):
                     if key in edge.settings:
                         return edge.settings[key]
                 return getattr(edges[0].path.my_shape, key)
-        shape_name = self.get_active_edge_setting('shape_name')
+        shape_name = ctrl.ui.get_active_edge_setting('shape_name', self.active_edge_type)
         return getattr(SHAPE_PRESETS[shape_name], key)
 
     def is_active_fillable(self):

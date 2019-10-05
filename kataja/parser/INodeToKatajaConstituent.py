@@ -1,9 +1,8 @@
 __author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.INodes import IParserNode, ITextNode
-from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.singletons import ctrl
 from kataja.parser.SuperParser import SuperParser
+from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 
 
 class INodeToKatajaConstituent:
@@ -25,7 +24,7 @@ class INodeToKatajaConstituent:
         self.temp_tree = None
 
     # @time_me
-    #IParserNode(parts=[
+    # IParserNode(parts=[
     #    IParserNode(parts=[IParserNode(parts=[IParserNode(label_rows=['Cynth']), IParserNode(label_rows=['Daff'])])],
     #                label_rows=['Boris'])], label_rows=['Adolf'])
 
@@ -58,6 +57,7 @@ class INodeToKatajaConstituent:
         :param inode:
         :return:
         """
+        cnode = None
         if isinstance(inode, IParserNode):
             cnode = self.parsernodes_to_constituentnodes(inode)
         elif isinstance(inode, ITextNode):
@@ -65,11 +65,6 @@ class INodeToKatajaConstituent:
         return cnode
 
     def textnode_to_constituentnode(self, tnode):
-        """
-
-        :param node:
-        :return:
-        """
         cn = self.forest.drawing.create_node(label=tnode, node_type=g.CONSTITUENT_NODE)
         cn.update_label()
         return cn
@@ -77,8 +72,6 @@ class INodeToKatajaConstituent:
     def parsernodes_to_constituentnodes(self, parsernode):
         """ Recursively turn IParserNodes into Constituents supported by syntax
         and further into Kataja's ConstituentNodes.
-        :param inode: should be IParserNode.
-        :return: the root ConstituentNode
         """
         f = self.forest
         children = []

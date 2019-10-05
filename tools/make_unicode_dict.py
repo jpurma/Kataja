@@ -1,18 +1,18 @@
-from xml.dom.minidom import parse, parseString
 import pprint
+from xml.dom.minidom import parse
 
 MAKE = 1
 PREVIEW = 0
 
-operation = MAKE 
-#operation = PREVIEW
+operation = MAKE
+# operation = PREVIEW
 
-dom1 = parse('../temp/unicode.xml') # parse an XML file by name
+dom1 = parse('../temp/unicode.xml')  # parse an XML file by name
 
 charmap = {}
 prep_tables = ['greek', 'latin', 'combining', 'arrows', 'rest']
-tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
-
+tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr',
+          'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
 
 manual_additions = {
     "theta": ('θ', 'greek letter theta', 'greek'),
@@ -21,6 +21,7 @@ manual_additions = {
     "Omicron": ('O', 'greek capital letter omicron', 'greek'),
     "omicron": ('o', 'greek letter omicron', 'greek'),
 }
+
 
 def getText(nodelist):
     """
@@ -34,6 +35,7 @@ def getText(nodelist):
             rc.append(node.data)
     return ''.join(rc)
 
+
 def find_characters(dom):
     """
 
@@ -46,7 +48,7 @@ def find_characters(dom):
     for character in characters:
         d += 1
         latex_element = character.getElementsByTagName("latex")
-        #print(latex)
+        # print(latex)
         if latex_element:
             latex = getText(latex_element[0].childNodes)
             latex = latex.strip()
@@ -56,13 +58,14 @@ def find_characters(dom):
                 if char_code.isdigit():
                     unicode_char = chr(int(char_code))
                 else:
-                    uchars =  char_code.split('-')
+                    uchars = char_code.split('-')
                     unicode_char = ''.join((chr(int(c)) for c in uchars))
                 category = choose_category(latex[1:], description)
                 charmap[latex[1:]] = (unicode_char, description, category)
                 b += 1
-            c += 1 
+            c += 1
     print("Found %s characters, where %s latex command and %s had slash-command" % (d, c, b))
+
 
 def choose_category(key, description):
     """
@@ -103,5 +106,4 @@ else:
     keys = list(charmap.keys())
     keys.sort()
     for key in keys:
-        w.write('%s\t%s (%s)\n' % (charmap[key][0], key, charmap[key][1]))    
-
+        w.write('%s\t%s (%s)\n' % (charmap[key][0], key, charmap[key][1]))

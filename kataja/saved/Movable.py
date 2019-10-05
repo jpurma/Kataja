@@ -22,18 +22,18 @@
 #
 #############################################################################
 
+import math
 import random
 
-import math
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
+from kataja.FadeInOut import FadeInOut
+from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
 from kataja.globals import TOP, MIDDLE, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, \
     NO_ALIGN, DELETED, CREATED
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField
-from kataja.utils import add_xy, multiply_xy, div_xy, time_me
-from kataja.FadeInOut import FadeInOut
+
 
 def about_there(pos1, pos2):
     """ Two triplets are about equal
@@ -80,6 +80,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     When nodes that don't use physics are dragged, the adjustment.
 
     """
+
     def __init__(self, forest=None):
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
@@ -97,7 +98,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._start_position = 0, 0
         self._move_frames = 0
         self._move_counter = 0
-        self._is_moving = False
+        self.is_moving = False
         self._use_easing = True
         self._distance = None
         self.unmoved = True  # flag to distinguish newly created nodes
@@ -135,7 +136,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :param transition_type: 0:edit, 1:CREATED, -1:DELETED
         :return: None
         """
-        #print('movable after_model_update, ', transition_type, revert_transition)
+        # print('movable after_model_update, ', transition_type, revert_transition)
         if transition_type == CREATED:
             self.forest.store(self)
             self.forest.add_to_scene(self)
@@ -187,7 +188,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return p.x(), p.y()
         else:
             return x, y
-
 
     # ## Movement ##############################################################
 
@@ -344,7 +344,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Initiate moving animation for object.
         :return: None
         """
-        self._is_moving = True
+        self.is_moving = True
         self.setAcceptHoverEvents(False)
         self._use_easing = True
         tx, ty = self.target_position
@@ -365,11 +365,11 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._move_frames = int(p * prefs.move_frames)
         if self._move_frames == 0:
             self._move_frames = 1
-        #self._move_frames = prefs.move_frames
+        # self._move_frames = prefs.move_frames
         self._move_counter = self._move_frames
         self._start_position = self.current_position
         # self.adjustment affects both elements in the previous subtraction, so it can be ignored
-        #ctrl.graph_scene.item_moved()
+        # ctrl.graph_scene.item_moved()
 
     def stop_moving(self):
         """ Kill moving animation for this object.
@@ -379,7 +379,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._high_priority_move = False
         self.target_position = self.current_position
         self._move_counter = 0
-        self._is_moving = False
+        self.is_moving = False
 
     def _current_position_changed(self, value):
         self.setPos(value[0], value[1])
@@ -388,7 +388,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Compute new current_position and target_position
         :return: None
         """
-        #if (not self.use_physics()) and (not self._move_counter):
+        # if (not self.use_physics()) and (not self._move_counter):
 
         if hasattr(self, 'setPos'):
             self.setPos(*self.current_position)
@@ -418,8 +418,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     # ## Hover ################################################################
 
-
-    #def shape(self):
+    # def shape(self):
     #    p = QtGui.QPainterPath()
     #    p.addRect(self.boundingRect())
     #    return p
@@ -456,6 +455,9 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             self._stop_direct_hover()
         if self._indirect_hovering:
             self._stop_indirect_hover()
+
+    def is_direct_hovering(self):
+        return self._direct_hovering
 
     @property
     def hovering(self):
@@ -506,7 +508,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return:
         """
         self._indirect_hovering = False
-        #self.prepareGeometryChange()
+        # self.prepareGeometryChange()
         self.setZValue(self.preferred_z_value())
         self.update()
 
@@ -566,9 +568,6 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         This item is dropped to screen coordinates. Evaluate if there are
         sensitive objects (TouchAreas) there and if
         there are, call their 'drop'-method with self as argument.
-        :param x: int or float
-        :param y: int or float
-        :param recipient: Movable?
         """
         print('movable drop to %s,%s , recipient=%s, shift_down=%s' % (x, y, recipient, shift_down))
 
@@ -635,7 +634,7 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     #                #
     # ############## #
 
-    #current_position = Saved("current_position", if_changed=_current_position_changed)
+    # current_position = Saved("current_position", if_changed=_current_position_changed)
     target_position = SavedField("target_position")
     adjustment = SavedField("adjustment")
     use_adjustment = SavedField("use_adjustment")
@@ -644,4 +643,3 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     physics_y = SavedField("physics_y")
     locked_to_node = SavedField("locked_to_node")
     forest = SavedField("forest")
-

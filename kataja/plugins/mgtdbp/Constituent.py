@@ -58,7 +58,7 @@ class Constituent(BaseConstituent or object):
     def find_closest_available(self, fname, fsign):
         for feat in self.features:
             if (feat.name == fname and feat.sign == fsign and not
-                    (getattr(feat, 'checks', None) or getattr(feat, 'checked_by', None))):
+            (getattr(feat, 'checks', None) or getattr(feat, 'checked_by', None))):
                 return self, feat
         for part in self.parts:
             found, found_f = part.find_closest_available(fname, fsign)
@@ -68,8 +68,6 @@ class Constituent(BaseConstituent or object):
 
     def to_dtree(self):
         """ This is print out tree that aims to be identical with output from original mgtdbp-dev
-        :param t:
-        :return:
         """
         if self.parts:
             return [self.label] + [p.to_dtree() for p in self.parts]
@@ -80,8 +78,6 @@ class Constituent(BaseConstituent or object):
 
     def to_tree(self):
         """ This is print out that tries to remain true for constituent information
-        :param t:
-        :return:
         """
         if self.label == '*':
             return ['*::%s' % ', '.join([str(f) for f in self.features])] + \

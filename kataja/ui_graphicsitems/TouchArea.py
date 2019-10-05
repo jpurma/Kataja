@@ -34,6 +34,7 @@ from kataja.utils import to_tuple
 
 symbol_radius = 10
 
+
 class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     """ Mouse sensitive areas connected to either nodes or edges between
     them. """
@@ -259,14 +260,11 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     def dropEvent(self, event):
         self.hovering = False
         event.accept()
-        message = self.drop(event.mimeData().text())
+        self.drop(event.mimeData().text())
         QtWidgets.QGraphicsObject.dropEvent(self, event)
-        ctrl.main.action_finished(message)
+        ctrl.main.action_finished()
 
     def drop(self, node_or_string):
-        """
-        :param dropped_node:
-        """
         drop_args = {}
         if isinstance(node_or_string, str) and node_or_string.startswith('kataja:'):
             foo, command, ntype = node_or_string.split(':')
@@ -289,7 +287,7 @@ class AbstractBelowTouchArea(TouchArea):
         self.start_point = self.end_point
         self.setPos(self.end_point[0], self.end_point[1])
 
-    def paint(self, painter, option, widget):
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -317,14 +315,7 @@ class AddTriangleTouchArea(AbstractBelowTouchArea):
     def boundingRect(self):
         return QtCore.QRectF(-symbol_radius - 2, 0, symbol_radius * 2 + 4, symbol_radius + 2)
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -347,14 +338,7 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
     def boundingRect(self):
         return QtCore.QRectF(-symbol_radius - 2, -symbol_radius - 2, symbol_radius * 2 + 4, symbol_radius * 2 + 4)
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -392,14 +376,7 @@ class StartArrowTouchArea(AbstractBelowTouchArea):
         """
         return QtCore.QRectF(-10, -5, 20, 15)
 
-    def paint(self, painter, option, widget):
-        """
-
-        :param painter:
-        :param option:
-        :param widget:
-        :raise:
-        """
+    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -409,4 +386,3 @@ class StartArrowTouchArea(AbstractBelowTouchArea):
         draw_arrow_shape_from_points(painter, -2, 0, 8, 7, c)
         if self._hovering:
             painter.drawRoundedRect(self.boundingRect(), 4, 4)
-

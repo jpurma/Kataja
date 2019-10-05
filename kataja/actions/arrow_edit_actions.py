@@ -1,9 +1,10 @@
 # coding=utf-8
 
 from PyQt5 import QtCore
+
 from kataja.KatajaAction import KatajaAction
-from kataja.ui_widgets.UIEmbed import EmbedAction
 from kataja.singletons import ctrl, log
+from kataja.ui_widgets.UIEmbed import EmbedAction
 
 
 # ==== Class variables for KatajaActions:
@@ -97,7 +98,7 @@ class NewArrow(EmbedAction):
         p1, p2 = self.embed.get_marker_points()
         end_point = int(p1.x()), int(p1.y())
         focus_point = int(p2.x()), int(p2.y())
-        text = embed.input_line_edit.text()
+        text = self.embed.input_line_edit.text()
         return [focus_point, end_point, text], kwargs
 
     def method(self, focus_point, end_point, text):

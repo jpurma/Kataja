@@ -2,8 +2,9 @@
 # This is the highest level script that should be run when testing the algorithm
 ################################################################################
 
-from TreesAreMemoryParser import TreesAreMemoryParser
 import time
+
+from .TreesAreMemoryParser import TreesAreMemoryParser
 
 t = time.time()
 

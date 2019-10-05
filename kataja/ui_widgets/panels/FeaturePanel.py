@@ -1,13 +1,13 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaLabel import KatajaInfoLabel
 from kataja.ui_widgets.buttons.EyeButton import EyeButton
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.ui_widgets.panels.NodePanel import NodePanel
 from kataja.ui_widgets.selection_boxes.ShapeSelector import ShapeSelector
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -82,4 +82,3 @@ class FeaturePanel(NodePanel):
                                         ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
         self.edge_options.data = g.FEATURE_NODE
         self.finish_init()
-

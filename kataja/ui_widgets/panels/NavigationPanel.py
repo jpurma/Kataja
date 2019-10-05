@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import qt_prefs, ctrl
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
-from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 

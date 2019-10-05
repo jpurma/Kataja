@@ -7,7 +7,8 @@ from kataja.ui_widgets.UIEmbed import UIEmbed
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
-    label = QtWidgets.QLabel(text, parent=parent)
+    label = QtWidgets.QLabel(text)
+    label.setParent(parent)
     if palette:
         label.setPalette(palette)
     if buddy:
@@ -23,11 +24,6 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
 class ConstituentNodeEditEmbed(UIEmbed):
     """ Node edit embed creates editable elements based on templates provided by Node subclass.
     It allows easy UI generation for user-customized syntactic elements or Kataja Nodes.
-
-    :param parent: QWidget where this editor lives, QGraphicsView of some sort
-    :param ui_manager: UIManager instance that manages this editor
-    :param ui_key: unique, but predictable key for accessing this editor
-    :param node: node that is to be associated with this editor
     """
     can_fade = False  # fade and textareas don't work well together
 
@@ -94,8 +90,8 @@ class ConstituentNodeEditEmbed(UIEmbed):
         return False
 
     def synlabel_edited(self, *args, **kwargs):
-        #print('synlabel edited')
-        #print(args, kwargs)
+        # print('synlabel edited')
+        # print(args, kwargs)
         pass
 
     def synlabel_finished(self):
@@ -122,6 +118,3 @@ class ConstituentNodeEditEmbed(UIEmbed):
         :return:
         """
         self.synlabel.setFocus()
-
-
-

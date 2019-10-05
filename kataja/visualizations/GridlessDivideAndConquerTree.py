@@ -23,6 +23,8 @@
 # ############################################################################
 
 from PyQt5 import QtCore, QtGui
+
+import kataja
 import kataja.globals as g
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BalancedTree import BalancedTree
@@ -233,4 +235,3 @@ class GridlessDivideAndConquerTree(BalancedTree):
     def draw_tree(self, tree_top):
         top_block = Block(tree_top)
         top_block.trigger_move()
-

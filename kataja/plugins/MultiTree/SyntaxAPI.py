@@ -22,9 +22,9 @@
 #
 # ############################################################################
 
-from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 from kataja.plugins.MultiTree.Parser import Parser
 from kataja.singletons import ctrl
+from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 
 
 class SyntaxAPI(KatajaSyntaxAPI):

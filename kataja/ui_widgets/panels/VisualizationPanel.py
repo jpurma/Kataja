@@ -1,18 +1,17 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 
 from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.Panel import Panel
-from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.ui_support.panel_utils import box_row
+from kataja.visualizations.available import VISUALIZATIONS
 
 __author__ = 'purma'
 
 
 class VisualizationPanel(Panel):
     """ Switch visualizations and adjust their settings """
-
 
     def __init__(self, name, default_position='right', parent=None, folded=False):
         """

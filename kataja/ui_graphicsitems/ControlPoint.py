@@ -1,15 +1,16 @@
 # coding=utf-8
 # #######################################################
 import math
-from PyQt5 import QtCore, QtWidgets, QtGui
 
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
-from kataja.singletons import prefs, ctrl
-from kataja.utils import to_tuple
-from kataja.UIItem import UIGraphicsItem
+
 import kataja.globals as g
+from kataja.UIItem import UIGraphicsItem
+from kataja.singletons import prefs, ctrl
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import to_tuple
 
 
 class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
@@ -158,9 +159,6 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
 
     def drop_to(self, x, y, recipient=None, shift_down=False):
         """ Dragging ends, possibly by dropping over another object.
-        :param x: scene x coordinate
-        :param y: scene y coordinate
-        :param recipient: object that receives the dropped _control point_
         """
         if recipient:
             # recipient.accept_drop(self)

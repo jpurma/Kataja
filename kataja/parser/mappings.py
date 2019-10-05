@@ -1,10 +1,10 @@
 # (command, html, latex)
 commands = {('emph', 'em', 'emph'), ('italic', 'i', 'textit'), ('bold', 'b', 'textbf'),
-    ('sup', 'sup', '^'), ('sub', 'sub', '_'), ('underline', 'u', 'underline'),
-    ('strikeout', 's', 'strikeout'), ('smallcaps', 'font', 'textsc'), ('code', 'code', 'verb'),
-    ('br', 'br', '\\'), ('newline', '', 'newline'), ('small', 'small', ''), ('link', 'a', 'href'),
-    ('quote', 'q', 'quote'), ('sample', 'samp', 'verb'), ('qroof', 'roof', 'qroof'),
-    ('math', '', '$')}
+            ('sup', 'sup', '^'), ('sub', 'sub', '_'), ('underline', 'u', 'underline'),
+            ('strikeout', 's', 'strikeout'), ('smallcaps', 'font', 'textsc'), ('code', 'code', 'verb'),
+            ('br', 'br', '\\'), ('newline', '', 'newline'), ('small', 'small', ''), ('link', 'a', 'href'),
+            ('quote', 'q', 'quote'), ('sample', 'samp', 'verb'), ('qroof', 'roof', 'qroof'),
+            ('math', '', '$')}
 
 command_to_html = {}
 command_to_latex = {}
@@ -37,7 +37,7 @@ latex_to_html = {
 latex_special_chars = {'#', '$', '%', '^', '&', '_', '{', '}', '~', '\\'}
 
 allowed_html = {'i', 'b', 'sup', 'sub', 'u', 's', 'font', 'br', 'a', 'code', 'em', 'q', 's', 'samp',
-    'small'}
+                'small'}
 
 html_to_latex = {}
 for key, tag_tuple in latex_to_html.items():

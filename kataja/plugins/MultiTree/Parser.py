@@ -1,10 +1,12 @@
 try:
-    from MultiTree.Constituent import Constituent
-    from MultiTree.Feature import Feature
+    from kataja.plugins.MultiTree.Constituent import Constituent
+    from kataja.plugins.MultiTree.Feature import Feature
     from kataja.syntax.SyntaxState import SyntaxState
 except ImportError:
-    from Constituent import Constituent
-    from Feature import Feature
+    from .Constituent import Constituent
+    from .Feature import Feature
+
+    SyntaxState = None
 import time
 
 REMOVE_BAD_PARSES = True
@@ -66,6 +68,7 @@ def _update_check_information_for_features(tree):
         else:
             for feature in node.features:
                 features.add(feature)
+
     walk_tree(tree)
     for feature in features:
         feature.checked_by = None
@@ -96,7 +99,6 @@ class Parser:
             self.lexicon[item] = node.copy()
         node.head = node
         return node
-
 
     @staticmethod
     def _find_checked_features_for_im(pos_head, neg_head):
@@ -129,7 +131,7 @@ class Parser:
                 break
 
     def _justify_external_merge(self, next_const, tree):
-        #return next_const and self._justify_comp_merge(tree, next_const, strict=False)
+        # return next_const and self._justify_comp_merge(tree, next_const, strict=False)
         return next_const and (self._justify_spec_merge(tree, next_const, strict=False)
                                or self._justify_comp_merge(tree, next_const, strict=False))
 
@@ -161,7 +163,7 @@ class Parser:
             if plus_feature.sign == '':
                 for neg_feature in tree.features:
                     if neg_feature.name == plus_feature.name and (neg_feature.sign == '-' or neg_feature.sign == '='):
-                            return plus_feature, neg_feature
+                        return plus_feature, neg_feature
             elif strict:
                 break
 
@@ -175,8 +177,6 @@ class Parser:
             return mover
 
     def _process_const(self, next_const, const, old_tree, remaining, branch_path):
-        if not const:
-            return old_tree, branch_path
         self.ticks += 1
 
         # External merge new constituent
@@ -205,7 +205,10 @@ class Parser:
             self.export_to_kataja([next_const, tree], f"Evaluating spec merge '{tree.label}'", tree, mover,
                                   branch_path=branch_path)
             print(mover.features, tree.features)
-            external_merge_is_possible = self._justify_external_merge(next_const, tree)
+            if next_const:
+                external_merge_is_possible = self._justify_external_merge(next_const, tree)
+            else:
+                external_merge_is_possible = False
             if external_merge_is_possible:
                 self.export_to_kataja([next_const, tree], f"Eager to EM next const '{next_const.label}'", tree,
                                       next_const, branch_path=branch_path)
@@ -256,7 +259,7 @@ class Parser:
                 checker, checked = q_raising_is_possible
                 tree = Constituent(label=tree.label,
                                    parts=[tree.Q, tree],
-                                   movers=tree.movers, # not sure...
+                                   movers=tree.movers,  # not sure...
                                    head=tree,
                                    features=[f for f in tree.features if f is not checked],
                                    checker=checker,
@@ -304,7 +307,8 @@ class Parser:
     def _process_words(self, tree, const, words, branch_path):
         for i, word in enumerate(words):
             next_const = self.pick_constituent(word)
-            tree, branch_path = self._process_const(next_const, const, tree, words[i:], branch_path)
+            if const:
+                tree, branch_path = self._process_const(next_const, const, tree, words[i:], branch_path)
             const = next_const
         tree, branch_path = self._process_const(None, const, tree, [], branch_path)
         linear = linearize(tree)
@@ -344,7 +348,8 @@ class Parser:
                     _update_check_information_for_features(tree)
             self.stored_paths.add(branch_path)
             print(message)
-            syn_state = SyntaxState(tree_roots=trees, msg=message, marked=marked, marked2=marked2, iteration=branch_path)
+            syn_state = SyntaxState(tree_roots=trees, msg=message, groups=[('', marked), ('', marked2)],
+                                    state_id=branch_path)
             self.forest.add_step(syn_state)
 
 
@@ -360,6 +365,7 @@ if __name__ == '__main__':
             sentences.append(line)
     succs = 0
     fails = 0
+    i = 0
     for i, sentence in enumerate(sentences, 1):
         print(f'{i}. "{sentence}"')
         result_trees = parser.parse(sentence)

@@ -1,8 +1,8 @@
 # coding=utf-8
 from PyQt5.QtGui import QKeySequence
 
-from kataja.singletons import ctrl, log
 from kataja.KatajaAction import KatajaAction, MediatingAction
+from kataja.singletons import ctrl
 
 
 # ==== Class variables for KatajaActions:
@@ -59,7 +59,6 @@ class TogglePanel(KatajaAction):
         ctrl.ui.toggle_panel(panel_id)
 
 
-
 class ToggleHeading(KatajaAction):
     k_action_uid = 'toggle_heading'
     k_command = 'Fold heading'
@@ -71,11 +70,7 @@ class ToggleHeading(KatajaAction):
     k_tooltip_alt = 'Show this heading'
 
     def method(self):
-        """ Show or hide panel depending if it is visible or not
-        :param panel_id: enum of panel identifiers (str)
-        """
         ctrl.ui.toggle_heading()
-
 
 
 class ToggleFoldPanel(KatajaAction):
@@ -116,4 +111,3 @@ class CloseEmbed(KatajaAction):
         :return: None
         """
         ctrl.ui.close_active_embed()
-

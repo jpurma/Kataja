@@ -6,7 +6,7 @@ BOTTOM_CENTER = 1
 MAGNETS = 2
 BORDER = 3
 SPECIAL = 4
-ARROW: {
+ARROW = {
     'shape_name': 'cubic',
     'color_key': 'accent4',
     'pull': 0,

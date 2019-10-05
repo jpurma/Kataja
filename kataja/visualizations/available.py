@@ -25,18 +25,16 @@
 from collections import OrderedDict
 
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
-from kataja.visualizations.HeadDownTree import HeadDownTree
-from kataja.visualizations.BracketedLinearization import BracketedLinearization
-from kataja.visualizations.DynamicWidthTree import DynamicWidthTree
-from kataja.visualizations.EquidistantElasticTree import EquidistantElasticTree
-from kataja.visualizations.LeftFirstTree import LeftFirstTree
-from kataja.visualizations.SpirallingTree import SpirallingTree
-from kataja.visualizations.LinearizedDynamicTree import LinearizedDynamicTree
-from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
-from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
 from kataja.visualizations.BalancedTree import BalancedTree
+from kataja.visualizations.BracketedLinearization import BracketedLinearization
+from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
+from kataja.visualizations.EquidistantElasticTree import EquidistantElasticTree
 from kataja.visualizations.GridlessDivideAndConquerTree import GridlessDivideAndConquerTree
-
+from kataja.visualizations.HeadDownTree import HeadDownTree
+from kataja.visualizations.LeftFirstTree import LeftFirstTree
+from kataja.visualizations.LinearizedDynamicTree import LinearizedDynamicTree
+from kataja.visualizations.SpirallingTree import SpirallingTree
+from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
 
 # These will be mapped to number keys 1...0,+ in given order.
 
@@ -68,4 +66,3 @@ for vclass in visualizations_list:
     vis.shortcut = shortcut_char
     VISUALIZATIONS[vclass.name] = vis
     shortcut += 1
-

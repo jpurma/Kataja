@@ -28,8 +28,8 @@ from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, \
     CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
-from kataja.utils import open_symbol_data
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import open_symbol_data
 
 style_sheet = """
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
@@ -74,6 +74,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
         self.setAcceptHoverEvents(False)
+        # noinspection PyUnresolvedReferences
         self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
         self.setTextWidth(-1)
 
@@ -175,6 +176,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
             self.setHtml(self.editable_html)
+            # noinspection PyUnresolvedReferences
             self.editable_doc.cursorPositionChanged.connect(self.cursor_position_changed)
 
             self.resize_label()
@@ -264,7 +266,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         ctrl.ui.update_position_for(self._host)
 
     def hoverMoveEvent(self, event):
-        if not self._host._is_moving:
+        if not self._host.is_moving:
             ctrl.ui.move_help(event)
             QtWidgets.QGraphicsItem.hoverMoveEvent(self, event)
 
@@ -286,8 +288,8 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
             print('label dropEvent something')
             super().dropEvent(event)
 
-#    def boundingRect(self):
-#        return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
+    #    def boundingRect(self):
+    #        return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
 
     def dragEnterEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel

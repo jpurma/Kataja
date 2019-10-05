@@ -28,8 +28,10 @@ class TestMainWindowStructure(unittest.TestCase):
         cls._main = KatajaMain(cls._app, sys.argv)
         cls._app.setActiveWindow(cls._main)
         cls._app.processEvents()
+        # noinspection PyCallByClass
         QtTest.QTest.qWaitForWindowActive(cls._main)
 
+    # noinspection PyUnresolvedReferences
     @classmethod
     def tearDownClass(cls):
         cls._main.close()

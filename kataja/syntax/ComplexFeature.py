@@ -23,8 +23,8 @@
 #
 # ############################################################################
 
-from kataja.syntax.MultivaluedFeature import MultivaluedFeature
 from kataja.syntax.BaseFeature import BaseFeature
+from kataja.syntax.MultivaluedFeature import MultivaluedFeature
 
 
 class ComplexFeature(MultivaluedFeature):

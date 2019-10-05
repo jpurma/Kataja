@@ -1,9 +1,10 @@
-
 try:
     from kataja.SavedField import SavedField
     from kataja.syntax.BaseConstituent import BaseConstituent
+
     in_kataja = True
 except ImportError:
+    SavedField = object
     BaseConstituent = object
     in_kataja = False
 
@@ -11,15 +12,14 @@ except ImportError:
 class Constituent(BaseConstituent):
     """This defines the basic linguistic competence, i.e. phrase structures and operations on phrase structure """
 
+    # noinspection PyMissingConstructor
     def __init__(self, label='', parts=None, features=None, head=None, movers=None, checked=None, checker=None, Q=None):
-        parts = parts or []
-        features = features or []
         if in_kataja:
-            BaseConstituent.__init__(self, label=label, parts=parts, features=features)
+            BaseConstituent.__init__(self, label=label, parts=parts or [], features=features or [])
         else:
             self.label = label
-            self.parts = parts
-            self.features = features
+            self.parts = parts or []
+            self.features = features or []
             self.uid = id(self)
         self.movers = movers or []
         self.Q = Q

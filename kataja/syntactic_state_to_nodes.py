@@ -26,7 +26,6 @@
 import time
 
 import kataja.globals as g
-
 from kataja.singletons import ctrl
 
 group_colors = ['accent5tr', 'accent2tr', 'accent7tr', 'accent4tr', 'accent3tr', 'accent1tr', 'accent6tr', 'accent8tr']
@@ -317,7 +316,7 @@ def verify_edge_order_for_constituent_nodes(node):
             passed = []
             for edge in node.edges_down:
                 if (edge.end and edge.end.node_type == g.CONSTITUENT_NODE and edge.end.syntactic_object in
-                   node.syntactic_object.parts):
+                        node.syntactic_object.parts):
                     new_order.append((correct_order.index(edge.end.syntactic_object), edge))
                 else:
                     passed.append(edge)

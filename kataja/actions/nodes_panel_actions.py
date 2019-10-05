@@ -8,6 +8,7 @@ from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, log, qt_prefs, classes
 from kataja.ui_widgets.Panel import PanelAction
 
+
 # ==== Class variables for KatajaActions:
 #
 # k_action_uid : unique id for calling this action. required, other are optional
@@ -96,10 +97,6 @@ class AbstractToggleVisibility(KatajaAction):
             return [False], kwargs
 
     def method(self, checked):
-        """ Change font key for current node or node type.
-        :param font_id: str
-        :return: None
-        """
         node_type = self.__class__.node_type
         ctrl.ui.set_active_node_setting('visible', checked, node_type=node_type)
         for node in ctrl.forest.nodes.values():
@@ -153,10 +150,6 @@ class AbstractToggleEdgeVisibility(KatajaAction):
             return [False], kwargs
 
     def method(self, checked):
-        """ Change font key for current node or node type.
-        :param font_id: str
-        :return: None
-        """
         edge_type = self.__class__.edge_type
         ctrl.ui.set_active_edge_setting('visible', checked, edge_type=edge_type)
 
@@ -369,17 +362,20 @@ class ChangeEdgeShape(PanelAction):
     k_undoable = True
     edge_type = None
 
+    def get_edge_type(self):
+        if self.__class__.edge_type:
+            return self.__class__.edge_type
+        else:
+            return self.panel.active_edge_type
+
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()
         shape_name = sender.currentData()
+        kwargs = {'level': ctrl.ui.active_scope}
         if self.__class__.edge_type:
-            return [shape_name, ctrl.ui.active_scope], {
-                'edge_type': self.__class__.edge_type
-            }
-        elif ctrl.ui.scope_is_selection:
-            kwargs = {'level': ctrl.ui.active_scope}
-        else:
-            kwargs = {'level': ctrl.ui.active_scope, 'edge_type': self.panel.active_edge_type}
+            kwargs['edge_type'] = self.__class__.edge_type
+        elif not ctrl.ui.scope_is_selection:
+            kwargs['edge_type'] = self.panel.active_edge_type
         return [shape_name], kwargs
 
     def method(self, shape_name, level, edge_type=None):
@@ -401,7 +397,7 @@ class ChangeEdgeShape(PanelAction):
         return self.panel and ctrl.ui.has_edges_in_scope()
 
     def getter(self):
-        return ctrl.ui.get_active_edge_setting('shape_name', self.__class__.edge_type)
+        return ctrl.ui.get_active_edge_setting('shape_name', self.get_edge_type())
 
 
 class ChangeConstituentEdgeShape(ChangeEdgeShape):
@@ -434,4 +430,3 @@ class ChangeCommentEdgeShape(ChangeEdgeShape):
     k_tooltip = 'Change shapes of edges that connect comments'
     k_undoable = True
     edge_type = g.COMMENT_EDGE
-

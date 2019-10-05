@@ -23,25 +23,24 @@
 # ############################################################################
 
 import math
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
+import kataja.ui_widgets.buttons.OverlayButton as Buttons
 from kataja.SavedField import SavedField
 from kataja.SimpleLabel import SimpleLabel
 from kataja.Triangle import Triangle
-from kataja.saved.Movable import Movable
+from kataja.parser.INodes import as_html
 from kataja.saved.Draggable import Draggable
+from kataja.saved.Movable import Movable
 from kataja.settings.NodeSettings import NodeSettings
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.parser.INodes import as_html
-import kataja.ui_widgets.buttons.OverlayButton as Buttons
 
 call_counter = [0]
-
-
 
 qbytes_scale = QtCore.QByteArray()
 qbytes_scale.append("scale")
@@ -357,7 +356,7 @@ class Node(Draggable, Movable):
             return []
         if visible:
             return list(set(edge.start for edge in self.edges_up if
-                        edge.start and edge.start.is_visible()))
+                            edge.start and edge.start.is_visible()))
         else:
             return list(set(edge.start for edge in self.edges_up if edge.start))
 
@@ -454,11 +453,8 @@ class Node(Draggable, Movable):
         return filter(filter_func, self.edges_up)
 
     def list_descendants_once(self):
-        """
-        Do left-first iteration through all nodes and return a list where
+        """ Do left-first iteration through all nodes and return a list where
         only first instance of each node is present.
-        :param first: Node, start from a certain point in structure
-        :return: iterator through nodes
         """
         done = set()
         result = []
@@ -720,7 +716,7 @@ class Node(Draggable, Movable):
             (x + w2 + w4, y_max),
             (x_max, y_max)]
 
-    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
+    def _calculate_inner_rect(self, min_w=0, min_h=0):
         my_class = self.__class__
         label = self.label_object
         x_offset = 0
@@ -734,8 +730,8 @@ class Node(Draggable, Movable):
             x_offset = label.x_offset
             y_offset = label.y_offset
             self.label_rect = label_rect
-        w = max((extra_w, label_w, my_class.width))
-        h = max((extra_h, label_h, my_class.height))
+        w = max((min_w, label_w, my_class.width))
+        h = max((min_h, label_h, my_class.height))
         if x_offset or y_offset:
             x = x_offset
             y = y_offset
@@ -777,7 +773,7 @@ class Node(Draggable, Movable):
     def scene_rect_coordinates(self, current=False):
         if current:
             return self.sceneBoundingRect().getCoords()
-        if self._is_moving:
+        if self.is_moving:
             scx, scy = self.target_position
         else:
             scx, scy = self.current_position
@@ -868,7 +864,7 @@ class Node(Draggable, Movable):
             if isinstance(previously, Node):
                 previously.update_bounding_rect()
         elif move_to:
-            assert(self.parentItem() == self.locked_to_node)
+            assert (self.parentItem() == self.locked_to_node)
             self.move_to(*move_to)
             parent.update_bounding_rect()
 

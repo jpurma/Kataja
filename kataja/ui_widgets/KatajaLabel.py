@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets
+
 from kataja.singletons import ctrl
 
 
@@ -9,7 +10,9 @@ class KatajaBuddyLabel(QtWidgets.QLabel):
     """
 
     def __init__(self, text, buddy):
-        QtWidgets.QLabel.__init__(self, text=text, parent=buddy.parentWidget())
+        super().__init__()
+        self.setParent(buddy.parentWidget())
+        self.setText(text)
         self.setMouseTracking(True)
         self.setBuddy(buddy)
 
@@ -29,7 +32,9 @@ class KatajaInfoLabel(QtWidgets.QLabel):
     """
 
     def __init__(self, text, tooltip='', parent=None):
-        QtWidgets.QLabel.__init__(self, text=text, parent=parent)
+        QtWidgets.QLabel.__init__(self)
+        self.setParent(parent)
+        self.setText(text)
         self.setMouseTracking(True)
         self.k_tooltip = tooltip
 
@@ -41,4 +46,3 @@ class KatajaInfoLabel(QtWidgets.QLabel):
 
     def leaveEvent(self, event):
         ctrl.ui.hide_help(self, event)
-

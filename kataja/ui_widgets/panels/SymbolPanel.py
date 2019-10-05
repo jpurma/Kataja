@@ -128,6 +128,7 @@ class SymbolPanel(Panel):
         layout = self.vlayout
         self.selector = SelectionBox(parent=widget)
         self.selector.add_items([(table_dict[item], item) for item in table_names])
+        # noinspection PyUnresolvedReferences
         self.selector.activated.connect(self.change_symbol_set)
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
         layout.addWidget(self.selector)
@@ -140,7 +141,9 @@ class SymbolPanel(Panel):
         f = qt_prefs.get_font(g.MAIN_FONT)
         self.symlist.setStyleSheet(
             'font-family: "%s"; font-size: %spx;' % (f.family(), int(f.pointSize() * 1.5)))
+        # noinspection PyUnresolvedReferences
         self.symlist.itemEntered.connect(self.item_entered)
+        # noinspection PyUnresolvedReferences
         self.symlist.itemClicked.connect(self.item_clicked)
         layout.addWidget(self.symlist)
         hlayout = box_row(layout)

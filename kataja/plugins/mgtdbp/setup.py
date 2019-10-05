@@ -21,13 +21,11 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from mgtdbp.Parser import Parser
-from mgtdbp.Constituent import Constituent
-from mgtdbp.Feature import Feature
-from mgtdbp.Document import Document
-from mgtdbp.SyntaxAPI import SyntaxAPI
-import os
-from PyQt5 import QtCore
+from kataja.plugins.mgtdbp.Constituent import Constituent
+from kataja.plugins.mgtdbp.Document import Document
+from kataja.plugins.mgtdbp.Feature import Feature
+from kataja.plugins.mgtdbp.Parser import Parser
+from kataja.plugins.mgtdbp.SyntaxAPI import SyntaxAPI
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -53,6 +51,8 @@ reload_order = ['mgtdbp.Constituent', 'mgtdbp.Feature',
                 'mgtdbp.setup']
 
 plugin_preferences = {}
+
+
 # These are additional preferences added by plugin. They extend the bottom layer of preferences
 # hierarchy and can have an UI elements in 'Preferences' panel. You can have custom panels or
 # code to make them editable in document-, forest- or node/edge-level, or just programmatically
@@ -83,5 +83,3 @@ def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
     pass
-
-

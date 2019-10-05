@@ -4,17 +4,18 @@ import kataja.globals as g
 from kataja.parser.INodes import as_html
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
+from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 from kataja.ui_widgets.UIEmbed import UIEmbed
-from kataja.ui_widgets.KatajaLineEdit import KatajaLineEdit
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
-from kataja.ui_support.panel_utils import box_row
 from kataja.utils import combine_dicts
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
-    label = QtWidgets.QLabel(text, parent=parent)
+    label = QtWidgets.QLabel(text)
+    label.setParent(parent)
     if palette:
         label.setPalette(palette)
     label.setBuddy(buddy)
@@ -29,11 +30,6 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
 class NodeEditEmbed(UIEmbed):
     """ Node edit embed creates editable elements based on templates provided by Node subclass.
     It allows easy UI generation for user-customized syntactic elements or Kataja Nodes.
-
-    :param parent: QWidget where this editor lives, QGraphicsView of some sort
-    :param ui_manager: UIManager instance that manages this editor
-    :param ui_key: unique, but predictable key for accessing this editor
-    :param node: node that is to be associated with this editor
     """
     can_fade = False  # fade and textareas don't work well together
 
@@ -89,7 +85,7 @@ class NodeEditEmbed(UIEmbed):
                 field.setFixedWidth(min(w, max_w))
                 self.resize_target = field
             elif itype == 'expandingtext':
-                field = ExpandingTextArea(self, tip=tt, font=smaller_font, prefill=prefill,
+                field = ExpandingTextArea(self, tooltip=tt, font=smaller_font, prefill=prefill,
                                           on_edit=on_edit)
                 template_width = d.get('width', 0)
                 if template_width:

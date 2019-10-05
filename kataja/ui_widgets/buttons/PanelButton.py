@@ -4,6 +4,7 @@ from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.utils import colored_image
 
+
 class PanelButton(PushButtonBase):
     """ Buttons that change their color according to widget where they are.
         Currently this is not doing anything special that can't be done by
@@ -60,6 +61,7 @@ class PanelButton(PushButtonBase):
             image = self.colored_image_from_drawing(c)
         else:
             return
+        # noinspection PyArgumentList
         self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
         self.setIcon(self.normal_icon)
 

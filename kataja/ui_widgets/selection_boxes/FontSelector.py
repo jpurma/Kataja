@@ -2,7 +2,6 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QSize
 
 import kataja.globals as g
-from kataja.saved.movables.Node import Node
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
@@ -31,13 +30,6 @@ QComboBox::down-arrow {
 
 
 class FontDialogForSelector(QtWidgets.QFontDialog):
-    """
-
-    :param parent:
-    :param role:
-    :param initial_font:
-    """
-
     def __init__(self, parent, initial_font):
         super().__init__(parent)
         self.setOption(QtWidgets.QFontDialog.NoButtons)
@@ -47,11 +39,6 @@ class FontDialogForSelector(QtWidgets.QFontDialog):
 
 
 class FontSelector(TableModelSelectionBox):
-    """
-
-    :param parent:
-    """
-
     def __init__(self, **kwargs):
         TableModelSelectionBox.__init__(self, **kwargs)
         self.setMaximumWidth(20)

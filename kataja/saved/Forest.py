@@ -26,22 +26,22 @@ import itertools
 from PyQt5 import QtWidgets
 
 import kataja.globals as g
-from kataja.Triangle import Triangle
-from kataja.globals import ViewUpdateReason
 from kataja.ChainManager import ChainManager
 from kataja.ForestDrawing import ForestDrawing
 from kataja.ProjectionManager import ProjectionManager
-from kataja.SemanticsManager import SemanticsManager
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
+from kataja.SemanticsManager import SemanticsManager
+from kataja.Triangle import Triangle
 from kataja.UndoManager import UndoManager
-from kataja.settings.ForestSettings import ForestSettings
+from kataja.globals import ViewUpdateReason
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.saved.DerivationTree import DerivationTree
 from kataja.saved.Edge import Edge
-from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, classes
 from kataja.saved.movables.Arrow import Arrow
+from kataja.saved.movables.Node import Node
+from kataja.settings.ForestSettings import ForestSettings
+from kataja.singletons import ctrl, classes
 from kataja.syntax.SyntaxState import SyntaxState
 
 
@@ -310,8 +310,6 @@ class Forest(SavedObject):
         traces removed --
             as close to original sentences as possible. If trees or node is given,
             return linearization of only that.
-        :param tree: Tree instance
-        :param node: Node instance
         """
 
         def _tree_as_text(tree_top, delimiter=' '):
@@ -411,7 +409,7 @@ class Forest(SavedObject):
         elif isinstance(item, QtWidgets.QGraphicsItem):
             sc = item.scene()
             if sc == self.scene:
-                #print('..removing from scene ', item.uid)
+                # print('..removing from scene ', item.uid)
                 sc.removeItem(item)
             elif sc:
                 print('unknown scene for item %s : %s ' % (item, sc))
@@ -433,7 +431,7 @@ class Forest(SavedObject):
                                     self.projection_manager.projection_visuals if self.projection_manager else [],
                                     self.semantics_manager.all_items if self.semantics_manager else [],
                                     self.groups.values()):
-                yield item
+            yield item
 
     def get_object_by_uid(self, uid):
         return self.nodes.get(uid, None) or self.edges.get(uid, None) \
@@ -473,7 +471,7 @@ class Forest(SavedObject):
         if key in self.ongoing_animations:
             self.ongoing_animations.remove(key)
         # fixme: put this back on when triangle animations work again
-        #if not self.ongoing_animations:
+        # if not self.ongoing_animations:
         #    self.draw()
 
     def flush_and_rebuild_temporary_items(self):
@@ -556,10 +554,10 @@ class Forest(SavedObject):
                 if ban_normalization:
                     allow_normalization = False
                 if abs(diff_x) + abs(diff_y) > 0.5:
-                    node._is_moving = True
+                    node.is_moving = True
                     nodes_are_moving = True
                 else:
-                    node._is_moving = False
+                    node.is_moving = False
 
             # normalize movement so that the trees won't glide away
             if allow_normalization and to_normalize:

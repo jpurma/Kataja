@@ -1,12 +1,13 @@
 import logging
 import sys
-from kataja.settings.Preferences import Preferences, QtPreferences
+
 from kataja.Controller import Controller
+from kataja.KatajaFactory import KatajaFactory
+from kataja.LogWidgetPusher import LogWidgetPusher
 from kataja.environments.Base import Base
 from kataja.environments.Mac import Mac
 from kataja.environments.Win import Win
-from kataja.KatajaFactory import KatajaFactory
-from kataja.LogWidgetPusher import LogWidgetPusher
+from kataja.settings.Preferences import Preferences, QtPreferences
 
 if sys.platform == 'darwin':
     running_environment = Mac()
@@ -23,6 +24,3 @@ log = logging.getLogger('kataja')
 log.setLevel(logging.DEBUG)
 log.log_handler = LogWidgetPusher()
 log.addHandler(log.log_handler)
-
-
-

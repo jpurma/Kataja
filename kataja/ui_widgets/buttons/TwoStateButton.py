@@ -1,14 +1,15 @@
 # coding=utf-8
-from PyQt5 import QtGui, QtWidgets
-from kataja.UIItem import UIWidget
-from kataja.singletons import qt_prefs, ctrl
+from PyQt5 import QtGui
+
 import kataja.globals as g
+from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 from kataja.utils import colored_image
 
+
 class TwoStateButton(PanelButton):
 
-    def __init__(self, text0='', text1='', pixmap0='', pixmap1='', **kwargs):
+    def __init__(self, text0='', text1='', pixmap0=None, pixmap1=None, **kwargs):
         self.text0 = text0
         self.text1 = text1
         self.pixmap0 = pixmap0
@@ -28,6 +29,7 @@ class TwoStateButton(PanelButton):
             self.setMinimumWidth(mw + 24)
             ctrl.main.ui_font_changed.connect(self.update_font)
         self.setMinimumHeight(24)
+        # noinspection PyUnresolvedReferences
         self.toggled.connect(self.toggle_state)
         self.compose_icon()
         self.toggle_state(False)
@@ -46,7 +48,7 @@ class TwoStateButton(PanelButton):
         self.updateGeometry()
         self.update_position()
 
-    def update_colors(self):
+    def update_colors(self, color_key=None):
         self.compose_icon()
 
     def compose_icon(self):
@@ -61,7 +63,9 @@ class TwoStateButton(PanelButton):
             image1 = colored_image(ctrl.cm.ui(), self.image1)
         else:
             image1 = colored_image(ctrl.cm.paper(), self.image0)
+        # noinspection PyArgumentList
         self.icon0 = QtGui.QIcon(QtGui.QPixmap().fromImage(image0))
+        # noinspection PyArgumentList
         self.icon1 = QtGui.QIcon(QtGui.QPixmap().fromImage(image1))
 
     def update_font(self):

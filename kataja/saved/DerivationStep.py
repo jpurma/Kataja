@@ -22,8 +22,8 @@
 #
 # ############################################################################
 
-from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.SavedObject import SavedObject
 from kataja.syntax.SyntaxState import SyntaxState
 
 

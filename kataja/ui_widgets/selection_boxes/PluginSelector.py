@@ -1,8 +1,9 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtGui
+
 from kataja.singletons import prefs, running_environment, ctrl
-from kataja.ui_widgets.PushButtonBase import PushButtonBase
 from kataja.ui_support.panel_utils import box_row
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 
 class PluginSelector(QtWidgets.QWidget):
@@ -10,6 +11,7 @@ class PluginSelector(QtWidgets.QWidget):
     hardcoded, not using KatajaActions at this point. """
 
     def __init__(self, field_name, parent=None):
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         layout = QtWidgets.QVBoxLayout()
         self.preferred_width = 360
@@ -20,6 +22,7 @@ class PluginSelector(QtWidgets.QWidget):
         self.scroll_area.setWidget(self.inner_widget)
         self.scroll_area.setMinimumWidth(self.preferred_width)
         self.scroll_area.setMaximumWidth(self.preferred_width)
+        # noinspection PyArgumentList
         layout.addWidget(self.scroll_area)
         layout.addStretch(10)
         hlayout = box_row(layout)
@@ -36,6 +39,7 @@ class PluginSelector(QtWidgets.QWidget):
         refresh = QtWidgets.QPushButton('Refresh list', self)
         refresh.setMaximumWidth(80)
         refresh.clicked.connect(self.refresh_plugin_selection)
+        # noinspection PyArgumentList
         layout.addWidget(refresh)
         self.setLayout(layout)
         self.field_name = field_name
@@ -43,6 +47,7 @@ class PluginSelector(QtWidgets.QWidget):
 
     def prepare_plugins_selection_widget(self):
         """ Draw or redraw the plugin info and their buttons based on available plugins dict """
+        # noinspection PyArgumentList
         inner_widget = QtWidgets.QWidget(self.scroll_area)
         inner_layout = QtWidgets.QVBoxLayout()
         inner_layout.setContentsMargins(0, 0, 0, 0)
@@ -57,6 +62,7 @@ class PluginSelector(QtWidgets.QWidget):
         for key in sorted(available_plugins.keys()):
             item = available_plugins[key]
             activated = key == prefs.active_plugin_name
+            # noinspection PyArgumentList
             plugin_frame = QtWidgets.QFrame(inner_widget)
             if activated:
                 plugin_frame.setPalette(enabled_palette)
@@ -66,6 +72,7 @@ class PluginSelector(QtWidgets.QWidget):
             hlayout = QtWidgets.QHBoxLayout()
             vlayout = QtWidgets.QVBoxLayout()
             name = QtWidgets.QLabel(item['name'])
+            # noinspection PyArgumentList
             vlayout.addWidget(name)
             text = '%s\n v. %s by %s' % (item['description'], item['version'], item['author'])
             info = QtWidgets.QLabel(text, plugin_frame)
@@ -78,6 +85,7 @@ class PluginSelector(QtWidgets.QWidget):
             info.setMinimumHeight(info.sizeHint().height() + 20)
             info.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
                                QtWidgets.QSizePolicy.MinimumExpanding)
+            # noinspection PyArgumentList
             vlayout.addWidget(info)
             hlayout.addLayout(vlayout)
             vlayout = QtWidgets.QVBoxLayout()
@@ -92,6 +100,7 @@ class PluginSelector(QtWidgets.QWidget):
             hlayout.addLayout(vlayout)
             plugin_frame.setLayout(hlayout)
             height_sum += plugin_frame.sizeHint().height()
+            # noinspection PyArgumentList
             inner_layout.addWidget(plugin_frame)
         inner_widget.setFixedHeight(height_sum)
         return inner_widget

@@ -25,10 +25,9 @@ GlossNode is a Node to display translation or explanation of a constituent
 #
 #############################################################################
 import kataja.globals as g
-from kataja.globals import GLOSS_EDGE, GLOSS_NODE
+from kataja.globals import GLOSS_NODE
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.singletons import ctrl, prefs
 
 
 class GlossNode(Node):

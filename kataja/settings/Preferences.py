@@ -22,14 +22,15 @@
 #
 # ############################################################################
 
+import os
+from copy import deepcopy
+
 from PyQt5 import QtGui, QtCore
 
+import kataja
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.edge_styles import master_styles
 from kataja.globals import *
-from copy import deepcopy
-from kataja.Shapes import SHAPE_PRESETS
-import kataja
-import os
 
 # Disable these if necessary for debugging
 enable_loading_preferences = True
@@ -89,8 +90,8 @@ class Preferences(object):
     def __init__(self, running_environment):
         self.save_key = 'preferences'
         self.version = None
-        self._tab_order = ['General', 'Drawing', 'Printing', 'Animation', 'Syntax', 'Node styles',
-                           'Performance', 'Plugins', 'Advanced']
+        self.tab_order = ['General', 'Drawing', 'Printing', 'Animation', 'Syntax', 'Node styles',
+                          'Performance', 'Plugins', 'Advanced']
 
         self.color_theme = 'solarized_lt'
         self._color_theme_ui = {
@@ -438,7 +439,7 @@ class Preferences(object):
             'range': (10, 60),
             'label': 'Target FPS'
         }
-        self._fps_in_msec = 1000 / self.FPS
+        self.fps_in_msec = 1000 / self.FPS
 
         self.move_frames = 10
         self._move_frames_ui = {
@@ -761,9 +762,6 @@ class QtPreferences:
     def late_init(self, running_environment, preferences, fontdb, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
         qt requirements that are difficult to get around.
-        :param running_environment:
-        :param preferences:
-        :param fontdb:
         """
         iconpath = os.path.join(running_environment.resources_path, 'icons')
 
@@ -865,30 +863,14 @@ class QtPreferences:
         self.trash_icon = icon('trash24.svg')
 
     def update(self, preferences, running_environment, log):
-        """
-
-        :param preferences:
-        :param running_environment:
-        """
         self.prepare_fonts(preferences.fonts, running_environment, log)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
 
     def prepare_easing_curve(self, curve_type, frames):
-        """
-
-        :param curve_type:
-        :param frames:
-        :return:
-        """
         curve = QtCore.QEasingCurve(getattr(QtCore.QEasingCurve, curve_type))
 
         def curve_value(x):
-            """
-
-            :param x:
-            :return:
-            """
             z = 1.0 / frames
             y = float(x) / frames
             return z + y - curve.valueForProgress(y)
@@ -905,10 +887,6 @@ class QtPreferences:
         self.curve = curve
 
     def prepare_fonts(self, fonts_dict, running_environment, log):
-        """
-        :param fonts_dict:
-        :param running_environment:
-        """
         self.fonts = {}
         asana_math = self.fontdb.addApplicationFont(
             os.path.join(running_environment.resources_path, "Asana-Math.otf"))

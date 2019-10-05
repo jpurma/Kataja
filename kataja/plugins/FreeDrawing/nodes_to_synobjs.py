@@ -23,7 +23,6 @@
 # ############################################################################
 
 
-
 import kataja.globals as g
 from kataja.parser.INodes import as_text, extract_triangle
 

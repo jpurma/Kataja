@@ -1,7 +1,4 @@
-from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import Panel
-from PyQt5 import QtWidgets
-from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 
@@ -67,4 +64,3 @@ class VisualizationOptionsPanel(Panel):
         """
         self.update_panel()
         super().showEvent(event)
-

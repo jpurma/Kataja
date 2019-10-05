@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+from kataja.KatajaAction import KatajaAction
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl, qt_prefs, prefs
-from kataja.uniqueness_generator import next_available_type_id
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.KatajaAction import KatajaAction
+from kataja.uniqueness_generator import next_available_type_id
 
 __author__ = 'purma'
 
@@ -37,15 +37,13 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
     UIEmbed implements the basic functions of all embeds: showing them,
     updating their positions, close buttons, updating colors. The approach is
     similar to UIPanels.
-
-    :param parent:
-    :param ui_manager:
     """
     __qt_type_id__ = next_available_type_id()
     unique = True
 
     def __init__(self, parent, host, text):
         UIWidget.__init__(self, host=host)
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         self._palette = None
         self.update_colors()
@@ -59,10 +57,12 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
                                    color_key='content1')
         close_button.setMaximumWidth(16)
         self.ui_manager.connect_element_to_action(close_button, 'close_embed')
+        # noinspection PyArgumentList
         self.top_row_layout.addWidget(close_button)
         self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.top_row_layout.addSpacing(8)
         self.top_title = QtWidgets.QLabel(text)
+        # noinspection PyArgumentList
         self.top_row_layout.addWidget(self.top_title)
         self.assumed_width = 300
         self.assumed_height = 100
@@ -145,6 +145,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         w = my_rect.width()
         h = my_rect.height()
         view_rect = view.geometry()
+        scene_br = None
         if self.host:
             scene_br = self.host.sceneBoundingRect()
             scene_br.adjust(-ew, -eh, ew, eh)

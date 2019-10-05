@@ -24,10 +24,10 @@
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+import kataja.globals as g
 from kataja.FadeInOut import FadeInOut
 from kataja.Shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl, prefs
-import kataja.globals as g
 
 
 class Triangle(QtWidgets.QGraphicsItem, FadeInOut):

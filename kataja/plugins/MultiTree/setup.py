@@ -1,7 +1,7 @@
 # coding=utf-8
-from kataja.plugins.MultiTree.Feature import Feature
 from kataja.plugins.MultiTree.Constituent import Constituent
 from kataja.plugins.MultiTree.Document import Document
+from kataja.plugins.MultiTree.Feature import Feature
 from kataja.plugins.MultiTree.SyntaxAPI import SyntaxAPI
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
@@ -21,7 +21,8 @@ plugin_classes = [Feature, Constituent, Document, SyntaxAPI]
 # When the plugin is ordered to reload, we have to manually list here which modules we want to reload. Otherwise their
 # code changes are not recognized. After reload the plugin is initialized again, so data files will probably be reloaded
 # without explicitly telling. Also the module reload order may be sensitive, so here you can set it.
-reload_order = ['MultiTree.Feature', 'MultiTree.Constituent', 'MultiTree.SyntaxAPI', 'MultiTree.Document', 'MultiTree.StacklessShiftParser',
+reload_order = ['MultiTree.Feature', 'MultiTree.Constituent', 'MultiTree.SyntaxAPI', 'MultiTree.Document',
+                'MultiTree.StacklessShiftParser',
                 'MultiTree.setup']
 
 
@@ -36,6 +37,7 @@ def start_plugin(main, ctrl, prefs):
     ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
     ctrl.doc_settings.set_for_edge_type('visible', True, g.FEATURE_EDGE)
 
+
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
@@ -43,7 +45,6 @@ def start_plugin(main, ctrl, prefs):
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled. Plugins should clean up after themselves! """
     pass
-
 
 # Typical call stack when starting a plugin, or starting Kataja with plugin enabled:
 #
@@ -87,4 +88,3 @@ def tear_down_plugin(main, ctrl, prefs):
 #         of parse is written into forest's derivation steps. For command line use, the parse method can return results
 #         in a manner you want.
 #
-

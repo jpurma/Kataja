@@ -26,16 +26,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import kataja.globals as g
+from kataja.EdgePath import EdgePath
+from kataja.FadeInOut import FadeInOut
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
-from kataja.singletons import ctrl
-from kataja.settings.EdgeSettings import EdgeSettings
-from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple
-from kataja.FadeInOut import FadeInOut
-from kataja.EdgePath import EdgePath
 from kataja.Shapes import SHAPE_PRESETS
 from kataja.edge_styles import names
+from kataja.settings.EdgeSettings import EdgeSettings
+from kataja.singletons import ctrl
+from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import to_tuple
 
 
 class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
@@ -68,7 +68,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._nodes_overlap = False
         self.k_tooltip = ''
         self.k_action = None
-        self._is_moving = False
+        self.is_moving = False
 
         self._local_drag_handle_position = None
 
@@ -263,8 +263,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                     lv = False
             elif self.edge_type == g.FEATURE_EDGE:
                 if (start.node_type == g.CONSTITUENT_NODE and
-                   start.is_card() and
-                   ((not end.adjustment) or end.adjustment == (0, 0))):
+                        start.is_card() and
+                        ((not end.adjustment) or end.adjustment == (0, 0))):
                     lv = False
                     # elif end.locked_to_node is start and \
                     #        ((not end.adjustment) or end.adjustment == (0, 0)):
@@ -314,7 +314,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         :return: QColor
         """
         return ctrl.cm.get(self.color_key)
-
 
     # Helper methods for derived properties
 
@@ -400,10 +399,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self.color_key:
             base = ctrl.cm.get(self.color_key)
-        elif self.alpha and hasattr(self.alpha, 'color'): #hasattr(self.alpha, 'get_color_key'):
-            base = self.alpha.color # ctrl.cm.get(self.alpha.get_color_key())
+        elif self.alpha and hasattr(self.alpha, 'color'):  # hasattr(self.alpha, 'get_color_key'):
+            base = self.alpha.color  # ctrl.cm.get(self.alpha.get_color_key())
         elif self.end:
-            base = self.end.color # get_color_key())
+            base = self.end.color  # get_color_key())
         else:
             base = ctrl.cm.get('content1')
 
@@ -413,7 +412,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             return ctrl.cm.hovering(base)
         else:
             return base
-
 
     # ### Derivative features ############################################
 
@@ -436,7 +434,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         else:
             self._nodes_overlap = False
         self.update_visibility()
-        if not self._is_moving:
+        if not self.is_moving:
             self.update_tooltip()
 
     # override
@@ -674,7 +672,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Low level toggle off things that slow drawing
         :return: None
         """
-        self._is_moving = True
+        self.is_moving = True
         self.setAcceptHoverEvents(False)
         # if prefs.move_effect:
         self._use_simple_path = True
@@ -699,7 +697,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Low level toggle back complex drawing
         :return: None
         """
-        self._is_moving = False
+        self.is_moving = False
         self.path.make_fat_path = True
         self.setAcceptHoverEvents(True)
         # if prefs.move_effect:

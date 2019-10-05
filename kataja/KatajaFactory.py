@@ -1,5 +1,6 @@
 import kataja.globals as g
 
+
 # We could use globals but it is safer this way: you can only create objects listed here.
 
 
@@ -171,10 +172,9 @@ class KatajaFactory:
         """
         class_object = self.get(object_class_name)
         if class_object and callable(class_object):
-            #print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
+            # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
             new_object = class_object(*args, **kwargs)
             return new_object
         else:
             # Here we should try importing classes from probable places (plugins, kataja, syntax)
             raise TypeError('class missing: %s ' % object_class_name)
-

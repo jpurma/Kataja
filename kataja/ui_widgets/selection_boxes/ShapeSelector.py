@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui
 
-from kataja.Shapes import SHAPE_PRESETS
 import kataja.globals as g
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl, classes
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
 
@@ -27,7 +27,9 @@ class LineStyleIcon(QtGui.QIcon):
         painter.setPen(color)
         SHAPE_PRESETS[self.shape_key].icon_path(painter, image.rect(), color)
         painter.end()
-        self.addPixmap(QtGui.QPixmap.fromImage(image))
+        pixmap = QtGui.QPixmap()
+        # noinspection PyArgumentList
+        self.addPixmap(pixmap.fromImage(image))
 
 
 class ShapeSelector(TableModelSelectionBox):

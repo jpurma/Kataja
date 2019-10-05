@@ -1,10 +1,8 @@
-from PyQt5 import QtWidgets, QtCore
-
-from kataja.singletons import ctrl, classes
-from kataja.ui_widgets.Panel import Panel
-from kataja.ui_widgets.buttons.PanelButton import PanelButton
-from kataja.ui_widgets.SelectionBox import SelectionBox
 import kataja.globals as g
+from kataja.singletons import ctrl
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.SelectionBox import SelectionBox
+from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
 __author__ = 'purma'
 

@@ -24,15 +24,16 @@
 
 import random
 import string
+
 from PyQt5 import QtGui, QtCore
 
 import kataja.globals as g
+from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGED_IN, \
     EDGE_RECEIVING_NOW, CHECKING_EDGE, EDGE_RECEIVING_NOW_DOMINANT, EDGE_OPEN_DOMINANT
-from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
 from kataja.utils import coords_as_str, to_tuple
 
 color_map = {
@@ -74,21 +75,21 @@ class FeatureNode(Node):
 
     quick_editable = False
     editable_fields = {'name': dict(name='Name', prefill='X',
-                             tooltip='Name of the feature, used as identifier',
-                                     syntactic=True),
-                        'value': dict(name='Value',
-                                      prefill='',
-                                      tooltip='Value given to this feature',
-                                      syntactic=True),
-                        'sign': dict(name='Sign',
+                                    tooltip='Name of the feature, used as identifier',
+                                    syntactic=True),
+                       'value': dict(name='Value',
                                      prefill='',
-                                     tooltip='Sign of this feature, e.g. +, -, u, =...'),
-                        'family': dict(name='Family', prefill='',
-                                       tooltip='Several distinct features can be '
-                                               'grouped under one family (e.g. '
-                                               'phi-features)',
-                                       syntactic=True)
-                      }
+                                     tooltip='Value given to this feature',
+                                     syntactic=True),
+                       'sign': dict(name='Sign',
+                                    prefill='',
+                                    tooltip='Sign of this feature, e.g. +, -, u, =...'),
+                       'family': dict(name='Family', prefill='',
+                                      tooltip='Several distinct features can be '
+                                              'grouped under one family (e.g. '
+                                              'phi-features)',
+                                      syntactic=True)
+                       }
 
     default_style = {'fancy': {'color_key': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9,
                                'visible': True},
@@ -274,7 +275,7 @@ class FeatureNode(Node):
             if edge.start.node_type == g.CONSTITUENT_NODE:
                 return edge.start
 
-    def _calculate_inner_rect(self, extra_w=0, extra_h=0):
+    def _calculate_inner_rect(self, min_w=0, min_h=0):
         label = self.label_object
         x_offset = 0
         y_offset = 0
@@ -457,17 +458,17 @@ class FeatureNode(Node):
         return ck
 
     def get_special_connection_point(self, sx, sy, ex, ey, start=False, edge_type=''):
-        if edge_type == g.FEATURE_EDGE: # not used atm.
+        if edge_type == g.FEATURE_EDGE:  # not used atm.
             f_align = self.forest.settings.get('feature_positioning')
             br = self.boundingRect()
             left, top, right, bottom = (int(x * .8) for x in br.getCoords())
-            if f_align == 0: # direct
+            if f_align == 0:  # direct
 
                 if start:
                     return (sx, sy), BOTTOM_SIDE
                 else:
                     return (ex, ey), BOTTOM_SIDE
-            elif f_align == 1: # vertical
+            elif f_align == 1:  # vertical
                 if start:
                     if sx < ex:
                         return (sx + right, sy), RIGHT_SIDE
@@ -623,7 +624,7 @@ class FeatureNode(Node):
         """ When features are joined into one object, deliver hover effects to child if necessary.
         :param event:
         """
-        if self.locked_to_node and self.locked_to_node._direct_hovering:
+        if self.locked_to_node and self.locked_to_node.is_direct_hovering():
             self.locked_to_node.stop_hovering()
         self.start_hovering()
         if not ctrl.scene_moving:

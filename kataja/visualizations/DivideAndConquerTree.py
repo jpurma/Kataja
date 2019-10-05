@@ -23,14 +23,13 @@
 # ############################################################################
 
 import math
-import time
 
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.saved.Movable import Movable
-from kataja.singletons import prefs, ctrl
+from kataja.singletons import prefs
 from kataja.visualizations.BalancedTree import BalancedTree
-from kataja.utils import time_me
+
 
 class DivideAndConquerTree(BalancedTree):
     """
@@ -42,7 +41,7 @@ class DivideAndConquerTree(BalancedTree):
 
     def __init__(self):
         BalancedTree.__init__(self)
-        self.forest = []
+        self.forest = None
         self._directed = True
         self.grid_lines_y = {}
         self.grid_lines_x = {}
@@ -118,7 +117,8 @@ class DivideAndConquerTree(BalancedTree):
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
-        def _build_grid(node, parent=None, done: set=None):
+        def _build_grid(node, parent=None, done: set = None):
+            last_drawn_child = None
             if node not in done and self.forest.should_we_draw(node, parent):
                 done.add(node)
                 if node.locked_to_node:
@@ -202,4 +202,3 @@ class DivideAndConquerTree(BalancedTree):
                 if node and isinstance(node, Movable):
                     node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width
-

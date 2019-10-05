@@ -11,6 +11,7 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.buttons.PanelButton import PanelButton
 
+
 #
 # class CommandPrompt(QtWidgets.QLineEdit):
 #

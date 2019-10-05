@@ -1,9 +1,9 @@
 # coding=utf-8
-from kataja.plugins.FreeDrawing.EditableFeatureNode import EditableFeatureNode
+import kataja.plugins.FreeDrawing.actions
 from kataja.plugins.FreeDrawing.EditableConstituentNode import EditableConstituentNode
+from kataja.plugins.FreeDrawing.EditableFeatureNode import EditableFeatureNode
 from kataja.plugins.FreeDrawing.EditableForest import EditableForest
 from kataja.plugins.FreeDrawing.EditableSyntax import EditableSyntax
-import kataja.plugins.FreeDrawing.actions
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -28,6 +28,7 @@ plugin_actions = kataja.plugins.FreeDrawing.actions
 
 reload_order = ['FreeDrawing.EditableFeatureNode', 'FreeDrawing.EditableConstituentNode']
 
+
 def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled and can be used for initializations, e.g. loading
     lexicons or adding new data to main, ctrl or prefs without reclassing them."""
@@ -42,7 +43,6 @@ def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
     pass
-
 
 # Typical call stack when starting a plugin, or starting Kataja with plugin enabled:
 #
@@ -86,4 +86,3 @@ def tear_down_plugin(main, ctrl, prefs):
 #         of parse is written into forest's derivation steps. For command line use, the parse method can return results
 #         in a manner you want.
 #
-

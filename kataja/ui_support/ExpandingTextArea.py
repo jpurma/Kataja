@@ -1,11 +1,10 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
+import kataja.globals as g
+from kataja.parser.INodes import as_editable_latex, as_editable_html
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup
 from kataja.utils import open_symbol_data, caller
-from kataja.parser.INodes import as_editable_latex, as_editable_html
-import kataja.globals as g
-import html
 
 
 class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
@@ -22,6 +21,7 @@ class MyPlainTextEdit(QtWidgets.QPlainTextEdit):
 class ExpandingTextArea(QtWidgets.QWidget):
     def __init__(self, parent, tooltip='', font=None, prefill='', on_edit=None, label=None,
                  on_focus_out=None, use_parsing_modes=True):
+        # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent)
         self.raw_text = ''
         self.parsed_latex = ''
@@ -43,10 +43,13 @@ class ExpandingTextArea(QtWidgets.QWidget):
 
         if label:
             lab = QtWidgets.QLabel(label, self)
+            # noinspection PyArgumentList
             self.top_row_layout.addWidget(lab)
             self.top_row_layout.addStretch(0)
         if use_parsing_modes:
+            # noinspection PyArgumentList
             self.top_row_layout.addWidget(self.tex_radio)
+            # noinspection PyArgumentList
             self.top_row_layout.addWidget(self.html_radio)
             self.top_row_layout.addStretch(0)
         layout.addLayout(self.top_row_layout)
@@ -64,6 +67,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.cut_point = 24
 
         layout.setContentsMargins(0, 0, 0, 0)
+        # noinspection PyArgumentList
         layout.addWidget(self.text_area)
         self.setLayout(layout)
         self.text_area.setMinimumHeight(40)
@@ -84,12 +88,12 @@ class ExpandingTextArea(QtWidgets.QWidget):
     def focusInEvent(self, event):
         self.grabKeyboard()
         print('grabbing keyboard')
-        #ctrl.grab_arrow_keys()
+        # ctrl.grab_arrow_keys()
 
     def focusOutEvent(self, event):
         self.releaseKeyboard()
         print('releasing keyboard')
-        #ctrl.grab_arrow_keys
+        # ctrl.grab_arrow_keys
 
     def get_host(self):
         parent = self.parentWidget()

@@ -23,6 +23,9 @@
 
 from collections import ChainMap
 
+import kataja
+
+
 class EdgeSettings:
     def __init__(self, edge: 'kataja.saved.Edge'):
         self.edge = edge
@@ -35,7 +38,7 @@ class EdgeSettings:
 
     @property
     def data(self):
-        return self.edge._settings
+        return self.edge.get_settings()
 
     def get(self, key):
         v = self.data.get(key, None)

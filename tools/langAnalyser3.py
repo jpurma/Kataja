@@ -1,5 +1,8 @@
-import os, csv, itertools
-# Fully automated version from semi-automated path analyser in Evelina Leivada's dissertation 
+import csv
+import itertools
+
+
+# Fully automated version from semi-automated path analyser in Evelina Leivada's dissertation
 # (2015, The nature and limits of variation across languages and pathologies 
 # (Doctoral dissertation, Universitat de Barcelona).
 # http://www.evelina.biolinguistics.eu/dissertation.pdf 
@@ -25,12 +28,14 @@ class Path:
         else:
             return '%s%s' % (self.number, self.sign)
 
+
 class AndPath:
     def __init__(self, paths):
         self.paths = paths
 
     def __repr__(self):
         return 'And%s' % self.paths
+
 
 class OrPath:
     def __init__(self, paths):
@@ -48,9 +53,9 @@ class Parameter:
         self.dependency_string = dependency_string.strip()
         self.values = values
         self.plus_path = []
-        self.minus_path = [] 
+        self.minus_path = []
         self.parent = None
-        self.paths_to_test = [] 
+        self.paths_to_test = []
 
     def __repr__(self):
         return 'P%s' % self.index
@@ -59,7 +64,7 @@ class Parameter:
         """ This parses path definitions like 
         "+7, -22, ( -25, +26 )  or +27, +42 or +45 or -50" 
         into Path, AndPath and OrPath -trees.
-        """  
+        """
         words = self.dependency_string.split()
         stack = []
 
@@ -80,7 +85,7 @@ class Parameter:
             and_suffix = False
             while words:
                 item = words.pop(0)
-                if item.startswith('('):                    
+                if item.startswith('('):
                     item = item[1:]
                     words, package = parse('', [item] + words)
                     stack.append(package)
@@ -90,7 +95,7 @@ class Parameter:
                 if item.endswith(','):
                     item = item[:-1]
                     and_suffix = True
-                if item.startswith(('+','-')):                
+                if item.startswith(('+', '-')):
                     sign = item[0]
                     number = item[1:]
                     stack.append(Path(sign, number, None))
@@ -100,15 +105,15 @@ class Parameter:
                     elif command == 'and':
                         prev = stack.pop()
                         words, package = parse('or', words, [prev])
-                        stack.append(package)                        
-                if and_suffix: # AND has priority over OR 
+                        stack.append(package)
+                if and_suffix:  # AND has priority over OR
                     # a OR b OR c AND d OR e  = (a OR B OR c) AND (d OR e)
                     # so if previous command was OR, fold it up and use the package  
                     and_suffix = False
                     if not command:
                         command = 'and'
-                    elif command == 'or': 
-                        package = _flush(command, stack)                        
+                    elif command == 'or':
+                        package = _flush(command, stack)
                         stack = [package]
                         return parse('and', words, stack)
             package = _flush(command, stack)
@@ -120,6 +125,7 @@ class Parameter:
     def connect_paths(self, params):
         """ Path objects in Path, AndPath and OrPath -trees are replaced with actual Parameters,
         connecting Parameters to each other or to AndPath or OrPath -nodes. """
+
         def connect(child, parent):
             if isinstance(parent, Path):
                 if isinstance(parent.number, int):
@@ -141,6 +147,7 @@ class Parameter:
                 parent.paths = new_paths
 
                 return parent
+
         self.parent = connect(self, self.parent)
 
 
@@ -172,7 +179,7 @@ def recursive_build(my_path, node):
                 parts.append([res])
         path_endings = itertools.product(*parts)
         for tupleitem in path_endings:
-            new_path = my_path.copy()            
+            new_path = my_path.copy()
             for item in tupleitem:
                 if isinstance(item, list):
                     new_path += item
@@ -217,7 +224,7 @@ file = open('parameterdata.csv')
 header, *reader = list(csv.reader(file, delimiter=';'))
 lang_names = header[3:]
 lang_data = [[] for x in lang_names]
-params = [None] # spend the index 0, so parameter numbering and their indexes match 
+params = [None]  # spend the index 0, so parameter numbering and their indexes match
 
 for n, name, dependency_string, *row in reader:
     new_param = Parameter(n, name, dependency_string, row)
@@ -235,10 +242,11 @@ for param in params:
 
 ## Figuring all possible paths to set each parameter
 for param in params:
-    if param: 
+    if param:
         tree = recursive_build([], param)
         if tree and isinstance(tree[0], list):
             param.paths_to_test = turn_to_valued_paths(tree, params)
+
 
 # Actual testing
 def test_parameter(param):
@@ -247,7 +255,7 @@ def test_parameter(param):
     for lang_name in lang_names:
         s.append(lang_name.center(5))
     print(''.join(s))
-    for path in param.paths_to_test:        
+    for path in param.paths_to_test:
         s = []
         for lang_name in lang_names:
             lang = lang_dict[lang_name]
@@ -257,13 +265,13 @@ def test_parameter(param):
                 s.append('  .  ')
         print(''.join(s))
 
+
 test_only = 0
 if test_only:
     test_parameter(params[test_only])
 else:
     for param in params:
-        if param and param.paths_to_test: 
+        if param and param.paths_to_test:
             if len(param.paths_to_test) > 20:
                 continue
             test_parameter(param)
-

@@ -1,6 +1,5 @@
 from kataja.parser.latex_to_unicode import latex_to_unicode
 
-
 greek = []
 latin = []
 combining = []
@@ -9,7 +8,8 @@ keys = list(latex_to_unicode.keys())
 keys.sort()
 d = {}
 
-tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
+tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr',
+          'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
 
 for table in tables:
     d[table] = []
@@ -32,9 +32,8 @@ for key in keys:
         if not found:
             rest.append(key)
 
-
 print(len(greek), greek)
 print(len(latin), latin)
 for table in tables:
-    print (len(d[table]), d[table])
+    print(len(d[table]), d[table])
 print(len(rest), rest)

@@ -1,8 +1,8 @@
 # coding=utf-8
-from TreesAreMemory.Constituent import Constituent
-from TreesAreMemory.Feature import Feature
-from TreesAreMemory.Document import Document
-from TreesAreMemory.SyntaxAPI import SyntaxAPI
+from kataja.plugins.TreesAreMemory.Constituent import Constituent
+from kataja.plugins.TreesAreMemory.Document import Document
+from kataja.plugins.TreesAreMemory.Feature import Feature
+from kataja.plugins.TreesAreMemory.SyntaxAPI import SyntaxAPI
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -44,7 +44,6 @@ def start_plugin(main, ctrl, prefs):
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled. Plugins should clean up after themselves! """
     pass
-
 
 # Typical call stack when starting a plugin, or starting Kataja with plugin enabled:
 #
@@ -88,4 +87,3 @@ def tear_down_plugin(main, ctrl, prefs):
 #         of parse is written into forest's derivation steps. For command line use, the parse method can return results
 #         in a manner you want.
 #
-

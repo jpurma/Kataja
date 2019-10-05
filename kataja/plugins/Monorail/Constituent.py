@@ -25,8 +25,10 @@
 try:
     from kataja.SavedField import SavedField
     from kataja.syntax.SyntaxState import BaseConstituent
+
     in_kataja = True
 except ImportError:
+    SavedField = object
     BaseConstituent = None
     in_kataja = False
 
@@ -35,12 +37,6 @@ class Constituent(BaseConstituent or object):
     nodecount = 0
 
     def __init__(self, label='', features=None, parts=None, lexical_heads=None):
-        """ Constituents
-        :param label:
-        :param features:
-        :param parts:
-        :param path:
-        """
         if BaseConstituent:
             super().__init__(label, parts=parts, features=features, lexical_heads=lexical_heads)
         else:
@@ -48,10 +44,11 @@ class Constituent(BaseConstituent or object):
             self.features = list(features) if features else []
             self.parts = parts or []
             self.inherited_features = self.features
+            self.lexical_heads = lexical_heads
             if features:
                 for feature in features:
                     feature.host = self
-
+        self.checked_features = None
         self.has_raised = False
 
     def __str__(self):

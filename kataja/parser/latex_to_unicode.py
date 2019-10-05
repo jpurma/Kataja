@@ -2746,4 +2746,3 @@ latex_to_unicode = {
     '~{o}': ('õ', 'latin small letter o with tilde', 'latin'),
     '~{u}': ('ũ', 'latin small letter u with tilde', 'latin')
 }
-

@@ -24,13 +24,12 @@
 
 
 import math
+import random
 
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, ctrl
-from kataja.utils import caller, time_me
-import random
+from kataja.singletons import prefs
 
 
 class LeftFirstTree(BaseVisualization):
@@ -109,6 +108,8 @@ class LeftFirstTree(BaseVisualization):
             grandchildren = [x for x in child.get_children(visible=True) if
                              not x.locked_to_node]
             count = 0
+            path = []
+            path_marker = 1
             while blocked and count < 10:
                 # is the right node position available?
                 blocked = grid.get(nx, ny)

@@ -1,10 +1,8 @@
 # coding=utf-8
-from PyQt5 import QtWidgets
 
-from kataja.globals import FOREST, DOCUMENT, PREFS
-from kataja.singletons import ctrl, prefs, log, classes
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl, prefs
 
 
 # ==== Class variables for KatajaActions:
@@ -214,4 +212,3 @@ class SetFeaturesHanging(KatajaAction):
 
     def enabler(self):
         return self.not_selection()
-

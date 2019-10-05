@@ -1,7 +1,9 @@
+import os
+
 from PyQt5 import QtCore, QtWidgets, QtGui
+
 from kataja.singletons import ctrl, prefs, running_environment, log
 from kataja.utils import find_free_filename
-import os
 
 
 class PrintManager:

@@ -1,14 +1,16 @@
-
 from itertools import chain
+
 try:  # When this is imported in Kataja context
-    from TreesAreMemory.Constituent import Constituent
-    from TreesAreMemory.Feature import Feature
+    from kataja.plugins.TreesAreMemory.Constituent import Constituent
+    from kataja.plugins.TreesAreMemory.Feature import Feature
     from kataja.syntax.SyntaxState import SyntaxState
-    from TreesAreMemory.utils import simple_bracket_tree_parser
+    from kataja.plugins.TreesAreMemory.utils import simple_bracket_tree_parser
 except ImportError:  # this is run as a standalone, from command line
-    from Constituent import Constituent
-    from Feature import Feature
-    from utils import simple_bracket_tree_parser
+    from .Constituent import Constituent
+    from .Feature import Feature
+    from .utils import simple_bracket_tree_parser
+
+    SyntaxState = None
 
 
 def load_lexicon(lines):
@@ -33,7 +35,7 @@ class TreesAreMemoryParser:
             self.lexicon = load_lexicon(lexicon)
         self.forest = forest
 
-    def read_lexicon(self, entry_list):
+    def read_lexicon(self, entry_list, lexicon=None):
         self.lexicon = load_lexicon(entry_list)
 
     def parse(self, sentence):
@@ -46,11 +48,14 @@ class TreesAreMemoryParser:
     def _parse(self, next_const, tree, word_list):
 
         # Check if new node has immediate justification for merging with tree.
-        next_will_match = self.find_matching_features_for(next_const, tree, deep=False)
+        if tree:
+            next_will_match = self.find_matching_features_for(next_const, tree, deep=False)
+        else:
+            next_will_match = False
         if next_will_match and False:
             # ...if match is found a pile of nodes in wrong order is put at the top of the tree
             msg = f'Merge because "{next_const}" fits into ongoing phrase. "{tree.label}", {next_will_match[0]}' \
-                f' & {next_will_match[2]}'
+                  f' & {next_will_match[2]}'
             tree = self.merge(next_const, tree)
             self.export_to_kataja(tree, msg)
         else:
@@ -77,14 +82,16 @@ class TreesAreMemoryParser:
         next_const = self.get_lexeme(word_list.pop(0)) if word_list else None
         return self._parse(next_const, tree, word_list)
 
-    def merge(self, left, right):
+    @staticmethod
+    def merge(left, right):
         merged = Constituent(label=left.label, left=left, right=right)
         merged.inherited_features = list(left.features)
         merged.head = left.head
         # print('made a naive merge: ', merged, merged.inherited_features)
         return merged
 
-    def raise_matching_features(self, matching_features, tree):
+    @staticmethod
+    def raise_matching_features(matching_features, tree):
         """ Feature match that is justifying this merge is also used to configure the merge. """
         match_feat, const, feat = matching_features
         # print('matching features: ', match_feat, match_feat.leads, feat, feat.leads)
@@ -206,7 +213,8 @@ class TreesAreMemoryParser:
     def get_morphology(self, key):
         return self.lexicon[key].morphology if key in self.lexicon else key
 
-    def spellout(self, tree):
+    @staticmethod
+    def spellout(tree):
         def _spellout(tree, used):
             if tree in used:  # don't visit any branch twice
                 return []
@@ -225,5 +233,3 @@ class TreesAreMemoryParser:
             print(message)
             syn_state = SyntaxState(tree_roots=[tree], msg=message)
             self.forest.add_step(syn_state)
-
-

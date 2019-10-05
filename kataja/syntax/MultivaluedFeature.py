@@ -62,11 +62,10 @@ class MultivaluedFeature(BaseFeature):
     def __str__(self):
         s = []
         if self.value in ('+', '-', '=', 'u'):
-            s.append(self.value + str(self.name))
+            s.append(f'{self.value}{self.name}')
         else:
             s.append(str(self.name))
             s.append(str(self.value))
         if self.family:
             s.append(str(self.family))
         return ":".join(s)
-

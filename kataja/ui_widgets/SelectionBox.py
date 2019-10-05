@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl
@@ -19,10 +19,11 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
             self.setMaximumSize(QtCore.QSize(40, 20))
         if action:
             ctrl.ui.connect_element_to_action(self, action)
-        #if data:
+        # if data:
         #    self.disable_choice(data[0])
 
     def disable_choice(self, choice):
+        # noinspection PyArgumentList
         index = self.findData(choice)
         m = self.model()
         item = m.item(index, 0)
@@ -38,6 +39,7 @@ class SelectionBox(QtWidgets.QComboBox, UIWidget):
         :param data: data to match
         :return: -1 if not found, index if found
         """
+        # noinspection PyArgumentList
         return self.findData(data)
 
     def remove_list_item(self, data):

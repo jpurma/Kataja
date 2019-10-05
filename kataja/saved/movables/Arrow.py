@@ -1,19 +1,11 @@
+from PyQt5 import QtCore, QtWidgets
 
-import time
-from PyQt5 import QtCore, QtGui, QtWidgets
-from collections import ChainMap
-
-import kataja.globals as g
 from kataja.ArrowLabel import ArrowLabel
-from kataja.SavedField import SavedField
-from kataja.SavedObject import SavedObject
-from kataja.singletons import ctrl, prefs
-from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import to_tuple, add_xy, time_me
 from kataja.FadeInOut import FadeInOut
-from kataja.EdgePath import EdgePath
-from kataja.Shapes import SHAPE_PRESETS
+from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
+from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import to_tuple
 
 
 class Arrow(Movable):
@@ -55,7 +47,7 @@ class Arrow(Movable):
             self.fixed_end_point = start_x + ex - sx, start_y + ey - sy
 
     def __repr__(self):
-        return f'Arrow from {self.start or int(self.start_point[0]), int(self.start_point[1])} to '\
+        return f'Arrow from {self.start or int(self.start_point[0]), int(self.start_point[1])} to ' \
                f'{self.end or int(self.end_point[0]), int(self.end_point[1])}'
 
     # ## Label data and its shortcut properties
@@ -80,7 +72,6 @@ class Arrow(Movable):
                     self.label_item = None
         self.update()
 
-
     def get_label_text(self) -> str:
         """ Label text is actually stored in model.label_data, but this is a
         shortcut for it.
@@ -99,7 +90,6 @@ class Arrow(Movable):
             self.label_item = ArrowLabel(value, parent=self)
             self.poke('label_data')
             self.label_data['text'] = value
-
 
     # ############## #
     #                #

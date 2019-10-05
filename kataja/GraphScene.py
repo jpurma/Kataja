@@ -22,19 +22,16 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import time
-from itertools import chain
 
-import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 
 from kataja.globals import ViewUpdateReason, CONSTITUENT_NODE
-from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, open_symbol_data, time_me, caller
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.utils import to_tuple, open_symbol_data
 
 
 # from BlenderExporter import export_visible_items
@@ -153,7 +150,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def move_selection(self, direction, add_to_selection=False):
         """ Move selection to best candidate
-        :param direction:
         """
 
         def edge_of_set(my_selectables):
@@ -394,7 +390,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self._fade_steps = 7
         if not self._fade_timer_id:
-            self._fade_timer_id = self.startTimer(prefs._fps_in_msec)
+            self._fade_timer_id = self.startTimer(prefs.fps_in_msec)
 
         self._fade_steps_list = []
         oh, os, ov, oa = old_base_color.getHsvF()
@@ -431,7 +427,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if ctrl.play and not self._timer_id:
-            self._timer_id = self.startTimer(prefs._fps_in_msec)
+            self._timer_id = self.startTimer(prefs.fps_in_msec)
             self.timer_counter = 0
             self.heat = 5.0
 
@@ -474,7 +470,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.timer_counter += 1
         if self.heat > 0.1:
             self.heat *= 0.96
-            #print('heat: ', self.heat)
+            # print('heat: ', self.heat)
         else:
             self.stop_animations()
         if ctrl.pressed:

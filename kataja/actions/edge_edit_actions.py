@@ -1,8 +1,6 @@
 # coding=utf-8
 
-from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
-from kataja.ui_widgets.UIEmbed import EmbedAction
 from kataja.singletons import ctrl, log
 
 

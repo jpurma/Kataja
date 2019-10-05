@@ -22,12 +22,10 @@
 #
 # ############################################################################
 
-from kataja.singletons import ctrl, running_environment
+from kataja.plugins.mgtdbp.Parser import sentences
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
-from mgtdbp.Parser import sentences
 from kataja.singletons import classes
-import os
 
 
 class Document(KatajaDocument):
@@ -36,9 +34,6 @@ class Document(KatajaDocument):
 
     def create_forests(self, filename=None, treelist=None, clear=False):
         """ This will read sentences to parse. One sentence per line, no periods etc.
-
-        :param filename: not used
-        :param clear: start with empty
         """
         forests = []
         for grammar, start, sentence in sentences:

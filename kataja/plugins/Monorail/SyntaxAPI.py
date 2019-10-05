@@ -22,13 +22,14 @@
 #
 # ############################################################################
 
+import time
+
+from kataja.plugins.Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
+    parse_from_recipe, parse, flatten
+import kataja.globals as g
 from kataja.SavedObject import SavedObject
 from kataja.singletons import ctrl, classes, log
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
-from Monorail.Parser import remove_punctuation, list_to_monorail, deduce_lexicon_from_recipe, \
-    parse_from_recipe, parse, flatten
-import kataja.globals as g
-import time
 
 CONSTITUENT_TREE = 0
 FEATURE_TREE = 1
@@ -145,9 +146,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
         return synobj
 
     def to_feature_constituent(self, synobj):
-        #if synobj.parts:
+        # if synobj.parts:
         #    synobj.label = ' '.join([str(x) for x in synobj.checked_features])
         #    for part in synobj.parts:
         #        self.to_feature_constituent(part)
         return synobj
-

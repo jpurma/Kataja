@@ -36,10 +36,6 @@ class IConstituent(metaclass=ABCMeta):
     addable = []
 
     @abstractmethod
-    def __init__(self, label='', parts=None, uid='', features=None, **kw):
-        NotImplemented
-
-    @abstractmethod
     def __str__(self):
         return NotImplemented
 
@@ -145,8 +141,6 @@ class IConstituent(metaclass=ABCMeta):
     @abstractmethod
     def remove_feature(self, name):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
-        :param fname: str, the name for finding the feature or for convenience, a feature
-        instance to be removed
         """
         return NotImplemented
 
@@ -172,4 +166,3 @@ class IConstituent(metaclass=ABCMeta):
         :return: BaseConstituent
         """
         return NotImplemented
-

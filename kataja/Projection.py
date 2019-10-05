@@ -1,10 +1,7 @@
-import string
-
 import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
-from kataja.singletons import ctrl
 from kataja.parser.INodes import as_text
-from kataja.utils import time_me
+from kataja.singletons import ctrl
 
 
 class Projection:

@@ -42,11 +42,11 @@ from kataja.LogWidgetPusher import capture_stdout
 from kataja.PaletteManager import PaletteManager
 from kataja.PluginManager import PluginManager
 from kataja.PrintManager import PrintManager
-from kataja.ViewManager import ViewManager
+from kataja.Recorder import Recorder
 from kataja.UIManager import UIManager
+from kataja.ViewManager import ViewManager
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
-from kataja.Recorder import Recorder
 from kataja.utils import quit
 from kataja.visualizations.available import VISUALIZATIONS
 
@@ -101,6 +101,7 @@ HeadingWidget QLabel {font-family: "%(main_font)s";
                font-size: %(heading_font_size)spx;}
 """
 
+
 class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
@@ -126,6 +127,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param reset_prefs: bool, don't attempt to load preferences, use defaults instead
 
         """
+        # noinspection PyArgumentList
         QtWidgets.QMainWindow.__init__(self)
         silent = bool(image_out)
         self.init_done = False
@@ -198,7 +200,7 @@ class KatajaMain(QtWidgets.QMainWindow):
                 self.forest.undo_manager.flush_pile()
         else:
             self.action_finished(undoable=False, play=False)
-        #gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
+        # gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
         #            QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         # for gesture in gestures:
         #    self.grabGesture(gesture)
@@ -251,7 +253,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.resume_undo()
         self.init_done = self._stored_init_state
         # ----------------------
-
 
     # Preferences ###################################
 
@@ -330,6 +331,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param undoable: are we supposed to take a snapshot of changes after
         this action.
         :param error message
+        :param play: force animations to play
         """
         if error:
             log.error(error)
@@ -378,14 +380,11 @@ class KatajaMain(QtWidgets.QMainWindow):
     def change_color_theme(self, mode, force=False):
         """
         triggered by color mode selector in colors panel
-
-        :param mode:
         """
         if self.document:
             if mode != self.document.settings.get('color_theme') or force:
                 self.document.settings.set('color_theme', mode)
                 self.update_colors()
-
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):

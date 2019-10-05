@@ -46,4 +46,3 @@ class CommentPanel(NodePanel):
         self.edge_options.data = self.node_type
 
         self.finish_init()
-

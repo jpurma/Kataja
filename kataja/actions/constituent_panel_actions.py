@@ -1,10 +1,9 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
 
-from kataja.globals import FOREST, DOCUMENT, PREFS
-from kataja.singletons import ctrl, prefs, log, classes
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
+from kataja.singletons import ctrl, prefs
 
 
 # ==== Class variables for KatajaActions:
@@ -41,6 +40,7 @@ class SelectLabelShape(KatajaAction):
         """
         bs = ctrl.ui.get_active_setting('cn_shape')
         bs += 1
+        m = ''
         if bs > 5:
             bs = 0
         while bs in ctrl.forest.visualization.banned_cn_shapes:
@@ -246,4 +246,3 @@ class SetVisibleLabel(KatajaAction):
 
     def enabler(self):
         return ctrl.forest and self.not_selection()
-

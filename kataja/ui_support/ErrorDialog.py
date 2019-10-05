@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from PyQt5 import QtWidgets
-from kataja.singletons import qt_prefs, ctrl
+
 from kataja.ui_support.panel_utils import box_row
 
 
@@ -9,7 +9,7 @@ class ErrorDialog(QtWidgets.QDialog):
     """ Dialog to show an error in operation """
 
     def __init__(self, parent, retry=True):
-
+        # noinspection PyArgumentList
         QtWidgets.QDialog.__init__(self, parent)
         self.setModal(True)
         self.message = 'Apologies, but there was a plugin that failed to register:'
@@ -18,6 +18,7 @@ class ErrorDialog(QtWidgets.QDialog):
 
         layout = QtWidgets.QVBoxLayout()
         hlayout = box_row(layout)
+        # noinspection PyArgumentList
         self.message_widget = QtWidgets.QWidget(self)
         self.traceback_widget = QtWidgets.QTextBrowser(self)
         self.traceback_widget.setMinimumWidth(300)
@@ -28,6 +29,7 @@ class ErrorDialog(QtWidgets.QDialog):
         # self.message_header_label = QtWidgets.QLabel('', self.message_widget)
         self.message_error_label = QtWidgets.QLabel(self.error_text, self.message_widget)
         # mlayout.addWidget(self.message_header_label)
+        # noinspection PyArgumentList
         mlayout.addWidget(self.message_error_label)
         self.message_widget.setLayout(mlayout)
         hlayout = box_row(layout)
