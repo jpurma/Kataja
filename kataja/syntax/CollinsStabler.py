@@ -28,7 +28,8 @@ class UniversalGrammar:
         else:
             raise NotImplementedError
 
-    def Merge(self, a, b):
+    @staticmethod
+    def Merge(a, b):
         """ Definition 13: Given any two distinct syntactic objects A, B, Merge(A, B) = {A, B}
         :param a:
         :param b:

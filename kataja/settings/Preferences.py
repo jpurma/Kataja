@@ -648,7 +648,8 @@ class Preferences(object):
     def get_for_edge_type(self, key, edge_type):
         return self.edges[edge_type][key]
 
-    def get_for_edge_shape(self, key, edge_shape):
+    @staticmethod
+    def get_for_edge_shape(key, edge_shape):
         return SHAPE_PRESETS[edge_shape].defaults[key]
 
     def set(self, key, value):
@@ -736,6 +737,8 @@ class QtPreferences:
         self.left_align_icon = None
         self.center_align_icon = None
         self.right_align_icon = None
+        self.down_arrow = None
+        self.up_arrow = None
         self.remove_styles_icon = None
         self.shape_icon_card = None
         self.shape_icon_plain = None

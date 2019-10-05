@@ -15,7 +15,8 @@ class ComputationalSystem:
         self._pf = pf
         self._lf = lf
 
-    def Merge(self, X, Y):
+    @staticmethod
+    def Merge(X, Y):
         SO = SyntacticObject(X.label.copy(), (X, Y))
         return SO
 

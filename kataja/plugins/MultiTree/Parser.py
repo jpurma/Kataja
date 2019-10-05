@@ -135,7 +135,8 @@ class Parser:
         return next_const and (self._justify_spec_merge(tree, next_const, strict=False)
                                or self._justify_comp_merge(tree, next_const, strict=False))
 
-    def _justify_comp_merge(self, mover, tree, strict=True):
+    @staticmethod
+    def _justify_comp_merge(mover, tree, strict=True):
         for plus_feature in tree.features:
             if plus_feature.sign == '':
                 for neg_feature in mover.features:
@@ -145,7 +146,8 @@ class Parser:
             elif strict:
                 break
 
-    def _justify_spec_merge(self, mover, tree, strict=True):
+    @staticmethod
+    def _justify_spec_merge(mover, tree, strict=True):
         for plus_feature in mover.features:
             if plus_feature.sign == '':
                 for neg_feature in tree.features:
@@ -155,7 +157,8 @@ class Parser:
             elif strict:
                 break
 
-    def _q_raising_is_possible(self, tree, strict=True):
+    @staticmethod
+    def _q_raising_is_possible(tree, strict=True):
         mover = tree and tree.Q
         if not mover:
             return
@@ -167,12 +170,14 @@ class Parser:
             elif strict:
                 break
 
-    def _is_q_raiser(self, const):
+    @staticmethod
+    def _is_q_raiser(const):
         for feature in const.features:
             if feature.sign == '*':
                 return True
 
-    def _find_mover(self, tree):
+    @staticmethod
+    def _find_mover(tree):
         for mover in tree.movers:
             return mover
 

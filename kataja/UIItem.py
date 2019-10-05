@@ -105,7 +105,6 @@ class UIItem:
         self._fade_out_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
-        self.visible = False
         self.hide()
         self.is_fading_out = False
         self._fade_out_anim = None
@@ -147,7 +146,8 @@ class UIGraphicsItem(UIItem):
         self._hovering = True
         ctrl.ui.show_help(self, event)
 
-    def hoverMoveEvent(self, event):
+    @staticmethod
+    def hoverMoveEvent(event):
         ctrl.ui.move_help(event)
 
     def hoverLeaveEvent(self, event):

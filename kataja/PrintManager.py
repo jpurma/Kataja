@@ -92,7 +92,8 @@ class PrintManager:
             node.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
         ctrl.graph_scene.setBackgroundBrush(ctrl.cm.gradient)
 
-    def _write_png(self, source, write_path):
+    @staticmethod
+    def _write_png(source, write_path):
         scale = 4
         target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
         writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
@@ -110,7 +111,8 @@ class PrintManager:
         print(msg)
         log.info(msg)
 
-    def _write_pdf(self, source, write_path):
+    @staticmethod
+    def _write_pdf(source, write_path):
         dpi = 25.4
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
 

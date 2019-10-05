@@ -58,6 +58,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.timer_counter = 0
         self._fade_steps = 0
         self._fade_steps_list = []
+        self.heat = 0
         # self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
 
@@ -202,7 +203,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # ######### MOUSE ##############
 
-    def kill_dragging(self):
+    @staticmethod
+    def kill_dragging():
         """ Remove all flags and temporary things related to dragging """
         if ctrl.dragged_focus:
             ctrl.dragged_focus.finish_dragging()

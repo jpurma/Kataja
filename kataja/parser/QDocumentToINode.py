@@ -6,7 +6,8 @@ class QDocumentToINode:
     brackets or tree parsing, only fields.
     """
 
-    def process(self, doc):
+    @staticmethod
+    def process(doc):
 
         def removed(stack, command):
             for item in reversed(stack):

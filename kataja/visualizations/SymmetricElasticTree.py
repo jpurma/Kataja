@@ -99,7 +99,8 @@ class SymmetricElasticTree(BaseVisualization):
 
         return (push_x + pull_x) * heat, (push_y + pull_y) * heat  # round(xvel), round(yvel)
 
-    def calculate_movement_good(self, node, other_nodes):
+    @staticmethod
+    def calculate_movement_good(node, other_nodes):
         """
 
         :param node:
@@ -170,7 +171,8 @@ class SymmetricElasticTree(BaseVisualization):
 
         return round(xvel), round(yvel)
 
-    def calculate_movement_old(self, node, other_nodes):
+    @staticmethod
+    def calculate_movement_old(node, other_nodes):
         """
 
         :param node:

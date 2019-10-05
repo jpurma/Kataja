@@ -421,7 +421,8 @@ class KatajaAction(QtWidgets.QAction):
             if menu.key == menu_key:
                 menu.setChecked(value)
 
-    def not_selection(self):
+    @staticmethod
+    def not_selection():
         """ Helper method that checks if we are not in selection scope, many actions are then
         disabled.
         :return:

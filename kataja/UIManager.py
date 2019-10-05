@@ -942,7 +942,8 @@ class UIManager:
                         ta = ta_class(host)
                         self.add_ui(ta)
 
-    def is_dragging_this_type(self, dtype):
+    @staticmethod
+    def is_dragging_this_type(dtype):
         """ Check if the currently dragged item is in principle compatible with
         self.
         :return:
@@ -963,7 +964,8 @@ class UIManager:
     # ### Messages
     # ####################################################################
 
-    def add_message(self, msg, level=logging.INFO):
+    @staticmethod
+    def add_message(msg, level=logging.INFO):
         """ Insert new row of text to log
         possible logger levels are those from logging library:
         CRITICAL	50
@@ -988,7 +990,8 @@ class UIManager:
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
 
-    def add_button(self, button, action):
+    @staticmethod
+    def add_button(button, action):
         button.update_position()
         button.show()
         return button

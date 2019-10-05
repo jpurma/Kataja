@@ -263,7 +263,8 @@ class Parser:
         sen_str = ' '.join(self.active_parse.input_words)
         return f"{sen_str}\nStep {self.c}, exp. {len(self.expansions) + 1}, movers: {mover_keys}\n"
 
-    def find_matching_subtree(self, node, target):
+    @staticmethod
+    def find_matching_subtree(node, target):
         for tree in node.parts:
             if tree.feat and tree.feat.name == target.feat.name:
                 return tree

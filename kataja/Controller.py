@@ -108,7 +108,7 @@ class Controller:
         self.undo_pile = set()
         # ---------------------------
 
-    def late_init(self, main: KatajaMain):
+    def late_init(self, main: 'KatajaMain'):
         self.main = main
 
     @property

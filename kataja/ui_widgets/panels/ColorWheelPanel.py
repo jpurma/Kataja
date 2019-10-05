@@ -63,6 +63,7 @@ class ColorWheelPanel(Panel):
         self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + \
                           the_rest
 
+        self.selector_items = None
         self.role_label = QtWidgets.QLabel("Picking color for role: ")
         self.role_selector = QtWidgets.QComboBox(parent=widget)
         self.role_selector.addItems(self.editable_colors)
@@ -273,6 +274,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         self._flag_area = 0, 0, 0, 0
         self.setAutoFillBackground(True)
         self.show()
+        self.suggested_size = 0
         self.outer = get_parent_panel(self)
         self._radius = 0
         self._top_corner = 0

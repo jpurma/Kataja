@@ -148,7 +148,8 @@ class CommentNode(Node):
 
         self.label_object.resize_label()
 
-    def dragging_my_arrow(self):
+    @staticmethod
+    def dragging_my_arrow():
         return True
 
     def node_alone(self):

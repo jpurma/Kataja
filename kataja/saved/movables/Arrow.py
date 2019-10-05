@@ -23,6 +23,10 @@ class Arrow(Movable):
         self.label_data = {}
         self.label_item = None
         self.text = text or ''
+        self._local_drag_handle_position = None
+        self.fixed_start_point = None
+        self.fixed_end_point = None
+        self.selected = None
 
     def drag(self, event):
         """ This is for dragging the whole edge in cases when edge is not

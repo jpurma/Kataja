@@ -141,6 +141,7 @@ class SpirallingTree(BaseVisualization):
         self.edge = 0
         self.sides = 3
         self.use_gravity = False
+        self.waiting_list = []
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -157,10 +158,6 @@ class SpirallingTree(BaseVisualization):
             self.reset_nodes()
 
     def reset_node(self, node):
-        """
-
-        :param node:
-        """
         super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
@@ -173,10 +170,6 @@ class SpirallingTree(BaseVisualization):
         return True
 
     def draw_tree(self, tree_top, sides=0):
-        """
-
-        :return:
-        """
         self.start_x = 0
         self.areas = {}
         self.iterations = 0

@@ -444,7 +444,8 @@ class KatajaMain(QtWidgets.QMainWindow):
     # preference should have immediate consequences. They are hosted here because they need to
     # have access to prefs, qt_prefs, main etc.
 
-    def prepare_easing_curve(self):
+    @staticmethod
+    def prepare_easing_curve():
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
 
     def update_color_theme(self):

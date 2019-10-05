@@ -179,7 +179,8 @@ class AsymmetricElasticTree(BaseVisualization):
 
         return xvel, yvel
 
-    def calculate_movement_good(self, node, other_nodes):
+    @staticmethod
+    def calculate_movement_good(node, other_nodes):
         """ The idea here is that each node has their preferred position below their parent node. 
         The strings that pull are computed to pull towards that position instead of pulling nodes 
         over each other.

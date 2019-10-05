@@ -169,7 +169,7 @@ class SavedObject(object):
         """ Restore to earlier version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old,
         new) -pairs
-        :return: None
+        :param transition_type:
         """
         # print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
@@ -352,7 +352,8 @@ class SavedObject(object):
                 # print('restoring item, calling after_init for ', type(item), item)
                 item.after_init()
 
-    def restore(self, obj_key, full_data, full_map, restored):
+    @staticmethod
+    def restore(obj_key, full_data, full_map, restored):
         """ Recursively restore objects inside the scope of current obj. Used
         for loading kataja files. """
 

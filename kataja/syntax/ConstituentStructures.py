@@ -67,11 +67,12 @@ class ConstituentStructures:
         self.Constituent = Constituent
         # self.Feature=feature
         self.lexicon = {}  # load_lexicon(lexicon, constituent, feature)
-        # self.structure=None
+        self.structure = None
 
         self.dominates = self.undefined
 
-    def undefined(self, *args, **kw):
+    @staticmethod
+    def undefined(*args, **kw):
         """
 
         :param args:
@@ -322,7 +323,8 @@ class ConstituentStructures:
 
     # ## PRECEDENCE
 
-    def is_left_edge(self, A, B, parent):
+    @staticmethod
+    def is_left_edge(A, B, parent):
         """ This assumes only that parent has an ordering method that returns iterable results
         :param A:
         :param B:
@@ -615,7 +617,8 @@ class ConstituentStructures:
                     factors.append(s)
         return factors
 
-    def is_maximal_category(self, node, structure):
+    @staticmethod
+    def is_maximal_category(node, structure):
         return NotImplemented
 
     def m_command(self, A, B, structure):
@@ -835,7 +838,8 @@ class ConstituentStructures:
         # this will behave strangely with multidominated structures
         return path
 
-    def bar_level(self, node, structure):
+    @staticmethod
+    def bar_level(node, structure):
         return NotImplemented
 
     def projection_path_top_down(self, top, structure):
@@ -864,7 +868,8 @@ class ConstituentStructures:
         # this will behave strangely with multidominated structures
         return path
 
-    def maximal_projection_node(self, path):
+    @staticmethod
+    def maximal_projection_node(path):
         """ (4) n_i is the maximal projection node of a projection path Pi = (n_1, ..., n_n) iff i=1  (Carnie 2010 p.137)
         :param path:
         """
@@ -1079,7 +1084,8 @@ class ConstituentStructures:
             print('Labeling problem')
         return delta
 
-    def head_is_label(self, candidates):
+    @staticmethod
+    def head_is_label(candidates):
         """ Chomsky's minimalist labeling function: head projects: one that is head is label.
         :param candidates:
         """
@@ -1095,7 +1101,8 @@ class ConstituentStructures:
         else:
             return found
 
-    def first_is_label(self, candidates):
+    @staticmethod
+    def first_is_label(candidates):
         """ Labeling based on ordered pairs
         :param candidates: constituents in any ordered sequence
         """
@@ -1124,10 +1131,12 @@ class ConstituentStructures:
         delta.setLabel((gamma, gamma))
         return delta
 
-    def is_terminal(self, node, structure):
+    @staticmethod
+    def is_terminal(node, structure):
         return NotImplemented
 
-    def is_silent(self, node, structure):
+    @staticmethod
+    def is_silent(node, structure):
         return NotImplemented
 
     def bare_phrase_lca(self, structure):
@@ -1165,7 +1174,8 @@ class ConstituentStructures:
                 raise ValueError
         return T
 
-    def feature_check(self, left, right):
+    @staticmethod
+    def feature_check(left, right):
         """
 
         :param left:
@@ -1209,7 +1219,8 @@ class ConstituentStructures:
         # del new.features[key]
         return new
 
-    def CCommands(self, A, B, context):
+    @staticmethod
+    def CCommands(A, B, context):
         """ C-Command edge needs the root constituent of the trees as a context, as
         :param A:
         :param B:
@@ -1222,7 +1233,8 @@ class ConstituentStructures:
                 return True
         return False
 
-    def getChildren(self, A):
+    @staticmethod
+    def getChildren(A):
         """ Returns immediate children of this element, [left, right] or [] if no children
         :param A:
         """
@@ -1233,7 +1245,8 @@ class ConstituentStructures:
             children.append(A.right)
         return children
 
-    def getCCommanded(self, A, context):
+    @staticmethod
+    def getCCommanded(A, context):
         """ Returns elements c-commanded by this element
         :param A:
         :param context:
@@ -1291,7 +1304,8 @@ class ConstituentStructures:
             print('Finished: %s' % self.structure)
         return self.structure
 
-    def Linearize(self, structure):
+    @staticmethod
+    def Linearize(structure):
         """
 
         :param structure:

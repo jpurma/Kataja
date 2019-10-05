@@ -15,6 +15,7 @@ class TwoStateIconButton(PushButtonBase):
         self.pixmap1 = pixmap1
         self.color0 = color0
         self.color1 = color1
+        self.color_key = ''
         self.icon0 = None
         self.icon1 = None
         self.setCheckable(True)
