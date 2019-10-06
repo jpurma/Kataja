@@ -129,11 +129,8 @@ menu_structure = OrderedDict([('file_menu', ('&File',
 
 
 class UIManager:
-    """
-    UIManager Keeps track of all UI-related widgets and tries to do the most
-    work to keep
-    KatajaMain as simple as possible.
-    """
+    """ UIManager Keeps track of all UI-related widgets and tries to do the most
+    work to keep KatajaMain as simple as possible. """
 
     def __init__(self, main=None):
         self.main = main
@@ -167,8 +164,7 @@ class UIManager:
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
-        may refer to ctrl.ui_support,
-        which doesn't exist until the __init__  is completed.
+        may refer to ctrl.ui_support, which doesn't exist until the __init__  is completed.
         :return:
         """
         # Create actions based on actions.py
@@ -184,27 +180,23 @@ class UIManager:
         ctrl.main.viewport_resized.connect(self.update_positions_and_top_bar)
         ctrl.main.ui_font_changed.connect(self.redraw_panels)
 
+    def position_panels(self):
+        for panel in self._panels.values():
+            if panel.isFloating():
+                panel.move(panel.initial_position())
+
     def disable_item(self, ui_key):
-        """ Disable ui_item, assuming it can be disabled (buttons etc).
-        :param ui_key:
-        :return:
-        """
+        """ Disable ui_item, assuming it can be disabled (buttons etc). """
         item = self.get_ui(ui_key)
         item.setEnabled(False)
 
     def enable_item(self, ui_key):
-        """ Set ui_item enabled, for those that have enabled/disabled mode (buttons etc).
-        :param ui_key:
-        :return:
-        """
+        """ Set ui_item enabled, for those that have enabled/disabled mode (buttons etc). """
         item = self.get_ui(ui_key)
         item.setEnabled(True)
 
     def get_action_group(self, action_group_name):
-        """ Get action group with this name, or create one if it doesn't exist
-        :param action_group_name:
-        :return:
-        """
+        """ Get action group with this name, or create one if it doesn't exist """
         if action_group_name not in self._action_groups:
             self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
         return self._action_groups[action_group_name]
@@ -261,8 +253,6 @@ class UIManager:
         """ Remove ui_item from active and displayed ui_items. The item may still exist in scene
         as a fading item, but it cannot be reached by ui_manager. Such items have to take care
         that they are removed from scene when they finish fading.
-        :param item:
-        :param fade:
         """
         if fade and not ctrl.play:
             fade = False
@@ -291,10 +281,7 @@ class UIManager:
         self.scene.removeItem(item)
 
     def get_ui(self, ui_key) -> QtCore.QObject:
-        """ Return a managed ui_support item
-        :param ui_key:
-        :return:
-        """
+        """ Return a managed ui_support item """
         return self._items.get(ui_key, None)
 
     def get_ui_by_type(self, host=None, ui_type=None):
@@ -316,10 +303,7 @@ class UIManager:
                 return item
 
     def get_uis_for(self, obj):
-        """ Return ui_items that have this object as host, generally objects related to given object
-        :param obj:
-        :return:
-        """
+        """ Return ui_items that have this object as host, generally objects related to given object """
         return self._items_by_host.get(obj.uid, [])
 
     def resize_ui(self, size):
@@ -332,10 +316,7 @@ class UIManager:
 
     def update_action(self, key):
         """ If action is tied to some meter (e.g. number field that is used to show value and
-        change it), update the value in the meter and see if it should be enabled.
-        :param key:
-        :return:
-        """
+        change it), update the value in the meter and see if it should be enabled. """
         self.actions[key].update_action()
 
     def update_selections(self):
@@ -433,15 +414,13 @@ class UIManager:
     # unused, but sane
     def focusable_elements(self):
         """ Return those UI elements that are flagged focusable (Kataja's
-        focusable, not Qt's).
-        """
+        focusable, not Qt's). """
         for e in self._items:
             if getattr(e, 'focusable', False) and e.isVisible():
                 yield e
 
     def clear_items(self):
-        """ Remove all ui_support objects managed by UIManager.
-        """
+        """ Remove all ui_support objects managed by UIManager. """
         ctrl.deselect_objects()
         for item in list(self._items.values()):
             if not item.permanent_ui:
@@ -449,8 +428,7 @@ class UIManager:
 
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when
-        something moves there
-        UI has to update its elements too."""
+        something moves there UI has to update its elements too."""
         for item in self._items.values():
             item.update_position()
 
@@ -460,10 +438,7 @@ class UIManager:
             self.top_bar_buttons.update_position()
 
     def update_position_for(self, obj):
-        """ Update position of ui_support-elements for selected (non-ui_support) object.
-        :param obj:
-        :return:
-        """
+        """ Update position of ui_support-elements for selected (non-ui_support) object. """
         for ui_item in self.get_uis_for(obj):
             ui_item.update_position()
 
@@ -564,10 +539,7 @@ class UIManager:
             action.host_menu = plugin_menu
 
     def get_action(self, key) -> KatajaAction:
-        """ Returns action method for key, None if no such action
-        :param key:
-        :return: Action
-        """
+        """ Returns action method for key, None if no such action """
         if key:
             a = self.actions.get(key, None)
             if a:
@@ -637,10 +609,6 @@ class UIManager:
     # ###################################################################
 
     def get_panel(self, panel_id) -> Panel:
-        """
-        :param panel_id: panel key. Probably from constant from globals
-        :return: UIPanel instance or None
-        """
         return self._panels.get(panel_id, None)
 
     def get_panel_by_node_type(self, node_type):
@@ -665,10 +633,6 @@ class UIManager:
         toggle_action.set_checked_for(panel_id, True)
 
     def create_panels(self):
-        """ Put actions to panels. Panel contents are defined at the top of
-        this file.
-        :return: None
-        """
         self._panels = {}
         for panel_data in PANELS:
             # noinspection PyTypeChecker
@@ -693,34 +657,26 @@ class UIManager:
         position = data.get('position', 'float')
         folded = data.get('folded', False)
         name = data.get('name', 'New panel')
-        new_panel = constructor(name, default_position=position, parent=self.main,
-                                folded=folded)
+        new_panel = constructor(name, default_position=position, parent=self.main, folded=folded)
         self._panels[constructor.__name__] = new_panel
         self.add_ui(new_panel)
         return new_panel
 
     def restore_panel_positions(self):
-        """ Restore panel to its previous position using our own panel geometry
-        storage
-        """
+        """ Restore panel to its previous position using our own panel geometry storage """
         for name, panel in self._panels.items():
             if name in self._panel_positions:
                 panel.setGeometry(self._panel_positions[name])
 
     def store_panel_positions(self):
         """ Store panel positions temporarily. UI manager doesn't save to
-        file, if that is
-        wanted, data has to be sent to some permanency supporting object.
-        """
+        file, if that is wanted, data has to be sent to some permanency supporting object."""
         self._panel_positions = {}
         for panel_id, panel in self._panels.items():
             self._panel_positions[panel_id] = panel.geometry()
 
     def reset_panel_fields(self):
-        """ Update all panel elements, may be costly -- try to do specific
-        updates instead.
-        :return:
-        """
+        """ Update all panel elements, may be costly -- try to do specific updates instead. """
         for panel in self._panels.values():
             panel.update_fields()
 
@@ -758,8 +714,7 @@ class UIManager:
 
     def manage_shortcut(self, key_seq, element, action):
         """ Some shortcut become ambiguous as they are used for several
-        buttons and menus at
-        the same time and we need some extra information to solve these.
+        buttons and menus at the same time and we need some extra information to solve these.
         """
         if not hasattr(element, 'setShortcut'):
             return
@@ -884,8 +839,7 @@ class UIManager:
                 self.remove_ui(item)
 
     def update_touch_areas(self):
-        """ Create touch areas as necessary
-        """
+        """ Create touch areas as necessary """
         self.remove_touch_areas()
         for item in ctrl.selected:
             if isinstance(item, Edge):
@@ -895,9 +849,7 @@ class UIManager:
 
     def update_touch_areas_for_selected_node(self, node):
         """ Assumes that touch areas for this node are empty and that the
-        node is selected
-        :param node: object to update
-        """
+        node is selected """
         if not node.is_visible():
             return
         ta_classes = node.__class__.touch_areas_when_selected
@@ -911,9 +863,7 @@ class UIManager:
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
         """ Assumes that touch areas for this edge are empty and that the
-        edge is selected
-        :param edge: object to update
-        """
+        edge is selected """
         pass
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
@@ -944,10 +894,7 @@ class UIManager:
 
     @staticmethod
     def is_dragging_this_type(dtype):
-        """ Check if the currently dragged item is in principle compatible with
-        self.
-        :return:
-        """
+        """ Check if the currently dragged item is in principle compatible with self. """
         if ctrl.dragged_focus:
             return ctrl.dragged_focus.node_type == dtype
         elif ctrl.dragged_text:
@@ -982,9 +929,7 @@ class UIManager:
     # ### Embedded buttons ############################
 
     def create_float_buttons(self):
-        """ Create top button row
-        :return:
-        """
+        """ Create top button row """
         #  for item in self._float_buttons:
         #     item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
@@ -1023,28 +968,21 @@ class UIManager:
         return button
 
     def add_buttons_for_group(self, group):
-        """ Selection groups have a button to toggle their editing options
-        :param group:
-        :return:
-        """
+        """ Selection groups have a button to toggle their editing options """
         for button_class in [ob.GroupPersistenceButton, ob.GroupOptionsButton]:
             if button_class.condition(group):
                 button = self.get_or_create_button(group, button_class)
                 group.add_button(button)
 
     def add_buttons_for_arrow(self, arrow):
-        """ Arrows need release button when they are connected to nodes and delete button
-        """
+        """ Arrows need release button when they are connected to nodes and delete button """
         if ob.CutArrowButton.condition(arrow):
             self.get_or_create_button(arrow, ob.CutEdgeButton)
         if ob.RemoveArrowButton.condition(arrow):
             self.get_or_create_button(arrow, ob.RemoveArrowButton)
 
     def add_buttons_for_edge(self, edge):
-        """ Constituent edges have a button to remove the edge and the node
-        in between.
-        :param edge:
-        """
+        """ Constituent edges have a button to remove the edge and the node in between. """
         if ob.CutEdgeButton.condition(edge):
             self.get_or_create_button(edge, ob.CutEdgeButton)
 
@@ -1070,9 +1008,7 @@ class UIManager:
         cp.update_position()
 
     def add_control_points(self, edge):
-        """ Display control points for this edge
-        :param edge:
-        """
+        """ Display control points for this edge """
         for i, point in enumerate(edge.path.control_points):
             self._add_cp(edge, i, g.CURVE_ADJUSTMENT)
 
@@ -1087,9 +1023,7 @@ class UIManager:
             self._add_cp(arrow, -1, g.LABEL_START)
 
     def update_control_points(self):
-        """ Create all necessary control points
-        :return:
-        """
+        """ Create all necessary control points """
         self.remove_control_points()
         for item in ctrl.selected:
             if isinstance(item, Edge):
@@ -1098,9 +1032,6 @@ class UIManager:
                 self.add_control_points_for_arrow(item)
 
     def remove_control_points(self):
-        """ Remove all control points
-        :return:
-        """
         for item in list(self._items.values()):
             if isinstance(item, ControlPoint):
                 self.remove_ui(item)

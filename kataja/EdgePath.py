@@ -267,11 +267,6 @@ class EdgePath:
         self.abstract_end_point = ex, ey
 
     def update_end_points(self):
-        """
-
-        :return:
-        """
-
         osx, osy = self.computed_start_point
         oex, oey = self.computed_end_point
         start = self.edge.start
@@ -371,19 +366,13 @@ class EdgePath:
         self.cached_cp_rect = self.draw_path.controlPointRect().adjusted(-2, -2, 2, 2)
 
     def get_point_at(self, d: float) -> 'QtCore.QPointF':
-        """ Get coordinates at the percentage of the length of the path.
-        :param d: float
-        :return: QPoint
-        """
+        """ Get coordinates at the percentage of the length of the path. """
         if not self.true_path:
             self.make()
         return self.true_path.pointAtPercent(d)
 
     def get_angle_at(self, d: float) -> float:
-        """ Get angle at the percentage of the length of the path.
-        :param d: int
-        :return: float
-        """
+        """ Get angle at the percentage of the length of the path."""
         if not self.true_path:
             self.make()
         return self.true_path.angleAtPercent(d)

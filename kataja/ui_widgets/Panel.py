@@ -237,16 +237,18 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
             dp = None
         if dp:
             pixel_ratio = dp.devicePixelRatio()
+
             p = dp.mapToGlobal(dp.pos())
+            dp.pos()
             x = p.x()
             y = p.y()
             if pixel_ratio:
                 x /= pixel_ratio
                 y /= pixel_ratio
             if dp.isFloating():
-                y += 20
+                y += 40 / pixel_ratio
             else:
-                x += dp.width() + 40
+                x += dp.width() + 40 / pixel_ratio
         else:
             pixel_ratio = ctrl.main.devicePixelRatio()
             if pixel_ratio < 1:

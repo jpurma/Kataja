@@ -100,6 +100,9 @@ class ParseTreePanel(Panel):
         ctrl.graph_view.activateWindow()
         ctrl.graph_view.setFocus()
 
+    def initial_position(self, next_to=''):
+        return Panel.initial_position(self, next_to=next_to or 'NavigationPanel')
+
     def prepare_tree(self):
         if ctrl.main.signalsBlocked():
             return
