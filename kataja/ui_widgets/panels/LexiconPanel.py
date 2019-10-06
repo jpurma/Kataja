@@ -25,6 +25,9 @@ class LexiconPanel(Panel):
         ctrl.graph_view.activateWindow()
         ctrl.graph_view.setFocus()
 
+    def initial_position(self, next_to=''):
+        return Panel.initial_position(self, next_to=next_to or 'ConstituentPanel')
+
     def prepare_lexicon(self):
         if ctrl.main.signalsBlocked():
             return

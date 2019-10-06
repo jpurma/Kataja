@@ -204,9 +204,6 @@ class LineOptionsPanel(Panel):
         # self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
     def initial_position(self, next_to=''):
-        """
-        :return:
-        """
         return Panel.initial_position(self, next_to=next_to or 'StylePanel')
 
     def close(self):

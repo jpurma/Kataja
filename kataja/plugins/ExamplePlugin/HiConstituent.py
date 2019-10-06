@@ -3,12 +3,12 @@ from kataja.SavedField import SavedField
 from kataja.syntax.BaseConstituent import BaseConstituent
 
 
-class HiConstituent(BaseConstituent):
-    """ HiConstituent is a slight modification from BaseConstituent.
+class Constituent(BaseConstituent):
+    """ This Constituent is a slight modification from BaseConstituent.
     Everything that is not explicitly defined here is inherited from parent class."""
 
     def __init__(self, *args, **kwargs):
-        """ Constructor for new HiConstituents """
+        """ Constructor for new Constituents """
         super().__init__(*args, **kwargs)
         if 'hi' in kwargs:
             self.hi = kwargs['hi']
@@ -22,15 +22,15 @@ class HiConstituent(BaseConstituent):
         :return:
         """
         if self.is_leaf():
-            return 'HiConstituent(id=%s)' % self.label
+            return f'Constituent(label={self.label}, hi={self.hi})'
         else:
-            return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
+            return f"[ {' '.join((x.__repr__() for x in self.parts))} ]"
 
     def label_as_html(self, node):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
         'label_as_html' -method. This is so that it is easier to create custom
-        implementations for constituents without requiring custom constituentnodes.
+        implementations for constituents without requiring custom ConstituentNodes.
 
         Note that synobj's label_as_html receives the node object as parameter,
         so you can call the parent to do its part and then add your own to it.
@@ -43,9 +43,9 @@ class HiConstituent(BaseConstituent):
 
     def copy(self, done=None):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
-        :return: HiConstituent
+        :return: Constituent
         """
-        nc = super().copy()
+        nc = super().copy(done=done)
         nc.hi = self.hi
         return nc
 

@@ -181,6 +181,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.setCentralWidget(self.graph_view)
             self.setGeometry(x, y, w, h)
             self.show()
+            self.ui_manager.position_panels()
             self.raise_()
             kataja_app.processEvents()
             self.activateWindow()
