@@ -5,8 +5,8 @@ from kataja.ui_widgets.Panel import Panel
 from kataja.uniqueness_generator import next_available_type_id
 
 
-def color_for(ds_type):
-    return ctrl.cm.d[f'accent{ds_type % 8 + 1}']
+def color_for(ds_type, tr=False):
+    return ctrl.cm.d[f'accent{ds_type % 8 + 1}{"tr" if tr else ""}']
 
 
 class DTNode(QtWidgets.QGraphicsEllipseItem):
@@ -23,6 +23,7 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setBrush(color_for(ds_type))
         self.selected = False
+        self.fog = False
 
     def set_selected(self, value):
         self.selected = value
@@ -33,6 +34,12 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
         else:
             self.setPen(qt_prefs.no_pen)
 
+    def set_fog(self, value):
+        if value != self.fog:
+            self.fog = value
+            self.setBrush(color_for(self.ds_type, self.fog))
+
+
     def hoverEnterEvent(self, event):
         self.setBrush(ctrl.cm.lighter(color_for(self.ds_type)))
         ctrl.ui.show_help(self, event)
@@ -41,7 +48,7 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
         ctrl.ui.move_help(event)
 
     def hoverLeaveEvent(self, event):
-        self.setBrush(color_for(self.ds_type))
+        self.setBrush(color_for(self.ds_type, self.fog))
         ctrl.ui.hide_help(self, event)
 
     def mouseReleaseEvent(self, event):
@@ -58,6 +65,7 @@ class DTLine(QtWidgets.QGraphicsLineItem):
         self.parent_id = parent_id
         self.selected = False
         self.ds_type = ds_type
+        self.fog = False
         self.set_selected(False)
 
     def get_id(self):
@@ -70,9 +78,19 @@ class DTLine(QtWidgets.QGraphicsLineItem):
             pen.setWidth(3)
             self.setPen(pen)
         else:
-            pen = QtGui.QPen(ctrl.cm.d[f'accent{self.ds_type % 8 + 1}tr'])
+            pen = QtGui.QPen(color_for(self.ds_type, self.fog))
             pen.setWidth(1)
             self.setPen(pen)
+
+    def set_fog(self, value):
+        if value != self.fog and not self.selected:
+            pen = QtGui.QPen(color_for(self.ds_type, value))
+            if value:
+                pen.setWidth(0.5)
+            else:
+                pen.setWidth(1)
+            self.setPen(pen)
+        self.fog = value
 
 
 class ParseTreePanel(Panel):
@@ -104,28 +122,28 @@ class ParseTreePanel(Panel):
         return Panel.initial_position(self, next_to=next_to or 'NavigationPanel')
 
     def prepare_tree(self):
+        def add_children(state_id, depth):
+            if depth == len(columns):
+                columns.append([])
+            columns[depth].append(state_id)
+            for child in dt.child_map[state_id]:
+                add_children(child, depth + 1)
+
         if ctrl.main.signalsBlocked():
             return
         dt = ctrl.forest.derivation_tree
         if not dt:
             return
-        self.dt_data = {}
+        roots = dt.get_roots()
         columns = []
+        for root in roots:
+            add_children(root, 0)
 
-        for branch_end in dt.branches:
-            branch = dt.build_branch(branch_end)
-            for i, node in enumerate(branch):
-                if i < len(columns):
-                    columns[i].add(node)
-                else:
-                    columns.append({node})
-        self.columns = []
+        self.dt_data = {}
         width = len(columns) + 1
         for x, column in enumerate(columns, 1):
-            ordered = sorted(list(column))
             height = len(column) + 1
-            self.columns.append(ordered)
-            for y, node in enumerate(ordered, 1):
+            for y, node in enumerate(column, 1):
                 self.dt_data[node] = (1.0 / width) * x, (1.0 / height) * y
         self.draw_tree()
         self.update_selected()
@@ -164,17 +182,16 @@ class ParseTreePanel(Panel):
             state_id = parent_id
         for item in self.scene.items():
             if isinstance(item, DTNode):
-                was_selected = item.selected
                 selected = item.state_id == selected_id
-                if was_selected != selected:
-                    item.set_selected(selected)
-                    item.update()
+                item.set_selected(selected)
+                item.set_fog(selected_id not in dt.iterate_branch(item.state_id))
+                item.update()
+
             elif isinstance(item, DTLine):
-                was_selected = item.selected
                 selected = item.get_id() in route_lines
-                if was_selected != selected:
-                    item.set_selected(selected)
-                    item.update()
+                item.set_selected(selected)
+                item.set_fog(selected_id not in dt.iterate_branch(item.state_id))
+                item.update()
 
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all

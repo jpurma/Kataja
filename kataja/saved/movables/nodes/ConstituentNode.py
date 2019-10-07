@@ -366,8 +366,8 @@ class ConstituentNode(Node):
             else:
                 l = self.label
         # fixme: remove this hack after use
-        i = self.get_highest()[0].get_sorted_nodes().index(self)
-        html.append(f'{i} ')
+        #i = self.get_highest()[0].get_sorted_nodes().index(self)
+        #html.append(f'{i} ')
         l_html = as_html(l, omit_triangle=True, include_index=include_index and self.index)
         if l_html:
             html.append(l_html)
