@@ -80,14 +80,12 @@ class DerivationTree(SavedObject):
         nodes = set(self.d.keys())
         parents = {parent_id for uid, data, msg, state_id, parent_id, state_type in self.d.values()}
         self.branches = list(nodes - parents)
-        self.branches.sort()
 
     def build_child_map(self):
         self.child_map = defaultdict(list)
         for uid, data, msg, state_id, parent_id, state_type in self.d.values():
             if parent_id:
                 self.child_map[parent_id].append(state_id)
-        print(self.child_map)
 
     def iterate_branch(self, branch_id):
         step = self.d.get(branch_id, None)

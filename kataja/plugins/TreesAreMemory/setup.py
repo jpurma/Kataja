@@ -8,7 +8,7 @@ from kataja.plugins.TreesAreMemory.SyntaxAPI import SyntaxAPI
 
 # List those classes that belong to this plugin and which are used to replace the standard Kataja
 # classes. The classes themselves should follow the format of Kataja classes (see
-# HiConstituent.py for example) to tell which Kataja class they aim to replace.
+# Constituent.py for example) to tell which Kataja class they aim to replace.
 
 # plugin_classes = [PythonClass,...]
 plugin_classes = [Constituent, Feature, Document, SyntaxAPI]

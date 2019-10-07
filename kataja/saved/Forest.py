@@ -675,6 +675,8 @@ class Forest(SavedObject):
 
         def flat(listlike):
             res = []
+            if not listlike:
+                return res
             for xy in listlike:
                 if isinstance(xy, tuple):
                     res.append(xy[0])

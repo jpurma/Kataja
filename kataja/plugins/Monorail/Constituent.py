@@ -24,8 +24,7 @@
 
 try:
     from kataja.SavedField import SavedField
-    from kataja.syntax.SyntaxState import BaseConstituent
-
+    from kataja.syntax.BaseConstituent import BaseConstituent
     in_kataja = True
 except ImportError:
     SavedField = object
@@ -44,11 +43,11 @@ class Constituent(BaseConstituent or object):
             self.features = list(features) if features else []
             self.parts = parts or []
             self.inherited_features = self.features
-            self.lexical_heads = lexical_heads
+            self.lexical_heads = list(lexical_heads) if lexical_heads else [self]
             if features:
                 for feature in features:
                     feature.host = self
-        self.checked_features = None
+        self.checked_features = []
         self.has_raised = False
 
     def __str__(self):

@@ -189,7 +189,12 @@ class KatajaMain(QtWidgets.QMainWindow):
             plugin = plugin or 'FreeDrawing'
         else:
             plugin = plugin or prefs.active_plugin_name or 'FreeDrawing'
-        self.plugin_manager.enable_plugin(plugin)
+        try:
+            self.plugin_manager.enable_plugin(plugin)
+        except FileNotFoundError:
+            plugin = 'FreeDrawing'
+            prefs.active_plugin_name = 'FreeDrawing'
+            self.plugin_manager.enable_plugin(plugin)
         self.document.load_default_forests(tree=tree)
         self.document.play = not silent
         if not silent:
