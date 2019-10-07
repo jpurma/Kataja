@@ -45,13 +45,14 @@ class DerivationTree(SavedObject):
         self.current_branch_id = 0  # state_id
         self.current_branch_index = 0
 
-    def save_and_create_derivation_step(self, syn_state: SyntaxState):
-        """ Derivation steps store syntax states. Nodes etc. will be
-        then updated and created as necessary the fly.
-        :param syn_state: SyntaxState-instance
+    def add_step(self, d_step: SyntaxState or DerivationStep):
+        """ Store given syntactic state as a derivation step. Forest can switch which derivation
+        state it is currently displaying.
+        :param d_step: SyntaxState or DerivationStep object
         :return:
         """
-        d_step = DerivationStep(syn_state)
+        if isinstance(d_step, SyntaxState):
+            d_step = DerivationStep(d_step)
         self.save_derivation_step(d_step)
 
     def save_derivation_step(self, derivation_step: DerivationStep):
@@ -157,17 +158,6 @@ class DerivationTree(SavedObject):
         self.current_step_index = i
         self.current_step_id = self.branch[self.current_step_index]
         self.restore_derivation_step()
-
-    def add_step(self, syn_state: SyntaxState or DerivationStep):
-        """ Store given syntactic state as a derivation step. Forest can switch which derivation
-        state it is currently displaying.
-        :param syn_state: SyntaxState object
-        :return:
-        """
-        if isinstance(syn_state, DerivationStep):
-            self.save_derivation_step(syn_state)
-        else:
-            self.save_and_create_derivation_step(syn_state)
 
     def jump_to_first_step(self):
         self.jump_to_derivation_step(0)
