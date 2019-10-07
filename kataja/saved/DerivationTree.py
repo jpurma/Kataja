@@ -29,6 +29,8 @@ from kataja.singletons import log, ctrl
 from kataja.syntactic_state_to_nodes import syntactic_state_to_nodes
 from kataja.syntax.SyntaxState import SyntaxState
 
+from collections import defaultdict
+
 
 class DerivationTree(SavedObject):
     """ Stores derivation steps for one forest and takes care of related
@@ -44,6 +46,8 @@ class DerivationTree(SavedObject):
         self.current_step_id = 0
         self.current_branch_id = 0  # state_id
         self.current_branch_index = 0
+        self.child_map = defaultdict(list)
+
 
     def add_step(self, d_step: SyntaxState or DerivationStep):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
@@ -78,6 +82,13 @@ class DerivationTree(SavedObject):
         self.branches = list(nodes - parents)
         self.branches.sort()
 
+    def build_child_map(self):
+        self.child_map = defaultdict(list)
+        for uid, data, msg, state_id, parent_id, state_type in self.d.values():
+            if parent_id:
+                self.child_map[parent_id].append(state_id)
+        print(self.child_map)
+
     def iterate_branch(self, branch_id):
         step = self.d.get(branch_id, None)
         while step:
@@ -85,8 +96,12 @@ class DerivationTree(SavedObject):
             yield state_id
             step = self.d.get(parent_id, None)
 
+    def get_roots(self):
+        return [state_id for uid, data, msg, state_id, parent_id, state_type in self.d.values() if not parent_id]
+
     def update_dimensions(self):
         self.build_branches()
+        self.build_child_map()
 
     #    @time_me
     def restore_derivation_step(self):
@@ -184,33 +199,6 @@ class DerivationTree(SavedObject):
         self.build_active_branch()
         self.jump_to_last_step()
         ctrl.main.parse_changed.emit()
-
-    # def _find_matching_parse(self, reverse=False):
-    #     tree_roots = [x.syntactic_object for x in self.trees if x.node_type == g.CONSTITUENT_NODE]
-    #     if (not tree_roots) or not hasattr(tree_roots[0], 'eq'):
-    #         return "Cannot compare trees. Either no tree or constituents don't have 'eq'-comparison method."
-    #     if reverse:
-    #         tree_indices = range(self.current_parse_index - 1, -1, -1)
-    #     else:
-    #         tree_indices = range(self.current_parse_index + 1, len(self.derivation_branches))
-    #     for tree_index in tree_indices:
-    #         parse_tree = self.derivation_branches[tree_index]
-    #         ds = parse_tree.derivation_steps
-    #         for i in range(0, len(ds.derivation_steps)):
-    #             step_data = ds.get_derivation_step(i)
-    #             if (len(step_data.tree_roots) == len(tree_roots) and
-    #                     all([a.eq(b) for a, b in zip(step_data.tree_roots, tree_roots)])):
-    #                 self.current_parse_index = tree_index
-    #                 ds.derivation_step_index = i
-    #                 ds.jump_to_derivation_step(i)
-    #                 ctrl.main.parse_changed.emit()
-    #                 return self.current_parse_index, ds.derivation_step_index
-    #
-    # def find_next_matching_parse(self):
-    #     return self._find_matching_parse()
-    #
-    # def find_previous_matching_parse(self):
-    #     return self._find_matching_parse(reverse=True)
 
     # ############## #
     #                #
