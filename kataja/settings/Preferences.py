@@ -33,8 +33,8 @@ from kataja.edge_styles import master_styles
 from kataja.globals import *
 
 # Disable these if necessary for debugging
-enable_loading_preferences = False
-enable_saving_preferences = False
+enable_loading_preferences = True
+enable_saving_preferences = True
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
           'InOutCubic', 'OutInCubic', 'InQuart', 'OutQuart', 'InOutQuart', 'OutInQuart', 'InQuint',
