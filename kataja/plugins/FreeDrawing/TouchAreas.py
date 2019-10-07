@@ -73,7 +73,7 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -121,7 +121,7 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
             self.end_point = ex, ey
         self.setPos(ex, ey)
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -185,7 +185,7 @@ class MergeToTop(AbstractBranchingTouchArea):
         else:
             return QtCore.QRectF(0, 0, dx, dy)
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -342,7 +342,7 @@ class LeftAddTop(AbstractJointedTouchArea):
             'position': 'top_left'
         })
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -471,7 +471,7 @@ class RightAddTop(AbstractJointedTouchArea):
             'position': 'top_right'
         })
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -533,7 +533,7 @@ class AbstractLeftAddChild(AbstractChildTouchArea):
         adjust = []
         self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -623,7 +623,7 @@ class AbstractRightAddChild(AbstractChildTouchArea):
         adjust = []
         self._path = shape.path((sx, sy), (0, 0), adjust, g.BOTTOM, g.TOP)[0]
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()

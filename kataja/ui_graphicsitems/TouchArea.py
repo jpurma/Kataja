@@ -287,7 +287,7 @@ class AbstractBelowTouchArea(TouchArea):
         self.start_point = self.end_point
         self.setPos(self.end_point[0], self.end_point[1])
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -315,7 +315,7 @@ class AddTriangleTouchArea(AbstractBelowTouchArea):
     def boundingRect(self):
         return QtCore.QRectF(-symbol_radius - 2, 0, symbol_radius * 2 + 4, symbol_radius + 2)
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -338,7 +338,7 @@ class RemoveTriangleTouchArea(AbstractBelowTouchArea):
     def boundingRect(self):
         return QtCore.QRectF(-symbol_radius - 2, -symbol_radius - 2, symbol_radius * 2 + 4, symbol_radius * 2 + 4)
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
@@ -376,7 +376,7 @@ class StartArrowTouchArea(AbstractBelowTouchArea):
         """
         return QtCore.QRectF(-10, -5, 20, 15)
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, widget=None):
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()

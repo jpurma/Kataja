@@ -3,6 +3,7 @@ from kataja.SavedField import SavedField
 from kataja.plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
 from kataja.singletons import classes
 from kataja.syntax.SyntaxAPI import SyntaxAPI
+from kataja.syntax.SyntaxState import SyntaxState
 
 
 class EditableSyntax(SyntaxAPI):
@@ -184,6 +185,8 @@ class EditableSyntax(SyntaxAPI):
             roots = forest.parser.string_into_forest(str(self.input_tree))
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
             self.nodes_to_synobjs(forest, roots)
+            syn_state = SyntaxState(tree_roots=[x.syntactic_object for x in roots])
+            forest.add_step(syn_state)
 
     def set_display_mode(self, i):
         self.display_mode = i
