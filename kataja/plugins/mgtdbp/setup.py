@@ -31,7 +31,7 @@ from kataja.plugins.mgtdbp.SyntaxAPI import SyntaxAPI
 
 # List those classes that belong to this plugin and which are used to replace the standard Kataja
 # classes. The classes themselves should follow the format of Kataja classes (see
-# HiConstituent.py for example) to tell which Kataja class they aim to replace.
+# Constituent.py for example) to tell which Kataja class they aim to replace.
 # Notice that you can either import these classes or define them here in this file. If you define
 # them here, you have to put class definitions *before* the plugin_classes -line.
 

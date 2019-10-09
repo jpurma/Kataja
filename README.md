@@ -19,77 +19,22 @@ The software is alpha and under sporadic development. At this stage there are no
 
 # Running and installing
 
-At this stage it is recommended to run Kataja as a Python module in virtualenv. This requires some understanding of Python,
-but Kataja is at its best when it is used to visualise grammar models written in Python.  
+At current stage of development, I recommend running Kataja from its source code with Python and its required libraries installed in virtual environment.
 
-Kataja can be built and distributed as a standalone app for MacOS, Windows and Linux, but providing these will wait until the features are stable enough.
-
-## Installing and running Kataja with virtualenv on MacOS
-
-Use Terminal and navigate to some directory that you can use as a workspace. There create a virtualenv named 'venv'
-
-    python3 -m venv venv  
-
-This creates a new folder 'venv' that will contain its own copy of Python and all of the packages and dependencies required for Kataja. Removing Kataja will be as easy as removing this folder.
-
-Then activate the virtual environment.
-
-    source venv/bin/activate
-    
-Command prompt in terminal will change to indicate you are in venv-environment -- items available from venv will be sought first instead of your normal environment.
-
-Then install Kataja. 
-
-    pip install kataja --extra-index-url https://test.pypi.org/simple/
-
-This will download and install Kataja and its required dependencies, largest of them will be PyQt5. Then you can run Kataja:
-
-    python -m kataja
-
-You can also try to use Kataja as a command line tool to draw pretty trees from bracket notation:
-
-    python -m kataja -image_out test.pdf "[ a [ brown fox ] ]" 
-
-## Installing and running Kataja with virtualenv on Windows
-
-You have to download and install latest version of Python for Windows (3.6 at least, 3.7 preferable) 
-from https://python.org
-
-Use PowerShell and navigate to some directory that you can use as a workspace. There create a virtualenv named 'venv'
-
-    py -m venv venv  
-
-This creates a new folder 'venv' that will contain its own copy of Python and all of the packages and dependencies required for Kataja. Removing Kataja will be as easy as removing this folder.
-
-Then activate the virtual environment.
-
-    .\venv\Scripts\activate.bat
-    
-Command prompt in terminal will change to indicate you are in venv-environment -- items available from venv will be sought first instead of your normal environment.
-
-Then install Kataja. 
-
-    pip install kataja --extra-index-url https://test.pypi.org/simple/
-
-This will download and install Kataja and its required dependencies, largest of them will be PyQt5. Then you can run Kataja:
-
-    python -m kataja
-
-You can also try to use Kataja as a command line tool to draw pretty trees from bracket notation:
-
-    python -m kataja -image_out test.pdf "[ a [ brown fox ] ]" 
+Kataja can be built and distributed as a standalone app for MacOS, Windows and Linux, but creating these packages should wait until Kataja is stable enough.
 
 
+## Setting up Kataja development version
 
-# Setting up Kataja development version
+Clone or download the source code from https://github.com/jpurma/Kataja by using the green 'Clone or download' button. If you choose to download, expand the zip file into a suitable location.
 
-Clone or download the source code from https://github.com/jpurma/Kataja by using the green 'Clone or download' button. If you choose to download, expand zip somewhere.
+Kataja requires Python 3.6 or later. Python distributions for various operating systems can be found at http://python.org
 
-Kataja requires Python 3.6 or newer. Python distributions for various operating systems can be found at http://python.org
+If you are new to Python, the following references to `python`, `python3` and `py3` can be a source of confusion and the names can be even be wrong. They aim to refer to two things, either a) the installed Python3 -interpreter in your operating system. b) the local virtual environment version of Python3. How they are named depends on the operating system and its pre-existing installations: if there exists Python2.x in the system, installer may use python3 to avoid breaking existing things that expect Python2.x to exist under the name 'python'. Also in Windows python may use 'py'-alias for reasons I don't know. Python in the sense (a) can be used to run and install Kataja, or it can be used to **set up** a local virtual environment, which once activated will provide Python (b). The same variance with naming and applies for `pip` and `pip3`-commands. You'll want to use the one that is associated with your Python3.x installation. Try `pip --version` to see if the command refers to Python3 or 2.
 
-## Preparing virtual environment, loading dependencies and running Kataja
+### Preparing virtual environment, loading dependencies and running Kataja
 
-It is recommended to run Kataja in virtualenv, so that its dependencies can be kept separated from user and system files.
+It is recommended to run Kataja in virtualenv, so that its dependencies can be kept separated from user's Python libraries and system's Python libraries.
 
 First navigate into Kataja-folder and create a folder for your virtual environment with virtualenv command:
 
@@ -97,26 +42,32 @@ First navigate into Kataja-folder and create a folder for your virtual environme
 
 Then activate virtualenv. While virtualenv is active, 'python' refers to virtualenv's own python and all the libraries and dependancies will be installed into venv-folder.
 
+In MacOS:
+
     source venv/bin/activate
 
-Install requirements defined here in ./requirements.txt:
+In Windows:
+
+    .\venv\Scripts\activate.bat
+
+Then install Kataja's requirements. They are defined in file ./requirements.txt:
 
     pip install -r requirements.txt
 
-Then you should be able to run Kataja:
+Now you should be able to run Kataja:
 
     python -m kataja
 
-When you want to deactivate virtualenv, use:
+You only have to create virtualenv and install requirements once. Subsequent Kataja runs only require that you are in an activated virtualenv.
 
-    venv/bin/deactivate
+You can also try to use Kataja as a command line tool to draw pretty trees from bracket notation:
 
-You only have to create virtualenv and install requirements once. Subsequent Kataja runs only require that you have activated virtualenv.
+    python -m kataja -image_out test.pdf "[ a [ brown fox ] ]"
 
 
 ### Installing without virtualenv ###
 
-Another option is to skip the virtualenv and install dependencies for user's python framework. In this case there is a small risk that at some point another python project upgrades some of the dependencies into something incompatible and breaks something in Kataja. And cleaning up Kataja's required dependencies is not as straightforward.
+Another option is to skip the virtualenv and install dependencies permanently into user's python framework.
 
 Just navigate to Kataja folder and run:
 
@@ -130,6 +81,20 @@ Then run Kataja with:
 
     python3 -m kataja
 
+
+### Installing Kataja itself from PyPI
+
+There is an experimental build of Kataja in Python Package Index (PyPI)'s test index. It lags behind the current version, but it can be tried out. In (preferably) an activated virtualenv, try:
+
+    pip install kataja --extra-index-url https://test.pypi.org/simple/
+
+Then try to run it:
+
+    python -m kataja
+
+or to see command line arguments:
+
+    python -h
 
 ### Building Kataja as runnable app in MacOS (broken now, will fix at some point!)
 
@@ -148,30 +113,53 @@ This will take ~10 seconds, and end with `------ Done ------` if everything is r
 
 The build script will build Kataja.app to `dist/` and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with `create_dmg` -variable in `setup.py`. 
 
+# Running Kataja from command line
 
-# Visualising your own models with Kataja
+There are following command line arguments:
 
-To understand the work where Kataja aims to help, we should think about three levels where a computer-assisted syntactician has to operate:
+    python -m kataja -h
+    
+Will display 
 
-1. Developing a linguistic model
+    positional arguments:
+      tree                  bracket tree or source tree filename
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --reset_prefs         reset the current preferences file to default
+      --no_prefs            don't use preferences file -- don't save it either
+      -image_out IMAGE_OUT  draw tree into given file (name.pdf or name.png) and
+                            exit
+      -plugin PLUGIN        start with the given plugin
 
-2. Creating a software implementation for the linguistic model
+The combination of positional argument `tree` and `-image_out IMAGE_OUT` can be used to draw tidy bracket trees without launching Kataja UI:   
 
-3. Creating diagnostic and presentable outputs from the software implementation
+    python -m kataja -image_out abc.pdf "[A [B C]]"
 
-Usually 2 and 3 go together. When one creates a software implementation of a linguistic model, one adds output methods and other diagnostic tools to help figure what the model is doing. With recursive structures typical for generative enterprise, our grammars tend to create problems that are difficult to trace and states that are difficult to represent. Kataja will help and save effort in level 3, e.g. in drawing intermediate stages of derivation, tracking movements and feature interactions.
+Drawing will use Kataja's current preferences file. 
 
-Kataja will also help when your syntactic model is doing something impressive. It can output your derivations as beautiful animated sequences or rich structures for publications and presentations.
+At this point the preferences file often breaks with new version -- I assume that no-one is yet using this in such serious manner that avoiding this would be worth the effort. The easy way to fix broken preferences file is to not load it, and let Kataja create a new one and overwrite the old one. This can be done with:   
 
+    python -m kataja --reset_prefs
 
-## Kataja plugins
+Also there is 
 
-If you have a syntactic model of minimalist flavor, written in python, then it can be modified to work as a Kataja plugin. Kataja plugins are syntactic models that have such properties that Kataja can understand their constituent structures and display them in various manners. A syntactic model as a Kataja plugin is not dependant on Kataja: if you have started to develop your MG model as a python project running from command line, a Kataja compatible version should still run from command line without having Kataja present. Kataja is there to handle some outputs of your models you want to give for it. This is also a matter of performance: once there is a successful parser, you'll want to do runs with thousands of inputs and at least temporarily strip off unnecessary overhead.
+    python -m kataja --no_prefs
+    
+for cases when the access to location where preferences files are loaded and saved is providing problems.
 
-See `kataja/plugins`...
+The current active plugin is saved into Kataja preferences and when Kataja is restarted, it will try to load that plugin. Sometimes, especially if integrating a specific Kataja plugin into some script or workflow, you'll want to directly launch with a specific plugin. The plugin names are those defined in plugin's folder's plugin.json. So:
 
+    python -m kataja -plugin Monorail
 
- 
+Would start plugin Monorail, as defined by `./kataja/plugins/Monorail/plugin.json`   
+
+# What is it about?
+
+Kataja is built to help me experiment with syntactic models with minimalistic or biolinguistic flavor. These are models that attempt to create syntactic phenomena recognizable by linguists from more primitive operations. These operations should be as simple as possible and sensible for the subject matter. In practice these operations are varieties of Merge, following Chomsky (1995) and later variants.  A model by itself is often an inert object, unless we have ways to provide some input into model or challenge it somehow. Syntactic models are often closely associated to some parser that uses the model. A parser is fed sentences, and the model states what can be done with the elements of the sentence. Though the models itself aim for few simple operations, models in action rely on repetitive and recursive use of these operations, creating complex and hard to track interactions. Kataja aims to help visualise these interactions and the workings of the model/parser. It assumes that the model provides _syntax states_. These states it freezes, stores and visualizes, and provides tools for navigating between states.          
+
+to be continued...
+
 3rd party resources
 -------------------
 

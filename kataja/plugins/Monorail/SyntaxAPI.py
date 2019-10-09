@@ -76,8 +76,9 @@ class SyntaxAPI(KatajaSyntaxAPI):
         If a forest is provided, derivation steps are created there.
         :return:
         """
+        if not lexicon:
+            lexicon = self.lexicon
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
-
         if self.input_tree:
             print('parsing from the given tree while deriving a lexicon')
             print('====================================================')

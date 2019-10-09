@@ -274,6 +274,7 @@ def deduce_lexicon_from_recipe(recipe, lexicon=None):
                 if old_feat.sign == '':
                     old_feat.used = True
             tree = merge(node, tree)
+            deduce_head(tree)
         else:
             if lexem in lexicon:
                 node = lexicon[lexem]
@@ -284,6 +285,7 @@ def deduce_lexicon_from_recipe(recipe, lexicon=None):
                 node = Constituent(label=lexem, features=features)
                 lexicon[lexem] = node
             tree = merge(node, tree or startnode())
+            deduce_head(tree)
 
     for node in lexicon.values():
         for feature in node.features:
@@ -346,7 +348,7 @@ def fast_find_movable_4(node, excluded=None):
     if not excluded:
         excluded = node
     if node.parts:
-        if node is not excluded and not (node.checked_features and node.has_raised):
+        if node is not excluded and not (node.checked_features or node.has_raised):
             return node
         for part in node.parts:
             n = fast_find_movable_4(part, excluded=excluded)
@@ -381,27 +383,33 @@ def startnode():
 def parse_from_recipe(recipe, lexicon, forest):
     # build phase
     tree = None
-    for lexem in recipe:
+    parent_id = None
+    for i, lexem in enumerate(recipe):
         if lexem == '|':
             node = fast_find_movable(tree)
             tree = merge(node, tree)
+            node.has_raised = True
         else:
             node = lexicon[lexem].copy()
             tree = merge(node, tree or startnode())
-        export_to_kataja(tree, lexem, fast_find_movable(tree), forest)
+        state_id = f'recp_{i}'
+        export_to_kataja(tree, lexem, fast_find_movable(tree), forest, state_id, parent_id)
+        parent_id = state_id
     return tree
 
 
-def export_to_kataja(tree, message, focus, forest):
+def export_to_kataja(tree, message, focus, forest, state_id, parent_id):
     if forest:
         syn_state = SyntaxState(tree_roots=[tree], msg=message,
-                                state_id=Constituent.nodecount,
-                                groups=[('', focus)] if focus else None)
+                                state_id=state_id, parent_id=parent_id,
+                                groups=[('', [focus])] if focus else None)
         forest.add_step(syn_state)
 
 
 def parse(sentence, lexicon, forest):
     tree = None
+    parent_id = None
+    state_id = 1
     for lexem in sentence:
         # External Merge
         if lexem in lexicon:
@@ -412,7 +420,9 @@ def parse(sentence, lexicon, forest):
         tree = merge(node, tree or startnode())
         deduce_head(tree)
         raising_node = fast_find_movable(tree)
-        export_to_kataja(tree, 'em: %s' % lexem, raising_node, forest)
+        export_to_kataja(tree, 'em: %s' % lexem, raising_node, forest, state_id, parent_id)
+        parent_id = state_id
+        state_id += 1
         checking = find_checked_features(raising_node, tree) if raising_node else None
         # Do Internal Merges as long as possible
         while checking:
@@ -421,7 +431,9 @@ def parse(sentence, lexicon, forest):
             deduce_head(tree)
             raising_node.has_raised = True
             raising_node = fast_find_movable(tree)
-            export_to_kataja(tree, 'internal merge, ' + str(checking), raising_node, forest)
+            export_to_kataja(tree, 'internal merge, ' + str(checking), raising_node, forest, state_id, parent_id)
+            parent_id = state_id
+            state_id += 1
             checking = find_checked_features(raising_node, tree) if raising_node else None
     return tree
 
@@ -432,7 +444,6 @@ def read_lexicon(lexdata):
         lines = lexdata
     else:
         lines = lexdata.splitlines()
-    print('read_lexicon has lines: ', lines)
 
     for line in lines:
         line = line.strip()
