@@ -48,7 +48,6 @@ class DerivationTree(SavedObject):
         self.current_branch_index = 0
         self.child_map = defaultdict(list)
 
-
     def add_step(self, d_step: SyntaxState or DerivationStep):
         """ Store given syntactic state as a derivation step. Forest can switch which derivation
         state it is currently displaying.

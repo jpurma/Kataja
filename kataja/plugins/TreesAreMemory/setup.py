@@ -22,7 +22,7 @@ plugin_classes = [Constituent, Feature, Document, SyntaxAPI]
 # code changes are not recognized. After reload the plugin is initialized again, so data files will probably be reloaded
 # without explicitly telling. Also the module reload order may be sensitive, so here you can set it.
 reload_order = ['Monorail3.Feature', 'Monorail3.Constituent', 'Monorail3.SyntaxAPI',
-                'Monorail3.Document', 'Monorail3.MonorailParser', 'Monorail3.setup']
+                'Monorail3.Document', 'Monorail3.Parser', 'Monorail3.setup']
 
 
 def start_plugin(main, ctrl, prefs):

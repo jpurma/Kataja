@@ -305,8 +305,6 @@ class Parser:
         tree = None
         const = None
         self._process_words(tree, const, words, '')
-        if self.forest and self.results and REMOVE_BAD_PARSES:
-            self.remove_bad_parses()
         return self.results
 
     def _process_words(self, tree, const, words, branch_path):
@@ -327,18 +325,6 @@ class Parser:
             self.export_to_kataja([tree], 'Crash', branch_path=branch_path)
             print(f"  fail: {' '.join(linear)}")
             return False
-
-    def remove_bad_parses(self):
-        bad_paths = []
-        for path in self.stored_paths:
-            found = False
-            for good_path in self.good_paths:
-                if good_path.startswith(path):
-                    found = True
-                    break
-            if not found:
-                bad_paths.append(path)
-        self.forest.remove_iterations(bad_paths)
 
     def export_to_kataja(self, trees, message, marked=None, marked2=None, branch_path=''):
         if self.forest:
