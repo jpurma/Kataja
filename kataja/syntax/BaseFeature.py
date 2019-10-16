@@ -26,7 +26,6 @@
 from kataja.SavedField import SavedField
 from kataja.SavedObject import SavedObject
 
-simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>', '*')
 
 
 class BaseFeature(SavedObject):
@@ -52,6 +51,7 @@ class BaseFeature(SavedObject):
     Feature strength is included into base feature properties, and a syntactic model can use it
     if it is found necessary.
     """
+    simple_signs = ('+', '-', '=', '_', '≤', '≈', '~', '>', '*')
 
     syntactic_object = True
     role = "Feature"
@@ -180,11 +180,11 @@ class BaseFeature(SavedObject):
     host = SavedField("host")
     used = SavedField("used")
 
-    @staticmethod
-    def from_string(s):
+    @classmethod
+    def from_string(cls, s):
         if not s:
             return
-        if s[0] in simple_signs:
+        if s[0] in cls.simple_signs:
             sign = s[0]
             name = s[1:]
         else:
@@ -194,4 +194,4 @@ class BaseFeature(SavedObject):
         name = parts[0]
         value = parts[1] if len(parts) > 1 else ''
         family = parts[2] if len(parts) > 2 else ''
-        return BaseFeature(name, sign, value, family)
+        return cls(name, sign, value, family)

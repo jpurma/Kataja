@@ -61,8 +61,8 @@ class Feature(BaseFeature or object):
                 getattr(other, 'name', None) == self.name and
                 getattr(other, 'sign', None) == self.sign)
 
-    @staticmethod
-    def from_string(string):
+    @classmethod
+    def from_string(cls, string):
         if not string:
             return None
         if string[0] in ['=', '-', '+', '≈', '>']:
@@ -71,4 +71,4 @@ class Feature(BaseFeature or object):
         else:
             sign = ''
             name = string
-        return Feature(name, sign)
+        return cls(name, sign)
