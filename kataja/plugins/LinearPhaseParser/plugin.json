@@ -1,0 +1,7 @@
+{
+  "name": "LinearPhaseParser",
+  "description": "Phillips-Chesi-Brattico parser as Kataja plugin. This one relies on Brattico's original code to be available in source folder and converts its PhraseStructure items into Kataja constituents when necessary.",
+  "author": "plugin: Jukka Purma, parser: Pauli Brattico",
+  "version": "0.3",
+  "setup": "setup.py"
+}

@@ -8,10 +8,9 @@ except ImportError:
     BaseFeature = None
     in_kataja = False
 
-simple_signs = ('+', '-', '=', 'u', '_', '←', '.', '*', '!', '|', ')')
-
 
 class Feature(BaseFeature or object):
+    simple_signs = ('+', '-', '=', 'u', '_', '←', '.', '*', '!', '|', ')')
 
     def __init__(self, name='', sign='', value=''):
         if BaseFeature:
@@ -102,20 +101,20 @@ class Feature(BaseFeature or object):
         else:
             return -2, 1
 
-    @staticmethod
-    def from_string(s):
+    @classmethod
+    def from_string(cls, s):
         if not s:
             return
         sign = []
         for letter in s:
-            if letter in simple_signs:
+            if letter in cls.simple_signs:
                 sign.append(letter)
         name = s[len(sign):]
         sign = ''.join(sign)
         parts = name.split(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
         name = parts[0]
         value = parts[1] if len(parts) > 1 else ''
-        f = Feature(name, sign, value)
+        f = cls(name, sign, value)
         return f
 
     if in_kataja:

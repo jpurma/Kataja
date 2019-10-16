@@ -7,10 +7,9 @@ except ImportError:
     BaseFeature = object
     in_kataja = False
 
-simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*')
-
 
 class Feature(BaseFeature):
+    simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*')
 
     def __init__(self, name='Feature', sign='', value=None):
         if in_kataja:
@@ -43,15 +42,15 @@ class Feature(BaseFeature):
     def __hash__(self):
         return id(self)
 
-    @staticmethod
-    def from_string(s):
+    @classmethod
+    def from_string(cls, s):
         if not s:
             return
-        if s[0] in simple_signs:
+        if s[0] in cls.simple_signs:
             sign = s[0]
             name = s[1:]
         else:
             sign = ''
             name = s
         name, sep, value = name.partition(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
-        return Feature(name, sign, value)
+        return cls(name, sign, value)

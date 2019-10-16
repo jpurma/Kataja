@@ -43,7 +43,7 @@ sup sup {font-size: 8pt; vertical-align: sup}
 class SimpleLabel(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
     label composes its document (html layout) for its contents based on that. """
-    max_width = 400
+    max_width = 150
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, parent=None):
