@@ -1,0 +1,53 @@
+who did John tell how to fix what
+John told me how to fix the bicycle
+#* John told me how to fix what
+who saw a picture of whom
+#* who saw a certain picture of whom
+who should Mary have hired
+Mary told you where to put the book
+where did Mary tell you to put the book
+who told you to put the book where
+where do you think that John thinks that Mary put the book
+who thinks that John will put the book where
+you both seem to be very happy
+you seem both to be very happy
+you seem to both be very happy
+who did you tell to do what
+which philosopher likes which book
+who likes his mother
+who believes that Mary likes his mother
+John believes that you read a book about what
+Steven believes that who will win
+Steven wants who to win the race
+Steven expects to win what
+Steven will read to who
+Mary likes books that criticize who
+Mary was happy after Mary fired who
+Mary likes John and who
+Mary will read only to who
+John told Mary that who read what
+John convinced whom to read what to whom
+Whom does John like
+what did Mary give to whom
+who expects whom to win
+who knows how to do what
+who knows what had happened to whom
+which woman knows what which man bought
+who took a picture of whom
+who did John like a picture of
+who did John like a picture of at the party
+what did Steven tell John Mary was reading
+what does Steven know John was reading to Mary
+Steven met a politician whom she likes a great deal
+#* what did Steven see a woman who was reading
+#* whom does Steven like the book that John was reading to
+#* what do you know the best place to eat in
+who knows who said what
+who knows what who said
+who does John believe that Mary told you that she would fire tomorrow
+who does John believe that Mary hired
+John believes that Mary told you that she would fire Steven
+
+# Stroik ratkaisee nämä ongelmat REMERGE/SURVIVAL -periaatteella. Kun numeraatiosta mergetään elementtejä rakenteeseen,
+jos rakenteelle jää tyydyttämättömiä +-piirteitä, se jää numeraatioon roikkumaan (survive) ja voidaan uudelleen mergetä
+(remerge) päätyen täyttämään monta paikkaa rakenteessa.

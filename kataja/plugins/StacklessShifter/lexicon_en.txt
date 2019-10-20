@@ -1,0 +1,52 @@
+John :: D n -per
+Mary :: D n -per
+Pekka :: D n -per
+Seine :: D n
+Simon :: D n -per
+a :: -n D h
+at :: P -D
+blue :: n a >n
+book :: n a >n
+broke :: C T -D -D -P
+by :: by -D
+car :: n a >n
+city :: n a >n
+claim :: n C
+did :: T =v
+does :: T =v
+down :: P -P -D -by
+eagerly :: >a
+faintly :: >a
+flowing :: D -P
+found :: C T v -D -D
+gave :: T -D -D v C F -D -P -by
+hill :: n =n
+his :: D =n
+like :: C F T -D -D v =P
+likes :: T -D C F -D -P -by
+live :: C F T -D v =P
+ocean :: n =n
+of :: P -D h
+party :: n =n
+person :: n =n
+picture :: n =h =n
+reach :: C a F T v -D -D -P -by
+river :: n =n
+rolled :: T a -D C F -D -P -by
+run :: C F T v -D -P
+runs :: F T -D -P -by
+said :: T a -D C F Q -P -by
+say :: C a F T v -D -P
+sleeps :: C a F T -D -P -by
+small :: n a >n
+that :: -C Rel =F
+the :: -n D -of -Rel
+to :: -D P Rel
+towards :: P -D
+what :: D Rel -n
+which :: D -n
+who :: Rel D
+who's :: D -n
+whom :: -C Rel D
+with :: P -D
+wonders :: C -C T -D =Rel

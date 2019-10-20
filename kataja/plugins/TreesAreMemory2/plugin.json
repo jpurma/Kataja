@@ -1,0 +1,7 @@
+{
+  "name": "TreesAreMemory2",
+  "description": "Bottom-first, left-to-right parser that uses chains of functions as its intermediate input. No memory stack, tree itself is its memory.",
+  "author": "Jukka Purma",
+  "version": "0.2",
+  "setup": "setup.py"
+}

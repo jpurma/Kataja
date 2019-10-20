@@ -260,13 +260,5 @@ kataja_clip.gif
 kataja_clip.webp
 o_kataja_clip.gif
 workspace/*.*
-kataja/plugins/PCBPlugin*
-kataja/plugins/Monorail2
-kataja/plugins/StacklessShifter
-kataja/plugins/AmbiTree
-kataja/plugins/TreesAreMemory2
-kataja/plugins/SpreadTree
-kataja/plugins/SpreadNet
-kataja/plugins/OrderlessTree
 
 

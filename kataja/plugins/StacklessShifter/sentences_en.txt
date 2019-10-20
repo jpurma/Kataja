@@ -1,0 +1,242 @@
+# 2a. John sleeps
+[.T [.D:1 D John-] [.T T [.sleep [.D:1 D John-] sleep]]]
+D John- T sleep
+
+# 2. the city sleeps
+[.T [.the:1 the city] [.T T [.sleep [.the:1 the city] sleep]]]
+the city T sleep
+
+# 3aa. John rolled Mary
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled [.D D Mary-]]]]]
+D John- T rolled D Mary-
+
+# 3a. John rolled down
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled down ]]]]
+D John- T rolled down
+
+# 3b. John rolled the hill
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled [.the the hill]]]]]
+D John- T rolled the hill
+
+# 3. John rolled down the hill
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled [.down down [.the the hill]]]]]]
+D John- T rolled down the hill
+
+# 3c. Mary rolled down the hill
+[.T [.D:1 D Mary-] [.T T [.rolled [.D:1 D Mary-] [.rolled rolled [.down down [.the the hill]]]]]]
+D Mary- T rolled down the hill
+
+# 3d. John rolled down to Mary
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled [.down down [.to to [.D D Mary-]]]]]]]
+D John- T rolled down to D Mary-
+
+# 10. John said that the city sleeps
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.the:2 the city] [.T T [.sleep [.the:2 the city] sleep]]]]]]]]
+D John- T say that the city T sleep
+
+# 11. John said that John rolled down the hill
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.D:2 D John-] [.T T [.rolled [.D:2 D John-] [.rolled rolled [.down down [.the the hill]]]]]]]]]]]
+D John- T say that D John- T rolled down the hill
+
+# 15. down the hill rolled John
+[.T [.down:1 down [.the the hill]] [.T T [.rolled [.down:1 down [.the the hill]] [.rolled rolled [.D D John-]]]]]
+down the hill T rolled D John-
+
+# 17. John said that down the hill rolled John
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.down:2 down [.the the hill]] [.T T [.rolled [.down:2 down [.the the hill]] [.rolled rolled [.D D John-]]]]]]]]]]
+D John- T say that down the hill T rolled D John-
+
+# 24. John likes Mary
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.D D Mary-]]]]]]
+D John- T v like D Mary-
+
+# 29. his claim that John likes Mary
+[.his his [.claim claim [.that that [.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.D D Mary-]]]]]]]]]
+his claim that D John- T v like D Mary-
+
+# 30. Simon said that John likes Mary
+[.T [.D:1 D Simon-] [.T T [.say [.D:1 D Simon-] [.say say [.that that [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like like [.D D Mary-]]]]]]]]]]]
+D Simon- T say that D John- T v like D Mary-
+
+# 34. John gave the book to Mary
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave [.gave gave [.the the book]] <.to to [.D D Mary-]>]]]]]
+#[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave:2 gave [.the [.the the book] [.gave:2 gave <.to to [.D D Mary-]>]]]]]]]]
+D John- T v gave the book to D Mary-
+
+# 38. John said that Mary gave the book to Mary
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.D:2 D Mary-] [.T T [.v [.D:2 D Mary-] [.v v [.gave [.gave gave [.the the book]] <.to to [.D D Mary-]>]]]]]]]]]]
+D John- T say that D Mary- T v gave the book to D Mary-
+
+# 45. John gave Mary the book
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]]
+#[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]
+
+D John- T v gave D Mary- the book
+
+# 57. his claim that John gave Mary the book
+[.his his [.claim claim [.that that [.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]]]]
+his claim that D John- T v gave D Mary- the book
+
+# 58. Simon said that John gave Mary the book
+[.T [.D:1 D Simon-] [.T T [.say [.D:1 D Simon-] [.say say [.that that [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]]]]]]
+D Simon- T say that D John- T v gave D Mary- the book
+
+# 61. 's who book broke
+[.T [.'s:1 's [.book [.D D who] book]] [.T T [.broke [.'s:1 's [.book [.D D who] book]] broke]]]
+'s D who book T broke
+
+# 61. 's who car broke
+[.T [.'s:1 's [.car [.D D who] car]] [.T T [.broke [.'s:1 's [.car [.D D who] car]] broke]]]
+'s D who car T broke
+
+# 62. who rolled down the hill
+[.T [.D:1 D who] [.T T [.rolled [.D:1 D who] [.rolled rolled [.down down [.the the hill]]]]]]
+D who T rolled down the hill
+
+# 65. John wonders who rolled down the hill
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.rolled [.D:2 D who] [.rolled rolled [.down down [.the the hill]]]]]]]]]]
+D John- T wonder D who T rolled down the hill
+
+# 69. what did.C John found
+[.did [.D:1 D what] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.found [.D:1 D what] found]]]]]]]
+D what did D John- T v found
+
+# 70. who likes John
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.like like [.D D John-]]]]]]
+D who T v like D John-
+
+# 74. John wonders who likes Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.like like [.D D Mary-]]]]]]]]]]
+D John- T wonder D who T v like D Mary-
+
+# 83. who gave the book to Mary
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave [.gave gave [.the the book]] <.to to [.D D Mary-]>]]]]]
+D who T v gave the book to D Mary-
+
+# 84. what did.C John gave to Mary
+[.did [.D:1 D what] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.D:1 D what] [.gave gave [.to to [.D D Mary-]]]]]]]]]]
+D what did D John- T v gave to D Mary-
+
+# 85. to who did.C John gave the book
+[.did [.to:1 to [.D D who]] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.to:1 to [.D D who]] [.gave gave [.the the book]]]]]]]]]
+to D who did D John- T v gave the book
+
+# 90. John wonders what did.C John gave to Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did [.D:2 D what] [.did did [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.D:2 D what] [.gave gave [.to to [.D D Mary-]]]]]]]]]]]]]]
+D John- T wonder D what did D John- T v gave to D Mary-
+
+# 91. John wonders to who did.C John gave the book
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did [.to:2 to [.D D who]] [.did did [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]]]]]]
+D John- T wonder to D who did D John- T v gave the book
+
+# 95. who gave Mary the book
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]
+D who T v gave D Mary- the book
+
+# 100. John wonders who gave Mary the book
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]]]]]
+D John- T wonder D who T v gave D Mary- the book
+
+# 105. who John said that Mary said that Simon likes
+[.uWH [.D:1 D who] [.uWH uWH [.T [.D:2 D John-] [.T T [.say [.D:2 D John-] [.say say [.that that [.T [.D:3 D Mary-] [.T T [.say [.D:3 D Mary-] [.say say [.that that [.T [.D:4 D Simon-] [.T T [.v [.D:4 D Simon-] [.v v [.like [.D:1 D who] like]]]]]]]]]]]]]]]]]
+D who uWH D John- T say that D Mary- T say that D Simon- T v like
+
+# 112. the city that.rel sleeps
+[.the [.the the city] <.that:1 that:1 [.T T [.sleep that:1 sleep]]>]
+the city that T sleep
+
+# 114. John likes the city that.rel sleeps
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.the [.the the city] <.that:2 that:2 [.T T [.sleep that:2 sleep]]>]]]]]]
+D John- T v like the city that T sleep
+
+# 117. the city that.rel John likes
+[.the the [.city city [.that:1 that:1 [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like that:1 like]]]]]]]]
+the city that D John- T v like
+
+# 120. John likes the city that.rel Mary likes
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.the the [.city city [.that:2 that:2 [.T [.D:3 D Mary-] [.T T [.v [.D:3 D Mary-] [.v v [.like that:2 like]]]]]]]]]]]]]
+D John- T v like the city that D Mary- T v like
+
+# 127. the person to whom.rel John gave the book
+[.the [.the the person] <.uR [.to:1 to [.D D who]] [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.to:1 to [.D D who]] [.gave gave [.the the book]]]]]]]>]
+the person to D who D John- T v gave the book
+
+# 128. the person who.rel gave the book to Mary
+[.the the [.person person <.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]]
+the person D who T v gave the book to D Mary-
+
+# 131. the person to whom.rel John gave the book sleeps
+[.T [.the:1 [.the the person] <.uR [.to:2 to [.D D who]] [.uR uR [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]>] [.T T [.sleep [.the:1 [.the the person] <.uR [.to:2 to [.D D who]] [.uR uR [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]>] sleep]]]
+the person to D who uR D John- T v gave the book T sleep
+
+# 132. the person who.rel gave the book to Mary sleeps
+[.T [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]] [.T T [.sleep [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]] sleep]]]
+the person D who T v gave the book to D Mary- T sleep
+
+# 135. the person who.rel gave Mary the book
+[.the the [.person person <.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave [.gave gave [.D D Mary-]] <.the the book>]]]]]>]
+the person D who T v gave D Mary- the book
+
+# 137. the person who.rel gave Mary the book sleeps
+[.T [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]>]] [.T T [.sleep [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]>]] sleep]]]
+the person D who T v gave D Mary- the book T sleep
+
+# 142. towards which.D city does Seine run
+[.does [.towards:1 towards [.which which city]] [.does does [.run [.D D Seine] [.run run [.towards:1 towards [.which which city]]]]]]
+towards which city does D Seine run
+
+# 143. 's who car broke
+[.T [.'s:1 's [.car [.D D who] car]] [.T T [.broke [.'s:1 's [.car [.D D who] car]] broke]]]
+'s D who car T broke
+
+# 147. John wonders towards which.D city does Seine run
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.does [.towards:2 towards [.which which city]] [.does does [.run [.D D Seine] [.run run [.towards:2 towards [.which which city]]]]]]]]]]
+D John- T wonder towards which city does D Seine run
+
+# 151. by.adv flowing towards which.D city does.C Seine reach the ocean
+[.does <.by:1 by [.flowing flowing [.towards towards [.which which city]]]> [.does does [.T <.D:2 D Seine> [.T T [.v <.D:2 D Seine> [.v v [.reach reach [.the [.the the ocean] <.by:1 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]
+by flowing towards which city does D Seine T v reach the ocean
+
+# 156. John wonders by.adv flowing towards which.D city does.C Seine reach the ocean
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.does <.by:2 by [.flowing flowing [.towards towards [.which which city]]]> [.does does [.T <.D:3 D Seine> [.T T [.v <.D:3 D Seine> [.v [.v v [.reach reach [.the the ocean]]] <.by:2 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]]]
+D John- T wonder by flowing towards which city does D Seine T v reach the ocean
+
+# 167. by.adv flowing towards which.D city did.C Pekka gave the book to Mary
+[.did <.by:1 by [.flowing flowing [.towards towards [.which which city]]]> [.did did [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.gave gave [.the [.the [.the the book] <.to to [.D D Mary-]>] <.by:1 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]
+by flowing towards which city did D Pekka T v gave the book to D Mary-
+
+# 170. John wonders by.adv flowing towards which.D city did.C Pekka gave the book to Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did <.by:2 by [.flowing flowing [.towards towards [.which which city]]]> [.did did [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]] <.by:2 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]]]
+D John- T wonder by flowing towards which city did D Pekka T v gave the book to D Mary-
+
+# 183. towards which.D city did.C John say that the river runs
+[.did [.towards:1 towards [.which which city]] [.did did [.T [.D:2 D John-] [.T T [.say [.D:2 D John-] [.say say [.that that [.T [.the:3 the river] [.T T [.run [.the:3 the river] [.run run [.towards:1 towards [.which which city]]]]]]]]]]]]]
+towards which city did D John- T say that the river T run
+
+# 186. who does John live with
+[.does [.D:1 D who] [.does does [.live [.D D John-] [.live live [.with with [.D:1 D who]]]]]]
+D who does D John- live with
+
+# 187. who did.C John like a.D picture of
+[.did [.D:1 D who] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like [.like like [.a a picture]] <.of of [.D:1 D who]>]]]]]]]
+D who did D John- T v like a picture of
+
+# 188. who did.C John like a.D picture of at the party
+[.did [.D:1 D who] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like [.D:1 D who] [.like like [.a [.a a picture] <.of of [.at at [.the the party]]>]]]]]]]]]
+D who did D John- T v like a picture of at the party
+
+# 191. the city towards which.rel Seine runs
+[.the [.the the city] <.uR [.towards:1 towards [.D D which]] [.uR uR [.T <.D:2 D Seine> [.T T [.run <.D:2 D Seine> [.run run [.towards:1 towards [.D D which]]]]]]]>]
+the city towards D which uR D Seine T run
+
+# 194. the city by.adv flowing towards which.rel John likes Mary
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like like [.D [.D D Mary-] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v like D Mary-
+
+# 198. the city by.adv flowing towards which.rel John gave the book to Mary
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave gave [.the [.the [.the the book] <.to to [.D D Mary-]>] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v gave the book to D Mary-
+
+# 202. the city by.adv flowing towards which.rel John gave Mary the book
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave gave [.D [.D [.D D Mary-] <.the the book>] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v gave D Mary- the book

@@ -1,0 +1,15 @@
+# List of sentences given to the parser for testing purposes. Sentence per line.
+
+[ the [ [ nice letter ] [ from [ the [ smart lady ] ] ] ] ]
+[ [ the [ nice letter ] ] [ from [ the [ smart lady ] ] ] ]
+
+the nice letter from the smart lady
+the nice letter from the smart lady of the lake
+the smart letter from the lady
+the smart lady
+the very smart lady
+the smart lady sleeps
+the smart lady likes smart London
+the man admires the smart lady
+who the man admires
+who did you see
