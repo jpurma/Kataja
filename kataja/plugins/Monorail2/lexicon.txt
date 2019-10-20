@@ -1,0 +1,48 @@
+# ======================================================================================
+#   Lexicon
+# ======================================================================================
+
+# (no sign) = positive feature
+# . = positive feature, doesn't 'spend' the negative feature, negative feature remains not used
+# + = positive feature ... no special meaning yet
+# = = negative feature, once satisfied this becomes head
+# - = negative feature, once satisfied the other becomes head
+# :val = feature gives or requires this value, depending on its sign (eg. -N:Nom matches only with N:Nom )
+# | before a negative feature, states that this has to be satisfied before the next features are available
+
+
+a :: D |=N (-P .K
+from :: .P R -K =M
+lady :: .M .N
+lake :: .M .N
+letter :: .M .N
+nice :: .M .N
+of :: .P R -K =M
+smart :: .M .N
+the :: D |=N (-P K -R
+
+#from :: P X .Y
+#lady :: -A A .N
+#lake :: -A A .N
+#letter :: -A A .N
+#nice :: -A A .N
+#of :: -D P -P
+#smart :: -A A .N
+#the :: D (-P =X |=N =Y Y
+
+
+#Dwh :: who CAT:D A-BAR
+#London :: A D
+#T :: T =v -D EPP
+#admire- :: V =D
+#always :: -Adv VAdv
+#did :: T
+#him :: D
+#likes :: T D -D
+#man :: N =P
+#sleep- :: V
+#sleeps :: Adv T D =VAdv
+#v :: v =V
+#very :: Adv -A
+#wh :: CAT:O EPP
+#who :: wh#Dwh

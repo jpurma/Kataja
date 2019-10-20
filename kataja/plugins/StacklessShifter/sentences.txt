@@ -1,0 +1,815 @@
+# 175. Pekka kysyi mitä.D kaupunkia kohti virtaamalla meren saavuttaa Seine
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:5 D meri> [.T T [.v <.D:6 D Seine> [.v [.v v [.saavuttaa- <.D:5 D meri> [.saavuttaa- saavuttaa- <.D:6 D Seine>]]] <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]>]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 1. teoria kumoutui
+[.T <.D:1 D teoria> [.T T [.kumoutui <.D:1 D teoria> kumoutui]]]
+D teoria T kumoutui
+
+# 2. the city sleeps
+[.T [.the:1 the city] [.T T [.sleep [.the:1 the city] sleep]]]
+the city T sleep
+
+# 3. John rolled down the hill
+[.T [.D:1 D John-] [.T T [.rolled [.D:1 D John-] [.rolled rolled [.down down [.the the hill]]]]]]
+D John- T rolled down the hill
+
+# 4. la Senna scorre attraverso Parigi
+[.T [.la:1 la Senna] [.T T [.scorre [.la:1 la Senna] [.scorre scorre [.attraverso attraverso [.D D Parigi]]]]]]
+la Senna T scorre attraverso D Parigi
+
+# 5. Pekka sanoi että teoria kumoutui
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D teoria> [.T T [.kumoutui <.D:2 D teoria> kumoutui]]]]]]]]
+D Pekka T sano- että D teoria T kumoutui
+
+# 6. Pekka kertoi että Merja sanoi että teoria kumoutui
+[.T <.D:1 D Pekka> [.T T [.kertoi <.D:1 D Pekka> [.kertoi kertoi [.että että [.T <.D:2 D Merja-> [.T T [.sano- <.D:2 D Merja-> [.sano- sano- [.että että [.T <.D:3 D teoria> [.T T [.kumoutui <.D:3 D teoria> kumoutui]]]]]]]]]]]]]
+D Pekka T kertoi että D Merja- T sano- että D teoria T kumoutui
+
+# 7. se väite.N että Pekka nukkui kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.nukku <.D:2 D Pekka> nukku]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.nukku <.D:2 D Pekka> nukku]]]]]> kumoutui]]]
+se väite että D Pekka T nukku T kumoutui
+
+# 8. se väite.N että Pekka sanoi että teoria kumoutui kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D teoria> [.T T [.kumoutui <.D:3 D teoria> kumoutui]]]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D teoria> [.T T [.kumoutui <.D:3 D teoria> kumoutui]]]]]]]]]]> kumoutui]]]
+se väite että D Pekka T sano- että D teoria T kumoutui T kumoutui
+
+# 9. Pekka sanoi että se väite.N että Merja nukkui kumoutui
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.se:2 se [.väite väite [.että että [.T <.D:3 D Merja-> [.T T [.nukku <.D:3 D Merja-> nukku]]]]]> [.T T [.kumoutui <.se:2 se [.väite väite [.että että [.T <.D:3 D Merja-> [.T T [.nukku <.D:3 D Merja-> nukku]]]]]> kumoutui]]]]]]]]
+D Pekka T sano- että se väite että D Merja- T nukku T kumoutui
+
+# 10. John said that the city sleeps
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.the:2 the city] [.T T [.sleep [.the:2 the city] sleep]]]]]]]]
+D John- T say that the city T sleep
+
+# 11. John said that John rolled down the hill
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.D:2 D John-] [.T T [.rolled [.D:2 D John-] [.rolled rolled [.down down [.the the hill]]]]]]]]]]]
+D John- T say that D John- T rolled down the hill
+
+# 12. Gianni detto che la Senna scorre attraverso Parigi
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.la:2 la Senna] [.T T [.scorre [.la:2 la Senna] [.scorre scorre [.attraverso attraverso [.D D Parigi]]]]]]]]]]]
+D Gianni T detto che la Senna T scorre attraverso D Parigi
+
+# 13. Gianni detto la Senna sfocia nell oceano
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.T [.la:2 la Senna] [.T T [.sfocia- [.la:2 la Senna] [.sfocia- sfocia- [.in in [.il il oceano]]]]]]]]]]
+D Gianni T detto la Senna T sfocia- in il oceano
+
+# 14. kaupungissa asui Pekka
+[.T [.ssa:1 ssa [.D D kaupunki]] [.T T [.asui [.ssa:1 ssa [.D D kaupunki]] [.asui asui [.D D Pekka]]]]]
+ssa D kaupunki T asui D Pekka
+
+# 15. down the hill rolled John
+[.T [.down:1 down [.the the hill]] [.T T [.rolled [.down:1 down [.the the hill]] [.rolled rolled [.D D John-]]]]]
+down the hill T rolled D John-
+
+# 16. giu dalla collina rotolato Gianni
+[.T [.giu:1 giu [.di di [.D D collina]]] [.T T [.rotolato [.giu:1 giu [.di di [.D D collina]]] [.rotolato rotolato [.D D Gianni]]]]]
+giu di D collina T rotolato D Gianni
+
+# 17. John said that down the hill rolled John
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.down:2 down [.the the hill]] [.T T [.rolled [.down:2 down [.the the hill]] [.rolled rolled [.D D John-]]]]]]]]]]
+D John- T say that down the hill T rolled D John-
+
+# 18. Gianni detto che giu dalla collina rotolato Gianni
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.giu:2 giu [.di di [.D D collina]]] [.T T [.rotolato [.giu:2 giu [.di di [.D D collina]]] [.rotolato rotolato [.D D Gianni]]]]]]]]]]
+D Gianni T detto che giu di D collina T rotolato D Gianni
+
+# 19. Merja sanoi että kaupungissa asui Pekka
+[.T <.D:1 D Merja-> [.T T [.sano- <.D:1 D Merja-> [.sano- sano- [.että että [.T [.ssa:2 ssa [.D D kaupunki]] [.T T [.asui [.ssa:2 ssa [.D D kaupunki]] [.asui asui [.D D Pekka]]]]]]]]]]
+D Merja- T sano- että ssa D kaupunki T asui D Pekka
+
+# 20. Pekka saavuttaa Merjaa
+[.T <.D:1 D Pekka> [.T T [.v <.D:1 D Pekka> [.v v [.saavuttaa- saavuttaa- [.D D Merjaa]]]]]]
+D Pekka T v saavuttaa- D Merjaa
+
+# 21. Seine saavuttaa meren
+[.T <.D:1 D Seine> [.T T [.v <.D:1 D Seine> [.v v [.saavuttaa- saavuttaa- [.D D meri]]]]]]
+D Seine T v saavuttaa- D meri
+
+# 22. Seine saavuttaa meren virtaamalla
+[.T <.D:1 D Seine> [.T T [.v <.D:1 D Seine> [.v v [.saavuttaa- saavuttaa- [.D D [.meri meri <.malla malla virtaa>]]]]]]]
+D Seine T v saavuttaa- D meri malla virtaa
+
+# 23. Seine saavuttaa meren virtaamalla kohti kaupunkia_DP
+[.T <.D:1 D Seine> [.T T [.v <.D:1 D Seine> [.v v [.saavuttaa- saavuttaa- [.D D [.meri meri <.malla malla [.virtaa virtaa [.kohti kohti [.D D kaupunkia]]]>]]]]]]]
+D Seine T v saavuttaa- D meri malla virtaa kohti D kaupunkia
+
+# 24. John likes Mary
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.D D Mary-]]]]]]
+D John- T v like D Mary-
+
+# 25. la Senna sfocia nell oceano
+[.T [.la:1 la Senna] [.T T [.sfocia- [.la:1 la Senna] [.sfocia- sfocia- [.in in [.il il oceano]]]]]]
+la Senna T sfocia- in il oceano
+
+# 26. la Senna raggiunge l oceano
+[.T [.la:1 la Senna] [.T T [.v [.la:1 la Senna] [.v v [.raggiunge raggiunge [.l l oceano]]]]]]
+la Senna T v raggiunge l oceano
+
+# 27. Pekka sanoi että Merja löysi meren
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D Merja-> [.T T [.v <.D:2 D Merja-> [.v v [.löytä- löytä- [.D D meri]]]]]]]]]]]
+D Pekka T sano- että D Merja- T v löytä- D meri
+
+# 28. se väite.N että Seine saavuttaa meren kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D Seine> [.T T [.v <.D:2 D Seine> [.v v [.saavuttaa- saavuttaa- [.D D meri]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D Seine> [.T T [.v <.D:2 D Seine> [.v v [.saavuttaa- saavuttaa- [.D D meri]]]]]]]]> kumoutui]]]
+se väite että D Seine T v saavuttaa- D meri T kumoutui
+
+# 29. his claim that John likes Mary
+[.his his [.claim claim [.that that [.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.D D Mary-]]]]]]]]]
+his claim that D John- T v like D Mary-
+
+# 30. Simon said that John likes Mary
+[.T [.D:1 D Simon-] [.T T [.say [.D:1 D Simon-] [.say say [.that that [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like like [.D D Mary-]]]]]]]]]]]
+D Simon- T say that D John- T v like D Mary-
+
+# 31. Gianni detto la Senna raggiunge l oceano
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.T [.la:2 la Senna] [.T T [.v [.la:2 la Senna] [.v v [.raggiunge raggiunge [.l l oceano]]]]]]]]]]
+D Gianni T detto la Senna T v raggiunge l oceano
+
+# 32. Pekkaa saavuttaa Merja
+[.T <.D:1 D Pekkaa> [.T T [.v <.D:2 D Merja-> [.v v [.saavuttaa- <.D:1 D Pekkaa> [.saavuttaa- saavuttaa- <.D:2 D Merja->]]]]]]
+D Pekkaa T D Merja- v saavuttaa-
+
+# 33. Pekka sanoi että avaimen löysi Merja
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D avain> [.T T [.v <.D:3 D Merja-> [.v v [.löytä- <.D:2 D avain> [.löytä- löytä- <.D:3 D Merja->]]]]]]]]]]]
+D Pekka T sano- että D avain T D Merja- v löytä-
+
+# 34. John gave the book to Mary
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]]
+D John- T v gave the book to D Mary-
+
+# 35. Pekka antoi kirjan Merjalle
+[.T <.D:1 D Pekka> [.T T [.v <.D:1 D Pekka> [.v v [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]]]]]
+D Pekka T v antaa D kirja P(lle) D Merja-
+
+# 36. Gianni dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]
+D Gianni T v dato il libro a D Luisa
+
+# 37. Pekka sanoi että Jari antoi kirjan Merjalle
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D Jari> [.T T [.v <.D:2 D Jari> [.v v [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]]]]]]]]]]
+D Pekka T sano- että D Jari T v antaa D kirja P(lle) D Merja-
+
+# 38. John said that Mary gave the book to Mary
+[.T [.D:1 D John-] [.T T [.say [.D:1 D John-] [.say say [.that that [.T [.D:2 D Mary-] [.T T [.v [.D:2 D Mary-] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]]]]]]]
+D John- T say that D Mary- T v gave the book to D Mary-
+
+# 39. Gianni detto che Luisa dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.D:2 D Luisa] [.T T [.v [.D:2 D Luisa] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]]]]]]
+D Gianni T detto che D Luisa T v dato il libro a D Luisa
+
+# 40. Pekka antoi Merjalle kirjan
+[.T <.D:1 D Pekka> [.T T [.v <.D:1 D Pekka> [.v v [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]]]]]
+D Pekka T v antaa P(lle) D Merja- D kirja
+
+# 41. kirjan antoi Merjalle Pekka
+[.T <.D:1 D kirja> [.T T [.v <.D:2 D Pekka> [.v v [.antaa <.D:1 D kirja> [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D:2 D Pekka>]]]]]]]
+D kirja T D Pekka v antaa P(lle) D Merja-
+
+# 42. kirjan antoi Pekka Merjalle
+[.T <.D:1 D kirja> [.T T [.v <.D:2 D Pekka> [.v v [.antaa <.D:1 D kirja> [.antaa antaa [.P(lle) <.D:2 D Pekka> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]
+D kirja T D Pekka v antaa P(lle) D Merja-
+
+# 43. Merjalle antoi kirjan Pekka
+[.T [.P(lle):1 P(lle) [.D D Merja-]] [.T T [.v <.D:2 D Pekka> [.v v [.antaa [.P(lle):1 P(lle) [.D D Merja-]] [.antaa antaa [.D [.D D kirja] <.D:2 D Pekka>]]]]]]]
+P(lle) D Merja- T D Pekka v antaa D kirja
+
+# 44. Merjalle antoi Pekka kirjan
+[.T [.P(lle):1 P(lle) [.D D Merja-]] [.T T [.v <.D:2 D Pekka> [.v v [.antaa [.P(lle):1 P(lle) [.D D Merja-]] [.antaa antaa [.D <.D:2 D Pekka> <.D D kirja>]]]]]]]
+P(lle) D Merja- T D Pekka v antaa D kirja
+
+# 45. John gave Mary the book
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]
+D John- T v gave D Mary- the book
+
+# 46. Gianni dato a Luisa il libro
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]
+D Gianni T v dato a D Luisa il libro
+
+# 47. Pekka sanoi että kirjan antoi Merjalle Jari
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Jari> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D:3 D Jari>]]]]]]]]]]]]
+D Pekka T sano- että D kirja T D Jari v antaa P(lle) D Merja-
+
+# 48. Pekka sanoi että kirjan antoi Jari Merjalle
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Jari> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) <.D:3 D Jari> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]]]]
+D Pekka T sano- että D kirja T D Jari v antaa P(lle) D Merja-
+
+# 49. Pekka sanoi että Merjalle antoi kirjan Jari
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Jari> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D [.D D kirja] <.D:3 D Jari>]]]]]]]]]]]]
+D Pekka T sano- että P(lle) D Merja- T D Jari v antaa D kirja
+
+# 50. Pekka sanoi että Merjalle antoi Jari kirjan
+[.T <.D:1 D Pekka> [.T T [.sano- <.D:1 D Pekka> [.sano- sano- [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Jari> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D <.D:3 D Jari> <.D D kirja>]]]]]]]]]]]]
+D Pekka T sano- että P(lle) D Merja- T D Jari v antaa D kirja
+
+# 51. se väite.N että Pekka antoi kirjan Merjalle kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]]]]]]]> kumoutui]]]
+se väite että D Pekka T v antaa D kirja P(lle) D Merja- T kumoutui
+
+# 52. se väite.N että meren löysi Merja kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D meri> [.T T [.v <.D:3 D Merja-> [.v v [.löytä- <.D:2 D meri> [.löytä- löytä- <.D:3 D Merja->]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D meri> [.T T [.v <.D:3 D Merja-> [.v v [.löytä- <.D:2 D meri> [.löytä- löytä- <.D:3 D Merja->]]]]]]]]> kumoutui]]]
+se väite että D meri T D Merja- v löytä- T kumoutui
+
+# 53. se väite.N että kirjan antoi Merjalle Pekka kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D:3 D Pekka>]]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D:3 D Pekka>]]]]]]]]]> kumoutui]]]
+se väite että D kirja T D Pekka v antaa P(lle) D Merja- T kumoutui
+
+# 54. se väite.N että kirjan antoi Pekka Merjalle kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) <.D:3 D Pekka> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa antaa [.P(lle) <.D:3 D Pekka> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]> kumoutui]]]
+se väite että D kirja T D Pekka v antaa P(lle) D Merja- T kumoutui
+
+# 55. se väite.N että Merjalle antoi kirjan Pekka kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D [.D D kirja] <.D:3 D Pekka>]]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D [.D D kirja] <.D:3 D Pekka>]]]]]]]]]> kumoutui]]]
+se väite että P(lle) D Merja- T D Pekka v antaa D kirja T kumoutui
+
+# 56. se väite.N että Merjalle antoi Pekka kirjan kumoutui
+[.T <.se:1 se [.väite väite [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D <.D:3 D Pekka> <.D D kirja>]]]]]]]]]> [.T T [.kumoutui <.se:1 se [.väite väite [.että että [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa antaa [.D <.D:3 D Pekka> <.D D kirja>]]]]]]]]]> kumoutui]]]
+se väite että P(lle) D Merja- T D Pekka v antaa D kirja T kumoutui
+
+# 57. his claim that John gave Mary the book
+[.his his [.claim claim [.that that [.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]]]]
+his claim that D John- T v gave D Mary- the book
+
+# 58. Simon said that John gave Mary the book
+[.T [.D:1 D Simon-] [.T T [.say [.D:1 D Simon-] [.say say [.that that [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]]]]]]
+D Simon- T say that D John- T v gave D Mary- the book
+
+# 59. Luisa detto che Gianni dato a Luisa il libro
+[.T [.D:1 D Luisa] [.T T [.detto [.D:1 D Luisa] [.detto detto [.che che [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]]]]]]
+D Luisa T detto che D Gianni T v dato a D Luisa il libro
+
+# 60. kuka kumoutui
+[.T <.D:1 D kuka> [.T T [.kumoutui <.D:1 D kuka> kumoutui]]]
+D kuka T kumoutui
+
+# 61. 's who car broke
+[.T [.'s:1 's [.car [.D D who] car]] [.T T [.broke [.'s:1 's [.car [.D D who] car]] broke]]]
+'s D who car T broke
+
+# 62. who rolled down the hill
+[.T [.D:1 D who] [.T T [.rolled [.D:1 D who] [.rolled rolled [.down down [.the the hill]]]]]]
+D who T rolled down the hill
+
+# 63. dove sfocia la Senna
+[.T [.P:1 P [.D D dove]] [.T T [.sfocia- [.P:1 P [.D D dove]] [.sfocia- sfocia- [.la la Senna]]]]]
+P D dove T sfocia- la Senna
+
+# 64. Merja kysyi kuka kumoutui
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.T <.D:2 D kuka> [.T T [.kumoutui <.D:2 D kuka> kumoutui]]]]]]]
+D Merja- T kysyi D kuka T kumoutui
+
+# 65. John wonders who rolled down the hill
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.rolled [.D:2 D who] [.rolled rolled [.down down [.the the hill]]]]]]]]]]
+D John- T wonder D who T rolled down the hill
+
+# 66. cosa credi che Gianni sappia della visita di Luisa
+[.T [.D:1 D cosa] [.T T [.credi [.D:1 D cosa] [.credi credi [.che che [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.sappia sappia [.di [.di di [.D D visita]] <.di di [.D D Luisa]>]]]]]]]]]]]
+D cosa T credi che D Gianni T v sappia di D visita di D Luisa
+
+# 67. mitä Pekka löysi
+[.uWH [.D:1 D mitä] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.löytä- [.D:1 D mitä] löytä-]]]]]]]
+D mitä uWH D Pekka T v löytä-
+
+# 68. kuka löysi avaimen
+[.T <.D:1 D kuka> [.T T [.v <.D:1 D kuka> [.v v [.löytä- löytä- [.D D avain]]]]]]
+D kuka T v löytä- D avain
+
+# 69. what did.C John found
+[.did [.D:1 D what] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.found [.D:1 D what] found]]]]]]]
+D what did D John- T v found
+
+# 70. who likes John
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.like like [.D D John-]]]]]]
+D who T v like D John-
+
+# 71. chi ama Gianni
+[.T [.D:1 D chi] [.T T [.v [.D:1 D chi] [.v v [.ama ama [.D D Gianni]]]]]]
+D chi T v ama D Gianni
+
+# 72. Merja kysyi mitä Pekka löysi
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.uWH [.D:2 D mitä] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.löytä- [.D:2 D mitä] löytä-]]]]]]]]]]]
+D Merja- T kysyi D mitä uWH D Pekka T v löytä-
+
+# 73. Merja kysyi että.Q mitä Pekka löysi
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.että(wh) että(wh) [.uWH [.D:2 D mitä] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.löytä- [.D:2 D mitä] löytä-]]]]]]]]]]]]
+D Merja- T kysyi että(wh) D mitä uWH D Pekka T v löytä-
+
+# 74. John wonders who likes Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.like like [.D D Mary-]]]]]]]]]]
+D John- T wonder D who T v like D Mary-
+
+# 75. Gianni si_chiede chi ama Luisa
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.D:2 D chi] [.T T [.v [.D:2 D chi] [.v v [.ama ama [.D D Luisa]]]]]]]]]]
+D Gianni T si_chiede D chi T v ama D Luisa
+
+# 76. mitä löysi Pekka
+[.T [.D:1 D mitä] [.T T [.v <.D:2 D Pekka> [.v v [.löytä- [.D:1 D mitä] [.löytä- löytä- <.D:2 D Pekka>]]]]]]
+D mitä T D Pekka v löytä-
+
+# 77. cosa trovato Gianni
+[.T [.D:1 D cosa] [.T T [.v [.D:1 D cosa] [.v v [.trovato trovato [.D D Gianni]]]]]]
+D cosa T v trovato D Gianni
+
+# 78. Merja kysyi mitä löysi Pekka
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.T [.D:2 D mitä] [.T T [.v <.D:3 D Pekka> [.v v [.löytä- [.D:2 D mitä] [.löytä- löytä- <.D:3 D Pekka>]]]]]]]]]]
+D Merja- T kysyi D mitä T D Pekka v löytä-
+
+# 79. Luisa si_chiede cosa trovato Gianni
+[.T [.D:1 D Luisa] [.T T [.si_chiede [.D:1 D Luisa] [.si_chiede si_chiede [.T [.D:2 D cosa] [.T T [.v [.D:2 D cosa] [.v v [.trovato trovato [.D D Gianni]]]]]]]]]]
+D Luisa T si_chiede D cosa T v trovato D Gianni
+
+# 80. kenelle Pekka antoi kirjan
+[.uWH [.P:1 P [.D D kenelle]] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.antaa [.P:1 P [.D D kenelle]] [.antaa antaa [.D D kirja]]]]]]]]]
+P D kenelle uWH D Pekka T v antaa D kirja
+
+# 81. mitä Pekka antoi Merjalle
+[.uWH [.D:1 D mitä] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.antaa [.D:1 D mitä] [.antaa antaa [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]
+D mitä uWH D Pekka T v antaa P(lle) D Merja-
+
+# 82. kuka antoi Merjalle kirjan
+[.T <.D:1 D kuka> [.T T [.v <.D:1 D kuka> [.v v [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]]]]]
+D kuka T v antaa P(lle) D Merja- D kirja
+
+# 83. who gave the book to Mary
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]]
+D who T v gave the book to D Mary-
+
+# 84. what did.C John gave to Mary
+[.did [.D:1 D what] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.D:1 D what] [.gave gave [.to to [.D D Mary-]]]]]]]]]]
+D what did D John- T v gave to D Mary-
+
+# 85. to who did.C John gave the book
+[.did [.to:1 to [.D D who]] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.to:1 to [.D D who]] [.gave gave [.the the book]]]]]]]]]
+to D who did D John- T v gave the book
+
+# 86. a chi dato il libro Gianni
+[.T [.a:1 a [.D D chi]] [.T T [.v <.D:2 D Gianni> [.v v [.dato [.a:1 a [.D D chi]] [.dato dato [.il [.il il libro] <.D:2 D Gianni>]]]]]]]
+a D chi T D Gianni v dato il libro
+
+# 87. Merja kysyi kenelle Pekka antoi kirjan
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.uWH [.P:2 P [.D D kenelle]] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P:2 P [.D D kenelle]] [.antaa antaa [.D D kirja]]]]]]]]]]]]]
+D Merja- T kysyi P D kenelle uWH D Pekka T v antaa D kirja
+
+# 88. Merja kysyi kuka antoi Merjalle kirjan
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.T <.D:2 D kuka> [.T T [.v <.D:2 D kuka> [.v v [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]]]]]]]]]
+D Merja- T kysyi D kuka T v antaa P(lle) D Merja- D kirja
+
+# 89. Merja kysyi mitä Pekka antoi Merjalle
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.uWH [.D:2 D mitä] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.D:2 D mitä] [.antaa antaa [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]]]]
+D Merja- T kysyi D mitä uWH D Pekka T v antaa P(lle) D Merja-
+
+# 90. John wonders what did.C John gave to Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did [.D:2 D what] [.did did [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.D:2 D what] [.gave gave [.to to [.D D Mary-]]]]]]]]]]]]]]
+D John- T wonder D what did D John- T v gave to D Mary-
+
+# 91. John wonders to who did.C John gave the book
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did [.to:2 to [.D D who]] [.did did [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]]]]]]
+D John- T wonder to D who did D John- T v gave the book
+
+# 92. Gianni si_chiede a chi Luisa dato il libro
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH [.a:2 a [.D D chi]] [.uWH uWH [.T [.D:3 D Luisa] [.T T [.v [.D:3 D Luisa] [.v v [.dato [.a:2 a [.D D chi]] [.dato dato [.il il libro]]]]]]]]]]]]]
+D Gianni T si_chiede a D chi uWH D Luisa T v dato il libro
+
+# 93. kenelle kirjan antoi Pekka
+[.uWH [.P:1 P [.D D kenelle]] [.uWH uWH [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa [.antaa antaa [.P:1 P [.D D kenelle]]] <.D:3 D Pekka>]]]]]]]]
+P D kenelle uWH D kirja T D Pekka v antaa
+
+# 94. mitä Merjalle antoi Pekka
+[.uWH [.D:1 D mitä] [.uWH uWH [.T [.P(lle):2 P(lle) [.D D Merja-]] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P(lle):2 P(lle) [.D D Merja-]] [.antaa [.antaa antaa [.D:1 D mitä]] <.D:3 D Pekka>]]]]]]]]
+D mitä uWH P(lle) D Merja- T D Pekka v antaa
+
+# 95. who gave Mary the book
+[.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]
+D who T v gave D Mary- the book
+
+# 96. Merja kysyi kenelle kirjan antoi Pekka
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.uWH [.P:2 P [.D D kenelle]] [.uWH uWH [.T <.D:3 D kirja> [.T T [.v <.D:4 D Pekka> [.v v [.antaa <.D:3 D kirja> [.antaa [.antaa antaa [.P:2 P [.D D kenelle]]] <.D:4 D Pekka>]]]]]]]]]]]]
+D Merja- T kysyi P D kenelle uWH D kirja T D Pekka v antaa
+
+# 97. Merja kysyi mitä antoi Pekka Merjalle
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.T [.D:2 D mitä] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.D:2 D mitä] [.antaa antaa [.P(lle) <.D:3 D Pekka> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]]]
+D Merja- T kysyi D mitä T D Pekka v antaa P(lle) D Merja-
+
+# 98. Merja kysyi mitä antoi Merjalle Pekka
+[.T <.D:1 D Merja-> [.T T [.kysyi <.D:1 D Merja-> [.kysyi kysyi [.T [.D:2 D mitä] [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.D:2 D mitä] [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D:3 D Pekka>]]]]]]]]]]]
+D Merja- T kysyi D mitä T D Pekka v antaa P(lle) D Merja-
+
+# 99. Pekka kysyi kuka antoi Merjalle kirjan
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.T <.D:2 D kuka> [.T T [.v <.D:2 D kuka> [.v v [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]]]]]]]]]
+D Pekka T kysyi D kuka T v antaa P(lle) D Merja- D kirja
+
+# 100. John wonders who gave Mary the book
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]]]]]]
+D John- T wonder D who T v gave D Mary- the book
+
+# 101. mitä Pekka sanoi että Merja löysi
+[.uWH [.D:1 D mitä] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D Merja-> [.T T [.v <.D:3 D Merja-> [.v v [.löytä- [.D:1 D mitä] löytä-]]]]]]]]]]]]
+D mitä uWH D Pekka T sano- että D Merja- T v löytä-
+
+# 102. mitä Pekka sanoi että Merja sanoi että Jari löysi
+[.uWH [.D:1 D mitä] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D Merja-> [.T T [.sano- <.D:3 D Merja-> [.sano- sano- [.että että [.T <.D:4 D Jari> [.T T [.v <.D:4 D Jari> [.v v [.löytä- [.D:1 D mitä] löytä-]]]]]]]]]]]]]]]]]
+D mitä uWH D Pekka T sano- että D Merja- T sano- että D Jari T v löytä-
+
+# 103. kenelle Pekka sanoi että Merja antoi kirjan
+[.uWH [.P:1 P [.D D kenelle]] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D Merja-> [.T T [.v <.D:3 D Merja-> [.v v [.antaa [.P:1 P [.D D kenelle]] [.antaa antaa [.D D kirja]]]]]]]]]]]]]]
+P D kenelle uWH D Pekka T sano- että D Merja- T v antaa D kirja
+
+# 104. kenelle Pekka sanoi että kirjan antoi Merja
+[.uWH [.P:1 P [.D D kenelle]] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D kirja> [.T T [.v <.D:4 D Merja-> [.v v [.antaa <.D:3 D kirja> [.antaa [.antaa antaa [.P:1 P [.D D kenelle]]] <.D:4 D Merja->]]]]]]]]]]]]]
+P D kenelle uWH D Pekka T sano- että D kirja T D Merja- v antaa
+
+# 105. who John said that Mary said that Simon likes
+[.uWH [.D:1 D who] [.uWH uWH [.T [.D:2 D John-] [.T T [.say [.D:2 D John-] [.say say [.that that [.T [.D:3 D Mary-] [.T T [.say [.D:3 D Mary-] [.say say [.that that [.T [.D:4 D Simon-] [.T T [.v [.D:4 D Simon-] [.v v [.like [.D:1 D who] like]]]]]]]]]]]]]]]]]
+D who uWH D John- T say that D Mary- T say that D Simon- T v like
+
+# 106. chi pro credi che sappia qualcosa della visita
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.T [.D:1 D chi] [.T T [.v [.D:1 D chi] [.v v [.sappia sappia [.D [.D D qualcosa] <.di di [.D D visita]>]]]]]]]]]]]]]
+D chi uWH D (pro) T credi che T v sappia D qualcosa di D visita
+
+# 107. chi pro credi che Gianni abbia avvertito
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.avvertito [.D:3 D Gianni] [.avvertito avvertito [.D:1 D chi]]]]]]]]]]]]
+D chi uWH D (pro) T credi che D Gianni abbia avvertito
+
+# 108. chi pro credi che abbia avvertito Gianni
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:1 D chi] [.abbia abbia [.avvertito [.D:1 D chi] [.avvertito avvertito [.D D Gianni]]]]]]]]]]]]
+D chi uWH D (pro) T credi che abbia avvertito D Gianni
+
+# 109. chi pro credi che abbia avvertito Gianni prima della visita
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:1 D chi] [.abbia abbia [.avvertito [.D:1 D chi] [.avvertito avvertito [.D D [.Gianni Gianni <.prima prima [.di di [.D D visita]]>]]]]]]]]]]]]]
+D chi uWH D (pro) T credi che abbia avvertito D Gianni prima di D visita
+
+# 110. poika joka nukkui heräsi
+[.T <.D:1 D [.poika poika <.T <.D:2 D joka> [.T T [.nukku <.D:2 D joka> nukku]]>]> [.T T [.heräsi <.D:1 D [.poika poika <.T <.D:2 D joka> [.T T [.nukku <.D:2 D joka> nukku]]>]> heräsi]]]
+D poika D joka T nukku T heräsi
+
+# 111. la citta che.rel dorme dorme
+[.T [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]] [.T T [.dorme [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]] dorme]]]
+la citta D che T dorme T dorme
+
+# 112. the city that.rel sleeps
+[.the the [.city city <.T [.D:1 D that] [.T T [.sleep [.D:1 D that] sleep]]>]]
+the city D that T sleep
+
+# 113. Pekka keksi teorian joka kumoutui
+[.T <.D:1 D Pekka> [.T T [.v <.D:1 D Pekka> [.v v [.keksi keksi [.D D [.teoria teoria <.T <.D:2 D joka> [.T T [.kumoutui <.D:2 D joka> kumoutui]]>]]]]]]]
+D Pekka T v keksi D teoria D joka T kumoutui
+
+# 114. John likes the city that.rel sleeps
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.the the [.city city <.T [.D:2 D that] [.T T [.sleep [.D:2 D that] sleep]]>]]]]]]]
+D John- T v like the city D that T sleep
+
+# 115. Gianni adora la citta che.rel dorme
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]]]]]]]
+D Gianni T v adora la citta D che T dorme
+
+# 116. talo jonka Pekka löysi
+[.D D [.talo talo <.uR [.D:1 D jonka] [.uR uR [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.löytä- [.D:1 D jonka] löytä-]]]]]]>]]
+D talo D jonka uR D Pekka T v löytä-
+
+# 117. the city that.rel John likes
+[.the the [.city city <.uR [.D:1 D that] [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like [.D:1 D that] like]]]]]]>]]
+the city D that uR D John- T v like
+
+# 118. la citta che.rel Gianni adora
+[.la la [.citta citta <.uR [.D:1 D che] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.adora [.D:1 D che] adora]]]]]]>]]
+la citta D che uR D Gianni T v adora
+
+# 119. Merja löysi talon jonka Pekka löysi
+[.T <.D:1 D Merja-> [.T T [.v <.D:1 D Merja-> [.v v [.löytä- löytä- [.D D [.talo talo <.uR [.D:2 D jonka] [.uR uR [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.löytä- [.D:2 D jonka] löytä-]]]]]]>]]]]]]]
+D Merja- T v löytä- D talo D jonka uR D Pekka T v löytä-
+
+# 120. John likes the city that.rel Mary likes
+[.T [.D:1 D John-] [.T T [.v [.D:1 D John-] [.v v [.like like [.the the [.city city <.uR [.D:2 D that] [.uR uR [.T [.D:3 D Mary-] [.T T [.v [.D:3 D Mary-] [.v v [.like [.D:2 D that] like]]]]]]>]]]]]]]
+D John- T v like the city D that uR D Mary- T v like
+
+# 121. Gianni adora la citta che.rel adora Luisa
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.adora adora [.D D Luisa]]]]]>]]]]]]]
+D Gianni T v adora la citta D che T v adora D Luisa
+
+# 122. talo jonka löysi Pekka
+[.D D [.talo talo <.T [.D:1 D jonka] [.T T [.v <.D:2 D Pekka> [.v v [.löytä- [.D:1 D jonka] [.löytä- löytä- <.D:2 D Pekka>]]]]]>]]
+D talo D jonka T D Pekka v löytä-
+
+# 123. Gianni adora la citta che.rel Luisa adora
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.uR [.D:2 D che] [.uR uR [.T [.D:3 D Luisa] [.T T [.v [.D:3 D Luisa] [.v v [.adora [.D:2 D che] adora]]]]]]>]]]]]]]
+D Gianni T v adora la citta D che uR D Luisa T v adora
+
+# 124. Merja löysi talon jonka löysi Pekka
+[.T <.D:1 D Merja-> [.T T [.v <.D:1 D Merja-> [.v v [.löytä- löytä- [.D D [.talo talo <.T [.D:2 D jonka] [.T T [.v <.D:3 D Pekka> [.v v [.löytä- [.D:2 D jonka] [.löytä- löytä- <.D:3 D Pekka>]]]]]>]]]]]]]
+D Merja- T v löytä- D talo D jonka T D Pekka v löytä-
+
+# 125. Luisa adora la citta che.rel adora Gianni
+[.T [.D:1 D Luisa] [.T T [.v [.D:1 D Luisa] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.adora adora [.D D Gianni]]]]]>]]]]]]]
+D Luisa T v adora la citta D che T v adora D Gianni
+
+# 126. mies jolle Pekka antoi kirjan
+[.D D [.mies mies <.uR [.P:1 P [.D D jolle]] [.uR uR [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.antaa [.P:1 P [.D D jolle]] [.antaa antaa [.D D kirja]]]]]]]]>]]
+D mies P D jolle uR D Pekka T v antaa D kirja
+
+# 127. the person to whom.rel John gave the book
+[.the [.the the person] <.uR [.to:1 to [.D D who]] [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave [.to:1 to [.D D who]] [.gave gave [.the the book]]]]]]]]>]
+the person to D who uR D John- T v gave the book
+
+# 128. the person who.rel gave the book to Mary
+[.the the [.person person <.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]]
+the person D who T v gave the book to D Mary-
+
+# 129. la citta che.rel dato il libro a Luisa
+[.la la [.citta citta <.T [.D:1 D che] [.T T [.v [.D:1 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]]
+la citta D che T v dato il libro a D Luisa
+
+# 130. Merja ihailee henkilöä jolle Pekka antoi kirjan
+[.T <.D:1 D Merja-> [.T T [.v <.D:1 D Merja-> [.v v [.ihailee ihailee [.D D [.henkilö henkilö <.uR [.P:2 P [.D D jolle]] [.uR uR [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v v [.antaa [.P:2 P [.D D jolle]] [.antaa antaa [.D D kirja]]]]]]]]>]]]]]]]
+D Merja- T v ihailee D henkilö P D jolle uR D Pekka T v antaa D kirja
+
+# 131. the person to whom.rel John gave the book sleeps
+[.T [.the:1 [.the the person] <.uR [.to:2 to [.D D who]] [.uR uR [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]>] [.T T [.sleep [.the:1 [.the the person] <.uR [.to:2 to [.D D who]] [.uR uR [.T [.D:3 D John-] [.T T [.v [.D:3 D John-] [.v v [.gave [.to:2 to [.D D who]] [.gave gave [.the the book]]]]]]]]>] sleep]]]
+the person to D who uR D John- T v gave the book T sleep
+
+# 132. the person who.rel gave the book to Mary sleeps
+[.T [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]] [.T T [.sleep [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]]]]>]] sleep]]]
+the person D who T v gave the book to D Mary- T sleep
+
+# 133. la citta che.rel dato il libro a Luisa dorme
+[.T [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]] [.T T [.dorme [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]] dorme]]]
+la citta D che T v dato il libro a D Luisa T dorme
+
+# 134. mies jolle kirjan antoi Pekka
+[.D D [.mies mies <.uR [.P:1 P [.D D jolle]] [.uR uR [.T <.D:2 D kirja> [.T T [.v <.D:3 D Pekka> [.v v [.antaa <.D:2 D kirja> [.antaa [.antaa antaa [.P:1 P [.D D jolle]]] <.D:3 D Pekka>]]]]]]]>]]
+D mies P D jolle uR D kirja T D Pekka v antaa
+
+# 135. the person who.rel gave Mary the book
+[.the the [.person person <.T [.D:1 D who] [.T T [.v [.D:1 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]>]]
+the person D who T v gave D Mary- the book
+
+# 136. henkilö jolle kirjan antoi Pekka kasvaa
+[.T <.D:1 D [.henkilö henkilö <.uR [.P:2 P [.D D jolle]] [.uR uR [.T <.D:3 D kirja> [.T T [.v <.D:4 D Pekka> [.v v [.antaa <.D:3 D kirja> [.antaa [.antaa antaa [.P:2 P [.D D jolle]]] <.D:4 D Pekka>]]]]]]]>]> [.T T [.kasva- <.D:1 D [.henkilö henkilö <.uR [.P:2 P [.D D jolle]] [.uR uR [.T <.D:3 D kirja> [.T T [.v <.D:4 D Pekka> [.v v [.antaa <.D:3 D kirja> [.antaa [.antaa antaa [.P:2 P [.D D jolle]]] <.D:4 D Pekka>]]]]]]]>]> kasva-]]]
+D henkilö P D jolle uR D kirja T D Pekka v antaa T kasva-
+
+# 137. the person who.rel gave Mary the book sleeps
+[.T [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]>]] [.T T [.sleep [.the:1 the [.person person <.T [.D:2 D who] [.T T [.v [.D:2 D who] [.v v [.gave gave [.D [.D D Mary-] <.the the book>]]]]]>]] sleep]]]
+the person D who T v gave D Mary- the book T sleep
+
+# 138. Merjan.foc Pekka löysi
+[.uFOC [.D:1 D Merja-] [.uFOC uFOC [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.löytä- [.D:1 D Merja-] löytä-]]]]]]]
+D Merja- uFOC D Pekka T v löytä-
+
+# 139. virtaamalla.foc Seine saavuttaa meren
+[.uFOC <.malla:1 malla virtaa> [.uFOC uFOC [.T <.D:2 D Seine> [.T T [.v <.D:2 D Seine> [.v v [.saavuttaa- saavuttaa- [.D [.D D meri] <.malla:1 malla virtaa>]]]]]]]]
+malla virtaa uFOC D Seine T v saavuttaa- D meri
+
+# 140. mitä.D kaupunkia kohti Seine virtaa
+[.uWH [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]] [.uWH uWH [.T <.D:3 D Seine> [.T T [.virtaa <.D:3 D Seine> [.virtaa virtaa [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]]]]]]]]
+mitä kaupunkia kohti uWH D Seine T virtaa
+
+# 141. mitä.D kaupunkia kohti virtaamalla teoria kumoutui
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D teoria> [.T T [.kumoutui <.D:4 D teoria> [.kumoutui kumoutui <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D teoria T kumoutui
+
+# 142. towards which.D city does Seine run
+[.does [.towards:1 towards [.which which city]] [.does does [.run [.D D Seine] [.run run [.towards:1 towards [.which which city]]]]]]
+towards which city does D Seine run
+
+# 143. 's who car broke
+[.T [.'s:1 's [.car [.D D who] car]] [.T T [.broke [.'s:1 's [.car [.D D who] car]] broke]]]
+'s D who car T broke
+
+# 144. cosa attraversa la Senna scorrendo
+[.T [.D:1 D cosa] [.T T [.v [.D:1 D cosa] [.v v [.attraversa attraversa [.la la [.Senna Senna <.endo endo scorr->]]]]]]]
+D cosa T v attraversa la Senna endo scorr-
+
+# 145. Pekka kysyi mitä.D kaupunkia kohti Seine virtaa
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.uWH uWH [.T <.D:4 D Seine> [.T T [.virtaa <.D:4 D Seine> [.virtaa virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti uWH D Seine T virtaa
+
+# 146. Pekka kysyi mitä.D kaupunkia kohti virtaamalla Seine kasvaa
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.uWH uWH [.T <.D:4 D Seine> [.T T [.kasva- <.D:4 D Seine> [.kasva- kasva- [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D Seine T kasva-
+
+# 147. John wonders towards which.D city does Seine run
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.does [.towards:2 towards [.which which city]] [.does does [.run [.D D Seine] [.run run [.towards:2 towards [.which which city]]]]]]]]]]
+D John- T wonder towards which city does D Seine run
+
+# 148. Gianni si_chiede cosa attraversa la Senna scorrendo
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.D:2 D cosa] [.T T [.v [.D:2 D cosa] [.v v [.attraversa attraversa [.la la [.Senna Senna <.endo endo scorr->]]]]]]]]]]]
+D Gianni T si_chiede D cosa T v attraversa la Senna endo scorr-
+
+# 149. mitä.D kaupunkia kohti virtaamalla Seine saavuttaa meren
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D Seine> [.T T [.v <.D:4 D Seine> [.v v [.saavuttaa- [.saavuttaa- saavuttaa- [.D D meri]] <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D Seine T v saavuttaa- D meri
+
+# 150. minne virtaamalla Seine saavuttaa meren
+[.uWH <.malla:1 [.D:2 D minne] [.malla malla [.virtaa [.D:2 D minne] virtaa]]> [.uWH uWH [.T <.D:3 D Seine> [.T T [.v <.D:3 D Seine> [.v v [.saavuttaa- [.saavuttaa- saavuttaa- [.D D meri]] <.malla:1 [.D:2 D minne] [.malla malla [.virtaa [.D:2 D minne] virtaa]]>]]]]]]]
+D minne malla virtaa uWH D Seine T v saavuttaa- D meri
+
+# 151. by.adv flowing towards which.D city does.C Seine reach the ocean
+[.does <.by:1 by [.flowing flowing [.towards towards [.which which city]]]> [.does does [.T <.D:2 D Seine> [.T T [.v <.D:2 D Seine> [.v v [.reach reach [.the [.the the ocean] <.by:1 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]
+by flowing towards which city does D Seine T v reach the ocean
+
+# 152. attraverso quale citta passa la Senna
+[.T [.attraverso:1 attraverso [.quale quale citta]] [.T T [.passa [.attraverso:1 attraverso [.quale quale citta]] [.passa passa [.la la Senna]]]]]
+attraverso quale citta T passa la Senna
+
+# 153. scorrendo attraverso quale citta la Senna passa fino a_inf raggiungere l oceano
+[.uWH <.endo:1 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]> [.uWH uWH [.T [.la:2 la Senna] [.T T [.passa [.la:2 la Senna] [.passa passa [.fino [.fino fino [.a a [.-are -are [.v/pro v/pro [.raggiunge raggiunge [.l l oceano]]]]]] <.endo:1 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]>]]]]]]]
+endo scorr- attraverso quale citta uWH la Senna T passa fino a -are v/pro raggiunge l oceano
+
+# 154. attraversando quale citta la Senna cresce fino a sfociare nell oceano
+[.uWH <.ando:1 ando [.attraversa attraversa [.quale quale citta]]> [.uWH uWH [.T [.la:2 la Senna] [.T T [.v [.la:2 la Senna] [.v v [.cresce cresce [.fino [.fino fino [.a a [.-are -are [.v/pro v/pro [.sfocia- sfocia- [.in in [.il il oceano]]]]]]] <.ando:1 ando [.attraversa attraversa [.quale quale citta]]>]]]]]]]]
+ando attraversa quale citta uWH la Senna T v cresce fino a -are v/pro sfocia- in il oceano
+
+# 155. Pekka kysyi mitä.D kaupunkia kohti virtaamalla Seine saavuttaa meren
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.uWH uWH [.T <.D:4 D Seine> [.T T [.v <.D:4 D Seine> [.v v [.saavuttaa- [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.saavuttaa- saavuttaa- [.D D meri]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D Seine T v saavuttaa- D meri
+
+# 156. John wonders by.adv flowing towards which.D city does.C Seine reach the ocean
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.does <.by:2 by [.flowing flowing [.towards towards [.which which city]]]> [.does does [.T <.D:3 D Seine> [.T T [.v <.D:3 D Seine> [.v [.v v [.reach reach [.the the ocean]]] <.by:2 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]]]
+D John- T wonder by flowing towards which city does D Seine T v reach the ocean
+
+# 157. Gianni si_chiede attraverso quale citta passa la Senna
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.attraverso:2 attraverso [.quale quale citta]] [.T T [.passa [.attraverso:2 attraverso [.quale quale citta]] [.passa passa [.la la Senna]]]]]]]]]
+D Gianni T si_chiede attraverso quale citta T passa la Senna
+
+# 158. Gianni si_chiede scorrendo attraverso quale citta la Senna passa fino a raggiungere l oceano
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.endo:2 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]> [.uWH uWH [.T [.la:3 la Senna] [.T T [.passa [.passa [.la:3 la Senna] [.passa passa [.fino fino [.a a [.-are -are [.v/pro v/pro [.raggiunge raggiunge [.l l oceano]]]]]]]] <.endo:2 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]>]]]]]]]]]
+D Gianni T si_chiede endo scorr- attraverso quale citta uWH la Senna T passa fino a -are v/pro raggiunge l oceano
+
+# 159. Gianni si_chiede attraversando quale citta la Senna cresce fino a sfociare nell oceano
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.ando:2 ando [.attraversa attraversa [.quale quale citta]]> [.uWH uWH [.T [.la:3 la Senna] [.T T [.v [.v [.la:3 la Senna] [.v v [.cresce cresce [.fino fino [.a a [.-are -are [.v/pro v/pro [.sfocia- sfocia- [.in in [.il il oceano]]]]]]]]]] <.ando:2 ando [.attraversa attraversa [.quale quale citta]]>]]]]]]]]]
+D Gianni T si_chiede ando attraversa quale citta uWH la Senna T v cresce fino a -are v/pro sfocia- in il oceano
+
+# 160. mitä.D kaupunkia kohti virtaamalla meren saavuttaa Seine
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D meri> [.T T [.v <.D:5 D Seine> [.v v [.saavuttaa- <.D:4 D meri> [.saavuttaa- [.saavuttaa- saavuttaa- <.D:5 D Seine>] <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 161. minne virtaamalla meren saavuttaa Seine
+[.uWH <.malla:1 [.D:2 D minne] [.malla malla [.virtaa [.D:2 D minne] virtaa]]> [.uWH uWH [.T <.D:3 D meri> [.T T [.v <.D:4 D Seine> [.v v [.saavuttaa- <.D:3 D meri> [.saavuttaa- [.saavuttaa- saavuttaa- <.D:4 D Seine>] <.malla:1 [.D:2 D minne] [.malla malla [.virtaa [.D:2 D minne] virtaa]]>]]]]]]]]
+D minne malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 162. dove scorrendo verso il mare arriva la Senna
+[.uWH [.P:1 P [.D D dove]] [.uWH uWH [.T <.endo:2 endo [.scorr- scorr- [.verso verso [.il il mare]]]> [.T T [.arriva [.P:1 P [.D D dove]] [.arriva arriva [.la [.la la Senna] <.endo:2 endo [.scorr- scorr- [.verso verso [.il il mare]]]>]]]]]]]
+P D dove uWH endo scorr- verso il mare T arriva la Senna
+
+# 163. Pekka kysyi mitä.D kaupunkia kohti virtaamalla meren saavuttaa Seine
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:5 D meri> [.T T [.v <.D:6 D Seine> [.v [.v v [.saavuttaa- <.D:5 D meri> [.saavuttaa- saavuttaa- <.D:6 D Seine>]]] <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]>]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 164. Pekka kysyi minne virtaamalla meren saavuttaa Seine
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH <.malla:2 [.D:3 D minne] [.malla malla [.virtaa [.D:3 D minne] virtaa]]> [.uWH uWH [.T <.D:4 D meri> [.T T [.v <.D:5 D Seine> [.v [.v v [.saavuttaa- <.D:4 D meri> [.saavuttaa- saavuttaa- <.D:5 D Seine>]]] <.malla:2 [.D:3 D minne] [.malla malla [.virtaa [.D:3 D minne] virtaa]]>]]]]]]]]]]
+D Pekka T kysyi D minne malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 165. Gianni si_chiede dove scorrendo verso il mare arriva la Senna
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH [.P:2 P [.D D dove]] [.uWH uWH [.T <.endo:3 endo [.scorr- scorr- [.verso verso [.il il mare]]]> [.T T [.arriva [.arriva [.P:2 P [.D D dove]] [.arriva arriva [.la la Senna]]] <.endo:3 endo [.scorr- scorr- [.verso verso [.il il mare]]]>]]]]]]]]]
+D Gianni T si_chiede P D dove uWH endo scorr- verso il mare T arriva la Senna
+
+# 166. mitä.D kaupunkia kohti virtaamalla Pekka antoi kirjan Merjalle
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D Pekka> [.T T [.v <.D:4 D Pekka> [.v v [.antaa [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]] <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D Pekka T v antaa D kirja P(lle) D Merja-
+
+# 167. by.adv flowing towards which.D city did.C Pekka gave the book to Mary
+[.did <.by:1 by [.flowing flowing [.towards towards [.which which city]]]> [.did did [.T <.D:2 D Pekka> [.T T [.v <.D:2 D Pekka> [.v v [.gave gave [.the [.the [.the the book] <.to to [.D D Mary-]>] <.by:1 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]
+by flowing towards which city did D Pekka T v gave the book to D Mary-
+
+# 168. correndo verso quale citta Gianni dato il libro a Luisa
+[.uWH <.endo:1 endo [.corre corre [.verso verso [.quale quale citta]]]> [.uWH uWH [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato dato [.il [.il [.il il libro] <.a a [.D D Luisa]>] <.endo:1 endo [.corre corre [.verso verso [.quale quale citta]]]>]]]]]]]]
+endo corre verso quale citta uWH D Gianni T v dato il libro a D Luisa
+
+# 169. Pekka kysyi mitä.D kaupunkia kohti virtaamalla Jari antoi kirjan Merjalle
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.uWH uWH [.T <.D:4 D Jari> [.T T [.v <.D:4 D Jari> [.v v [.antaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.antaa antaa [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D Jari T v antaa D kirja P(lle) D Merja-
+
+# 170. John wonders by.adv flowing towards which.D city did.C Pekka gave the book to Mary
+[.T [.D:1 D John-] [.T T [.wonder [.D:1 D John-] [.wonder wonder [.did <.by:2 by [.flowing flowing [.towards towards [.which which city]]]> [.did did [.T <.D:3 D Pekka> [.T T [.v <.D:3 D Pekka> [.v [.v v [.gave gave [.the [.the the book] <.to to [.D D Mary-]>]]] <.by:2 by [.flowing flowing [.towards towards [.which which city]]]>]]]]]]]]]]
+D John- T wonder by flowing towards which city did D Pekka T v gave the book to D Mary-
+
+# 171. Gianni si_chiede correndo verso quale citta Gianni dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.endo:2 endo [.corre corre [.verso verso [.quale quale citta]]]> [.uWH uWH [.T [.D:3 D Gianni] [.T T [.v [.v [.D:3 D Gianni] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]] <.endo:2 endo [.corre corre [.verso verso [.quale quale citta]]]>]]]]]]]]]
+D Gianni T si_chiede endo corre verso quale citta uWH D Gianni T v dato il libro a D Luisa
+
+# 172. mitä.D kaupunkia kohti virtaamalla kirjan antoi Pekka Merjalle
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D kirja> [.T T [.v <.D:5 D Pekka> [.v v [.antaa <.D:4 D kirja> [.antaa [.antaa antaa [.P(lle) <.D:5 D Pekka> [.P(lle) P(lle) [.D D Merja-]]]] <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D kirja T D Pekka v antaa P(lle) D Merja-
+
+# 173. mitä.D kaupunkia kohti virtaamalla Merjalle antoi kirjan Pekka
+[.uWH [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]] [.uWH uWH [.T <.malla:3 malla [.virtaa virtaa [.P(lle) P(lle) [.D D Merja-]]]> [.T T [.v <.D:4 D Pekka> [.v v [.antaa [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]] [.antaa antaa [.D [.D [.D D kirja] <.D:4 D Pekka>] <.malla:3 malla [.virtaa virtaa [.P(lle) P(lle) [.D D Merja-]]]>]]]]]]]]]
+mitä kaupunkia kohti uWH malla virtaa P(lle) D Merja- T D Pekka v antaa D kirja
+
+# 174. mitä.D kaupunkia kohti virtaamalla Pekka antoi Merjalle kirjan
+[.uWH <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:4 D Pekka> [.T T [.v <.D:4 D Pekka> [.v v [.antaa [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]] <.malla:1 [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä:3 mitä kaupunkia]]] virtaa]]>]]]]]]]
+mitä kaupunkia kohti malla virtaa uWH D Pekka T v antaa P(lle) D Merja- D kirja
+
+# 175. Pekka kysyi mitä.D kaupunkia kohti virtaamalla meren saavuttaa Seine
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]> [.uWH uWH [.T <.D:5 D meri> [.T T [.v <.D:6 D Seine> [.v [.v v [.saavuttaa- <.D:5 D meri> [.saavuttaa- saavuttaa- <.D:6 D Seine>]]] <.malla:2 [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] [.malla malla [.virtaa [.kohti:3 [.mitä:4 mitä kaupunkia] [.kohti kohti [.mitä:4 mitä kaupunkia]]] virtaa]]>]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D meri T D Seine v saavuttaa-
+
+# 176. Pekka kysyi mitä.D kaupunkia kohti virtaamalla kirjan antoi Jari Merjalle
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:2 mitä kaupunkia] <.malla malla virtaa>]]] [.uWH uWH [.T <.D:3 D kirja> [.T T [.v <.D:4 D Jari> [.v v [.antaa <.D:3 D kirja> [.antaa antaa [.P(lle) <.D:4 D Jari> [.P(lle) P(lle) [.D D Merja-]]]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D kirja T D Jari v antaa P(lle) D Merja-
+
+# 177. Pekka kysyi mitä.D kaupunkia kohti virtaamalla Merjalle antoi kirjan Jari
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.T [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla [.virtaa virtaa [.P(lle) P(lle) [.D D Merja-]]]>]]] [.T T [.v <.D:4 D Jari> [.v v [.antaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla [.virtaa virtaa [.P(lle) P(lle) [.D D Merja-]]]>]]] [.antaa antaa [.D [.D D kirja] <.D:4 D Jari>]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa P(lle) D Merja- T D Jari v antaa D kirja
+
+# 178. Pekka kysyi mitä.D kaupunkia kohti virtaamalla Jari antoi Merjalle kirjan
+[.T <.D:1 D Pekka> [.T T [.kysyi <.D:1 D Pekka> [.kysyi kysyi [.uWH [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.uWH uWH [.T <.D:4 D Jari> [.T T [.v <.D:4 D Jari> [.v v [.antaa [.kohti:2 [.mitä:3 mitä kaupunkia] [.kohti kohti [.mitä [.mitä:3 mitä kaupunkia] <.malla malla virtaa>]]] [.antaa antaa [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]]]]]]]]]]]]
+D Pekka T kysyi mitä kaupunkia kohti malla virtaa uWH D Jari T v antaa P(lle) D Merja- D kirja
+
+# 179. quale libro tu credi che Gianni abbia letto
+[.uWH [.quale:1 quale libro] [.uWH uWH [.T [.D:2 D tu] [.T T [.credi [.D:2 D tu] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.v [.D:3 D Gianni] [.v v [.letto [.quale:1 quale libro] letto]]]]]]]]]]]]
+quale libro uWH D tu T credi che D Gianni abbia v letto
+
+# 180. di quale libro tu credi che Gianni abbia letto la recensione
+[.uWH [.di:1 di [.quale quale libro]] [.uWH uWH [.T [.D:2 D tu] [.T T [.credi [.D:2 D tu] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.v [.D:3 D Gianni] [.v v [.letto [.di:1 di [.quale quale libro]] [.letto letto [.la la recensione]]]]]]]]]]]]]]
+di quale libro uWH D tu T credi che D Gianni abbia v letto la recensione
+
+# 181. mitä.D kaupunkia kohti Pekka sanoi että.Q Seine virtaa
+[.uWH [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.sano- <.D:3 D Pekka> [.sano- sano- [.että(wh) että(wh) [.T <.D:4 D Seine> [.T T [.virtaa <.D:4 D Seine> [.virtaa virtaa [.kohti:1 [.mitä:2 mitä kaupunkia] [.kohti kohti [.mitä:2 mitä kaupunkia]]]]]]]]]]]]]]
+mitä kaupunkia kohti uWH D Pekka T sano- että(wh) D Seine T virtaa
+
+# 182. mitä.D kaupunkia Pekka sanoi että Merja asui lähellä
+[.uWH [.mitä:1 mitä kaupunkia] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.sano- <.D:2 D Pekka> [.sano- sano- [.että että [.T <.D:3 D Merja-> [.T T [.asui <.D:3 D Merja-> [.asui asui [.lähellä [.mitä:1 mitä kaupunkia] [.lähellä lähellä [.mitä:1 mitä kaupunkia]]]]]]]]]]]]]]
+mitä kaupunkia uWH D Pekka T sano- että D Merja- T asui lähellä
+
+# 183. towards which.D city did.C John say that the river runs
+[.did [.towards:1 towards [.which which city]] [.did did [.T [.D:2 D John-] [.T T [.say [.D:2 D John-] [.say say [.that that [.T [.the:3 the river] [.T T [.run [.the:3 the river] [.run run [.towards:1 towards [.which which city]]]]]]]]]]]]]
+towards which city did D John- T say that the river T run
+
+# 184. mitä.D kaupunkia lähellä Pekka asui
+[.uWH [.lähellä:1 [.mitä:2 mitä kaupunkia] [.lähellä lähellä [.mitä:2 mitä kaupunkia]]] [.uWH uWH [.T <.D:3 D Pekka> [.T T [.asui <.D:3 D Pekka> [.asui asui [.lähellä:1 [.mitä:2 mitä kaupunkia] [.lähellä lähellä [.mitä:2 mitä kaupunkia]]]]]]]]]
+mitä kaupunkia lähellä uWH D Pekka T asui
+
+# 185. mitä.D kaupunkia Pekka asui lähellä
+[.uWH [.mitä:1 mitä kaupunkia] [.uWH uWH [.T <.D:2 D Pekka> [.T T [.asui <.D:2 D Pekka> [.asui asui [.lähellä [.mitä:1 mitä kaupunkia] [.lähellä lähellä [.mitä:1 mitä kaupunkia]]]]]]]]]
+mitä kaupunkia uWH D Pekka T asui lähellä
+
+# 186. who does John live with
+[.does [.D:1 D who] [.does does [.live [.D D John-] [.live live [.with with [.D:1 D who]]]]]]
+D who does D John- live with
+
+# 187. who did.C John like a.D picture of
+[.did [.D:1 D who] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like [.like like [.a a picture]] <.of of [.D:1 D who]>]]]]]]]
+D who did D John- T v like a picture of
+
+# 188. who did.C John like a.D picture of at the party
+[.did [.D:1 D who] [.did did [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like [.D:1 D who] [.like like [.a [.a a picture] <.of of [.at at [.the the party]]>]]]]]]]]]
+D who did D John- T v like a picture of at the party
+
+# 189. se kaupunki jota lähellä Pekka asui tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.lähellä:2 [.D:3 D jota] [.lähellä lähellä [.D:3 D jota]]> [.uR uR [.T <.D:4 D Pekka> [.T T [.asui <.D:4 D Pekka> [.asui asui <.lähellä:2 [.D:3 D jota] [.lähellä lähellä [.D:3 D jota]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.lähellä:2 [.D:3 D jota] [.lähellä lähellä [.D:3 D jota]]> [.uR uR [.T <.D:4 D Pekka> [.T T [.asui <.D:4 D Pekka> [.asui asui <.lähellä:2 [.D:3 D jota] [.lähellä lähellä [.D:3 D jota]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota lähellä uR D Pekka T asui T tuhoutui
+
+# 190. se kaupunki jota kohti Seine virtaa tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]> [.uR uR [.T <.D:4 D Seine> [.T T [.virtaa <.D:4 D Seine> [.virtaa virtaa <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]> [.uR uR [.T <.D:4 D Seine> [.T T [.virtaa <.D:4 D Seine> [.virtaa virtaa <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti uR D Seine T virtaa T tuhoutui
+
+# 191. the city towards which.rel Seine runs
+[.the [.the the city] <.uR [.towards:1 towards [.D D which]] [.uR uR [.T <.D:2 D Seine> [.T T [.run <.D:2 D Seine> [.run run [.towards:1 towards [.D D which]]]]]]]>]
+the city towards D which uR D Seine T run
+
+# 192. la citta attraverso che.rel la Senna scorre
+[.la [.la la citta] <.uR [.attraverso:1 attraverso [.D D che]] [.uR uR [.T [.la:2 la Senna] [.T T [.scorre [.la:2 la Senna] [.scorre scorre [.attraverso:1 attraverso [.D D che]]]]]]]>]
+la citta attraverso D che uR la Senna T scorre
+
+# 193. se kaupunki jota kohti virtaamalla Seine saavuttaa meren tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Seine> [.T T [.v <.D:5 D Seine> [.v [.v v [.saavuttaa- saavuttaa- [.D D meri]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Seine> [.T T [.v <.D:5 D Seine> [.v [.v v [.saavuttaa- saavuttaa- [.D D meri]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti malla virtaa uR D Seine T v saavuttaa- D meri T tuhoutui
+
+# 194. the city by.adv flowing towards which.rel John likes Mary
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.like like [.D [.D D Mary-] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v like D Mary-
+
+# 195. la foto attraverso che.rel Gianni dato Luisa
+[.la [.la la foto] <.uR [.attraverso:1 attraverso [.D D che]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D che]] [.dato dato [.D D Luisa]]]]]]]]>]
+la foto attraverso D che uR D Gianni T v dato D Luisa
+
+# 196. se kaupunki jota kohti virtaamalla meren saavuttaa Seine tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D meri> [.T T [.v <.D:6 D Seine> [.v [.v v [.saavuttaa- <.D:5 D meri> [.saavuttaa- saavuttaa- <.D:6 D Seine>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D meri> [.T T [.v <.D:6 D Seine> [.v [.v v [.saavuttaa- <.D:5 D meri> [.saavuttaa- saavuttaa- <.D:6 D Seine>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.virtaa virtaa [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti malla virtaa uR D meri T D Seine v saavuttaa- T tuhoutui
+
+# 197. se kaupunki jota kohti matkustamalla Pekka palautti kirjan Merjalle tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Pekka> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Pekka> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.D [.D D kirja] <.P(lle) P(lle) [.D D Merja-]>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti malla matkusta uR D Pekka T v palautta D kirja P(lle) D Merja- T tuhoutui
+
+# 198. the city by.adv flowing towards which.rel John gave the book to Mary
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave gave [.the [.the [.the the book] <.to to [.D D Mary-]>] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v gave the book to D Mary-
+
+# 199. le mezzo attraverso cui Gianni da_V il libro a Luisa
+[.le [.le le mezzo] <.uR [.attraverso:1 attraverso [.D D cui]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D cui]] [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]]]>]
+le mezzo attraverso D cui uR D Gianni T v dato il libro a D Luisa
+
+# 200. se kaupunki jota kohti matkustamalla Merjalle palautti Pekka kirjan tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]> [.uR uR [.T <.malla:4 malla [.matkusta matkusta [.P(lle) P(lle) [.D D Merja-]]]> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.D [.D <.D:5 D Pekka> <.D D kirja>] <.malla:4 malla [.matkusta matkusta [.P(lle) P(lle) [.D D Merja-]]]>]]] <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]> [.uR uR [.T <.malla:4 malla [.matkusta matkusta [.P(lle) P(lle) [.D D Merja-]]]> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.D [.D <.D:5 D Pekka> <.D D kirja>] <.malla:4 malla [.matkusta matkusta [.P(lle) P(lle) [.D D Merja-]]]>]]] <.kohti:2 [.D:3 D jota] [.kohti kohti [.D:3 D jota]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti uR malla matkusta P(lle) D Merja- T D Pekka v palautta D kirja T tuhoutui
+
+# 201. se kaupunki jota kohti matkustamalla Pekka palautti Merjalle kirjan tuhoutui
+[.T <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Pekka> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> [.T T [.tuhoutui <.se:1 se [.kaupunki kaupunki <.uR <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]> [.uR uR [.T <.D:5 D Pekka> [.T T [.v <.D:5 D Pekka> [.v [.v v [.palautta palautta [.P(lle) [.P(lle) P(lle) [.D D Merja-]] <.D D kirja>]]] <.malla:2 [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]] [.malla malla [.matkusta matkusta [.kohti:3 [.D:4 D jota] [.kohti kohti [.D:4 D jota]]]]]>]]]]]>]> tuhoutui]]]
+se kaupunki D jota kohti malla matkusta uR D Pekka T v palautta P(lle) D Merja- D kirja T tuhoutui
+
+# 202. the city by.adv flowing towards which.rel John gave Mary the book
+[.the [.the the city] <.uR <.by:1 by [.flowing flowing [.towards towards [.D D which]]]> [.uR uR [.T [.D:2 D John-] [.T T [.v [.D:2 D John-] [.v v [.gave gave [.D [.D [.D D Mary-] <.the the book>] <.by:1 by [.flowing flowing [.towards towards [.D D which]]]>]]]]]]]>]
+the city by flowing towards D which uR D John- T v gave D Mary- the book
+
+# 203. le mezzo attraverso cui Gianni da_V a Luisa il libro
+[.le [.le le mezzo] <.uR [.attraverso:1 attraverso [.D D cui]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D cui]] [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]]]>]
+le mezzo attraverso D cui uR D Gianni T v dato a D Luisa il libro

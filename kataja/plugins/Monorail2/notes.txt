@@ -1,0 +1,97 @@
+
+Mitäs minä olin tekemässä viimeksi?
+
+Oli suuria vaikeuksia saada tämäntapaisia lauseenosia toimimaan:
+
+the nice letter from the smart lady of the lake
+
+Näissä oli ongelmana että on monta kohtaa jossa lauseenosa voisi pysähtyä ja olla vain se:
+the nice ...
+the nice letter...
+the nice letter from the smart...
+the nice letter from the smart lady...
+
+Minun ahne parseri yrittää kääriä valmiin DP:n joka kohdassa kun se on mahdollista katsomatta eteenpäin.
+Voidakseen toimia se vaatisi että vaikka on jo kääritty kasaan DP 'the nice', niin kun siihen mergeää päälle 'letter',
+seuraa liikkeitä joiden jälkeen on DP 'the nice letter' ja DP 'the nice' on jäänyt jonnekin historian hämärään. Näitä
+korjaavia liikkeitä voi tehdä pienessä mittakaavassa, mutta kun on tuollainen pitempi ketju tarkennuksia, jää aina jotain
+tauhkaa joka häiritsee yrityksiä etsiä että mikä aiempi elementti nostetaan uuden rinnalle.
+
+Tauhkaa syntyy, koska tuollainen ahne DP:n luonti vaatii sen, että saman 'the' pitää pystyä liittymään 'nice' kanssa,
+ja sen jälkeen liittymään 'letter' kanssa -- se ei voi vielä ensimmäisessä liittymässä tietää että sieltä tulee
+parempikin vaihtoehto. Minä olen vältellyt sitä, että jo tehtyjä piirreyhteyksiä purettaisiin tai korvattaisiin, olen
+pyrkinyt siihen että niitä vain kasataan edellisen päälle.
+
+Ongelma tulee siinä että halutaan voida rakentaa joku PP kaikessa rauhassa ilman että se löytää osia edellisestä jo
+rakennetusta DP:stä, mutta toisaalta kun PP on valmis, halutaan että se ensimmäinen DP on rakenteen ylin elementti.
+Voidakseen olla ylin sen täytyisi ahneesti tunkea itseään ylimmäksi joka välissä PP:n rakentuessa jolloin se on
+mahdollista.
+
+Yritetään rakentaa tällaista:
+DP1 P DP2
+
+Yksi keino jota voisi kokeilla on että kun tulee DP1-P liitos, niin se sinetöi DP1:n niin että siitä näkyy vain sen
+pääelementti, D. Silloin ei ainakaan sen sisuksissa olevat N:t häiritsisi DP2:n rakentamista, mutta D-kokonaisuus olisi
+yhä liikuteltavissa.
+
+Kokeillaan, '(' olkoon etuliite negatiiviselle piirteelle, joka tyydyttyessään aiheuttaa sellaisen lukon että haku ei enää
+mene tätä konstituenttia pitemmälle.
+
+Joo-o, edellisin keinoin päästiin tilanteeseen jossa voidaan rakentaa DP1 P DP2, mutta DP2 päätyy hallitsemaan DP1:ä, eikä
+löydy siistiä tapaa miten DP1 nostetaan hallitsemaan DP2:a koska ei voi tietää onko DP2:n rakentaminen vielä kesken -- sitä
+pitää yrittää nostaa joka välissä. Molempia DP:tä johtaa 'the', joten niiden piirteetkin sotkeutuvat helposti toisiinsa.
+
+Yksi tapa olisi löyhentää piirteiden periytymistä: Halutaan pitää, että D johtaa DP:tä ja DP:llä on D:n piirteet, mutta
+ jos jokainen siihen liitetty NP antaisi DP2:lle piirteen jolla voisi nostaa DP1:n sen eteen.
+
+Piirteiden periytyminen ei-pää elementistä voidaan tehdä aika monella tavalla ja eri valinnoilla on suuret seuraukset,
+joten yritetään vähän katsoa vaihtoehtoja ennenkuin sitoudutaan koodissa mihinkään:
+
+1) Piirteet periytyvät pää-ja ei-pää-elementistä, mutta pää ensin. Seuraa hirveitä piirrekasoja, ellei niitä sulje pois
+laskennasta soveltaen '(' -ominaisuutta. (sitä pitää muokata niin, että suljetulla haaralla on vain sen päästä tulleet
+piirteet)
+2) Tietyn piirteen tarkistaminen aiheuttaa tietyn uuden piirteen antamisen syntyneelle elementille.
+3) Tietyn piirteen tarkistaminen aiheuttaa tiettyjen uusien piirteiden antamisen syntyneelle elementille. 2 ja 3 vievät
+piirteiden käsittelyä yhä mutkikkaammaksi ja ilmaisuvoimaisemmaksi ja laajentavat mahdollisia piirreyhdistelmiä mitä
+pitää käydä läpi kun oppii tietyn kielen syntaksia. Piirteillä voi alkaa ohjelmoida sääntöjä, ehkä liikaa.
+
+Aloitan kokeilemalla vaihtoehtoa 1.
+
+Paljon myöhemmin... Jos taas on DP1 P1 DP2 P2 DP3 niin sellainen pitäisi voida lukea [ DP1 P1 [ DP2 P2 DP3 ]], nyt päädyn
+lukemaan [[ DP1 P1 DP2 ] P2 DP3]. Esim. 'the nice letter from the smart lady of the lake', siinä 'the smart lady of the lake'
+pitäisi voida tunnistaa. Polku edetä tuosta olisi priorisoida nostoissa edellistä elementtiä, eli kun aletaan käsitellä P2:a,
+se kiinnittyisi DP2:een. Ongelma siinä on, että DP2 ei ole mitenkään viimeksi liitetty elementti, DP2:n N on viimeisin.
+Eli etsittävä ei olisi viimeisin elementti vaan soveliain tietynlainen.
+
+Mietin että välitavoite sen sijaan että etsisin piirteiden ja operaatioiden yhdistelmää jolla saisin tuon [ DP1 P1 [ DP2 P2 DP3]]
+oikein voisin yrittää osoittaa että tuollaisen rakenteen yleensä pystyy rakentamaan tällä minun menetelmällä jossa
+elementtejä otetaan siinä järjestyksessä kuin niiden pitää valmiissa rakenteessa olla, mutta uusi elementti mergetään aina
+senhetkisen rakenteen päälle (eli ei ole mitään erillistä muistia tai pinoa johon sopimattomia elementtejä laitettaisiin.)
+
+Kierrättämällä koodia aiemmasta yrityksestä tehdä samaa oli aika helppoa rakentaa systeemi joka ottaa LaTeX -tyylisiä
+hakasulkupuita sisään (vain binääripuita) ja tekee niistä version jossa puu rakennetaan uudestaan vasemmalta oikealle vain
+top-mergellä.
+
+Input oli (bracket_input.pdf) :
+[ the [ [ nice letter ] [ from [ the [ smart lady ] ] ] ] ]
+Output olisi (ei kannata esittää tässä muodossa!):
+[ the [ [ [ nice the ] [ letter [ nice the ] ] ] [ [ from [ [ nice the ] [ letter [ nice the ] ] ] ] [ [ the [ from [ [ nice the ] [ letter [ nice the ] ] ] ] ] [ [ smart [ the [ from [ [ nice the ] [ letter [ nice the ] ] ] ] ] ] [ lady [ smart [ the [ from [ [ nice the ] [ letter [ nice the ] ] ] ] ] ] ] ] ] ] ] ]
+bracket_output.pdf näyttää miltä se oikeasti näyttää, koska hakasulkuesitys ei tajua siirtymiä.
+bracket_output_ext_merge_positions.pdf näyttää saman rakenteen kuin bracket_output, mutta sen sijaan että elementti
+näytettäisiin sen viimeisessä sijainnissa, se pidetään siinä missä se ensimmäisen kerran mergettiin rakenteeseen. Eli
+tuosta voi lukea alhaalta ylös syötteen mitä saatiin ja sisäiset nostot.
+
+Mietin että voisin tehdä oman pluginin joka näyttää vain tuon tuloksen mahdollisimman yksinkertaisesti. Kaikki kokeilut
+mitä olen tähän pluginiin kirjoittanut sotkevat sen luettavuutta.
+
+Tuosta voi tehdä hyödyllisen välirepresentaaation, 'reseptin' joka näyttää mitä parserin täytyisi tietää osatakseen
+palauttaa 1d-syötteen 2d-puuksi. Tämä koskee tavallista hakasulkupuuta ja monorail-puuta.
+resepti: "the nice letter | from the smart lady | | | | |"
+"|" tarkoittaa nostoa.
+Binääripuita esitettäessä ei tarvitsisi hakasulkupuita, sulkujen avaaminen on redundanttia. Jos voi luottaa että yksi
+sana = yksi elementti, riittää että merkkaa milloin rakenteet suljetaan.
+
+
+
+
+

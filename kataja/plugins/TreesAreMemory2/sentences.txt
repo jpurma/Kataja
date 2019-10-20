@@ -1,0 +1,39 @@
+Pekka sanoi että se väite että teoria kumoutui kumoutui
+
+f('kenen', wh=True).f('paidasta').arg().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').wharg().r().f('juhlissa').r().r().r()
+
+f('kenestä', wh=True).f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').wharg().r().f('juhlissa').r().r().r()
+
+kenen paidasta Merja halusi Pekan ottavan kuvan juhlissa
+
+kenestä Merja halusi Pekan ottavan kuvan juhlissa
+
+
+
+f('tyttö').f('jota', wh=True).f('Pekka').f('halusi').arg().f('rakastaa').arg().wharg().r().r().r().f('löytyi').arg().f('kaapista').r()
+
+f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+
+mitä lääkettä syömällä Pekka parantui
+
+
+tyttö jota Pekka halusi rakastaa löytyi kaapista
+
+#tyttö löytyi kaapista
+
+lääke josta Merja halusi eroon löytyi kaapista
+
+#f('lääke').f('josta', wh=True).f('Merja').f('halusi').arg().f('eroon').wharg().r().r().r().r().f('löytyi').arg().f('kaapista').r()
+
+mitä kaupunkia kohti virtaamalla Seine pääsee valtamereen
+
+Seine pääsee valtamereen virtaamalla kohti kaupunkia
+
+# f('lääke').f('josta').arg().f('Merja').f('halusi').arg().arg().f('eroon').r().r().f('löytyi').arg().f('kaapista').r()
+
+Pekka joka tiesi mitä lääkettä syömällä hän parantui rakasti Merjaa
+
+# f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').r().f('syömällä').arg().r().f('hän').f('parantui').arg().r().r().f('rakasti').arg().f('Merjaa')
+
+# f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').f('syömällä').arg().r().r().f('hän').f('parantui').arg().r().f('rakasti').arg().f('Merjaa').r()
+

@@ -1,0 +1,63 @@
+, :: coord -k -kk
+I :: D n
+John :: D n +n -Per
+Mary :: D n +n -Per
+Pekka :: D n +n -Per
+Seine :: D n +n
+Simon :: D n +n -Per
+X :: X -specX -Y
+Y :: Y -specY -compY
+a :: -n! D -of
+and :: coord -k kk
+at :: P -D!
+blue :: n -a +n
+book :: n +n
+broke :: C T -D! -D -P
+by :: by -D!
+car :: n +n
+city :: n +n
+claim :: n C
+compY :: compY
+did :: T -by
+does :: T -by
+down :: P -P -D -by
+eagerly :: a
+faintly :: a
+flowing :: D -P
+found :: C T -T -D! -D
+gave :: C T -T -D! -D! -D -P -by -RelB
+hill :: n 0n
+his :: D -n
+lady :: n a 0n
+like :: C T -D! -D! -T -P
+likes :: C T -D! -D! -P -by
+live :: C T -D! v -P
+not :: -T T
+ocean :: n +n
+of :: of -D!
+or :: coord
+party :: n +n
+person :: n +n
+picture :: n +n
+reach :: C -a T -T -D! -D -P -by
+river :: n +n
+rolled :: T -a -a -D! C -D -P -by
+run :: C T -T -D! -P
+runs :: C T -D! -P -by
+said :: C T -a -D -P -by
+say :: C -a T -T -D! -P
+sleeps :: C -a T -D! -P -by
+small :: n -a +n
+specX :: specX
+specY :: specY
+that :: Rel *D +n -C
+the :: -n! D -of RelB
+to :: P -D!
+towards :: P -D!
+what :: Rel *D +n -C
+which :: Rel *D +n! -C
+who :: *D Rel +n -C
+who's :: D -n!
+whom :: *D Rel -C
+with :: P -D!
+wonders :: C -C T -D! -by

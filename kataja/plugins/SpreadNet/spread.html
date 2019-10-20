@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link line {
+  stroke-opacity: 1
+}
+
+.labels text {
+  pointer-events: none;
+  font: 10px sans-serif;
+  /*color: hsl(192, 81%, 14%);*/
+  color: rgb(238, 232, 213);
+}
+
+svg {
+  /*background-color: hsl(192, 81%, 14%);*/
+  background: radial-gradient(rgb(253, 246, 227), rgb(238, 232, 213));
+}
+
+.buttons {
+  position: fixed;
+  bottom: 20px;
+  left: 8px;
+  display: inline-block;
+  background-color: transparent;
+}
+
+.buttons div {
+  display: inline-block;
+}
+
+button {
+  width: 72px;
+  height: 22px;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+  border: 0;
+  cursor: pointer;
+  line-height: 22px;
+  padding: 0;
+  margin: 0;
+  top: 0;
+}
+
+#graph_n, #path_n, #step_n {
+  text-align: center;
+  display: inline-block;
+  min-width: 48px;
+  height: 22px;
+  line-height: 22px;
+  color: rgb(131, 148, 150);
+  background-color: rgb(253, 246, 227);
+  padding: 0;
+  border: 0;
+  margin: 0;
+  top: 0;
+}
+
+button:active {
+  background-color: rgb(238, 232, 213);
+  color: rgb(147, 161, 161);
+}
+
+button:hover {
+  background-color: rgb(238, 232, 213);
+  color: rgb(147, 161, 161);
+}
+
+#sentence {
+  padding-left: 0.5em;
+}
+
+
+</style>
+<body>
+<div class="buttons">
+    <button id="prev_graph" onclick="prevGraph()">←</button>
+    <span id="graph_n">0</span>
+    <button id="next_graph" onclick="nextGraph()">→</button>
+    <button id="prev_path" onclick="prevPath()">←</button>
+    <span id="path_n">0</span>
+    <button id="next_path" onclick="nextPath()">→</button>
+    <button id="prev_der" onclick="prevStep()">-</button>
+    <span id="step_n">0</span>
+    <button id="next_der" onclick="nextStep()">+</button>
+    <span id="sentence"></span>
+</div>
+<svg width="1440" height="960" class="node link labels"></svg>
+</body>
+<script src="../../../webviewer/d3.min.js"></script>
+<script src="../../../webviewer/d3-ellipse-force.js"></script>
+<!-- Data is loaded as .js files instead of JSON, because this way we
+  can run visualisations locally instead of having to set up a web server.
+
+  If you have means to save data as JSON, you can make it readable as .js
+  simply by adding a variable declaration before it: e.g. plugin writes
+  graph.json having:
+
+  {nodes: [...], links: [...]}
+
+  we'll make it proper javascript by prepending it with variable assignment:
+
+  const graph = {nodes: [...], links: [...]}
+
+  Then you just use the variables loaded from the file as containing the data
+  you need. Kataja plugins have examples of how to write prefix and then json data 
+  to one file with Python.   
+-->
+<script src="mg0.js"></script>
+<script>
+
+const ALPHA = 0.5;
+
+const CONST_EDGE = 1;
+const SPEC_MATCH = 2;
+const COMP_MATCH = 3;
+const OTHER_MATCH = 4;
+const SPEC_EDGE = 5;
+const COMP_EDGE = 6;
+const OTHER_EDGE = 7;
+
+const CONSTITUENT = 10;
+const FEATURE = 11;
+const SPEC_FEATURE = 12;
+const COMP_FEATURE = 13;
+
+const ACTIVE_WEIGHT = 0.3;
+const DEFAULT_WEIGHT = 0.02;
+
+const state = { graph:0, path:0, step:0 };
+let graph = graphs ? graphs[state.graph] : {}
+let path = [];
+let edgeMap = {};
+let nodeMap = {};
+const sentence = document.getElementById('sentence');
+
+const svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+    center_x = width / 2;
+    center_y = height / 2;
+
+const step_n = document.getElementById('step_n');
+const path_n = document.getElementById('path_n');
+const graph_n = document.getElementById('graph_n');
+
+
+const transparent = color => color.concat([0.40])
+const solid = color => color.concat([1.00])
+
+const base03 = [0, 43, 54]; // [192, 100, 11] // #002b36
+const base02 = [7, 54, 66]; // [192, 81, 14] // #073642
+const base01 = [88, 110, 117]; // [194, 14, 40] // #586e75
+const base00 = [101, 123, 131]; // [196, 13, 45] // #657b83
+const base0 = [131, 148, 150]; // [186, 8, 55] // #839496
+const base1 = [147, 161, 161]; // [180, 7, 60] // #93a1a1
+const base2 = [238, 232, 213]; // [46, 42, 88] // #eee8d5
+const base3 = [253, 246, 227]; // [44, 87, 94] // #fdf6e3
+const accents = [
+  [181, 137, 0], // [45, 100, 35], // #b58900 yellow
+  [203, 75, 22], //[18, 80, 44], // #cb4b16 orange
+  [220, 50, 47], //[1, 71, 52], // #dc322f red
+  [211, 54, 130], //[331, 164, 52], // #d33682 magenta
+  [108, 113, 196], //[237, 43, 60], // #6c71c4 violet
+  [38, 139, 210], //[205, 69, 49], // #268bd2 blue
+  [42, 161, 152], //[175, 59, 40], // #2aa198 cyan
+  [133, 153, 0] //[68, 100, 30] // #859900 green  
+];
+const negative = [68, 68, 228];
+const positive = [208, 48, 48];
+
+let tree_words = [];
+
+graph.nodes.forEach(n => nodeMap[n.id] = n);
+let link = svg.selectAll("line").data(graph.links, d => d.id);
+let node = svg.selectAll("ellipse").data(graph.nodes, d => d.id);
+let text = svg.selectAll("text").data(graph.nodes, d => d.id);
+
+const linkColor = d => {
+  const [r, g, b, a] = d.color || base0;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+const rgbstr = ([r, g, b, a]) => `rgba(${r}, ${g}, ${b}, ${a})`;
+
+var simulation = d3.forceSimulation()
+  .force("link",
+    d3.forceLink()
+      .id(d => d.id)
+      .strength(l => l.weight)
+      )
+  .force("collide", d3.ellipseForce(6, 0.5, 5))
+  .force("center", d3.forceCenter(center_x, center_y))
+  .nodes(graph.nodes)
+  .on("tick", ticked)
+  .alphaTarget(0);
+
+function ticked() {
+  link
+    .attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
+
+  node
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; });
+  text
+    .attr('transform', function(d) { return `translate(${d.x},${d.y})`});
+}
+
+function setActiveNode(nd) {
+    switch (nd.group) {
+      case CONSTITUENT: // const
+        nd.baseColor = solid(accents[0]);
+        break;
+      case FEATURE: // feature
+        nd.baseColor = solid(accents[7]);
+        break;
+      case SPEC_FEATURE: // '-'-feature
+        nd.baseColor = solid(accents[2]);
+        break;
+      case COMP_FEATURE: // '='-feature
+        nd.baseColor = solid(accents[5]);
+        break;
+    }  
+}
+
+function setActiveEdge(l) {
+    switch (l.group) {
+      case CONST_EDGE:
+        l.strokeWidth = 1;
+        l.baseColor = solid(base0);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case SPEC_MATCH:
+        l.strokeWidth = 2;
+        l.baseColor = solid(accents[2]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case COMP_MATCH:
+        l.strokeWidth = 2;
+        l.baseColor = solid(accents[5]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case OTHER_MATCH:
+        l.strokeWidth = 2;
+        l.baseColor = solid(accents[7]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case SPEC_EDGE:
+        l.strokeWidth = 1;
+        l.baseColor = solid(accents[2]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case COMP_EDGE:
+        l.strokeWidth = 1;
+        l.baseColor = solid(accents[5]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+      case OTHER_EDGE:
+        l.strokeWidth = 1;
+        l.baseColor = solid(accents[7]);
+        l.weight = ACTIVE_WEIGHT;
+        break;
+    }  
+}
+
+function lightUpNodes() {
+  for (const n of graph.nodes) {
+    n.baseColor = transparent(base0);
+  }
+  for (const l of graph.links) {
+    l.baseColor = transparent(base0);
+    l.weight = DEFAULT_WEIGHT;
+  }
+  if (path.length) {
+    for (let i=0; i <= state.step; i++ ) {
+      for (const key of path[i]) {
+        const edge = edgeMap[key];
+        if (edge) {
+          setActiveEdge(edge);
+          setActiveNode(edge.source);
+          setActiveNode(edge.target);        
+        } else {
+          console.log('missing edge: ', key, edge);
+        }
+      }
+    }    
+  }
+  node.attr("fill", d => rgbstr(d.baseColor))
+    .attr("stroke", d => rgbstr(d.baseColor));
+  link.attr("stroke-width", d => d.strokeWidth)
+    .attr("stroke", d => rgbstr(d.baseColor || base0));
+
+  simulation
+    .force("link")
+      //.links(graph.links)
+      .strength(l => l.weight);
+
+  simulation
+    .alpha(ALPHA)
+    .restart();
+}
+
+// function initLinks(simulation) {
+//     simulation.force("link", d3.forceLink(pullLinks)
+//       .id(d => d.id)
+//       .strength(l => l.weight || 0.3));
+// }
+
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alpha(ALPHA / 2).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alpha(ALPHA / 2);
+  d.fx = null;
+  d.fy = null;
+}
+
+function nextStep() {
+  if (!path.length) {
+    return;
+  }
+  state.step++;
+  if (state.step === path.length) {
+    state.step = 0;
+    nextPath();
+  }
+  updateCounters();
+  lightUpNodes();
+}
+
+function prevStep() {
+  if (!path.length) {
+    return;
+  }
+  state.step--;
+  if (state.step < 0) {
+    prevPath();
+    state.step = path.length - 1;
+  }
+  updateCounters();
+  lightUpNodes();
+}
+
+function nextGraph() {
+  state.graph++;
+  if (state.graph === graphs.length) {
+    state.graph = 0;
+  }
+  startGraph();
+}
+
+function prevGraph() {
+  state.graph--;
+  if (state.graph < 0) {
+    state.graph = graphs.length - 1;
+  }
+  startGraph();
+}
+
+
+function nextPath() {
+  state.path++;
+  if (state.path === graph.paths.length) {
+    state.path = 0;
+  }
+  startPath();
+}
+
+function prevPath() {
+  state.path--;
+  if (state.path < 0) {
+    state.path = graph.paths.length - 1;
+  }
+  startPath();
+}
+
+function updateCounters() {
+  step_n.innerText = `${state.step + 1}/${path.length}`;
+  path_n.innerText = `${state.path + 1}/${graph.paths.length}`;
+  graph_n.innerText = `${state.graph + 1}/${graphs.length}`;
+  sentence.innerText = graph.sentence;
+}
+
+function startGraph() {
+  state.step = 0;
+  state.path = 0;
+  tree_words = [];
+  graph = graphs[state.graph];
+  path = graph.paths[state.path] || []
+  updateCounters();
+  redrawGraph();
+  lightUpNodes();
+}
+
+function startPath() {
+  state.step = 0;
+  updateCounters();
+  lightUpNodes();
+}
+
+document.onkeydown = function (e) {
+  switch(e.keyCode || window.event.keyCode) {
+    case 37:  // Left
+      prevGraph();
+      e.preventDefault();
+      return;
+    case 39: // Right
+      nextGraph();
+      e.preventDefault();
+      return;
+    case 38: // Up
+      nextStep();
+      e.preventDefault();
+      return;
+    case 40: // Down
+      prevStep();
+      e.preventDefault();
+      return
+  }
+};
+
+function redrawGraph() {
+  graph = graphs[state.graph];
+  graph.nodes.forEach(n => nodeMap[n.id] = n);
+
+  graph.nodes.forEach(nd => {
+    nd.x = nd.x === undefined ? center_x : nd.x; 
+    nd.y = nd.y === undefined ? center_y : nd.y; 
+    nd.vx = nd.vx === undefined ? 0 : nd.vx; 
+    nd.vy = nd.vy === undefined ? 0 : nd.vy; 
+    nd.baseColor = transparent(base0);
+    nd.rx = Math.max(nd.label.length * 4.5, 16);
+    nd.ry = 12;
+  });
+
+  edgeMap = {};
+
+  graph.links.forEach(l => {
+    l.strokeWidth = 1;
+    l.baseColor = transparent(base0);
+    l.weight = DEFAULT_WEIGHT;
+    edgeMap[l.id] = l;
+  });
+
+
+  link = svg.selectAll("line").data(graph.links, d => d.id);
+
+  link.exit().remove();
+
+  link = link.enter().append("line")
+    .merge(link)
+    .attr("stroke-width", d => d.strokeWidth)
+    .attr("stroke", d => rgbstr(d.baseColor || base0));
+
+  node = svg.selectAll("ellipse").data(graph.nodes, d => d.id);
+
+  node.exit().transition()
+    .attr("rx", 0)
+    .attr("ry", 0)
+    .remove();
+
+  node.attr("x", d => d.x || center_x)
+    .attr("y", d => d.y || center_y);
+
+  node = node.enter().append("ellipse")
+    .attr("rx", 0)
+    .attr("ry", 0)
+    .attr("fill", d => rgbstr(d.baseColor))
+    .attr("stroke", d => rgbstr(d.baseColor))
+    .attr("stroke-width", 0)
+    .attr("x", center_x)
+    .attr("y", center_y)
+    .merge(node)
+    .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended)
+      .clickDistance(6))
+    //.on("click", selectNode)
+    //.on("mouseover", handleMouseOver)
+    //.on("mouseout", handleMouseOut)
+    .raise();
+
+  text = svg.selectAll("text").data(graph.nodes, d => d.id);
+
+  text.exit().remove();
+
+  text = text.attr("dy", 2)
+    .style("fill", "#93a1a1;");
+
+  text = text.enter().append("text")
+    .attr("text-anchor", "middle")
+    .attr("dy", 2)
+    .style("fill", "#93a1a1;")
+    .text(d => d.label)
+    .merge(text)
+    .raise();
+
+  node
+    .transition()
+    .attr("rx", d => d.rx)
+    .attr("ry", d => d.ry)
+
+  simulation
+    .nodes(graph.nodes)
+    .force("link")
+      .links(graph.links)
+      .strength(l => l.weight);
+}
+
+startGraph();
+
+
+</script>

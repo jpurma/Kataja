@@ -1,0 +1,200 @@
+
+# 4. la Senna scorre attraverso Parigi
+[.T [.la:1 la Senna] [.T T [.scorre [.la:1 la Senna] [.scorre scorre [.attraverso attraverso [.D D Parigi]]]]]]
+la Senna T scorre attraverso D Parigi
+
+# 12. Gianni detto che la Senna scorre attraverso Parigi
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.la:2 la Senna] [.T T [.scorre [.la:2 la Senna] [.scorre scorre [.attraverso attraverso [.D D Parigi]]]]]]]]]]]
+D Gianni T detto che la Senna T scorre attraverso D Parigi
+
+# 13. Gianni detto la Senna sfocia nell oceano
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.T [.la:2 la Senna] [.T T [.sfocia- [.la:2 la Senna] [.sfocia- sfocia- [.in in [.il il oceano]]]]]]]]]]
+D Gianni T detto la Senna T sfocia- in il oceano
+
+# 16. giu dalla collina rotolato Gianni
+[.T [.giu:1 giu [.di di [.D D collina]]] [.T T [.rotolato [.giu:1 giu [.di di [.D D collina]]] [.rotolato rotolato [.D D Gianni]]]]]
+giu di D collina T rotolato D Gianni
+
+# 18. Gianni detto che giu dalla collina rotolato Gianni
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.giu:2 giu [.di di [.D D collina]]] [.T T [.rotolato [.giu:2 giu [.di di [.D D collina]]] [.rotolato rotolato [.D D Gianni]]]]]]]]]]
+D Gianni T detto che giu di D collina T rotolato D Gianni
+
+# 25. la Senna sfocia nell oceano
+[.T [.la:1 la Senna] [.T T [.sfocia- [.la:1 la Senna] [.sfocia- sfocia- [.in in [.il il oceano]]]]]]
+la Senna T sfocia- in il oceano
+
+# 26. la Senna raggiunge l oceano
+[.T [.la:1 la Senna] [.T T [.v [.la:1 la Senna] [.v v [.raggiunge raggiunge [.l l oceano]]]]]]
+la Senna T v raggiunge l oceano
+
+# 31. Gianni detto la Senna raggiunge l oceano
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.T [.la:2 la Senna] [.T T [.v [.la:2 la Senna] [.v v [.raggiunge raggiunge [.l l oceano]]]]]]]]]]
+D Gianni T detto la Senna T v raggiunge l oceano
+
+# 36. Gianni dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]
+D Gianni T v dato il libro a D Luisa
+
+# 39. Gianni detto che Luisa dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.detto [.D:1 D Gianni] [.detto detto [.che che [.T [.D:2 D Luisa] [.T T [.v [.D:2 D Luisa] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]]]]]]
+D Gianni T detto che D Luisa T v dato il libro a D Luisa
+
+# 46. Gianni dato a Luisa il libro
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]
+D Gianni T v dato a D Luisa il libro
+
+# 59. Luisa detto che Gianni dato a Luisa il libro
+[.T [.D:1 D Luisa] [.T T [.detto [.D:1 D Luisa] [.detto detto [.che che [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]]]]]]
+D Luisa T detto che D Gianni T v dato a D Luisa il libro
+
+# 63. dove sfocia la Senna
+[.T [.P:1 P [.D D dove]] [.T T [.sfocia- [.P:1 P [.D D dove]] [.sfocia- sfocia- [.la la Senna]]]]]
+P D dove T sfocia- la Senna
+
+# 66. cosa credi che Gianni sappia della visita di Luisa
+[.T [.D:1 D cosa] [.T T [.credi [.D:1 D cosa] [.credi credi [.che che [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.sappia sappia [.di [.di di [.D D visita]] <.di di [.D D Luisa]>]]]]]]]]]]]
+D cosa T credi che D Gianni T v sappia di D visita di D Luisa
+
+# 71. chi ama Gianni
+[.T [.D:1 D chi] [.T T [.v [.D:1 D chi] [.v v [.ama ama [.D D Gianni]]]]]]
+D chi T v ama D Gianni
+
+# 75. Gianni si_chiede chi ama Luisa
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.D:2 D chi] [.T T [.v [.D:2 D chi] [.v v [.ama ama [.D D Luisa]]]]]]]]]]
+D Gianni T si_chiede D chi T v ama D Luisa
+
+# 77. cosa trovato Gianni
+[.T [.D:1 D cosa] [.T T [.v [.D:1 D cosa] [.v v [.trovato trovato [.D D Gianni]]]]]]
+D cosa T v trovato D Gianni
+
+# 79. Luisa si_chiede cosa trovato Gianni
+[.T [.D:1 D Luisa] [.T T [.si_chiede [.D:1 D Luisa] [.si_chiede si_chiede [.T [.D:2 D cosa] [.T T [.v [.D:2 D cosa] [.v v [.trovato trovato [.D D Gianni]]]]]]]]]]
+D Luisa T si_chiede D cosa T v trovato D Gianni
+
+# 86. a chi dato il libro Gianni
+[.T [.a:1 a [.D D chi]] [.T T [.v <.D:2 D Gianni> [.v v [.dato [.a:1 a [.D D chi]] [.dato dato [.il [.il il libro] <.D:2 D Gianni>]]]]]]]
+a D chi T D Gianni v dato il libro
+
+# 92. Gianni si_chiede a chi Luisa dato il libro
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH [.a:2 a [.D D chi]] [.uWH uWH [.T [.D:3 D Luisa] [.T T [.v [.D:3 D Luisa] [.v v [.dato [.a:2 a [.D D chi]] [.dato dato [.il il libro]]]]]]]]]]]]]
+D Gianni T si_chiede a D chi uWH D Luisa T v dato il libro
+
+# 106. chi pro credi che sappia qualcosa della visita
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.T [.D:1 D chi] [.T T [.v [.D:1 D chi] [.v v [.sappia sappia [.D [.D D qualcosa] <.di di [.D D visita]>]]]]]]]]]]]]]
+D chi uWH D (pro) T credi che T v sappia D qualcosa di D visita
+
+# 107. chi pro credi che Gianni abbia avvertito
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.avvertito [.D:3 D Gianni] [.avvertito avvertito [.D:1 D chi]]]]]]]]]]]]
+D chi uWH D (pro) T credi che D Gianni abbia avvertito
+
+# 108. chi pro credi che abbia avvertito Gianni
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:1 D chi] [.abbia abbia [.avvertito [.D:1 D chi] [.avvertito avvertito [.D D Gianni]]]]]]]]]]]]
+D chi uWH D (pro) T credi che abbia avvertito D Gianni
+
+# 109. chi pro credi che abbia avvertito Gianni prima della visita
+[.uWH [.D:1 D chi] [.uWH uWH [.T [.D:2 D (pro)] [.T T [.credi [.D:2 D (pro)] [.credi credi [.che che [.abbia [.D:1 D chi] [.abbia abbia [.avvertito [.D:1 D chi] [.avvertito avvertito [.D D [.Gianni Gianni <.prima prima [.di di [.D D visita]]>]]]]]]]]]]]]]
+D chi uWH D (pro) T credi che abbia avvertito D Gianni prima di D visita
+
+# 111. la citta che.rel dorme dorme
+[.T [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]] [.T T [.dorme [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]] dorme]]]
+la citta D che T dorme T dorme
+
+# 115. Gianni adora la citta che.rel dorme
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.dorme [.D:2 D che] dorme]]>]]]]]]]
+D Gianni T v adora la citta D che T dorme
+
+# 118. la citta che.rel Gianni adora
+[.la la [.citta citta <.uR [.D:1 D che] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.adora [.D:1 D che] adora]]]]]]>]]
+la citta D che uR D Gianni T v adora
+
+# 121. Gianni adora la citta che.rel adora Luisa
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.adora adora [.D D Luisa]]]]]>]]]]]]]
+D Gianni T v adora la citta D che T v adora D Luisa
+
+# 123. Gianni adora la citta che.rel Luisa adora
+[.T [.D:1 D Gianni] [.T T [.v [.D:1 D Gianni] [.v v [.adora adora [.la la [.citta citta <.uR [.D:2 D che] [.uR uR [.T [.D:3 D Luisa] [.T T [.v [.D:3 D Luisa] [.v v [.adora [.D:2 D che] adora]]]]]]>]]]]]]]
+D Gianni T v adora la citta D che uR D Luisa T v adora
+
+# 125. Luisa adora la citta che.rel adora Gianni
+[.T [.D:1 D Luisa] [.T T [.v [.D:1 D Luisa] [.v v [.adora adora [.la la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.adora adora [.D D Gianni]]]]]>]]]]]]]
+D Luisa T v adora la citta D che T v adora D Gianni
+
+# 129. la citta che.rel dato il libro a Luisa
+[.la la [.citta citta <.T [.D:1 D che] [.T T [.v [.D:1 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]]
+la citta D che T v dato il libro a D Luisa
+
+# 133. la citta che.rel dato il libro a Luisa dorme
+[.T [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]] [.T T [.dorme [.la:1 la [.citta citta <.T [.D:2 D che] [.T T [.v [.D:2 D che] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]>]] dorme]]]
+la citta D che T v dato il libro a D Luisa T dorme
+
+# 144. cosa attraversa la Senna scorrendo
+[.T [.D:1 D cosa] [.T T [.v [.D:1 D cosa] [.v v [.attraversa attraversa [.la la [.Senna Senna <.endo endo scorr->]]]]]]]
+D cosa T v attraversa la Senna endo scorr-
+
+# 148. Gianni si_chiede cosa attraversa la Senna scorrendo
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.D:2 D cosa] [.T T [.v [.D:2 D cosa] [.v v [.attraversa attraversa [.la la [.Senna Senna <.endo endo scorr->]]]]]]]]]]]
+D Gianni T si_chiede D cosa T v attraversa la Senna endo scorr-
+
+# 152. attraverso quale citta passa la Senna
+[.T [.attraverso:1 attraverso [.quale quale citta]] [.T T [.passa [.attraverso:1 attraverso [.quale quale citta]] [.passa passa [.la la Senna]]]]]
+attraverso quale citta T passa la Senna
+
+# 153. scorrendo attraverso quale citta la Senna passa fino a_inf raggiungere l oceano
+[.uWH <.endo:1 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]> [.uWH uWH [.T [.la:2 la Senna] [.T T [.passa [.la:2 la Senna] [.passa passa [.fino [.fino fino [.a a [.-are -are [.v/pro v/pro [.raggiunge raggiunge [.l l oceano]]]]]] <.endo:1 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]>]]]]]]]
+endo scorr- attraverso quale citta uWH la Senna T passa fino a -are v/pro raggiunge l oceano
+
+# 154. attraversando quale citta la Senna cresce fino a sfociare nell oceano
+[.uWH <.ando:1 ando [.attraversa attraversa [.quale quale citta]]> [.uWH uWH [.T [.la:2 la Senna] [.T T [.v [.la:2 la Senna] [.v v [.cresce cresce [.fino [.fino fino [.a a [.-are -are [.v/pro v/pro [.sfocia- sfocia- [.in in [.il il oceano]]]]]]] <.ando:1 ando [.attraversa attraversa [.quale quale citta]]>]]]]]]]]
+ando attraversa quale citta uWH la Senna T v cresce fino a -are v/pro sfocia- in il oceano
+
+# 157. Gianni si_chiede attraverso quale citta passa la Senna
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.T [.attraverso:2 attraverso [.quale quale citta]] [.T T [.passa [.attraverso:2 attraverso [.quale quale citta]] [.passa passa [.la la Senna]]]]]]]]]
+D Gianni T si_chiede attraverso quale citta T passa la Senna
+
+# 158. Gianni si_chiede scorrendo attraverso quale citta la Senna passa fino a raggiungere l oceano
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.endo:2 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]> [.uWH uWH [.T [.la:3 la Senna] [.T T [.passa [.passa [.la:3 la Senna] [.passa passa [.fino fino [.a a [.-are -are [.v/pro v/pro [.raggiunge raggiunge [.l l oceano]]]]]]]] <.endo:2 endo [.scorr- scorr- [.attraverso attraverso [.quale quale citta]]]>]]]]]]]]]
+D Gianni T si_chiede endo scorr- attraverso quale citta uWH la Senna T passa fino a -are v/pro raggiunge l oceano
+
+# 159. Gianni si_chiede attraversando quale citta la Senna cresce fino a sfociare nell oceano
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.ando:2 ando [.attraversa attraversa [.quale quale citta]]> [.uWH uWH [.T [.la:3 la Senna] [.T T [.v [.v [.la:3 la Senna] [.v v [.cresce cresce [.fino fino [.a a [.-are -are [.v/pro v/pro [.sfocia- sfocia- [.in in [.il il oceano]]]]]]]]]] <.ando:2 ando [.attraversa attraversa [.quale quale citta]]>]]]]]]]]]
+D Gianni T si_chiede ando attraversa quale citta uWH la Senna T v cresce fino a -are v/pro sfocia- in il oceano
+
+# 162. dove scorrendo verso il mare arriva la Senna
+[.uWH [.P:1 P [.D D dove]] [.uWH uWH [.T <.endo:2 endo [.scorr- scorr- [.verso verso [.il il mare]]]> [.T T [.arriva [.P:1 P [.D D dove]] [.arriva arriva [.la [.la la Senna] <.endo:2 endo [.scorr- scorr- [.verso verso [.il il mare]]]>]]]]]]]
+P D dove uWH endo scorr- verso il mare T arriva la Senna
+
+# 165. Gianni si_chiede dove scorrendo verso il mare arriva la Senna
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH [.P:2 P [.D D dove]] [.uWH uWH [.T <.endo:3 endo [.scorr- scorr- [.verso verso [.il il mare]]]> [.T T [.arriva [.arriva [.P:2 P [.D D dove]] [.arriva arriva [.la la Senna]]] <.endo:3 endo [.scorr- scorr- [.verso verso [.il il mare]]]>]]]]]]]]]
+D Gianni T si_chiede P D dove uWH endo scorr- verso il mare T arriva la Senna
+
+# 168. correndo verso quale citta Gianni dato il libro a Luisa
+[.uWH <.endo:1 endo [.corre corre [.verso verso [.quale quale citta]]]> [.uWH uWH [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato dato [.il [.il [.il il libro] <.a a [.D D Luisa]>] <.endo:1 endo [.corre corre [.verso verso [.quale quale citta]]]>]]]]]]]]
+endo corre verso quale citta uWH D Gianni T v dato il libro a D Luisa
+
+# 171. Gianni si_chiede correndo verso quale citta Gianni dato il libro a Luisa
+[.T [.D:1 D Gianni] [.T T [.si_chiede [.D:1 D Gianni] [.si_chiede si_chiede [.uWH <.endo:2 endo [.corre corre [.verso verso [.quale quale citta]]]> [.uWH uWH [.T [.D:3 D Gianni] [.T T [.v [.v [.D:3 D Gianni] [.v v [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]] <.endo:2 endo [.corre corre [.verso verso [.quale quale citta]]]>]]]]]]]]]
+D Gianni T si_chiede endo corre verso quale citta uWH D Gianni T v dato il libro a D Luisa
+
+# 179. quale libro tu credi che Gianni abbia letto
+[.uWH [.quale:1 quale libro] [.uWH uWH [.T [.D:2 D tu] [.T T [.credi [.D:2 D tu] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.v [.D:3 D Gianni] [.v v [.letto [.quale:1 quale libro] letto]]]]]]]]]]]]
+quale libro uWH D tu T credi che D Gianni abbia v letto
+
+# 180. di quale libro tu credi che Gianni abbia letto la recensione
+[.uWH [.di:1 di [.quale quale libro]] [.uWH uWH [.T [.D:2 D tu] [.T T [.credi [.D:2 D tu] [.credi credi [.che che [.abbia [.D:3 D Gianni] [.abbia abbia [.v [.D:3 D Gianni] [.v v [.letto [.di:1 di [.quale quale libro]] [.letto letto [.la la recensione]]]]]]]]]]]]]]
+di quale libro uWH D tu T credi che D Gianni abbia v letto la recensione
+
+# 192. la citta attraverso che.rel la Senna scorre
+[.la [.la la citta] <.uR [.attraverso:1 attraverso [.D D che]] [.uR uR [.T [.la:2 la Senna] [.T T [.scorre [.la:2 la Senna] [.scorre scorre [.attraverso:1 attraverso [.D D che]]]]]]]>]
+la citta attraverso D che uR la Senna T scorre
+
+# 195. la foto attraverso che.rel Gianni dato Luisa
+[.la [.la la foto] <.uR [.attraverso:1 attraverso [.D D che]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D che]] [.dato dato [.D D Luisa]]]]]]]]>]
+la foto attraverso D che uR D Gianni T v dato D Luisa
+
+# 199. le mezzo attraverso cui Gianni da_V il libro a Luisa
+[.le [.le le mezzo] <.uR [.attraverso:1 attraverso [.D D cui]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D cui]] [.dato dato [.il [.il il libro] <.a a [.D D Luisa]>]]]]]]]]>]
+le mezzo attraverso D cui uR D Gianni T v dato il libro a D Luisa
+
+# 203. le mezzo attraverso cui Gianni da_V a Luisa il libro
+[.le [.le le mezzo] <.uR [.attraverso:1 attraverso [.D D cui]] [.uR uR [.T [.D:2 D Gianni] [.T T [.v [.D:2 D Gianni] [.v v [.dato [.attraverso:1 attraverso [.D D cui]] [.dato dato [.a [.a a [.D D Luisa]] <.il il libro>]]]]]]]]>]
+le mezzo attraverso D cui uR D Gianni T v dato a D Luisa il libro

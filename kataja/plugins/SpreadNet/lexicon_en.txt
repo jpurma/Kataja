@@ -1,0 +1,63 @@
+, :: coord -k =kk
+I :: D n
+John :: k -kk D n =Per =Rel
+Mary :: k -kk D n =Per =Rel
+Pekka :: k -kk D n =Per =Rel
+Seine :: k -kk D n =Rel
+Simon :: k -kk D n =Per =Rel
+X :: X -specX =Y
+Y :: Y -specY =compY
+a :: =n! D =of
+and :: coord -k kk
+at :: P =D!
+blue :: n -a a -n
+book :: n -n
+broke :: C T -D! =D =P
+by :: by =D!
+car :: n -n
+city :: n -a -n
+claim :: n C =Rel
+compY :: compY
+did :: C T =by
+does :: C T =by
+down :: P =P =D =by
+eagerly :: a
+faintly :: a
+flowing :: D =P
+found :: C T -T -D! =D
+gave :: C T -T -D! =D! =D =P =by =RelB
+hill :: n -n
+his :: D =n
+lady :: n a -n
+like :: C T -D! =D! -T =P
+likes :: C T -D! =D! =P =by
+live :: C T -D! v =P
+not :: -T T
+ocean :: n -n
+of :: of =D!
+or :: coord
+party :: n -n
+person :: n -n
+picture :: n -n
+reach :: C -a T -T -D! =D =P =by
+river :: n -n
+rolled :: T -a =a -D! C =D -P =P =by
+run :: C T -T -D! =P -P
+runs :: C T -D! =P =by -P
+said :: C T -a -D =Rel =P =by
+say :: C -a T -T -D! =P
+sleeps :: C -a T -D! =P =by
+small :: n -a -n
+specX :: specX
+specY :: specY
+that :: Rel *D =n =C
+the :: =n! D -of =Rel RelB
+to :: P =D!
+towards :: P =D!
+what :: Rel *D =n =C
+which :: Rel *D =n! =C
+who :: *D Rel =n =C
+who's :: D =n
+whom :: *D Rel =C
+with :: P =D!
+wonders :: C -C T -D! =Rel =by
