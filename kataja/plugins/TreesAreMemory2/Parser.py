@@ -76,7 +76,7 @@ def get_head_features(head):
     if isinstance(head, tuple):
         feats = []
         for h in head:
-            feats += get_head_features(h)
+            feats += [feat for feat in get_head_features(h) if feat not in feats]
         return feats
     else:
         return head.features
@@ -123,6 +123,15 @@ def collect_checked(const, used_features, done, inherit=False):
 
 def mark_features(node):
     collect_checked(node, set(), set(), inherit=True)
+
+
+def are_congruent(feats_a, feats_b):
+    for feat_a in feats_a:
+        if feat_a.value:
+            for feat_b in feats_b:
+                if feat_b.name == feat_a.name and feat_a.sign == feat_b.sign and feat_b.value and feat_b.value != feat_a.value:
+                    return False
+    return True
 
 
 class State:
@@ -202,7 +211,7 @@ class State:
         has_wh = ', wh=True' if [f for f in const.features if f.name == 'wh' and not f.sign] else ''
         return self.new_state(x, msg, f"f('{const.label}'{has_wh})", ADD)
 
-    def adj(self, other=None):
+    def o_adj(self, other=None):
         const = self.s
         first = const.left
         second = const.right
@@ -235,17 +244,25 @@ class State:
         trunk = const.right.right or second
         head = first.head
         arg = second
-        if has_wh(second.head):
-            x = Constituent(label=f'{arg.label}+{first.label}', parts=[second, first], head=(arg.head, head),
-                            checked_features=checked_features)
-            tsk = 'adj'
-        else:
-            x = Constituent(label=first.label, parts=[second, first],
-                            argument=arg, head=head, checked_features=checked_features)
-            tsk = 'arg'
+        x = Constituent(label=first.label, parts=[second, first],
+                        argument=arg, head=head, checked_features=checked_features)
         y = Constituent(label=x.label, parts=[x, trunk], head=x.head)
-        msg = f"raise '{arg.label}' as {tsk} for: '{first.label}' ({checked_features or ''})"
+        msg = f"raise '{arg.label}' as arg for: '{first.label}' ({checked_features or ''})"
         return self.new_state(y, msg, "arg()", RAISE_ARG)
+
+    def adj(self, checked_features=None):
+        const = self.s
+        first = const.left
+        second = const.right
+        trunk = const.right.right or second
+        head = first.head
+        adj = second
+        x = Constituent(label=f'{adj.label}+{first.label}', parts=[second, first], head=(adj.head, head),
+                        checked_features=checked_features)
+        y = Constituent(label=x.label, parts=[x, trunk], head=x.head)
+        msg = f"raise '{adj.label}' as adj for: '{first.label}' ({checked_features or ''})"
+        return self.new_state(y, msg, "adj()", ADJUNCT)
+
 
     def new_state(self, x, msg, entry, state_type):
         state = self.parser.add_state(self, x, entry, state_type)
@@ -429,6 +446,20 @@ class Parser:
         second_features = self._collect_available_features(state.s.right, used_features)
         # next_const_features = next_const.features if next_const else []
 
+        # adj raise
+        adj_features = second_features
+        head_features = top_features
+        if are_congruent(head_features, adj_features):
+            for feat in head_features:
+                if feat.sign == '+':
+                    print('looking for match for ', feat)
+                    match = self._find_match(feat, adj_features)
+                    if match:
+                        new_state = state.adj(checked_features=[(feat, match)])
+                        new_state = self.attempt_raising(new_state, next_const=next_const)
+                        self.states_to_remove.add(state)
+                        return new_state
+
         # arg raise
         arg_features = second_features
         head_features = top_features
@@ -438,8 +469,9 @@ class Parser:
                 if match:
                     new_state = state.arg(checked_features=[(feat, match)])
                     new_state = self.attempt_raising(new_state, next_const=next_const)
-                    # self.states_to_remove.add(state)
-                    #return new_state
+                    if feat.sign == '-':
+                        self.states_to_remove.add(state)
+                        return new_state
 
         # close argument
         arg_features = top_features
