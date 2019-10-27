@@ -39,6 +39,19 @@ from kataja.utils import coords_as_str, escape
 __author__ = 'purma'
 
 
+def flatten(thick_list):
+    res = []
+
+    def flat(listlike):
+        for item in listlike:
+            if isinstance(item, list) or isinstance(item, tuple):
+                flat(item)
+            else:
+                res.append(item)
+
+    flat(thick_list)
+    return res
+
 class ConstituentNode(Node):
     """ ConstituentNode is enriched with few elements that have no syntactic meaning but help with
      reading the trees aliases, indices and glosses.
@@ -283,7 +296,7 @@ class ConstituentNode(Node):
             lines.append(f'uid: {tt_style % synobj.uid}')
             lines.append(f"label: '{escape(synobj.label)}'")
             lines.append(f"adjunct: {synobj.adjunct}")
-            heads = synobj.get_heads()
+            heads = flatten(synobj.get_heads())
             heads_str = [f"itself, {tt_style % h.uid}" if h is synobj
                          else f'{escape(h.label)}, {tt_style % h.uid}'
                          for h in heads]
@@ -428,13 +441,10 @@ class ConstituentNode(Node):
     def get_heads(self):
         res = []
         if self.syntactic_object:
-            for head in self.syntactic_object.get_heads():
-                if head is self.syntactic_object:
-                    res.append(self)
-                else:
-                    node = self.forest.get_node(head)
-                    if node:
-                        res.append(node)
+            for head in flatten(self.syntactic_object.get_heads()):
+                node = self.forest.get_node(head)
+                if node:
+                    res.append(node)
         return res
 
     def get_lexical_color(self, refresh=True):

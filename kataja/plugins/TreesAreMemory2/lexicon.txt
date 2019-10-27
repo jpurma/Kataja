@@ -1,43 +1,44 @@
-Merja :: D:nom nom -D:gen
-Merjaa :: D:part nom -D:gen
-Pekan :: D:gen nom -D:gen
-Pekka :: D:nom nom -D:gen
-Seine :: D:nom nom -D:gen
-Seineä :: D:part nom -D:gen
-ajoi :: v -D:nom T:past -P -D:part
-autoa :: D:part nom -D:gen
-eroon :: P -D:sta
-että :: rel xC -v
-halusi :: v T:past -D:nom =v =P
-hän :: D:nom nom -D:gen
-joka :: rel -v D:nom wh
-josta :: rel -v P D:sta wh
-jota :: rel -v D:part wh
-juhlissa :: D:sem nom -D:gen
-kaapista :: D:sta nom -D:gen
-kaupunkia :: D:part nom -D:gen
-kenen :: wh D:gen -v
-kenestä :: wh D:sta -v
-kohti :: P -D:part
-kumoutui :: v T:past -D:nom =pv
-kuvan :: D:acc =D:sta nom -D:gen
-lääke :: D:nom -rel nom -D:gen
-lääkettä :: D:part nom -D:gen
-löytyi :: v T:past -D:nom =D:sta
-mitä :: wh D:part =nom -D:gen -v
-ottavan :: v T =D:gen =D:acc =D:sem =D:sta
-paidasta :: D:sta nom -D:gen
-parantui :: v T:past -D:nom =pv
-pääsee :: v T:prees =pv -D:nom =D:sem
-päätyi :: v T:past -D:nom =pv
-rakastaa :: v T:prees -D:nom =D:part
-rakasti :: v T:past -D:nom =D:part
-sanoi :: v T:past -D:nom -xC
-se :: D:nom -nom
-syömällä :: pv =D:part
-tiesi :: v T:past -D:nom =T
-teoria :: D:nom -rel nom -D:gen
-tyttö :: D:nom -rel nom -D:gen
-valtamereen :: D:sem nom -D:gen
-virtaamalla :: pv =D:sem =P
-väite :: D:nom -rel nom -D:gen
+hassu :: n:nom +a a -n:gen
+Merja :: n:nom +a -n:gen
+Merjaa :: n:part +a -n:gen
+Pekan :: n:gen +a -n:gen
+Pekka :: n:nom +a -n:gen
+Seine :: n:nom +a -n:gen
+Seineä :: n:part +a -n:gen
+ajoi :: v -n:nom T:past -P -n:part
+autoa :: n:part +a -n:gen
+eroon :: P -n:sta
+että :: rel xC =v
+halusi :: v T:past -n:nom =T:inf =P
+hän :: n:nom -n:gen
+joka :: rel -v n:nom wh
+josta :: rel -v P n:sta wh
+jota :: rel -v n:part wh
+juhlissa :: n:sem +a -n:gen
+kaapista :: n:sta +a -n:gen
+kaupunkia :: n:part +a -n:gen
+kenen :: wh n:gen +n -v
+kenestä :: wh n:sta +n -v
+kohti :: P -n:part
+kumoutui :: v T:past -n:nom =pv
+kuvan :: n:acc =n:sta +a -n:gen
+lääke :: n:nom -rel +a -n:gen
+lääkettä :: n:part +a -n:gen
+löytyi :: v T:past -n:nom =n:sta
+mitä :: wh n:part +n -n:gen -v
+ottavan :: v T =n:gen =n:acc =n:sem =n:sta
+paidasta :: n:sta +a
+parantui :: v T:past -n:nom =pv
+pääsee :: v T:prees =pv -n:nom =n:sem
+päätyi :: v T:past -n:nom =pv
+rakastaa :: v T:prees -n:nom =n:part
+rakasti :: v T:past -n:nom =n:part
+sanoi :: v T:past -n:nom -xC
+se :: n:nom =rel =n
+syömällä :: pv =n:part
+teoria :: n:nom =rel +a -n:gen
+tiesi :: v T:past -n:nom =T
+tyttö :: n:nom -rel +a -n:gen
+valtamereen :: n:sem +a -n:gen
+virtaamalla :: pv =n:sem =P
+väite :: n:nom =rel +a n -n:gen
