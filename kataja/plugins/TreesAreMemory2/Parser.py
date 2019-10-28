@@ -56,13 +56,16 @@ def has_wh(const):
             return feat
 
 
-def find_wh(node):
+def find_wh(node, at_head=None):
     wh_feat = has_wh(node.head)
     if wh_feat:
-        return node, wh_feat
+        return (at_head or node), wh_feat
     if node.parts:
         for part in node.parts:
-            found = find_wh(part)
+            if part is node.argument or part.head is node.head:
+                found = find_wh(part, at_head=at_head or node)
+            else:
+                found = find_wh(part)
             if found:
                 return found
 
@@ -186,7 +189,7 @@ class State:
             checked_features.append((wh_feat, wh_feat))
         else:
             checked_features = [(wh_feat, wh_feat)]
-        x = Constituent(label=get_label(const.head), parts=[const, wh], head=const.head,
+        x = Constituent(label=get_label(const.head), parts=[wh, const], head=const.head,
                         argument=wh, checked_features=checked_features)
         y = Constituent(label=x.label, parts=[x, const.right], head=x.head)
 
