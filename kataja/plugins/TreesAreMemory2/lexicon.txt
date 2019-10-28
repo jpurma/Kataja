@@ -1,4 +1,3 @@
-hassu :: n:nom +a a -n:gen
 Merja :: n:nom +a -n:gen
 Merjaa :: n:part +a -n:gen
 Pekan :: n:gen +a -n:gen
@@ -9,7 +8,8 @@ ajoi :: v -n:nom T:past -P -n:part
 autoa :: n:part +a -n:gen
 eroon :: P -n:sta
 että :: rel xC =v
-halusi :: v T:past -n:nom =T:inf =P
+halusi :: v T:past -n:nom =T:inf =P =foc
+hassu :: n:nom +a a -n:gen
 hän :: n:nom -n:gen
 joka :: rel -v n:nom wh
 josta :: rel -v P n:sta wh
@@ -17,7 +17,7 @@ jota :: rel -v n:part wh
 juhlissa :: n:sem +a -n:gen
 kaapista :: n:sta +a -n:gen
 kaupunkia :: n:part +a -n:gen
-kenen :: wh n:gen +n -v
+kenen :: wh n:gen +n
 kenestä :: wh n:sta +n -v
 kohti :: P -n:part
 kumoutui :: v T:past -n:nom =pv
@@ -26,8 +26,8 @@ lääke :: n:nom -rel +a -n:gen
 lääkettä :: n:part +a -n:gen
 löytyi :: v T:past -n:nom =n:sta
 mitä :: wh n:part +n -n:gen -v
-ottavan :: v T =n:gen =n:acc =n:sem =n:sta
-paidasta :: n:sta +a
+ottavan :: v T:inf =n:gen =n:acc =n:sem =n:sta
+paidasta :: n:sta +a -n:gen =T
 parantui :: v T:past -n:nom =pv
 pääsee :: v T:prees =pv -n:nom =n:sem
 päätyi :: v T:past -n:nom =pv

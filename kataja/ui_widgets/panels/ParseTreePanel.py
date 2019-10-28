@@ -122,12 +122,21 @@ class ParseTreePanel(Panel):
         return Panel.initial_position(self, next_to=next_to or 'NavigationPanel')
 
     def prepare_tree(self):
-        def add_children(state_id, depth):
+        def add_children(state_ids, depth):
             if depth == len(columns):
                 columns.append([])
-            columns[depth].append(state_id)
-            for child in dt.child_map[state_id]:
-                add_children(child, depth + 1)
+            columns[depth] += state_ids
+            next_ids = []
+            empty = True
+            for state_id in state_ids:
+                children = dt.child_map[state_id] if state_id else None
+                if not children:
+                    next_ids.append(None)
+                else:
+                    empty = False
+                    next_ids += children
+            if not empty:
+                add_children(next_ids, depth + 1)
 
         if ctrl.main.signalsBlocked():
             return
@@ -136,15 +145,15 @@ class ParseTreePanel(Panel):
             return
         roots = dt.get_roots()
         columns = []
-        for root in roots:
-            add_children(root, 0)
+        add_children(roots, 0)
 
         self.dt_data = {}
         width = len(columns) + 1
         for x, column in enumerate(columns, 1):
             height = len(column) + 1
             for y, node in enumerate(column, 1):
-                self.dt_data[node] = (1.0 / width) * x, (1.0 / height) * y
+                if node:
+                    self.dt_data[node] = (1.0 / width) * x, (1.0 / height) * y
         self.draw_tree()
         self.update_selected()
         ctrl.graph_view.activateWindow()
