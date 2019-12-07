@@ -192,10 +192,11 @@ class DerivationTree(SavedObject):
         self.show_parse(self.current_branch_index)
 
     def show_parse(self, parse_index):
-        self.current_branch_id = self.branches[parse_index]
-        self.build_active_branch()
-        self.jump_to_last_step()
-        ctrl.main.parse_changed.emit()
+        if self.branches:
+            self.current_branch_id = self.branches[parse_index]
+            self.build_active_branch()
+            self.jump_to_last_step()
+            ctrl.main.parse_changed.emit()
 
     # ############## #
     #                #

@@ -5,6 +5,7 @@ from kataja.ui_support.panel_utils import box_row
 from kataja.ui_widgets.KatajaSpinbox import KatajaSpinbox
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.buttons.TwoColorButton import TwoColorButton
+from kataja.ui_widgets.PushButtonBase import PushButtonBase
 
 __author__ = 'purma'
 
@@ -23,11 +24,10 @@ class NavigationPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         inner = self.widget()
         inner.setAutoFillBackground(True)
-        ctrl.main.forest_changed.connect(self.update_counters)
-        ctrl.main.parse_changed.connect(self.update_counters)
+        ctrl.main.forest_changed.connect(self.update_panel)
+        ctrl.main.parse_changed.connect(self.update_panel)
         layout = self.vlayout
-        if getattr(ctrl.document, 'can_add_forest', False):
-            self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest').to_layout(layout)
+        self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest').to_layout(layout)
 
         hlayout = box_row(layout)
         self.current_treeset = KatajaSpinbox(
@@ -102,11 +102,15 @@ class NavigationPanel(Panel):
                     self.current_parse.setMaximum(len(dt.branches))
                     self.parse_counter.setText('/ %s' % len(dt.branches))
 
+    def update_panel(self):
+        self.update_counters()
+        self.new_tree.setVisible(getattr(ctrl.document, 'can_add_forest', False))
+
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
         that signals would update.
         :param event:
         :return:
         """
-        self.update_counters()
+        self.update_panel()
         super().showEvent(event)

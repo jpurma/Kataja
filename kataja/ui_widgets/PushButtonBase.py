@@ -17,8 +17,8 @@ class PushButtonBase(QtWidgets.QPushButton, UIWidget):
 
     def __init__(self, parent=None, text=None, size=None, **kwargs):
         QtWidgets.QPushButton.__init__(self)
-        UIWidget.__init__(self, **kwargs)
         self.setParent(parent)
+        UIWidget.__init__(self, **kwargs)
         if text:
             self.setText(text)
         if size:

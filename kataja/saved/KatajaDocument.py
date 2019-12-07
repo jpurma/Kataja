@@ -41,6 +41,7 @@ class KatajaDocument(SavedObject):
     """
 
     unique = True
+    can_add_forest = False
 
     def __init__(self, name=None, uid=None):
         super().__init__(uid=uid)
