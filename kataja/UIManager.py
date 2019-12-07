@@ -632,6 +632,13 @@ class UIManager:
         toggle_action = self.get_action('toggle_panel')
         toggle_action.set_checked_for(panel_id, True)
 
+    def hide_panel(self, panel_id):
+        panel = self.get_panel(panel_id)
+        if panel and panel.isVisible():
+            panel.close()
+        toggle_action = self.get_action('toggle_panel')
+        toggle_action.set_checked_for(panel_id, False)
+
     def create_panels(self):
         self._panels = {}
         for panel_data in PANELS:

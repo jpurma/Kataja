@@ -34,8 +34,11 @@ def start_plugin(main, ctrl, prefs):
     ctrl.doc_settings.set('gloss_strategy', 'message')
     # ctrl.doc_settings.set('edge_visibility_rule', g.HIDE_UNJUSTIFIED_EDGES)
     ctrl.doc_settings.set('edge_visibility_rule', 0)
-    ctrl.doc_settings.set_for_edge_type('visible', True, g.CONSTITUENT_EDGE)
+    ctrl.doc_settings.set_for_edge_type('visible', False, g.CONSTITUENT_EDGE)
     ctrl.doc_settings.set_for_edge_type('visible', True, g.FEATURE_EDGE)
+    ctrl.doc_settings.set('left_first_rotation', True)
+    ctrl.ui.show_panel('ParseTreePanel')
+    ctrl.ui.show_panel('LexiconPanel')
 
 
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the

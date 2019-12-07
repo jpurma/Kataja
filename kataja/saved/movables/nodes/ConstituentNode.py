@@ -322,10 +322,10 @@ class ConstituentNode(Node):
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')
                 lines.append('')
-            if False and self.syntactic_object.parts:  # fixme: for debugging ordering problems
+            if self.syntactic_object.parts:  # fixme: for debugging ordering problems
                 lines.append(f'Children: {[c.label for c in self.syntactic_object.parts]}')
-                lines.append(f'Child nodes: {[f"{cn.uid}-{cn.label}" for cn in self.get_all_children()]}')
-                lines.append(f'Edge ends: {[f"{e.end.uid}-{e.end.label}" for e in self.edges_down]}')
+                #lines.append(f'Child nodes: {[f"{cn.uid}-{cn.label}" for cn in self.get_all_children()]}')
+                #lines.append(f'Edge ends: {[f"{e.end.uid}-{e.end.label}" for e in self.edges_down]}')
 
         if self.selected:
             lines.append(ui_style % 'Click to edit text, drag to move')

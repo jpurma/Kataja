@@ -313,7 +313,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     text = data['char']
                     node = ctrl.forest.drawing.create_node_from_text(text)
                     node.current_position = event.scenePos().x(), event.scenePos().y()
-                    message = f'Added node "{node}"'
+                    node.target_position = node.current_position
+                    message = f'Added node "{node}" to {node.current_position}'
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
                 command_identifier, *args = data.text().split(':')
@@ -328,15 +329,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node = ctrl.drawing.create_node(pos=event.scenePos(),
                                                         node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
+                        node.target_position = node.current_position
                         if node_type != CONSTITUENT_NODE:
                             node.lock()
-                        message = 'added %s' % args[0]
+                        message = f'added {args[0]} to {node.current_position}'
                     else:
                         print('received unknown command:', command, args)
                 else:
                     text = data.text().strip()
                     node = ctrl.forest.drawing.create_node_from_text(text)
-                    message = f'Added node "{node}"'
+                    node.current_position = event.scenePos().x(), event.scenePos().y()
+                    node.target_position = node.current_position
+                    message = f'Added node "{node}" to {node.current_position}'
             elif data.hasUrls():
                 for url in data.urls():
                     path = url.toString()

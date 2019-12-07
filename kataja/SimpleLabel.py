@@ -297,7 +297,6 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         :param event:
         """
         data = event.mimeData()
-        print('label dragEnterEvent ', data)
         if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
                 "text/plain"):
             event.acceptProposedAction()

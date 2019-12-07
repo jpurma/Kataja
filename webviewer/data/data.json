@@ -1,0 +1,476 @@
+{
+  "nodes": [
+    {
+      "id": "lääke",
+      "type": 0
+    },
+    {
+      "id": "n:nom",
+      "type": 2
+    },
+    {
+      "id": "-rel",
+      "type": 1
+    },
+    {
+      "id": "+a",
+      "type": 2
+    },
+    {
+      "id": "-n:gen",
+      "type": 1
+    },
+    {
+      "id": "josta",
+      "type": 0
+    },
+    {
+      "id": "rel",
+      "type": 2
+    },
+    {
+      "id": "-v",
+      "type": 1
+    },
+    {
+      "id": "P",
+      "type": 2
+    },
+    {
+      "id": "n:sta",
+      "type": 2
+    },
+    {
+      "id": "wh",
+      "type": 2
+    },
+    {
+      "id": "Merja",
+      "type": 0
+    },
+    {
+      "id": "halusi",
+      "type": 0
+    },
+    {
+      "id": "v",
+      "type": 2
+    },
+    {
+      "id": "T:past",
+      "type": 2
+    },
+    {
+      "id": "-n:nom",
+      "type": 1
+    },
+    {
+      "id": "=T:inf",
+      "type": 1
+    },
+    {
+      "id": "=P",
+      "type": 1
+    },
+    {
+      "id": "=foc",
+      "type": 1
+    },
+    {
+      "id": "=n:acc",
+      "type": 1
+    },
+    {
+      "id": "=n:sem",
+      "type": 1
+    },
+    {
+      "id": "=n:sta",
+      "type": 1
+    },
+    {
+      "id": "eroon",
+      "type": 0
+    },
+    {
+      "id": "-n:sta",
+      "type": 1
+    },
+    {
+      "id": "löytyi",
+      "type": 0
+    },
+    {
+      "id": "kaapista",
+      "type": 0
+    }
+  ],
+  "links": [
+    {
+      "id": "lääke_n:nom",
+      "type": 2,
+      "start": "lääke",
+      "end": "n:nom"
+    },
+    {
+      "id": "lääke_-rel",
+      "type": 1,
+      "start": "lääke",
+      "end": "-rel"
+    },
+    {
+      "id": "lääke_+a",
+      "type": 2,
+      "start": "lääke",
+      "end": "+a"
+    },
+    {
+      "id": "lääke_-n:gen",
+      "type": 1,
+      "start": "lääke",
+      "end": "-n:gen"
+    },
+    {
+      "id": "josta_rel",
+      "type": 2,
+      "start": "josta",
+      "end": "rel"
+    },
+    {
+      "id": "josta_-v",
+      "type": 1,
+      "start": "josta",
+      "end": "-v"
+    },
+    {
+      "id": "josta_P",
+      "type": 2,
+      "start": "josta",
+      "end": "P"
+    },
+    {
+      "id": "josta_n:sta",
+      "type": 2,
+      "start": "josta",
+      "end": "n:sta"
+    },
+    {
+      "id": "josta_wh",
+      "type": 2,
+      "start": "josta",
+      "end": "wh"
+    },
+    {
+      "id": "josta_josta",
+      "type": 0,
+      "start": "josta",
+      "end": "josta"
+    },
+    {
+      "id": "josta_lääke",
+      "type": 0,
+      "start": "josta",
+      "end": "lääke"
+    },
+    {
+      "id": "-rel_rel",
+      "type": 3,
+      "start": "-rel",
+      "end": "rel"
+    },
+    {
+      "id": "lääke_lääke",
+      "type": 0,
+      "start": "lääke",
+      "end": "lääke"
+    },
+    {
+      "id": "lääke_josta",
+      "type": 0,
+      "start": "lääke",
+      "end": "josta"
+    },
+    {
+      "id": "Merja_n:nom",
+      "type": 2,
+      "start": "Merja",
+      "end": "n:nom"
+    },
+    {
+      "id": "Merja_+a",
+      "type": 2,
+      "start": "Merja",
+      "end": "+a"
+    },
+    {
+      "id": "Merja_-n:gen",
+      "type": 1,
+      "start": "Merja",
+      "end": "-n:gen"
+    },
+    {
+      "id": "Merja_Merja",
+      "type": 0,
+      "start": "Merja",
+      "end": "Merja"
+    },
+    {
+      "id": "Merja_josta",
+      "type": 0,
+      "start": "Merja",
+      "end": "josta"
+    },
+    {
+      "id": "Merja_lääke",
+      "type": 0,
+      "start": "Merja",
+      "end": "lääke"
+    },
+    {
+      "id": "halusi_v",
+      "type": 2,
+      "start": "halusi",
+      "end": "v"
+    },
+    {
+      "id": "halusi_T:past",
+      "type": 2,
+      "start": "halusi",
+      "end": "T:past"
+    },
+    {
+      "id": "halusi_-n:nom",
+      "type": 1,
+      "start": "halusi",
+      "end": "-n:nom"
+    },
+    {
+      "id": "halusi_=T:inf",
+      "type": 1,
+      "start": "halusi",
+      "end": "=T:inf"
+    },
+    {
+      "id": "halusi_=P",
+      "type": 1,
+      "start": "halusi",
+      "end": "=P"
+    },
+    {
+      "id": "halusi_=foc",
+      "type": 1,
+      "start": "halusi",
+      "end": "=foc"
+    },
+    {
+      "id": "halusi_=n:acc",
+      "type": 1,
+      "start": "halusi",
+      "end": "=n:acc"
+    },
+    {
+      "id": "halusi_=n:sem",
+      "type": 1,
+      "start": "halusi",
+      "end": "=n:sem"
+    },
+    {
+      "id": "halusi_=n:sta",
+      "type": 1,
+      "start": "halusi",
+      "end": "=n:sta"
+    },
+    {
+      "id": "halusi_halusi",
+      "type": 0,
+      "start": "halusi",
+      "end": "halusi"
+    },
+    {
+      "id": "halusi_Merja",
+      "type": 0,
+      "start": "halusi",
+      "end": "Merja"
+    },
+    {
+      "id": "-n:nom_n:nom",
+      "type": 3,
+      "start": "-n:nom",
+      "end": "n:nom"
+    },
+    {
+      "id": "halusi_lääke",
+      "type": 0,
+      "start": "halusi",
+      "end": "lääke"
+    },
+    {
+      "id": "halusi_josta",
+      "type": 0,
+      "start": "halusi",
+      "end": "josta"
+    },
+    {
+      "id": "=P_P",
+      "type": 3,
+      "start": "=P",
+      "end": "P"
+    },
+    {
+      "id": "=n:sta_n:sta",
+      "type": 3,
+      "start": "=n:sta",
+      "end": "n:sta"
+    },
+    {
+      "id": "-v_v",
+      "type": 3,
+      "start": "-v",
+      "end": "v"
+    },
+    {
+      "id": "josta_halusi",
+      "type": 0,
+      "start": "josta",
+      "end": "halusi"
+    },
+    {
+      "id": "eroon_P",
+      "type": 2,
+      "start": "eroon",
+      "end": "P"
+    },
+    {
+      "id": "eroon_-n:sta",
+      "type": 1,
+      "start": "eroon",
+      "end": "-n:sta"
+    },
+    {
+      "id": "eroon_eroon",
+      "type": 0,
+      "start": "eroon",
+      "end": "eroon"
+    },
+    {
+      "id": "eroon_halusi",
+      "type": 0,
+      "start": "eroon",
+      "end": "halusi"
+    },
+    {
+      "id": "eroon_josta",
+      "type": 0,
+      "start": "eroon",
+      "end": "josta"
+    },
+    {
+      "id": "eroon_lääke",
+      "type": 0,
+      "start": "eroon",
+      "end": "lääke"
+    },
+    {
+      "id": "halusi_eroon",
+      "type": 0,
+      "start": "halusi",
+      "end": "eroon"
+    },
+    {
+      "id": "-n:sta_n:sta",
+      "type": 3,
+      "start": "-n:sta",
+      "end": "n:sta"
+    },
+    {
+      "id": "löytyi_v",
+      "type": 2,
+      "start": "löytyi",
+      "end": "v"
+    },
+    {
+      "id": "löytyi_T:past",
+      "type": 2,
+      "start": "löytyi",
+      "end": "T:past"
+    },
+    {
+      "id": "löytyi_-n:nom",
+      "type": 1,
+      "start": "löytyi",
+      "end": "-n:nom"
+    },
+    {
+      "id": "löytyi_=n:sta",
+      "type": 1,
+      "start": "löytyi",
+      "end": "=n:sta"
+    },
+    {
+      "id": "löytyi_löytyi",
+      "type": 0,
+      "start": "löytyi",
+      "end": "löytyi"
+    },
+    {
+      "id": "löytyi_eroon",
+      "type": 0,
+      "start": "löytyi",
+      "end": "eroon"
+    },
+    {
+      "id": "löytyi_halusi",
+      "type": 0,
+      "start": "löytyi",
+      "end": "halusi"
+    },
+    {
+      "id": "löytyi_josta",
+      "type": 0,
+      "start": "löytyi",
+      "end": "josta"
+    },
+    {
+      "id": "löytyi_lääke",
+      "type": 0,
+      "start": "löytyi",
+      "end": "lääke"
+    },
+    {
+      "id": "kaapista_n:sta",
+      "type": 2,
+      "start": "kaapista",
+      "end": "n:sta"
+    },
+    {
+      "id": "kaapista_+a",
+      "type": 2,
+      "start": "kaapista",
+      "end": "+a"
+    },
+    {
+      "id": "kaapista_-n:gen",
+      "type": 1,
+      "start": "kaapista",
+      "end": "-n:gen"
+    },
+    {
+      "id": "kaapista_kaapista",
+      "type": 0,
+      "start": "kaapista",
+      "end": "kaapista"
+    },
+    {
+      "id": "kaapista_löytyi",
+      "type": 0,
+      "start": "kaapista",
+      "end": "löytyi"
+    },
+    {
+      "id": "löytyi_kaapista",
+      "type": 0,
+      "start": "löytyi",
+      "end": "kaapista"
+    }
+  ]
+}

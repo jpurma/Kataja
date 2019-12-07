@@ -141,6 +141,10 @@ class FreeDrawing(ForestDrawing):
             right = new
         self.create_merger_node(left=left, right=right, new=new, heads=top.heads)
 
+    def create_node_from_text(self, text):
+        node = self.create_node(text, node_type=g.CONSTITUENT_NODE)
+        return node
+
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a trees: a new merge is created
         and inserted between two existing constituents. One connection is

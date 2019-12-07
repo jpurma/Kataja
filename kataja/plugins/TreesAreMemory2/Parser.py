@@ -1,9 +1,11 @@
 try:
     from kataja.plugins.TreesAreMemory2.Constituent import Constituent
+    from kataja.plugins.TreesAreMemory2.WebWeaver import Web
     from kataja.syntax.BaseFeature import BaseFeature as Feature
     from kataja.syntax.SyntaxState import SyntaxState
 except ImportError:
     from Constituent import Constituent
+    from WebWeaver import Web
     from Feature import Feature
     SyntaxState = None
 import time
@@ -16,6 +18,10 @@ ADJUNCT = 3
 RAISE_ARG = 4
 CLOSE_ARG = 5
 WH_RAISE_ARG = 6
+
+WEAVE = False
+
+DATA_PATH = 'webviewer/data/data.json'
 
 
 def read_lexicon(filename):
@@ -52,22 +58,31 @@ def linearize(const):
 
 def has_wh(const):
     for feat in get_head_features(const):
-        if feat.name == 'wh' and not feat.sign:
+        if feat.name == 'wh' and is_positive(feat):
             return feat
 
 
-def find_wh(node, at_head=None):
+def shallow_find_wh(node):
+    wh_feat = has_wh(node)
+    if wh_feat:
+        return node, wh_feat
+
+
+def deep_find_wh(node, at_head=None):
     wh_feat = has_wh(node.head)
     if wh_feat:
         return (at_head or node), wh_feat
     if node.parts:
         for part in node.parts:
             if part is node.argument or part.head is node.head:
-                found = find_wh(part, at_head=at_head or node)
+                found = deep_find_wh(part, at_head=at_head or node)
             else:
-                found = find_wh(part)
+                found = deep_find_wh(part)
             if found:
                 return found
+
+
+find_wh = shallow_find_wh
 
 
 def include_kataja_data(node):
@@ -100,6 +115,7 @@ def reset_features(node):
         if n in done:
             return
         done.add(n)
+        n.inherited_features = []
         heads.add(n.head)
         for part in n.parts:
             _collect_nodes(part)
@@ -111,21 +127,48 @@ def reset_features(node):
             feat.checks = None
 
 
-def collect_checked(const, used_features, done, inherit=False):
+def collect_checked(const, used_features, done, add_kataja_props=False):
     if const in done:
         return
     done.add(const)
     for part in const.parts:
-        collect_checked(part, used_features, done, inherit=inherit)
+        collect_checked(part, used_features, done, add_kataja_props=add_kataja_props)
     for f1, f2 in const.checked_features:
         used_features.add(f1)
         used_features.add(f2)
-    if inherit:
+
+    if add_kataja_props:
         const.inherited_features = [feat for feat in get_head_features(const.head) if feat not in used_features]
+        for f1, f2 in const.checked_features:
+            if is_positive(f1):
+                f1.checks = f2
+                f2.checked_by = f1
+            else:
+                f2.checks = f1
+                f1.checked_by = f2
+
+
+def collect_strong_features(const, strong_features, used_features, done, add_kataja_props=False):
+    if const in done:
+        return
+    done.add(const)
+    my_strong_features = set()
+    for part in const.parts:
+        if part is const.head or part is const.argument:
+            collect_strong_features(part, my_strong_features, used_features, done, add_kataja_props=add_kataja_props)
+    for feature in const.features:
+        if feature.sign == '*':
+            my_strong_features.add(feature)
+    strong_features |= my_strong_features
+    if add_kataja_props:
+        const.inherited_features += [feat for feat in my_strong_features
+                                     if feat not in used_features and feat not in const.inherited_features]
 
 
 def mark_features(node):
-    collect_checked(node, set(), set(), inherit=True)
+    used_features = set()
+    collect_checked(node, used_features, set(), add_kataja_props=True)
+    collect_strong_features(node, set(), used_features, set(), add_kataja_props=True)
 
 
 def are_congruent(feats_a, feats_b):
@@ -135,6 +178,10 @@ def are_congruent(feats_a, feats_b):
                 if feat_b.name == feat_a.name and feat_a.sign == feat_b.sign and feat_b.value and feat_b.value != feat_a.value:
                     return False
     return True
+
+
+def is_positive(feat):
+    return feat.sign == '' or feat.sign == '*'
 
 
 class State:
@@ -196,6 +243,20 @@ class State:
         msg = f"wh-raise : '{wh.label}' as argument for '{const.label}' ({checked_features or ''})"
         return self.new_state(y, msg, "wharg()", WH_RAISE_ARG)
 
+    def whup(self):
+        const = self.s
+        first = const.left
+        second = const.right
+        wh_node, wh_feat = deep_find_wh(second)
+        head = first.head
+        x = Constituent(label=first.label, parts=[wh_node, first], head=head)
+        if second.parts:
+            y = Constituent(label=x.label, parts=[x, second], head=x.head)
+        else:
+            y = x
+        msg = f"raise '{wh_node.label}' as waiting wh-element for: '{first.label}'"
+        return self.new_state(y, msg, "whup()", WH_RAISE_ARG)
+
     def add(self, word, wh=False):
         x = Constituent(word)
         if wh:
@@ -211,7 +272,7 @@ class State:
     def add_const(self, const):
         x = Constituent(const.label, parts=[const, self.s], head=const.head) if self.s else const
         msg = f'add "{const.label}"'
-        has_wh = ', wh=True' if [f for f in const.features if f.name == 'wh' and not f.sign] else ''
+        has_wh = ', wh=True' if [f for f in const.features if f.name == 'wh' and is_positive(f)] else ''
         return self.new_state(x, msg, f"f('{const.label}'{has_wh})", ADD)
 
     def o_adj(self, other=None):
@@ -266,7 +327,6 @@ class State:
         msg = f"raise '{adj.label}' as adj for: '{first.label}' ({checked_features or ''})"
         return self.new_state(y, msg, "adj()", ADJUNCT)
 
-
     def new_state(self, x, msg, entry, state_type):
         state = self.parser.add_state(self, x, entry, state_type)
         #print('creating state ', state.state_id, ' w. parent ', state.parent and state.parent.state_id, ' , ', msg)
@@ -296,6 +356,8 @@ class Parser:
         self.ids = 0
         self.debug = debug
         self.expanding = False
+        if WEAVE:
+            self.web = Web()
 
     def add_state(self, parent=None, const=None, entry="", state_type=0):
         if parent and not parent.s:
@@ -403,23 +465,29 @@ class Parser:
 
         for state in list(self.states):
             linear = linearize(state.s)
-            print(state)
+            print('state n.: ', state)
 
             if target_linearization == linear and self.validate_structure(state.s):
                 state.new_state(state.s, f'done: {linear}', '', DONE_SUCCESS)
                 result_trees.append(state.s)
-                print(state.s)
                 if not func_parse:
-                    print(state.print_history())
+                    print('possible derivation: ', state.print_history())
             else:
                 state.new_state(state.s, f'fail: {linear}', '', DONE_FAIL)
 
         print()
+        if WEAVE:
+            self.web.save_as_json(DATA_PATH)
+
         return result_trees
 
     @staticmethod
     def _collect_available_features(top_head, used_features):
-        return [feat for feat in get_head_features(top_head.head) if feat not in used_features]
+        strong_features = set()
+        collect_strong_features(top_head, strong_features, used_features, set())
+        head_features = get_head_features(top_head.head)
+        head_features += [f for f in strong_features if f not in head_features]
+        return [feat for feat in head_features if feat not in used_features]
 
     @staticmethod
     def _collect_wh_features(top, used_features):
@@ -432,14 +500,15 @@ class Parser:
     @staticmethod
     def _find_match(target, features):
         for feat in features:
-            if feat.name == target.name and (feat.value == target.value or not target.value) and not feat.sign:
+            if feat.name == target.name and (feat.value == target.value or not target.value) and is_positive(feat):
                 return feat
 
-    def attempt_raising(self, state, next_const=None):
+    def attempt_raising(self, state, next_const=None, can_whup=True):
         # options are close_argument, arg, wharg and do nothing. Features of the current state may block some of these
         if not (state.s and state.s.left and state.s.right):
             self.states_to_remove.remove(state)
             return state
+
 
         used_features = set()
 
@@ -449,13 +518,23 @@ class Parser:
         second_features = self._collect_available_features(state.s.right, used_features)
         # next_const_features = next_const.features if next_const else []
 
+            # wharg raise
+        if can_whup and False:
+            for feat in second_features:
+                if feat.name == 'wh' and is_positive(feat):
+                    print('doing wharg raise')
+                    new_state = state.whup()
+                    self.attempt_raising(new_state, next_const=next_const, can_whup=False)
+                    #self.states_to_remove.add(state)
+                    #return new_state
+
+
         # adj raise
         adj_features = second_features
         head_features = top_features
         if are_congruent(head_features, adj_features):
             for feat in head_features:
                 if feat.sign == '+':
-                    print('looking for match for ', feat)
                     match = self._find_match(feat, adj_features)
                     if match:
                         new_state = state.adj(checked_features=[(feat, match)])
@@ -486,15 +565,14 @@ class Parser:
                     new_state = state.close_argument(checked_features=[(feat, match)])
                     self.attempt_raising(new_state, next_const=next_const)
 
-        # wharg raise
-        wh_features = self._collect_wh_features(state.s, used_features)
-        head_features = top_features
-        for feat in head_features:
-            if feat.sign == '-' or feat.sign == '=':
-                match = self._find_match(feat, wh_features)
-                if match:
-                    new_state = state.wharg(checked_features=[(feat, match)])
-                    self.attempt_raising(new_state, next_const=next_const)
+        # wh_features = self._collect_wh_features(state.s, used_features)
+        # head_features = top_features
+        # for feat in head_features:
+        #     if feat.sign == '-' or feat.sign == '=':
+        #         match = self._find_match(feat, wh_features)
+        #         if match:
+        #             new_state = state.wharg(checked_features=[(feat, match)])
+        #             self.attempt_raising(new_state, next_const=next_const)
         if state in self.states_to_remove:
             self.states_to_remove.remove(state)
         return state
@@ -503,6 +581,8 @@ class Parser:
         if self.forest:
             # print('iteration ', iteration, ' : ', message)
             include_kataja_data(const)
+            if WEAVE:
+                self.web.weave_in(const)
             if const.left and const.right and state_type != DONE_SUCCESS and state_type != DONE_FAIL:
                 groups = [('', [const.left]), ('', [const.right])]
             else:

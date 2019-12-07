@@ -45,10 +45,10 @@ class CommentNode(Node):
     can_be_in_groups = False
     resizable = True
     quick_editable = True
-    editable_fields = {'text': dict(name='',
-                                    prefill='comment',
-                                    tooltip='freeform text, invisible for processing',
-                                    input_type='expandingtext')}
+    editable_fields = {'label': dict(name='',
+                                     prefill='comment',
+                                     tooltip='freeform text, invisible for processing',
+                                     input_type='expandingtext')}
 
     default_style = {'fancy': {'color_key': 'accent4',
                                'font_id': g.MAIN_FONT,
@@ -92,19 +92,8 @@ class CommentNode(Node):
         """
         return self.get_parents(of_type=g.COMMENT_NODE)
 
-    @property
-    def text(self):
-        """ The text of the comment. Uses the generic node.label as storage.
-        :return: str or ITextNode
-        """
-        return self.label
-
-    @text.setter
-    def text(self, value):
-        """ The text of the comment. Uses the generic node.label as storage.
-        :param value: str or ITextNode
-        """
-        self.label = value
+    def label_as_editable_html(self):
+        return 'label', as_html(self.label)
 
     def has_arrow(self):
         return bool(self.edges_down)
@@ -122,7 +111,7 @@ class CommentNode(Node):
                     self.image_object.setParentItem(None)
                 self.image_object = QtWidgets.QGraphicsPixmapItem(self.image, self)
                 self.image_object.setPos(self.image.width() / -2, self.image.height() / -2)
-                self.text = ''
+                self.label = ''
                 self.update_label_visibility()
                 self.update_bounding_rect()
         else:
@@ -156,7 +145,7 @@ class CommentNode(Node):
         return not (self.edges_down or self.edges_up)
 
     def __str__(self):
-        return 'comment: %s' % self.text
+        return 'comment: %s' % self.label
 
     def _calculate_inner_rect(self, min_w=0, min_h=0):
         user_width, user_height = self.user_size if self.user_size is not None else (0, 0)

@@ -726,6 +726,29 @@ class Forest(SavedObject):
                 edge.path.cached_shift_for_end = None
 
     def compute_traces_to_draw(self, rotator) -> int:
+        if self.settings.get('left_first_rotation'):
+            return self.compute_left_first_rotation(rotator)
+        else:
+            return self.compute_highest_first_rotation(rotator)
+
+    def compute_left_first_rotation(self, rotator):
+        def add_children(node, parent):
+            if node not in used:
+                used.add(node)
+                if hasattr(node, 'index') and parent:
+                    trace_dict[node.uid] = parent.uid
+                for child in node.get_all_children(visible=False):
+                    add_children(child, node)
+
+        trace_dict = {}
+        for tree_top in self:
+            used = set()
+            add_children(tree_top, None)
+
+        self.traces_to_draw = trace_dict
+        return 0
+
+    def compute_highest_first_rotation(self, rotator):
         """ This is complicated, but returns a dictionary that tells for each index key
         (used by chains) in which position at trees to draw the node. Positions are identified by
         key of their immediate parent: {'i': ConstituentNode394293, ...} """
@@ -760,9 +783,6 @@ class Forest(SavedObject):
                     my_parents = []
                     for parent in parents:
                         if parent in ltree:
-                            # vanhemman indeksi on hyvä vain jos on vasemmanpuolimmaisin lapsi. Muuten pitää ottaa
-                            # edellisen sisaren oikealta viimeinen lapsi ja sen indeksi. Olkoon se sitten n_index - 1
-                            # tee numeroitu versio puusta ja mieti sen avulla.
                             i = ltree.index(parent)
                             my_parents.append((max((i, n_index - 1)), node_key, parent, True))
                     if my_parents:

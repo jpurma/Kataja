@@ -496,6 +496,8 @@ class Preferences(object):
                     'linearisation or parser output',
             'order': 40
         }
+
+        self.left_first_rotation = False
         self.log_level = 20
 
     def import_node_classes(self, classes):

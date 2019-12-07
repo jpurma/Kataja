@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link line {
+  stroke-opacity: 1
+}
+
+.labels text {
+  pointer-events: none;
+  font: 10px sans-serif;
+  /*color: hsl(192, 81%, 14%);*/
+  color: rgb(238, 232, 213);
+}
+
+svg {
+  /*background-color: hsl(192, 81%, 14%);*/
+  background: radial-gradient(rgb(253, 246, 227), rgb(238, 232, 213));
+}
+
+.buttons {
+  position: fixed;
+  bottom: 24px;
+  left: 8px;
+  display: inline-block;
+  background-color: transparent;
+}
+
+button {
+  width: 72px;
+  height: 20px;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+  border: 0;
+  cursor: pointer;
+}
+
+#tree_n, #step_n {
+  text-align: center;
+  display: inline-block;
+  min-width: 48px;
+  height: 20px;
+  color: rgb(131, 148, 150);
+  background-color: rgb(253, 246, 227);
+}
+
+button:active {
+  background-color: rgb(238, 232, 213);
+  color: rgb(147, 161, 161);
+}
+
+
+</style>
+<body>
+<div class="buttons">
+    <button id="prev_tree" onclick="prevTree()">←</button>
+    <span id="tree_n">0</span>
+    <button id="next_tree" onclick="nextTree()">→</button>
+    <button id="prev_der" onclick="prevStep()">-</button>
+    <span id="step_n">0</span>
+    <button id="next_der" onclick="nextStep()">+</button>
+    <button id="reload" onclick="openNetwork()">refresh</button>
+</div>
+<svg width="2880" height="1920"></svg>
+</body>
+<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+<!-- switch link above with local version for offline development -->
+<script src="d3.min.js"></script>
+<!-- -->
+<script src="d3-ellipse-force.js"></script>
+<script>
+
+const CONST_NODE = 0
+const NEG_FEAT = 1
+const POS_FEAT = 2
+const WH_FEAT = 3
+
+let showWeights = true;
+const svg = d3.select("svg");
+svg.attr("width", window.innerWidth - 8);
+svg.attr("height", window.innerHeight - 16);
+
+let svg_width = svg.attr("width");
+let svg_height = svg.attr("height");
+let center_x = svg_width / 2;
+let center_y = svg_height / 2;
+
+const graph = {nodes: [], links:[], info:{}};
+
+var accents = [
+  [181, 137, 0, 1], // [45, 100, 35], // #b58900 yellow
+  [203, 75, 22, 1], //[18, 80, 44], // #cb4b16 orange
+  [220, 50, 47, 1], //[1, 71, 52], // #dc322f red
+  [211, 54, 130, 1], //[331, 164, 52], // #d33682 magenta
+  [108, 113, 196, 1], //[237, 43, 60], // #6c71c4 violet
+  [38, 139, 210, 1], //[205, 69, 49], // #268bd2 blue
+  [42, 161, 152, 1], //[175, 59, 40], // #2aa198 cyan
+  [133, 153, 0, 1] //[68, 100, 30] // #859900 green
+];
+
+///////////////////////////////////
+
+// Generic 'get' from api endpoint
+const get = (endpoint) => {
+  var opts = {
+    method: 'GET',
+    headers: {}
+  };
+  console.log('fetch: ', endpoint, opts);
+  return fetch(endpoint, opts)
+    .then(response => response.json());
+};
+
+const post = (endpoint, data) => {
+  var opts = {
+    method: 'POST',
+    headers: {},
+    body: data
+  };
+  console.log('fetch: ', endpoint, opts);
+  return fetch(endpoint, opts)
+    .then(response => response.json());
+};
+
+
+const openNetwork = () => {
+  get('/api/net').then(redrawGraph);
+}
+
+openNetwork()
+
+svg.append("rect")
+  .attr("fill", "none")
+  .attr("pointer-events", "all")
+  .attr("width", svg_width)
+  .attr("height", svg_height)
+  .call(d3.zoom()
+    .scaleExtent([0.1, 8])
+    .on("zoom", zoom));
+
+const g = svg.append("g");
+g.attr("class", "node link labels");
+
+var simulation = d3.forceSimulation()
+  .force("link",
+    d3.forceLink()
+      .id(function(d) { return d.id; })
+      .strength(function(d) {
+          return 0.2
+      })
+    )
+  .force("collide", d3.ellipseForce(10, 1, 0.05))
+  .force("x", d3.forceX(d => d.start_x).strength(function(d) {
+    return 0.03;
+  }))
+  .force("y", d3.forceY(d => d.start_y).strength(function(d) {
+    return 0.03;
+  }))
+  ;
+
+let link = g.selectAll("line").data(graph.links, function(d) { return d.id; });
+let node = g.selectAll("ellipse").data(graph.nodes, function(d) { return d.id; });
+let text = g.selectAll("text").data(graph.nodes, function(d) { return d.id; });
+
+function ticked() {
+  link
+    .attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
+
+  node
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; });
+  text
+    .attr('transform', function(d) { return `translate(${d.x},${d.y})`});
+}
+
+function zoom() {
+  g.attr("transform", d3.event.transform);
+}
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.05).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+function selectNode(d) {
+  const token = encodeURIComponent(d.id);
+  console.log(d)
+}
+
+const resizeSvg = function() {
+  svg_width = window.innerWidth - 8;
+  svg_height = window.innerHeight - 16;
+
+  svg.attr("width", svg_width);
+  svg.attr("height", svg_height);
+  center_x = svg_width / 2;
+  center_y = svg_height / 2;
+  simulation.force("x", d3.forceX(center_x).strength(function(d) {
+    return 0.5;
+  }))
+  .force("y", d3.forceY(center_y).strength(function(d) {
+    return 0.5;
+  }));
+  simulation.alpha(0.1).alphaTarget(0).restart();
+}
+
+window.addEventListener('resize', resizeSvg, false);
+
+function fuzz() {
+  return Math.random() * 400 - 200
+}
+
+function fuzz10() {
+  return Math.random() * 30 - 15
+}
+
+function nodeStroke(d) {
+  return nodeColor(d);
+}
+
+function nodeFill(d) {
+  const rgba = nodeColor(d);
+  return `rgba(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`;
+}
+
+function nodeColor(d) {
+  if (d.type == CONST_NODE) {
+    return accents[0];
+  } else if (d.type == NEG_FEAT) {
+    return accents[4];
+  } else if (d.type == POS_FEAT) {
+    return accents[2];
+  } else if (d.type == WH_FEAT) {
+    return accents[6];
+  }
+}
+
+function linkColor(d) {
+  if (d.type == 0) {
+    return '#aaa';
+  } else if (d.type == 1) {
+    return '#44e';
+  } else if (d.type == 2) {
+    return '#e44';
+  }
+  return '#000';
+  //const v = d.weight * 255
+  //return `rgba(${v}, ${v}, ${v}, 1)`;
+}
+
+function strokeWidth(d) {
+  return 2
+  //return d.weight * 10.0;
+}
+
+function handleMouseOver() {
+  d3.select(this)
+    .attr('stroke', d => {
+      const c = d3.hsl(nodeColor(d));
+      c.l += 0.15;
+      return c;
+    })
+    .attr("stroke-width", function(d) {
+        return 3;
+      })
+}
+
+function handleMouseOut() {
+  d3.select(this)
+    .attr('stroke', nodeStroke)
+    .attr('stroke-width', strokeWidth)
+}
+
+function calculatePositions() {
+  graph.nodes.forEach(nd => {
+    nd.x = fuzz() + center_x;
+    nd.y = fuzz() + center_y;
+    nd.start_x = nd.x;
+    nd.start_y = nd.y;
+  });
+}
+
+// ---------------- update graph starts ------------------
+
+function redrawGraph(data) {
+  // map of existing nodes by their id
+  const nodeMap = graph.nodes.reduce((map, nd) => {
+      map[nd.id] = nd;
+      return map;
+    }, {});
+
+  graph.nodes = data.nodes;
+  graph.links = data.links;
+  graph.links.forEach(e => {
+    e.source = e.start;
+    e.target = e.end;
+  });
+  graph.info = data.info;
+
+  // map of nodes that target the given node id
+  const targetMap = graph.links.reduce((m, link) => {
+    const start = nodeMap[link.start];
+    if (start) {
+      if (m && m[link.end]) {
+        m[link.end].push(start);
+      } else {
+        m[link.end] = [start];
+      }
+    }
+    return m;
+  }, {});
+
+  calculatePositions();
+
+  link = g.selectAll("line").data(graph.links, function(d) { return d.id; });
+
+  link.exit().remove();
+
+  link = link.enter().append("line")
+    .merge(link)
+    .attr("stroke-width", 1)
+    .attr("stroke", linkColor)
+
+  node = g.selectAll("ellipse").data(graph.nodes, function(d) { return d.id; });
+
+  node.exit().transition()
+    .attr("rx", 0)
+    .attr("ry", 0)
+    .remove();
+
+  node.attr("x", function(d) { return d.x; })
+    .attr("y", function(d) { return d.y; });
+
+  node = node.enter().append("ellipse")
+    .attr("rx", 0)
+    .attr("ry", 0)
+    .attr("fill", nodeFill)
+    .attr("stroke", nodeStroke)
+    .attr("stroke-width", strokeWidth)
+    .merge(node)
+    .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended)
+      .clickDistance(6))
+    .on("click", selectNode)
+    .on("mouseover", handleMouseOver)
+    .on("mouseout", handleMouseOut)
+    .raise();
+
+  text = g.selectAll("text").data(graph.nodes, function(d) { return d.id; });
+
+  text.exit().remove();
+
+  text = text.enter().append("text")
+    .attr("dy", 2)
+    .attr("text-anchor", "middle")
+    .text(d => d.id)
+    .attr("fill", "#93a1a1;")
+    .merge(text)
+    .raise();
+
+  graph.nodes.forEach(nd => {
+    nd.rx = 36;
+    nd.ry = 18;
+  });
+
+  // updating existing/merged new nodes is done last because new texts may have changed the text box size
+  // for existing nodes.
+  node
+    .transition()
+    .attr("rx", function(d) { return d.rx; })
+    .attr("ry", function(d) { return d.ry; })
+    .attr("fill", nodeFill)
+    .attr("stroke", nodeStroke)
+    .attr("stroke-width", strokeWidth);
+
+  // restart animations and graph calculations
+  simulation
+    .nodes(graph.nodes);
+  simulation.force("link")
+       .links(graph.links);
+
+  simulation.alpha(0.3).alphaTarget(0).restart();
+
+  simulation
+    .on("tick", ticked);
+}
+// ---------------- update graph ends ------------------
+
+</script>

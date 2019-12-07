@@ -26,8 +26,8 @@ class NavigationPanel(Panel):
         ctrl.main.forest_changed.connect(self.update_counters)
         ctrl.main.parse_changed.connect(self.update_counters)
         layout = self.vlayout
-        # self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest'
-        #                               ).to_layout(layout)
+        if getattr(ctrl.document, 'can_add_forest', False):
+            self.new_tree = PushButtonBase(parent=self, text='New forest', action='new_forest').to_layout(layout)
 
         hlayout = box_row(layout)
         self.current_treeset = KatajaSpinbox(

@@ -3,6 +3,7 @@ import kataja.plugins.FreeDrawing.actions
 from kataja.plugins.FreeDrawing.EditableConstituentNode import EditableConstituentNode
 from kataja.plugins.FreeDrawing.EditableFeatureNode import EditableFeatureNode
 from kataja.plugins.FreeDrawing.EditableForest import EditableForest
+from kataja.plugins.FreeDrawing.EditableDocument import EditableDocument
 from kataja.plugins.FreeDrawing.EditableSyntax import EditableSyntax
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
@@ -14,7 +15,7 @@ from kataja.plugins.FreeDrawing.EditableSyntax import EditableSyntax
 # them here, you have to put class definitions *before* the plugin_classes -line.
 
 # plugin_classes = [PythonClass,...]
-plugin_classes = [EditableFeatureNode, EditableConstituentNode, EditableForest, EditableSyntax]
+plugin_classes = [EditableFeatureNode, EditableConstituentNode, EditableForest, EditableSyntax, EditableDocument]
 
 # plugin_actions = PythonModule / None
 plugin_actions = kataja.plugins.FreeDrawing.actions
@@ -26,7 +27,7 @@ plugin_actions = kataja.plugins.FreeDrawing.actions
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
-reload_order = ['FreeDrawing.EditableFeatureNode', 'FreeDrawing.EditableConstituentNode']
+reload_order = ['FreeDrawing.EditableFeatureNode', 'FreeDrawing.EditableConstituentNode', 'FreeDrawing.EditableDocument']
 
 
 def start_plugin(main, ctrl, prefs):
@@ -37,6 +38,7 @@ def start_plugin(main, ctrl, prefs):
     ctrl.doc_settings.set('feature_positioning', g.HORIZONTAL_ROW)
     ctrl.doc_settings.set('feature_check_display', g.NO_CHECKING_EDGE)
     ctrl.doc_settings.set_for_edge_type('visible', True, g.CONSTITUENT_EDGE)
+    ctrl.ui.hide_panel('ParseTreePanel')
 
 
 def tear_down_plugin(main, ctrl, prefs):

@@ -14,31 +14,6 @@ table_names = ['common', 'greek', 'arrows', 'more arrows', 'latin', 'combining',
                'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl',
                'mathtt']
 
-table_dict = {
-    'common': 'common',
-    'greek': 'greek alphabet',
-    'latin': 'extended latin',
-    'combining': 'combining diacritics',
-    'arrows': 'arrows',
-    'more arrows': 'more arrows etc.',
-    'rest': 'miscallenous symbols',
-    'cyrchar': 'cyrillic',
-    'ding': 'dingbats',
-    'ElsevierGlyph': 'Elsevier Glyphs',
-    'mathbb': 'mathbb',
-    'mathbf': 'mathbf',
-    'mathbit': 'mathbit',
-    'mathfrak': 'mathfrak',
-    'mathmit': 'mathmit',
-    'mathscr': 'mathscr',
-    'mathsfbfsl': 'mathsfbfsl',
-    'mathsfbf': 'mathsfbf',
-    'mathsfsl': 'mathsfsl',
-    'mathsf': 'mathsf',
-    'mathslbb': 'mathslbb',
-    'mathsl': 'mathsl',
-    'mathtt': 'mathtt'
-}
 
 common = ['alpha', 'beta', 'gamma', 'phi', 'theta', 'lambda', 'tau', 'leftarrow', 'rightarrow',
           'prec', 'preccurlyeq', 'succ', 'succcurlyeq', 'oplus', 'surd', 'subset', 'subseteq',
@@ -127,7 +102,7 @@ class SymbolPanel(Panel):
         widget = self.widget()
         layout = self.vlayout
         self.selector = SelectionBox(parent=widget)
-        self.selector.add_items([(table_dict[item], item) for item in table_names])
+        self.selector.add_items([(item, item) for item in table_names])
         # noinspection PyUnresolvedReferences
         self.selector.activated.connect(self.change_symbol_set)
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -170,10 +145,8 @@ class SymbolPanel(Panel):
 
     def prepare_symbols(self, key):
         self.symlist.clear()
-        # debug_dict = OrderedDict()
         for key in self.tables[key]:
             char, description, table = latex_to_unicode[key]
-            # debug_dict[key] = (char, description)
             command = '\\' + key
             item = QtWidgets.QListWidgetItem(char)
             item.k_tooltip = command
@@ -183,8 +156,6 @@ class SymbolPanel(Panel):
                 'command': command
             })
             self.symlist.addItem(item)
-            # pp = pprint.PrettyPrinter(indent=4)
-            # pp.pprint(list(debug_dict.keys()))
 
     def item_entered(self, item):
         self.info.setText(item.data(55)['description'])

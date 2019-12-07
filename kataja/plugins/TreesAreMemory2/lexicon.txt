@@ -8,7 +8,7 @@ ajoi :: v -n:nom T:past -P -n:part
 autoa :: n:part +a -n:gen
 eroon :: P -n:sta
 että :: rel xC =v
-halusi :: v T:past -n:nom =T:inf =P =foc
+halusi :: v T:past -n:nom =T:inf =P =foc =n:acc =n:sem =n:sta
 hassu :: n:nom +a a -n:gen
 hän :: n:nom -n:gen
 joka :: rel -v n:nom wh
@@ -17,17 +17,17 @@ jota :: rel -v n:part wh
 juhlissa :: n:sem +a -n:gen
 kaapista :: n:sta +a -n:gen
 kaupunkia :: n:part +a -n:gen
-kenen :: wh n:gen +n
-kenestä :: wh n:sta +n -v
+kenen :: *wh n:gen
+kenestä :: wh n:sta -v
 kohti :: P -n:part
 kumoutui :: v T:past -n:nom =pv
 kuvan :: n:acc =n:sta +a -n:gen
 lääke :: n:nom -rel +a -n:gen
 lääkettä :: n:part +a -n:gen
 löytyi :: v T:past -n:nom =n:sta
-mitä :: wh n:part +n -n:gen -v
+mitä :: *wh n:part +n -n:gen -v
 ottavan :: v T:inf =n:gen =n:acc =n:sem =n:sta
-paidasta :: n:sta +a -n:gen =T
+paidasta :: n:sta +a -n:gen
 parantui :: v T:past -n:nom =pv
 pääsee :: v T:prees =pv -n:nom =n:sem
 päätyi :: v T:past -n:nom =pv
