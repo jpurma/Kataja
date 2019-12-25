@@ -2,13 +2,15 @@ Merja :: n:nom +a -n:gen
 Merjaa :: n:part +a -n:gen
 Pekan :: n:gen +a -n:gen
 Pekka :: n:nom +a -n:gen
+Pekkaa :: n:part +a -n:gen
+Riikan :: n:gen +a -n:gen
 Seine :: n:nom +a -n:gen
 Seineä :: n:part +a -n:gen
 ajoi :: v -n:nom T:past -P -n:part
 autoa :: n:part +a -n:gen
 eroon :: P -n:sta
 että :: rel xC =v
-halusi :: v T:past -n:nom =T:inf =P =foc =n:acc =n:sem =n:sta
+halusi :: v T:past -n:nom =T:inf =P =n:acc =n:sem -foc
 hassu :: n:nom +a a -n:gen
 hän :: n:nom -n:gen
 joka :: rel -v n:nom wh
@@ -16,23 +18,30 @@ josta :: rel -v P n:sta wh
 jota :: rel -v n:part wh
 juhlissa :: n:sem +a -n:gen
 kaapista :: n:sta +a -n:gen
-kaupunkia :: n:part +a -n:gen
-kenen :: *wh n:gen
-kenestä :: wh n:sta -v
+kaupunkia :: n:part +a -n:part -n:gen
+kenen :: *foc wh n:gen
+kenestä :: *foc wh n:sta -v
+kielsi :: v T:past -n:nom =T -foc -n:sem
+kimaltavasta :: n:sta +a -n:gen =n:sta
 kohti :: P -n:part
 kumoutui :: v T:past -n:nom =pv
 kuvan :: n:acc =n:sta +a -n:gen
+kuvia :: n:part =n:sta +a -n:gen
 lääke :: n:nom -rel +a -n:gen
 lääkettä :: n:part +a -n:gen
 löytyi :: v T:past -n:nom =n:sta
-mitä :: *wh n:part +n -n:gen -v
+mitä :: *foc wh n:part +n -n:gen -v
+ottamaan :: v T:inf =n:part =n:part =n:sem =n:acc
+ottamasta :: v T:inf =n:part =n:part =n:acc -n:sem
 ottavan :: v T:inf =n:gen =n:acc =n:sem =n:sta
 paidasta :: n:sta +a -n:gen
 parantui :: v T:past -n:nom =pv
+pyysi :: v T:past -n:nom =T -foc
 pääsee :: v T:prees =pv -n:nom =n:sem
 päätyi :: v T:past -n:nom =pv
 rakastaa :: v T:prees -n:nom =n:part
 rakasti :: v T:past -n:nom =n:part
+saavuttaa :: v T:prees -n:nom =n:sem =n:acc =pv
 sanoi :: v T:past -n:nom -xC
 se :: n:nom =rel =n
 syömällä :: pv =n:part
@@ -40,5 +49,6 @@ teoria :: n:nom =rel +a -n:gen
 tiesi :: v T:past -n:nom =T
 tyttö :: n:nom -rel +a -n:gen
 valtamereen :: n:sem +a -n:gen
+valtameren :: n:acc +a -n:gen
 virtaamalla :: pv =n:sem =P
 väite :: n:nom =rel +a n -n:gen

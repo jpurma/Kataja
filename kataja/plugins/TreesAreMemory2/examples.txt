@@ -1,3 +1,5 @@
+f('mitä', wh=True).f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().f('Seine').f('saavuttaa').arg().f('valtameren').r().arg()
+
 f('mitä', wh=True).f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().f('Seine').f('pääsee').arg().f('valtamereen').r().arg()
 
 f('tyttö').f('jota', wh=True).arg().f('Pekka').f('halusi').arg().f('rakastaa').wharg().arg().r().r().r().f('löytyi').arg().f('kaapista').r()
