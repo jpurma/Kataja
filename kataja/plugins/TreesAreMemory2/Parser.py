@@ -110,69 +110,71 @@ def get_label(head):
 
 def reset_features(node):
     done = set()
-    heads = {node.head}
 
-    def _collect_nodes(n):
+    def _reset_features(n):
         if n in done:
             return
         done.add(n)
         n.inherited_features = []
-        heads.add(n.head)
-        for part in n.parts:
-            _collect_nodes(part)
-
-    _collect_nodes(node)
-    for head in heads:
-        for feat in get_head_features(head):
+        for feat in n.features:
             feat.checked_by = None
             feat.checks = None
+        for part in n.parts:
+            _reset_features(part)
+
+    _reset_features(node)
 
 
-def collect_checked(const, used_features, done, add_kataja_props=False):
-    if const in done:
-        return
+def collect_strong_features(const, done=None):
+    if done is None:
+        done = set()
+    elif const in done:
+        return set()
     done.add(const)
-    for part in const.parts:
-        collect_checked(part, used_features, done, add_kataja_props=add_kataja_props)
-    for f1, f2 in const.checked_features:
-        used_features.add(f1)
-        used_features.add(f2)
+    strong_features = set()
+    if const.parts:
+        part = const.parts[0]
+        if part.head is const.head or part is const.argument:
+            strong_features = collect_strong_features(part, done)
+    for feature in const.features:
+        if feature.sign == '*':
+            strong_features.add(feature)
+    return strong_features
 
-    if add_kataja_props:
-        const.inherited_features = [feat for feat in get_head_features(const.head) if feat not in used_features]
-        for f1, f2 in const.checked_features:
+
+def mark_features(top_node):
+    done = {}
+
+    def _mark_features(node):
+        if node.uid in done:
+            return done[node.uid]
+        checked_here = []
+        for f1, f2 in node.checked_features:
             if is_positive(f1):
                 f1.checks = f2
                 f2.checked_by = f1
             else:
                 f2.checks = f1
                 f1.checked_by = f2
+            checked_here.append(f1)
+            checked_here.append(f2)
+        node.inherited_features = []
+        my_strong_features = [f for f in node.features if f.sign == '*']
+        my_head_features = [f for f in node.features if f.sign != '*']
+        for part in node.parts:
+            strong_features, head_features = _mark_features(part)
+            if part.head is node.head or node.argument is part:
+                my_strong_features += strong_features
+                if part.head is node.head:
+                    my_head_features += head_features
 
+        node.inherited_features = my_head_features + my_strong_features
+        my_strong_features = [f for f in my_strong_features if f not in checked_here]
+        my_head_features = [f for f in my_head_features if f not in checked_here]
+        done[node.uid] = my_strong_features, my_head_features
+        return my_strong_features, my_head_features
 
-def collect_strong_features(const, strong_features, used_features, done, add_kataja_props=False):
-    if const in done:
-        return
-    done.add(const)
-    my_strong_features = set()
-    #for part in const.parts:
-    #    if part is const.head or part is const.argument or True:
-    if const.parts:
-        part = const.parts[0]
-        if part is const.head or part is const.argument:
-            collect_strong_features(part, my_strong_features, used_features, done, add_kataja_props)
-    for feature in const.features:
-        if feature.sign == '*':
-            my_strong_features.add(feature)
-    strong_features |= my_strong_features
-    if add_kataja_props:
-        const.inherited_features += [feat for feat in my_strong_features
-                                     if feat not in used_features and feat not in const.inherited_features]
-
-
-def mark_features(node):
-    used_features = set()
-    collect_checked(node, used_features, set(), add_kataja_props=True)
-    collect_strong_features(node, set(), used_features, set(), add_kataja_props=True)
+    _mark_features(top_node)
 
 
 def are_congruent(feats_a, feats_b):
@@ -189,15 +191,26 @@ def is_positive(feat):
 
 
 class State:
-    def __init__(self, parser, parent=None, s=None, state_id=0, entry="", state_type=0):
-        self.state_id = state_id
+    def __init__(self, parent=None, s=None, entry="", state_type=0, stack=None, checked_features=None):
+        self.parser = None
+        self.state_id = 0
         self.s = s
-        self.parent = parent
-        self.parser = parser
+        if parent and parent.s:
+            self.parent = parent
+            parent.children.append(self)
+        else:
+            self.parent = None
         self.entry = entry
         self.children = []
         self.state_type = state_type
-        self.stack = []
+        if stack is None and parent:
+            self.stack = list(parent.stack)
+        else:
+            self.stack = stack or []
+        self.checked_features = checked_features or []
+
+    def set_id(self, state_id):
+        self.state_id = state_id
 
     def __enter__(self):
         pass
@@ -219,15 +232,10 @@ class State:
         return '.'.join(entries)
 
     def export(self, msg):
-        self.parser.export_to_kataja(self.s, msg, self.state_id, self.parent and self.parent.state_id, self.state_type)
-
-    # end / start
+        self.parser.export_to_kataja(self, msg)
 
     def start(self):
-        self.parser.add_state(self)
-
-    def crash(self):
-        self.parser.remove_state(self)
+        self.parser.add_state(State())
 
     # Commands
 
@@ -248,6 +256,22 @@ class State:
         msg = f"pull '{stack_node.label}' from stack and merge as argument for: '{const.label}'"
 
         return self.new_state(y, msg, "from_stack()", FROM_STACK, stack=stack)
+
+    def collect_checked_features_with_nodes(self):
+        if self.parent:
+            return self.parent.collect_checked_features_with_nodes() + [(self.s, self.checked_features)]
+        else:
+            return [(self.s, self.checked_features)]
+
+    def collect_checked_features(self):
+        checked = set()
+        for f1, f2 in self.checked_features:
+            checked.add(f1)
+            checked.add(f2)
+        if self.parent:
+            return self.parent.collect_checked_features() | checked
+        else:
+            return checked
 
     def add(self, word):
         x = Constituent(word)
@@ -285,7 +309,7 @@ class State:
                         argument=arg, head=head, checked_features=checked_features)
         y = Constituent(label=x.label, parts=[x, trunk], head=x.head)
         msg = f"CLOSING: set '{arg.label}' as arg for: '{second.label}', when third is {trunk.label} ({checked_features or ''})"
-        return self.new_state(y, msg, "r()", CLOSE_ARG)
+        return self.new_state(y, msg, "r()", CLOSE_ARG, checked_features=checked_features)
 
     def arg(self, checked_features=None):
         const = self.s
@@ -298,7 +322,7 @@ class State:
                         argument=arg, head=head, checked_features=checked_features)
         y = Constituent(label=x.label, parts=[x, trunk], head=x.head)
         msg = f"raise '{arg.label}' as arg for: '{first.label}' ({checked_features or ''})"
-        return self.new_state(y, msg, "arg()", RAISE_ARG)
+        return self.new_state(y, msg, "arg()", RAISE_ARG, checked_features=checked_features)
 
     def adj(self, checked_features=None):
         const = self.s
@@ -311,10 +335,11 @@ class State:
                         checked_features=checked_features)
         y = Constituent(label=x.label, parts=[x, trunk], head=x.head)
         msg = f"raise '{adj.label}' as adj for: '{first.label}' ({checked_features or ''})"
-        return self.new_state(y, msg, "adj()", ADJUNCT)
+        return self.new_state(y, msg, "adj()", ADJUNCT, checked_features=checked_features)
 
-    def new_state(self, x, msg, entry, state_type, stack=None):
-        state = self.parser.add_state(self, x, entry, state_type, stack)
+    def new_state(self, x, msg, entry, state_type, stack=None, checked_features=None):
+        state = State(self, x, entry, state_type, stack, checked_features)
+        self.parser.add_state(state)
         #print('creating state ', state.state_id, ' w. parent ', state.parent and state.parent.state_id, ' , ', msg)
         if self.parser.debug:
             print(f':: {msg}')
@@ -338,32 +363,19 @@ class Parser:
         self.correct = []
         self.lexicon = lexicon or {}
         self.states = []
-        self.states_to_remove = set()
         self.ids = 0
         self.debug = debug
-        self.expanding = False
+        self.func_parsing = False
         if WEAVE:
             self.web = Web()
 
-    def add_state(self, parent=None, const=None, entry="", state_type=0, stack=None):
-        if parent and not parent.s:
-            parent = None
-        new_state = State(parser=self, s=const, parent=parent, state_id=self.ids, entry=entry, state_type=state_type)
-        if stack is not None:
-            new_state.stack = stack
-        elif parent:
-            new_state.stack = parent.stack
-        if parent and self.expanding:
-            parent.children.append(new_state)
-            self.states.append(new_state)
-        else:
-            self.states = [new_state]
+    def add_state(self, new_state):
+        new_state.state_id = self.ids
+        new_state.parser = self
         self.ids += 1
+        if self.func_parsing:
+            self.states = [new_state]
         return new_state
-
-    def remove_state(self, state):
-        if state in self.states:
-            self.states.remove(state)
 
     @staticmethod
     def compute_target_linearization(sentence):
@@ -378,33 +390,32 @@ class Parser:
         return ' '.join(words)
 
     def _func_parse(self, sentence):
-        self.expanding = False
 
         def f(word):
             return self.states[0].add(word)
-
         func_locals = {'f': f}
+        self.func_parsing = True
         exec(sentence, globals(), func_locals)
+        self.func_parsing = False
 
     def _string_parse(self, sentence):
-        self.expanding = True
         for word in sentence.split():
             const = self.get_from_lexicon(word)
-            # May create new states to represent different parses
-            self.states_to_remove = set(self.states)
-            #print('==== starting attempt cycle, states to remove: ', self.states_to_remove)
-            for state in list(self.states):
-                self.attempt_raising(state, const)
-            #print('==== ended attempt cycle, states to remove: ', self.states_to_remove)
-            old_states = self.states
+            states_before_raising = self.states
             self.states = []
-            for state in old_states:
-                if state not in self.states_to_remove:
-                    state.add_const(const)
+            for state in states_before_raising:
+                self.states += self.attempt_raising(state, const)
+            states_before_addition = self.states
+            self.states = []
+            for state in states_before_addition:
+                new_state = state.add_const(const)
+                self.states.append(new_state)
+
         # Finally attempt to raise what can be raised
-        for state in list(self.states):
-            #print('final attempts:', state.state_id)
-            self.attempt_raising(state)
+        states_before_raising = self.states
+        self.states = []
+        for state in states_before_raising:
+            self.states += self.attempt_raising(state)
 
     def get_from_lexicon(self, word):
         const = self.lexicon[word].copy()
@@ -438,7 +449,9 @@ class Parser:
 
         self.states = []
         self.ids = 0
-        self.add_state()
+        initial_state = State()
+        self.add_state(initial_state)
+        self.states.append(initial_state)
 
         print('--------------')
 
@@ -471,36 +484,16 @@ class Parser:
         return result_trees
 
     @staticmethod
-    def _collect_available_features(top_head, used_features):
-        strong_features = set()
-        collect_strong_features(top_head, strong_features, used_features, set())
+    def _collect_available_features(top_head):
+        strong_features = collect_strong_features(top_head)
         head_features = get_head_features(top_head.head)
-        head_features += [f for f in strong_features if f not in head_features]
-
-        res = [feat for feat in head_features if feat not in used_features]
-        if strong_features:
-            print(top_head.label, res, strong_features, used_features)
-        return res
+        return head_features + [f for f in strong_features if f not in head_features]
 
     @staticmethod
     def _find_match(target, features):
         for feat in features:
             if feat.name == target.name and (feat.value == target.value or not target.value) and is_positive(feat):
                 return feat
-
-    def attempt_raising(self, state, next_const=None):
-        if not (state.s and state.s.left and state.s.right):
-            self.states_to_remove.remove(state)
-            return state
-
-
-        used_features = set()
-
-        collect_checked(state.s, used_features, set())
-        next_features = self._collect_available_features(next_const, set()) if next_const else []
-        top_features = self._collect_available_features(state.s.left, used_features)
-        second_features = self._collect_available_features(state.s.right, used_features)
-        # next_const_features = next_const.features if next_const else []
 
         # adj raise
         # adj_features = second_features
@@ -515,38 +508,47 @@ class Parser:
         #                 self.states_to_remove.add(state)
         #                 return new_state
 
-        # arg raise
+    def attempt_raising(self, state, next_const=None):
+        if not (state.s and state.s.left and state.s.right):
+            return [state]
+
+        states = []
+        used_features = state.collect_checked_features()
+        # next_features = self._collect_available_features(next_const, set()) if next_const else []
+        top_features = [f for f in self._collect_available_features(state.s.left) if f not in used_features]
+        second_features = [f for f in self._collect_available_features(state.s.right) if f not in used_features]
+        # next_const_features = next_const.features if next_const else []
+
+        # arg raise (ARG H)
         arg_features = second_features
         head_features = top_features
         for feat in head_features:
-            if feat.sign == '-' or feat.sign == '=':
+            if feat.sign == '-': # or feat.sign == '=':
                 match = self._find_match(feat, arg_features)
                 if match:
                     important = feat.sign == '-' or True
                     if feat.name == 'foc' and not state.stack:
                         new_state = state.put_stack()
-                        if important:
-                            self.states_to_remove.add(state)
                     else:
                         new_state = state
-                    if important:
-                        self.states_to_remove.add(new_state)
                     new_state = new_state.arg(checked_features=[(feat, match)])
-                    new_state = self.attempt_raising(new_state, next_const=next_const)
                     if important:
-                        return new_state
+                        return self.attempt_raising(new_state, next_const=next_const)
+                    else:
+                        states += self.attempt_raising(new_state, next_const=next_const)
 
         # raise from stack
-        stack_features = self._collect_available_features(state.stack[-1], used_features) if state.stack else []
-        head_features = top_features
-        for feat in head_features:
-            if feat.sign == '-' or feat.sign == '=':
-                match = self._find_match(feat, stack_features)
-                if match:
-                    new_state = state.from_stack(checked_features=[(feat, match)])
-                    self.attempt_raising(new_state, next_const=next_const)
+        if state.stack:
+            stack_features = [f for f in self._collect_available_features(state.stack[-1]) if f not in used_features]
+            head_features = top_features
+            for feat in head_features:
+                if feat.sign == '-' or feat.sign == '=':
+                    match = self._find_match(feat, stack_features)
+                    if match:
+                        new_state = state.from_stack(checked_features=[(feat, match)])
+                        states += self.attempt_raising(new_state, next_const=next_const)
 
-        # close argument
+        # close argument (H ARG)
         arg_features = top_features
         head_features = second_features
         for feat in head_features:
@@ -554,24 +556,26 @@ class Parser:
                 match = self._find_match(feat, arg_features)
                 if match:
                     new_state = state.close_argument(checked_features=[(feat, match)])
-                    self.attempt_raising(new_state, next_const=next_const)
+                    states += self.attempt_raising(new_state, next_const=next_const)
 
-        if state in self.states_to_remove:
-            self.states_to_remove.remove(state)
-        return state
+        states.append(state)
+        return states
 
-    def export_to_kataja(self, const, message, state_id, parent_id, state_type):
+    def export_to_kataja(self, state, message):
         if self.forest:
             # print('iteration ', iteration, ' : ', message)
+            const = state.s
             include_kataja_data(const)
             if WEAVE:
                 self.web.weave_in(const)
-            if const.left and const.right and state_type != DONE_SUCCESS and state_type != DONE_FAIL:
+            if const.left and const.right and state.state_type != DONE_SUCCESS and state.state_type != DONE_FAIL:
                 groups = [('', [const.left]), ('', [const.right])]
             else:
-                groups = []
-            syn_state = SyntaxState(tree_roots=[const], msg=message, state_id=state_id, parent_id=parent_id,
-                                    groups=groups, state_type=state_type)
+                groups = [('', []), ('', [])]
+            groups.append(('', state.stack))
+            syn_state = SyntaxState(tree_roots=[const], msg=message, state_id=state.state_id,
+                                    parent_id=state.parent and state.parent.state_id,
+                                    groups=groups, state_type=state.state_type)
             self.forest.add_step(syn_state)
 
 

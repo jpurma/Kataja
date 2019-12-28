@@ -33,8 +33,8 @@ löytyi :: v T:past -n:nom =n:sta
 mitä :: *foc wh n:part +n -n:gen -v
 ottamaan :: v T:inf =n:part =n:part =n:sem =n:acc
 ottamasta :: v T:inf =n:part =n:part =n:acc -n:sem
-ottavan :: v T:inf =n:gen =n:acc =n:sem =n:sta
-paidasta :: n:sta +a -n:gen
+ottavan :: v T:inf -n:gen =n:acc =n:sem =n:sta
+paidasta :: n:sta +a -n:gen =n:sta
 parantui :: v T:past -n:nom =pv
 pyysi :: v T:past -n:nom =T -foc
 pääsee :: v T:prees =pv -n:nom =n:sem

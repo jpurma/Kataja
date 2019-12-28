@@ -1,3 +1,4 @@
+kenen kimaltavasta paidasta Merja halusi Pekan ottavan kuvan juhlissa
 
 kenen paidasta Merja halusi Pekan ottavan kuvan juhlissa
 
@@ -16,13 +17,10 @@ mitä kaupunkia kohti virtaamalla Seine saavuttaa valtameren
 Pekka sanoi että se väite että teoria kumoutui kumoutui
 
 
-f('kenestä').f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').wharg().r().f('juhlissa').r().r().r()
-
 kenestä Merja halusi Pekan ottavan kuvan juhlissa
 
 
 
-f('tyttö').f('jota').f('Pekka').f('halusi').arg().f('rakastaa').arg().wharg().r().r().r().f('löytyi').arg().f('kaapista').r()
 
 f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
 
