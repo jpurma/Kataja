@@ -494,6 +494,16 @@ class Parser:
             if feat.name == target.name and (feat.value == target.value or not target.value) and is_positive(feat):
                 return feat
 
+    @staticmethod
+    def _find_matches(pos_features, neg_features, neg_signs='-='):
+        matches = []
+        for pos_feat in pos_features:
+            if is_positive(pos_feat):
+                for neg_feat in neg_features:
+                    if neg_feat.sign and neg_feat.name == pos_feat.name and neg_feat.sign in neg_signs and \
+                            (pos_feat.value == neg_feat.value or not neg_feat.value):
+                        matches.append((pos_feat, neg_feat))
+        return matches
         # adj raise
         # adj_features = second_features
         # head_features = top_features
@@ -521,41 +531,31 @@ class Parser:
         # arg raise (ARG H)
         arg_features = second_features
         head_features = top_features
-        for feat in head_features:
-            if feat.sign == '-': # or feat.sign == '=':
-                match = self._find_match(feat, arg_features)
-                if match:
-                    important = feat.sign == '-' or True
-                    if feat.name == 'foc' and not state.stack:
-                        new_state = state.put_stack()
-                    else:
-                        new_state = state
-                    new_state = new_state.arg(checked_features=[(feat, match)])
-                    if important:
-                        return self.attempt_raising(new_state, next_const=next_const)
-                    else:
-                        states += self.attempt_raising(new_state, next_const=next_const)
+        matches = self._find_matches(arg_features, head_features, '-')
+        if matches:
+            new_state = state
+            for fpos, fneg in matches:
+                if fpos.name == 'foc' and not state.stack:
+                    new_state = state.put_stack()
+            new_state = new_state.arg(checked_features=matches)
+            return self.attempt_raising(new_state, next_const=next_const)
 
         # raise from stack
         if state.stack:
             stack_features = [f for f in self._collect_available_features(state.stack[-1]) if f not in used_features]
             head_features = top_features
-            for feat in head_features:
-                if feat.sign == '-' or feat.sign == '=':
-                    match = self._find_match(feat, stack_features)
-                    if match:
-                        new_state = state.from_stack(checked_features=[(feat, match)])
-                        states += self.attempt_raising(new_state, next_const=next_const)
+            matches = self._find_matches(stack_features, head_features, '-=')
+            if matches:
+                new_state = state.from_stack(checked_features=matches)
+                states += self.attempt_raising(new_state, next_const=next_const)
 
         # close argument (H ARG)
         arg_features = top_features
         head_features = second_features
-        for feat in head_features:
-            if feat.sign == '-' or feat.sign == '=':
-                match = self._find_match(feat, arg_features)
-                if match:
-                    new_state = state.close_argument(checked_features=[(feat, match)])
-                    states += self.attempt_raising(new_state, next_const=next_const)
+        matches = self._find_matches(arg_features, head_features, '-=')
+        if matches:
+            new_state = state.close_argument(checked_features=matches)
+            states += self.attempt_raising(new_state, next_const=next_const)
 
         states.append(state)
         return states
