@@ -132,10 +132,9 @@ def collect_strong_features(const, done=None):
         return set()
     done.add(const)
     strong_features = set()
-    if const.parts:
-        part = const.parts[0]
+    for part in const.parts:
         if part.head is const.head or part is const.argument:
-            strong_features = collect_strong_features(part, done)
+            strong_features |= collect_strong_features(part, done)
     for feature in const.features:
         if feature.sign == '*':
             strong_features.add(feature)

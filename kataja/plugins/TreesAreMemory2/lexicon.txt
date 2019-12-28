@@ -14,13 +14,14 @@ halusi :: v T:past -n:nom =T:inf =P =n:acc =n:sem -foc
 hassu :: n:nom +a a -n:gen
 hän :: n:nom -n:gen
 joka :: rel -v n:nom wh
+jonka :: rel -v n:gen *foc
 josta :: rel -v P n:sta wh
 jota :: rel -v n:part wh
 juhlissa :: n:sem +a -n:gen
 kaapista :: n:sta +a -n:gen
 kaupunkia :: n:part +a -n:part -n:gen
 kenen :: *foc wh n:gen
-kenestä :: *foc wh n:sta -v
+kenestä :: *foc wh n:sta
 kielsi :: v T:past -n:nom =T -foc -n:sem
 kimaltavasta :: n:sta +a -n:gen =n:sta
 kohti :: P -n:part
@@ -30,6 +31,7 @@ kuvia :: n:part =n:sta +a -n:gen
 lääke :: n:nom -rel +a -n:gen
 lääkettä :: n:part +a -n:gen
 löytyi :: v T:past -n:nom =n:sta
+löysi :: v T:past -n:nom =n:acc
 mitä :: *foc wh n:part +n -n:gen -v
 ottamaan :: v T:inf =n:part =n:part =n:sem =n:acc
 ottamasta :: v T:inf =n:part =n:part =n:acc -n:sem
@@ -41,14 +43,15 @@ pääsee :: v T:prees =pv -n:nom =n:sem
 päätyi :: v T:past -n:nom =pv
 rakastaa :: v T:prees -n:nom =n:part
 rakasti :: v T:past -n:nom =n:part
-saavuttaa :: v T:prees -n:nom =n:sem =n:acc =pv
+saavuttaa :: v T:prees -n:nom =n:sem =n:acc -pv
 sanoi :: v T:past -n:nom -xC
 se :: n:nom =rel =n
 syömällä :: pv =n:part
 teoria :: n:nom =rel +a -n:gen
 tiesi :: v T:past -n:nom =T
 tyttö :: n:nom -rel +a -n:gen
+tytön :: n:acc -rel -n:gen
 valtamereen :: n:sem +a -n:gen
 valtameren :: n:acc +a -n:gen
-virtaamalla :: pv =n:sem =P
+virtaamalla :: pv =n:sem -P
 väite :: n:nom =rel +a n -n:gen
