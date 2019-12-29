@@ -168,8 +168,8 @@ def mark_features(top_node):
                     my_head_features += head_features
 
         node.inherited_features = my_head_features + my_strong_features
-        my_strong_features = [f for f in my_strong_features if f not in checked_here]
-        my_head_features = [f for f in my_head_features if f not in checked_here]
+        my_strong_features = [f for f in my_strong_features if not strictly_in(f, checked_here)]
+        my_head_features = [f for f in my_head_features if not strictly_in(f, checked_here)]
         done[node.uid] = my_strong_features, my_head_features
         return my_strong_features, my_head_features
 
@@ -188,6 +188,11 @@ def are_congruent(feats_a, feats_b):
 def is_positive(feat):
     return feat.sign == '' or feat.sign == '*'
 
+
+def strictly_in(feat, feats):
+    for f in feats:
+        if feat is f:
+            return True
 
 class State:
     def __init__(self, parent=None, s=None, entry="", state_type=0, stack=None, checked_features=None):
@@ -237,24 +242,6 @@ class State:
         self.parser.add_state(State())
 
     # Commands
-
-    def put_stack(self):
-        const = self.s
-        stack = list(self.stack)
-        stack.append(const.right)
-        msg = f"put '{const.right.label}' into stack for later use"
-        return self.new_state(const, msg, "put_stack()", PUT_STACK, stack=stack)
-
-    def from_stack(self, checked_features=None):
-        const = self.s
-        stack = list(self.stack)
-        stack_node = stack.pop()
-        x = Constituent(label=const.left.label, parts=[stack_node, const.left],
-                        argument=stack_node, head=const.left.head, checked_features=checked_features)
-        y = Constituent(label=x.label, parts=[x, const.right], head=x.head)
-        msg = f"pull '{stack_node.label}' from stack and merge as argument for: '{const.label}'"
-
-        return self.new_state(y, msg, "from_stack()", FROM_STACK, stack=stack)
 
     def collect_checked_features_with_nodes(self):
         if self.parent:
@@ -323,6 +310,24 @@ class State:
         msg = f"raise '{arg.label}' as arg for: '{first.label}' ({checked_features or ''})"
         return self.new_state(y, msg, "arg()", RAISE_ARG, checked_features=checked_features)
 
+    def put_stack(self):
+        const = self.s
+        stack = list(self.stack)
+        stack.append(const.right)
+        msg = f"put '{const.right.label}' into stack for later use"
+        return self.new_state(const, msg, "put_stack()", PUT_STACK, stack=stack)
+
+    def from_stack(self, checked_features=None):
+        const = self.s
+        stack = list(self.stack)
+        stack_node = stack.pop()
+        x = Constituent(label=const.left.label, parts=[stack_node, const.left],
+                        argument=stack_node, head=const.left.head, checked_features=checked_features)
+        y = Constituent(label=x.label, parts=[x, const.right], head=x.head)
+        msg = f"pull '{stack_node.label}' from stack and merge as argument for: '{const.label}'"
+
+        return self.new_state(y, msg, "from_stack()", FROM_STACK, stack=stack)
+
     def adj(self, checked_features=None):
         const = self.s
         first = const.left
@@ -339,7 +344,6 @@ class State:
     def new_state(self, x, msg, entry, state_type, stack=None, checked_features=None):
         state = State(self, x, entry, state_type, stack, checked_features)
         self.parser.add_state(state)
-        #print('creating state ', state.state_id, ' w. parent ', state.parent and state.parent.state_id, ' , ', msg)
         if self.parser.debug:
             print(f':: {msg}')
             print(f'    ->: {x}')
@@ -398,8 +402,14 @@ class Parser:
         self.func_parsing = False
 
     def _string_parse(self, sentence):
+
+        first = True
         for word in sentence.split():
             const = self.get_from_lexicon(word)
+            if first:  # the first word will always get focus feature, makes sense at least in finnish
+                focus = Feature(name='foc', sign='*')
+                if focus not in const.features:
+                    const.features.append(focus)
             states_before_raising = self.states
             self.states = []
             for state in states_before_raising:
@@ -409,7 +419,7 @@ class Parser:
             for state in states_before_addition:
                 new_state = state.add_const(const)
                 self.states.append(new_state)
-
+            first = False
         # Finally attempt to raise what can be raised
         states_before_raising = self.states
         self.states = []
@@ -524,21 +534,9 @@ class Parser:
         states = []
         used_features = state.collect_checked_features()
         # next_features = self._collect_available_features(next_const, set()) if next_const else []
-        top_features = [f for f in self._collect_available_features(state.s.left) if f not in used_features]
-        second_features = [f for f in self._collect_available_features(state.s.right) if f not in used_features]
+        top_features = [f for f in self._collect_available_features(state.s.left) if not strictly_in(f, used_features)]
+        second_features = [f for f in self._collect_available_features(state.s.right) if not strictly_in(f, used_features)]
         # next_const_features = next_const.features if next_const else []
-
-        # arg raise (ARG H)
-        arg_features = second_features
-        head_features = top_features
-        matches = self._find_matches(arg_features, head_features, '-')
-        if matches:
-            new_state = state
-            for fpos, fneg in matches:
-                if fpos.name == 'foc' and not state.stack:
-                    new_state = state.put_stack()
-            new_state = new_state.arg(checked_features=matches)
-            return self.attempt_raising(new_state, next_const=next_const)
 
         # raise from stack
         if state.stack:
@@ -548,6 +546,22 @@ class Parser:
             if matches:
                 new_state = state.from_stack(checked_features=matches)
                 states += self.attempt_raising(new_state, next_const=next_const)
+
+        # arg raise (ARG H)
+        arg_features = second_features
+        head_features = top_features
+        matches = self._find_matches(arg_features, head_features, '-')
+        if matches:
+            new_state = state
+            stack_put = False
+            for fpos, fneg in matches:
+                if fpos.name == 'foc' and not state.stack:
+                    new_state = state.put_stack()
+                    stack_put = True
+            new_state = new_state.arg(checked_features=matches)
+            if stack_put and len(matches) > 1:
+                new_state.stack.pop()
+            return self.attempt_raising(new_state, next_const=next_const)
 
         # close argument (H ARG)
         arg_features = top_features

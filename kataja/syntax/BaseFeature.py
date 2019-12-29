@@ -63,7 +63,7 @@ class BaseFeature(SavedObject):
                  checked_by=None, strong=False, parts=None, **kwargs):
         super().__init__()
         self.name = str(name)
-        self.value = value
+        self.value = value or ''
         self.sign = sign
         self.family = family
         # status of being checked, checking something and being in use could be deduced online,
