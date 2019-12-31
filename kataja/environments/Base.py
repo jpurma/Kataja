@@ -47,7 +47,9 @@ class Base:
         filename = os.path.basename(__file__)
         package_cut = os.path.join('environments', filename)
         package_root = full_path_to_this_file[:-len(package_cut)]
+        source_cut = os.path.join('kataja', 'environments', filename)
+        source_root = full_path_to_this_file[:-len(source_cut)]
         self.resources_path = os.path.join(package_root, 'resources')
-        self.plugins_path = os.path.join(package_root, 'plugins')
+        self.plugins_path = os.path.join(source_root, 'plugins')
         print('resources_path: ', self.resources_path)
         print('plugins_path: ', self.plugins_path)

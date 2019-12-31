@@ -236,9 +236,9 @@ kataja_print*.png
 
 postsetup.py
 
-kataja/plugins/myplugin*
-kataja/plugins/mgtdbp/versions
-kataja/plugins/mgtdbp/original
+plugins/myplugin*
+plugins/mgtdbp/versions
+plugins/mgtdbp/original
 
 profile
 profiler_results.log

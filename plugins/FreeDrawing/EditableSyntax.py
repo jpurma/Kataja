@@ -1,11 +1,12 @@
 import kataja.globals as g
 from kataja.SavedField import SavedField
-from kataja.SavedObject import SavedObject
 from plugins.FreeDrawing.nodes_to_synobjs import nodes_to_synobjs
-from kataja.singletons import classes, ctrl
+from kataja.singletons import classes
+from kataja.syntax.SyntaxAPI import SyntaxAPI
+from kataja.syntax.SyntaxState import SyntaxState
 
 
-class SyntaxAPI(SavedObject):
+class EditableSyntax(SyntaxAPI):
     """ This class is the interface between syntax implementations and Kataja calls for them.
     Syntax implementations subclass this and overwrite methods as needed. It is assumed that each
     Forest will create its own SyntaxAPI -- it may save data specific for that structure, but
@@ -39,9 +40,8 @@ class SyntaxAPI(SavedObject):
         self.trees = []
         self.constituents = {}
         self.features = {}
-        self.lexicon = ctrl.document.lexicon
+        self.lexicon = {}
         self.rules = {}
-        self.parser = None
         self.input_text = ''
         self.input_tree = []
         self.display_mode = 0
@@ -60,11 +60,9 @@ class SyntaxAPI(SavedObject):
 
     def read_lexicon(self, lexdata, lexicon=None):
         if lexicon is None:
-            if ctrl.document.lexicon is not None:
-                lexicon = ctrl.document.lexicon
-            else:
-                lexicon = {}
-        lexicon.clear()
+            lexicon = {}
+        else:
+            lexicon.clear()
         lines = lexdata.splitlines()
 
         for line in lines:
@@ -125,8 +123,6 @@ class SyntaxAPI(SavedObject):
     def get_c_commanded_leaves(self, node):
         """ By default we cheat on c-command and do it on node level, where we have a reliable
         access to parent of node.
-        :param node:
-        :return:
         """
 
         def _pick_leaves(n):
@@ -146,30 +142,6 @@ class SyntaxAPI(SavedObject):
             _pick_leaves(parent)
         return [l.syntactic_object for l in leaves]
 
-    @staticmethod
-    def get_dominated_nodes(node):
-        """ General solution works on level of nodes, not constituents, so this shouldn't be used
-        to determine how nodes relate to each others.
-        :param node:
-        :return:
-        """
-
-        def _pick_leaves(n):
-            if n not in passed:
-                passed.add(n)
-                leaves.append(n)
-                children = n.get_children()
-                if children:
-                    for c in children:
-                        _pick_leaves(c)
-
-        leaves = []
-        passed = set()
-        passed.add(node)
-        for child in node.get_children():
-            _pick_leaves(child)
-        return [l.syntactic_object for l in leaves]
-
     def nodes_to_synobjs(self, forest, roots):
         """ Wrapper for function to update all syntactic objects to correspond with the current
         node graph, if possible. It can be complicated and it is sensitive to modifications in
@@ -185,7 +157,7 @@ class SyntaxAPI(SavedObject):
             if isinstance(lexicon, dict):
                 self.lexicon = lexicon
             else:
-                self.lexicon = self.read_lexicon(lexicon)
+                self.lexicon = self.read_lexicon(lexicon, self.lexicon)
         if input_text is not None:
             if isinstance(input_text, list):
                 self.input_tree = input_text
@@ -212,7 +184,9 @@ class SyntaxAPI(SavedObject):
         if self.input_tree:
             roots = forest.parser.string_into_forest(str(self.input_tree))
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
-            # self.nodes_to_synobjs(forest, roots)
+            self.nodes_to_synobjs(forest, roots)
+            syn_state = SyntaxState(tree_roots=[x.syntactic_object for x in roots])
+            forest.add_step(syn_state)
 
     def set_display_mode(self, i):
         self.display_mode = i
@@ -405,6 +379,22 @@ class SyntaxAPI(SavedObject):
         else:
             raise NotImplementedError
 
+    def feature_check(self, suitor, bride):
+        """ Check if the features(?) match(?)
+        :param suitor:
+        :param bride:
+        :return: bool
+        """
+        raise NotImplementedError
+
+    def c_commands(self, A, B):
+        """ Evaluate if A C-commands B
+        :param A:
+        :param B:
+        :return: bool
+        """
+        raise NotImplementedError
+
     def parse(self, sentence, silent=False):
         """ Returns structure (constituent or list of constituents) if given sentence can be parsed. Not
         necessary to implement.
@@ -450,6 +440,16 @@ class SyntaxAPI(SavedObject):
         """
         return self.features.get(key, None)
 
+    def construct(self, parent, children, purge_existing=True):
+        """ Sets up connections between constituents without caring if there are syntactic
+        operations to allow that
+        :param parent:
+        :param children:
+        :param purge_existing:
+        :return:
+        """
+        raise NotImplementedError
+
     def connect(self, parent, child, align=None):
         """ Tries to set a parent-child connection. It may be necessary to
         force parts to be in specific order, alignment can be used to give
@@ -493,6 +493,18 @@ class SyntaxAPI(SavedObject):
             parents = [x for x in self.constituents.values() if old_c in x.parts]
             for parent in parents:
                 self.replace(old_c, new_c, under_parent=parent)
+
+    def linearization_types(self):
+        """ Return available options for linearization
+        :return:
+        """
+        raise NotImplementedError
+
+    def merge_types(self):
+        """ Provide available merge types
+        :return:
+        """
+        raise NotImplementedError
 
     def create_feature(self, **kw):
         """ Create feature with provided values and return it
