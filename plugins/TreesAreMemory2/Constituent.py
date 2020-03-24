@@ -28,10 +28,12 @@ class Constituent(BaseConstituent or object):
                 for feature in features:
                     feature.host = self
         self.argument = argument
+        if not self.head:
+            self.head = self
 
     if not in_kataja:
         def __str__(self):
-            return self.as_string(done=set())
+            return self.as_string(set())
 
         def as_string(self, done):
             if self in done:
@@ -74,8 +76,18 @@ class Constituent(BaseConstituent or object):
         else:
             return self.label
 
-    def is_wh(self):
-        return self.wh
+    def full_tree(self):
+        for f0, f1 in self.checked_features:
+            assert isinstance(f0.host, Constituent)
+            assert isinstance(f1.host, Constituent)
+        for f in self.features:
+            assert isinstance(f.host, Constituent)
+        for f in self.inherited_features:
+            assert isinstance(f.host, Constituent)
+        if self.parts:
+            return f'[{" ".join([part.full_tree() for part in self.parts])}]'
+        else:
+            return self.label
 
     def copy(self, done=None):
         """ Does not copy parts, this is intended only for picking words from lexicon"""
@@ -88,4 +100,3 @@ class Constituent(BaseConstituent or object):
 
     if in_kataja:
         argument = SavedField('argument')
-        wh = SavedField('wh')

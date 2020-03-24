@@ -86,7 +86,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         for part in me.parts:
             if part.uid not in done_nodes:
                 recursive_add_const_node(part, me)
-        for feat in me.get_features():
+        for feat in me.get_features() + me.get_checked_features():
             if feat.uid not in done_nodes:
                 recursive_add_feature_node(feat)
 
@@ -155,7 +155,7 @@ def syntactic_state_to_nodes(forest, syn_state):
         if host:
             pos = host.scenePos()
         else:
-            print(f"missing host for created feature: '{syn_feat}' at '{syn_feat.host}'")
+            print(f"missing host for created feature: '{syn_feat}' at '{syn_feat.host}, {syn_feat.host.uid}'")
             pos = (0, 0)
         drawing.create_node(node_type=g.FEATURE_NODE, pos=pos, synobj=syn_feat)
 

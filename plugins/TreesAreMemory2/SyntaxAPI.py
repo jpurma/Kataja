@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from plugins.TreesAreMemory2.Parser import Parser
+from plugins.TreesAreMemory2.BarParser import Parser
 from kataja.singletons import ctrl
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 
@@ -38,7 +38,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
 
     def __init__(self, lexicon=None):
         super().__init__()
-        self.parser = Parser(lexicon=lexicon, forest=None, debug=False)
+        self.parser = Parser(lexicon=lexicon, forest=None)
 
     def create_derivation(self, input_text=None, lexicon=None, semantics=None, forest=None):
         """ Attempt parsing with given sentence or tree and with given lexicon. If these are left
@@ -52,7 +52,7 @@ class SyntaxAPI(KatajaSyntaxAPI):
             self.input_text = input_text
 
         if forest:
-            self.parser.forest = forest
+            self.parser.set_forest(forest)
         if lexicon is not None:
             if isinstance(lexicon, str):
                 lexicon = self.read_lexicon(lexicon)

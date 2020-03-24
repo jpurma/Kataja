@@ -9,6 +9,7 @@ except ImportError:
     from Feature import Feature
     SyntaxState = None
 import time
+from collections import Counter
 
 # State types
 DONE_SUCCESS = 7
@@ -47,43 +48,10 @@ def linearize(const):
         if not x or x in done:
             return
         done.add(x)
-        if x.parts:
-            _lin(x.parts[0])
-            _lin(x.parts[1])
-        else:
-            result.append(x.label.replace('+', ' '))
+        result.append(x.label.replace('+', ' '))
 
     _lin(const)
     return ' '.join(result)
-
-
-def has_wh(const):
-    for feat in get_head_features(const):
-        if feat.name == 'wh' and is_positive(feat):
-            return feat
-
-
-def shallow_find_wh(node):
-    wh_feat = has_wh(node)
-    if wh_feat:
-        return node, wh_feat
-
-
-# def deep_find_wh(node, at_head=None):
-#     wh_feat = has_wh(node.head)
-#     if wh_feat:
-#         return (at_head or node), wh_feat
-#     if node.parts:
-#         for part in node.parts:
-#             if part is node.argument or part.head is node.head:
-#                 found = deep_find_wh(part, at_head=at_head or node)
-#             else:
-#                 found = deep_find_wh(part)
-#             if found:
-#                 return found
-
-
-find_wh = shallow_find_wh
 
 
 def include_kataja_data(node):
@@ -389,6 +357,7 @@ class Parser:
         self.debug = debug
         self.func_parsing = False
         self.total = 0
+        self.state_count = Counter()
         if WEAVE:
             self.web = Web()
 
@@ -478,6 +447,8 @@ class Parser:
 
         self.states = []
         self.ids = 0
+        self.total = 0
+        self.state_count = Counter()
         initial_state = State()
         self.add_state(initial_state)
         self.states.append(initial_state)
@@ -507,6 +478,8 @@ class Parser:
                 state.new_state(state.s, f'fail: {linear}', '', DONE_FAIL)
 
         print()
+        if self.state_count:
+            print(len(self.state_count), self.total, self.total / len(self.state_count))
         if WEAVE:
             self.web.save_as_json(DATA_PATH)
 
@@ -557,6 +530,8 @@ class Parser:
         top_features = [f for f in self._collect_available_features(state.s.left) if not strictly_in(f, used_features)]
         second_features = [f for f in self._collect_available_features(state.s.right) if not strictly_in(f, used_features)]
         next_const_features = next_const.features if next_const else []
+        f_string = f'{state.s.left.label}:{top_features},{state.s.right.label}:{second_features}'
+        self.state_count[f_string] += 1
 
         # raise from stack
         if state.stack:

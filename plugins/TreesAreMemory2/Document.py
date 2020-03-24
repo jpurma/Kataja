@@ -48,7 +48,7 @@ class Document(KatajaDocument):
 
     @staticmethod
     def get_default_treeset_file():
-        return os.path.join(ctrl.main.plugin_manager.active_plugin_path, 'sentences.txt')
+        return os.path.join(ctrl.main.plugin_manager.active_plugin_path, 'bar_sentences.txt')
 
     @staticmethod
     def get_default_lexicon_file():

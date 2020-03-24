@@ -1,0 +1,57 @@
+f('Pekka').f('oli').arg().f('ihaillut').f('Merjaa').f('ja').arg().f('Riikkaa').r().r().r()
+f('Pekka').f('oli').arg().f('ihaillut').f('Merjaa').r().r().f('ja').arg().f('Merja').r(head='oli').f('Riikkaa').r(head='ihaillut').r()
+
+f('ei').f('tässä').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').f('Merjaa').r().r().f('eikä').f('Riikka').f('Pekkaa')
+
+f('ei').f('tässä').f('Merjaa').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').r().r()
+
+f('ei').f('Merjaa').f('ollut').f('ihaillut').arg(arg='Merjaa').r().f('Pekka').r().r()
+f('ei').f('tässä').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').f('Merjaa').r().r()
+
+
+f('Pekka').f('tilasi').arg().f('pizzan').f('ja').arg().f('Merja').arg().f('lasagnen').r()
+
+f('lääke').f('jota').f('Merja').f('ei').f('ollut').r().arg().f('löytänyt').arg().arg(arg='jota').r().r(head='jota').f('löytyi').arg().f('kaapista').r()
+
+f('lääke').f('josta').f('Merja').f('halusi').arg().f('eroon').arg(arg='josta').r().r(head='josta').f('löytyi').arg().f('kaapista').r()
+
+f('kenen').f('paidasta').arg().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').arg(arg='paidasta').r().f('juhlissa').r().r().r(head='kenen')
+f('Riikka').f('jonka').f('paidasta').arg().f('Merja').f('halusi').arg().f('kuvan').arg(arg='paidasta').r().r(head='jonka').r().f('parantui').arg()
+
+f('Pekka').f('joka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r().f('nukkui').arg().arg()
+
+
+f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+
+f('Pekka').f('joka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').r().r().r().r(head='joka').r().f('nukkui').arg()
+f('Pekka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r()
+
+
+Pekka jonka kuvan Riikka löysi halusi
+
+Pekka jonka kuvan Riikka löysi paidasta halusi kuvan
+
+Pekka joka löysi kuvan Riikan paidasta halusi kuvan
+
+Sannan uusi keltainen kukka löytyi
+
+Sannan uusi keltainen kukka löytyi Pekan kimaltavasta paidasta
+
+# Sannan keltainen kukka löytyi
+
+# mitä lääkettä syömällä Pekka parantui
+
+# juhlissa Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+
+# Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+
+#Merja halusi kuvan Riikan kimaltavasta paidasta
+
+
+
+#f('kenen').f('paidasta').arg().put_stack().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').from_stack().r().f('juhlissa').r().r()
+
+#f('mitä').f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().put_stack().f('Seine').f('saavuttaa').arg().f('valtameren').r().from_stack()
+
+#f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+

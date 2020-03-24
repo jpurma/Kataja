@@ -1,3 +1,7 @@
+f('A').f('B').arg()
+
+f('A').f('B').f('C').arg().arg()
+
 juhlissa Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
 
 juhlissa viihtyvä Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
@@ -45,7 +49,6 @@ mitä kaupunkia kohti virtaamalla Seine pääsee valtamereen
 
 Seine pääsee valtamereen virtaamalla kohti kaupunkia
 
-# f('lääke').f('josta').arg().f('Merja').f('halusi').arg().arg().f('eroon').r().r().f('löytyi').arg().f('kaapista').r()
 
 Pekka joka tiesi mitä lääkettä syömällä hän parantui rakasti Merjaa
 

@@ -31,9 +31,6 @@ def spinner(parent, layout, connect, label='', vmin=0, vmax=360, wrapping=False)
 
 
 class ColorWheelPanel(Panel):
-    """
-
-    """
 
     def __init__(self, name, default_position='right', parent=None, folded=False):
         """
@@ -60,8 +57,7 @@ class ColorWheelPanel(Panel):
         the_rest = [f'accent{i}' for i in range(1, 9)] + [f'custom{i}' for i in range(1, 10)]
 
         self.editable_colors = ['content1', 'background1'] + the_rest
-        self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + \
-                          the_rest
+        self.all_colors = ['content1', 'content2', 'content3', 'background1', 'background2'] + the_rest
 
         self.selector_items = None
         self.role_label = QtWidgets.QLabel("Picking color for role: ")
@@ -76,7 +72,7 @@ class ColorWheelPanel(Panel):
         self.color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(self.selected_hsv), widget)
         layout.addWidget(self.color_name)
 
-        self.color_wheel = ColorWheelInner(widget)
+        self.color_wheel = ColorWheelInner(widget, self)
         self.color_wheel.suggested_size = 200
         layout.addWidget(self.color_wheel)
 
@@ -200,28 +196,25 @@ class ColorWheelPanel(Panel):
         self.send_color_rgb(color.red(), color.green(), value)
 
     def update_colors(self):
-        """
-
-        """
         self.update_hsv()
         h, s, v = self.selected_hsv
         self._updating = True
-        self.h_spinner.setValue(h * 360)
-        self.s_spinner.setValue(s * 255)
-        self.v_spinner.setValue(v * 255)
-        color = QtGui.QColor().fromHsvF(h, s, v)
-        self.r_spinner.setValue(color.red())
-        self.g_spinner.setValue(color.green())
-        self.b_spinner.setValue(color.blue())
-        self.color_name.setText(f'{ctrl.cm.get_color_name(self.selected_hsv)}, '
-                                f'{color.name()}')
-        self.contrast_spin.setValue(ctrl.cm.theme_contrast)
-        self.color_wheel.update()
-        self._updating = False
+        if hasattr(self, 'h_spinner'):
+            self.h_spinner.setValue(h * 360)
+            self.s_spinner.setValue(s * 255)
+            self.v_spinner.setValue(v * 255)
+            color = QtGui.QColor().fromHsvF(h, s, v)
+            self.r_spinner.setValue(color.red())
+            self.g_spinner.setValue(color.green())
+            self.b_spinner.setValue(color.blue())
+            self.color_name.setText(f'{ctrl.cm.get_color_name(self.selected_hsv)}, '
+                                    f'{color.name()}')
+            self.contrast_spin.setValue(ctrl.cm.theme_contrast)
+            self.color_wheel.update()
+            self._updating = False
 
     def send_color(self, h, s, v):
-        """ Replace color in palette with new color from hsvF (0.0-1.0)
-        """
+        """ Replace color in palette with new color from hsvF (0.0-1.0) """
         color = QtGui.QColor().fromHsvF(h, s, v)
         ctrl.cm.set_color(self.selected_role, color, compute_companions=self.try_to_match,
                           contrast=self.match_contrast)
@@ -254,8 +247,6 @@ class ColorWheelPanel(Panel):
     def showEvent(self, event):
         """ Panel may have missed signals to update its contents when it was hidden: update all
         that signals would update.
-        :param event:
-        :return:
         """
         self.update_themes_and_colors()
         super().showEvent(event)
@@ -266,7 +257,7 @@ class ColorWheelPanel(Panel):
 
 
 class ColorWheelInner(QtWidgets.QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, panel):
         self.preferred_size = QtCore.QSize(160, 160)
         # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent=parent)
@@ -275,7 +266,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         self.setAutoFillBackground(True)
         self.show()
         self.suggested_size = 0
-        self.outer = get_parent_panel(self)
+        self.outer = panel
         self._radius = 0
         self._top_corner = 0
         self._lum_box_width = 0
@@ -319,11 +310,6 @@ class ColorWheelInner(QtWidgets.QWidget):
                                                self._lum_box_height)
 
     def paintEvent(self, event):
-        """
-
-        :param event:
-        :return:
-        """
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing)  # | QtGui.QPainter.TextAntialiasing)
         painter.setPen(QtCore.Qt.NoPen)
@@ -400,10 +386,6 @@ class ColorWheelInner(QtWidgets.QWidget):
         # QtWidgets.QWidget.paintEvent(self, event)
 
     def wheelEvent(self, event):
-        """
-
-        :param event:
-        """
         h, s, v = self.outer.selected_hsv
         ov = v
         v += event.angleDelta().y() / 100.0
@@ -415,10 +397,6 @@ class ColorWheelInner(QtWidgets.QWidget):
             self.outer.send_color(h, s, v)
 
     def mousePressEvent(self, event):
-        """
-
-        :param event:
-        """
         lp = event.localPos()
         x, y = to_tuple(lp)
         f_x, f_y, f_w, f_h = self._flag_area
@@ -445,11 +423,6 @@ class ColorWheelInner(QtWidgets.QWidget):
                     self._pressed = None  # prevent dragging weirdness
 
     def mouseMoveEvent(self, event):
-        """
-
-        :param event:
-        :return:
-        """
 
         def get_value_from_flag_position(y):
             dv = (self._lum_box_y + self._lum_box_height - y) / self._lum_box_height
@@ -484,8 +457,4 @@ class ColorWheelInner(QtWidgets.QWidget):
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        """
-
-        :param event:
-        """
         self._pressed = 0

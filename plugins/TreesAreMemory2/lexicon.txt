@@ -1,58 +1,64 @@
-Merja :: n:nom -n:nom +a -n:gen =rel
-Merjaa :: n:part +a -n:gen =rel
-Pekan :: n:gen +a -n:gen =rel
-Pekka :: n:nom +a -n:gen =rel
-Pekkaa :: n:part +a -n:gen =rel
-Riikan :: n:gen +a -n:gen
-Seine :: n:nom +a -n:gen =rel
-Seineä :: n:part +a -n:gen =rel
-ajoi :: v -n:nom T:past -P -n:part
-autoa :: n:part +a -n:gen =rel
+Merja :: n:nom -n:nom -n:gen =rel
+Merjaa :: n:part -n:gen =rel
+Pekan :: foc n:gen _foc
+Pekka :: n:nom =n:gen =rel foc _foc
+Pekkaa :: n:part -n:gen =rel
+Riikan :: n:gen -n:gen
+Riikka :: n:nom =n:gen foc _foc
+Sannan :: foc =n:gen n:gen _foc
+Seine :: n:nom -n:gen =rel
+Seineä :: n:part -n:gen =rel
+ajoi :: v =n:nom T:past -P =n:part _foc
+autoa :: n:part -n:gen =rel
 eroon :: P -n:sta
 että :: rel xC =v
-halusi :: v T:past -n:nom =T:inf =P =n:acc =n:sem -foc
-hassu :: n:nom +a a -n:gen
+halusi :: v T:past -n:nom =T:inf =P =n:acc =n:sem _foc
+hassu :: n:nom -n:gen
 hän :: n:nom -n:gen
-joka :: *rel _v n:nom *foc
-jonka :: *rel _v n:gen *foc
-josta :: *rel _v n:sta *foc
-jota :: *rel _v n:part *foc
-juhlissa :: n:sem +a -n:gen
-kaapista :: n:sta +a -n:gen
-kaupunkia :: n:part +a -n:part -n:gen =rel
-kenen :: *foc wh n:gen
-kenestä :: *foc wh n:sta
-kielsi :: v T:past -n:nom =T -foc =n:sem
-kimaltavasta :: n:sta +a -n:gen -n:sta
+joka :: rel n:nom foc =v
+jonka :: rel n:gen foc foc -v
+josta :: rel _v n:sta foc
+jota :: rel _v n:part foc
+juhlissa :: n:sem -n:gen
+kaapista :: n:sta -n:gen
+kaupunkia :: n:part -n:part -n:gen =rel
+keltainen :: adj foc n:nom =n:gen _foc
+kenen :: foc wh n:gen
+kenestä :: foc wh n:sta
+kielsi :: v T:past -n:nom =T _foc -n:sem
+kimaltavasta :: n:sta adj foc =n:sta
 kohti :: P -n:part
+kukka :: =n:gen =adj _foc foc n:nom =D:nom
 kumoutui :: v T:past -n:nom =pv
-kuvan :: n:acc =n:sta +a -n:gen
-kuvia :: n:part =n:sta +a -n:gen
-lääke :: n:nom =rel +a -n:gen
-lääkettä :: n:part +a -n:gen =rel
-löysi :: v T:past -n:nom =n:acc
-löytyi :: v T:past -n:nom =n:sta
-mitä :: *foc wh n:part +n -n:gen *rel =n:part
+kuvan :: n:acc =n:sta =n:gen foc _foc
+kuvia :: n:part =n:sta -n:gen
+lääke :: n:nom =rel -n:gen
+lääkettä :: n:part -n:gen =rel
+löysi :: v T:past _foc -n:nom =n:acc =n:sta
+löytyi :: v T:past _foc -n:nom =n:sta
+mitä :: foc wh n:part +n -n:gen rel =n:part
 ottamaan :: v T:inf -n:part =n:part =n:sem =n:acc
 ottamasta :: v T:inf -n:part =n:part =n:acc -n:sem
 ottavan :: v T:inf -n:gen =n:acc =n:sem =n:sta
-paidasta :: n:sta +a -n:gen -n:sta
-parantui :: v T:past -n:nom =pv -foc
-pyysi :: v T:past -n:nom =T -foc
-pääsee :: v T:prees =pv -n:nom =n:sem -foc
+paidasta :: n:sta =adj _foc =n:gen =n:sta
+parantui :: v T:past -n:nom =pv _foc
+pyysi :: v T:past -n:nom =T _foc
+pääsee :: v T:prees =pv -n:nom =n:sem _foc
 päätyi :: v T:past -n:nom =pv
 rakastaa :: v T:prees T:inf -n:nom -n:part
 rakasti :: v T:past -n:nom =n:part
-saavuttaa :: v T:prees -n:nom =n:sem =n:acc =pv -foc
+saavuttaa :: v T:prees -n:nom =n:sem =n:acc =pv _foc
 sanoi :: v T:past -n:nom -xC
 se :: n:nom =rel =n
-syömällä :: pv -n:part
-teoria :: n:nom =rel +a -n:gen
+syömällä :: pv =n:part _foc foc
+teoria :: n:nom =rel -n:gen
 tiesi :: v T:past -n:nom =T
-tyttö :: n:nom =rel +a -n:gen
+tyttö :: n:nom =rel -n:gen
 tytön :: n:acc =rel -n:gen
-valtamereen :: n:sem +a -n:gen
-valtameren :: n:acc +a -n:gen
-viihtyvä :: n:nom +a -n:sem =n:nom
+tämä :: D:nom foc
+uusi :: adj foc n:nom =n:gen _foc
+valtamereen :: n:sem -n:gen
+valtameren :: n:acc -n:gen
+viihtyvä :: n:nom -n:sem -n:nom
 virtaamalla :: pv =n:sem -P
-väite :: n:nom =rel +a n -n:gen
+väite :: n:nom =rel n -n:gen

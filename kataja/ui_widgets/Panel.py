@@ -46,7 +46,6 @@ class PanelAction(KatajaAction):
                 return panel
             elif panel:
                 return find_panel_widget(panel.parentWidget())
-
         self.panel = find_panel_widget(ui_item.parentWidget())
 
 

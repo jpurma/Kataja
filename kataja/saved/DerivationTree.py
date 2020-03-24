@@ -67,24 +67,44 @@ class DerivationTree(SavedObject):
         self.branch = self.build_branch(self.current_branch_id)
 
     def build_branch(self, branch_id):
+        print('building branch...', branch_id)
         b = []
         step = self.d.get(branch_id, None)
+        done = set()
         while step:
             uid, data, msg, state_id, parent_id, state_type = step
             b.append(state_id)
+            if parent_id in done:
+                print('looping branch, at parent ', parent_id)
+                break
             step = self.d.get(parent_id, None)
+            done.add(parent_id)
+        print('...done building branch')
         return list(reversed(b))
 
+    def collect_states(self):
+        states = {}
+        for key, val in self.d.items():
+            state_key = key.rsplit('_', 1)[-1]
+            if state_key not in states:
+                uid, data, msg, state_id, parent_id, state_type = val
+                states[int(state_key)] = msg, state_type
+        return states
+
     def build_branches(self):
+        print('building branches...')
         nodes = set(self.d.keys())
         parents = {parent_id for uid, data, msg, state_id, parent_id, state_type in self.d.values()}
         self.branches = list(nodes - parents)
+        print('...done building branches')
 
     def build_child_map(self):
+        print('building child map...')
         self.child_map = defaultdict(list)
         for uid, data, msg, state_id, parent_id, state_type in self.d.values():
             if parent_id:
                 self.child_map[parent_id].append(state_id)
+        print('...done building child map')
 
     def iterate_branch(self, branch_id):
         step = self.d.get(branch_id, None)

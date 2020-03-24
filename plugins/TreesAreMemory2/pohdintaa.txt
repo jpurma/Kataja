@@ -102,3 +102,60 @@ Parseroinnin järjestys tulee laittamaan päänoodin ja sen alisteiset noodit ke
 Junassa lueskelen Stroikin 'Locality in Minimalist Syntax':a ja miten siinä oli ratkottu wh-pulmia. Siinä rakennetaan alhaalta ylös, mutta se soveltuu huonosti parserointiin koska leksikaalinen elementti sijoitetaan ensimmäisen kerran rakenteeseen sen pohjimmaisessa kohdassa, eli jos on vaikka wh verbin objektina ja siirtynyt lauseen ihan lopusta niin rakentaminen alkaa sieltä pohjalta, vasta kun koko lause on kuultu. Ajatus siitä että pidetään niitä elementtejä joiden piirteet eivät täysin tyydyttyneet käsillä työtilassa kunnes löytävät paikkansa on kyllä soveltuva minunkin malliin, kunhan merkataan nämä näin käyttäytyvät piirteet eri tavalla kuin piirteet jotka saavat jäädä tyydyttymättä.
 
 Jonkinlainen Survive-periaate voisi auttaa minunkin parserissa kun ei tarvitsisi pitää wh-rakennetta vapaana kunnes se löytää paikkansa ja sen jälkeen keksiä miten se nostetaan takaisin lauseen alkuun. Ehkä, tämä pitää tarkistaa. Voisin muokata parseria niin että siellä on survivors-kasa, josta voi myös mergetä.
+
+31.12. 2019
+Takaisin siihen asiaan että parseroinnin järjestys järjestää myös argumentit. En ole nyt varma tekeekö parseri monia ekvivalentteja tuloksia, eli johtavatko erilaiset operaatioiden ketjut samaan lopputulokseen. No, jätetään se yhä hautumaan. Toinen asia joka mietityttää on parsereiden taipumus lievään kombinatoriseen räjähdykseen lauseen pituuden kasvaessa. Vaiheet auttaisivat siinä, jos voisi jotenkin eristää että vaikkapa kaikki jonkun DP:n tulkintamahdollisuudet eivät aiheuttaisi n-kertaista kasvua koko lauseelle. Mitä keinoja minun parserissa on sinetöidä joku pätkä käsitellyksi että seuraava pätkä tarvitsee käsitellä vain yhdestä lähtökohdasta? Tämähän liittyy tuohon ekvivalenssiin.
+
+Jos on nykyisen rakenteen pää H ja sen päälle aletaan rakentamaan lisää, niin uusi rakennelma on sama kaikille H, kunnes se on käyttänyt H:ta rakenteessa ja sen seuraavat mahdollisuudet perustuvat H:n sisäiseen rakenteeseen. Koitetaan saada tästä otetta.
+
+4.1. 2020
+Katsotaanpa nyt niitä parserin tiloja järjestelmällisemmin. Kun on sanat A B tässä järjestyksessä, eli B seuraa A:ta, niin niiden mahdolliset suhteet on:
+0. Vierekkyyssuhde: A edeltää välittömästi B:tä (=A.f('B'))
+ja joku näistä:
+1. Rakenne johon A kuuluu on B:n argumentti: ...Pekka(A) näki(B)... (=B.arg())
+2. B on argumentti rakenteelle johon A:kuuluu: ...näki(A) Merjan(B)... (=B.r())
+3. A:lla ja B:llä ei vielä ole rakenteellista yhteyttä.
+   a. B kuuluu rakenteeseen josta tulee A:n rakenteen argumentti: ...näki(A) iloisen(B)...
+   b. B kuuluu rakenteeseen jonka argumentiksi otetaan rakenne johon A kuuluu: ...Merjan(A) tavallisen(B)...
+   c. A kuuluu siirtyneeseen rakenteeseen ja se tulee liittymään johonkin toiseen rakenteeseen kuin B
+
+Tässä kiinnostava on tuo 'rakenne johon A kuuluu'. Jos lause alkaisi vaikka 'Pekka näki Merjan hyökkäävän...' niin rakenne johon 'hyökkäävän' kuuluu ei saa olla vielä 'näki'. Silloin seuraava argumentti menisi sen argumentiksi. Pitää lykätä argumentin asettamista kunnes kaikki argumenttiin liittyvät palaset on käsitelty. Vierekkyyssuhde on voimassa.
+
+Nykyparserissa olen määritellyt nuo operaatiot suhteessa rakentuvaan puuhun. Siinä A ja B eivät viittaa suoraan sanoihin, vaan puun oksiin ja sikäli se pystyy kuvaamaan joitakin noista yksinkertaisemmin.
+0. Vierekkyyssuhde: Uusi sana C mergetään rakenteeseen [.A A B]. => [.C C [.A A B]]
+1. Edellinen rakenne [A B] on argumentti uudelle sanalle C:  [.C C [.A A B]] => [.C [.C [.A A B] C] B]
+  jos X = C, Y = [A B], Z = B niin [X Y] => [[Y X] Z]
+2. Uusi sana C on argumentti edelliselle rakenteelle [A B]:  [.C C [.A A B]] => [.A [.A [.A A B] C] B]
+
+Katsotaan miten tämä toimii jos puussa pitää kaivaa syvemmälle:
+(0) [.A A B]
+(0) [.C C [.A A B]]
+(1) [.C [.C [.A A B] C] B]
+    X = [.C [.A A B] C], Y = B, Z = B, [X Y] => [.C [.C B [.C [.A A B] C]] B]
+(1) [.C [.C [.C [.C A [.C [.C [.B B A] C] A]]
+
+Tuon esittäminen vierekkäisyyssuhteella menisi:
+0. B.precedent=A
+1. B.precedent=A => B.args.append(A.free_precedent())
+2. B.precedent=A => A.free_precedent().args.append(B)
+
+Eli tarvitsisi free_precedent-metodin, joka etsisi edellisen edeltäjän jota ei ole käytetty argumenttina
+
+[[Merjan ^hyökkäävän] linnaan]
+
+26.1. 2020
+Onpa taas sotkua. Toteutettu tuo edellinen (Bar-alkuisissa tiedostoissa, koska konstituentti on 'palkki', jossa yhdellä pääsanalla on lista argumentteja, käytännössä pääsanakonstituentti sisältää projektion konstituentista.). Mietityttää määreposition ja komplementtiposition ero yleensä. Nyt molemmista syntyy pääsanan argumentteja, siinä vaiheessa ei enää määreellä ja komplementilla ole eroa. Ongelmat on siinä, että argumentit jotka yleensä ovat komplementteina voivat joissakin tapauksissa nousta määrepositioon ja määreet jäädä komplementtipositioon, mutta siinäkin on tapauksia joissa järjestystä ei koskaan voi muuttaa. Olen usein käyttänyt '-' ja '='-merkkejä erottamaan onko piirre sellainen joka oikeuttaa noston määrepositioon vai ainoastaan komplementiksi, mutta se on vähän turhan ad hoc. Lisäksi on fokusmekanismi, jolla voi oikeuttaa sen, että argumentti jonka pitäisi olla komplementtina ilmestyykin pääsanan eteen. Houkutteleva ajatus on, että komplementtipositio olisi normaali ja fokusmekanismia käytettäisiin aina kun jotain onkin määrepositiossa. Siinä on riskinä se, että fokusmekanismista tulisi niin lokaali ja helposti tukkeutuva että se ei enää pystyisi hoitamaan pitempiä siirtymiä joita varten sen alunperin laitoin. Mutta pitää vähän koetella.
+
+Adjektiivit ovat määrepositiossa ja niitä voi olla monta. Pitäisi myös mahduttaa genetiivit ja D:t oikeassa järjestyksessä. Näyttää siltä että foc-piirre päätyy hoitamaan '-':n tehtävää toisten piirteiden puolesta. Tämä ei varmaankaan ole vika.
+
+20.3.
+Mietitään nyt sellaista hypoteesia että myös normaali spec ennen pääsanaa käyttää samaa mekanismia kuin pitkänmatkansiirtymät. Tämä ei oikeastaan ole kaukana siitä ajatuksesta jota yritin kauan pelastaa, jossa pitkänmatkansiirtymät ovat vain paikallisia siirtymiä, mutta jatkuvien nostojen rakenteet ovat jättäneet ne lopulta kauas toisistaan. Jos on nostomekanismi jota käytetään usein ja useimmiten toteuttamaan sen, että edeltävästä sanasta tulee seuraavan sanan argumentti: esim. 'keltainen auto' olisi jotain jossa keltainen on nostettu auton argumentiksi, [.auto keltainen] ja pääsana on rakenteessa aina vasemmalla. Tuo on toinen iso seuraus. Pääsana on aina ensin syntyneessä rakenteessa.
+
+Mahdolliset ongelmat joissa tämän saisi ehkä kaadettua ovat tilanteet joissa jokin elementti jonka pitäisi pystyä nostamaan kaukaisempi B nostaakin läheisemmän A:n: 'B... A X' Tuo taitaa olla yleisesti noin: 'Minkä_B Pekka_A lainasi A B' ja 'Kuka_A lainasi A kirjan?' Toinen mahdollinen ongelma on estää liiallinen opportunistinen argumenttien nosto. Jos jokaista argumenttia voisi käyttää vain kerran, elementit jotka ovat jo käytetty jossakin argumenttina eivät olisi nostettavissa. Tämä olisi liian tiukka ehto relatiivilauseissa, joissa joko täytyy relatiivipronomini toimii sekä relatiivipääsanan argumenttina että relatiivilauseen jonakin argumenttina. Tosin siinä on sellainen hieno mutkistus, että parserointi näyttää vaativan että kun relatiivilause RP on muodostettu, täytyy historiasta kaivaa se pääsana johon sen on tarkoitus liittyä ja tästä historiasta nostetusta elementistä tulee sen yhdistelmän pääsana, eli tässä täytyy nostaa elementti toimimaan pääsanana, kun muuten nostellaan elementtejä toimimaan argumentteina. Tämä voisi tehdä sen tarvittavan eron: relatiivilauseessa elementin saa nostaa toimimaan argumenttina, koska sitä ei vielä ole käytetty argumenttina, ja relatiivipronomini saa nostaa itselleen pääsanan koska se on eri operaatio.
+
+No nyt tuossa paljastuu, että kun argumentti etsii itselleen pääsanan, niin sekin on periaatteessa yksi ja sama operaatio vaikka pääsana löytyy siitä ihan vierestä tai jos se haetaan syvempää. Eli kun parseri on sanassa X, niin se hakee rakenteesta vapaata elementtiä Y josta joko tulee X:n argumentti tai X:stä tulee Y:n argumentti. Tuntuu liian yksinkertaiselta suhteessa kaikkeen mitä ollaan jo kokeiltu, mitä tässä en ota huomioon? Onko tämä toiminnaltaan nyt vastaava kuin perinteinen shift-reduce parseri? Meillä on kaksi sääntöä jotka yhdistävät X:n ja Y:n joko [.X Y] tai [X .Y] ja 'shift' joka jättää elementin odottamaan yhdistämistä. Eroa tulee ainakin kahdessa asiassa: siinä, että elementin voi yhdistää uudestaan joissakin tapauksissa (relatiivilauseet) ja että oletetaan että kun elementti nostetaan reducen myötä uuteen positioon rakenteessa, rakenteen 'muisti' järjestyy uudelleen, koska rakenne on muisti. Tuota pitää katsoa tarkemmin.
+
+Jos X nostaa rakenteen Y ja muodostaa [X Y]:n, niin kun lähdetään etsimään seuraavaa vapaata elementtiä niin se tulee tapahtumaan etsimällä Y:stä. vaikka se on nostettu X:n rinnalle ja käsittelyssä sen jälkeen, se on yhä myös X:n lapsissa, ja koska se oli edellinen vapaa elementti, tiedetään että X:n ja Y:n välillä ei ollut vapaita elementtejä, joten seuraava vapaa elementti voi löytyä Y:n sisältä. Tuleeko siitä joku lumipalloefekti? Katsotaan 'Mitä lääkettä syömällä Pekka parantui?'
+
+f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+f('Pekka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r()

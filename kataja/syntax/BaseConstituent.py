@@ -136,6 +136,13 @@ class BaseConstituent(SavedObject, IConstituent):
         """
         return self.features
 
+    def get_checked_features(self):
+        flat = []
+        for ftuple in self.checked_features:
+            for f in ftuple:
+                flat.append(f)
+        return flat
+
     def get_parts(self):
         """ Getter for parts, redundant for BaseConstituent (you could use c.parts ) but it
         is better to use this consistently for compatibility with other implementations for
