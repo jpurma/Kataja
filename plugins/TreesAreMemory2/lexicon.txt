@@ -3,30 +3,29 @@ Pariisia :: N:prt
 Pekka :: N:nom
 Seine :: N:nom
 acc :: N:acc
-ei :: T -N:nom -v
-että :: N:että -T
+ei :: T -N:nom =v
+että :: N:acc =T
 gen :: N:gen
 ilman :: N:iin -N:prt
-joka :: N:nom rel? -T*
-jonka :: N:acc rel? -T*
-jota :: rel? -T
+joka :: rel? =T, N:nom
+jonka :: rel? =T, N:acc
+jota :: rel? =T, N:prt
 jäätyään :: -N:iin adv
 kaupunkia :: N:prt
 keksi :: -N:nom -N:acc
-kenen :: wh =T
+kenen :: wh =T, wh N:gen
 kohti :: P -N:prt
 kotiin :: N:iin
 kumoutui :: -N:nom
 meren :: N:acc =rel
-minkä :: C -T
-mitä :: N:prt C
+minkä :: C =T wh, wh N:acc
+mitä :: C =T wh, wh N:prt
 nimmaria :: N:prt -N:gen
 palasi :: -N:nom -N:iin adv T
-prt :: N:prt
 rakastanut :: -N:prt v
 rakasti :: -N:nom -N:prt T
 saavutti :: T -N:nom -N:acc -N:lla
 suruissaan :: adv
 teorian :: N:acc =rel
-tiesi :: -N:nom -N:acc|että T
+tiesi :: -N:nom -N:acc T
 virtaamalla :: N:lla -P

@@ -23,17 +23,21 @@ debug_features = True
 show_bad_routes = True
 
 
-def read_lexicon(filename):
-    lexicon = {}
-    for line in open(filename):
+def read_lexicon(lines, lexicon=None):
+    if lexicon is None:
+        lexicon = {}
+    for line in lines:
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        label, foo, fstring = line.partition('::')
+        label, foo, feat_parts = line.partition('::')
         label = label.strip()
-        feats = [Feature.from_string(fs) for fs in fstring.split()]
-        const = SimpleConstituent(label=label, features=feats)
-        lexicon[label] = const
+        consts = []
+        for i, fstring in enumerate(feat_parts.split(',')):
+            feats = [Feature.from_string(fs) for fs in fstring.split()]
+            const_label = f'({label})' if i else label
+            consts.append(SimpleConstituent(label=const_label, features=feats))
+        lexicon[label] = consts
     return lexicon
 
 
@@ -82,42 +86,43 @@ class Parser:
             if self.active_route:
                 return self.active_route[-1].func_add(word, *feats)
             else:
-                print(feats)
                 const = SimpleConstituent(word)
                 route_item = RouteItem.create_initial_state(const, self, feats)
-                print('initial route item:', route_item)
                 self.active_route = [route_item]
                 return route_item
 
         func_locals = {'f': f}
         self.active_route = []
         exec(sentence, globals(), func_locals)
-        print(self.active_route)
         return [self.active_route]
 
     def _string_parse(self, sentence):
         paths = []
         for word in sentence.split():
             paths = list(chain.from_iterable(self.do_operations(path) for path in paths))
-            const = self.get_from_lexicon(word)
-            if paths:
-                paths = [path + [path[-1].add_const(const)] for path in paths]
-            else:
-                paths = [[RouteItem.create_initial_state(const, self)]]
+            consts = self.get_from_lexicon(word)
+            for const in consts:
+                if paths:
+                    paths = [path + [path[-1].add_const(const)] for path in paths]
+                else:
+                    paths = [[RouteItem.create_initial_state(const, self)]]
 
         # Finally attempt to raise what can be raised
         paths = list(chain.from_iterable(self.do_operations(path) for path in paths))
         return paths
 
     def get_from_lexicon(self, word):
-        const = self.lexicon[word]
-        if isinstance(const, SimpleConstituent):
-            const = const.copy()
-        else:
-            const = SimpleConstituent(label=const.label, features=[x.copy() for x in const.features])
-        const.uid = self.get_const_uid(const)
-        const.head = const
-        return const
+        original_consts = self.lexicon[word]
+        consts = []
+        for const in original_consts:
+            if isinstance(const, SimpleConstituent):
+                const = const.copy()
+            else:
+                const = SimpleConstituent(label=const.label, features=[x.copy() for x in const.features])
+            const.uid = self.get_const_uid(const)
+            const.head = const
+            consts.append(const)
+        return consts
 
     def add_feat_to_route(self, feat, head):
         for route_item in self.active_route:
@@ -171,11 +176,7 @@ class Parser:
 
             # Entäpä adjunktointi?
             common_features = find_common_features(top_features, prev_features)
-            print(route_item, precedent)
-            print('common features: ', common_features)
-            print('shared heads: ', find_shared_heads(precedent, route_item))
             if common_features and not find_shared_heads(precedent, route_item):
-                print('merging adjuncts ', common_features)
                 shared_features = find_shared_features(top_features, prev_features)
                 new_route_item = route_item.adjunct(precedent, shared_features=shared_features)
                 paths += self.do_operations(path + [new_route_item])
@@ -285,8 +286,8 @@ class Parser:
 
 if __name__ == '__main__':
     t = time.time()
-    lexicon = read_lexicon('lexicon.txt')
-    parser = Parser(lexicon)
+    my_lexicon = read_lexicon(open('lexicon.txt'))
+    parser = Parser(my_lexicon)
     sentences = []
     readfile = open('sentences.txt', 'r')
     for line in readfile:

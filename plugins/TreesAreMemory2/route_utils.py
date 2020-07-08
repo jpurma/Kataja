@@ -234,7 +234,9 @@ def linearize(route):
     for route_item in route:
         state = route_item.state
         if state.state_type == state.ADD:
-            result.append(state.get_head_label())
+            label = state.get_head_label()
+            if label and not label.startswith('('):
+                result.append(state.get_head_label())
     str_result = ' '.join(result)
     debug_linearization and print('linearised: ', str_result)
     return str_result

@@ -72,7 +72,7 @@ class Document(KatajaDocument):
                 if line and not line.startswith('#'):
                     sentences.append(line)
 
-        self.lexicon = read_lexicon(self.get_default_lexicon_file())
+        self.lexicon = read_lexicon(open(self.get_default_lexicon_file()))
 
         self._sentences = sentences
         for sentence in sentences:

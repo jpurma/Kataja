@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from plugins.TreesAreMemory2.Parser import Parser
+from plugins.TreesAreMemory2.Parser import Parser, read_lexicon
 from kataja.singletons import ctrl
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 
@@ -39,6 +39,40 @@ class SyntaxAPI(KatajaSyntaxAPI):
     def __init__(self, lexicon=None):
         super().__init__()
         self.parser = Parser(lexicon=lexicon, forest=None)
+
+    def read_lexicon(self, lexdata, lexicon=None):
+        if lexicon is None:
+            if ctrl.document.lexicon is not None:
+                lexicon = ctrl.document.lexicon
+            else:
+                lexicon = {}
+        lexicon.clear()
+        lines = lexdata.splitlines()
+        read_lexicon(lines, lexicon)
+        return lexicon
+
+    def get_editable_lexicon(self):
+        """ If it is possible to provide editable lexicon (str), where to get it.
+        :return:
+        """
+        def feat_str(const):
+            return ' '.join([str(x) for x in const.features])
+
+        if isinstance(self.lexicon, dict):
+            s = []
+            for key, const in self.lexicon.items():
+                if isinstance(const, str):
+                    fs = const
+                elif isinstance(const, list):
+                    fs = ', '.join(feat_str(c) for c in const)
+                else:
+                    fs = feat_str(const)
+                cs = f'{key} :: {fs}'
+                s.append(cs)
+            s.sort()
+            return '\n'.join(s)
+        else:
+            return self.lexicon
 
     def create_derivation(self, input_text=None, lexicon=None, semantics=None, forest=None):
         """ Attempt parsing with given sentence or tree and with given lexicon. If these are left
