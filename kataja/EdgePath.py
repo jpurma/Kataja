@@ -6,6 +6,7 @@ import kataja.globals as g
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.globals import EDGE_PLUGGED_IN, EDGE_OPEN, EDGE_CAN_INSERT, EDGE_RECEIVING_NOW, \
     EDGE_OPEN_DOMINANT, EDGE_RECEIVING_NOW_DOMINANT
+from kataja.utils import equal_synobj
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -86,10 +87,16 @@ class EdgePath:
         self.cached_shift_for_start = 0
         cn = self.edge.start
         if cn and cn.node_type == g.CONSTITUENT_NODE:
-            if self.edge in cn.cached_sorted_feature_edges:
-                i = cn.cached_sorted_feature_edges.index(self.edge)
-                max_i = len(cn.cached_sorted_feature_edges)
-                self.cached_shift_for_start = (i - math.ceil((max_i - 1) / 2)) * 4
+            i = 0
+            count = 0
+            prev_edge = None
+            for edge in cn.cached_sorted_feature_edges:
+                if prev_edge and not equal_synobj(edge.origin, prev_edge.origin):
+                    count += 1
+                if edge == self.edge:
+                    i = count
+                prev_edge = edge
+            self.cached_shift_for_start = (i - math.ceil(count / 2)) * 4
         return self.cached_shift_for_start
 
     def get_shift_for_end(self):
@@ -424,9 +431,9 @@ class EdgePath:
             path.addEllipse(x - 2, y - 4, 4, 4)
             path.addEllipse(x - 1, y - 6, 2, 2)
         elif symbol == EDGE_PLUGGED_IN:
-            checks_node = self.edge.alpha.checks
+            checks_node = self.edge.origin.checks
             for edge in self.edge.start.edges_down:
-                if edge.alpha is checks_node and edge.is_visible():
+                if equal_synobj(edge.origin, checks_node) and edge.is_visible():
                     edge.path.update_end_points()
                     cx, cy = edge.path.computed_start_point
                     cy -= 2

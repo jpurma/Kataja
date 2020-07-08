@@ -1,58 +1,157 @@
-f('A').f('B').arg()
+jäätyään ilman nimmaria Merja palasi suruissaan kotiin
+kenen nimmaria ilman jäätyään Merja palasi suruissaan kotiin
 
-f('A').f('B').f('C').arg().arg()
+minkä acc meren jota prt Pekka ei rakastanut Seine saavutti virtaamalla
+minkä meren jota Pekka rakasti Seine saavutti virtaamalla
+minkä meren jonka Pekka tiesi Seine saavutti virtaamalla
+minkä meren Seine saavutti virtaamalla kohti mitä kaupunkia
 
-juhlissa Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+Pekka tiesi että Pariisia kohti virtaamalla Seine saavutti meren
+Pekka tiesi että mitä kaupunkia kohti virtaamalla Seine saavutti meren
+mitä kaupunkia kohti virtaamalla Seine saavutti meren
+Pekka keksi teorian joka kumoutui
 
-juhlissa viihtyvä Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+f('Pekka').f('tiesi', 'T','-että').arg().f('että','että*', '-T').f('Pariisia').f('kohti').arg().f('virtaamalla', 'lla').arg().f('Seine').f('saavutti', 'T', '-lla').arg().arg('-lla').f('meren').r().r().r()
 
-Pekka löysi tytön jonka kimaltavasta paidasta Merja halusi Pekan ottavan kuvan juhlissa
+f('Pekka').f('tiesi', 'T','-että').arg().f('Mitä', '-T*','että*').f('kaupunkia').arg().f('kohti').arg().f('virtaamalla', 'lla').arg().f('Seine').f('saavutti', 'T', '-lla').arg().arg('-lla').f('meren').r().r().r()
 
-kenen kimaltavasta paidasta Merja halusi Pekan ottavan kuvan juhlissa
+f('Mitä', '-T*').f('kaupunkia').arg().f('kohti').arg().f('virtaamalla', 'lla').arg().f('Pekka').f('tiesi', 'T').arg().f('että').f('Seine').f('saavutti', 'T', '-lla').arg().arg('-lla').f('meren').r().r().r().r()
 
-kenen paidasta Merja halusi Pekan ottavan kuvan juhlissa
+#Mitä kaupunkia kohti virtaamalla Seine saavutti meren
+f('Mitä', '-T*').f('kaupunkia').arg().f('kohti').arg().f('virtaamalla').arg().f('Seine').f('saavutti', 'T').arg().f('meren').r().arg()
 
-f('kenen').f('paidasta').arg().put_stack().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').from_stack().r().f('juhlissa').r().r().r().r()
+# Pekka keksi teorian joka kumoutui
+f('Pekka').f('keksi').arg().f('teorian').f('joka').f('kumoutui').arg().r().r()
 
-f('mitä').f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().put_stack().f('Seine').f('saavuttaa').arg().f('valtameren').r().from_stack().arg()
-
-Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta juhlissa
-
-Riikan kimaltavasta paidasta pyysi Merja Pekkaa ottamaan kuvan juhlissa
-
-
-mitä kaupunkia kohti virtaamalla Seine saavuttaa valtameren
-
-
-Pekka sanoi että se väite että teoria kumoutui kumoutui
-
-
-kenestä Merja halusi Pekan ottavan kuvan juhlissa
-
-
-
+f('John').f('wonders').arg().f('to', 'P').f('who', '-T*').r().f('did').arg().f('John').f('gave', '-P').arg().arg('-P').f('the').f('book').arg().r().r().r().r()
 
 f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
 
-mitä lääkettä syömällä Pekka parantui
+f('Pekka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r()
+
+f('Pekka', 'D').f('hukkasi', 'V', '-D', '-K:acc').arg().f('takin', 'K:acc', '-rel').f('jota', 'K:prt','-T','rel', '-NEG').f('Merja', 'D').f('ei', 'NEG', '-T', '-D').arg().f('ollut', 'T').f('etsinyt', '-K:prt').arg('-K:prt').r().r().f('eikä', 'NEG', '-T', '-D').f('Pauli', 'D').r().f('-', 'T').f('pilkannut', '-K:prt').arg('-K:prt').r().r().adj().r().r().r()
+
+f('Pekka', 'D').f('hukkasi', 'V', '-D', '-K:acc').arg().f('takin', 'K:acc', '-rel').f('jota', 'K:prt','-T','rel').f('Merja', 'D').f('oli', '-D', 'T').arg().f('etsinyt', '-K:prt').arg('-K:prt').r().f('ja', 'T').adj().f('Pauli', 'D').f('-', '-D', 'T').arg().f('pilkannut', '-K:prt').arg('-K:prt').r().adj().r().r().r()
+
+f('Pekka', 'D').f('hukkasi', 'V', '-D', '-K:acc').arg().f('takin', 'K:acc').f('jota', 'K:prt','-T').f('Merja', 'D').f('oli', '-D', 'T').arg().f('etsinyt', '-K:prt').arg('-K:prt').r().r('T').adj().r()
+
+f('Pekka', 'D').f('hukkasi', 'V', '-D', '-K:acc').arg().f('takin', 'K:acc').f('avaimet', 'K:acc').adj().f('ja', 'V', 'K').adj().f('puhelimen', 'K:acc').adj().r()
+
+f('Pekka', 'D').f('hukkasi', 'V', '-D', '-K:acc').arg().f('takin', 'K:acc').r().f('Merja','D').f('-', 'V', '-D', '-K:acc').arg().f('avaimet', 'K:acc').r().adj().f('tai', 'V').adj().f('Pauli','D').f('-', 'V', '-D', '-K:acc').arg().f('puhelimen', 'K:acc').r().adj()
+
+f('Pekka').f('ei').arg().f('muistanut').arg().f('ostaneensa', 'v', '-lle', '-A').f('keltaista', 'A').f('-', 'A').adj().r().f('lainanneensa', 'v', '-lle', '-A').f('punaista', 'A').f('-', 'A').adj().r().adj().f('tai', 'v').adj().f('poimineensa', 'v', '-lle', '-A').f('sinistä', 'A').f('kukkaa', 'A').adj().r().adj().f('Merjalle', 'lle').r().r()
 
 
-tyttö jota Pekka halusi rakastaa löytyi kaapista
+f('Hassu', 'D').f('Pekka', 'D').adj().f('hukkasi', ['-D', 'K','-acc']).arg('-D').f('takin').r().f('Merja', 'D').f('-', ['-D', 'K']).arg('-D').f('avaimet').r().adj().f('tai', 'K').adj().f('Pauli','D').f('-', ['-D', 'K']).arg('-D').f('puhelimen').r().adj()
 
-#tyttö löytyi kaapista
+f('Hassu', 'D').f('Pekka', 'D').adj().f('hukkasi', ['-D', 'K']).arg('-D').f('takin').r().f('Merja').f('hukkasi', ['-D', 'K']).arg().f('avaimet').r().adj().f('tai', 'K').adj().f('Pauli').f('hukkasi', ['-D', 'K']).arg().f('puhelimen').r().adj()
 
-lääke josta Merja halusi eroon löytyi kaapista
+f('Hassu', 'D').f('Pekka', 'D').adj().f('hukkasi', ['-D', 'K']).arg('-D').f('takin').r().f('Merja').f('hukkasi', ['-D', 'K']).arg().f('avaimet').r().adj().f('tai', '-K').arg('-K').f('Pauli').f('hukkasi', ['-D', 'K']).arg().f('puhelimen').r().r()
 
-#f('lääke').f('josta').f('Merja').f('halusi').arg().f('eroon').wharg().r().r().r().r().f('löytyi').arg().f('kaapista').r()
+f('Hassu', 'D').f('Pekka', 'D').adj().f('hukkasi', ['-D', 'K']).arg('-D').f('takin').r().f('Merja').r('D').f('avaimet').r().f('tai', '-K').arg('-K').f('Pauli').r('D').f('puhelimen').r().r()
 
-mitä kaupunkia kohti virtaamalla Seine pääsee valtamereen
+Pekka ei muistanut ostaneensa keltaista lainanneensa punaista tai poimineensa sinistä kukkaa Merjalle
 
-Seine pääsee valtamereen virtaamalla kohti kaupunkia
+Pekka hukkasi takin Merja avaimet tai Pauli puhelimen
+
+f('Pekka', 'D').f('hukkasi', ['-D', 'K']).arg('-D').f('takin').r().f('Merja').r('D').f('avaimet').r().f('tai', '-K').arg('-K').f('Pauli').r('D').f('puhelimen').r().r()
+
+f('Pekka', feats='d').f('hukkasi', feats='-d').arg('-d').f('takin').r().f('Merja').r('d').f('avaimet').r().f('tai').arg().f('Pauli').r('d').f('puhelimen').r().r()
+Pekka hukkasi takin tai Merja avaimet
+
+Pekka hukkasi takin Merja avaimet tai Pauli puhelimen
+
+Pekka ei muistanut ostaneensa keltaista lainanneensa punaista tai poimineensa sinistä kukkaa Merjalle
+
+# Pekka ei muistanut ostaneensa keltaista, lainanneensa punaista tai poimineensa keltaista kukkaa Merjalle.
+f('Pekka').f('ei').arg().f('muistanut').arg().f('ostaneensa').f('keltaista').f('lainanneensa').f('punaista').f('tai').f('poimineensa').f('sinistä').f('kukkaa').arg().r().f('Merjalle').r().r().r().r('kukkaa_0').r().arg('Merjalle').r('tai').r('ostaneensa').r().r('kukkaa_0').r('ostaneensa').arg('Merjalle').r()
+
+# Pekka ei ostanut keltaista, lainannut punaista eikä poiminut sinistä kukkaa Merjalle
+f('Pekka').f('ei').arg().f('ostanut').arg().f('keltaista').f('lainannut').f('punaista').f('eikä').arg('Pekka').f('poiminut').f('sinistä').f('kukkaa').arg().r().f('Merjalle').r().r().r().r('kukkaa_0').r().arg('Merjalle').r('eikä').r('ostanut').r().r('kukkaa_0').r('ostanut').arg('Merjalle')
+
+f('Pekka').f('ei').f('ostanut').arg().f('keltaista').f('lainannut').f('punaista').f('eikä').f('poiminut').f('sinistä').f('kukkaa').arg().r().f('Merjalle').r().arg('Pekka').r('poiminut').r().r().r('kukkaa_0').r().arg('Merjalle').arg('Pekka').r('eikä').r('ostanut').r().r('kukkaa_0').r('ostanut').arg('Merjalle')
 
 
-Pekka joka tiesi mitä lääkettä syömällä hän parantui rakasti Merjaa
+f('Pekka').f('osti').arg().f('keltaisen').f('lainasi').f('punaisen').f('ja').f('poimi').f('sinisen').f('kukan').r().r().f('Merjalle').r().arg('Pekka').r('poimi').r().r().r('kukan_0').r().arg('Merjalle').arg('Pekka').r('ja').r('osti').r().r('kukan_0').r('osti').arg('Merjalle')
 
-# f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').r().f('syömällä').arg().r().f('hän').f('parantui').arg().r().r().f('rakasti').arg().f('Merjaa')
+# ? Pekka osti Merjalle keltaisen, lainasi punaisen ja poimi sinisen kukan.
 
-# f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').f('syömällä').arg().r().r().f('hän').f('parantui').arg().r().f('rakasti').arg().f('Merjaa').r()
+f('Pekka').f('tilasi').arg().f('jäätelön').r().f('Merja').f('pirtelön').f('ja').f('Riikka').f('kahvin').r('tilasi_0').arg().r().r().r('tilasi_0').arg()
+
+
+f('Pekka').f('osti').arg().f('keltaisen').f('lainasi').f('punaisen').f('ja').f('poimi').f('sinisen').f('kukan').r().r().arg('Pekka').r('poimi').r().r().r('kukan_0').r().arg('Pekka').r('ja').r('osti').r().r('kukan_0').r('osti')
+
+
+
+# Vau, sehän toimii!
+f('Pekka').f('osti').arg().f('keltaisen').f('lainasi').arg('Pekka').f('punaisen').f('ja').f('poimi').arg('Pekka').f('sinisen').f('kukan').arg().r().r('ja').r().r('kukan_0').r('lainasi').r('ja').r().r('kukan_0').r('osti')
+
+
+f('Pekka').f('osti').arg().f('keltaisen').f('lainasi').arg('Pekka').f('punaisen').f('ja').f('poimi').arg('Pekka').f('sinisen').f('kukan').r().r().r()
+
+
+f('Pekka').f('oli').arg().f('ihaillut').f('Merjaa').f('ja').arg().f('Riikkaa').r().r().r()
+
+Pekka halusi pirtelön , Riikka kahvin ja Merja jäätelön
+Pekka halusi pirtelön , Riikka halusi kahvin ja Merja halusi jäätelön
+
+ei Pekka ollut ihaillut Merjaa
+ei Merjaa ollut ihaillut Pekka
+juhlissa Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+
+f('Pekka').f('oli').arg().f('ihaillut').f('Merjaa').r().r().f('ja').arg().f('Merja').r(head='oli').f('Riikkaa').r(head='ihaillut').r()
+
+f('ei').f('tässä').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').f('Merjaa').r().r().f('eikä').f('Riikka').f('Pekkaa')
+
+f('ei').f('tässä').f('Merjaa').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').r().r()
+
+f('ei').f('Merjaa').f('ollut').f('ihaillut').arg(arg='Merjaa').r().f('Pekka').r().r()
+
+f('ei').f('tässä').f('Pekka').f('ollut').arg().arg().arg().f('ihaillut').f('Merjaa').r().r()
+
+f('Pekka').f('tilasi').arg().f('pizzan').f('ja').arg().f('Merja').arg().f('lasagnen').r()
+
+f('lääke').f('jota').f('Merja').f('ei').f('ollut').r().arg().f('löytänyt').arg().arg(arg='jota').r().r(head='jota').f('löytyi').arg().f('kaapista').r()
+
+f('lääke').f('josta').f('Merja').f('halusi').arg().f('eroon').arg(arg='josta').r().r(head='josta').f('löytyi').arg().f('kaapista').r()
+
+f('kenen').f('paidasta').arg().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').arg(arg='paidasta').r().f('juhlissa').r().r().r(head='kenen')
+
+f('Riikka').f('jonka').f('paidasta').arg().f('Merja').f('halusi').arg().f('kuvan').arg(arg='paidasta').r().r(head='jonka').r().f('parantui').arg()
+
+f('Pekka').f('joka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r().f('nukkui').arg().arg()
+
+f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+
+f('Pekka').f('joka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').r().r().r().r(head='joka').r().f('nukkui').arg()
+
+f('Pekka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r()
+
+
+Pekka jonka kuvan Riikka löysi halusi
+
+Pekka jonka kuvan Riikka löysi paidasta halusi kuvan
+
+Pekka joka löysi kuvan Riikan paidasta halusi kuvan
+
+Sannan uusi keltainen kukka löytyi
+
+Sannan uusi keltainen kukka löytyi Pekan kimaltavasta paidasta
+
+# Sannan keltainen kukka löytyi
+
+# mitä lääkettä syömällä Pekka parantui
+
+
+# Merja kielsi Pekkaa ottamasta kuvia Riikan kimaltavasta paidasta
+
+#Merja halusi kuvan Riikan kimaltavasta paidasta
+
+
+
+#f('kenen').f('paidasta').arg().put_stack().f('Merja').f('halusi').arg().f('Pekan').f('ottavan').arg().f('kuvan').from_stack().r().f('juhlissa').r().r()
+
+#f('mitä').f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().put_stack().f('Seine').f('saavuttaa').arg().f('valtameren').r().from_stack()
+
+#f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
 

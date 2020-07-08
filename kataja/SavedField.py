@@ -1,4 +1,5 @@
 from kataja.singletons import ctrl
+from collections import Iterable
 
 
 class SavedField(object):
@@ -82,7 +83,7 @@ class SavedField(object):
                     self.watcher.emit()
         elif self.name in saved:
             old = saved[self.name]
-            if old != value:
+            if (isinstance(value, Iterable) and old != value) or (not isinstance(value, Iterable) and old is not value):
                 history = obj.get_history()
                 if not history:
                     ctrl.undo_pile.add(obj)

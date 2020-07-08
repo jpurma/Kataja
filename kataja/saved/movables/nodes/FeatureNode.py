@@ -34,7 +34,7 @@ from kataja.globals import FEATURE_NODE, EDGE_CAN_INSERT, EDGE_OPEN, EDGE_PLUGGE
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.utils import coords_as_str, to_tuple
+from kataja.utils import coords_as_str, to_tuple, equal_synobj
 
 color_map = {
     'tense': 'accent7',
@@ -260,7 +260,7 @@ class FeatureNode(Node):
 
     def get_edges_to_me(self):
         for edge in self.edges_up:
-            if edge.alpha is self:
+            if equal_synobj(edge.origin, self):
                 return edge.chain_up([edge])
         return []
 

@@ -149,7 +149,8 @@ class BaseFeature(SavedObject):
         s += self.sign
         fam = ':' + self.family if self.family else ''
         val = ':' + self.value if self.value else ''
-        return s + str(self.name) + val + fam
+        strong = '*' if self.strong else ''
+        return s + str(self.name) + val + fam + strong
 
     def __repr__(self):
         c = '✓' if self.checks or self.is_satisfied() else ''
@@ -158,6 +159,8 @@ class BaseFeature(SavedObject):
             s.append(str(self.value))
         if self.family:
             s.append(str(self.family))
+        if self.strong:
+            s.append('*')
         return ":".join(s)
 
     def __hash__(self):
@@ -190,8 +193,13 @@ class BaseFeature(SavedObject):
         else:
             sign = ''
             name = s
+        strong = False
+        if name.endswith('*'):
+            name = name[:-1]
+            strong = True
         parts = name.split(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
         name = parts[0]
         value = parts[1] if len(parts) > 1 else ''
         family = parts[2] if len(parts) > 2 else ''
-        return cls(name, sign, value, family)
+        print('using basefeature from_string ', s)
+        return cls(name, sign, value, family, strong=strong)

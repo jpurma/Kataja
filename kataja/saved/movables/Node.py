@@ -39,6 +39,7 @@ from kataja.settings.NodeSettings import NodeSettings
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import equal_synobj
 
 call_counter = [0]
 
@@ -309,14 +310,14 @@ class Node(Draggable, Movable):
                         edge.end and edge.end.node_type == of_type and edge.end.is_visible()]
             else:
                 return [edge.end for edge in self.edges_down if
-                        edge.end and edge.end.node_type == of_type and (not edge.alpha) and edge.end.is_visible()]
+                        edge.end and edge.end.node_type == of_type and (not edge.origin) and edge.end.is_visible()]
         else:
             if of_type == g.FEATURE_NODE:
                 return [edge.end for edge in self.edges_down if
                         edge.end and edge.end.node_type == of_type]
             else:
                 return [edge.end for edge in self.edges_down if
-                        edge.end and (not edge.alpha) and edge.end.node_type == of_type]
+                        edge.end and (not edge.origin) and edge.end.node_type == of_type]
 
     def get_all_children(self, visible=False) -> list:
         """
@@ -339,10 +340,10 @@ class Node(Draggable, Movable):
         of_type = of_type or self.node_type
         if visible:
             return [edge.start for edge in self.edges_up if
-                    edge.start and edge.start.node_type == of_type and (not edge.alpha) and edge.start.is_visible()]
+                    edge.start and edge.start.node_type == of_type and (not edge.origin) and edge.start.is_visible()]
         else:
             return [edge.start for edge in self.edges_up if
-                    edge.start and edge.start.node_type == of_type and not edge.alpha]
+                    edge.start and edge.start.node_type == of_type and not edge.origin]
 
     def get_all_parents(self, visible=False) -> list:
         """
@@ -385,29 +386,28 @@ class Node(Draggable, Movable):
         """
         return not self.get_parents(visible=visible)
 
-    def get_edge_to(self, other, edge_type='', alpha=None) -> QtWidgets.QGraphicsItem or None:
+    def get_edge_to(self, other, edge_type='', origin=None) -> QtWidgets.QGraphicsItem or None:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
         of certain type between two elements.
         :param other:
         :param edge_type:
-        :param alpha: extra identifier stored with edge, to distinguish between otherwise
-        similar edges. Usually points to the origin of many-parted edge
+        :param origin: final node of a many parted edge, projecting feature
         """
-        if alpha:
+        if origin:
             if edge_type:
                 for edge in self.edges_down:
-                    if alpha is edge.alpha and edge.end is other and edge_type == edge.edge_type:
+                    if equal_synobj(origin, edge.origin) and edge.end is other and edge_type == edge.edge_type:
                         return edge
                 for edge in self.edges_up:
-                    if alpha is edge.alpha and edge.start is other and edge_type == edge.edge_type:
+                    if equal_synobj(origin, edge.origin) and edge.start is other and edge_type == edge.edge_type:
                         return edge
             else:
                 for edge in self.edges_down:
-                    if alpha is edge.alpha and edge.end is other:
+                    if equal_synobj(origin, edge.origin) and edge.end is other:
                         return edge
                 for edge in self.edges_up:
-                    if alpha is edge.alpha and edge.start is other:
+                    if equal_synobj(origin, edge.origin) and edge.start is other:
                         return edge
         else:
             if edge_type:

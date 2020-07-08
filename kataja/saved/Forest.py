@@ -169,7 +169,7 @@ class Forest(SavedObject):
             self.derivation_tree.update_dimensions()
             self.after_model_update('nodes', 0)
             self.is_parsed = True
-            self.derivation_tree.show_parse(0)
+            self.derivation_tree.show_first_passing_parse()
             self.forest_edited()
 
         ctrl.main.update_colors()
@@ -704,8 +704,8 @@ class Forest(SavedObject):
             else:
                 sorted_syn_feats = list(const.features)
 
-            sortable_edges = [(sorted_syn_feats.index(e.alpha.syntactic_object)
-                               if e.alpha and e.alpha.syntactic_object in sorted_syn_feats else i + 100, e) for i, e in
+            sortable_edges = [(sorted_syn_feats.index(e.origin.syntactic_object)
+                               if e.origin and e.origin.syntactic_object in sorted_syn_feats else i + 100, e) for i, e in
                               enumerate(node.edges_down) if e.edge_type == g.FEATURE_EDGE]
 
             return [e for i, e in sorted(sortable_edges)]

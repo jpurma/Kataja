@@ -159,3 +159,36 @@ Jos X nostaa rakenteen Y ja muodostaa [X Y]:n, niin kun lähdetään etsimään 
 
 f('mitä').f('lääkettä').r().f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
 f('Pekka').f('parantui').arg().f('syömällä').f('Merjan').f('lääkettä').arg().r().r()
+
+10.4.
+Pekka tilasi jäätelön, Merja pirtelön ja Riikka kahvin.
+
+Pariluennalliset koordinaatiolauseet ovat todella vaikeita, mutta jos keksii mekanismin niille niin sitten on syytä uskoaa että tämä mekanismi taipuu myös helpompiin tapauksiin.
+
+Pekka keräsi sinisiä, Merja punaisia ja Riikka keltaisia kukkia.
+Pekka keräsi sinisiä kukkia, Merja punaisia ja Riikka keltaisia.
+*Pekka sinisiä, Merja punaisia ja Riikka keräsi keltaisia kukkia
+?Pekka paitoja, Merja takkeja ja Riikka sukkia keräsi.
+Pekka myi sinisiä, Merja osti punaisia ja Riikka varasti keltaisia kukkia.
+Pekka myi sinisiä kukkia, Merja osti punaisia ja Riikka varasti keltaisia.
+
+'Pekka myi sinisiä, osti keltaisia ja varasti punaisia kukkia'
+Esimerkiksi tässä viimeisessä pitää olla 'sinisiä', 'keltaisia', 'punaisia' vapaana jotta lopussa voidaan tehdä [.kukkia sinisiä kukkia], [.kukkia keltaisia kukkia] ja [.kukkia punaisia kukkia]. Jos ne on jo asetettu verbeille objekteiksi, yritys tuoda 'kukkia' mukaan rikkoo no tampering-sääntöä. Vaikka meillä olisi parsinta jossa nuo ovat yhä vapaana, se että 'kukkia' liitetään yhdelle tai useammalle tai ei yhdellekään objektille tuo mahdollisuuksien kirjon jota on vaikea hillitä. Miten uudesta sanasta koordinaatiolauseessa tiedetään että tämä pitää sitten levittää kaikkiin koordinaatiohaaroihin?
+
+
+1.7. 2020
+Adjunkti/koordinaatiopohdintaa
+Samankaltaisuus ei riitä ehdoksi sille, että kaksi elementtiä voidaan adjunktoida: sijamuotojen samuus rikkoutuu esim 'ostin jäätelön:acc ja maitoa:prt'. Jos samankaltaisuutta löyhentää niin että riittää että kategoria on sama, tulee ongelmaksi vilkas mahdollisten adjunktioiden luonti kun esimerkiksi verbillä on monta argumenttia.
+Koordinaatioadjunktoinnissa itse koordinaatioelementti näyttää hyvältä vihjeeltä mitä tarvitaan: koordinaatioelementti voidaan adjunktoida sitä edeltävään tai sitä seuraavaan rakenteeseen ja syntyvä tuotos on edelleen adjunktoitavissa, ja siten voidaan keriä siihen mukaan edelliset koordinoitavat rakenteet. Tämä on epäsymmetristä adjunktointia: tarvitaan että toisella rakenteella on tietty adjunktoinnin mahdollistava piirre ja että molemmilla rakenteilla on jotain joka mahdollistaa että ne adjunktoituvat juuri keskenään.
+Siitä seuraisi vaikeuksia tilanteessa jossa olisi vaikkapa ADJ:acc N:acc N:ill ja haluttaisiin että N:acc ja N:ill eivät adjunktoidu toisiinsa. Tarvitaan sijapiirteen samuus tai adjunktoinnin salliva yleinen piirre?
+
+7.7. 2020
+Piirteiden siistimisestä
+Tarvittaisiin joku este sille kun verbi voi ottaa argumentin N:acc tai N:prt ja se on ottanut toisen, niin toinen ei ole enään otettavissa. Yleinen ratkaisu että vain yksi N:? ei kelpaa, koska täytyy voida ottaa myös N:nom ja paikallissijoja. Se olisi luontevaa esittää -N:prt|acc , mutta se miten se kuvataan piirrerakenteessa on ongelma. No, se taisi nyt ongelman esitettyä ratketa sillä että se kuvataan name:'N', value:'prt|acc' ja kun piirrettä verrataan niin se tehdään vähän mutkikkaammin, pilkotaan '|':lla. Siinä tulee se rajoitus että tälläinen poissulkeva tyydyttäminen toimii vain jos piirteillä on sama nimi.
+
+8.7. 2020
+Wh- ja relatiivilauseissa tarvittavat pitkän kantaman siirtymät, joissa kysymyssana tai relatiivipronomini on nostettu eteen menisivät ehkä siistimmin jos wh/rel -sanaan suhtautuisi kaksiosaisena elementtinä. Siinä on yhtenä osana pääkategoria joka ottaa komplementtina T-lauseen ja toisena osana sijamuoto joka mahdollistaa wh/rel -sanan toimimisen argumenttina T-lauseessa. Jakaminen tarvitaan jotta mahdollistuisi se, että tyydytettyään toisen suhteen elementti olisi yhä etsintäavaruudessa toisellekin suhteelle. Jakamisen toteutus on pohdinnassa.
+
+Jakamisen voi tehdä niin, että jo leksikkopoiminnassa luodaan kaksi eri konstituenttia. Silloin ongelmana on pitää huoli, että konstituentit eivät päädy mihinkään outoon suhteeseen keskenään. Niillä ei saa olla piirteitä jotka reagoisivat toisiinsa. Linearisoinnissa huomioitaisiin vain ensimmäinen osa. Pitäisi tallettaa tieto että nämä ovat samaa sanaa.
+
+Ongelma jakamisessa on, että se mahdollistaa sanan käytön kahdessa paikassa, mutta jos tarvitaan oikeasti syklinen siirtymä niin se ei riitä. En ole nyt varma tarvitaanko syklistä siirtymää.

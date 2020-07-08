@@ -415,3 +415,7 @@ def combine_lists(primary, secondary):
 def get_parent_panel(widget):
     if widget:
         return widget if isinstance(widget, QtWidgets.QDockWidget) else get_parent_panel(widget.getParentWidget())
+
+
+def equal_synobj(n1, n2):
+    return n1 and n2 and ((not (n1.syntactic_object or n2.syntactic_object)) or n1.syntactic_object == n2.syntactic_object)

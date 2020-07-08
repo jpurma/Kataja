@@ -31,6 +31,8 @@ from kataja.syntax.SyntaxState import SyntaxState
 
 from collections import defaultdict
 
+DONE_SUCCESS = 7
+
 
 class DerivationTree(SavedObject):
     """ Stores derivation steps for one forest and takes care of related
@@ -67,7 +69,6 @@ class DerivationTree(SavedObject):
         self.branch = self.build_branch(self.current_branch_id)
 
     def build_branch(self, branch_id):
-        print('building branch...', branch_id)
         b = []
         step = self.d.get(branch_id, None)
         done = set()
@@ -79,7 +80,6 @@ class DerivationTree(SavedObject):
                 break
             step = self.d.get(parent_id, None)
             done.add(parent_id)
-        print('...done building branch')
         return list(reversed(b))
 
     def collect_states(self):
@@ -217,6 +217,16 @@ class DerivationTree(SavedObject):
             self.build_active_branch()
             self.jump_to_last_step()
             ctrl.main.parse_changed.emit()
+
+    def show_first_passing_parse(self):
+        for i, branch in enumerate(self.branches):
+            step = self.d.get(branch, None)
+            if step:
+                uid, data, msg, state_id, parent_id, state_type = step
+                if state_type == DONE_SUCCESS:
+                    self.show_parse(i)
+                    return
+        self.show_parse(0)
 
     # ############## #
     #                #

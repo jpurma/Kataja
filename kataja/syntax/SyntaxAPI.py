@@ -66,7 +66,6 @@ class SyntaxAPI(SavedObject):
                 lexicon = {}
         lexicon.clear()
         lines = lexdata.splitlines()
-
         for line in lines:
             line = line.strip()
             if line.startswith('#'):

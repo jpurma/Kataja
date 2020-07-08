@@ -169,8 +169,8 @@ class ForestDrawing:
             cn.set_image_path(pixmap_path)
         return cn
 
-    def create_edge(self, start=None, end=None, edge_type='', fade=False, alpha=None):
-        rel = Edge(self.forest, start=start, end=end, edge_type=edge_type, alpha=alpha)
+    def create_edge(self, start=None, end=None, edge_type='', fade=False, origin=None):
+        rel = Edge(self.forest, start=start, end=end, edge_type=edge_type, origin=origin)
         rel.after_init()
         self.forest.store(rel)
         self.forest.add_to_scene(rel)
@@ -427,7 +427,7 @@ class ForestDrawing:
     # by forest's higher level methods.
     #
     def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False,
-                     alpha=None):
+                     origin=None):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -441,7 +441,7 @@ class ForestDrawing:
         :param direction:
         :param edge_type: optional, force edge to be of given type
         :param fade_in:
-        :param alpha:
+        :param origin:
         """
 
         # print('--- connecting node %s to %s ' % (child, parent))
@@ -459,7 +459,7 @@ class ForestDrawing:
         for old_edge in child.edges_up:
             if old_edge.edge_type == edge_type:
                 if old_edge.end == child and old_edge.start == parent \
-                        and old_edge.alpha == alpha:
+                        and old_edge.origin == origin:
                     # raise ForestError('Identical edge exists already')
                     log.info('Identical edge exists already')
                     return
@@ -468,15 +468,15 @@ class ForestDrawing:
 
         # Create edge and make connections
         new_edge = self.create_edge(start=parent, end=child, edge_type=edge_type, fade=fade_in,
-                                    alpha=alpha)
+                                    origin=origin)
 
         for edge_up in parent.edges_up:
-            if edge_up.alpha == new_edge.alpha:
+            if edge_up.has_similar_origin(new_edge):
                 edge_up.end_links_to = new_edge
                 new_edge.start_links_to = edge_up
 
         for edge_down in child.edges_down:
-            if edge_down.alpha == new_edge.alpha:
+            if edge_down.has_similar_origin(new_edge):
                 edge_down.start_links_to = new_edge
                 new_edge.end_links_to = edge_down
                 edge_down.update_start_symbol()

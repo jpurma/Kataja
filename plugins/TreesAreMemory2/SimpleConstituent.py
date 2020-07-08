@@ -1,5 +1,5 @@
 
-class BarConstituent:
+class SimpleConstituent:
 
     def __init__(self, label='', features=None):
         self.label = label
@@ -13,7 +13,7 @@ class BarConstituent:
         return str(self)
 
     def copy(self):
-        const = BarConstituent(label=self.label, features=[f.copy() for f in self.features])
+        const = SimpleConstituent(label=self.label, features=[f.copy() for f in self.features])
         for f in const.features:
             f.host = const
         return const

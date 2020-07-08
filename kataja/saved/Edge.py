@@ -43,12 +43,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type='', alpha=None):
+    def __init__(self, forest=None, start=None, end=None, edge_type='', origin=None):
         """
         :param Node start:
         :param Node end:
         :param string edge_type:
-        :param alpha: optional data for e.g. referring to third object
+        :param origin: optional data for e.g. referring to third object
         """
         FadeInOut.__init__(self)
         SavedObject.__init__(self)
@@ -60,7 +60,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self.start_links_to = None
         self.end_links_to = None
         self.end = end
-        self.alpha = alpha
+        self.origin = origin
         self.start_symbol = 0
         self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
         self.path = EdgePath(self)
@@ -216,8 +216,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     def update_start_symbol(self):
         if self.start_links_to:
             self.start_symbol = 0
-        elif self.alpha:
-            self.start_symbol = self.alpha.get_edge_start_symbol()
+        elif self.origin:
+            self.start_symbol = self.origin.get_edge_start_symbol()
         else:
             self.start_symbol = 0
 
@@ -245,7 +245,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
             lv = False
         elif not end.is_visible():
             lv = False
-        elif self.alpha and not self.alpha.is_visible():
+        elif self.origin and not self.origin.is_visible():
             lv = False
         elif not self.settings.get('visible'):
             lv = False
@@ -328,6 +328,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         ctrl.drawing.set_edge_end(self, node)
         self.update_shape()
 
+    def has_similar_origin(self, edge):
+        if not (self.origin and edge.origin):
+            return False
+        return self.origin.syntactic_object and edge.origin.syntactic_object and self.origin.syntactic_object == edge.origin.syntactic_object
+
     def __lt__(self, other):
         return self.edge_start_index()[0] < other.edge_start_index()[0]
 
@@ -391,8 +396,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         if self.color_key:
             base = ctrl.cm.get(self.color_key)
-        elif self.alpha and hasattr(self.alpha, 'color'):  # hasattr(self.alpha, 'get_color_key'):
-            base = self.alpha.color  # ctrl.cm.get(self.alpha.get_color_key())
+        elif self.origin and hasattr(self.origin, 'color'):  # hasattr(self.alpha, 'get_color_key'):
+            base = self.origin.color  # ctrl.cm.get(self.alpha.get_color_key())
         elif self.end:
             base = self.end.color  # get_color_key())
         else:
@@ -778,5 +783,5 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
     curve_adjustment = SavedField("curve_adjustment")
     start = SavedField("start")
     end = SavedField("end")
-    alpha = SavedField("alpha")
+    origin = SavedField("origin")
     forest = SavedField("forest")

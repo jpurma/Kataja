@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from plugins.TreesAreMemory2.BarParser import Parser
+from plugins.TreesAreMemory2.Parser import Parser
 from kataja.singletons import ctrl
 from kataja.syntax.SyntaxAPI import SyntaxAPI as KatajaSyntaxAPI
 
@@ -63,6 +63,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
         print('parsing from the input text and provided lexicon')
         print('================================================')
         print('input_text: ', self.input_text)
+        print('feature class is: ', self.Feature)
+
         self.parser.parse(self.input_text)
         self.lexicon = self.parser.lexicon
         if old_lexicon != self.lexicon:

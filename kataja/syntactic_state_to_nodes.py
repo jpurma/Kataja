@@ -171,9 +171,9 @@ def syntactic_state_to_nodes(forest, syn_state):
             found_edges.add(edge.uid)
 
     def connect_feature_if_necessary(parent, child, feature):
-        edge = parent.get_edge_to(child, g.FEATURE_EDGE, alpha=feature)
+        edge = parent.get_edge_to(child, g.FEATURE_EDGE, origin=feature)
         if not edge:
-            drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, alpha=feature)
+            drawing.connect_node(parent, child, edge_type=g.FEATURE_EDGE, origin=feature)
         else:
             found_edges.add(edge.uid)
 
