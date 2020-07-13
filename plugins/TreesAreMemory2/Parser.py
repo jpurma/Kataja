@@ -2,19 +2,20 @@ try:
     from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
     from plugins.TreesAreMemory2.Exporter import Exporter
     from plugins.TreesAreMemory2.State import State
-    from plugins.TreesAreMemory2.Operation import context, Operation, Add, Comp, Spec, Adj, Done, Fail
+    from plugins.TreesAreMemory2.FuncParser import FuncParser
+    from plugins.TreesAreMemory2.operations import Add, Comp, Spec, Adj, Done, Fail
     from plugins.TreesAreMemory2.Feature import Feature
     from plugins.TreesAreMemory2.route_utils import *
 except ImportError:
     from SimpleConstituent import SimpleConstituent
     from Exporter import Exporter
     from State import State
-    from Operation import context, Operation, Add, Comp, Spec, Adj, Done, Fail
+    from FuncParser import FuncParser
+    from operations import Add, Comp, Spec, Adj, Done, Fail
     from Feature import Feature
     from route_utils import *
 import time
 from collections import Counter
-from string import ascii_letters
 from itertools import chain
 
 debug_parse = False
@@ -54,11 +55,9 @@ class Parser:
         self.correct = []
         self.lexicon = lexicon or {}
         self.states = {}
-        self.ids = 0
         self.total = 0
-        self.active_route = []
-        self.last_used_feature = 0
         self.last_const_id = 0
+        self.func_parser = FuncParser(self)
 
     def set_forest(self, forest):
         self.exporter.forest = forest
@@ -66,33 +65,6 @@ class Parser:
     def get_const_uid(self, const):
         self.last_const_id += 1
         return f'{const.label}{self.last_const_id}'
-
-    def add_state(self, new_state):
-        self.ids += 1
-        new_state.state_id = self.ids
-        new_state.parser = self
-        self.states[new_state.key] = new_state
-        return new_state
-
-    # Only for _func_parse
-    @staticmethod
-    def compute_target_linearisation(route):
-        words = []
-        for operation in route:
-            if operation.state.state_type == State.ADD:
-                words.append(operation.state.head.label)
-        return ' '.join(words)
-
-    def _func_parse(self, sentence):
-
-        def f(word, *feats):
-            print(word, feats)
-            return Operation.func_add(word, *feats)
-
-        func_locals = {'f': f}
-        self.active_route = []
-        exec(sentence, globals(), func_locals)
-        return [self.active_route]
 
     def _string_parse(self, sentence):
         paths = []
@@ -103,7 +75,7 @@ class Parser:
             for complex_const in consts:
                 new_paths = list(paths_before)
                 for const in complex_const:
-                    new_paths = [path + [Add(self, const)] for path in new_paths] if new_paths else [[Add(self, const)]]
+                    new_paths = [path + [Add(self.states, const)] for path in new_paths] if new_paths else [[Add(self.states, const)]]
                     new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
                 paths += new_paths
         paths.sort()
@@ -125,27 +97,9 @@ class Parser:
             consts.append(complex_const)
         return consts
 
-    # Only for _func_parse
-    def add_feat_to_route(self, feat, head):
-        for operation in self.active_route:
-            if operation.state.head is head and feat not in operation.features and feat not in operation.used_features:
-                #print('adding missing feat for ', operation.state.head, feat)
-                operation.features.append(feat)
-                add_feature(operation.state.head, feat)
-
-    # Only for _func_parse
-    def speculate_features(self, head, arg):
-        pos_feature = Feature(ascii_letters[self.last_used_feature], sign='')
-        neg_feature = Feature(ascii_letters[self.last_used_feature], sign='-')
-        self.last_used_feature += 1
-        add_feature(head, neg_feature)
-        add_feature(arg, pos_feature)
-        return pos_feature, neg_feature
-
     def do_operations(self, path):
         path_str = route_str(path)
         debug_parse and print('checking path ', path_str)
-        print('checking path ', path_str)
         operation = path[-1]
         state = operation.state
         if not state.head:
@@ -163,7 +117,7 @@ class Parser:
             # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
             matches = find_matches(prev_features, top_features, '-=')
             if matches:
-                new_operation = Spec(self, operation, precedent, checked_features=matches)
+                new_operation = Spec(self.states, operation, precedent, checked_features=matches)
                 if new_operation.state in path_states:
                     raise hell
                 paths += self.do_operations(path + [new_operation])
@@ -172,7 +126,7 @@ class Parser:
             # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
             matches = find_matches(top_features, prev_features, '-=')
             if matches:
-                new_operation = Comp(self, operation, precedent, checked_features=matches)
+                new_operation = Comp(self.states, operation, precedent, checked_features=matches)
                 if new_operation.state in path_states:
                     raise hell
                 paths += self.do_operations(path + [new_operation])
@@ -182,7 +136,7 @@ class Parser:
             common_features = find_common_features(top_features, prev_features)
             if common_features and not find_shared_heads(precedent, operation):
                 shared_features = find_shared_features(top_features, prev_features)
-                new_operation = Adj(self, operation, precedent, shared_features=shared_features)
+                new_operation = Adj(self.states, operation, precedent, shared_features=shared_features)
                 if new_operation.state in path_states:
                     raise hell
                 paths += self.do_operations(path + [new_operation])
@@ -199,7 +153,7 @@ class Parser:
                     prev_features = distant_precedent.features
                     matches = find_matches(prev_features, top_features, '-')
                     if matches:
-                        new_operation = Spec(self, operation, distant_precedent, checked_features=matches, long_distance=True)
+                        new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
                         if new_operation.state in path_states:
                             raise hell
                         paths += self.do_operations(path + [new_operation])
@@ -214,7 +168,7 @@ class Parser:
                     prev_features = distant_precedent.features
                     matches = find_matches(top_features, prev_features, '-=')
                     if matches:
-                        new_operation = Comp(self, operation, distant_precedent, checked_features=matches, long_distance=True)
+                        new_operation = Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
                         if new_operation.state not in path_states:
                             paths += self.do_operations(path + [new_operation])
                             break
@@ -227,17 +181,14 @@ class Parser:
         sentence = sentence.strip()
         func_parse = sentence.startswith('f(')
 
-        self.states = {}
-        self.ids = 0
-        self.last_used_feature = 0
+        self.states.clear()
         self.exporter.reset()
         print('--------------')
 
         if func_parse:
             print('using func parse')
-            context.parser = self
-            paths = self._func_parse(sentence)
-            target_linearisation = self.compute_target_linearisation(paths[0])
+            paths = self.func_parser.parse(sentence)
+            target_linearisation = self.func_parser.compute_target_linearisation(paths[0])
         else:
             target_linearisation = sentence
             paths = self._string_parse(sentence)
@@ -252,14 +203,14 @@ class Parser:
             operation = path[-1]
             is_valid = is_fully_connected(path)
             if target_linearisation == linear and is_valid:
-                path.append(Done(self, operation, msg=f'done: {linear}'))
+                path.append(Done(self.states, operation, msg=f'done: {linear}'))
                 if path not in result_trees:
                     good_routes.append(path)
                     print(f'result path: {route_str(path)} is in correct order and fully connected')
                     if not func_parse:
                         print('possible derivation: ', '.'.join(operation.state.entry for operation in path))
             elif show_bad_routes:
-                #path.append(Fail(self, operation, msg=f'fail: {linear}'))
+                #path.append(Fail(self.states, operation, msg=f'fail: {linear}'))
                 bad_routes.append(path)
         self.exporter.export_to_kataja(good_routes + bad_routes)  # + bad_routes, good_routes)
         print()
