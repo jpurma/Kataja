@@ -48,7 +48,7 @@ class Feature(BaseFeature):
 
     @classmethod
     def from_string(cls, s):
-        print('using from_string in TreesAreMemory2 for ', s)
+        # print('using from_string in TreesAreMemory2 for ', s)
         s = s.strip()
         required = False
         strong = False

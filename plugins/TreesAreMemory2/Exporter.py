@@ -161,9 +161,9 @@ class Exporter:
         const = None
         passed_route = []
         path = ''
-        for route_item in route:
-            state = route_item.state
-            passed_route.append(route_item)
+        for operation in route:
+            state = operation.state
+            passed_route.append(operation)
             last_path = path
             path = make_path(passed_route)
             if path in self.states_as_const:
@@ -180,30 +180,30 @@ class Exporter:
                     const = Constituent(const.label, parts=[prev_const, const], head=const.head)
                 assert features_have_host(const)
                 self.set_const(path, const)
-            elif state.state_type == state.RAISE_ARG:
+            elif state.state_type == state.SPECIFIER:
                 route_to_look = passed_route[:-1]
-                if not route_item.long_distance:
-                    precedent_ri = get_free_precedent_from_route(route_to_look)
-                    if precedent_ri:
-                        route_to_look = passed_route[:passed_route.index(precedent_ri) + 1]
-                arg_ri = find_route_item_with_features([fpos for fpos, fneg in state.checked_features], route_to_look)
-                assert arg_ri
-                arg_path = make_path(passed_route[:passed_route.index(arg_ri) + 1])
+                if not operation.long_distance:
+                    precedent_op = get_free_precedent_from_route(route_to_look)
+                    if precedent_op:
+                        route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
+                arg_op = find_operation_with_features([fpos for fpos, fneg in state.checked_features], route_to_look)
+                assert arg_op
+                arg_path = make_path(passed_route[:passed_route.index(arg_op) + 1])
                 arg = self.get_const(arg_path)
                 head = self.get_const(last_path)
                 const = Constituent(head.label, parts=[arg, head], checked_features=state.checked_features,
                                     argument=arg, head=head.head)
                 assert features_have_host(const)
                 self.set_const(path, const)
-            elif state.state_type == state.CLOSE_ARG:
+            elif state.state_type == state.COMPLEMENT:
                 route_to_look = passed_route[:-1]
-                if not route_item.long_distance:
-                    precedent_ri = get_free_precedent_from_route(route_to_look)
-                    if precedent_ri:
-                        route_to_look = passed_route[:passed_route.index(precedent_ri) + 1]
-                head_ri = find_route_item_with_features([fneg for fpos, fneg in state.checked_features], route_to_look)
-                assert head_ri
-                head_path = make_path(passed_route[:passed_route.index(head_ri) + 1])
+                if not operation.long_distance:
+                    precedent_op = get_free_precedent_from_route(route_to_look)
+                    if precedent_op:
+                        route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
+                head_op = find_operation_with_features([fneg for fpos, fneg in state.checked_features], route_to_look)
+                assert head_op
+                head_path = make_path(passed_route[:passed_route.index(head_op) + 1])
                 head = self.get_const(head_path)
                 arg = self.get_const(last_path)
                 const = Constituent(head.label, parts=[head, arg], checked_features=state.checked_features,
@@ -211,8 +211,8 @@ class Exporter:
                 assert features_have_host(const)
                 self.set_const(path, const)
             elif state.state_type == state.ADJUNCT:
-                precedent_ri = get_free_precedent_from_route(passed_route[:-1])
-                head_path1 = make_path(passed_route[:passed_route.index(precedent_ri)+1])
+                precedent_op = get_free_precedent_from_route(passed_route[:-1])
+                head_path1 = make_path(passed_route[:passed_route.index(precedent_op)+1])
                 head_path2 = make_path(passed_route[:-1])
                 head1 = self.get_const(head_path1)
                 head2 = self.get_const(head_path2)
@@ -242,8 +242,8 @@ class Exporter:
             for ri_route, const_route in zip(routes, const_routes):
                 parent_path = ''
                 route = []
-                for route_item, (const, state, path) in zip(ri_route, const_route):
-                    route.append(route_item)
+                for operation, (const, state, path) in zip(ri_route, const_route):
+                    route.append(operation)
                     if path in paths:
                         parent_path = path
                         continue
@@ -255,14 +255,14 @@ class Exporter:
 
                     if path and state.state_type != state.DONE_SUCCESS and state.state_type != state.DONE_FAIL:
                         groups = [('', [const])]
-                        precedent_ri = get_free_precedent_from_route(route)
-                        if precedent_ri:
-                            precedent_key = make_path(route[:route.index(precedent_ri) + 1])
+                        precedent_op = get_free_precedent_from_route(route)
+                        if precedent_op:
+                            precedent_key = make_path(route[:route.index(precedent_op) + 1])
                             groups.append(('', [self.get_const(precedent_key)]))
                         else:
                             groups.append(('', []))
                     arg = f', {state.get_arg_label()}' if state.arg_ else ''
-                    ld = ' (long distance)' if route_item.long_distance else ''
+                    ld = ' (long distance)' if operation.long_distance else ''
 
                     msg = f'{state.entry} ({state.get_head_label()}{arg}){ld}'
                     syn_state = SyntaxState(tree_roots=[const], msg=msg, state_id=path, parent_id=parent_path,

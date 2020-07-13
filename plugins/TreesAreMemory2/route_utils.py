@@ -1,41 +1,28 @@
 from collections.abc import Iterable
 
-debug_linearization = True
+debug_linearization = False
 
 DONE_SUCCESS = 7
 DONE_FAIL = 2
 ADD = 0
 ADJUNCT = 6
-RAISE_ARG = 4
-CLOSE_ARG = 5
-FROM_STACK = 3
-PUT_STACK = 1
+SPECIFIER = 4
+COMPLEMENT = 5
 
 # these can adjoin if coordinator is present, but not otherwise
 unadjoinable_categories = {'T', 'V', 'rel'}
 
-def get_free_precedent_from_route_old(route):
-    connected_heads = {route[-1].state.head}
-    for route_item in reversed(route):
-        if route_item.state.head not in connected_heads:
-            #print('from route ', route, ' free precedent is ', route_item)
-            return route_item
-        if route_item.state.arg_ and not route_item.long_distance:
-            connected_heads.add(route_item.state.arg_)
-        if route_item.state.state_type == ADJUNCT:
-            for head in route_item.state.head:
-                connected_heads.add(head)
 
 def get_free_precedent_from_route(route):
     connected_heads = {route[-1].state.head}
-    for route_item in reversed(route):
-        if route_item.state.head not in connected_heads:
-            #print('from route ', route, ' free precedent is ', route_item)
-            return route_item
-        if route_item.state.arg_: # and not route_item.long_distance:
-            connected_heads.add(route_item.state.arg_)
-        if route_item.state.state_type == ADJUNCT:
-            for head in route_item.state.head:
+    for operation in reversed(route):
+        if operation.state.head not in connected_heads:
+            #print('from route ', route, ' free precedent is ', operation)
+            return operation
+        if operation.state.arg_: # and not operation.long_distance:
+            connected_heads.add(operation.state.arg_)
+        if operation.state.state_type == ADJUNCT:
+            for head in operation.state.head:
                 connected_heads.add(head)
 
 
@@ -82,12 +69,12 @@ def add_feature(const, feat):
                     fcopy = feat.copy()
                     _const.features.append(fcopy)
                     fcopy.host = _const
-                    print('added feature (copy) ', fcopy, ' to const ', fcopy.host, id(fcopy))
+                    #print('added feature (copy) ', fcopy, ' to const ', fcopy.host, id(fcopy))
                 else:
                     _const.features.append(feat)
                     exists.append(_const)
                     feat.host = _const
-                    print('added feature ', feat, ' to const ', feat.host, id(feat))
+                    #print('added feature ', feat, ' to const ', feat.host, id(feat))
 
     _find_feature(const)
     _add_feature(const)
@@ -194,45 +181,45 @@ def flatten(head):
         return [head]
 
 
-def find_shared_heads(a_route_item, b_route_item):
-    flatten_a = set(flatten(a_route_item.state.head))
-    flatten_b = set(flatten(b_route_item.state.head))
+def find_shared_heads(a_operation, b_operation):
+    flatten_a = set(flatten(a_operation.state.head))
+    flatten_b = set(flatten(b_operation.state.head))
     return flatten_a & flatten_b
 
 
-def get_route_item_with_feature_match(route, feature):
-    for route_item in reversed(route):
-        for feat in route_item.features:
+def get_operation_with_feature_match(route, feature):
+    for operation in reversed(route):
+        for feat in operation.features:
             if feature_match(feature, feat):
-                return route_item, feat
+                return operation, feat
 
 
-def find_route_item_with_features(feats, route):
+def find_operation_with_features(feats, route):
     #print('looking for ', feats, ' in ', route)
-    for route_item in reversed(route):
+    for operation in reversed(route):
         found_all = True
         for feat in feats:
-            if feat not in route_item.features:
+            if feat not in operation.features:
                 found_all = False
                 break
         if found_all:
-            return route_item
+            return operation
 
 
 def make_path(route):
-    return '_'.join(str(ri.state.state_id) for ri in route)
+    return '_'.join(str(op.state.state_id) for op in route)
 
 
 def route_str(path):
-    return [ri.state.state_id for ri in path]
+    return [op.state.state_id for op in path]
 
 
 def linearize(route):
     """ This is a very simple linearisation because route already has elements in correct order.
     To verify that the structure is valid, one should try to linearise the constituent tree """
     result = []
-    for route_item in route:
-        state = route_item.state
+    for operation in route:
+        state = operation.state
         if state.state_type == state.ADD:
             label = state.get_head_label()
             if label and not label.startswith('('):
@@ -245,8 +232,8 @@ def linearize(route):
 def is_fully_connected(route):
     heads = set()
     args = set()
-    for route_item in route:
-        state = route_item.state
+    for operation in route:
+        state = operation.state
         if state.head and state.head not in args:
             heads.add(state.head)
         if state.arg_:
@@ -257,6 +244,6 @@ def is_fully_connected(route):
             for item in state.head:
                 if item in heads:
                     heads.remove(item)
-    print('is_fully_connected: ', len(heads), heads)
+    #print('is_fully_connected: ', len(heads), heads)
     return len(heads) < 2
 

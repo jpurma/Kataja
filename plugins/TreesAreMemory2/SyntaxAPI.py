@@ -60,15 +60,16 @@ class SyntaxAPI(KatajaSyntaxAPI):
 
         if isinstance(self.lexicon, dict):
             s = []
-            for key, const in self.lexicon.items():
-                if isinstance(const, str):
-                    fs = const
-                elif isinstance(const, list):
-                    fs = ', '.join(feat_str(c) for c in const)
-                else:
-                    fs = feat_str(const)
-                cs = f'{key} :: {fs}'
-                s.append(cs)
+            for key, lexems in self.lexicon.items():
+                for lexem in lexems:
+                    if isinstance(lexem, str):
+                        fs = const
+                    elif isinstance(lexem, list):
+                        fs = ', '.join(feat_str(c) for c in lexem)
+                    else:
+                        fs = feat_str(lexem)
+                    cs = f'{key} :: {fs}'
+                    s.append(cs)
             s.sort()
             return '\n'.join(s)
         else:

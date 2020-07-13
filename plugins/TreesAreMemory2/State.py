@@ -12,10 +12,8 @@ class State:
     DONE_FAIL = 2
     ADD = 0
     ADJUNCT = 6
-    RAISE_ARG = 4
-    CLOSE_ARG = 5
-    FROM_STACK = 3
-    PUT_STACK = 1
+    SPECIFIER = 4
+    COMPLEMENT = 5
 
     @staticmethod
     def create_key(state_type, head, arg_, checked_features):

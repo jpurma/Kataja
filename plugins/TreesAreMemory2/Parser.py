@@ -1,24 +1,23 @@
-#try:
-from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
-from plugins.TreesAreMemory2.Exporter import Exporter
-from plugins.TreesAreMemory2.State import State
-from plugins.TreesAreMemory2.RouteItem import RouteItem, route_str, linearize, is_fully_connected
-from plugins.TreesAreMemory2.Feature import Feature
-from plugins.TreesAreMemory2.route_utils import *
-# except ImportError:
-#     from SimpleConstituent import SimpleConstituent
-#     from State import State
-#     from RouteItem import RouteItem, route_str
-#     from Exporter import Exporter
-#     from Feature import Feature
-#     from route_utils import *
+try:
+    from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
+    from plugins.TreesAreMemory2.Exporter import Exporter
+    from plugins.TreesAreMemory2.State import State
+    from plugins.TreesAreMemory2.Operation import context, Operation, Add, Comp, Spec, Adj, Done, Fail
+    from plugins.TreesAreMemory2.Feature import Feature
+    from plugins.TreesAreMemory2.route_utils import *
+except ImportError:
+    from SimpleConstituent import SimpleConstituent
+    from Exporter import Exporter
+    from State import State
+    from Operation import context, Operation, Add, Comp, Spec, Adj, Done, Fail
+    from Feature import Feature
+    from route_utils import *
 import time
 from collections import Counter
 from string import ascii_letters
 from itertools import chain
 
-debug_parse = True
-debug_features = True
+debug_parse = False
 
 show_bad_routes = True
 
@@ -37,7 +36,10 @@ def read_lexicon(lines, lexicon=None):
             feats = [Feature.from_string(fs) for fs in fstring.split()]
             const_label = f'({label})' if i else label
             consts.append(SimpleConstituent(label=const_label, features=feats))
-        lexicon[label] = consts
+        if label in lexicon:
+            lexicon[label].append(consts)
+        else:
+            lexicon[label] = [consts]
     return lexicon
 
 
@@ -72,24 +74,20 @@ class Parser:
         self.states[new_state.key] = new_state
         return new_state
 
+    # Only for _func_parse
     @staticmethod
     def compute_target_linearisation(route):
         words = []
-        for route_item in route:
-            if route_item.state.state_type == State.ADD:
-                words.append(route_item.state.head.label)
+        for operation in route:
+            if operation.state.state_type == State.ADD:
+                words.append(operation.state.head.label)
         return ' '.join(words)
 
     def _func_parse(self, sentence):
 
         def f(word, *feats):
-            if self.active_route:
-                return self.active_route[-1].func_add(word, *feats)
-            else:
-                const = SimpleConstituent(word)
-                route_item = RouteItem.create_initial_state(const, self, feats)
-                self.active_route = [route_item]
-                return route_item
+            print(word, feats)
+            return Operation.func_add(word, *feats)
 
         func_locals = {'f': f}
         self.active_route = []
@@ -99,38 +97,43 @@ class Parser:
     def _string_parse(self, sentence):
         paths = []
         for word in sentence.split():
-            paths = list(chain.from_iterable(self.do_operations(path) for path in paths))
             consts = self.get_from_lexicon(word)
-            for const in consts:
-                if paths:
-                    paths = [path + [path[-1].add_const(const)] for path in paths]
-                else:
-                    paths = [[RouteItem.create_initial_state(const, self)]]
-
-        # Finally attempt to raise what can be raised
-        paths = list(chain.from_iterable(self.do_operations(path) for path in paths))
+            paths_before = list(paths)
+            paths = []
+            for complex_const in consts:
+                new_paths = list(paths_before)
+                for const in complex_const:
+                    new_paths = [path + [Add(self, const)] for path in new_paths] if new_paths else [[Add(self, const)]]
+                    new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
+                paths += new_paths
+        paths.sort()
         return paths
 
     def get_from_lexicon(self, word):
-        original_consts = self.lexicon[word]
+        original_consts = self.lexicon.get(word, [[SimpleConstituent(label=word)]])
         consts = []
-        for const in original_consts:
-            if isinstance(const, SimpleConstituent):
-                const = const.copy()
-            else:
-                const = SimpleConstituent(label=const.label, features=[x.copy() for x in const.features])
-            const.uid = self.get_const_uid(const)
-            const.head = const
-            consts.append(const)
+        for original_complex_const in original_consts:
+            complex_const = []
+            for const in original_complex_const:
+                if isinstance(const, SimpleConstituent):
+                    const = const.copy()
+                else:
+                    const = SimpleConstituent(label=const.label, features=[x.copy() for x in const.features])
+                const.uid = self.get_const_uid(const)
+                const.head = const
+                complex_const.append(const)
+            consts.append(complex_const)
         return consts
 
+    # Only for _func_parse
     def add_feat_to_route(self, feat, head):
-        for route_item in self.active_route:
-            if route_item.state.head is head and feat not in route_item.features and feat not in route_item.used_features:
-                print('adding missing feat for ', route_item.state.head, feat)
-                route_item.features.append(feat)
-                add_feature(route_item.state.head, feat)
+        for operation in self.active_route:
+            if operation.state.head is head and feat not in operation.features and feat not in operation.used_features:
+                #print('adding missing feat for ', operation.state.head, feat)
+                operation.features.append(feat)
+                add_feature(operation.state.head, feat)
 
+    # Only for _func_parse
     def speculate_features(self, head, arg):
         pos_feature = Feature(ascii_letters[self.last_used_feature], sign='')
         neg_feature = Feature(ascii_letters[self.last_used_feature], sign='-')
@@ -141,92 +144,80 @@ class Parser:
 
     def do_operations(self, path):
         path_str = route_str(path)
-        debug_parse and print('attempt raising ', path_str)
-        route_item = path[-1]
-        state = route_item.state
+        debug_parse and print('checking path ', path_str)
+        print('checking path ', path_str)
+        operation = path[-1]
+        state = operation.state
         if not state.head:
             return {path}
         top_head = state.head
-        top_features = route_item.features
-        my_heads = [ri.state.arg_ for ri in path if ri.state.arg_ and ri.state.head is top_head]
-        my_args = [ri.state.head for ri in path if ri.state.arg_ and ri.state.arg_ is top_head]
-        reversed_path = list(reversed(path))
+        top_features = operation.features
+        path_states = [op.state for op in path]
 
         paths = []
-        found_arg = False
+        found_spec = False
         found_comp = False
         precedent = get_free_precedent_from_route(path)
         if precedent and precedent.state.head is not top_head:
             prev_features = precedent.features
-            # Aluksi arg-raise -mahdollisuus, eli top on head ja nostetaan lähin sopiva edeltävä head argumentiksi
+            # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
             matches = find_matches(prev_features, top_features, '-=')
             if matches:
-                new_route_item = route_item.raise_arg(precedent, checked_features=matches)
-                # return self.do_operations(path + [new_route_item])
-                paths += self.do_operations(path + [new_route_item])
-                found_arg = True
+                new_operation = Spec(self, operation, precedent, checked_features=matches)
+                if new_operation.state in path_states:
+                    raise hell
+                paths += self.do_operations(path + [new_operation])
+                found_spec = True
 
-            # Sitten close arg -mahdollisuudet, eli top on arg ja nostetaan lähin sopiva edeltävä head pääsanaksi
+            # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
             matches = find_matches(top_features, prev_features, '-=')
             if matches:
-                new_route_item = route_item.complement(precedent, checked_features=matches)
-                #return self.do_operations(path + [new_route_item])
-                paths += self.do_operations(path + [new_route_item])
+                new_operation = Comp(self, operation, precedent, checked_features=matches)
+                if new_operation.state in path_states:
+                    raise hell
+                paths += self.do_operations(path + [new_operation])
                 found_comp = True
 
             # Entäpä adjunktointi?
             common_features = find_common_features(top_features, prev_features)
-            if common_features and not find_shared_heads(precedent, route_item):
+            if common_features and not find_shared_heads(precedent, operation):
                 shared_features = find_shared_features(top_features, prev_features)
-                new_route_item = route_item.adjunct(precedent, shared_features=shared_features)
-                paths += self.do_operations(path + [new_route_item])
+                new_operation = Adj(self, operation, precedent, shared_features=shared_features)
+                if new_operation.state in path_states:
+                    raise hell
+                paths += self.do_operations(path + [new_operation])
 
         # Myös se vaihtoehto että jätetään nostot tekemättä:
         paths.append(path)
 
-        if not found_arg:
-            closest_available_found = False
-            found_args = set()
-            for previous_route_item in reversed_path:
-                previous_state = previous_route_item.state
-                if previous_state.arg_:
-                    found_args.add(previous_state.arg_)
-                if previous_state.head is top_head:
-                    continue
-                if previous_state.head in my_heads or previous_state.head in my_args:
-                    continue
-                if (not closest_available_found) and previous_state.head not in found_args:
-                    closest_available_found = previous_state
-                prev_features = previous_route_item.features
-                matches = find_matches(prev_features, top_features, '-=' if closest_available_found is previous_state else '-')
-                if matches:
-                    new_route_item = route_item.raise_arg(previous_route_item, checked_features=matches, long_distance=True)
-                    #return self.do_operations(path + [new_route_item])
-                    paths += self.do_operations(path + [new_route_item])
-                    break
+        if not found_spec:
+            distant_precedent = precedent
+            while distant_precedent:
+                pathlet = path[:path.index(distant_precedent) + 1]
+                distant_precedent = get_free_precedent_from_route(pathlet)
+                if distant_precedent:
+                    prev_features = distant_precedent.features
+                    matches = find_matches(prev_features, top_features, '-')
+                    if matches:
+                        new_operation = Spec(self, operation, distant_precedent, checked_features=matches, long_distance=True)
+                        if new_operation.state in path_states:
+                            raise hell
+                        paths += self.do_operations(path + [new_operation])
+                        break
 
-        if not found_comp and False:
-            closest_available_found = False
-            found_args = set()
-            for previous_route_item in reversed_path:
-                previous_state = previous_route_item.state
-                if previous_state.arg_:
-                    found_args.add(previous_state.arg_)
-                if previous_state.head is top_head:
-                    continue
-                if previous_state.head in my_heads or previous_state.head in my_args:
-                    continue
-                if (not closest_available_found) and previous_state.head not in found_args:
-                    # print('(close arg) closest available: ', previous_state, ' for ', top_head)
-                    closest_available_found = previous_state
-                prev_features = previous_route_item.features
-                matches = find_matches(top_features, prev_features,
-                                       '-=' if closest_available_found is previous_state else '-')
-                if matches:
-                    new_route_item = route_item.complement(previous_route_item, checked_features=matches, long_distance=True)
-                    # return self.do_operations(path + [new_route_item])
-                    paths += self.do_operations(path + [new_route_item])
-                    break
+        if not found_comp:
+            distant_precedent = precedent
+            while distant_precedent:
+                pathlet = path[:path.index(distant_precedent) + 1]
+                distant_precedent = get_free_precedent_from_route(pathlet)
+                if distant_precedent:
+                    prev_features = distant_precedent.features
+                    matches = find_matches(top_features, prev_features, '-=')
+                    if matches:
+                        new_operation = Comp(self, operation, distant_precedent, checked_features=matches, long_distance=True)
+                        if new_operation.state not in path_states:
+                            paths += self.do_operations(path + [new_operation])
+                            break
 
         return paths
 
@@ -244,6 +235,7 @@ class Parser:
 
         if func_parse:
             print('using func parse')
+            context.parser = self
             paths = self._func_parse(sentence)
             target_linearisation = self.compute_target_linearisation(paths[0])
         else:
@@ -253,27 +245,21 @@ class Parser:
         print('==============')
         print(f"expecting: '{target_linearisation}'")
         print(f'{len(paths)} result paths')
-        print(paths)
         good_routes = []
         bad_routes = []
         for path in paths:
-            self.active_route = path
             linear = linearize(path)
-            print(linear)
-            route_item = path[-1]
-            state = route_item.state
+            operation = path[-1]
             is_valid = is_fully_connected(path)
             if target_linearisation == linear and is_valid:
-                route_item.new_route_item(head=state.head, head_ri=route_item, msg=f'done: {linear}', entry='done()',
-                                          state_type=State.DONE_SUCCESS)
+                path.append(Done(self, operation, msg=f'done: {linear}'))
                 if path not in result_trees:
                     good_routes.append(path)
                     print(f'result path: {route_str(path)} is in correct order and fully connected')
                     if not func_parse:
-                        print('possible derivation: ', '.'.join(route_item.state.entry for route_item in reversed(path)))
+                        print('possible derivation: ', '.'.join(operation.state.entry for operation in path))
             elif show_bad_routes:
-                route_item.new_route_item(head=state.head, head_ri=route_item, msg=f'fail: {linear}',
-                                          entry=f'fail: {linear}', state_type=State.DONE_FAIL)
+                #path.append(Fail(self, operation, msg=f'fail: {linear}'))
                 bad_routes.append(path)
         self.exporter.export_to_kataja(good_routes + bad_routes)  # + bad_routes, good_routes)
         print()
