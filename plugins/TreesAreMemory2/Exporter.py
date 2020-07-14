@@ -233,7 +233,7 @@ class Exporter:
     def export_to_kataja(self, routes):
         if WEAVE:
             self.web.weave_in(routes)
-
+        routes.sort()
         if self.forest:
             const_routes = [self.to_constituents(route) for route in routes]
             t = time.time()
@@ -264,9 +264,9 @@ class Exporter:
                     arg = f', {state.get_arg_label()}' if state.arg_ else ''
                     ld = ' (long distance)' if operation.long_distance else ''
 
-                    msg = f'{state.entry} ({state.get_head_label()}{arg}){ld}'
+                    msg = f'{paths_n}. {state.entry} ({state.get_head_label()}{arg}){ld}'
                     syn_state = SyntaxState(tree_roots=[const], msg=msg, state_id=path, parent_id=parent_path,
-                                            groups=groups, state_type=state.state_type)
+                                            groups=groups, state_type=state.state_type, sort_order=paths_n)
                     #print([const.full_tree(), state.entry, path, parent_path, groups, state.state_type])
                     self.forest.add_step(syn_state)
                     parent_path = path

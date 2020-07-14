@@ -73,7 +73,7 @@ class DerivationTree(SavedObject):
         step = self.d.get(branch_id, None)
         done = set()
         while step:
-            uid, data, msg, state_id, parent_id, state_type = step
+            uid, data, msg, state_id, parent_id, state_type, sort_order = step
             b.append(state_id)
             if parent_id in done:
                 print('looping branch, at parent ', parent_id)
@@ -87,34 +87,32 @@ class DerivationTree(SavedObject):
         for key, val in self.d.items():
             state_key = key.rsplit('_', 1)[-1]
             if state_key not in states:
-                uid, data, msg, state_id, parent_id, state_type = val
+                uid, data, msg, state_id, parent_id, state_type, sort_order = val
                 states[int(state_key)] = msg, state_type
         return states
 
     def build_branches(self):
-        print('building branches...')
-        nodes = set(self.d.keys())
-        parents = {parent_id for uid, data, msg, state_id, parent_id, state_type in self.d.values()}
-        self.branches = list(nodes - parents)
-        print('...done building branches')
+        parents = {parent_id for uid, data, msg, state_id, parent_id, state_type, sort_order in self.d.values()}
+        sortable_branches = [(sort_order, state_id) for uid, data, msg, state_id, parent_id, state_type, sort_order in self.d.values() if state_id not in parents]
+        sortable_branches.sort()
+        self.branches = [state_id for sort_order, state_id in sortable_branches]
 
     def build_child_map(self):
-        print('building child map...')
         self.child_map = defaultdict(list)
-        for uid, data, msg, state_id, parent_id, state_type in self.d.values():
-            if parent_id:
-                self.child_map[parent_id].append(state_id)
-        print('...done building child map')
+        sortable_values = [(sort_order, state_id, parent_id) for uid, data, msg, state_id, parent_id, state_type, sort_order in self.d.values() if parent_id]
+        sortable_values.sort()
+        for sort_order, state_id, parent_id in sortable_values:
+            self.child_map[parent_id].append(state_id)
 
     def iterate_branch(self, branch_id):
         step = self.d.get(branch_id, None)
         while step:
-            uid, data, msg, state_id, parent_id, state_type = step
+            uid, data, msg, state_id, parent_id, state_type, sort_order = step
             yield state_id
             step = self.d.get(parent_id, None)
 
     def get_roots(self):
-        return [state_id for uid, data, msg, state_id, parent_id, state_type in self.d.values() if not parent_id]
+        return [state_id for uid, data, msg, state_id, parent_id, state_type, sort_order in self.d.values() if not parent_id]
 
     def update_dimensions(self):
         self.build_branches()
@@ -138,7 +136,7 @@ class DerivationTree(SavedObject):
         return self.get_derivation_step_by_id(state_id)
 
     def get_derivation_step_by_id(self, state_id):
-        uid, frozen_data, msg, state_id, parent_id, state_type = self.d[state_id]
+        uid, frozen_data, msg, state_id, parent_id, state_type, sort_order = self.d[state_id]
         d_step = DerivationStep(None, uid=uid)
         d_step.load_objects(frozen_data)
         return d_step
@@ -219,14 +217,19 @@ class DerivationTree(SavedObject):
             ctrl.main.parse_changed.emit()
 
     def show_first_passing_parse(self):
+        passing = []
         for i, branch in enumerate(self.branches):
             step = self.d.get(branch, None)
             if step:
-                uid, data, msg, state_id, parent_id, state_type = step
+                uid, data, msg, state_id, parent_id, state_type, sort_order = step
                 if state_type == DONE_SUCCESS:
-                    self.show_parse(i)
-                    return
-        self.show_parse(0)
+                    passing.append((sort_order, i))
+        if passing:
+            passing.sort()
+            sort_order, i = passing[0]
+            self.show_parse(i)
+        else:
+            self.show_parse(0)
 
     # ############## #
     #                #

@@ -22,6 +22,57 @@ class Context:
 context = Context()
 
 
+def get_operation_with_feature_match(route, feature):
+    for operation in reversed(route):
+        for feat in operation.features:
+            if feature_match(feature, feat):
+                return operation, feat
+
+
+def get_features(const):
+    if not const:
+        return []
+    elif isinstance(const, Iterable):
+        feat_lists = []
+        for item in const:
+            feat_lists.append(get_features(item))
+        feats = [f for f in feat_lists[0] if all([f in feat_list for feat_list in feat_lists])]
+        return feats
+    return const.features
+
+
+def add_feature(const, feat):
+    exists = []
+
+    def _find_feature(_const):
+        if isinstance(_const, Iterable):
+            for item in _const:
+                _find_feature(item)
+        else:
+            if feat in _const.features:
+                exists.append(_const)
+
+    def _add_feature(_const):
+        if isinstance(_const, Iterable):
+            for item in _const:
+                _add_feature(item)
+        else:
+            if feat not in _const.features:
+                if exists:
+                    fcopy = feat.copy()
+                    _const.features.append(fcopy)
+                    fcopy.host = _const
+                    #print('added feature (copy) ', fcopy, ' to const ', fcopy.host, id(fcopy))
+                else:
+                    _const.features.append(feat)
+                    exists.append(_const)
+                    feat.host = _const
+                    #print('added feature ', feat, ' to const ', feat.host, id(feat))
+
+    _find_feature(const)
+    _add_feature(const)
+
+
 class FuncSupport:
     """ These are methods for parsing dot-string notations, eg. "f('Pekka').f('loves').spec().f('Merja').comp()"
      These are not required for parser itself, but this class is inserted into operations inheritance """

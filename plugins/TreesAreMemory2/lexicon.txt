@@ -1,4 +1,5 @@
 Merja :: N:nom3sg
+Merjalle :: N:lle
 Merjan :: N:gen N:acc
 Pariisia :: N:prt
 Pekan :: N:gen N:acc
@@ -24,13 +25,14 @@ jota :: rel? =T, N:prt
 jäätyään :: -N:iin adv
 kaupunkia :: N:prt
 keksi :: =N:nom3sg -N:acc
+kenelle :: C =wh, =T wh, N:lle
 kenen :: wh =T, N:gen
 kenet :: wh =T, N:acc
 kirjan :: N:acc =N:gen
 kohti :: P -N:prt
 korjasi :: T =N:nom3sg -N:acc|prt
 kotiin :: N:iin
-kuka :: wh =T, N:nom3sg
+kuka :: C =wh, =T wh, N:nom3sg
 kumoutui :: =N:nom T
 luuli :: T =N:nom3sg -N:että
 luulivat :: T =N:nom3pl -N:että
@@ -38,7 +40,7 @@ me :: N:nom1pl
 meren :: N:acc =rel
 minkä :: C =T wh, wh N:acc
 minä :: N:nom1sg
-mitä :: C =T wh, wh N:prt
+mitä :: C =wh, =T wh, N:prt
 nimmaria :: N:prt -N:gen
 ole :: T =T:nfinsg|nfinpl|pass =neg:sg|pl
 olemme :: =N:nom1pl T =T:nfinpl
@@ -56,7 +58,7 @@ on :: =T:pass
 osta :: T =N:nom3sg =v, v =N:nom3sg|nom3pl
 ostaa :: -N:acc|prt -P v
 ostapa :: pa =T, T =N:nom3sg =v, v =N:nom3sg|nom3pl
-osti :: =N:nom3sg T -N:acc|prt -P
+osti :: =N:nom3sg T -N:acc|prt -N:lle -P
 ostit :: =N:nom2sg T -N:acc|prt -P
 ovat :: =N:nom3pl T =T:nfinpl
 palasi :: =N:nom3sg -N:iin adv T
@@ -75,7 +77,8 @@ tapasi :: T =N:nom3sg -N:acc|prt
 te :: N:nom2pl
 teorian :: N:acc =rel
 tiennyt :: T -D =neg:sg =v, -N:acc|että|prt =C v
-tiesi :: =N:nom3sg -N:acc|että T
+tiesi :: =N:nom3sg -N:acc|että =C T
+tiesin :: =N:nom1sg -N:acc|että =C T
 työnnettiin :: T =v, v -N:acc|prt
 työnnettiin :: T:pass =v, v -N:acc|prt
 työnnetty :: T:pass =v =neg:pass, v -N:acc|prt

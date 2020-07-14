@@ -55,7 +55,10 @@ class Operation:
 
     def __lt__(self, other):
         if isinstance(other, Operation):
-            return self.__class__.sort_order < other.__class__.sort_order
+            if self.sort_order == other.sort_order:
+                return self.state.state_id < other.state.state_id
+            else:
+                return self.sort_order < other.sort_order
 
     def get_head_label(self):
         return self.state.get_head_label()

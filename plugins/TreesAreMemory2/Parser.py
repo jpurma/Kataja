@@ -78,7 +78,6 @@ class Parser:
                     new_paths = [path + [Add(self.states, const)] for path in new_paths] if new_paths else [[Add(self.states, const)]]
                     new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
                 paths += new_paths
-        paths.sort()
         return paths
 
     def get_from_lexicon(self, word):
@@ -166,13 +165,12 @@ class Parser:
                 distant_precedent = get_free_precedent_from_route(pathlet)
                 if distant_precedent:
                     prev_features = distant_precedent.features
-                    matches = find_matches(top_features, prev_features, '-=')
+                    matches = find_matches(top_features, prev_features, '-')
                     if matches:
                         new_operation = Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
                         if new_operation.state not in path_states:
                             paths += self.do_operations(path + [new_operation])
                             break
-
         return paths
 
     def parse(self, sentence):

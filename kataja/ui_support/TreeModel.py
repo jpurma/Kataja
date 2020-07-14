@@ -85,7 +85,7 @@ class TreeModel(ParseTreeBaseModel):
         nodes = []
         self.line_count = 0
         for node_id, (x, y) in self.dt_data.items():
-            uid, data, msg, state_id, parent_id, state_type = dt.d[node_id]
+            uid, data, msg, state_id, parent_id, state_type, sort_order = dt.d[node_id]
             nx = x * width
             ny = y * height
             node = DTNode(node_id, nx, ny, msg, state_type)

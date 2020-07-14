@@ -1,14 +1,14 @@
 try:
     from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
     from plugins.TreesAreMemory2.State import State
-    from plugins.TreesAreMemory2.FuncSupport import context, FuncSupport
+    from plugins.TreesAreMemory2.FuncSupport import context, FuncSupport, add_feature
     from plugins.TreesAreMemory2.Feature import Feature
     from plugins.TreesAreMemory2.operations import Add, Spec, Comp, Adj
     from plugins.TreesAreMemory2.route_utils import *
 except ImportError:
     from SimpleConstituent import SimpleConstituent
     from State import State
-    from FuncSupport import context, FuncSupport
+    from FuncSupport import context, FuncSupport, add_feature
     from operations import Add, Spec, Comp, Adj
     from Feature import Feature
     from route_utils import *
@@ -63,3 +63,4 @@ class FuncParser:
         add_feature(head, neg_feature)
         add_feature(arg, pos_feature)
         return pos_feature, neg_feature
+
