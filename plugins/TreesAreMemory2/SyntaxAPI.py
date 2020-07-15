@@ -98,7 +98,6 @@ class SyntaxAPI(KatajaSyntaxAPI):
         print('parsing from the input text and provided lexicon')
         print('================================================')
         print('input_text: ', self.input_text)
-        print('feature class is: ', self.Feature)
 
         self.parser.parse(self.input_text)
         self.lexicon = self.parser.lexicon

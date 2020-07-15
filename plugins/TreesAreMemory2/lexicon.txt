@@ -8,7 +8,7 @@ Pekkaa :: N:prt
 Seine :: N:nom3sg
 ajatteli :: =N:nom3sg =v T
 ei :: neg:pass
-ei :: neg:sg =N:nom3sg
+ei :: neg:sg -N:nom3sg
 eipä :: pa =T, neg:sg -N:nom3sg
 eivät :: neg:pl =N:nom3pl
 emme :: neg:pl =N:nom1pl
@@ -29,11 +29,11 @@ kenelle :: C =wh, =T wh, N:lle
 kenen :: wh =T, N:gen
 kenet :: wh =T, N:acc
 kirjan :: N:acc =N:gen
-kohti :: P -N:prt
+kohti :: P =N:prt
 korjasi :: T =N:nom3sg -N:acc|prt
 kotiin :: N:iin
 kuka :: C =wh, =T wh, N:nom3sg
-kumoutui :: =N:nom T
+kumoutui :: =N:nom3sg T
 luuli :: T =N:nom3sg -N:että
 luulivat :: T =N:nom3pl -N:että
 me :: N:nom1pl
@@ -55,7 +55,7 @@ ollut :: T =neg:sg =T:nfinsg
 oltu :: T =neg:pass =T:pass
 on :: =N:nom3sg T =T:nfinsg
 on :: =T:pass
-osta :: T =N:nom3sg =v, v =N:nom3sg|nom3pl
+osta :: T =v1, v1 =v2 =N:nom3sg|nom3pl|prt, v2 =N:nom3sg
 ostaa :: -N:acc|prt -P v
 ostapa :: pa =T, T =N:nom3sg =v, v =N:nom3sg|nom3pl
 osti :: =N:nom3sg T -N:acc|prt -N:lle -P
@@ -70,13 +70,16 @@ pyöränkö :: N:acc =N:gen, ko =T
 pyörää :: N:prt =N:gen
 rakastanut :: -N:prt v
 rakasti :: =N:nom3sg -N:prt T
-saavutti :: T =N:nom3sg -N:acc -N:lla
+saavuttaa :: T =v =N:nom3sg, v -N:acc|prt -N:lla
+saavutti :: T =v =N:nom3sg, v -N:acc -N:lla
+sanoi :: =N:nom3sg -N:acc|että =C T
+se :: N:nom3sg =n, n =N:että
 sinä :: N:nom2sg
 suruissaan :: adv
 tapasi :: T =N:nom3sg -N:acc|prt
 te :: N:nom2pl
 teorian :: N:acc =rel
-tiennyt :: T -D =neg:sg =v, -N:acc|että|prt =C v
+tiennyt :: T:nfinsg =v1, v1 -N:acc|että|prt =C =v2, v2 -D -neg:sg
 tiesi :: =N:nom3sg -N:acc|että =C T
 tiesin :: =N:nom1sg -N:acc|että =C T
 työnnettiin :: T =v, v -N:acc|prt
@@ -102,4 +105,6 @@ työntää :: T =v =N:nom3sg, v -N:acc|prt
 työntää :: v =N:acc|prt
 vartenhan :: =N:prt P, han =T
 veli :: N:nom3sg =N:gen
+virtaa :: T =v =N:nom3sg, v -P
 virtaamalla :: N:lla -P
+väite :: N:nom3sg =n, n =N:että

@@ -224,12 +224,12 @@ class DerivationTree(SavedObject):
                 uid, data, msg, state_id, parent_id, state_type, sort_order = step
                 if state_type == DONE_SUCCESS:
                     passing.append((sort_order, i))
+        i = 0
         if passing:
             passing.sort()
             sort_order, i = passing[0]
-            self.show_parse(i)
-        else:
-            self.show_parse(0)
+        self.current_branch_index = i
+        self.show_parse(i)
 
     # ############## #
     #                #

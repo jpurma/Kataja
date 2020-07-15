@@ -489,6 +489,9 @@ class UIManager:
     def create_actions(self):
         """ KatajaActions define user commands and interactions. They are loaded from modules in
         kataja.actions or from plugin's plugin.actions.any_module. """
+        def uses_arrow_key(keystr):
+            return keystr.endswith('Left') or keystr.endswith('Up') or keystr.endswith('Right') or keystr.endswith('Down')
+
         self.actions = {}
         self._action_groups = {}
         for module in os.listdir(os.path.dirname(kataja.actions.__file__)):
@@ -497,7 +500,7 @@ class UIManager:
             mod_path = 'kataja.actions.' + module[:-3]
             mod = importlib.import_module(mod_path)
             self.load_actions_from_module(mod)
-        self.arrow_actions = [a for a in self.actions.values() if a.k_shortcut in ['Left', 'Right', 'Up', 'Down']]
+        self.arrow_actions = [a for a in self.actions.values() if a.k_shortcut and uses_arrow_key(str(a.k_shortcut))]
         log.info('Prepared %s actions.' % len(self.actions))
 
     def prepare_panel_menus(self):

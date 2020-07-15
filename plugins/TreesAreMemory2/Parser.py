@@ -76,7 +76,7 @@ class Parser:
                 new_paths = list(paths_before)
                 for const in complex_const:
                     new_paths = [path + [Add(self.states, const)] for path in new_paths] if new_paths else [[Add(self.states, const)]]
-                    new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
+                new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
                 paths += new_paths
         return paths
 
