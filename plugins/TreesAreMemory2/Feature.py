@@ -46,6 +46,12 @@ class Feature(BaseFeature):
     def __hash__(self):
         return id(self)
 
+    def __eq__(self, other):
+        if other and isinstance(other, Feature):
+            return self.value == other.value and self.sign == other.sign and \
+                   self.name == other.name
+        return False
+
     @classmethod
     def from_string(cls, s):
         # print('using from_string in TreesAreMemory2 for ', s)

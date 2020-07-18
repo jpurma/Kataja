@@ -10,7 +10,7 @@ SPECIFIER = 4
 COMPLEMENT = 5
 
 # these can adjoin if coordinator is present, but not otherwise
-unadjoinable_categories = {'T', 'V', 'rel'}
+unadjoinable_categories = {'T', 'V', 'rel', 'että', 'v'}
 
 
 def get_free_precedent_from_route(route):
@@ -29,7 +29,7 @@ def get_free_precedent_from_route(route):
 def get_label(const):
     if not const:
         return None
-    if isinstance(const, Iterable):
+    if isinstance(const, tuple):
         return '+'.join([get_label(c) for c in const])
     else:
         return const.label
@@ -38,7 +38,7 @@ def get_label(const):
 def get_uid(const):
     if not const:
         return None
-    elif isinstance(const, Iterable):
+    elif isinstance(const, tuple):
         return '+'.join([get_uid(c) for c in const])
     else:
         return str(const.uid)
@@ -145,6 +145,7 @@ def find_shared_heads(a_operation, b_operation):
 
 def find_operation_with_features(feats, route):
     #print('looking for ', feats, ' in ', route)
+    assert(len(feats) == 1)
     for operation in reversed(route):
         found_all = True
         for feat in feats:
@@ -193,6 +194,7 @@ def is_fully_connected(route):
             for item in state.head:
                 if item in heads:
                     heads.remove(item)
-    #print('is_fully_connected: ', len(heads), heads)
+    if len(heads) < 2:
+        print('is_fully_connected: ', len(heads), heads)
     return len(heads) < 2
 

@@ -13,6 +13,16 @@
   color: rgb(238, 232, 213);
 }
 
+#state_message {
+  display: inline-block;
+  position: absolute;
+  bottom: 50px;
+  left: 20px;
+  font-size: 20pt;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+}
+
 svg {
   /*background-color: hsl(192, 81%, 14%);*/
   background: radial-gradient(rgb(253, 246, 227), rgb(238, 232, 213));
@@ -52,6 +62,7 @@ button:active {
 
 </style>
 <body>
+<div id="state_message"></div>
 <div class="buttons">
     <button id="prev_tree" onclick="prevTree()">←</button>
     <span id="tree_n">0</span>
@@ -156,8 +167,9 @@ var numerate = function () {
     for (const nd of nodes) {
       if (nd.type == 3) {
         var n = parseInt(nd.id.substr(1));
+        var dom_adjust = nd.dom || 0;
         nd.x = 200 + 50 * n;
-        nd.y = 50;
+        nd.y = 200 - 35 * dom_adjust;
       }
     }
   };
@@ -182,9 +194,9 @@ var simulation = d3.forceSimulation()
   }))
   .force("y", d3.forceY(d => {
     if (d.type == 0) {
-      return 150;
-    } else if (d.type == 1 || d.type == 2) {
       return 300;
+    } else if (d.type == 1 || d.type == 2) {
+      return 450;
     } else {
       return d.start_y;
     }}).strength(function(d) {
@@ -353,11 +365,10 @@ function linkWidth(d) {
 }
 
 function linkForce(d) {
-  if (d.type == 3) {
-    return 1.0
-  }
+  //if (d.type == 3) {
+  //  return 1.0
+  //}
   if (isActive(d)) {
-    console.log('linkForce isActive')
     return 0.5;
   } else if (isAvailable(d) || isUsed(d)) {
     return 0.1;
@@ -462,34 +473,32 @@ function resetRoute() {
 }
 
 function markUsed(state, states) {
-  var activeNode;
-  if (state.arg_id) {
-    activeNode = nodeMap[state.arg_id];
-    activeNode.used = true;
-    //for (const feat_id of activeNode.features) {
-    //  nodeMap[feat_id].used = true;
-    //}
-  }
-  if (state.head_id) {
-    activeNode = nodeMap[state.head_id]
-    activeNode.used = true;
-    //for (const feat_id of activeNode.features) {
-    //  nodeMap[feat_id].used = true;
-    //}
-  }
-  if (state.head_num_id) {
-    nodeMap[state.head_num_id].used = true;
-  }
-  if (state.arg_num_id) {
-    nodeMap[state.arg_num_id].used = true;
-  }
+  let num_node;
+  const arg_nums = [];
 
+  for (const argPair of state.arg_ids) {
+     num_node = nodeMap[argPair[0]];
+     num_node.used = true;
+     nodeMap[argPair[1]].used = true;
+     arg_nums.push(num_node);
+  }
+  for (const headPair of state.head_ids) {
+     num_node = nodeMap[headPair[0]];
+     num_node.used = true;
+     if (state.arg_ids.length) {
+       for (const arg_num of arg_nums) {
+         if (arg_num.dom >= num_node.dom) {
+           num_node.dom = arg_num.dom + 1;
+         } else {
+           arg_num.dom = num_node.dom - 1;
+         }
+       }
+     }
+     nodeMap[headPair[1]].used = true;
+  }
   for (const featTuple of state.checked_features) {
     nodeMap[featTuple[0]].used = true;
     nodeMap[featTuple[1]].used = true;
-  }
-  if (state.parent_id) {
-    markUsed(states[state.parent_id], states);
   }
 }
 
@@ -499,42 +508,52 @@ function updateRoute() {
     n.available = false;
     n.used = false;
     n.arg = false;
+    n.dom = 0;
   });
   const states = graph.states[routeSet];
   const routes = graph.routes[routeSet];
   if (routes.length) {
+      for (let i=0; i<step; i++) {
+        markUsed(states[routes[route][i]], states);
+      }
       const route_id = routes[route][step];
       const state = states[route_id];
-      if (state.parent_id) {
-        markUsed(states[state.parent_id], states);
-      }
-      var activeNode;
-      if (state.arg_id) {
-        activeNode = nodeMap[state.arg_id];
-        activeNode.active = true;
-        activeNode.arg = true;
-        activeNode.available = true;
-        for (const feat_id of activeNode.features) {
+      console.log('step: ', step, ' route_id: ', route_id);
+      const arg_nums = [];
+      for (const argPair of state.arg_ids) {
+        const num = nodeMap[argPair[0]];
+        const arg = nodeMap[argPair[1]];
+        arg.active = true;
+        num.active = true;
+        arg.arg = true;
+        num.arg = true;
+        arg.available = true;
+        num.available = true;
+        arg_nums.push(num);
+        for (const feat_id of arg.features) {
           nodeMap[feat_id].available = true;
         }
       }
-      if (state.head_id) {
-        activeNode = nodeMap[state.head_id]
-        activeNode.active = true;
-        activeNode.available = true;
-        for (const feat_id of activeNode.features) {
+      for (const headPair of state.head_ids) {
+        const num = nodeMap[headPair[0]];
+        const head = nodeMap[headPair[1]];
+        head.active = true;
+        num.active = true;
+        head.available = true;
+        num.available = true;
+        if (state.arg_ids.length) {
+          for (const arg_num of arg_nums) {
+            if (arg_num.dom >= num.dom) {
+              num.dom = arg_num.dom + 1;
+            } else {
+              arg_num.dom = num.dom - 1;
+            }
+          }
+        }
+        for (const feat_id of head.features) {
           nodeMap[feat_id].available = true;
         }
       }
-      if (state.head_num_id) {
-        nodeMap[state.head_num_id].active = true;
-        nodeMap[state.head_num_id].available = true;
-      }
-      if (state.arg_num_id) {
-        nodeMap[state.arg_num_id].active = true;
-        nodeMap[state.arg_num_id].available = true;
-      }
-
       for (const featTuple of state.checked_features) {
         nodeMap[featTuple[0]].active = true;
         nodeMap[featTuple[0]].available = true;
@@ -548,6 +567,8 @@ function updateRoute() {
   node.attr("fill", nodeFill);
   node.attr("stroke", nodeStroke);
   updateUICounters();
+  simulation.force("link", linkPullForce);
+  animate();
 }
 
 function updateUICounters() {
@@ -561,7 +582,7 @@ function updateUICounters() {
     document.getElementById('route_n').innerText = '-';
     document.getElementById('step_n').innerText = '-';
   }
-
+  document.getElementById('state_message').innerText = routes[route] ? graph.states[routeSet][routes[route][step]].msg : '';
 }
 
 function animate() {

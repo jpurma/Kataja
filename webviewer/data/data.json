@@ -1,43 +1,26 @@
 {
   "nodes": [
     {
-      "id": "Sannan",
-      "type": 0,
-      "features": [
-        "foc",
-        "n:gen",
-        "-foc"
-      ]
-    },
-    {
       "id": "N0",
       "type": 3,
       "features": []
     },
     {
-      "id": "foc",
+      "id": "N:nom3sg",
       "type": 2,
       "features": []
     },
     {
-      "id": "n:gen",
-      "type": 2,
-      "features": []
-    },
-    {
-      "id": "-foc",
+      "id": "=n",
       "type": 1,
       "features": []
     },
     {
-      "id": "keltainen",
+      "id": "se",
       "type": 0,
       "features": [
-        "adj",
-        "foc",
-        "n:nom",
-        "=n:gen",
-        "-foc"
+        "N:nom3sg",
+        "=n"
       ]
     },
     {
@@ -46,30 +29,21 @@
       "features": []
     },
     {
-      "id": "adj",
+      "id": "n",
       "type": 2,
       "features": []
     },
     {
-      "id": "n:nom",
-      "type": 2,
-      "features": []
-    },
-    {
-      "id": "=n:gen",
+      "id": "=N:että",
       "type": 1,
       "features": []
     },
     {
-      "id": "kukka",
+      "id": "(se)",
       "type": 0,
       "features": [
-        "=n:gen",
-        "=adj",
-        "-foc",
-        "foc",
-        "n:nom",
-        "=D:nom"
+        "n",
+        "=N:että"
       ]
     },
     {
@@ -78,28 +52,92 @@
       "features": []
     },
     {
-      "id": "=adj",
-      "type": 1,
-      "features": []
-    },
-    {
-      "id": "=D:nom",
-      "type": 1,
-      "features": []
-    },
-    {
-      "id": "löytyi",
+      "id": "väite",
       "type": 0,
       "features": [
-        "v",
-        "T:past",
-        "-foc",
-        "=n:nom",
-        "=n:sta"
+        "N:nom3sg",
+        "=n"
       ]
     },
     {
       "id": "N3",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "(väite)",
+      "type": 0,
+      "features": [
+        "n",
+        "=N:että"
+      ]
+    },
+    {
+      "id": "N4",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "=T",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "N:että",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "että",
+      "type": 0,
+      "features": [
+        "=T",
+        "N:että"
+      ]
+    },
+    {
+      "id": "N5",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "Pekka",
+      "type": 0,
+      "features": [
+        "N:nom3sg"
+      ]
+    },
+    {
+      "id": "N6",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "T",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=v",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=N:nom3sg",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "työnsi",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "N7",
       "type": 3,
       "features": []
     },
@@ -109,1637 +147,1353 @@
       "features": []
     },
     {
-      "id": "T:past",
-      "type": 2,
-      "features": []
-    },
-    {
-      "id": "=n:nom",
+      "id": "-N:acc|prt",
       "type": 1,
       "features": []
     },
     {
-      "id": "=n:sta",
-      "type": 1,
+      "id": "(työnsi)",
+      "type": 0,
+      "features": [
+        "v",
+        "-N:acc|prt"
+      ]
+    },
+    {
+      "id": "N8",
+      "type": 3,
       "features": []
+    },
+    {
+      "id": "kumoutui",
+      "type": 0,
+      "features": [
+        "=N:nom3sg",
+        "T"
+      ]
     }
   ],
   "links": [
     {
-      "id": "N0_Sannan",
+      "id": "se_N:nom3sg",
+      "type": 2,
+      "start": "se",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "se_=n",
+      "type": 1,
+      "start": "se",
+      "end": "=n"
+    },
+    {
+      "id": "N0_se",
       "type": 0,
       "start": "N0",
-      "end": "Sannan"
+      "end": "se"
     },
     {
-      "id": "Sannan_foc",
+      "id": "(se)_n",
       "type": 2,
-      "start": "Sannan",
-      "end": "foc"
+      "start": "(se)",
+      "end": "n"
     },
     {
-      "id": "Sannan_n:gen",
-      "type": 2,
-      "start": "Sannan",
-      "end": "n:gen"
-    },
-    {
-      "id": "Sannan_-foc",
+      "id": "(se)_=N:että",
       "type": 1,
-      "start": "Sannan",
-      "end": "-foc"
+      "start": "(se)",
+      "end": "=N:että"
     },
     {
-      "id": "N0_N1",
-      "type": 4,
-      "start": "N0",
-      "end": "N1"
-    },
-    {
-      "id": "N1_keltainen",
+      "id": "N1_(se)",
       "type": 0,
       "start": "N1",
-      "end": "keltainen"
+      "end": "(se)"
     },
     {
-      "id": "keltainen_adj",
-      "type": 2,
-      "start": "keltainen",
-      "end": "adj"
-    },
-    {
-      "id": "keltainen_foc",
-      "type": 2,
-      "start": "keltainen",
-      "end": "foc"
-    },
-    {
-      "id": "keltainen_n:nom",
-      "type": 2,
-      "start": "keltainen",
-      "end": "n:nom"
-    },
-    {
-      "id": "keltainen_=n:gen",
-      "type": 1,
-      "start": "keltainen",
-      "end": "=n:gen"
-    },
-    {
-      "id": "keltainen_-foc",
-      "type": 1,
-      "start": "keltainen",
-      "end": "-foc"
-    },
-    {
-      "id": "foc_-foc",
+      "id": "n_=n",
       "type": 3,
-      "start": "foc",
-      "end": "-foc"
+      "start": "n",
+      "end": "=n"
     },
     {
-      "id": "n:gen_=n:gen",
-      "type": 3,
-      "start": "n:gen",
-      "end": "=n:gen"
+      "id": "väite_N:nom3sg",
+      "type": 2,
+      "start": "väite",
+      "end": "N:nom3sg"
     },
     {
-      "id": "N1_N2",
-      "type": 4,
-      "start": "N1",
-      "end": "N2"
+      "id": "väite_=n",
+      "type": 1,
+      "start": "väite",
+      "end": "=n"
     },
     {
-      "id": "N2_kukka",
+      "id": "N2_väite",
       "type": 0,
       "start": "N2",
-      "end": "kukka"
+      "end": "väite"
     },
     {
-      "id": "kukka_=n:gen",
-      "type": 1,
-      "start": "kukka",
-      "end": "=n:gen"
-    },
-    {
-      "id": "kukka_=adj",
-      "type": 1,
-      "start": "kukka",
-      "end": "=adj"
-    },
-    {
-      "id": "kukka_-foc",
-      "type": 1,
-      "start": "kukka",
-      "end": "-foc"
-    },
-    {
-      "id": "kukka_foc",
+      "id": "(väite)_n",
       "type": 2,
-      "start": "kukka",
-      "end": "foc"
+      "start": "(väite)",
+      "end": "n"
     },
     {
-      "id": "kukka_n:nom",
-      "type": 2,
-      "start": "kukka",
-      "end": "n:nom"
-    },
-    {
-      "id": "kukka_=D:nom",
+      "id": "(väite)_=N:että",
       "type": 1,
-      "start": "kukka",
-      "end": "=D:nom"
+      "start": "(väite)",
+      "end": "=N:että"
     },
     {
-      "id": "adj_=adj",
-      "type": 3,
-      "start": "adj",
-      "end": "=adj"
-    },
-    {
-      "id": "N2_N3",
-      "type": 4,
-      "start": "N2",
-      "end": "N3"
-    },
-    {
-      "id": "N3_löytyi",
+      "id": "N3_(väite)",
       "type": 0,
       "start": "N3",
-      "end": "löytyi"
+      "end": "(väite)"
     },
     {
-      "id": "löytyi_v",
+      "id": "että_=T",
+      "type": 1,
+      "start": "että",
+      "end": "=T"
+    },
+    {
+      "id": "että_N:että",
       "type": 2,
-      "start": "löytyi",
+      "start": "että",
+      "end": "N:että"
+    },
+    {
+      "id": "N4_että",
+      "type": 0,
+      "start": "N4",
+      "end": "että"
+    },
+    {
+      "id": "Pekka_N:nom3sg",
+      "type": 2,
+      "start": "Pekka",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "N5_Pekka",
+      "type": 0,
+      "start": "N5",
+      "end": "Pekka"
+    },
+    {
+      "id": "työnsi_T",
+      "type": 2,
+      "start": "työnsi",
+      "end": "T"
+    },
+    {
+      "id": "työnsi_=v",
+      "type": 1,
+      "start": "työnsi",
+      "end": "=v"
+    },
+    {
+      "id": "työnsi_=N:nom3sg",
+      "type": 1,
+      "start": "työnsi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N6_työnsi",
+      "type": 0,
+      "start": "N6",
+      "end": "työnsi"
+    },
+    {
+      "id": "(työnsi)_v",
+      "type": 2,
+      "start": "(työnsi)",
       "end": "v"
     },
     {
-      "id": "löytyi_T:past",
-      "type": 2,
-      "start": "löytyi",
-      "end": "T:past"
-    },
-    {
-      "id": "löytyi_-foc",
+      "id": "(työnsi)_-N:acc|prt",
       "type": 1,
-      "start": "löytyi",
-      "end": "-foc"
+      "start": "(työnsi)",
+      "end": "-N:acc|prt"
     },
     {
-      "id": "löytyi_=n:nom",
-      "type": 1,
-      "start": "löytyi",
-      "end": "=n:nom"
+      "id": "N7_(työnsi)",
+      "type": 0,
+      "start": "N7",
+      "end": "(työnsi)"
     },
     {
-      "id": "löytyi_=n:sta",
-      "type": 1,
-      "start": "löytyi",
-      "end": "=n:sta"
-    },
-    {
-      "id": "n:nom_=n:nom",
+      "id": "v_=v",
       "type": 3,
-      "start": "n:nom",
-      "end": "=n:nom"
+      "start": "v",
+      "end": "=v"
+    },
+    {
+      "id": "N:nom3sg_=N:nom3sg",
+      "type": 3,
+      "start": "N:nom3sg",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "T_=T",
+      "type": 3,
+      "start": "T",
+      "end": "=T"
+    },
+    {
+      "id": "N:että_=N:että",
+      "type": 3,
+      "start": "N:että",
+      "end": "=N:että"
+    },
+    {
+      "id": "kumoutui_=N:nom3sg",
+      "type": 1,
+      "start": "kumoutui",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "kumoutui_T",
+      "type": 2,
+      "start": "kumoutui",
+      "end": "T"
+    },
+    {
+      "id": "N8_kumoutui",
+      "type": 0,
+      "start": "N8",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N1_väite",
+      "type": 0,
+      "start": "N1",
+      "end": "väite"
+    },
+    {
+      "id": "N2_Pekka",
+      "type": 0,
+      "start": "N2",
+      "end": "Pekka"
+    },
+    {
+      "id": "N3_työnsi",
+      "type": 0,
+      "start": "N3",
+      "end": "työnsi"
+    },
+    {
+      "id": "N0_väite",
+      "type": 0,
+      "start": "N0",
+      "end": "väite"
+    },
+    {
+      "id": "N1_Pekka",
+      "type": 0,
+      "start": "N1",
+      "end": "Pekka"
+    },
+    {
+      "id": "N0_työnsi",
+      "type": 0,
+      "start": "N0",
+      "end": "työnsi"
+    },
+    {
+      "id": "N0_kumoutui",
+      "type": 0,
+      "start": "N0",
+      "end": "kumoutui"
     }
   ],
   "states": [
-    [
-      {
-        "id": 0,
-        "parent_id": null,
-        "type": [
-          0
-        ],
-        "head_id": "Sannan",
-        "arg_id": null,
-        "head_num_id": "N0",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 1,
-        "parent_id": 0,
-        "type": [
-          1
-        ],
-        "head_id": "Sannan",
-        "arg_id": null,
-        "head_num_id": "N0",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 2,
-        "parent_id": 1,
-        "type": [
-          0
-        ],
-        "head_id": "keltainen",
-        "arg_id": null,
-        "head_num_id": "N1",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 3,
-        "parent_id": 0,
-        "type": [
-          0
-        ],
-        "head_id": "keltainen",
-        "arg_id": null,
-        "head_num_id": "N1",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 4,
-        "parent_id": 2,
-        "type": [
-          6
-        ],
-        "head_id": "keltainen",
-        "arg_id": "Sannan",
-        "head_num_id": "N1",
-        "arg_num_id": "N0",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "n:gen",
-            "=n:gen"
-          ]
+    {
+      "id": 0,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 1,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 2,
+      "type": [
+        5
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "n",
+          "=n"
         ]
-      },
-      {
-        "id": 5,
-        "parent_id": 4,
-        "type": [
-          1
-        ],
-        "head_id": "keltainen",
-        "arg_id": null,
-        "head_num_id": "N1",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 6,
-        "parent_id": 2,
-        "type": [
-          1
-        ],
-        "head_id": "keltainen",
-        "arg_id": null,
-        "head_num_id": "N1",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 7,
-        "parent_id": 3,
-        "type": [
-          1
-        ],
-        "head_id": "keltainen",
-        "arg_id": null,
-        "head_num_id": "N1",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 8,
-        "parent_id": 5,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 9,
-        "parent_id": 4,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 10,
-        "parent_id": 6,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 11,
-        "parent_id": 2,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 12,
-        "parent_id": 7,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 13,
-        "parent_id": 3,
-        "type": [
-          0
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 14,
-        "parent_id": 8,
-        "type": [
-          6
-        ],
-        "head_id": "kukka",
-        "arg_id": "keltainen",
-        "head_num_id": "N2",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "adj",
-            "=adj"
-          ]
+      ]
+    },
+    {
+      "id": 3,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 4,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 7,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 9,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 12,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 13,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 14,
+      "type": [
+        5
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "v",
+          "=v"
         ]
-      },
-      {
-        "id": 15,
-        "parent_id": 14,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 16,
-        "parent_id": 8,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 17,
-        "parent_id": 9,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 18,
-        "parent_id": 10,
-        "type": [
-          6
-        ],
-        "head_id": "kukka",
-        "arg_id": "keltainen",
-        "head_num_id": "N2",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "adj",
-            "=adj"
-          ]
+      ]
+    },
+    {
+      "id": 15,
+      "type": [
+        4
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:nom3sg",
+          "=N:nom3sg"
         ]
-      },
-      {
-        "id": 19,
-        "parent_id": 18,
-        "type": [
-          6
-        ],
-        "head_id": "kukka",
-        "arg_id": "Sannan",
-        "head_num_id": "N2",
-        "arg_num_id": "N0",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:gen",
-            "=n:gen"
-          ]
+      ]
+    },
+    {
+      "id": 16,
+      "type": [
+        5
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "T",
+          "=T"
         ]
-      },
-      {
-        "id": 20,
-        "parent_id": 19,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 21,
-        "parent_id": 18,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 22,
-        "parent_id": 10,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 23,
-        "parent_id": 11,
-        "type": [
-          6
-        ],
-        "head_id": "kukka",
-        "arg_id": "Sannan",
-        "head_num_id": "N2",
-        "arg_num_id": "N0",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "n:gen",
-            "=n:gen"
-          ]
+      ]
+    },
+    {
+      "id": 8,
+      "type": [
+        5
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:että",
+          "=N:että"
         ]
-      },
-      {
-        "id": 24,
-        "parent_id": 23,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 25,
-        "parent_id": 11,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 26,
-        "parent_id": 12,
-        "type": [
-          6
-        ],
-        "head_id": "kukka",
-        "arg_id": "keltainen",
-        "head_num_id": "N2",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "adj",
-            "=adj"
-          ]
+      ]
+    },
+    {
+      "id": 5,
+      "type": [
+        5
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "n",
+          "=n"
         ]
-      },
-      {
-        "id": 27,
-        "parent_id": 26,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 28,
-        "parent_id": 12,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 29,
-        "parent_id": 13,
-        "type": [
-          1
-        ],
-        "head_id": "kukka",
-        "arg_id": null,
-        "head_num_id": "N2",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 30,
-        "parent_id": 15,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 31,
-        "parent_id": 14,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 32,
-        "parent_id": 16,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 33,
-        "parent_id": 8,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 34,
-        "parent_id": 17,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 35,
-        "parent_id": 9,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 36,
-        "parent_id": 20,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 37,
-        "parent_id": 19,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 38,
-        "parent_id": 21,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 39,
-        "parent_id": 18,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 40,
-        "parent_id": 22,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 41,
-        "parent_id": 10,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 42,
-        "parent_id": 24,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 43,
-        "parent_id": 23,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 44,
-        "parent_id": 25,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 45,
-        "parent_id": 11,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 46,
-        "parent_id": 27,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 47,
-        "parent_id": 26,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 48,
-        "parent_id": 28,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 49,
-        "parent_id": 12,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 50,
-        "parent_id": 29,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 51,
-        "parent_id": 13,
-        "type": [
-          0
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 52,
-        "parent_id": 30,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "foc",
-            "-foc"
-          ],
-          [
-            "n:nom",
-            "=n:nom"
-          ]
+      ]
+    },
+    {
+      "id": 6,
+      "type": [
+        6
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 19,
+      "type": [
+        0
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 20,
+      "type": [
+        4
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:nom3sg",
+          "=N:nom3sg"
         ]
-      },
-      {
-        "id": 53,
-        "parent_id": 32,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
+      ]
+    },
+    {
+      "id": 22,
+      "type": [
+        7
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 10,
+      "type": [
+        6
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 17,
+      "type": [
+        4
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:nom3sg",
+          "=N:nom3sg"
         ]
-      },
-      {
-        "id": 54,
-        "parent_id": 33,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "keltainen",
-        "head_num_id": "N3",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
+      ]
+    },
+    {
+      "id": 11,
+      "type": [
+        6
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": []
+    },
+    {
+      "id": 18,
+      "type": [
+        4
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:nom3sg",
+          "=N:nom3sg"
         ]
-      },
-      {
-        "id": 55,
-        "parent_id": 34,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
+      ]
+    },
+    {
+      "id": 21,
+      "type": [
+        4
+      ],
+      "head_ids": [],
+      "arg_ids": [],
+      "checked_features": [
+        [
+          "N:nom3sg",
+          "=N:nom3sg"
         ]
-      },
-      {
-        "id": 56,
-        "parent_id": 36,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 57,
-        "parent_id": 38,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 58,
-        "parent_id": 40,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 59,
-        "parent_id": 41,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "keltainen",
-        "head_num_id": "N3",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 60,
-        "parent_id": 42,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 61,
-        "parent_id": 44,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 62,
-        "parent_id": 46,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 63,
-        "parent_id": 48,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "✓foc",
-            "✓-foc"
-          ],
-          [
-            "✓n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 64,
-        "parent_id": 49,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "keltainen",
-        "head_num_id": "N3",
-        "arg_num_id": "N1",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 65,
-        "parent_id": 50,
-        "type": [
-          6
-        ],
-        "head_id": "löytyi",
-        "arg_id": "kukka",
-        "head_num_id": "N3",
-        "arg_num_id": "N2",
-        "checked_features": [
-          [
-            "foc",
-            "✓-foc"
-          ],
-          [
-            "n:nom",
-            "✓=n:nom"
-          ]
-        ]
-      },
-      {
-        "id": 66,
-        "parent_id": 52,
-        "type": [
-          7
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 67,
-        "parent_id": 30,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 68,
-        "parent_id": 31,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 69,
-        "parent_id": 53,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 70,
-        "parent_id": 32,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 71,
-        "parent_id": 54,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 72,
-        "parent_id": 33,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 73,
-        "parent_id": 55,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 74,
-        "parent_id": 34,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 75,
-        "parent_id": 35,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 76,
-        "parent_id": 56,
-        "type": [
-          7
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 77,
-        "parent_id": 36,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 78,
-        "parent_id": 37,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 79,
-        "parent_id": 57,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 80,
-        "parent_id": 38,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 81,
-        "parent_id": 39,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 82,
-        "parent_id": 58,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 83,
-        "parent_id": 40,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 84,
-        "parent_id": 59,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 85,
-        "parent_id": 41,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 86,
-        "parent_id": 60,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 87,
-        "parent_id": 42,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 88,
-        "parent_id": 43,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 89,
-        "parent_id": 61,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 90,
-        "parent_id": 44,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 91,
-        "parent_id": 45,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 92,
-        "parent_id": 62,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 93,
-        "parent_id": 46,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 94,
-        "parent_id": 47,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 95,
-        "parent_id": 63,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 96,
-        "parent_id": 48,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 97,
-        "parent_id": 64,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 98,
-        "parent_id": 49,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 99,
-        "parent_id": 65,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 100,
-        "parent_id": 50,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      },
-      {
-        "id": 101,
-        "parent_id": 51,
-        "type": [
-          2
-        ],
-        "head_id": "löytyi",
-        "arg_id": null,
-        "head_num_id": "N3",
-        "arg_num_id": null,
-        "checked_features": []
-      }
-    ]
+      ]
+    }
   ],
   "routes": [
     [
-      [
-        0,
-        1,
-        2,
-        4,
-        5,
-        8,
-        14,
-        15,
-        30,
-        52
-      ],
-      [
-        0,
-        1,
-        2,
-        6,
-        10,
-        18,
-        19,
-        20,
-        36,
-        56
-      ]
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      6,
+      19,
+      20,
+      22
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      10,
+      12,
+      13,
+      14,
+      17,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      10,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      10,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      6,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      10,
+      12,
+      13,
+      14,
+      17,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      10,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      10,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      14,
+      18,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      6,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      19,
+      21
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      14,
+      18,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      11,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      5,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      8,
+      9,
+      12,
+      13,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      19,
+      21
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      5,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      8,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      15,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      14,
+      19
+    ],
+    [
+      0,
+      1,
+      3,
+      4,
+      7,
+      9,
+      12,
+      13,
+      19
     ]
   ]
 }

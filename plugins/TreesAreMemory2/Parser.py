@@ -76,6 +76,7 @@ class Parser:
                 new_paths = list(paths_before)
                 for const in complex_const:
                     new_paths = [path + [Add(self.states, const)] for path in new_paths] if new_paths else [[Add(self.states, const)]]
+                    new_paths = list(chain.from_iterable(self.do_operations(path, specs_only=True) for path in new_paths))
                 new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
                 paths += new_paths
         return paths
@@ -96,7 +97,7 @@ class Parser:
             consts.append(complex_const)
         return consts
 
-    def do_operations(self, path):
+    def do_operations(self, path, specs_only=False):
         path_str = route_str(path)
         debug_parse and print('checking path ', path_str)
         operation = path[-1]
@@ -117,60 +118,63 @@ class Parser:
             matches = find_matches(prev_features, top_features, '-=')
             if matches:
                 new_operation = Spec(self.states, operation, precedent, checked_features=matches)
-                if new_operation.state in path_states:
-                    raise hell
+
+                if specs_only:
+                    return [path + [new_operation]]
                 paths += self.do_operations(path + [new_operation])
                 found_spec = True
 
-            # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
-            matches = find_matches(top_features, prev_features, '-=')
-            if matches:
-                new_operation = Comp(self.states, operation, precedent, checked_features=matches)
-                if new_operation.state in path_states:
-                    raise hell
-                paths += self.do_operations(path + [new_operation])
-                found_comp = True
+            if not specs_only:
+                # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
+                matches = find_matches(top_features, prev_features, '-=')
+                if matches:
+                    new_operation = Comp(self.states, operation, precedent, checked_features=matches)
+                    if new_operation.state in path_states:
+                        raise hell
+                    paths += self.do_operations(path + [new_operation])
+                    found_comp = True
 
-            # Entäpä adjunktointi?
-            common_features = find_common_features(top_features, prev_features)
-            if common_features and not find_shared_heads(precedent, operation):
-                shared_features = find_shared_features(top_features, prev_features)
-                new_operation = Adj(self.states, operation, precedent, shared_features=shared_features)
-                if new_operation.state in path_states:
-                    raise hell
-                paths += self.do_operations(path + [new_operation])
+                # Entäpä adjunktointi?
+                common_features = find_common_features(top_features, prev_features)
+                if common_features and not find_shared_heads(precedent, operation):
+                    shared_features = find_shared_features(top_features, prev_features)
+                    new_operation = Adj(self.states, operation, precedent, shared_features=shared_features)
+                    if new_operation.state in path_states:
+                        raise hell
+                    paths += self.do_operations(path + [new_operation])
 
         # Myös se vaihtoehto että jätetään nostot tekemättä:
         paths.append(path)
 
-        if not found_spec:
-            distant_precedent = precedent
-            while distant_precedent:
-                pathlet = path[:path.index(distant_precedent) + 1]
-                distant_precedent = get_free_precedent_from_route(pathlet)
-                if distant_precedent:
-                    prev_features = distant_precedent.features
-                    matches = find_matches(prev_features, top_features, '-')
-                    if matches:
-                        new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
-                        if new_operation.state in path_states:
-                            raise hell
-                        paths += self.do_operations(path + [new_operation])
-                        break
-
-        if not found_comp:
-            distant_precedent = precedent
-            while distant_precedent:
-                pathlet = path[:path.index(distant_precedent) + 1]
-                distant_precedent = get_free_precedent_from_route(pathlet)
-                if distant_precedent:
-                    prev_features = distant_precedent.features
-                    matches = find_matches(top_features, prev_features, '-')
-                    if matches:
-                        new_operation = Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
-                        if new_operation.state not in path_states:
+        if not specs_only:
+            if not found_spec:
+                distant_precedent = precedent
+                while distant_precedent:
+                    pathlet = path[:path.index(distant_precedent) + 1]
+                    distant_precedent = get_free_precedent_from_route(pathlet)
+                    if distant_precedent:
+                        prev_features = distant_precedent.features
+                        matches = find_matches(prev_features, top_features, '-')
+                        if matches:
+                            new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
+                            if new_operation.state in path_states:
+                                raise hell
                             paths += self.do_operations(path + [new_operation])
                             break
+
+            if not found_comp:
+                distant_precedent = precedent
+                while distant_precedent:
+                    pathlet = path[:path.index(distant_precedent) + 1]
+                    distant_precedent = get_free_precedent_from_route(pathlet)
+                    if distant_precedent:
+                        prev_features = distant_precedent.features
+                        matches = find_matches(top_features, prev_features, '-')
+                        if matches:
+                            new_operation = Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
+                            if new_operation.state not in path_states:
+                                paths += self.do_operations(path + [new_operation])
+                                break
         return paths
 
     def parse(self, sentence):
@@ -213,8 +217,7 @@ class Parser:
         self.exporter.export_to_kataja(good_routes + bad_routes)  # + bad_routes, good_routes)
         print()
         self.exporter.save_as_json()
-        print(f'total states: {len(self.states)}')
-        self.total += len(self.states)
+        self.total += len(paths)
         print('parse took ', time.time() - t)
         return good_routes
 
@@ -224,7 +227,7 @@ if __name__ == '__main__':
     my_lexicon = read_lexicon(open('lexicon.txt'))
     parser = Parser(my_lexicon)
     sentences = []
-    readfile = open('sentences.txt', 'r')
+    readfile = open('sentences1.txt', 'r')
     for line in readfile:
         line = line.strip()
         if line and not line.startswith('#') and not line.startswith('['):
@@ -242,4 +245,4 @@ if __name__ == '__main__':
     print(f'  {successes}/{i}   ')
     print('=====================')
     print('Parsing sentences took: ', time.time() - t)
-    print('Total considerations: ', parser.total)
+    print('Total routes inspected: ', parser.total)

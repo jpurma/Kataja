@@ -11,10 +11,11 @@ except ImportError:
     from route_utils import *
     SyntaxState = None
 from collections import Iterable
+from pathlib import Path
 import time
 WEAVE = False
 
-DATA_PATH = 'webviewer/data/data.json'
+DATA_PATH = Path(__file__).parent.absolute() / 'webviewer/data/data.json'
 
 
 def verify_feature_hosts(const):
@@ -182,12 +183,17 @@ class Exporter:
                 self.set_const(path, const)
             elif state.state_type == state.SPECIFIER:
                 route_to_look = passed_route[:-1]
-                if not operation.long_distance:
+                arg_op = None
+                fpos = state.checked_features[0][0]
+                while not arg_op:
                     precedent_op = get_free_precedent_from_route(route_to_look)
-                    if precedent_op:
+                    if not precedent_op:
+                        raise hell
+                    elif fpos in precedent_op.features:
+                        arg_op = precedent_op
+                    else:
                         route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-                arg_op = find_operation_with_features([fpos for fpos, fneg in state.checked_features], route_to_look)
-                assert arg_op
+
                 arg_path = make_path(passed_route[:passed_route.index(arg_op) + 1])
                 arg = self.get_const(arg_path)
                 head = self.get_const(last_path)
@@ -197,12 +203,16 @@ class Exporter:
                 self.set_const(path, const)
             elif state.state_type == state.COMPLEMENT:
                 route_to_look = passed_route[:-1]
-                if not operation.long_distance:
+                head_op = None
+                fneg = state.checked_features[0][1]
+                while not head_op:
                     precedent_op = get_free_precedent_from_route(route_to_look)
-                    if precedent_op:
+                    if not precedent_op:
+                        raise hell
+                    elif fneg in precedent_op.features:
+                        head_op = precedent_op
+                    else:
                         route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-                head_op = find_operation_with_features([fneg for fpos, fneg in state.checked_features], route_to_look)
-                assert head_op
                 head_path = make_path(passed_route[:passed_route.index(head_op) + 1])
                 head = self.get_const(head_path)
                 arg = self.get_const(last_path)
@@ -225,10 +235,6 @@ class Exporter:
             steps.append((const, state, path))
             prev_const = const
         return steps
-
-    def add_route(self, state):
-        if self.web:
-            self.web.add_route(state)
 
     def export_to_kataja(self, routes):
         if WEAVE:

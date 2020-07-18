@@ -86,11 +86,6 @@ class DivideAndConquerTree(BalancedTree):
         .L....   R.R...      +2                 - 0                    =2
         ..L..L   ..R.R.      +6                 - 2                    =4
         .L....               +2                                      
-        
-        .L.L..R.R..
-        .L...R.R...
-        ..L..L.....
-        .L.....R.R.
 
         so Grid R starts from coords (5,0)
         .L.L..R.R..
