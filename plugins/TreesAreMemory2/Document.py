@@ -75,11 +75,27 @@ class Document(KatajaDocument):
         self.lexicon = read_lexicon(open(self.get_default_lexicon_file()))
 
         self._sentences = sentences
-        for sentence in sentences:
+        for line in sentences:
+            expectation = ''
+            if line.startswith('??'):
+                line = line[3:]
+                expectation = '?? '
+            elif line.startswith('*?'):
+                line = line[3:]
+                expectation = '*? '
+            elif line.startswith('?*'):
+                line = line[3:]
+                expectation = '?* '
+            elif line.startswith('?'):
+                line = line[2:]
+                expectation = '? '
+            elif line.startswith('*'):
+                line = line[2:]
+                expectation = '* '
             syn = classes.SyntaxAPI()
-            syn.input_text = sentence
+            syn.input_text = line
             syn.lexicon = self.lexicon
-            forest = Forest(heading_text=sentence, syntax=syn)
+            forest = Forest(heading_text=f'{expectation}{line}', syntax=syn)
             forests.append(forest)
         return forests
 

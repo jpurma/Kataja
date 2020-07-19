@@ -55,7 +55,7 @@ class Adj(Operation, FuncSupport):
         other_head = other_head_op.state.head
         msg = f"set '{other_head_op.get_head_label()}' as adjunct for {head_op.get_head_label()} ({shared_features})"
         state = make_state(states, (other_head, head), None, "adj()", State.ADJUNCT)
-        Operation.__init__(self, state, msg, head_op=head_op)
+        Operation.__init__(self, state, msg, head_op=head_op, other_head_op=other_head_op)
 
 
 class Done(Operation, FuncSupport):

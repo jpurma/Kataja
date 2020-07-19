@@ -64,14 +64,7 @@ class PSExporter(Exporter):
                     trees = [const] + trees
                     self.set_const(path, trees)
                 elif state.state_type == state.SPECIFIER:
-                    route_to_look = passed_route[:-1]
-                    if not operation.long_distance:
-                        precedent_op = get_free_precedent_from_route(route_to_look)
-                        if precedent_op:
-                            route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-                    arg_op = find_operation_with_features([fpos for fpos, fneg in state.checked_features], route_to_look)
-                    assert arg_op
-                    arg_path = make_path(passed_route[:passed_route.index(arg_op) + 1])
+                    arg_path = make_path(passed_route[:passed_route.index(operation.arg_op) + 1])
                     arg = self.get_const(arg_path)[0]
                     head = self.get_const(last_path)[0]
                     const = Constituent(head.label, parts=[arg, head], checked_features=state.checked_features,
@@ -84,14 +77,7 @@ class PSExporter(Exporter):
                     assert features_have_host(const)
                     self.set_const(path, trees)
                 elif state.state_type == state.COMPLEMENT:
-                    route_to_look = passed_route[:-1]
-                    if not operation.long_distance:
-                        precedent_op = get_free_precedent_from_route(route_to_look)
-                        if precedent_op:
-                            route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-                    head_op = find_operation_with_features([fneg for fpos, fneg in state.checked_features], route_to_look)
-                    assert head_op
-                    head_path = make_path(passed_route[:passed_route.index(head_op) + 1])
+                    head_path = make_path(passed_route[:passed_route.index(operation.head_op) + 1])
                     head = self.get_const(head_path)[0]
                     arg = self.get_const(last_path)[0]
                     const = Constituent(head.label, parts=[head, arg], checked_features=state.checked_features,
@@ -104,8 +90,7 @@ class PSExporter(Exporter):
                     assert features_have_host(const)
                     self.set_const(path, trees)
                 elif state.state_type == state.ADJUNCT:
-                    precedent_op = get_free_precedent_from_route(passed_route[:-1])
-                    head_path1 = make_path(passed_route[:passed_route.index(precedent_op)+1])
+                    head_path1 = make_path(passed_route[:passed_route.index(operation.other_head_op)+1])
                     head_path2 = make_path(passed_route[:-1])
                     head1 = self.get_const(head_path1)[0]
                     head2 = self.get_const(head_path2)[0]
@@ -149,7 +134,7 @@ class PSExporter(Exporter):
 
                     if path and state.state_type != state.DONE_SUCCESS and state.state_type != state.DONE_FAIL:
                         groups = [('', trees[:1])]
-                        precedent_op = get_free_precedent_from_route(route)
+                        precedent_op = get_free_precedents_from_route(route)
                         if precedent_op:
                             precedent_key = make_path(route[:route.index(precedent_op) + 1])
                             groups.append(('', self.get_const(precedent_key)[:1]))

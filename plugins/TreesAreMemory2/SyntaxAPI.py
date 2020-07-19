@@ -100,6 +100,8 @@ class SyntaxAPI(KatajaSyntaxAPI):
         print('input_text: ', self.input_text)
 
         self.parser.parse(self.input_text)
+        if forest:
+            print('Sentence: ', forest.heading_text)
         self.lexicon = self.parser.lexicon
         if old_lexicon != self.lexicon:
             ctrl.document.parse_all_sentences()

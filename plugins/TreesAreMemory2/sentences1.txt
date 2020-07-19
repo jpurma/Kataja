@@ -1,3 +1,58 @@
+# Study 2 normal order
+Pekka nukkui
+Pekka ihailee Merjaa
+Pekka antoi kirjan Merjalle
+Pekka ei nukkunut
+Pekka ei ihaile Merjaa
+Pekka ei antanut kirjaa Merjalle
+Pekka käski heidän nukkua
+Pekka käski heidän ihailla Merjaa
+Pekka käski heidän antaa kirjan Merjalle
+Pekka nukkui kuorsaamalla
+Pekka häiritsee Merjaa kuorsaamalla
+Pekka antoi kirjan Merjalle heittämällä
+Pekka ei nukkunut kuorsaamalla
+Pekka ei häiritse Merjaa kuorsaamalla
+Pekka ei antanut kirjaa Merjalle heittämällä
+Pekka ei käskenyt heidän nukkua
+Pekka ei käskenyt heidän ihailla Merjaa
+Pekka ei käskenyt heidän antaa kirjaa Merjalle
+Pekka käski heidän nukkua kuorsaamalla
+Pekka käski heidän häiritä Merjaa kuorsaamalla
+Pekka käski heidän antaa kirjan Merjalle heittämällä
+Pekka ei käskenyt heidän nukkua kuorsaamalla
+Pekka ei käskenyt heidän häiritä Merjaa kuorsaamalla
+Pekka ei käskenyt heidän antaa kirjaa Merjalle heittämällä
+
+# Study 2 wh
+kuka nukkui
+kuka ei nukkunut
+ketä Pekka ihailee
+ketä Pekka ei ihaile
+mitä Pekka antoi Merjalle
+mitä Pekka ei antanut Merjalle
+kenen Pekka käski nukkua
+kenen Pekka ei käskenyt nukkua
+mitä Pekka käski heidän ihailla
+mitä Pekka ei käskenyt heidän ihailla
+mitä Pekka käski heidän antaa Merjalle
+mitä Pekka ei käskenyt heidän antaa Merjalle
+kuka nukkui kuorsaamalla
+kuka ei nukkunut kuorsaamalla
+mitä Pekka ihailee virtaamalla
+mitä Pekka ei ihaile virtaamalla
+kuka antoi kirjan Merjalle heittämällä
+mitä Pekka ei antanut Merjalle heittämällä
+kenen Pekka käski nukkua kuorsaamalla
+kenen Pekka ei käskenyt nukkua kuorsaamalla
+mitä Pekka käski heidän ihailla virtaamalla
+mitä Pekka ei käskenyt heidän ihailla virtaamalla
+mitä Pekka käski heidän antaa Merjalle heittämällä
+mitä Pekka ei käskenyt heidän antaa Merjalle heittämällä
+
+# Study 2 shuffled sentences 
+
+
 # Study 1 finnish sentences from https://github.com/pajubrat/parser-grammar/blob/master/language%20data%20working%20directory/study-1-pied-piping/test_set_all.txt
 teoria kumoutui
 Pekka sanoi että teoria kumoutui
@@ -119,10 +174,9 @@ se kaupunki jota kohti virtaamalla Merjalle antoi Pekka kirjan
 se kaupunki jota kohti virtaamalla kirjan antoi Pekka Merjalle
 se kaupunki jota kohti virtaamalla Pekka antoi Merjalle kirjan
 
-# ungrammatical
-#* mitä Pekka sanoi kaupunkia kohti Seine virtaa
-#* mitä Seine virtaa kohti kaupunkia
-#* mitä kaupunkia Seine saavuttaa meren virtaamalla kohti
-
-#* mikä Pekka kysyi mitä kaupunkia kohti virtaa
-#* ketä Merja kysyi kuka saavuttaa
+# ungrammatical (?)
+* mitä Pekka sanoi kaupunkia kohti Seine virtaa
+* mitä Seine virtaa kohti kaupunkia
+* mitä kaupunkia Seine saavuttaa meren virtaamalla kohti
+* mikä Pekka kysyi mitä kaupunkia kohti virtaa
+* ketä Merja kysyi kuka saavuttaa

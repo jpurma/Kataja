@@ -182,19 +182,7 @@ class Exporter:
                 assert features_have_host(const)
                 self.set_const(path, const)
             elif state.state_type == state.SPECIFIER:
-                route_to_look = passed_route[:-1]
-                arg_op = None
-                fpos = state.checked_features[0][0]
-                while not arg_op:
-                    precedent_op = get_free_precedent_from_route(route_to_look)
-                    if not precedent_op:
-                        raise hell
-                    elif fpos in precedent_op.features:
-                        arg_op = precedent_op
-                    else:
-                        route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-
-                arg_path = make_path(passed_route[:passed_route.index(arg_op) + 1])
+                arg_path = make_path(passed_route[:passed_route.index(operation.arg_op) + 1])
                 arg = self.get_const(arg_path)
                 head = self.get_const(last_path)
                 const = Constituent(head.label, parts=[arg, head], checked_features=state.checked_features,
@@ -202,18 +190,7 @@ class Exporter:
                 assert features_have_host(const)
                 self.set_const(path, const)
             elif state.state_type == state.COMPLEMENT:
-                route_to_look = passed_route[:-1]
-                head_op = None
-                fneg = state.checked_features[0][1]
-                while not head_op:
-                    precedent_op = get_free_precedent_from_route(route_to_look)
-                    if not precedent_op:
-                        raise hell
-                    elif fneg in precedent_op.features:
-                        head_op = precedent_op
-                    else:
-                        route_to_look = passed_route[:passed_route.index(precedent_op) + 1]
-                head_path = make_path(passed_route[:passed_route.index(head_op) + 1])
+                head_path = make_path(passed_route[:passed_route.index(operation.head_op) + 1])
                 head = self.get_const(head_path)
                 arg = self.get_const(last_path)
                 const = Constituent(head.label, parts=[head, arg], checked_features=state.checked_features,
@@ -221,8 +198,7 @@ class Exporter:
                 assert features_have_host(const)
                 self.set_const(path, const)
             elif state.state_type == state.ADJUNCT:
-                precedent_op = get_free_precedent_from_route(passed_route[:-1])
-                head_path1 = make_path(passed_route[:passed_route.index(precedent_op)+1])
+                head_path1 = make_path(passed_route[:passed_route.index(operation.other_head_op)+1])
                 head_path2 = make_path(passed_route[:-1])
                 head1 = self.get_const(head_path1)
                 head2 = self.get_const(head_path2)
@@ -261,7 +237,7 @@ class Exporter:
 
                     if path and state.state_type != state.DONE_SUCCESS and state.state_type != state.DONE_FAIL:
                         groups = [('', [const])]
-                        precedent_op = get_free_precedent_from_route(route)
+                        precedent_op = operation.first_free_precedent()
                         if precedent_op:
                             precedent_key = make_path(route[:route.index(precedent_op) + 1])
                             groups.append(('', [self.get_const(precedent_key)]))

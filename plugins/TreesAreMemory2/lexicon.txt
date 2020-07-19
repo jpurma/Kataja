@@ -7,9 +7,11 @@ Pekan :: N:gen N:acc
 Pekka :: N:nom3sg
 Pekkaa :: N:prt
 Seine :: N:nom3sg
-ajatteli :: T =N:nom3sg =v, v =että -N:prt|acc
-antoi :: T =v -N:nom3sg =v, v -N:prt|acc -N:lle -N:lla
-asui :: T =v =N:nom3sg, v -N:ssa -P
+ajatteli :: T -N:nom3sg =v, v =että -N:prt|acc
+antaa :: T:a -N:gen -va, va -N:acc|prt -N:lle -N:lla
+antanut :: T:nfinsg =neg:sg =v, v -N:acc|prt -N:lle -N:lla
+antoi :: T =v -N:nom3sg, v -N:prt|acc -N:lle -N:lla
+asui :: T =v -N:nom3sg, v -N:ssa -P
 ei :: neg:pass
 ei :: neg:sg -N:nom3sg
 eipä :: pa =T, neg:sg -N:nom3sg
@@ -20,10 +22,17 @@ et :: neg:sg =N:nom2sg
 ette :: neg:pl =N:nom2pl
 että :: että =T =C
 he :: N:nom3pl
+heidän :: N:gen
+heittämällä :: N:lla
 henkilö :: N:nom3sg =rel =gen
 henkilöä :: N:prt =gen =rel
+häiritse :: T:nfinsg =neg:sg =v, v -N:prt -N:lla
+häiritsee :: T -N:nom3sg =v, v -N:prt -N:lla
+häiritä :: T:a -N:gen =v, v -N:prt -N:lla
 hän :: N:nom3sg
-ihailee :: T =N:nom3sg =v, v -N:prt
+ihaile :: T:nfinsg =neg:sg =v, v -N:prt -N:lla
+ihailee :: T -N:nom3sg =v, v -N:prt -N:lla
+ihailla :: T:a -N:gen =v, v -N:prt -N:lla
 ilman :: N:iin -N:prt
 joka :: rel =T, N:nom3sg
 jolle :: rel =T, N:lle
@@ -34,34 +43,42 @@ kasvaa :: T =v =N:nom3sg, v
 kaupungissa :: N:ssa
 kaupunki :: N:nom3sg =N:gen =rel
 kaupunkia :: N:prt
-keksi :: =N:nom3sg -N:acc
+keksi :: T -N:nom3sg =v, v -N:acc
 kenelle :: C =wh, =T wh, N:lle
-kenen :: wh =T, N:gen
-kenet :: wh =T, N:acc
-kertoi :: T =N:nom3sg =v, v =että -N:acc =C
+kenen :: C =wh, wh -T, N:gen
+kenet :: C =wh, wh =T, N:acc
+kertoi :: T -N:nom3sg =v, v =että -N:acc =C
+ketä :: C =wh, =T wh, N:prt
+kirjaa :: N:prt =N:gen =rel
 kirjan :: N:acc =N:gen =rel
 kohti :: P =N:prt
-korjasi :: T =N:nom3sg =v, v -N:acc|prt
+korjasi :: T -N:nom3sg =v, v -N:acc|prt
 kotiin :: N:iin
 kuka :: C =wh, =T wh, N:nom3sg
-kumoutui :: T =v =N:nom3sg, v -N:lla
+kumoutui :: T =v -N:nom3sg, v -N:lla
+kuorsaamalla :: N:lla
 kysyi :: T -N:nom3sg =v, v =että -N:prt =C
-luuli :: T =N:nom3sg =v, v =että
-luulivat :: T =N:nom3pl =v, v =että
+käskenyt :: T:nfinsg =neg:sg =v -N:lla, v -T:a -N:lla
+käski :: T -N:nom3sg =v, v -T:a
+luuli :: T -N:nom3sg =v, v =että
+luulivat :: T -N:nom3pl =v, v =että
 lähellä :: P -N:prt
 löysi :: T -N:nom3sg =v, v -N:acc|prt
 me :: N:nom1pl
 meren :: N:acc =rel
 mies :: N:nom3sg =rel =gen
+mikä :: C =T wh, wh N:nom3sg
 minkä :: C =T wh, wh N:acc
 minne :: C =wh, =T wh, N:een
 minä :: N:nom1sg
 mitä :: C =wh, =T wh, N:prt
 nimmaria :: N:prt -N:gen
-nukkui :: T =v =N:nom3sg, v -N:ssa
+nukkua :: T:a -N:gen -N:lla
+nukkui :: T =v -N:nom3sg, v -N:ssa -N:lla
+nukkunut :: T:nfinsg =neg:sg =v, v -N:lla
 ole :: T =T:nfinsg|nfinpl|pass =neg:sg|pl
 olemme :: =N:nom1pl T =T:nfinpl
-olen :: =N:nom1sg T =T:nfinsg
+olen :: N:nom1sg T =T:nfinsg
 olet :: =N:nom2sg T =T:nfinsg
 olette :: =N:nom2pl T =T:nfinpl
 oli :: =N:nom3sg T =T
@@ -75,10 +92,10 @@ on :: =T:pass
 osta :: T =v1, v1 =v2 =N:nom3sg|nom3pl|prt, v2 =N:nom3sg
 ostaa :: -N:acc|prt -P v
 ostapa :: pa =T, T =N:nom3sg =v, v =N:nom3sg|nom3pl
-osti :: =N:nom3sg T -N:acc|prt -N:lle -P
-ostit :: =N:nom2sg T -N:acc|prt -P
-ovat :: =N:nom3pl T =T:nfinpl
-palasi :: =N:nom3sg -N:iin adv T
+osti :: -N:nom3sg T -N:acc|prt -N:lle -P
+ostit :: -N:nom2sg T -N:acc|prt -P
+ovat :: -N:nom3pl T =T:nfinpl
+palasi :: -N:nom3sg -N:iin adv T
 pojat :: N:nom3pl =N:gen
 pre :: T =v =N:nom3sg
 pyörä :: N:nom3sg =N:gen
@@ -86,22 +103,22 @@ pyörän :: N:acc =N:gen
 pyöränkö :: N:acc =N:gen, ko =T
 pyörää :: N:prt =N:gen
 rakastanut :: -N:prt v
-rakasti :: =N:nom3sg -N:prt T
-saavuttaa :: T =v =N:nom3sg, v -N:acc|prt -N:lla
-saavutti :: T =v =N:nom3sg, v -N:acc -N:lla
+rakasti :: -N:nom3sg -N:prt T
+saavuttaa :: T =v -N:nom3sg, v -N:acc|prt -N:lla
+saavutti :: T =v -N:nom3sg, v -N:acc -N:lla
 sanoi :: T -N:nom3sg =v, v =että -N:acc =C -N:lle
 se :: N:nom3sg =n, n =että
 sinä :: N:nom2sg
 suruissaan :: adv
 talo :: N:nom3sg =rel =gen
 talon :: N:acc =rel =gen
-tapasi :: T =N:nom3sg -N:acc|prt
+tapasi :: T -N:nom3sg -N:acc|prt
 te :: N:nom2pl
 teoria :: N:nom3sg =N:gen =rel
 teorian :: N:acc =rel
-tiennyt :: T:nfinsg =v1, v1 =että -N:acc|prt =C =v2, v2 -D -neg:sg
-tiesi :: T =N:nom3sg =v, v =että -N:acc =C
-tiesin :: T =N:nom1sg =v, v =että -N:acc =C
+tiennyt :: T:nfinsg =v1, v1 =että -N:acc|prt =C =v2, v2 -D =neg:sg
+tiesi :: T -N:nom3sg =v, v =että -N:acc =C
+tiesin :: T -N:nom1sg =v, v =että -N:acc =C
 tuhoutui :: T -N:nom3sg =v, v
 työnnettiin :: T =v, v -N:acc|prt -N:een
 työnnettiin :: T:pass =v, v -N:acc|prt -N:een
@@ -126,6 +143,6 @@ työntää :: T =v =N:nom3sg, v -N:acc|prt
 työntää :: v =N:acc|prt
 vartenhan :: =N:prt P, han =T
 veli :: N:nom3sg =N:gen
-virtaa :: T =v =N:nom3sg, v -P
+virtaa :: T =v -N:nom3sg, v -P
 virtaamalla :: N:lla -P -N:een
 väite :: N:nom3sg =n, n =että

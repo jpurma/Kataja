@@ -32,11 +32,12 @@ class Operation:
     """ Base class for "operator nodes" used by parser."""
     sort_order = 10
 
-    def __init__(self, state, msg, head_op=None, arg_op=None, features=None, long_distance=False):
+    def __init__(self, state, msg, head_op=None, arg_op=None, other_head_op=None, features=None, long_distance=False):
         self.state = state
         self.msg = msg
         self.features = []
         self.used_features = []
+        self.free_precedents = []
         if features:
             self.features = features
         elif head_op:
@@ -44,6 +45,9 @@ class Operation:
             self.features, used = filter_checked(head_op.features + strong_features, state.checked_features)
             self.used_features = head_op.used_features + used
         self.long_distance = long_distance
+        self.head_op = head_op
+        self.arg_op = arg_op
+        self.other_head_op = other_head_op
         debug_state and print('creating new Operation: ', self)
 
     def __str__(self):
@@ -70,3 +74,27 @@ class Operation:
 
     def get_arg_label(self):
         return self.state.get_arg_label()
+
+    def calculate_free_precedents(self, route):
+        heads = []
+        used = {self.state.head}
+        if self.state.arg_:
+            used.add(self.state.arg_)
+        for operation in route[:-1]:
+            if operation.state.head:
+                heads.append((operation, operation.state.head))
+            if operation.state.arg_:
+                used.add(operation.state.arg_)
+            elif operation.state.state_type == ADJUNCT:
+                used.add(operation.state.head[0])
+                used.add(operation.state.head[1])
+        self.free_precedents = []
+
+        for op, head in reversed(heads):
+            if head not in used and head:
+                used.add(head)
+                self.free_precedents.append(op)
+
+    def first_free_precedent(self):
+        if self.free_precedents:
+            return self.free_precedents[0]

@@ -13,12 +13,20 @@ COMPLEMENT = 5
 unadjoinable_categories = {'T', 'V', 'rel', 'että', 'v'}
 
 
-def get_free_precedent_from_route(route):
+def get_free_precedent_from_route_o(route):
     connected_heads = {route[-1].state.head}
     for operation in reversed(route):
         if operation.state.head not in connected_heads:
+            fail = False
+            for op in route:
+                if op.state.arg_ == operation.state.head:
+                    fail = True
+                    break
+                elif op is operation:
+                    break
             #print('from route ', route, ' free precedent is ', operation)
-            return operation
+            if not fail:
+                return operation
         if operation.state.arg_: # and not operation.long_distance:
             connected_heads.add(operation.state.arg_)
         if operation.state.state_type == ADJUNCT:
@@ -75,6 +83,14 @@ def find_matches(pos_features, neg_features, neg_signs='-='):
                     matches.append((pos_feat, neg_feat))
                     break  # one pos feature can satisfy only one neg feature
     return matches
+
+
+def phase_border(operation):
+    if not operation:
+        return
+    for feat in operation.features:
+        if (feat.name == 'rel' or feat.name == 'C' or feat.name == 'että') and is_positive(feat):
+            return True
 
 
 def has_loose_adjoining_feature(features):
