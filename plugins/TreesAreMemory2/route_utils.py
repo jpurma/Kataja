@@ -10,7 +10,9 @@ SPECIFIER = 4
 COMPLEMENT = 5
 
 # these can adjoin if coordinator is present, but not otherwise
-unadjoinable_categories = {'T', 'V', 'rel', 'että', 'v'}
+unadjoinable_categories = {'T', 'V', 'rel', 'että', 'v', 'neg', 'ld'}
+
+phase_borders = {'rel'}
 
 
 def get_free_precedent_from_route_o(route):
@@ -73,6 +75,16 @@ def feature_match(feat, other):
         return (not feat.value) or other.value in feat.value.split('|')
 
 
+def union(features1, features2):
+    return list(set(features1) | set(features2))
+
+
+def allow_long_distance(features):
+    for feature in features:
+        if feature.name == 'ld':
+            return True
+
+
 def find_matches(pos_features, neg_features, neg_signs='-='):
     matches = []
     for pos_feat in pos_features:
@@ -89,8 +101,16 @@ def phase_border(operation):
     if not operation:
         return
     for feat in operation.features:
-        if (feat.name == 'rel' or feat.name == 'C' or feat.name == 'että') and is_positive(feat):
+        if feat.name in phase_borders and is_positive(feat):
             return True
+
+
+def head_precedes(precedent, top, route):
+    for operation in route:
+        if operation.state.head is precedent.state.head:
+            return True
+        elif operation.state.head is top.state.head:
+            return False
 
 
 def has_loose_adjoining_feature(features):
@@ -102,7 +122,9 @@ def has_loose_adjoining_feature(features):
 def find_common_features(a_features, b_features):
     loose_adjoining = has_loose_adjoining_feature(a_features) or has_loose_adjoining_feature(b_features)
     if loose_adjoining:
-        return _loose_find_common_features(a_features, b_features)
+        l = _loose_find_common_features(a_features, b_features)
+        print('loose adjoining: ', l, a_features, b_features)
+        return l
     else:
         return _strict_find_common_features(a_features, b_features)
 

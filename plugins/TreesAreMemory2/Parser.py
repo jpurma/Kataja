@@ -1,6 +1,6 @@
 try:
     from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
-    from plugins.TreesAreMemory2.Exporter import Exporter
+    from plugins.TreesAreMemory2.PSExporter import PSExporter, Exporter
     from plugins.TreesAreMemory2.State import State
     from plugins.TreesAreMemory2.FuncParser import FuncParser
     from plugins.TreesAreMemory2.operations import Add, Comp, Spec, Adj, Done, Fail
@@ -8,7 +8,7 @@ try:
     from plugins.TreesAreMemory2.route_utils import *
 except ImportError:
     from SimpleConstituent import SimpleConstituent
-    from Exporter import Exporter
+    from PSExporter import PSExporter, Exporter
     from State import State
     from FuncParser import FuncParser
     from operations import Add, Comp, Spec, Adj, Done, Fail
@@ -20,7 +20,9 @@ from itertools import chain
 
 debug_parse = False
 
-show_bad_routes = True
+show_bad_routes = False
+
+use_classic_phrase_structure_exporter = False
 
 
 def read_lexicon(lines, lexicon=None):
@@ -50,7 +52,7 @@ def is_positive(feat):
 
 class Parser:
     def __init__(self, lexicon, forest=None):
-        self.exporter = Exporter(forest)
+        self.exporter = PSExporter(forest) if use_classic_phrase_structure_exporter else Exporter(forest)
         self.results = []
         self.correct = []
         self.lexicon = lexicon or {}
@@ -75,7 +77,7 @@ class Parser:
             paths = []
             for complex_const in consts:
                 new_paths = list(paths_before)
-                for const in complex_const:
+                for i, const in enumerate(complex_const):
                     if new_paths:
                         added_paths = []
                         for path in new_paths:
@@ -85,7 +87,10 @@ class Parser:
                             added_paths.append(added_path)
                     else:
                         added_paths = [[Add(self.states, const)]]
-                    new_paths = list(chain.from_iterable(self.do_operations_specs_only(path) for path in added_paths))
+                    if i + 1 < len(complex_const):
+                        new_paths = list(chain.from_iterable(self.do_operations_specs_only(path) for path in added_paths))
+                    else:
+                        new_paths = added_paths
                 new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
                 paths += new_paths
         return paths
@@ -115,24 +120,33 @@ class Parser:
             return {path}
         top_features = operation.features
 
-        precedent = operation.free_precedents[0] if operation.free_precedents else None
+        precedent = operation.first_free_precedent()
         if precedent:
             prev_features = precedent.features
             # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
-            matches = find_matches(prev_features, top_features, '-=')
-            if matches: # and matches[0][0].name == 'N':
+            matches = find_matches(prev_features, top_features, '=')
+            if matches:
                 new_operation = Spec(self.states, operation, precedent, checked_features=matches)
                 new_path = path + [new_operation]
                 new_operation.calculate_free_precedents(new_path)
                 return [new_path]
+
+            # Entäpä adjunktointi?
+            common_features = find_common_features(top_features, prev_features)
+            if common_features and head_precedes(precedent, operation, path) and not find_shared_heads(precedent, operation):
+                shared_features = find_shared_features(top_features, prev_features)
+                new_operation = Adj(self.states, operation, precedent, shared_features=shared_features)
+                new_path = path + [new_operation]
+                new_operation.calculate_free_precedents(new_path)
+                return [new_path, path]
 
         if len(operation.free_precedents) > 1:
             for distant_precedent in operation.free_precedents[1:]:
                 if phase_border(distant_precedent):
                     break
                 prev_features = distant_precedent.features
-                matches = find_matches(prev_features, top_features, '-')
-                if matches: # and matches[0][0].name == 'N':
+                matches = find_matches(prev_features, top_features, '=')
+                if allow_long_distance(prev_features + top_features) and matches:
                     new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
                     new_path = path + [new_operation]
                     new_operation.calculate_free_precedents(new_path)
@@ -161,32 +175,34 @@ class Parser:
         if precedent:
             prev_features = precedent.features
             # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
-            matches = find_matches(prev_features, top_features, '-=')
+            matches = find_matches(prev_features, top_features, '=')
             if matches:
                 add_to_paths(paths, Spec(self.states, operation, precedent, checked_features=matches))
                 found_spec = True
 
             # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
-            matches = find_matches(top_features, prev_features, '-=')
+            matches = find_matches(top_features, prev_features, '=')
             if matches:
                 add_to_paths(paths, Comp(self.states, operation, precedent, checked_features=matches))
                 found_comp = True
 
             # Entäpä adjunktointi?
             common_features = find_common_features(top_features, prev_features)
-            if common_features and not find_shared_heads(precedent, operation):
+            if common_features and head_precedes(precedent, operation, path) and not find_shared_heads(precedent, operation):
                 shared_features = find_shared_features(top_features, prev_features)
                 add_to_paths(paths, Adj(self.states, operation, precedent, shared_features=shared_features))
 
         # Myös se vaihtoehto että jätetään nostot tekemättä:
         paths.append(path)
 
-        if len(operation.free_precedents) > 1:
+        if len(operation.free_precedents) > 1 and not phase_border(precedent):
             if not found_spec:
                 # pitkän kantaman spec
                 for distant_precedent in operation.free_precedents[1:]:
+                    if phase_border(distant_precedent):
+                        break
                     prev_features = distant_precedent.features
-                    matches = find_matches(prev_features, top_features, '-')
+                    matches = allow_long_distance(prev_features + top_features) and find_matches(prev_features, top_features, '=')
                     if matches:
                         add_to_paths(paths, Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True))
                         break
@@ -196,7 +212,7 @@ class Parser:
                     if phase_border(distant_precedent):
                         break
                     prev_features = distant_precedent.features
-                    matches = find_matches(top_features, prev_features, '-')
+                    matches = allow_long_distance(prev_features + top_features) and find_matches(top_features, prev_features, '=')
                     if matches:
                         add_to_paths(paths, Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True))
                         break
@@ -307,6 +323,6 @@ if __name__ == '__main__':
     print('Total good routes found: ', parser.total_good_routes)
     print('Positives: ', len(positives))
     print('Negatives (as expected): ', len(negatives))
-    print('False positives: ', len(false_positives))
+    print('False positives: ', len(false_positives), false_positives)
     print('False negatives: ', len(false_negatives), false_negatives)
     #print('problems at: ', problems)

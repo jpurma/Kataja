@@ -1,4 +1,32 @@
-# Study 2 normal order
+# Koordinaatiolauseita
+
+Pekka ihaili keltaisia osti punaisia ja varasti keltaisia kukkia
+Pekka osti myi ja varasti kukkia
+Pekka Merja ja Minttu ihailevat kirjaa
+
+
+# Huhmarniemi, thesis
+# (177)
+Pekka käveli kohti puistoa
+mitä kohti Pekka käveli
+# (178)
+Pekka oli jonossa ennen Merjaa
+ketä ennen Pekka oli jonossa
+# (179)
+Kate Moss ei voisi elää ilman käsilaukkua
+mitä ilman Kate Moss ei voisi elää
+# (181)
+puisto jota kohti Pekka käveli
+* puisto kohti jota Pekka käveli
+# (184)
+Pekka otti kurssin suoraan kohti lentokenttää
+Pekka otti kurssin suoraan lentokenttää kohti
+? Pekka otti kurssin lentokenttää suoraan kohti
+* Pekka otti kurssin kohti suoraan lentokenttää
+* mitä suoraan kohti Pekka otti kurssin
+suoraan mitä kohti Pekka otti kurssin
+
+# Study 2 normal order (Brattico)
 Pekka nukkui
 Pekka ihailee Merjaa
 Pekka antoi kirjan Merjalle
@@ -24,7 +52,7 @@ Pekka ei käskenyt heidän nukkua kuorsaamalla
 Pekka ei käskenyt heidän häiritä Merjaa kuorsaamalla
 Pekka ei käskenyt heidän antaa kirjaa Merjalle heittämällä
 
-# Study 2 wh
+# Study 2 wh (Brattico)
 kuka nukkui
 kuka ei nukkunut
 ketä Pekka ihailee

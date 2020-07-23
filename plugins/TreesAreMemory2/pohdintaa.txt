@@ -192,3 +192,35 @@ Wh- ja relatiivilauseissa tarvittavat pitkän kantaman siirtymät, joissa kysymy
 Jakamisen voi tehdä niin, että jo leksikkopoiminnassa luodaan kaksi eri konstituenttia. Silloin ongelmana on pitää huoli, että konstituentit eivät päädy mihinkään outoon suhteeseen keskenään. Niillä ei saa olla piirteitä jotka reagoisivat toisiinsa. Linearisoinnissa huomioitaisiin vain ensimmäinen osa. Pitäisi tallettaa tieto että nämä ovat samaa sanaa.
 
 Ongelma jakamisessa on, että se mahdollistaa sanan käytön kahdessa paikassa, mutta jos tarvitaan oikeasti syklinen siirtymä niin se ei riitä. En ole nyt varma tarvitaanko syklistä siirtymää.
+
+20.7. 2020
+Pulmia: Miten esittää tiukasti järjestyneet rakenteet esim. englannin prepositioissa? Ne rakenteet on muuten ehdottomia vaatimuksessaan että arg seuraa pääsanaa ja on sen viereinen rakenteellinen elementti, mutta jos on siirtymä niin silloin voikin jäädä pääsana roikkumaan ja hakea argumenttinsa kaukaa. Nyt ei ole koodattu järjestystä, =N voi tyydyttyä sillä että argumentti tulee välittömästi eteen (spec) tai taakse (comp). Vaihtoehtoja:
+
+- Asettaa piirre ld (long distance) niille elementeille jotka saavat siirtyä kaukaa, tämä hoitaa poikkeukset ja muuten on tiukka =. Tässä voi vielä laajentaa piirteistöä luomalla vaatimuksen > joka sallii vain komplementtiargumentin. Suomelle tämä olisi vähän epäelegantti kun lähes kaikki suomen sanat saisivat ld-piirteen.
+- Toteuttaa 'vaiheen raja' jotenkin, positio josta saa nostaa. Tarkoittaisiko tämä suomen tapauksessa että olisi useampia vaiheen rajoja jotta voidaan toteuttaa vapaampaa sanajärjestystä? Jos niin, niin sitten se vaiheen raja olisi helpompi merkitä piirteellä ja ollaan aika samassa kuin edellisessä, ld-piirre olisikin ph-piirre.
+- Koittaa toteuttaa tiukkaa järjestyneisyyttä kaksiosaisella konstituentilla: jälkimmäinen osa on alisteinen ensimmäiselle, jolloin jälkimmäinen ei voi ottaa ensimmäistä konstituenttia edeltävää argumenttia omaksi argumentikseen. [.X1 a [.X1 X1 X2]] Tämä olisi elegantti.
+Lähdetään kokeilemaan kaksiosaisilla konstituenteilla ja ld-piirteellä.
+
+A picture of (who) -rakenne onkin hankala rakentaa alhaalta ylös. Siinä vaiheessa kun tuorein sana on 'of' niin 'a picture' on yhä vapaana. No joo, se korjautuukin tuolla kaksiosaisella konstituentilla. 'a picture' ei kelpaa nostettavaksi kun se ei ole of-konstituentin jälkimmäisen osan vieressä ja sillä ei ole ld-piirrettä.
+
+Seuraako tuosta ld-piirteestä että pääsen kokonaan '=', '-' -jaottelusta? Kaikki on '='? Joo.
+
+Suomen vapaa sanajärjestys, ainakin verbien argumenttien osalta, näyttää toteutuvan jos verbin jälkimmäisellä konstituentilla on ld-piirre.
+
+23.7. Koordinaatiolauseita taas
+Mietin sitä että jos meillä on tehty operaatiot A B C ja sitten kohdataan elementit D E F jotka halutaan koordinaatioasetelmaan, ja lause jatkuu sen jälkeen G H niin oikea tapa olisi asettaa ne näin:
+
+      D
+A B C E G H
+      F
+
+Eli D E ja F:lle kullekin C on edellinen elementti pinossa. Katsotaan miltä se näyttäisi hankalalla esimerkillä:
+
+Pekka myi sinisiä,       |
+Merja osti punaisia ja   | kukkia
+Riikka varasti keltaisia |
+
+      | myi sinisiä        |
+Pekka | osti punaisia ja   | kukkia
+      | varasti keltaisia  |
+

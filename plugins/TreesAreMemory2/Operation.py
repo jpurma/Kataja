@@ -80,6 +80,9 @@ class Operation:
         used = {self.state.head}
         if self.state.arg_:
             used.add(self.state.arg_)
+        if self.other_head_op:
+            used.add(self.state.head[0])
+            used.add(self.state.head[1])
         for operation in route[:-1]:
             if operation.state.head:
                 heads.append((operation, operation.state.head))

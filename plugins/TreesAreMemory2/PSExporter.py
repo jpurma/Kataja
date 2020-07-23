@@ -112,7 +112,7 @@ class PSExporter(Exporter):
             self.web.weave_in(routes)
 
         if self.forest:
-            const_routes = [self.to_ps_constituents(route) for route in routes]
+            const_routes = [self.to_constituents(route) for route in routes]
             t = time.time()
             paths = set()
             paths_n = 0
@@ -122,7 +122,6 @@ class PSExporter(Exporter):
                 for operation, (trees, state, path) in zip(ri_route, const_route):
                     route.append(operation)
                     if path in paths:
-                        print(f'path {path} is exported already')
                         parent_path = path
                         continue
                     paths_n += 1
@@ -134,7 +133,7 @@ class PSExporter(Exporter):
 
                     if path and state.state_type != state.DONE_SUCCESS and state.state_type != state.DONE_FAIL:
                         groups = [('', trees[:1])]
-                        precedent_op = get_free_precedents_from_route(route)
+                        precedent_op = operation.first_free_precedent()
                         if precedent_op:
                             precedent_key = make_path(route[:route.index(precedent_op) + 1])
                             groups.append(('', self.get_const(precedent_key)[:1]))

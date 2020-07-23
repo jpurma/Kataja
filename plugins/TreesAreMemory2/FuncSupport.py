@@ -79,7 +79,7 @@ class FuncSupport:
         return new_operation
 
     @staticmethod
-    def f(word, *feats):
+    def add(word, *feats):
         head = SimpleConstituent(word)
         if feats:
             if isinstance(feats, str):
