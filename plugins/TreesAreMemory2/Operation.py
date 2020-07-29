@@ -32,7 +32,8 @@ class Operation:
     """ Base class for "operator nodes" used by parser."""
     sort_order = 10
 
-    def __init__(self, state, msg, head_op=None, arg_op=None, other_head_op=None, features=None, long_distance=False):
+    def __init__(self, parent, state, msg, head_op=None, arg_op=None, other_head_op=None, features=None, long_distance=False):
+        self.parent = parent
         self.state = state
         self.msg = msg
         self.features = []
@@ -48,6 +49,7 @@ class Operation:
         self.head_op = head_op
         self.arg_op = arg_op
         self.other_head_op = other_head_op
+        self.calculate_free_precedents()
         debug_state and print('creating new Operation: ', self)
 
     def __str__(self):
@@ -66,6 +68,14 @@ class Operation:
             else:
                 return sd < od
 
+    def __eq__(self, other):
+        if isinstance(other, Operation):
+            return self.state == other.state and self.features == other.features and self.free_precedents == other.free_precedents
+        return False
+
+    def __hash__(self):
+        return hash(str(self.state) + str(self.features) + str(self.free_precedents))
+
     def get_head_label(self):
         return self.state.get_head_label()
 
@@ -75,29 +85,31 @@ class Operation:
     def get_arg_label(self):
         return self.state.get_arg_label()
 
-    def calculate_free_precedents(self, route):
-        heads = []
+    def calculate_free_precedents(self):
+        if not self.parent:
+            self.free_precedents = []
+            return
         used = {self.state.head}
         if self.state.arg_:
             used.add(self.state.arg_)
-        if self.other_head_op:
+        elif self.other_head_op:
             used.add(self.state.head[0])
             used.add(self.state.head[1])
-        for operation in route[:-1]:
-            if operation.state.head:
-                heads.append((operation, operation.state.head))
-            if operation.state.arg_:
-                used.add(operation.state.arg_)
-            elif operation.state.state_type == ADJUNCT:
-                used.add(operation.state.head[0])
-                used.add(operation.state.head[1])
-        self.free_precedents = []
+        self.free_precedents = [op for op in [self.parent] + self.parent.free_precedents if op.state.head not in used]
 
-        for op, head in reversed(heads):
-            if head not in used and head:
-                used.add(head)
-                self.free_precedents.append(op)
+    def as_route(self):
+        route = []
+        operation = self
+        while operation:
+            route.append(operation)
+            operation = operation.parent
+        return list(reversed(route))
 
     def first_free_precedent(self):
         if self.free_precedents:
             return self.free_precedents[0]
+
+    def is_phase_border(self):
+        for feat in self.features:
+            if feat.name in phase_borders and is_positive(feat):
+                return True

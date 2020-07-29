@@ -1,8 +1,10 @@
 # Koordinaatiolauseita
 
-Pekka ihaili keltaisia osti punaisia ja varasti keltaisia kukkia
-Pekka osti myi ja varasti kukkia
-Pekka Merja ja Minttu ihailevat kirjaa
+#Pekka ihaili keltaisia osti punaisia ja varasti keltaisia kukkia
+#Pekka osti myi ja varasti kukkia
+#Pekka Merja ja Minttu ihailevat kirjaa
+
+mitä kohti Pekka käveli
 
 
 # Huhmarniemi, thesis

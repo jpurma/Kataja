@@ -14,6 +14,7 @@ class State:
     ADJUNCT = 6
     SPECIFIER = 4
     COMPLEMENT = 5
+    RETURN = 8
 
     @staticmethod
     def create_key(state_type, head, arg_, checked_features):

@@ -3,7 +3,7 @@ try:
     from plugins.TreesAreMemory2.PSExporter import PSExporter, Exporter
     from plugins.TreesAreMemory2.State import State
     from plugins.TreesAreMemory2.FuncParser import FuncParser
-    from plugins.TreesAreMemory2.operations import Add, Comp, Spec, Adj, Done, Fail
+    from plugins.TreesAreMemory2.operations import Add, Comp, Spec, Adj, Done, Fail, Return
     from plugins.TreesAreMemory2.Feature import Feature
     from plugins.TreesAreMemory2.route_utils import *
 except ImportError:
@@ -11,7 +11,7 @@ except ImportError:
     from PSExporter import PSExporter, Exporter
     from State import State
     from FuncParser import FuncParser
-    from operations import Add, Comp, Spec, Adj, Done, Fail
+    from operations import Add, Comp, Spec, Adj, Done, Fail, Return
     from Feature import Feature
     from route_utils import *
 import time
@@ -20,7 +20,7 @@ from itertools import chain
 
 debug_parse = False
 
-show_bad_routes = False
+show_bad_routes = True
 
 use_classic_phrase_structure_exporter = False
 
@@ -37,7 +37,7 @@ def read_lexicon(lines, lexicon=None):
         consts = []
         for i, fstring in enumerate(feat_parts.split(',')):
             feats = [Feature.from_string(fs) for fs in fstring.split()]
-            const_label = f'({label})' if i else label
+            const_label = f'({label}{i})' if i else label
             consts.append(SimpleConstituent(label=const_label, features=feats))
         if label in lexicon:
             lexicon[label].append(consts)
@@ -70,30 +70,19 @@ class Parser:
         return f'{const.label}{self.last_const_id}'
 
     def _string_parse(self, sentence):
-        paths = []
+        path_ends = []
         for word in sentence.split():
             consts = self.get_from_lexicon(word)
-            paths_before = list(paths)
-            paths = []
+            paths_before = list(path_ends)
+            path_ends = []
             for complex_const in consts:
                 new_paths = list(paths_before)
-                for i, const in enumerate(complex_const):
-                    if new_paths:
-                        added_paths = []
-                        for path in new_paths:
-                            add_operation = Add(self.states, const)
-                            added_path = path + [add_operation]
-                            add_operation.calculate_free_precedents(added_path)
-                            added_paths.append(added_path)
-                    else:
-                        added_paths = [[Add(self.states, const)]]
-                    if i + 1 < len(complex_const):
-                        new_paths = list(chain.from_iterable(self.do_operations_specs_only(path) for path in added_paths))
-                    else:
-                        new_paths = added_paths
-                new_paths = list(chain.from_iterable(self.do_operations(path) for path in new_paths))
-                paths += new_paths
-        return paths
+                for const in complex_const:
+                    added_paths = [Add(path_end, self.states, const) for path_end in new_paths] \
+                                  or [Add(None, self.states, const)]
+                    new_paths = list(chain.from_iterable(self.do_operations(path) for path in added_paths))
+                path_ends += new_paths
+        return path_ends
 
     def get_from_lexicon(self, word):
         original_consts = self.lexicon.get(word, [[SimpleConstituent(label=word)]])
@@ -111,119 +100,82 @@ class Parser:
             consts.append(complex_const)
         return consts
 
-    def do_operations_specs_only(self, path):
-        path_str = route_str(path)
-        debug_parse and print('checking path ', path_str)
-        operation = path[-1]
-        state = operation.state
-        if not state.head:
-            return {path}
+    def do_operations(self, operation):
         top_features = operation.features
-
+        path_ends = []
+        found = False  # kokeillaan täyttä poissulkevuutta
         precedent = operation.first_free_precedent()
-        if precedent:
-            prev_features = precedent.features
-            # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
-            matches = find_matches(prev_features, top_features, '=')
-            if matches:
-                new_operation = Spec(self.states, operation, precedent, checked_features=matches)
-                new_path = path + [new_operation]
-                new_operation.calculate_free_precedents(new_path)
-                return [new_path]
+        if not precedent:
+            return [operation]
+        # Entäpä adjunktointi?
+        # (adjunktointi ei saisi olla poissulkeva vaihtoehto, vrt. 'show Mary castles' ja 'show Mary Castles')
+        # nyt se on jotta ei tule luotua liikaa vaihtoehtoja. Jotain parempaa tarvitaan.
+        if has_adjunct_licensed(precedent, operation) and \
+                head_precedes(precedent, operation) and \
+                not find_shared_heads(precedent, operation):
+            new_operation = Adj(self.states, operation, precedent)
+            return self.do_operations(new_operation)
 
-            # Entäpä adjunktointi?
-            common_features = find_common_features(top_features, prev_features)
-            if common_features and head_precedes(precedent, operation, path) and not find_shared_heads(precedent, operation):
-                shared_features = find_shared_features(top_features, prev_features)
-                new_operation = Adj(self.states, operation, precedent, shared_features=shared_features)
-                new_path = path + [new_operation]
-                new_operation.calculate_free_precedents(new_path)
-                return [new_path, path]
-
-        if len(operation.free_precedents) > 1:
+        found_spec = False
+        prev_features = precedent.features
+        # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
+        matches = find_matches(prev_features, top_features, '=')
+        if matches:
+            new_operation = Spec(self.states, operation, precedent, checked_features=matches)
+            path_ends += self.do_operations(new_operation)
+            found = True
+            found_spec = True
+        elif len(operation.free_precedents) > 1 and not precedent.is_phase_border():
+            # pitkän kantaman spec
+            top_allows_long_distance = allow_long_distance(top_features)
             for distant_precedent in operation.free_precedents[1:]:
-                if phase_border(distant_precedent):
+                if distant_precedent.is_phase_border():
                     break
                 prev_features = distant_precedent.features
+                if not (top_allows_long_distance or allow_long_distance(prev_features)):
+                    continue
                 matches = find_matches(prev_features, top_features, '=')
-                if allow_long_distance(prev_features + top_features) and matches:
-                    new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True)
-                    new_path = path + [new_operation]
-                    new_operation.calculate_free_precedents(new_path)
-                    return [new_path]
-
-        return [path]
-
-    def do_operations(self, path):
-        def add_to_paths(paths, new_operation):
-            new_path = path + [new_operation]
-            new_operation.calculate_free_precedents(new_path)
-            paths += self.do_operations(new_path)
-
-        path_str = route_str(path)
-        debug_parse and print('checking path ', path_str)
-        operation = path[-1]
-        state = operation.state
-        if not state.head:
-            return {path}
-        top_features = operation.features
-
-        paths = []
-        found_spec = False
-        found_comp = False
-        precedent = operation.free_precedents[0] if operation.free_precedents else None
-        if precedent:
+                if matches:
+                    new_operation = Spec(self.states, operation, distant_precedent, checked_features=matches,
+                                         long_distance=True)
+                    path_ends += self.do_operations(new_operation)
+                    found = True
+                    found_spec = True
+                    break
+        # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
+        if not found:
             prev_features = precedent.features
-            # Aluksi spec -mahdollisuus, eli viimeisin sana on head ja nostetaan lähin vapaa edeltävä head argumentiksi
-            matches = find_matches(prev_features, top_features, '=')
-            if matches:
-                add_to_paths(paths, Spec(self.states, operation, precedent, checked_features=matches))
-                found_spec = True
-
-            # Sitten comp -mahdollisuus, eli viimeisin sana on arg ja nostetaan lähin vapaa edeltävä head pääsanaksi
             matches = find_matches(top_features, prev_features, '=')
             if matches:
-                add_to_paths(paths, Comp(self.states, operation, precedent, checked_features=matches))
-                found_comp = True
+                new_operation = Comp(self.states, operation, precedent, checked_features=matches)
+                path_ends += self.do_operations(new_operation)
 
-            # Entäpä adjunktointi?
-            common_features = find_common_features(top_features, prev_features)
-            if common_features and head_precedes(precedent, operation, path) and not find_shared_heads(precedent, operation):
-                shared_features = find_shared_features(top_features, prev_features)
-                add_to_paths(paths, Adj(self.states, operation, precedent, shared_features=shared_features))
+            elif len(operation.free_precedents) > 1 and not precedent.is_phase_border():
+                # pitkän kantaman comp
+                top_allows_long_distance = allow_long_distance(top_features)
+                for distant_precedent in operation.free_precedents[1:]:
+                    if distant_precedent.is_phase_border():
+                        break
+                    prev_features = distant_precedent.features
+                    if not (top_allows_long_distance or allow_long_distance(prev_features)):
+                        continue
+                    matches = find_matches(top_features, prev_features, '=')
+                    if matches:
+                        new_operation = Comp(self.states, operation, distant_precedent, checked_features=matches,
+                                             long_distance=True)
+                        path_ends += self.do_operations(new_operation)
+                        break
 
         # Myös se vaihtoehto että jätetään nostot tekemättä:
-        paths.append(path)
+        if not found_spec:
+            path_ends.append(operation)
 
-        if len(operation.free_precedents) > 1 and not phase_border(precedent):
-            if not found_spec:
-                # pitkän kantaman spec
-                for distant_precedent in operation.free_precedents[1:]:
-                    if phase_border(distant_precedent):
-                        break
-                    prev_features = distant_precedent.features
-                    matches = allow_long_distance(prev_features + top_features) and find_matches(prev_features, top_features, '=')
-                    if matches:
-                        add_to_paths(paths, Spec(self.states, operation, distant_precedent, checked_features=matches, long_distance=True))
-                        break
-            if not found_comp:
-                # pitkän kantaman comp
-                for distant_precedent in operation.free_precedents[1:]:
-                    if phase_border(distant_precedent):
-                        break
-                    prev_features = distant_precedent.features
-                    matches = allow_long_distance(prev_features + top_features) and find_matches(top_features, prev_features, '=')
-                    if matches:
-                        add_to_paths(paths, Comp(self.states, operation, distant_precedent, checked_features=matches, long_distance=True))
-                        break
-        return paths
+        return path_ends
 
     def parse(self, sentence):
         t = time.time()
-        result_trees = []
         sentence = sentence.strip()
         func_parse = sentence.startswith('f(')
-
         self.states.clear()
         self.exporter.reset()
         print('--------------')
@@ -234,31 +186,32 @@ class Parser:
             target_linearisation = self.func_parser.compute_target_linearisation(paths[0])
         else:
             target_linearisation = sentence
-            paths = self._string_parse(sentence)
+            path_ends = self._string_parse(sentence)
 
         print('==============')
         print(f"expecting: '{target_linearisation}'")
-        print(f'{len(paths)} result paths')
+        print(f'{len(path_ends)} result paths')
         good_routes = []
         bad_routes = []
-        for path in paths:
-            linear = linearize(path)
-            operation = path[-1]
-            is_valid = is_fully_connected(path)
+        for operation in list(path_ends):
+            route = operation.as_route()
+            linear = linearize(route)
+            is_valid = is_fully_connected(route)
             if target_linearisation == linear and is_valid:
-                path.append(Done(self.states, operation, msg=f'done: {linear}'))
-                if path not in result_trees:
-                    good_routes.append(path)
-                    print(f'result path: {route_str(path)} is in correct order and fully connected')
-                    if not func_parse:
-                        print('possible derivation: ', '.'.join(operation.state.entry for operation in path))
+                done = Done(self.states, operation, msg=f'done: {linear}')
+                path_ends.append(done)
+                path_ends.remove(operation)
+                good_routes.append(done)
+                print(f'result path: {route_str(route)} is in correct order and fully connected')
+                if not func_parse:
+                    print('possible derivation: ', '.'.join(operation.state.entry for operation in route))
             elif show_bad_routes:
                 #path.append(Fail(self.states, operation, msg=f'fail: {linear}'))
-                bad_routes.append(path)
+                bad_routes.append(operation)
         self.exporter.export_to_kataja(good_routes + bad_routes)  # + bad_routes, good_routes)
         print()
         self.exporter.save_as_json()
-        self.total += len(paths)
+        self.total += len(path_ends)
         self.total_good_routes += len(good_routes)
         print('parse took ', time.time() - t)
         return good_routes

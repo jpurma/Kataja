@@ -212,7 +212,9 @@ class Exporter:
             prev_const = const
         return steps
 
-    def export_to_kataja(self, routes):
+    def export_to_kataja(self, route_ends):
+        routes = [op.as_route() for op in route_ends]
+
         if WEAVE:
             self.web.weave_in(routes)
         routes.sort()

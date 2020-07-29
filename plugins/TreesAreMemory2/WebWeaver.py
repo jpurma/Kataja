@@ -95,7 +95,6 @@ class Web:
         self.routes = []
         self.heads = []
         self.label_count = Counter()
-        print('created a web')
 
     def reset(self):
         print('reset web')

@@ -97,16 +97,8 @@ def find_matches(pos_features, neg_features, neg_signs='-='):
     return matches
 
 
-def phase_border(operation):
-    if not operation:
-        return
-    for feat in operation.features:
-        if feat.name in phase_borders and is_positive(feat):
-            return True
-
-
-def head_precedes(precedent, top, route):
-    for operation in route:
+def head_precedes(precedent, top):
+    for operation in top.as_route():
         if operation.state.head is precedent.state.head:
             return True
         elif operation.state.head is top.state.head:
@@ -117,6 +109,19 @@ def has_loose_adjoining_feature(features):
     for feat in features:
         if feat.name == 'coord':
             return True
+
+
+def has_adjunct_licensed(precedent, operation):
+    for feat in operation.features:
+        if feat.name == 'adjL':
+            found = None
+            for featp in precedent.features:
+                if featp.name == 'a' and featp.value == feat.value:
+                    found = (feat, featp)
+                elif featp.name == 'adjL' and featp.value == feat.value:
+                    return
+            if found:
+                return found
 
 
 def find_common_features(a_features, b_features):
@@ -220,19 +225,17 @@ def linearize(route):
 def is_fully_connected(route):
     heads = set()
     args = set()
+
     for operation in route:
         state = operation.state
-        if state.head and state.head not in args:
+        if state.head not in args:
             heads.add(state.head)
         if state.arg_:
             args.add(state.arg_)
-            if state.arg_ in heads:
-                heads.remove(state.arg_)
+            heads.discard(state.arg_)
         elif state.state_type == ADJUNCT:
-            for item in state.head:
-                if item in heads:
-                    heads.remove(item)
-    if len(heads) < 2:
-        print('is_fully_connected: ', len(heads), heads)
-    return len(heads) < 2
+            head1, head2 = state.head
+            heads.discard(head1)
+            heads.discard(head2)
+    return len(heads) == 1
 

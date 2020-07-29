@@ -1,0 +1,11640 @@
+{
+  "nodes": [
+    {
+      "id": "N0",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "C",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=T",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "mitä",
+      "type": 0,
+      "features": [
+        "C",
+        "=T"
+      ]
+    },
+    {
+      "id": "N1",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "N:prt",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "ld",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "a:prt",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(mitä1)",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "ld",
+        "a:prt"
+      ]
+    },
+    {
+      "id": "N2",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "=p",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "adjL:adv",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "P",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "kohti",
+      "type": 0,
+      "features": [
+        "=p",
+        "adjL:adv",
+        "P"
+      ]
+    },
+    {
+      "id": "N3",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "=N:prt",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "p",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(kohti1)",
+      "type": 0,
+      "features": [
+        "=N:prt",
+        "p",
+        "ld"
+      ]
+    },
+    {
+      "id": "N4",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "N:nom3sg",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "n",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=N:gen",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "Pekka",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "n",
+        "=N:gen"
+      ]
+    },
+    {
+      "id": "N5",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "T",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=v",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=N:nom3sg",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "käveli",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "N6",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "v",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=P",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(käveli1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "puistoa",
+      "type": 0,
+      "features": [
+        "N:prt"
+      ]
+    },
+    {
+      "id": "oli",
+      "type": 0,
+      "features": [
+        "=N:nom3sg",
+        "T",
+        "=v"
+      ]
+    },
+    {
+      "id": "=T:past",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=N:ssa",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(oli1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=T:past",
+        "=N:ssa",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "N:ssa",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "jonossa",
+      "type": 0,
+      "features": [
+        "N:ssa"
+      ]
+    },
+    {
+      "id": "ennen",
+      "type": 0,
+      "features": [
+        "P",
+        "=N:prt"
+      ]
+    },
+    {
+      "id": "Merjaa",
+      "type": 0,
+      "features": [
+        "N:prt"
+      ]
+    },
+    {
+      "id": "=wh",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "ketä",
+      "type": 0,
+      "features": [
+        "C",
+        "=wh"
+      ]
+    },
+    {
+      "id": "wh",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(ketä1)",
+      "type": 0,
+      "features": [
+        "=T",
+        "wh"
+      ]
+    },
+    {
+      "id": "(ketä2)",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "ld"
+      ]
+    },
+    {
+      "id": "N7",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "a:n",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "Kate",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "a:n"
+      ]
+    },
+    {
+      "id": "adjL:n",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "Moss",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "a:n",
+        "adjL:n"
+      ]
+    },
+    {
+      "id": "neg:sg",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "ei",
+      "type": 0,
+      "features": [
+        "neg:sg",
+        "=N:nom3sg",
+        "=N:prt"
+      ]
+    },
+    {
+      "id": "=neg:sg|pl",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "T:nfin",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "voisi",
+      "type": 0,
+      "features": [
+        "=neg:sg|pl",
+        "T:nfin",
+        "=v"
+      ]
+    },
+    {
+      "id": "=T:a",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(voisi1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=T:a"
+      ]
+    },
+    {
+      "id": "T:a",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "elää",
+      "type": 0,
+      "features": [
+        "T:a",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "ilman",
+      "type": 0,
+      "features": [
+        "P",
+        "=p"
+      ]
+    },
+    {
+      "id": "(ilman1)",
+      "type": 0,
+      "features": [
+        "p",
+        "=N:prt"
+      ]
+    },
+    {
+      "id": "N8",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "käsilaukkua",
+      "type": 0,
+      "features": [
+        "N:prt"
+      ]
+    },
+    {
+      "id": "N9",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "=n",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "puisto",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=n"
+      ]
+    },
+    {
+      "id": "=rel",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(puisto1)",
+      "type": 0,
+      "features": [
+        "n",
+        "=rel"
+      ]
+    },
+    {
+      "id": "rel",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "jota",
+      "type": 0,
+      "features": [
+        "rel",
+        "=T"
+      ]
+    },
+    {
+      "id": "(jota1)",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "ld"
+      ]
+    },
+    {
+      "id": "otti",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "=N:acc|prt",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(otti1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:acc|prt",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "N:acc",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "kurssin",
+      "type": 0,
+      "features": [
+        "N:acc"
+      ]
+    },
+    {
+      "id": "a:adv",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "suoraan",
+      "type": 0,
+      "features": [
+        "a:adv"
+      ]
+    },
+    {
+      "id": "lentokenttää",
+      "type": 0,
+      "features": [
+        "N:prt"
+      ]
+    },
+    {
+      "id": "nukkui",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "=N:lla",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(nukkui1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:ssa",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "ihailee",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(ihailee1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "antoi",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "=N:prt|acc",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=N:lle",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(antoi1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt|acc",
+        "=N:lle",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "kirjan",
+      "type": 0,
+      "features": [
+        "N:acc",
+        "=N:gen",
+        "=rel"
+      ]
+    },
+    {
+      "id": "N:lle",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "Merjalle",
+      "type": 0,
+      "features": [
+        "N:lle"
+      ]
+    },
+    {
+      "id": "T:nfinsg",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=neg:sg",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "nukkunut",
+      "type": 0,
+      "features": [
+        "T:nfinsg",
+        "=neg:sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(nukkunut1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:lla"
+      ]
+    },
+    {
+      "id": "ihaile",
+      "type": 0,
+      "features": [
+        "T:nfinsg",
+        "=neg:sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(ihaile1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "antanut",
+      "type": 0,
+      "features": [
+        "T:nfinsg",
+        "=neg:sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(antanut1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:acc|prt",
+        "=N:lle",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "kirjaa",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "=N:gen",
+        "=rel"
+      ]
+    },
+    {
+      "id": "=vk",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "käski",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=vk"
+      ]
+    },
+    {
+      "id": "vk",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=v1",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(käski1)",
+      "type": 0,
+      "features": [
+        "vk",
+        "=T:a",
+        "=v1"
+      ]
+    },
+    {
+      "id": "v1",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(käski2)",
+      "type": 0,
+      "features": [
+        "v1",
+        "ld",
+        "=N:prt"
+      ]
+    },
+    {
+      "id": "N:gen",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "heidän",
+      "type": 0,
+      "features": [
+        "N:gen"
+      ]
+    },
+    {
+      "id": "nukkua",
+      "type": 0,
+      "features": [
+        "T:a",
+        "=N:gen",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "ihailla",
+      "type": 0,
+      "features": [
+        "T:a",
+        "=N:gen",
+        "=v"
+      ]
+    },
+    {
+      "id": "(ihailla1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "=va",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "antaa",
+      "type": 0,
+      "features": [
+        "T:a",
+        "=N:gen",
+        "=va"
+      ]
+    },
+    {
+      "id": "va",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(antaa1)",
+      "type": 0,
+      "features": [
+        "va",
+        "=N:acc|prt",
+        "=N:lle",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "N:lla",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "kuorsaamalla",
+      "type": 0,
+      "features": [
+        "N:lla"
+      ]
+    },
+    {
+      "id": "häiritsee",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(häiritsee1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "heittämällä",
+      "type": 0,
+      "features": [
+        "N:lla"
+      ]
+    },
+    {
+      "id": "häiritse",
+      "type": 0,
+      "features": [
+        "T:nfinsg",
+        "=neg:sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(häiritse1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla"
+      ]
+    },
+    {
+      "id": "käskenyt",
+      "type": 0,
+      "features": [
+        "T:nfinsg",
+        "=neg:sg",
+        "=vk"
+      ]
+    },
+    {
+      "id": "(käskenyt1)",
+      "type": 0,
+      "features": [
+        "vk",
+        "=T:a",
+        "=v1"
+      ]
+    },
+    {
+      "id": "(käskenyt2)",
+      "type": 0,
+      "features": [
+        "v1",
+        "=N:lla",
+        "=N:prt",
+        "ld"
+      ]
+    },
+    {
+      "id": "häiritä",
+      "type": 0,
+      "features": [
+        "T:a",
+        "=N:gen",
+        "=v"
+      ]
+    },
+    {
+      "id": "(häiritä1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "N10",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "kuka",
+      "type": 0,
+      "features": [
+        "C",
+        "=wh"
+      ]
+    },
+    {
+      "id": "(kuka1)",
+      "type": 0,
+      "features": [
+        "=T",
+        "wh"
+      ]
+    },
+    {
+      "id": "(kuka2)",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "ld"
+      ]
+    },
+    {
+      "id": "kenen",
+      "type": 0,
+      "features": [
+        "C",
+        "=wh"
+      ]
+    },
+    {
+      "id": "(kenen1)",
+      "type": 0,
+      "features": [
+        "wh",
+        "=T"
+      ]
+    },
+    {
+      "id": "(kenen2)",
+      "type": 0,
+      "features": [
+        "N:gen"
+      ]
+    },
+    {
+      "id": "=N:een",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "virtaamalla",
+      "type": 0,
+      "features": [
+        "N:lla",
+        "=P",
+        "=N:een"
+      ]
+    },
+    {
+      "id": "N11",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "teoria",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=N:gen",
+        "=rel"
+      ]
+    },
+    {
+      "id": "kumoutui",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "(kumoutui1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "=vs",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "sanoi",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=vs"
+      ]
+    },
+    {
+      "id": "vs",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "=että",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=N:acc",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "=C",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "(sanoi1)",
+      "type": 0,
+      "features": [
+        "vs",
+        "=että",
+        "=N:acc",
+        "=C",
+        "=N:lle",
+        "ld"
+      ]
+    },
+    {
+      "id": "että",
+      "type": 0,
+      "features": [
+        "että",
+        "=T",
+        "=C"
+      ]
+    },
+    {
+      "id": "kertoi",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(kertoi1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=että",
+        "=N:acc",
+        "=C"
+      ]
+    },
+    {
+      "id": "Merja",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "n"
+      ]
+    },
+    {
+      "id": "se",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "a:n",
+        "=n"
+      ]
+    },
+    {
+      "id": "(se1)",
+      "type": 0,
+      "features": [
+        "n",
+        "=että"
+      ]
+    },
+    {
+      "id": "väite",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "adjL:n",
+        "=n"
+      ]
+    },
+    {
+      "id": "(väite1)",
+      "type": 0,
+      "features": [
+        "n",
+        "=että"
+      ]
+    },
+    {
+      "id": "N12",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "N13",
+      "type": 3,
+      "features": []
+    },
+    {
+      "id": "kaupungissa",
+      "type": 0,
+      "features": [
+        "N:ssa"
+      ]
+    },
+    {
+      "id": "asui",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "(asui1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:ssa",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "saavuttaa",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "(saavuttaa1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:acc|prt",
+        "=N:lla",
+        "ld"
+      ]
+    },
+    {
+      "id": "Seine",
+      "type": 0,
+      "features": [
+        "N:nom3sg"
+      ]
+    },
+    {
+      "id": "meren",
+      "type": 0,
+      "features": [
+        "N:acc",
+        "=rel"
+      ]
+    },
+    {
+      "id": "adjL:prt",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "kaupunkia",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "adjL:prt"
+      ]
+    },
+    {
+      "id": "löysi",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(löysi1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=N:acc|prt",
+        "ld"
+      ]
+    },
+    {
+      "id": "Pekkaa",
+      "type": 0,
+      "features": [
+        "N:prt"
+      ]
+    },
+    {
+      "id": "kysyi",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(kysyi1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=että",
+        "=N:prt",
+        "=C"
+      ]
+    },
+    {
+      "id": "kenelle",
+      "type": 0,
+      "features": [
+        "C",
+        "=wh"
+      ]
+    },
+    {
+      "id": "(kenelle1)",
+      "type": 0,
+      "features": [
+        "=T",
+        "wh"
+      ]
+    },
+    {
+      "id": "(kenelle2)",
+      "type": 0,
+      "features": [
+        "N:lle"
+      ]
+    },
+    {
+      "id": "joka",
+      "type": 0,
+      "features": [
+        "rel",
+        "=T"
+      ]
+    },
+    {
+      "id": "(joka1)",
+      "type": 0,
+      "features": [
+        "N:nom3sg"
+      ]
+    },
+    {
+      "id": "=gen",
+      "type": 1,
+      "features": []
+    },
+    {
+      "id": "talo",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=rel",
+        "=gen"
+      ]
+    },
+    {
+      "id": "jonka",
+      "type": 0,
+      "features": [
+        "rel",
+        "=T"
+      ]
+    },
+    {
+      "id": "(jonka1)",
+      "type": 0,
+      "features": [
+        "N:acc"
+      ]
+    },
+    {
+      "id": "talon",
+      "type": 0,
+      "features": [
+        "N:acc",
+        "=rel",
+        "=gen"
+      ]
+    },
+    {
+      "id": "mies",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=rel",
+        "=gen"
+      ]
+    },
+    {
+      "id": "jolle",
+      "type": 0,
+      "features": [
+        "rel",
+        "=T"
+      ]
+    },
+    {
+      "id": "(jolle1)",
+      "type": 0,
+      "features": [
+        "N:lle"
+      ]
+    },
+    {
+      "id": "henkilöä",
+      "type": 0,
+      "features": [
+        "N:prt",
+        "=gen",
+        "=rel"
+      ]
+    },
+    {
+      "id": "henkilö",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=rel",
+        "=gen"
+      ]
+    },
+    {
+      "id": "kasvaa",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "(kasvaa1)",
+      "type": 0,
+      "features": [
+        "v"
+      ]
+    },
+    {
+      "id": "Merjan",
+      "type": 0,
+      "features": [
+        "N:gen",
+        "N:acc"
+      ]
+    },
+    {
+      "id": "virtaa",
+      "type": 0,
+      "features": [
+        "T",
+        "=v",
+        "=N:nom3sg"
+      ]
+    },
+    {
+      "id": "(virtaa1)",
+      "type": 0,
+      "features": [
+        "v",
+        "=P",
+        "ld"
+      ]
+    },
+    {
+      "id": "minne",
+      "type": 0,
+      "features": [
+        "C",
+        "=wh"
+      ]
+    },
+    {
+      "id": "(minne1)",
+      "type": 0,
+      "features": [
+        "=T",
+        "wh"
+      ]
+    },
+    {
+      "id": "N:een",
+      "type": 2,
+      "features": []
+    },
+    {
+      "id": "(minne2)",
+      "type": 0,
+      "features": [
+        "N:een"
+      ]
+    },
+    {
+      "id": "lähellä",
+      "type": 0,
+      "features": [
+        "P",
+        "=N:prt"
+      ]
+    },
+    {
+      "id": "kaupunki",
+      "type": 0,
+      "features": [
+        "N:nom3sg",
+        "=N:gen",
+        "adjL:n",
+        "=rel"
+      ]
+    },
+    {
+      "id": "tuhoutui",
+      "type": 0,
+      "features": [
+        "T",
+        "=N:nom3sg",
+        "=v"
+      ]
+    },
+    {
+      "id": "(tuhoutui1)",
+      "type": 0,
+      "features": [
+        "v"
+      ]
+    },
+    {
+      "id": "mikä",
+      "type": 0,
+      "features": [
+        "C",
+        "=T",
+        "wh"
+      ]
+    },
+    {
+      "id": "(mikä1)",
+      "type": 0,
+      "features": [
+        "wh",
+        "N:nom3sg"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "mitä_C",
+      "type": 2,
+      "start": "mitä",
+      "end": "C"
+    },
+    {
+      "id": "mitä_=T",
+      "type": 1,
+      "start": "mitä",
+      "end": "=T"
+    },
+    {
+      "id": "N0_mitä",
+      "type": 0,
+      "start": "N0",
+      "end": "mitä"
+    },
+    {
+      "id": "(mitä1)_N:prt",
+      "type": 2,
+      "start": "(mitä1)",
+      "end": "N:prt"
+    },
+    {
+      "id": "(mitä1)_ld",
+      "type": 2,
+      "start": "(mitä1)",
+      "end": "ld"
+    },
+    {
+      "id": "(mitä1)_a:prt",
+      "type": 2,
+      "start": "(mitä1)",
+      "end": "a:prt"
+    },
+    {
+      "id": "N1_(mitä1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(mitä1)"
+    },
+    {
+      "id": "kohti_=p",
+      "type": 1,
+      "start": "kohti",
+      "end": "=p"
+    },
+    {
+      "id": "kohti_adjL:adv",
+      "type": 2,
+      "start": "kohti",
+      "end": "adjL:adv"
+    },
+    {
+      "id": "kohti_P",
+      "type": 2,
+      "start": "kohti",
+      "end": "P"
+    },
+    {
+      "id": "N2_kohti",
+      "type": 0,
+      "start": "N2",
+      "end": "kohti"
+    },
+    {
+      "id": "(kohti1)_=N:prt",
+      "type": 1,
+      "start": "(kohti1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(kohti1)_p",
+      "type": 2,
+      "start": "(kohti1)",
+      "end": "p"
+    },
+    {
+      "id": "(kohti1)_ld",
+      "type": 2,
+      "start": "(kohti1)",
+      "end": "ld"
+    },
+    {
+      "id": "N3_(kohti1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "N3_N1",
+      "type": 4,
+      "start": "N3",
+      "end": "N1"
+    },
+    {
+      "id": "N:prt_=N:prt",
+      "type": 3,
+      "start": "N:prt",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N2_N3",
+      "type": 4,
+      "start": "N2",
+      "end": "N3"
+    },
+    {
+      "id": "p_=p",
+      "type": 3,
+      "start": "p",
+      "end": "=p"
+    },
+    {
+      "id": "Pekka_N:nom3sg",
+      "type": 2,
+      "start": "Pekka",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "Pekka_n",
+      "type": 2,
+      "start": "Pekka",
+      "end": "n"
+    },
+    {
+      "id": "Pekka_=N:gen",
+      "type": 1,
+      "start": "Pekka",
+      "end": "=N:gen"
+    },
+    {
+      "id": "N4_Pekka",
+      "type": 0,
+      "start": "N4",
+      "end": "Pekka"
+    },
+    {
+      "id": "käveli_T",
+      "type": 2,
+      "start": "käveli",
+      "end": "T"
+    },
+    {
+      "id": "käveli_=v",
+      "type": 1,
+      "start": "käveli",
+      "end": "=v"
+    },
+    {
+      "id": "käveli_=N:nom3sg",
+      "type": 1,
+      "start": "käveli",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N5_käveli",
+      "type": 0,
+      "start": "N5",
+      "end": "käveli"
+    },
+    {
+      "id": "N5_N4",
+      "type": 4,
+      "start": "N5",
+      "end": "N4"
+    },
+    {
+      "id": "N:nom3sg_=N:nom3sg",
+      "type": 3,
+      "start": "N:nom3sg",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "(käveli1)_v",
+      "type": 2,
+      "start": "(käveli1)",
+      "end": "v"
+    },
+    {
+      "id": "(käveli1)_=P",
+      "type": 1,
+      "start": "(käveli1)",
+      "end": "=P"
+    },
+    {
+      "id": "(käveli1)_ld",
+      "type": 2,
+      "start": "(käveli1)",
+      "end": "ld"
+    },
+    {
+      "id": "N6_(käveli1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(käveli1)"
+    },
+    {
+      "id": "N6_N2",
+      "type": 4,
+      "start": "N6",
+      "end": "N2"
+    },
+    {
+      "id": "P_=P",
+      "type": 3,
+      "start": "P",
+      "end": "=P"
+    },
+    {
+      "id": "N5_N6",
+      "type": 4,
+      "start": "N5",
+      "end": "N6"
+    },
+    {
+      "id": "v_=v",
+      "type": 3,
+      "start": "v",
+      "end": "=v"
+    },
+    {
+      "id": "N0_N5",
+      "type": 4,
+      "start": "N0",
+      "end": "N5"
+    },
+    {
+      "id": "T_=T",
+      "type": 3,
+      "start": "T",
+      "end": "=T"
+    },
+    {
+      "id": "N2_(kohti1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "N2_N0",
+      "type": 4,
+      "start": "N2",
+      "end": "N0"
+    },
+    {
+      "id": "N4_käveli",
+      "type": 0,
+      "start": "N4",
+      "end": "käveli"
+    },
+    {
+      "id": "N0_Pekka",
+      "type": 0,
+      "start": "N0",
+      "end": "Pekka"
+    },
+    {
+      "id": "N1_käveli",
+      "type": 0,
+      "start": "N1",
+      "end": "käveli"
+    },
+    {
+      "id": "N1_N0",
+      "type": 4,
+      "start": "N1",
+      "end": "N0"
+    },
+    {
+      "id": "N2_(käveli1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(käveli1)"
+    },
+    {
+      "id": "N3_kohti",
+      "type": 0,
+      "start": "N3",
+      "end": "kohti"
+    },
+    {
+      "id": "N4_(kohti1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "puistoa_N:prt",
+      "type": 2,
+      "start": "puistoa",
+      "end": "N:prt"
+    },
+    {
+      "id": "N5_puistoa",
+      "type": 0,
+      "start": "N5",
+      "end": "puistoa"
+    },
+    {
+      "id": "N4_N5",
+      "type": 4,
+      "start": "N4",
+      "end": "N5"
+    },
+    {
+      "id": "N3_N4",
+      "type": 4,
+      "start": "N3",
+      "end": "N4"
+    },
+    {
+      "id": "N1_N2",
+      "type": 4,
+      "start": "N1",
+      "end": "N2"
+    },
+    {
+      "id": "oli_=N:nom3sg",
+      "type": 1,
+      "start": "oli",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "oli_T",
+      "type": 2,
+      "start": "oli",
+      "end": "T"
+    },
+    {
+      "id": "oli_=v",
+      "type": 1,
+      "start": "oli",
+      "end": "=v"
+    },
+    {
+      "id": "N1_oli",
+      "type": 0,
+      "start": "N1",
+      "end": "oli"
+    },
+    {
+      "id": "(oli1)_v",
+      "type": 2,
+      "start": "(oli1)",
+      "end": "v"
+    },
+    {
+      "id": "(oli1)_=T:past",
+      "type": 1,
+      "start": "(oli1)",
+      "end": "=T:past"
+    },
+    {
+      "id": "(oli1)_=N:ssa",
+      "type": 1,
+      "start": "(oli1)",
+      "end": "=N:ssa"
+    },
+    {
+      "id": "(oli1)_=P",
+      "type": 1,
+      "start": "(oli1)",
+      "end": "=P"
+    },
+    {
+      "id": "(oli1)_ld",
+      "type": 2,
+      "start": "(oli1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(oli1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(oli1)"
+    },
+    {
+      "id": "jonossa_N:ssa",
+      "type": 2,
+      "start": "jonossa",
+      "end": "N:ssa"
+    },
+    {
+      "id": "N3_jonossa",
+      "type": 0,
+      "start": "N3",
+      "end": "jonossa"
+    },
+    {
+      "id": "N:ssa_=N:ssa",
+      "type": 3,
+      "start": "N:ssa",
+      "end": "=N:ssa"
+    },
+    {
+      "id": "ennen_P",
+      "type": 2,
+      "start": "ennen",
+      "end": "P"
+    },
+    {
+      "id": "ennen_=N:prt",
+      "type": 1,
+      "start": "ennen",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N4_ennen",
+      "type": 0,
+      "start": "N4",
+      "end": "ennen"
+    },
+    {
+      "id": "Merjaa_N:prt",
+      "type": 2,
+      "start": "Merjaa",
+      "end": "N:prt"
+    },
+    {
+      "id": "N5_Merjaa",
+      "type": 0,
+      "start": "N5",
+      "end": "Merjaa"
+    },
+    {
+      "id": "N2_N4",
+      "type": 4,
+      "start": "N2",
+      "end": "N4"
+    },
+    {
+      "id": "ketä_C",
+      "type": 2,
+      "start": "ketä",
+      "end": "C"
+    },
+    {
+      "id": "ketä_=wh",
+      "type": 1,
+      "start": "ketä",
+      "end": "=wh"
+    },
+    {
+      "id": "N0_ketä",
+      "type": 0,
+      "start": "N0",
+      "end": "ketä"
+    },
+    {
+      "id": "(ketä1)_=T",
+      "type": 1,
+      "start": "(ketä1)",
+      "end": "=T"
+    },
+    {
+      "id": "(ketä1)_wh",
+      "type": 2,
+      "start": "(ketä1)",
+      "end": "wh"
+    },
+    {
+      "id": "N1_(ketä1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(ketä1)"
+    },
+    {
+      "id": "(ketä2)_N:prt",
+      "type": 2,
+      "start": "(ketä2)",
+      "end": "N:prt"
+    },
+    {
+      "id": "(ketä2)_ld",
+      "type": 2,
+      "start": "(ketä2)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(ketä2)",
+      "type": 0,
+      "start": "N2",
+      "end": "(ketä2)"
+    },
+    {
+      "id": "N3_ennen",
+      "type": 0,
+      "start": "N3",
+      "end": "ennen"
+    },
+    {
+      "id": "N3_N2",
+      "type": 4,
+      "start": "N3",
+      "end": "N2"
+    },
+    {
+      "id": "N5_oli",
+      "type": 0,
+      "start": "N5",
+      "end": "oli"
+    },
+    {
+      "id": "N6_(oli1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(oli1)"
+    },
+    {
+      "id": "N6_N3",
+      "type": 4,
+      "start": "N6",
+      "end": "N3"
+    },
+    {
+      "id": "N7_jonossa",
+      "type": 0,
+      "start": "N7",
+      "end": "jonossa"
+    },
+    {
+      "id": "N6_N7",
+      "type": 4,
+      "start": "N6",
+      "end": "N7"
+    },
+    {
+      "id": "N1_N5",
+      "type": 4,
+      "start": "N1",
+      "end": "N5"
+    },
+    {
+      "id": "N0_N1",
+      "type": 4,
+      "start": "N0",
+      "end": "N1"
+    },
+    {
+      "id": "wh_=wh",
+      "type": 3,
+      "start": "wh",
+      "end": "=wh"
+    },
+    {
+      "id": "Kate_N:nom3sg",
+      "type": 2,
+      "start": "Kate",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "Kate_a:n",
+      "type": 2,
+      "start": "Kate",
+      "end": "a:n"
+    },
+    {
+      "id": "N0_Kate",
+      "type": 0,
+      "start": "N0",
+      "end": "Kate"
+    },
+    {
+      "id": "Moss_N:nom3sg",
+      "type": 2,
+      "start": "Moss",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "Moss_a:n",
+      "type": 2,
+      "start": "Moss",
+      "end": "a:n"
+    },
+    {
+      "id": "Moss_adjL:n",
+      "type": 2,
+      "start": "Moss",
+      "end": "adjL:n"
+    },
+    {
+      "id": "N1_Moss",
+      "type": 0,
+      "start": "N1",
+      "end": "Moss"
+    },
+    {
+      "id": "ei_neg:sg",
+      "type": 2,
+      "start": "ei",
+      "end": "neg:sg"
+    },
+    {
+      "id": "ei_=N:nom3sg",
+      "type": 1,
+      "start": "ei",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "ei_=N:prt",
+      "type": 1,
+      "start": "ei",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N2_ei",
+      "type": 0,
+      "start": "N2",
+      "end": "ei"
+    },
+    {
+      "id": "N2_N1",
+      "type": 4,
+      "start": "N2",
+      "end": "N1"
+    },
+    {
+      "id": "voisi_=neg:sg|pl",
+      "type": 1,
+      "start": "voisi",
+      "end": "=neg:sg|pl"
+    },
+    {
+      "id": "voisi_T:nfin",
+      "type": 2,
+      "start": "voisi",
+      "end": "T:nfin"
+    },
+    {
+      "id": "voisi_=v",
+      "type": 1,
+      "start": "voisi",
+      "end": "=v"
+    },
+    {
+      "id": "N3_voisi",
+      "type": 0,
+      "start": "N3",
+      "end": "voisi"
+    },
+    {
+      "id": "neg:sg_=neg:sg|pl",
+      "type": 3,
+      "start": "neg:sg",
+      "end": "=neg:sg|pl"
+    },
+    {
+      "id": "(voisi1)_v",
+      "type": 2,
+      "start": "(voisi1)",
+      "end": "v"
+    },
+    {
+      "id": "(voisi1)_=T:a",
+      "type": 1,
+      "start": "(voisi1)",
+      "end": "=T:a"
+    },
+    {
+      "id": "N4_(voisi1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(voisi1)"
+    },
+    {
+      "id": "elää_T:a",
+      "type": 2,
+      "start": "elää",
+      "end": "T:a"
+    },
+    {
+      "id": "elää_=P",
+      "type": 1,
+      "start": "elää",
+      "end": "=P"
+    },
+    {
+      "id": "elää_ld",
+      "type": 2,
+      "start": "elää",
+      "end": "ld"
+    },
+    {
+      "id": "N5_elää",
+      "type": 0,
+      "start": "N5",
+      "end": "elää"
+    },
+    {
+      "id": "ilman_P",
+      "type": 2,
+      "start": "ilman",
+      "end": "P"
+    },
+    {
+      "id": "ilman_=p",
+      "type": 1,
+      "start": "ilman",
+      "end": "=p"
+    },
+    {
+      "id": "N6_ilman",
+      "type": 0,
+      "start": "N6",
+      "end": "ilman"
+    },
+    {
+      "id": "(ilman1)_p",
+      "type": 2,
+      "start": "(ilman1)",
+      "end": "p"
+    },
+    {
+      "id": "(ilman1)_=N:prt",
+      "type": 1,
+      "start": "(ilman1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N7_(ilman1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(ilman1)"
+    },
+    {
+      "id": "käsilaukkua_N:prt",
+      "type": 2,
+      "start": "käsilaukkua",
+      "end": "N:prt"
+    },
+    {
+      "id": "N8_käsilaukkua",
+      "type": 0,
+      "start": "N8",
+      "end": "käsilaukkua"
+    },
+    {
+      "id": "N7_N8",
+      "type": 4,
+      "start": "N7",
+      "end": "N8"
+    },
+    {
+      "id": "T:a_=T:a",
+      "type": 3,
+      "start": "T:a",
+      "end": "=T:a"
+    },
+    {
+      "id": "N2_ilman",
+      "type": 0,
+      "start": "N2",
+      "end": "ilman"
+    },
+    {
+      "id": "N3_(ilman1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(ilman1)"
+    },
+    {
+      "id": "N4_Kate",
+      "type": 0,
+      "start": "N4",
+      "end": "Kate"
+    },
+    {
+      "id": "N5_Moss",
+      "type": 0,
+      "start": "N5",
+      "end": "Moss"
+    },
+    {
+      "id": "N6_ei",
+      "type": 0,
+      "start": "N6",
+      "end": "ei"
+    },
+    {
+      "id": "N6_N4",
+      "type": 4,
+      "start": "N6",
+      "end": "N4"
+    },
+    {
+      "id": "N6_N5",
+      "type": 4,
+      "start": "N6",
+      "end": "N5"
+    },
+    {
+      "id": "N7_voisi",
+      "type": 0,
+      "start": "N7",
+      "end": "voisi"
+    },
+    {
+      "id": "N7_N6",
+      "type": 4,
+      "start": "N7",
+      "end": "N6"
+    },
+    {
+      "id": "N8_(voisi1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(voisi1)"
+    },
+    {
+      "id": "N9_elää",
+      "type": 0,
+      "start": "N9",
+      "end": "elää"
+    },
+    {
+      "id": "N9_N2",
+      "type": 4,
+      "start": "N9",
+      "end": "N2"
+    },
+    {
+      "id": "N8_N9",
+      "type": 4,
+      "start": "N8",
+      "end": "N9"
+    },
+    {
+      "id": "N0_N7",
+      "type": 4,
+      "start": "N0",
+      "end": "N7"
+    },
+    {
+      "id": "T:nfin_=T",
+      "type": 3,
+      "start": "T:nfin",
+      "end": "=T"
+    },
+    {
+      "id": "N0_N9",
+      "type": 4,
+      "start": "N0",
+      "end": "N9"
+    },
+    {
+      "id": "T:a_=T",
+      "type": 3,
+      "start": "T:a",
+      "end": "=T"
+    },
+    {
+      "id": "N6_N1",
+      "type": 4,
+      "start": "N6",
+      "end": "N1"
+    },
+    {
+      "id": "puisto_N:nom3sg",
+      "type": 2,
+      "start": "puisto",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "puisto_=n",
+      "type": 1,
+      "start": "puisto",
+      "end": "=n"
+    },
+    {
+      "id": "N0_puisto",
+      "type": 0,
+      "start": "N0",
+      "end": "puisto"
+    },
+    {
+      "id": "(puisto1)_n",
+      "type": 2,
+      "start": "(puisto1)",
+      "end": "n"
+    },
+    {
+      "id": "(puisto1)_=rel",
+      "type": 1,
+      "start": "(puisto1)",
+      "end": "=rel"
+    },
+    {
+      "id": "N1_(puisto1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(puisto1)"
+    },
+    {
+      "id": "jota_rel",
+      "type": 2,
+      "start": "jota",
+      "end": "rel"
+    },
+    {
+      "id": "jota_=T",
+      "type": 1,
+      "start": "jota",
+      "end": "=T"
+    },
+    {
+      "id": "N2_jota",
+      "type": 0,
+      "start": "N2",
+      "end": "jota"
+    },
+    {
+      "id": "(jota1)_N:prt",
+      "type": 2,
+      "start": "(jota1)",
+      "end": "N:prt"
+    },
+    {
+      "id": "(jota1)_ld",
+      "type": 2,
+      "start": "(jota1)",
+      "end": "ld"
+    },
+    {
+      "id": "N3_(jota1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(jota1)"
+    },
+    {
+      "id": "N4_kohti",
+      "type": 0,
+      "start": "N4",
+      "end": "kohti"
+    },
+    {
+      "id": "N5_(kohti1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "N5_N3",
+      "type": 4,
+      "start": "N5",
+      "end": "N3"
+    },
+    {
+      "id": "N6_Pekka",
+      "type": 0,
+      "start": "N6",
+      "end": "Pekka"
+    },
+    {
+      "id": "N7_käveli",
+      "type": 0,
+      "start": "N7",
+      "end": "käveli"
+    },
+    {
+      "id": "N8_(käveli1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(käveli1)"
+    },
+    {
+      "id": "N8_N4",
+      "type": 4,
+      "start": "N8",
+      "end": "N4"
+    },
+    {
+      "id": "N2_N7",
+      "type": 4,
+      "start": "N2",
+      "end": "N7"
+    },
+    {
+      "id": "rel_=rel",
+      "type": 3,
+      "start": "rel",
+      "end": "=rel"
+    },
+    {
+      "id": "n_=n",
+      "type": 3,
+      "start": "n",
+      "end": "=n"
+    },
+    {
+      "id": "N4_jota",
+      "type": 0,
+      "start": "N4",
+      "end": "jota"
+    },
+    {
+      "id": "N5_(jota1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(jota1)"
+    },
+    {
+      "id": "otti_T",
+      "type": 2,
+      "start": "otti",
+      "end": "T"
+    },
+    {
+      "id": "otti_=N:nom3sg",
+      "type": 1,
+      "start": "otti",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "otti_=v",
+      "type": 1,
+      "start": "otti",
+      "end": "=v"
+    },
+    {
+      "id": "N1_otti",
+      "type": 0,
+      "start": "N1",
+      "end": "otti"
+    },
+    {
+      "id": "(otti1)_v",
+      "type": 2,
+      "start": "(otti1)",
+      "end": "v"
+    },
+    {
+      "id": "(otti1)_=N:acc|prt",
+      "type": 1,
+      "start": "(otti1)",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "(otti1)_=P",
+      "type": 1,
+      "start": "(otti1)",
+      "end": "=P"
+    },
+    {
+      "id": "(otti1)_ld",
+      "type": 2,
+      "start": "(otti1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(otti1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(otti1)"
+    },
+    {
+      "id": "kurssin_N:acc",
+      "type": 2,
+      "start": "kurssin",
+      "end": "N:acc"
+    },
+    {
+      "id": "N3_kurssin",
+      "type": 0,
+      "start": "N3",
+      "end": "kurssin"
+    },
+    {
+      "id": "N:acc_=N:acc|prt",
+      "type": 3,
+      "start": "N:acc",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "suoraan_a:adv",
+      "type": 2,
+      "start": "suoraan",
+      "end": "a:adv"
+    },
+    {
+      "id": "N4_suoraan",
+      "type": 0,
+      "start": "N4",
+      "end": "suoraan"
+    },
+    {
+      "id": "N5_kohti",
+      "type": 0,
+      "start": "N5",
+      "end": "kohti"
+    },
+    {
+      "id": "N6_(kohti1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "lentokenttää_N:prt",
+      "type": 2,
+      "start": "lentokenttää",
+      "end": "N:prt"
+    },
+    {
+      "id": "N7_lentokenttää",
+      "type": 0,
+      "start": "N7",
+      "end": "lentokenttää"
+    },
+    {
+      "id": "N4_N6",
+      "type": 4,
+      "start": "N4",
+      "end": "N6"
+    },
+    {
+      "id": "N2_N5",
+      "type": 4,
+      "start": "N2",
+      "end": "N5"
+    },
+    {
+      "id": "N:prt_=N:acc|prt",
+      "type": 3,
+      "start": "N:prt",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "N5_lentokenttää",
+      "type": 0,
+      "start": "N5",
+      "end": "lentokenttää"
+    },
+    {
+      "id": "N6_kohti",
+      "type": 0,
+      "start": "N6",
+      "end": "kohti"
+    },
+    {
+      "id": "N7_(kohti1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "N7_N5",
+      "type": 4,
+      "start": "N7",
+      "end": "N5"
+    },
+    {
+      "id": "N2_N6",
+      "type": 4,
+      "start": "N2",
+      "end": "N6"
+    },
+    {
+      "id": "N4_lentokenttää",
+      "type": 0,
+      "start": "N4",
+      "end": "lentokenttää"
+    },
+    {
+      "id": "N5_suoraan",
+      "type": 0,
+      "start": "N5",
+      "end": "suoraan"
+    },
+    {
+      "id": "N7_N4",
+      "type": 4,
+      "start": "N7",
+      "end": "N4"
+    },
+    {
+      "id": "N5_N7",
+      "type": 4,
+      "start": "N5",
+      "end": "N7"
+    },
+    {
+      "id": "N6_suoraan",
+      "type": 0,
+      "start": "N6",
+      "end": "suoraan"
+    },
+    {
+      "id": "N2_suoraan",
+      "type": 0,
+      "start": "N2",
+      "end": "suoraan"
+    },
+    {
+      "id": "N4_N1",
+      "type": 4,
+      "start": "N4",
+      "end": "N1"
+    },
+    {
+      "id": "N5_Pekka",
+      "type": 0,
+      "start": "N5",
+      "end": "Pekka"
+    },
+    {
+      "id": "N6_otti",
+      "type": 0,
+      "start": "N6",
+      "end": "otti"
+    },
+    {
+      "id": "N7_(otti1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(otti1)"
+    },
+    {
+      "id": "N7_N2",
+      "type": 4,
+      "start": "N7",
+      "end": "N2"
+    },
+    {
+      "id": "N7_N3",
+      "type": 4,
+      "start": "N7",
+      "end": "N3"
+    },
+    {
+      "id": "N8_kurssin",
+      "type": 0,
+      "start": "N8",
+      "end": "kurssin"
+    },
+    {
+      "id": "N0_N6",
+      "type": 4,
+      "start": "N0",
+      "end": "N6"
+    },
+    {
+      "id": "N3_N0",
+      "type": 4,
+      "start": "N3",
+      "end": "N0"
+    },
+    {
+      "id": "N5_otti",
+      "type": 0,
+      "start": "N5",
+      "end": "otti"
+    },
+    {
+      "id": "N7_N1",
+      "type": 4,
+      "start": "N7",
+      "end": "N1"
+    },
+    {
+      "id": "N6_(otti1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(otti1)"
+    },
+    {
+      "id": "N6_N0",
+      "type": 4,
+      "start": "N6",
+      "end": "N0"
+    },
+    {
+      "id": "N0_suoraan",
+      "type": 0,
+      "start": "N0",
+      "end": "suoraan"
+    },
+    {
+      "id": "N1_mitä",
+      "type": 0,
+      "start": "N1",
+      "end": "mitä"
+    },
+    {
+      "id": "N7_kurssin",
+      "type": 0,
+      "start": "N7",
+      "end": "kurssin"
+    },
+    {
+      "id": "N2_(mitä1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(mitä1)"
+    },
+    {
+      "id": "N4_N2",
+      "type": 4,
+      "start": "N4",
+      "end": "N2"
+    },
+    {
+      "id": "N1_N6",
+      "type": 4,
+      "start": "N1",
+      "end": "N6"
+    },
+    {
+      "id": "nukkui_T",
+      "type": 2,
+      "start": "nukkui",
+      "end": "T"
+    },
+    {
+      "id": "nukkui_=v",
+      "type": 1,
+      "start": "nukkui",
+      "end": "=v"
+    },
+    {
+      "id": "nukkui_=N:nom3sg",
+      "type": 1,
+      "start": "nukkui",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N1_nukkui",
+      "type": 0,
+      "start": "N1",
+      "end": "nukkui"
+    },
+    {
+      "id": "(nukkui1)_v",
+      "type": 2,
+      "start": "(nukkui1)",
+      "end": "v"
+    },
+    {
+      "id": "(nukkui1)_=N:ssa",
+      "type": 1,
+      "start": "(nukkui1)",
+      "end": "=N:ssa"
+    },
+    {
+      "id": "(nukkui1)_=N:lla",
+      "type": 1,
+      "start": "(nukkui1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(nukkui1)_ld",
+      "type": 2,
+      "start": "(nukkui1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(nukkui1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(nukkui1)"
+    },
+    {
+      "id": "ihailee_T",
+      "type": 2,
+      "start": "ihailee",
+      "end": "T"
+    },
+    {
+      "id": "ihailee_=N:nom3sg",
+      "type": 1,
+      "start": "ihailee",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "ihailee_=v",
+      "type": 1,
+      "start": "ihailee",
+      "end": "=v"
+    },
+    {
+      "id": "N1_ihailee",
+      "type": 0,
+      "start": "N1",
+      "end": "ihailee"
+    },
+    {
+      "id": "(ihailee1)_v",
+      "type": 2,
+      "start": "(ihailee1)",
+      "end": "v"
+    },
+    {
+      "id": "(ihailee1)_=N:prt",
+      "type": 1,
+      "start": "(ihailee1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(ihailee1)_=N:lla",
+      "type": 1,
+      "start": "(ihailee1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(ihailee1)_ld",
+      "type": 2,
+      "start": "(ihailee1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(ihailee1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(ihailee1)"
+    },
+    {
+      "id": "N3_Merjaa",
+      "type": 0,
+      "start": "N3",
+      "end": "Merjaa"
+    },
+    {
+      "id": "antoi_T",
+      "type": 2,
+      "start": "antoi",
+      "end": "T"
+    },
+    {
+      "id": "antoi_=v",
+      "type": 1,
+      "start": "antoi",
+      "end": "=v"
+    },
+    {
+      "id": "antoi_=N:nom3sg",
+      "type": 1,
+      "start": "antoi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N1_antoi",
+      "type": 0,
+      "start": "N1",
+      "end": "antoi"
+    },
+    {
+      "id": "(antoi1)_v",
+      "type": 2,
+      "start": "(antoi1)",
+      "end": "v"
+    },
+    {
+      "id": "(antoi1)_=N:prt|acc",
+      "type": 1,
+      "start": "(antoi1)",
+      "end": "=N:prt|acc"
+    },
+    {
+      "id": "(antoi1)_=N:lle",
+      "type": 1,
+      "start": "(antoi1)",
+      "end": "=N:lle"
+    },
+    {
+      "id": "(antoi1)_=N:lla",
+      "type": 1,
+      "start": "(antoi1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(antoi1)_ld",
+      "type": 2,
+      "start": "(antoi1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(antoi1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "kirjan_N:acc",
+      "type": 2,
+      "start": "kirjan",
+      "end": "N:acc"
+    },
+    {
+      "id": "kirjan_=N:gen",
+      "type": 1,
+      "start": "kirjan",
+      "end": "=N:gen"
+    },
+    {
+      "id": "kirjan_=rel",
+      "type": 1,
+      "start": "kirjan",
+      "end": "=rel"
+    },
+    {
+      "id": "N3_kirjan",
+      "type": 0,
+      "start": "N3",
+      "end": "kirjan"
+    },
+    {
+      "id": "N:acc_=N:prt|acc",
+      "type": 3,
+      "start": "N:acc",
+      "end": "=N:prt|acc"
+    },
+    {
+      "id": "Merjalle_N:lle",
+      "type": 2,
+      "start": "Merjalle",
+      "end": "N:lle"
+    },
+    {
+      "id": "N4_Merjalle",
+      "type": 0,
+      "start": "N4",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N:lle_=N:lle",
+      "type": 3,
+      "start": "N:lle",
+      "end": "=N:lle"
+    },
+    {
+      "id": "N1_ei",
+      "type": 0,
+      "start": "N1",
+      "end": "ei"
+    },
+    {
+      "id": "nukkunut_T:nfinsg",
+      "type": 2,
+      "start": "nukkunut",
+      "end": "T:nfinsg"
+    },
+    {
+      "id": "nukkunut_=neg:sg",
+      "type": 1,
+      "start": "nukkunut",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "nukkunut_=v",
+      "type": 1,
+      "start": "nukkunut",
+      "end": "=v"
+    },
+    {
+      "id": "N2_nukkunut",
+      "type": 0,
+      "start": "N2",
+      "end": "nukkunut"
+    },
+    {
+      "id": "neg:sg_=neg:sg",
+      "type": 3,
+      "start": "neg:sg",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "(nukkunut1)_v",
+      "type": 2,
+      "start": "(nukkunut1)",
+      "end": "v"
+    },
+    {
+      "id": "(nukkunut1)_=N:lla",
+      "type": 1,
+      "start": "(nukkunut1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "N3_(nukkunut1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(nukkunut1)"
+    },
+    {
+      "id": "ihaile_T:nfinsg",
+      "type": 2,
+      "start": "ihaile",
+      "end": "T:nfinsg"
+    },
+    {
+      "id": "ihaile_=neg:sg",
+      "type": 1,
+      "start": "ihaile",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "ihaile_=v",
+      "type": 1,
+      "start": "ihaile",
+      "end": "=v"
+    },
+    {
+      "id": "N2_ihaile",
+      "type": 0,
+      "start": "N2",
+      "end": "ihaile"
+    },
+    {
+      "id": "(ihaile1)_v",
+      "type": 2,
+      "start": "(ihaile1)",
+      "end": "v"
+    },
+    {
+      "id": "(ihaile1)_=N:prt",
+      "type": 1,
+      "start": "(ihaile1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(ihaile1)_=N:lla",
+      "type": 1,
+      "start": "(ihaile1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(ihaile1)_ld",
+      "type": 2,
+      "start": "(ihaile1)",
+      "end": "ld"
+    },
+    {
+      "id": "N3_(ihaile1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(ihaile1)"
+    },
+    {
+      "id": "N4_Merjaa",
+      "type": 0,
+      "start": "N4",
+      "end": "Merjaa"
+    },
+    {
+      "id": "antanut_T:nfinsg",
+      "type": 2,
+      "start": "antanut",
+      "end": "T:nfinsg"
+    },
+    {
+      "id": "antanut_=neg:sg",
+      "type": 1,
+      "start": "antanut",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "antanut_=v",
+      "type": 1,
+      "start": "antanut",
+      "end": "=v"
+    },
+    {
+      "id": "N2_antanut",
+      "type": 0,
+      "start": "N2",
+      "end": "antanut"
+    },
+    {
+      "id": "(antanut1)_v",
+      "type": 2,
+      "start": "(antanut1)",
+      "end": "v"
+    },
+    {
+      "id": "(antanut1)_=N:acc|prt",
+      "type": 1,
+      "start": "(antanut1)",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "(antanut1)_=N:lle",
+      "type": 1,
+      "start": "(antanut1)",
+      "end": "=N:lle"
+    },
+    {
+      "id": "(antanut1)_=N:lla",
+      "type": 1,
+      "start": "(antanut1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(antanut1)_ld",
+      "type": 2,
+      "start": "(antanut1)",
+      "end": "ld"
+    },
+    {
+      "id": "N3_(antanut1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(antanut1)"
+    },
+    {
+      "id": "kirjaa_N:prt",
+      "type": 2,
+      "start": "kirjaa",
+      "end": "N:prt"
+    },
+    {
+      "id": "kirjaa_=N:gen",
+      "type": 1,
+      "start": "kirjaa",
+      "end": "=N:gen"
+    },
+    {
+      "id": "kirjaa_=rel",
+      "type": 1,
+      "start": "kirjaa",
+      "end": "=rel"
+    },
+    {
+      "id": "N4_kirjaa",
+      "type": 0,
+      "start": "N4",
+      "end": "kirjaa"
+    },
+    {
+      "id": "N5_Merjalle",
+      "type": 0,
+      "start": "N5",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N3_N5",
+      "type": 4,
+      "start": "N3",
+      "end": "N5"
+    },
+    {
+      "id": "käski_T",
+      "type": 2,
+      "start": "käski",
+      "end": "T"
+    },
+    {
+      "id": "käski_=N:nom3sg",
+      "type": 1,
+      "start": "käski",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "käski_=vk",
+      "type": 1,
+      "start": "käski",
+      "end": "=vk"
+    },
+    {
+      "id": "N1_käski",
+      "type": 0,
+      "start": "N1",
+      "end": "käski"
+    },
+    {
+      "id": "(käski1)_vk",
+      "type": 2,
+      "start": "(käski1)",
+      "end": "vk"
+    },
+    {
+      "id": "(käski1)_=T:a",
+      "type": 1,
+      "start": "(käski1)",
+      "end": "=T:a"
+    },
+    {
+      "id": "(käski1)_=v1",
+      "type": 1,
+      "start": "(käski1)",
+      "end": "=v1"
+    },
+    {
+      "id": "N2_(käski1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(käski1)"
+    },
+    {
+      "id": "(käski2)_v1",
+      "type": 2,
+      "start": "(käski2)",
+      "end": "v1"
+    },
+    {
+      "id": "(käski2)_ld",
+      "type": 2,
+      "start": "(käski2)",
+      "end": "ld"
+    },
+    {
+      "id": "(käski2)_=N:prt",
+      "type": 1,
+      "start": "(käski2)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N3_(käski2)",
+      "type": 0,
+      "start": "N3",
+      "end": "(käski2)"
+    },
+    {
+      "id": "v1_=v1",
+      "type": 3,
+      "start": "v1",
+      "end": "=v1"
+    },
+    {
+      "id": "heidän_N:gen",
+      "type": 2,
+      "start": "heidän",
+      "end": "N:gen"
+    },
+    {
+      "id": "N4_heidän",
+      "type": 0,
+      "start": "N4",
+      "end": "heidän"
+    },
+    {
+      "id": "nukkua_T:a",
+      "type": 2,
+      "start": "nukkua",
+      "end": "T:a"
+    },
+    {
+      "id": "nukkua_=N:gen",
+      "type": 1,
+      "start": "nukkua",
+      "end": "=N:gen"
+    },
+    {
+      "id": "nukkua_=N:lla",
+      "type": 1,
+      "start": "nukkua",
+      "end": "=N:lla"
+    },
+    {
+      "id": "nukkua_ld",
+      "type": 2,
+      "start": "nukkua",
+      "end": "ld"
+    },
+    {
+      "id": "N5_nukkua",
+      "type": 0,
+      "start": "N5",
+      "end": "nukkua"
+    },
+    {
+      "id": "N:gen_=N:gen",
+      "type": 3,
+      "start": "N:gen",
+      "end": "=N:gen"
+    },
+    {
+      "id": "vk_=vk",
+      "type": 3,
+      "start": "vk",
+      "end": "=vk"
+    },
+    {
+      "id": "ihailla_T:a",
+      "type": 2,
+      "start": "ihailla",
+      "end": "T:a"
+    },
+    {
+      "id": "ihailla_=N:gen",
+      "type": 1,
+      "start": "ihailla",
+      "end": "=N:gen"
+    },
+    {
+      "id": "ihailla_=v",
+      "type": 1,
+      "start": "ihailla",
+      "end": "=v"
+    },
+    {
+      "id": "N5_ihailla",
+      "type": 0,
+      "start": "N5",
+      "end": "ihailla"
+    },
+    {
+      "id": "(ihailla1)_v",
+      "type": 2,
+      "start": "(ihailla1)",
+      "end": "v"
+    },
+    {
+      "id": "(ihailla1)_=N:prt",
+      "type": 1,
+      "start": "(ihailla1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(ihailla1)_=N:lla",
+      "type": 1,
+      "start": "(ihailla1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(ihailla1)_ld",
+      "type": 2,
+      "start": "(ihailla1)",
+      "end": "ld"
+    },
+    {
+      "id": "N6_(ihailla1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(ihailla1)"
+    },
+    {
+      "id": "N7_Merjaa",
+      "type": 0,
+      "start": "N7",
+      "end": "Merjaa"
+    },
+    {
+      "id": "N3_N7",
+      "type": 4,
+      "start": "N3",
+      "end": "N7"
+    },
+    {
+      "id": "antaa_T:a",
+      "type": 2,
+      "start": "antaa",
+      "end": "T:a"
+    },
+    {
+      "id": "antaa_=N:gen",
+      "type": 1,
+      "start": "antaa",
+      "end": "=N:gen"
+    },
+    {
+      "id": "antaa_=va",
+      "type": 1,
+      "start": "antaa",
+      "end": "=va"
+    },
+    {
+      "id": "N5_antaa",
+      "type": 0,
+      "start": "N5",
+      "end": "antaa"
+    },
+    {
+      "id": "(antaa1)_va",
+      "type": 2,
+      "start": "(antaa1)",
+      "end": "va"
+    },
+    {
+      "id": "(antaa1)_=N:acc|prt",
+      "type": 1,
+      "start": "(antaa1)",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "(antaa1)_=N:lle",
+      "type": 1,
+      "start": "(antaa1)",
+      "end": "=N:lle"
+    },
+    {
+      "id": "(antaa1)_=N:lla",
+      "type": 1,
+      "start": "(antaa1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(antaa1)_ld",
+      "type": 2,
+      "start": "(antaa1)",
+      "end": "ld"
+    },
+    {
+      "id": "N6_(antaa1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(antaa1)"
+    },
+    {
+      "id": "N7_kirjan",
+      "type": 0,
+      "start": "N7",
+      "end": "kirjan"
+    },
+    {
+      "id": "N8_Merjalle",
+      "type": 0,
+      "start": "N8",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N6_N8",
+      "type": 4,
+      "start": "N6",
+      "end": "N8"
+    },
+    {
+      "id": "va_=va",
+      "type": 3,
+      "start": "va",
+      "end": "=va"
+    },
+    {
+      "id": "kuorsaamalla_N:lla",
+      "type": 2,
+      "start": "kuorsaamalla",
+      "end": "N:lla"
+    },
+    {
+      "id": "N3_kuorsaamalla",
+      "type": 0,
+      "start": "N3",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "N:lla_=N:lla",
+      "type": 3,
+      "start": "N:lla",
+      "end": "=N:lla"
+    },
+    {
+      "id": "häiritsee_T",
+      "type": 2,
+      "start": "häiritsee",
+      "end": "T"
+    },
+    {
+      "id": "häiritsee_=N:nom3sg",
+      "type": 1,
+      "start": "häiritsee",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "häiritsee_=v",
+      "type": 1,
+      "start": "häiritsee",
+      "end": "=v"
+    },
+    {
+      "id": "N1_häiritsee",
+      "type": 0,
+      "start": "N1",
+      "end": "häiritsee"
+    },
+    {
+      "id": "(häiritsee1)_v",
+      "type": 2,
+      "start": "(häiritsee1)",
+      "end": "v"
+    },
+    {
+      "id": "(häiritsee1)_=N:prt",
+      "type": 1,
+      "start": "(häiritsee1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(häiritsee1)_=N:lla",
+      "type": 1,
+      "start": "(häiritsee1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(häiritsee1)_ld",
+      "type": 2,
+      "start": "(häiritsee1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(häiritsee1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(häiritsee1)"
+    },
+    {
+      "id": "N4_kuorsaamalla",
+      "type": 0,
+      "start": "N4",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "heittämällä_N:lla",
+      "type": 2,
+      "start": "heittämällä",
+      "end": "N:lla"
+    },
+    {
+      "id": "N5_heittämällä",
+      "type": 0,
+      "start": "N5",
+      "end": "heittämällä"
+    },
+    {
+      "id": "häiritse_T:nfinsg",
+      "type": 2,
+      "start": "häiritse",
+      "end": "T:nfinsg"
+    },
+    {
+      "id": "häiritse_=neg:sg",
+      "type": 1,
+      "start": "häiritse",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "häiritse_=v",
+      "type": 1,
+      "start": "häiritse",
+      "end": "=v"
+    },
+    {
+      "id": "N2_häiritse",
+      "type": 0,
+      "start": "N2",
+      "end": "häiritse"
+    },
+    {
+      "id": "(häiritse1)_v",
+      "type": 2,
+      "start": "(häiritse1)",
+      "end": "v"
+    },
+    {
+      "id": "(häiritse1)_=N:prt",
+      "type": 1,
+      "start": "(häiritse1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(häiritse1)_=N:lla",
+      "type": 1,
+      "start": "(häiritse1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "N3_(häiritse1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(häiritse1)"
+    },
+    {
+      "id": "N5_kuorsaamalla",
+      "type": 0,
+      "start": "N5",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "N6_heittämällä",
+      "type": 0,
+      "start": "N6",
+      "end": "heittämällä"
+    },
+    {
+      "id": "N3_N6",
+      "type": 4,
+      "start": "N3",
+      "end": "N6"
+    },
+    {
+      "id": "käskenyt_T:nfinsg",
+      "type": 2,
+      "start": "käskenyt",
+      "end": "T:nfinsg"
+    },
+    {
+      "id": "käskenyt_=neg:sg",
+      "type": 1,
+      "start": "käskenyt",
+      "end": "=neg:sg"
+    },
+    {
+      "id": "käskenyt_=vk",
+      "type": 1,
+      "start": "käskenyt",
+      "end": "=vk"
+    },
+    {
+      "id": "N2_käskenyt",
+      "type": 0,
+      "start": "N2",
+      "end": "käskenyt"
+    },
+    {
+      "id": "(käskenyt1)_vk",
+      "type": 2,
+      "start": "(käskenyt1)",
+      "end": "vk"
+    },
+    {
+      "id": "(käskenyt1)_=T:a",
+      "type": 1,
+      "start": "(käskenyt1)",
+      "end": "=T:a"
+    },
+    {
+      "id": "(käskenyt1)_=v1",
+      "type": 1,
+      "start": "(käskenyt1)",
+      "end": "=v1"
+    },
+    {
+      "id": "N3_(käskenyt1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(käskenyt1)"
+    },
+    {
+      "id": "(käskenyt2)_v1",
+      "type": 2,
+      "start": "(käskenyt2)",
+      "end": "v1"
+    },
+    {
+      "id": "(käskenyt2)_=N:lla",
+      "type": 1,
+      "start": "(käskenyt2)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(käskenyt2)_=N:prt",
+      "type": 1,
+      "start": "(käskenyt2)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(käskenyt2)_ld",
+      "type": 2,
+      "start": "(käskenyt2)",
+      "end": "ld"
+    },
+    {
+      "id": "N4_(käskenyt2)",
+      "type": 0,
+      "start": "N4",
+      "end": "(käskenyt2)"
+    },
+    {
+      "id": "N5_heidän",
+      "type": 0,
+      "start": "N5",
+      "end": "heidän"
+    },
+    {
+      "id": "N6_nukkua",
+      "type": 0,
+      "start": "N6",
+      "end": "nukkua"
+    },
+    {
+      "id": "N6_ihailla",
+      "type": 0,
+      "start": "N6",
+      "end": "ihailla"
+    },
+    {
+      "id": "N7_(ihailla1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(ihailla1)"
+    },
+    {
+      "id": "N8_Merjaa",
+      "type": 0,
+      "start": "N8",
+      "end": "Merjaa"
+    },
+    {
+      "id": "N4_N8",
+      "type": 4,
+      "start": "N4",
+      "end": "N8"
+    },
+    {
+      "id": "N6_antaa",
+      "type": 0,
+      "start": "N6",
+      "end": "antaa"
+    },
+    {
+      "id": "N7_(antaa1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(antaa1)"
+    },
+    {
+      "id": "N8_kirjaa",
+      "type": 0,
+      "start": "N8",
+      "end": "kirjaa"
+    },
+    {
+      "id": "N9_Merjalle",
+      "type": 0,
+      "start": "N9",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N7_N9",
+      "type": 4,
+      "start": "N7",
+      "end": "N9"
+    },
+    {
+      "id": "N6_kuorsaamalla",
+      "type": 0,
+      "start": "N6",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "häiritä_T:a",
+      "type": 2,
+      "start": "häiritä",
+      "end": "T:a"
+    },
+    {
+      "id": "häiritä_=N:gen",
+      "type": 1,
+      "start": "häiritä",
+      "end": "=N:gen"
+    },
+    {
+      "id": "häiritä_=v",
+      "type": 1,
+      "start": "häiritä",
+      "end": "=v"
+    },
+    {
+      "id": "N5_häiritä",
+      "type": 0,
+      "start": "N5",
+      "end": "häiritä"
+    },
+    {
+      "id": "(häiritä1)_v",
+      "type": 2,
+      "start": "(häiritä1)",
+      "end": "v"
+    },
+    {
+      "id": "(häiritä1)_=N:prt",
+      "type": 1,
+      "start": "(häiritä1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(häiritä1)_=N:lla",
+      "type": 1,
+      "start": "(häiritä1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(häiritä1)_ld",
+      "type": 2,
+      "start": "(häiritä1)",
+      "end": "ld"
+    },
+    {
+      "id": "N6_(häiritä1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(häiritä1)"
+    },
+    {
+      "id": "N8_kuorsaamalla",
+      "type": 0,
+      "start": "N8",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "N9_heittämällä",
+      "type": 0,
+      "start": "N9",
+      "end": "heittämällä"
+    },
+    {
+      "id": "N6_N9",
+      "type": 4,
+      "start": "N6",
+      "end": "N9"
+    },
+    {
+      "id": "N7_kuorsaamalla",
+      "type": 0,
+      "start": "N7",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "N6_häiritä",
+      "type": 0,
+      "start": "N6",
+      "end": "häiritä"
+    },
+    {
+      "id": "N7_(häiritä1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(häiritä1)"
+    },
+    {
+      "id": "N9_kuorsaamalla",
+      "type": 0,
+      "start": "N9",
+      "end": "kuorsaamalla"
+    },
+    {
+      "id": "N4_N9",
+      "type": 4,
+      "start": "N4",
+      "end": "N9"
+    },
+    {
+      "id": "N10_heittämällä",
+      "type": 0,
+      "start": "N10",
+      "end": "heittämällä"
+    },
+    {
+      "id": "N7_N10",
+      "type": 4,
+      "start": "N7",
+      "end": "N10"
+    },
+    {
+      "id": "N4_N10",
+      "type": 4,
+      "start": "N4",
+      "end": "N10"
+    },
+    {
+      "id": "kuka_C",
+      "type": 2,
+      "start": "kuka",
+      "end": "C"
+    },
+    {
+      "id": "kuka_=wh",
+      "type": 1,
+      "start": "kuka",
+      "end": "=wh"
+    },
+    {
+      "id": "N0_kuka",
+      "type": 0,
+      "start": "N0",
+      "end": "kuka"
+    },
+    {
+      "id": "(kuka1)_=T",
+      "type": 1,
+      "start": "(kuka1)",
+      "end": "=T"
+    },
+    {
+      "id": "(kuka1)_wh",
+      "type": 2,
+      "start": "(kuka1)",
+      "end": "wh"
+    },
+    {
+      "id": "N1_(kuka1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(kuka1)"
+    },
+    {
+      "id": "(kuka2)_N:nom3sg",
+      "type": 2,
+      "start": "(kuka2)",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "(kuka2)_ld",
+      "type": 2,
+      "start": "(kuka2)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(kuka2)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kuka2)"
+    },
+    {
+      "id": "N3_nukkui",
+      "type": 0,
+      "start": "N3",
+      "end": "nukkui"
+    },
+    {
+      "id": "N4_(nukkui1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(nukkui1)"
+    },
+    {
+      "id": "N1_N3",
+      "type": 4,
+      "start": "N1",
+      "end": "N3"
+    },
+    {
+      "id": "N3_ei",
+      "type": 0,
+      "start": "N3",
+      "end": "ei"
+    },
+    {
+      "id": "N4_nukkunut",
+      "type": 0,
+      "start": "N4",
+      "end": "nukkunut"
+    },
+    {
+      "id": "N4_N3",
+      "type": 4,
+      "start": "N4",
+      "end": "N3"
+    },
+    {
+      "id": "N5_(nukkunut1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(nukkunut1)"
+    },
+    {
+      "id": "N1_N4",
+      "type": 4,
+      "start": "N1",
+      "end": "N4"
+    },
+    {
+      "id": "T:nfinsg_=T",
+      "type": 3,
+      "start": "T:nfinsg",
+      "end": "=T"
+    },
+    {
+      "id": "N3_Pekka",
+      "type": 0,
+      "start": "N3",
+      "end": "Pekka"
+    },
+    {
+      "id": "N4_ihailee",
+      "type": 0,
+      "start": "N4",
+      "end": "ihailee"
+    },
+    {
+      "id": "N5_(ihailee1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(ihailee1)"
+    },
+    {
+      "id": "N5_N2",
+      "type": 4,
+      "start": "N5",
+      "end": "N2"
+    },
+    {
+      "id": "N4_ei",
+      "type": 0,
+      "start": "N4",
+      "end": "ei"
+    },
+    {
+      "id": "N5_ihaile",
+      "type": 0,
+      "start": "N5",
+      "end": "ihaile"
+    },
+    {
+      "id": "N6_(ihaile1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(ihaile1)"
+    },
+    {
+      "id": "N2_Pekka",
+      "type": 0,
+      "start": "N2",
+      "end": "Pekka"
+    },
+    {
+      "id": "N3_antoi",
+      "type": 0,
+      "start": "N3",
+      "end": "antoi"
+    },
+    {
+      "id": "N4_(antoi1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N:prt_=N:prt|acc",
+      "type": 3,
+      "start": "N:prt",
+      "end": "=N:prt|acc"
+    },
+    {
+      "id": "N0_N3",
+      "type": 4,
+      "start": "N0",
+      "end": "N3"
+    },
+    {
+      "id": "N3_(antoi1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N2_antoi",
+      "type": 0,
+      "start": "N2",
+      "end": "antoi"
+    },
+    {
+      "id": "N4_antanut",
+      "type": 0,
+      "start": "N4",
+      "end": "antanut"
+    },
+    {
+      "id": "N5_(antanut1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(antanut1)"
+    },
+    {
+      "id": "N6_Merjalle",
+      "type": 0,
+      "start": "N6",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N0_N4",
+      "type": 4,
+      "start": "N0",
+      "end": "N4"
+    },
+    {
+      "id": "N3_antanut",
+      "type": 0,
+      "start": "N3",
+      "end": "antanut"
+    },
+    {
+      "id": "N5_N1",
+      "type": 4,
+      "start": "N5",
+      "end": "N1"
+    },
+    {
+      "id": "N4_(antanut1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(antanut1)"
+    },
+    {
+      "id": "N4_N0",
+      "type": 4,
+      "start": "N4",
+      "end": "N0"
+    },
+    {
+      "id": "kenen_C",
+      "type": 2,
+      "start": "kenen",
+      "end": "C"
+    },
+    {
+      "id": "kenen_=wh",
+      "type": 1,
+      "start": "kenen",
+      "end": "=wh"
+    },
+    {
+      "id": "N0_kenen",
+      "type": 0,
+      "start": "N0",
+      "end": "kenen"
+    },
+    {
+      "id": "(kenen1)_wh",
+      "type": 2,
+      "start": "(kenen1)",
+      "end": "wh"
+    },
+    {
+      "id": "(kenen1)_=T",
+      "type": 1,
+      "start": "(kenen1)",
+      "end": "=T"
+    },
+    {
+      "id": "N1_(kenen1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(kenen1)"
+    },
+    {
+      "id": "(kenen2)_N:gen",
+      "type": 2,
+      "start": "(kenen2)",
+      "end": "N:gen"
+    },
+    {
+      "id": "N2_(kenen2)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kenen2)"
+    },
+    {
+      "id": "N4_käski",
+      "type": 0,
+      "start": "N4",
+      "end": "käski"
+    },
+    {
+      "id": "N5_(käski1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(käski1)"
+    },
+    {
+      "id": "N6_(käski2)",
+      "type": 0,
+      "start": "N6",
+      "end": "(käski2)"
+    },
+    {
+      "id": "N7_nukkua",
+      "type": 0,
+      "start": "N7",
+      "end": "nukkua"
+    },
+    {
+      "id": "N1_N7",
+      "type": 4,
+      "start": "N1",
+      "end": "N7"
+    },
+    {
+      "id": "N5_käskenyt",
+      "type": 0,
+      "start": "N5",
+      "end": "käskenyt"
+    },
+    {
+      "id": "N6_(käskenyt1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(käskenyt1)"
+    },
+    {
+      "id": "N7_(käskenyt2)",
+      "type": 0,
+      "start": "N7",
+      "end": "(käskenyt2)"
+    },
+    {
+      "id": "N8_nukkua",
+      "type": 0,
+      "start": "N8",
+      "end": "nukkua"
+    },
+    {
+      "id": "N1_N8",
+      "type": 4,
+      "start": "N1",
+      "end": "N8"
+    },
+    {
+      "id": "N3_käski",
+      "type": 0,
+      "start": "N3",
+      "end": "käski"
+    },
+    {
+      "id": "N4_(käski1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(käski1)"
+    },
+    {
+      "id": "N5_(käski2)",
+      "type": 0,
+      "start": "N5",
+      "end": "(käski2)"
+    },
+    {
+      "id": "N6_heidän",
+      "type": 0,
+      "start": "N6",
+      "end": "heidän"
+    },
+    {
+      "id": "N7_ihailla",
+      "type": 0,
+      "start": "N7",
+      "end": "ihailla"
+    },
+    {
+      "id": "N8_(ihailla1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(ihailla1)"
+    },
+    {
+      "id": "N4_N7",
+      "type": 4,
+      "start": "N4",
+      "end": "N7"
+    },
+    {
+      "id": "N4_(käski2)",
+      "type": 0,
+      "start": "N4",
+      "end": "(käski2)"
+    },
+    {
+      "id": "N2_käski",
+      "type": 0,
+      "start": "N2",
+      "end": "käski"
+    },
+    {
+      "id": "N8_N1",
+      "type": 4,
+      "start": "N8",
+      "end": "N1"
+    },
+    {
+      "id": "N7_N0",
+      "type": 4,
+      "start": "N7",
+      "end": "N0"
+    },
+    {
+      "id": "N4_käskenyt",
+      "type": 0,
+      "start": "N4",
+      "end": "käskenyt"
+    },
+    {
+      "id": "N5_(käskenyt1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(käskenyt1)"
+    },
+    {
+      "id": "N6_(käskenyt2)",
+      "type": 0,
+      "start": "N6",
+      "end": "(käskenyt2)"
+    },
+    {
+      "id": "N7_heidän",
+      "type": 0,
+      "start": "N7",
+      "end": "heidän"
+    },
+    {
+      "id": "N8_ihailla",
+      "type": 0,
+      "start": "N8",
+      "end": "ihailla"
+    },
+    {
+      "id": "N8_N7",
+      "type": 4,
+      "start": "N8",
+      "end": "N7"
+    },
+    {
+      "id": "N9_(ihailla1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(ihailla1)"
+    },
+    {
+      "id": "N5_N8",
+      "type": 4,
+      "start": "N5",
+      "end": "N8"
+    },
+    {
+      "id": "N3_käskenyt",
+      "type": 0,
+      "start": "N3",
+      "end": "käskenyt"
+    },
+    {
+      "id": "N9_N1",
+      "type": 4,
+      "start": "N9",
+      "end": "N1"
+    },
+    {
+      "id": "N5_(käskenyt2)",
+      "type": 0,
+      "start": "N5",
+      "end": "(käskenyt2)"
+    },
+    {
+      "id": "N5_N0",
+      "type": 4,
+      "start": "N5",
+      "end": "N0"
+    },
+    {
+      "id": "N8_N0",
+      "type": 4,
+      "start": "N8",
+      "end": "N0"
+    },
+    {
+      "id": "N7_antaa",
+      "type": 0,
+      "start": "N7",
+      "end": "antaa"
+    },
+    {
+      "id": "N8_(antaa1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(antaa1)"
+    },
+    {
+      "id": "N8_antaa",
+      "type": 0,
+      "start": "N8",
+      "end": "antaa"
+    },
+    {
+      "id": "N9_(antaa1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(antaa1)"
+    },
+    {
+      "id": "N10_Merjalle",
+      "type": 0,
+      "start": "N10",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N9_N10",
+      "type": 4,
+      "start": "N9",
+      "end": "N10"
+    },
+    {
+      "id": "N3_ihailee",
+      "type": 0,
+      "start": "N3",
+      "end": "ihailee"
+    },
+    {
+      "id": "N4_(ihailee1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(ihailee1)"
+    },
+    {
+      "id": "virtaamalla_N:lla",
+      "type": 2,
+      "start": "virtaamalla",
+      "end": "N:lla"
+    },
+    {
+      "id": "virtaamalla_=P",
+      "type": 1,
+      "start": "virtaamalla",
+      "end": "=P"
+    },
+    {
+      "id": "virtaamalla_=N:een",
+      "type": 1,
+      "start": "virtaamalla",
+      "end": "=N:een"
+    },
+    {
+      "id": "N5_virtaamalla",
+      "type": 0,
+      "start": "N5",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N3_(ihailee1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(ihailee1)"
+    },
+    {
+      "id": "N2_ihailee",
+      "type": 0,
+      "start": "N2",
+      "end": "ihailee"
+    },
+    {
+      "id": "N4_ihaile",
+      "type": 0,
+      "start": "N4",
+      "end": "ihaile"
+    },
+    {
+      "id": "N5_(ihaile1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(ihaile1)"
+    },
+    {
+      "id": "N6_virtaamalla",
+      "type": 0,
+      "start": "N6",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N3_ihaile",
+      "type": 0,
+      "start": "N3",
+      "end": "ihaile"
+    },
+    {
+      "id": "N4_(ihaile1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(ihaile1)"
+    },
+    {
+      "id": "N5_kirjan",
+      "type": 0,
+      "start": "N5",
+      "end": "kirjan"
+    },
+    {
+      "id": "N7_heittämällä",
+      "type": 0,
+      "start": "N7",
+      "end": "heittämällä"
+    },
+    {
+      "id": "N9_virtaamalla",
+      "type": 0,
+      "start": "N9",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N10_virtaamalla",
+      "type": 0,
+      "start": "N10",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N6_N10",
+      "type": 4,
+      "start": "N6",
+      "end": "N10"
+    },
+    {
+      "id": "N8_N10",
+      "type": 4,
+      "start": "N8",
+      "end": "N10"
+    },
+    {
+      "id": "N11_heittämällä",
+      "type": 0,
+      "start": "N11",
+      "end": "heittämällä"
+    },
+    {
+      "id": "N9_N11",
+      "type": 4,
+      "start": "N9",
+      "end": "N11"
+    },
+    {
+      "id": "N6_N11",
+      "type": 4,
+      "start": "N6",
+      "end": "N11"
+    },
+    {
+      "id": "teoria_N:nom3sg",
+      "type": 2,
+      "start": "teoria",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "teoria_=N:gen",
+      "type": 1,
+      "start": "teoria",
+      "end": "=N:gen"
+    },
+    {
+      "id": "teoria_=rel",
+      "type": 1,
+      "start": "teoria",
+      "end": "=rel"
+    },
+    {
+      "id": "N0_teoria",
+      "type": 0,
+      "start": "N0",
+      "end": "teoria"
+    },
+    {
+      "id": "kumoutui_T",
+      "type": 2,
+      "start": "kumoutui",
+      "end": "T"
+    },
+    {
+      "id": "kumoutui_=v",
+      "type": 1,
+      "start": "kumoutui",
+      "end": "=v"
+    },
+    {
+      "id": "kumoutui_=N:nom3sg",
+      "type": 1,
+      "start": "kumoutui",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N1_kumoutui",
+      "type": 0,
+      "start": "N1",
+      "end": "kumoutui"
+    },
+    {
+      "id": "(kumoutui1)_v",
+      "type": 2,
+      "start": "(kumoutui1)",
+      "end": "v"
+    },
+    {
+      "id": "(kumoutui1)_=N:lla",
+      "type": 1,
+      "start": "(kumoutui1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(kumoutui1)_ld",
+      "type": 2,
+      "start": "(kumoutui1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(kumoutui1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "sanoi_T",
+      "type": 2,
+      "start": "sanoi",
+      "end": "T"
+    },
+    {
+      "id": "sanoi_=N:nom3sg",
+      "type": 1,
+      "start": "sanoi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "sanoi_=vs",
+      "type": 1,
+      "start": "sanoi",
+      "end": "=vs"
+    },
+    {
+      "id": "N1_sanoi",
+      "type": 0,
+      "start": "N1",
+      "end": "sanoi"
+    },
+    {
+      "id": "(sanoi1)_vs",
+      "type": 2,
+      "start": "(sanoi1)",
+      "end": "vs"
+    },
+    {
+      "id": "(sanoi1)_=että",
+      "type": 1,
+      "start": "(sanoi1)",
+      "end": "=että"
+    },
+    {
+      "id": "(sanoi1)_=N:acc",
+      "type": 1,
+      "start": "(sanoi1)",
+      "end": "=N:acc"
+    },
+    {
+      "id": "(sanoi1)_=C",
+      "type": 1,
+      "start": "(sanoi1)",
+      "end": "=C"
+    },
+    {
+      "id": "(sanoi1)_=N:lle",
+      "type": 1,
+      "start": "(sanoi1)",
+      "end": "=N:lle"
+    },
+    {
+      "id": "(sanoi1)_ld",
+      "type": 2,
+      "start": "(sanoi1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(sanoi1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "että_että",
+      "type": 2,
+      "start": "että",
+      "end": "että"
+    },
+    {
+      "id": "että_=T",
+      "type": 1,
+      "start": "että",
+      "end": "=T"
+    },
+    {
+      "id": "että_=C",
+      "type": 1,
+      "start": "että",
+      "end": "=C"
+    },
+    {
+      "id": "N3_että",
+      "type": 0,
+      "start": "N3",
+      "end": "että"
+    },
+    {
+      "id": "N4_teoria",
+      "type": 0,
+      "start": "N4",
+      "end": "teoria"
+    },
+    {
+      "id": "N5_kumoutui",
+      "type": 0,
+      "start": "N5",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N6_(kumoutui1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "että_=että",
+      "type": 1,
+      "start": "että",
+      "end": "=että"
+    },
+    {
+      "id": "vs_=vs",
+      "type": 3,
+      "start": "vs",
+      "end": "=vs"
+    },
+    {
+      "id": "kertoi_T",
+      "type": 2,
+      "start": "kertoi",
+      "end": "T"
+    },
+    {
+      "id": "kertoi_=N:nom3sg",
+      "type": 1,
+      "start": "kertoi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "kertoi_=v",
+      "type": 1,
+      "start": "kertoi",
+      "end": "=v"
+    },
+    {
+      "id": "N1_kertoi",
+      "type": 0,
+      "start": "N1",
+      "end": "kertoi"
+    },
+    {
+      "id": "(kertoi1)_v",
+      "type": 2,
+      "start": "(kertoi1)",
+      "end": "v"
+    },
+    {
+      "id": "(kertoi1)_=että",
+      "type": 1,
+      "start": "(kertoi1)",
+      "end": "=että"
+    },
+    {
+      "id": "(kertoi1)_=N:acc",
+      "type": 1,
+      "start": "(kertoi1)",
+      "end": "=N:acc"
+    },
+    {
+      "id": "(kertoi1)_=C",
+      "type": 1,
+      "start": "(kertoi1)",
+      "end": "=C"
+    },
+    {
+      "id": "N2_(kertoi1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kertoi1)"
+    },
+    {
+      "id": "Merja_N:nom3sg",
+      "type": 2,
+      "start": "Merja",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "Merja_n",
+      "type": 2,
+      "start": "Merja",
+      "end": "n"
+    },
+    {
+      "id": "N4_Merja",
+      "type": 0,
+      "start": "N4",
+      "end": "Merja"
+    },
+    {
+      "id": "N5_sanoi",
+      "type": 0,
+      "start": "N5",
+      "end": "sanoi"
+    },
+    {
+      "id": "N6_(sanoi1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N7_että",
+      "type": 0,
+      "start": "N7",
+      "end": "että"
+    },
+    {
+      "id": "N8_teoria",
+      "type": 0,
+      "start": "N8",
+      "end": "teoria"
+    },
+    {
+      "id": "N9_kumoutui",
+      "type": 0,
+      "start": "N9",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N9_N8",
+      "type": 4,
+      "start": "N9",
+      "end": "N8"
+    },
+    {
+      "id": "N10_(kumoutui1)",
+      "type": 0,
+      "start": "N10",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N1_N10",
+      "type": 4,
+      "start": "N1",
+      "end": "N10"
+    },
+    {
+      "id": "se_N:nom3sg",
+      "type": 2,
+      "start": "se",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "se_a:n",
+      "type": 2,
+      "start": "se",
+      "end": "a:n"
+    },
+    {
+      "id": "se_=n",
+      "type": 1,
+      "start": "se",
+      "end": "=n"
+    },
+    {
+      "id": "N0_se",
+      "type": 0,
+      "start": "N0",
+      "end": "se"
+    },
+    {
+      "id": "(se1)_n",
+      "type": 2,
+      "start": "(se1)",
+      "end": "n"
+    },
+    {
+      "id": "(se1)_=että",
+      "type": 1,
+      "start": "(se1)",
+      "end": "=että"
+    },
+    {
+      "id": "N1_(se1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(se1)"
+    },
+    {
+      "id": "väite_N:nom3sg",
+      "type": 2,
+      "start": "väite",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "väite_adjL:n",
+      "type": 2,
+      "start": "väite",
+      "end": "adjL:n"
+    },
+    {
+      "id": "väite_=n",
+      "type": 1,
+      "start": "väite",
+      "end": "=n"
+    },
+    {
+      "id": "N2_väite",
+      "type": 0,
+      "start": "N2",
+      "end": "väite"
+    },
+    {
+      "id": "(väite1)_n",
+      "type": 2,
+      "start": "(väite1)",
+      "end": "n"
+    },
+    {
+      "id": "(väite1)_=että",
+      "type": 1,
+      "start": "(väite1)",
+      "end": "=että"
+    },
+    {
+      "id": "N3_(väite1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(väite1)"
+    },
+    {
+      "id": "N4_että",
+      "type": 0,
+      "start": "N4",
+      "end": "että"
+    },
+    {
+      "id": "N6_nukkui",
+      "type": 0,
+      "start": "N6",
+      "end": "nukkui"
+    },
+    {
+      "id": "N7_(nukkui1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(nukkui1)"
+    },
+    {
+      "id": "N8_kumoutui",
+      "type": 0,
+      "start": "N8",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N8_N2",
+      "type": 4,
+      "start": "N8",
+      "end": "N2"
+    },
+    {
+      "id": "N9_(kumoutui1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N6_sanoi",
+      "type": 0,
+      "start": "N6",
+      "end": "sanoi"
+    },
+    {
+      "id": "N7_(sanoi1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N8_että",
+      "type": 0,
+      "start": "N8",
+      "end": "että"
+    },
+    {
+      "id": "N9_teoria",
+      "type": 0,
+      "start": "N9",
+      "end": "teoria"
+    },
+    {
+      "id": "N10_kumoutui",
+      "type": 0,
+      "start": "N10",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N10_N9",
+      "type": 4,
+      "start": "N10",
+      "end": "N9"
+    },
+    {
+      "id": "N11_(kumoutui1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N10_N11",
+      "type": 4,
+      "start": "N10",
+      "end": "N11"
+    },
+    {
+      "id": "N12_kumoutui",
+      "type": 0,
+      "start": "N12",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N12_N0",
+      "type": 4,
+      "start": "N12",
+      "end": "N0"
+    },
+    {
+      "id": "N12_N2",
+      "type": 4,
+      "start": "N12",
+      "end": "N2"
+    },
+    {
+      "id": "N13_(kumoutui1)",
+      "type": 0,
+      "start": "N13",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N12_N13",
+      "type": 4,
+      "start": "N12",
+      "end": "N13"
+    },
+    {
+      "id": "N12_N11",
+      "type": 4,
+      "start": "N12",
+      "end": "N11"
+    },
+    {
+      "id": "N10_N13",
+      "type": 4,
+      "start": "N10",
+      "end": "N13"
+    },
+    {
+      "id": "N8_N6",
+      "type": 4,
+      "start": "N8",
+      "end": "N6"
+    },
+    {
+      "id": "N3_N8",
+      "type": 4,
+      "start": "N3",
+      "end": "N8"
+    },
+    {
+      "id": "N4_se",
+      "type": 0,
+      "start": "N4",
+      "end": "se"
+    },
+    {
+      "id": "N5_(se1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(se1)"
+    },
+    {
+      "id": "N6_väite",
+      "type": 0,
+      "start": "N6",
+      "end": "väite"
+    },
+    {
+      "id": "N7_(väite1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(väite1)"
+    },
+    {
+      "id": "N9_Merja",
+      "type": 0,
+      "start": "N9",
+      "end": "Merja"
+    },
+    {
+      "id": "N10_nukkui",
+      "type": 0,
+      "start": "N10",
+      "end": "nukkui"
+    },
+    {
+      "id": "N11_(nukkui1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(nukkui1)"
+    },
+    {
+      "id": "N12_N4",
+      "type": 4,
+      "start": "N12",
+      "end": "N4"
+    },
+    {
+      "id": "N12_N6",
+      "type": 4,
+      "start": "N12",
+      "end": "N6"
+    },
+    {
+      "id": "N3_N12",
+      "type": 4,
+      "start": "N3",
+      "end": "N12"
+    },
+    {
+      "id": "N2_N8",
+      "type": 4,
+      "start": "N2",
+      "end": "N8"
+    },
+    {
+      "id": "kaupungissa_N:ssa",
+      "type": 2,
+      "start": "kaupungissa",
+      "end": "N:ssa"
+    },
+    {
+      "id": "N0_kaupungissa",
+      "type": 0,
+      "start": "N0",
+      "end": "kaupungissa"
+    },
+    {
+      "id": "asui_T",
+      "type": 2,
+      "start": "asui",
+      "end": "T"
+    },
+    {
+      "id": "asui_=v",
+      "type": 1,
+      "start": "asui",
+      "end": "=v"
+    },
+    {
+      "id": "asui_=N:nom3sg",
+      "type": 1,
+      "start": "asui",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N1_asui",
+      "type": 0,
+      "start": "N1",
+      "end": "asui"
+    },
+    {
+      "id": "(asui1)_v",
+      "type": 2,
+      "start": "(asui1)",
+      "end": "v"
+    },
+    {
+      "id": "(asui1)_=N:ssa",
+      "type": 1,
+      "start": "(asui1)",
+      "end": "=N:ssa"
+    },
+    {
+      "id": "(asui1)_=P",
+      "type": 1,
+      "start": "(asui1)",
+      "end": "=P"
+    },
+    {
+      "id": "(asui1)_ld",
+      "type": 2,
+      "start": "(asui1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(asui1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(asui1)"
+    },
+    {
+      "id": "saavuttaa_T",
+      "type": 2,
+      "start": "saavuttaa",
+      "end": "T"
+    },
+    {
+      "id": "saavuttaa_=v",
+      "type": 1,
+      "start": "saavuttaa",
+      "end": "=v"
+    },
+    {
+      "id": "saavuttaa_=N:nom3sg",
+      "type": 1,
+      "start": "saavuttaa",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N1_saavuttaa",
+      "type": 0,
+      "start": "N1",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "(saavuttaa1)_v",
+      "type": 2,
+      "start": "(saavuttaa1)",
+      "end": "v"
+    },
+    {
+      "id": "(saavuttaa1)_=N:acc|prt",
+      "type": 1,
+      "start": "(saavuttaa1)",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "(saavuttaa1)_=N:lla",
+      "type": 1,
+      "start": "(saavuttaa1)",
+      "end": "=N:lla"
+    },
+    {
+      "id": "(saavuttaa1)_ld",
+      "type": 2,
+      "start": "(saavuttaa1)",
+      "end": "ld"
+    },
+    {
+      "id": "N2_(saavuttaa1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "Seine_N:nom3sg",
+      "type": 2,
+      "start": "Seine",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "N0_Seine",
+      "type": 0,
+      "start": "N0",
+      "end": "Seine"
+    },
+    {
+      "id": "meren_N:acc",
+      "type": 2,
+      "start": "meren",
+      "end": "N:acc"
+    },
+    {
+      "id": "meren_=rel",
+      "type": 1,
+      "start": "meren",
+      "end": "=rel"
+    },
+    {
+      "id": "N3_meren",
+      "type": 0,
+      "start": "N3",
+      "end": "meren"
+    },
+    {
+      "id": "N4_virtaamalla",
+      "type": 0,
+      "start": "N4",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "kaupunkia_N:prt",
+      "type": 2,
+      "start": "kaupunkia",
+      "end": "N:prt"
+    },
+    {
+      "id": "kaupunkia_adjL:prt",
+      "type": 2,
+      "start": "kaupunkia",
+      "end": "adjL:prt"
+    },
+    {
+      "id": "N7_kaupunkia",
+      "type": 0,
+      "start": "N7",
+      "end": "kaupunkia"
+    },
+    {
+      "id": "löysi_T",
+      "type": 2,
+      "start": "löysi",
+      "end": "T"
+    },
+    {
+      "id": "löysi_=N:nom3sg",
+      "type": 1,
+      "start": "löysi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "löysi_=v",
+      "type": 1,
+      "start": "löysi",
+      "end": "=v"
+    },
+    {
+      "id": "N5_löysi",
+      "type": 0,
+      "start": "N5",
+      "end": "löysi"
+    },
+    {
+      "id": "(löysi1)_v",
+      "type": 2,
+      "start": "(löysi1)",
+      "end": "v"
+    },
+    {
+      "id": "(löysi1)_=N:acc|prt",
+      "type": 1,
+      "start": "(löysi1)",
+      "end": "=N:acc|prt"
+    },
+    {
+      "id": "(löysi1)_ld",
+      "type": 2,
+      "start": "(löysi1)",
+      "end": "ld"
+    },
+    {
+      "id": "N6_(löysi1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N7_meren",
+      "type": 0,
+      "start": "N7",
+      "end": "meren"
+    },
+    {
+      "id": "N:acc_=N:acc",
+      "type": 3,
+      "start": "N:acc",
+      "end": "=N:acc"
+    },
+    {
+      "id": "N5_Seine",
+      "type": 0,
+      "start": "N5",
+      "end": "Seine"
+    },
+    {
+      "id": "N6_saavuttaa",
+      "type": 0,
+      "start": "N6",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N7_(saavuttaa1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N8_meren",
+      "type": 0,
+      "start": "N8",
+      "end": "meren"
+    },
+    {
+      "id": "N9_N0",
+      "type": 4,
+      "start": "N9",
+      "end": "N0"
+    },
+    {
+      "id": "N9_N7",
+      "type": 4,
+      "start": "N9",
+      "end": "N7"
+    },
+    {
+      "id": "Pekkaa_N:prt",
+      "type": 2,
+      "start": "Pekkaa",
+      "end": "N:prt"
+    },
+    {
+      "id": "N0_Pekkaa",
+      "type": 0,
+      "start": "N0",
+      "end": "Pekkaa"
+    },
+    {
+      "id": "N3_Merja",
+      "type": 0,
+      "start": "N3",
+      "end": "Merja"
+    },
+    {
+      "id": "N4_meren",
+      "type": 0,
+      "start": "N4",
+      "end": "meren"
+    },
+    {
+      "id": "N7_Merja",
+      "type": 0,
+      "start": "N7",
+      "end": "Merja"
+    },
+    {
+      "id": "N5_antoi",
+      "type": 0,
+      "start": "N5",
+      "end": "antoi"
+    },
+    {
+      "id": "N6_(antoi1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N3_Merjalle",
+      "type": 0,
+      "start": "N3",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N4_kirjan",
+      "type": 0,
+      "start": "N4",
+      "end": "kirjan"
+    },
+    {
+      "id": "N0_kirjan",
+      "type": 0,
+      "start": "N0",
+      "end": "kirjan"
+    },
+    {
+      "id": "N0_Merjalle",
+      "type": 0,
+      "start": "N0",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N7_Merjalle",
+      "type": 0,
+      "start": "N7",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N8_Pekka",
+      "type": 0,
+      "start": "N8",
+      "end": "Pekka"
+    },
+    {
+      "id": "N7_Pekka",
+      "type": 0,
+      "start": "N7",
+      "end": "Pekka"
+    },
+    {
+      "id": "N8_kirjan",
+      "type": 0,
+      "start": "N8",
+      "end": "kirjan"
+    },
+    {
+      "id": "N6_antoi",
+      "type": 0,
+      "start": "N6",
+      "end": "antoi"
+    },
+    {
+      "id": "N7_(antoi1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N10_N0",
+      "type": 4,
+      "start": "N10",
+      "end": "N0"
+    },
+    {
+      "id": "N10_N2",
+      "type": 4,
+      "start": "N10",
+      "end": "N2"
+    },
+    {
+      "id": "N10_N7",
+      "type": 4,
+      "start": "N10",
+      "end": "N7"
+    },
+    {
+      "id": "N5_meren",
+      "type": 0,
+      "start": "N5",
+      "end": "meren"
+    },
+    {
+      "id": "N6_löysi",
+      "type": 0,
+      "start": "N6",
+      "end": "löysi"
+    },
+    {
+      "id": "N7_(löysi1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N8_Merja",
+      "type": 0,
+      "start": "N8",
+      "end": "Merja"
+    },
+    {
+      "id": "N9_Pekka",
+      "type": 0,
+      "start": "N9",
+      "end": "Pekka"
+    },
+    {
+      "id": "N9_kirjan",
+      "type": 0,
+      "start": "N9",
+      "end": "kirjan"
+    },
+    {
+      "id": "N3_kumoutui",
+      "type": 0,
+      "start": "N3",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N4_(kumoutui1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N0_Merja",
+      "type": 0,
+      "start": "N0",
+      "end": "Merja"
+    },
+    {
+      "id": "kysyi_T",
+      "type": 2,
+      "start": "kysyi",
+      "end": "T"
+    },
+    {
+      "id": "kysyi_=N:nom3sg",
+      "type": 1,
+      "start": "kysyi",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "kysyi_=v",
+      "type": 1,
+      "start": "kysyi",
+      "end": "=v"
+    },
+    {
+      "id": "N1_kysyi",
+      "type": 0,
+      "start": "N1",
+      "end": "kysyi"
+    },
+    {
+      "id": "(kysyi1)_v",
+      "type": 2,
+      "start": "(kysyi1)",
+      "end": "v"
+    },
+    {
+      "id": "(kysyi1)_=että",
+      "type": 1,
+      "start": "(kysyi1)",
+      "end": "=että"
+    },
+    {
+      "id": "(kysyi1)_=N:prt",
+      "type": 1,
+      "start": "(kysyi1)",
+      "end": "=N:prt"
+    },
+    {
+      "id": "(kysyi1)_=C",
+      "type": 1,
+      "start": "(kysyi1)",
+      "end": "=C"
+    },
+    {
+      "id": "N2_(kysyi1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kysyi1)"
+    },
+    {
+      "id": "N3_kuka",
+      "type": 0,
+      "start": "N3",
+      "end": "kuka"
+    },
+    {
+      "id": "N4_(kuka1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(kuka1)"
+    },
+    {
+      "id": "N5_(kuka2)",
+      "type": 0,
+      "start": "N5",
+      "end": "(kuka2)"
+    },
+    {
+      "id": "N6_kumoutui",
+      "type": 0,
+      "start": "N6",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N7_(kumoutui1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "C_=C",
+      "type": 3,
+      "start": "C",
+      "end": "=C"
+    },
+    {
+      "id": "N3_löysi",
+      "type": 0,
+      "start": "N3",
+      "end": "löysi"
+    },
+    {
+      "id": "N4_(löysi1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N3_(löysi1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N2_löysi",
+      "type": 0,
+      "start": "N2",
+      "end": "löysi"
+    },
+    {
+      "id": "N3_mitä",
+      "type": 0,
+      "start": "N3",
+      "end": "mitä"
+    },
+    {
+      "id": "N4_(mitä1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(mitä1)"
+    },
+    {
+      "id": "N4_mitä",
+      "type": 0,
+      "start": "N4",
+      "end": "mitä"
+    },
+    {
+      "id": "N5_(mitä1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(mitä1)"
+    },
+    {
+      "id": "N7_löysi",
+      "type": 0,
+      "start": "N7",
+      "end": "löysi"
+    },
+    {
+      "id": "N8_(löysi1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N8_N5",
+      "type": 4,
+      "start": "N8",
+      "end": "N5"
+    },
+    {
+      "id": "N0_N2",
+      "type": 4,
+      "start": "N0",
+      "end": "N2"
+    },
+    {
+      "id": "N2_(löysi1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N1_löysi",
+      "type": 0,
+      "start": "N1",
+      "end": "löysi"
+    },
+    {
+      "id": "N5_(löysi1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "kenelle_C",
+      "type": 2,
+      "start": "kenelle",
+      "end": "C"
+    },
+    {
+      "id": "kenelle_=wh",
+      "type": 1,
+      "start": "kenelle",
+      "end": "=wh"
+    },
+    {
+      "id": "N0_kenelle",
+      "type": 0,
+      "start": "N0",
+      "end": "kenelle"
+    },
+    {
+      "id": "(kenelle1)_=T",
+      "type": 1,
+      "start": "(kenelle1)",
+      "end": "=T"
+    },
+    {
+      "id": "(kenelle1)_wh",
+      "type": 2,
+      "start": "(kenelle1)",
+      "end": "wh"
+    },
+    {
+      "id": "N1_(kenelle1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(kenelle1)"
+    },
+    {
+      "id": "(kenelle2)_N:lle",
+      "type": 2,
+      "start": "(kenelle2)",
+      "end": "N:lle"
+    },
+    {
+      "id": "N2_(kenelle2)",
+      "type": 0,
+      "start": "N2",
+      "end": "(kenelle2)"
+    },
+    {
+      "id": "N4_antoi",
+      "type": 0,
+      "start": "N4",
+      "end": "antoi"
+    },
+    {
+      "id": "N5_(antoi1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N6_kirjan",
+      "type": 0,
+      "start": "N6",
+      "end": "kirjan"
+    },
+    {
+      "id": "N3_kenelle",
+      "type": 0,
+      "start": "N3",
+      "end": "kenelle"
+    },
+    {
+      "id": "N4_(kenelle1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(kenelle1)"
+    },
+    {
+      "id": "N5_(kenelle2)",
+      "type": 0,
+      "start": "N5",
+      "end": "(kenelle2)"
+    },
+    {
+      "id": "N7_antoi",
+      "type": 0,
+      "start": "N7",
+      "end": "antoi"
+    },
+    {
+      "id": "N8_(antoi1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N2_Merjalle",
+      "type": 0,
+      "start": "N2",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N3_sanoi",
+      "type": 0,
+      "start": "N3",
+      "end": "sanoi"
+    },
+    {
+      "id": "N4_(sanoi1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N5_että",
+      "type": 0,
+      "start": "N5",
+      "end": "että"
+    },
+    {
+      "id": "N6_Merja",
+      "type": 0,
+      "start": "N6",
+      "end": "Merja"
+    },
+    {
+      "id": "N3_(sanoi1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N7_sanoi",
+      "type": 0,
+      "start": "N7",
+      "end": "sanoi"
+    },
+    {
+      "id": "N8_(sanoi1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N9_että",
+      "type": 0,
+      "start": "N9",
+      "end": "että"
+    },
+    {
+      "id": "N10_Pekka",
+      "type": 0,
+      "start": "N10",
+      "end": "Pekka"
+    },
+    {
+      "id": "N11_löysi",
+      "type": 0,
+      "start": "N11",
+      "end": "löysi"
+    },
+    {
+      "id": "N11_N10",
+      "type": 4,
+      "start": "N11",
+      "end": "N10"
+    },
+    {
+      "id": "N12_(löysi1)",
+      "type": 0,
+      "start": "N12",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N12_N1",
+      "type": 4,
+      "start": "N12",
+      "end": "N1"
+    },
+    {
+      "id": "N11_N12",
+      "type": 4,
+      "start": "N11",
+      "end": "N12"
+    },
+    {
+      "id": "N11_(löysi1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(löysi1)"
+    },
+    {
+      "id": "N11_N0",
+      "type": 4,
+      "start": "N11",
+      "end": "N0"
+    },
+    {
+      "id": "N9_N3",
+      "type": 4,
+      "start": "N9",
+      "end": "N3"
+    },
+    {
+      "id": "N4_sanoi",
+      "type": 0,
+      "start": "N4",
+      "end": "sanoi"
+    },
+    {
+      "id": "N5_(sanoi1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(sanoi1)"
+    },
+    {
+      "id": "N6_että",
+      "type": 0,
+      "start": "N6",
+      "end": "että"
+    },
+    {
+      "id": "N8_antoi",
+      "type": 0,
+      "start": "N8",
+      "end": "antoi"
+    },
+    {
+      "id": "N9_(antoi1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N10_kirjan",
+      "type": 0,
+      "start": "N10",
+      "end": "kirjan"
+    },
+    {
+      "id": "N5_N10",
+      "type": 4,
+      "start": "N5",
+      "end": "N10"
+    },
+    {
+      "id": "N10_Merja",
+      "type": 0,
+      "start": "N10",
+      "end": "Merja"
+    },
+    {
+      "id": "joka_rel",
+      "type": 2,
+      "start": "joka",
+      "end": "rel"
+    },
+    {
+      "id": "joka_=T",
+      "type": 1,
+      "start": "joka",
+      "end": "=T"
+    },
+    {
+      "id": "N1_joka",
+      "type": 0,
+      "start": "N1",
+      "end": "joka"
+    },
+    {
+      "id": "(joka1)_N:nom3sg",
+      "type": 2,
+      "start": "(joka1)",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "N2_(joka1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(joka1)"
+    },
+    {
+      "id": "N4_joka",
+      "type": 0,
+      "start": "N4",
+      "end": "joka"
+    },
+    {
+      "id": "N5_(joka1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(joka1)"
+    },
+    {
+      "id": "talo_N:nom3sg",
+      "type": 2,
+      "start": "talo",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "talo_=rel",
+      "type": 1,
+      "start": "talo",
+      "end": "=rel"
+    },
+    {
+      "id": "talo_=gen",
+      "type": 1,
+      "start": "talo",
+      "end": "=gen"
+    },
+    {
+      "id": "N0_talo",
+      "type": 0,
+      "start": "N0",
+      "end": "talo"
+    },
+    {
+      "id": "jonka_rel",
+      "type": 2,
+      "start": "jonka",
+      "end": "rel"
+    },
+    {
+      "id": "jonka_=T",
+      "type": 1,
+      "start": "jonka",
+      "end": "=T"
+    },
+    {
+      "id": "N1_jonka",
+      "type": 0,
+      "start": "N1",
+      "end": "jonka"
+    },
+    {
+      "id": "(jonka1)_N:acc",
+      "type": 2,
+      "start": "(jonka1)",
+      "end": "N:acc"
+    },
+    {
+      "id": "N2_(jonka1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(jonka1)"
+    },
+    {
+      "id": "N4_löysi",
+      "type": 0,
+      "start": "N4",
+      "end": "löysi"
+    },
+    {
+      "id": "talon_N:acc",
+      "type": 2,
+      "start": "talon",
+      "end": "N:acc"
+    },
+    {
+      "id": "talon_=rel",
+      "type": 1,
+      "start": "talon",
+      "end": "=rel"
+    },
+    {
+      "id": "talon_=gen",
+      "type": 1,
+      "start": "talon",
+      "end": "=gen"
+    },
+    {
+      "id": "N3_talon",
+      "type": 0,
+      "start": "N3",
+      "end": "talon"
+    },
+    {
+      "id": "N4_jonka",
+      "type": 0,
+      "start": "N4",
+      "end": "jonka"
+    },
+    {
+      "id": "N5_(jonka1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(jonka1)"
+    },
+    {
+      "id": "N8_N3",
+      "type": 4,
+      "start": "N8",
+      "end": "N3"
+    },
+    {
+      "id": "mies_N:nom3sg",
+      "type": 2,
+      "start": "mies",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "mies_=rel",
+      "type": 1,
+      "start": "mies",
+      "end": "=rel"
+    },
+    {
+      "id": "mies_=gen",
+      "type": 1,
+      "start": "mies",
+      "end": "=gen"
+    },
+    {
+      "id": "N0_mies",
+      "type": 0,
+      "start": "N0",
+      "end": "mies"
+    },
+    {
+      "id": "jolle_rel",
+      "type": 2,
+      "start": "jolle",
+      "end": "rel"
+    },
+    {
+      "id": "jolle_=T",
+      "type": 1,
+      "start": "jolle",
+      "end": "=T"
+    },
+    {
+      "id": "N1_jolle",
+      "type": 0,
+      "start": "N1",
+      "end": "jolle"
+    },
+    {
+      "id": "(jolle1)_N:lle",
+      "type": 2,
+      "start": "(jolle1)",
+      "end": "N:lle"
+    },
+    {
+      "id": "N2_(jolle1)",
+      "type": 0,
+      "start": "N2",
+      "end": "(jolle1)"
+    },
+    {
+      "id": "henkilöä_N:prt",
+      "type": 2,
+      "start": "henkilöä",
+      "end": "N:prt"
+    },
+    {
+      "id": "henkilöä_=gen",
+      "type": 1,
+      "start": "henkilöä",
+      "end": "=gen"
+    },
+    {
+      "id": "henkilöä_=rel",
+      "type": 1,
+      "start": "henkilöä",
+      "end": "=rel"
+    },
+    {
+      "id": "N3_henkilöä",
+      "type": 0,
+      "start": "N3",
+      "end": "henkilöä"
+    },
+    {
+      "id": "N4_jolle",
+      "type": 0,
+      "start": "N4",
+      "end": "jolle"
+    },
+    {
+      "id": "N5_(jolle1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(jolle1)"
+    },
+    {
+      "id": "N9_N4",
+      "type": 4,
+      "start": "N9",
+      "end": "N4"
+    },
+    {
+      "id": "henkilö_N:nom3sg",
+      "type": 2,
+      "start": "henkilö",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "henkilö_=rel",
+      "type": 1,
+      "start": "henkilö",
+      "end": "=rel"
+    },
+    {
+      "id": "henkilö_=gen",
+      "type": 1,
+      "start": "henkilö",
+      "end": "=gen"
+    },
+    {
+      "id": "N0_henkilö",
+      "type": 0,
+      "start": "N0",
+      "end": "henkilö"
+    },
+    {
+      "id": "kasvaa_T",
+      "type": 2,
+      "start": "kasvaa",
+      "end": "T"
+    },
+    {
+      "id": "kasvaa_=v",
+      "type": 1,
+      "start": "kasvaa",
+      "end": "=v"
+    },
+    {
+      "id": "kasvaa_=N:nom3sg",
+      "type": 1,
+      "start": "kasvaa",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N7_kasvaa",
+      "type": 0,
+      "start": "N7",
+      "end": "kasvaa"
+    },
+    {
+      "id": "(kasvaa1)_v",
+      "type": 2,
+      "start": "(kasvaa1)",
+      "end": "v"
+    },
+    {
+      "id": "N8_(kasvaa1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(kasvaa1)"
+    },
+    {
+      "id": "Merjan_N:gen",
+      "type": 2,
+      "start": "Merjan",
+      "end": "N:gen"
+    },
+    {
+      "id": "Merjan_N:acc",
+      "type": 2,
+      "start": "Merjan",
+      "end": "N:acc"
+    },
+    {
+      "id": "N0_Merjan",
+      "type": 0,
+      "start": "N0",
+      "end": "Merjan"
+    },
+    {
+      "id": "N1_Pekka",
+      "type": 0,
+      "start": "N1",
+      "end": "Pekka"
+    },
+    {
+      "id": "N0_virtaamalla",
+      "type": 0,
+      "start": "N0",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N1_Seine",
+      "type": 0,
+      "start": "N1",
+      "end": "Seine"
+    },
+    {
+      "id": "N2_saavuttaa",
+      "type": 0,
+      "start": "N2",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N3_(saavuttaa1)",
+      "type": 0,
+      "start": "N3",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N2_kaupunkia",
+      "type": 0,
+      "start": "N2",
+      "end": "kaupunkia"
+    },
+    {
+      "id": "virtaa_T",
+      "type": 2,
+      "start": "virtaa",
+      "end": "T"
+    },
+    {
+      "id": "virtaa_=v",
+      "type": 1,
+      "start": "virtaa",
+      "end": "=v"
+    },
+    {
+      "id": "virtaa_=N:nom3sg",
+      "type": 1,
+      "start": "virtaa",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "N6_virtaa",
+      "type": 0,
+      "start": "N6",
+      "end": "virtaa"
+    },
+    {
+      "id": "(virtaa1)_v",
+      "type": 2,
+      "start": "(virtaa1)",
+      "end": "v"
+    },
+    {
+      "id": "(virtaa1)_=P",
+      "type": 1,
+      "start": "(virtaa1)",
+      "end": "=P"
+    },
+    {
+      "id": "(virtaa1)_ld",
+      "type": 2,
+      "start": "(virtaa1)",
+      "end": "ld"
+    },
+    {
+      "id": "N7_(virtaa1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(virtaa1)"
+    },
+    {
+      "id": "N1_kaupunkia",
+      "type": 0,
+      "start": "N1",
+      "end": "kaupunkia"
+    },
+    {
+      "id": "N6_teoria",
+      "type": 0,
+      "start": "N6",
+      "end": "teoria"
+    },
+    {
+      "id": "N7_kumoutui",
+      "type": 0,
+      "start": "N7",
+      "end": "kumoutui"
+    },
+    {
+      "id": "N8_(kumoutui1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(kumoutui1)"
+    },
+    {
+      "id": "N5_kaupunkia",
+      "type": 0,
+      "start": "N5",
+      "end": "kaupunkia"
+    },
+    {
+      "id": "N8_Seine",
+      "type": 0,
+      "start": "N8",
+      "end": "Seine"
+    },
+    {
+      "id": "N9_virtaa",
+      "type": 0,
+      "start": "N9",
+      "end": "virtaa"
+    },
+    {
+      "id": "N10_(virtaa1)",
+      "type": 0,
+      "start": "N10",
+      "end": "(virtaa1)"
+    },
+    {
+      "id": "N10_N6",
+      "type": 4,
+      "start": "N10",
+      "end": "N6"
+    },
+    {
+      "id": "N3_N9",
+      "type": 4,
+      "start": "N3",
+      "end": "N9"
+    },
+    {
+      "id": "N8_virtaamalla",
+      "type": 0,
+      "start": "N8",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N11_N8",
+      "type": 4,
+      "start": "N11",
+      "end": "N8"
+    },
+    {
+      "id": "N3_N10",
+      "type": 4,
+      "start": "N3",
+      "end": "N10"
+    },
+    {
+      "id": "N6_Seine",
+      "type": 0,
+      "start": "N6",
+      "end": "Seine"
+    },
+    {
+      "id": "N7_saavuttaa",
+      "type": 0,
+      "start": "N7",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N8_(saavuttaa1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N9_meren",
+      "type": 0,
+      "start": "N9",
+      "end": "meren"
+    },
+    {
+      "id": "minne_C",
+      "type": 2,
+      "start": "minne",
+      "end": "C"
+    },
+    {
+      "id": "minne_=wh",
+      "type": 1,
+      "start": "minne",
+      "end": "=wh"
+    },
+    {
+      "id": "N0_minne",
+      "type": 0,
+      "start": "N0",
+      "end": "minne"
+    },
+    {
+      "id": "(minne1)_=T",
+      "type": 1,
+      "start": "(minne1)",
+      "end": "=T"
+    },
+    {
+      "id": "(minne1)_wh",
+      "type": 2,
+      "start": "(minne1)",
+      "end": "wh"
+    },
+    {
+      "id": "N1_(minne1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(minne1)"
+    },
+    {
+      "id": "(minne2)_N:een",
+      "type": 2,
+      "start": "(minne2)",
+      "end": "N:een"
+    },
+    {
+      "id": "N2_(minne2)",
+      "type": 0,
+      "start": "N2",
+      "end": "(minne2)"
+    },
+    {
+      "id": "N3_virtaamalla",
+      "type": 0,
+      "start": "N3",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N:een_=N:een",
+      "type": 3,
+      "start": "N:een",
+      "end": "=N:een"
+    },
+    {
+      "id": "N4_Seine",
+      "type": 0,
+      "start": "N4",
+      "end": "Seine"
+    },
+    {
+      "id": "N5_saavuttaa",
+      "type": 0,
+      "start": "N5",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N6_(saavuttaa1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N9_Seine",
+      "type": 0,
+      "start": "N9",
+      "end": "Seine"
+    },
+    {
+      "id": "N10_saavuttaa",
+      "type": 0,
+      "start": "N10",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N11_(saavuttaa1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N12_meren",
+      "type": 0,
+      "start": "N12",
+      "end": "meren"
+    },
+    {
+      "id": "N11_N4",
+      "type": 4,
+      "start": "N11",
+      "end": "N4"
+    },
+    {
+      "id": "N11_N5",
+      "type": 4,
+      "start": "N11",
+      "end": "N5"
+    },
+    {
+      "id": "N10_(saavuttaa1)",
+      "type": 0,
+      "start": "N10",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N10_N3",
+      "type": 4,
+      "start": "N10",
+      "end": "N3"
+    },
+    {
+      "id": "N6_meren",
+      "type": 0,
+      "start": "N6",
+      "end": "meren"
+    },
+    {
+      "id": "N7_Seine",
+      "type": 0,
+      "start": "N7",
+      "end": "Seine"
+    },
+    {
+      "id": "N11_N9",
+      "type": 4,
+      "start": "N11",
+      "end": "N9"
+    },
+    {
+      "id": "N12_Seine",
+      "type": 0,
+      "start": "N12",
+      "end": "Seine"
+    },
+    {
+      "id": "N10_N12",
+      "type": 4,
+      "start": "N10",
+      "end": "N12"
+    },
+    {
+      "id": "N3_minne",
+      "type": 0,
+      "start": "N3",
+      "end": "minne"
+    },
+    {
+      "id": "N4_(minne1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(minne1)"
+    },
+    {
+      "id": "N5_(minne2)",
+      "type": 0,
+      "start": "N5",
+      "end": "(minne2)"
+    },
+    {
+      "id": "N8_saavuttaa",
+      "type": 0,
+      "start": "N8",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N9_(saavuttaa1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N9_N6",
+      "type": 4,
+      "start": "N9",
+      "end": "N6"
+    },
+    {
+      "id": "N10_Seine",
+      "type": 0,
+      "start": "N10",
+      "end": "Seine"
+    },
+    {
+      "id": "N10_antoi",
+      "type": 0,
+      "start": "N10",
+      "end": "antoi"
+    },
+    {
+      "id": "N11_(antoi1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N12_kirjan",
+      "type": 0,
+      "start": "N12",
+      "end": "kirjan"
+    },
+    {
+      "id": "N13_Merjalle",
+      "type": 0,
+      "start": "N13",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N11_N13",
+      "type": 4,
+      "start": "N11",
+      "end": "N13"
+    },
+    {
+      "id": "N10_(antoi1)",
+      "type": 0,
+      "start": "N10",
+      "end": "(antoi1)"
+    },
+    {
+      "id": "N12_Pekka",
+      "type": 0,
+      "start": "N12",
+      "end": "Pekka"
+    },
+    {
+      "id": "N13_Pekka",
+      "type": 0,
+      "start": "N13",
+      "end": "Pekka"
+    },
+    {
+      "id": "N12_Merjalle",
+      "type": 0,
+      "start": "N12",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N13_kirjan",
+      "type": 0,
+      "start": "N13",
+      "end": "kirjan"
+    },
+    {
+      "id": "lähellä_P",
+      "type": 2,
+      "start": "lähellä",
+      "end": "P"
+    },
+    {
+      "id": "lähellä_=N:prt",
+      "type": 1,
+      "start": "lähellä",
+      "end": "=N:prt"
+    },
+    {
+      "id": "N3_lähellä",
+      "type": 0,
+      "start": "N3",
+      "end": "lähellä"
+    },
+    {
+      "id": "N5_asui",
+      "type": 0,
+      "start": "N5",
+      "end": "asui"
+    },
+    {
+      "id": "N6_(asui1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(asui1)"
+    },
+    {
+      "id": "N2_lähellä",
+      "type": 0,
+      "start": "N2",
+      "end": "lähellä"
+    },
+    {
+      "id": "N4_asui",
+      "type": 0,
+      "start": "N4",
+      "end": "asui"
+    },
+    {
+      "id": "N5_(asui1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(asui1)"
+    },
+    {
+      "id": "N6_lähellä",
+      "type": 0,
+      "start": "N6",
+      "end": "lähellä"
+    },
+    {
+      "id": "kaupunki_N:nom3sg",
+      "type": 2,
+      "start": "kaupunki",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "kaupunki_=N:gen",
+      "type": 1,
+      "start": "kaupunki",
+      "end": "=N:gen"
+    },
+    {
+      "id": "kaupunki_adjL:n",
+      "type": 2,
+      "start": "kaupunki",
+      "end": "adjL:n"
+    },
+    {
+      "id": "kaupunki_=rel",
+      "type": 1,
+      "start": "kaupunki",
+      "end": "=rel"
+    },
+    {
+      "id": "N2_kaupunki",
+      "type": 0,
+      "start": "N2",
+      "end": "kaupunki"
+    },
+    {
+      "id": "N3_jota",
+      "type": 0,
+      "start": "N3",
+      "end": "jota"
+    },
+    {
+      "id": "N4_(jota1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(jota1)"
+    },
+    {
+      "id": "N5_lähellä",
+      "type": 0,
+      "start": "N5",
+      "end": "lähellä"
+    },
+    {
+      "id": "N7_asui",
+      "type": 0,
+      "start": "N7",
+      "end": "asui"
+    },
+    {
+      "id": "N8_(asui1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(asui1)"
+    },
+    {
+      "id": "tuhoutui_T",
+      "type": 2,
+      "start": "tuhoutui",
+      "end": "T"
+    },
+    {
+      "id": "tuhoutui_=N:nom3sg",
+      "type": 1,
+      "start": "tuhoutui",
+      "end": "=N:nom3sg"
+    },
+    {
+      "id": "tuhoutui_=v",
+      "type": 1,
+      "start": "tuhoutui",
+      "end": "=v"
+    },
+    {
+      "id": "N9_tuhoutui",
+      "type": 0,
+      "start": "N9",
+      "end": "tuhoutui"
+    },
+    {
+      "id": "(tuhoutui1)_v",
+      "type": 2,
+      "start": "(tuhoutui1)",
+      "end": "v"
+    },
+    {
+      "id": "N10_(tuhoutui1)",
+      "type": 0,
+      "start": "N10",
+      "end": "(tuhoutui1)"
+    },
+    {
+      "id": "N8_virtaa",
+      "type": 0,
+      "start": "N8",
+      "end": "virtaa"
+    },
+    {
+      "id": "N9_(virtaa1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(virtaa1)"
+    },
+    {
+      "id": "N9_N5",
+      "type": 4,
+      "start": "N9",
+      "end": "N5"
+    },
+    {
+      "id": "N7_virtaamalla",
+      "type": 0,
+      "start": "N7",
+      "end": "virtaamalla"
+    },
+    {
+      "id": "N9_saavuttaa",
+      "type": 0,
+      "start": "N9",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N11_meren",
+      "type": 0,
+      "start": "N11",
+      "end": "meren"
+    },
+    {
+      "id": "N10_N4",
+      "type": 4,
+      "start": "N10",
+      "end": "N4"
+    },
+    {
+      "id": "N11_N3",
+      "type": 4,
+      "start": "N11",
+      "end": "N3"
+    },
+    {
+      "id": "N10_N8",
+      "type": 4,
+      "start": "N10",
+      "end": "N8"
+    },
+    {
+      "id": "N11_Seine",
+      "type": 0,
+      "start": "N11",
+      "end": "Seine"
+    },
+    {
+      "id": "N9_antoi",
+      "type": 0,
+      "start": "N9",
+      "end": "antoi"
+    },
+    {
+      "id": "N11_kirjan",
+      "type": 0,
+      "start": "N11",
+      "end": "kirjan"
+    },
+    {
+      "id": "N11_Pekka",
+      "type": 0,
+      "start": "N11",
+      "end": "Pekka"
+    },
+    {
+      "id": "N12_N3",
+      "type": 4,
+      "start": "N12",
+      "end": "N3"
+    },
+    {
+      "id": "N11_Merjalle",
+      "type": 0,
+      "start": "N11",
+      "end": "Merjalle"
+    },
+    {
+      "id": "N2_Seine",
+      "type": 0,
+      "start": "N2",
+      "end": "Seine"
+    },
+    {
+      "id": "N3_virtaa",
+      "type": 0,
+      "start": "N3",
+      "end": "virtaa"
+    },
+    {
+      "id": "N4_(virtaa1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(virtaa1)"
+    },
+    {
+      "id": "N3_Seine",
+      "type": 0,
+      "start": "N3",
+      "end": "Seine"
+    },
+    {
+      "id": "N4_saavuttaa",
+      "type": 0,
+      "start": "N4",
+      "end": "saavuttaa"
+    },
+    {
+      "id": "N5_(saavuttaa1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N8_kohti",
+      "type": 0,
+      "start": "N8",
+      "end": "kohti"
+    },
+    {
+      "id": "N9_(kohti1)",
+      "type": 0,
+      "start": "N9",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "N4_(saavuttaa1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(saavuttaa1)"
+    },
+    {
+      "id": "N8_(kohti1)",
+      "type": 0,
+      "start": "N8",
+      "end": "(kohti1)"
+    },
+    {
+      "id": "mikä_C",
+      "type": 2,
+      "start": "mikä",
+      "end": "C"
+    },
+    {
+      "id": "mikä_=T",
+      "type": 1,
+      "start": "mikä",
+      "end": "=T"
+    },
+    {
+      "id": "mikä_wh",
+      "type": 2,
+      "start": "mikä",
+      "end": "wh"
+    },
+    {
+      "id": "N0_mikä",
+      "type": 0,
+      "start": "N0",
+      "end": "mikä"
+    },
+    {
+      "id": "(mikä1)_wh",
+      "type": 2,
+      "start": "(mikä1)",
+      "end": "wh"
+    },
+    {
+      "id": "(mikä1)_N:nom3sg",
+      "type": 2,
+      "start": "(mikä1)",
+      "end": "N:nom3sg"
+    },
+    {
+      "id": "N1_(mikä1)",
+      "type": 0,
+      "start": "N1",
+      "end": "(mikä1)"
+    },
+    {
+      "id": "N3_kysyi",
+      "type": 0,
+      "start": "N3",
+      "end": "kysyi"
+    },
+    {
+      "id": "N4_(kysyi1)",
+      "type": 0,
+      "start": "N4",
+      "end": "(kysyi1)"
+    },
+    {
+      "id": "N5_mitä",
+      "type": 0,
+      "start": "N5",
+      "end": "mitä"
+    },
+    {
+      "id": "N6_(mitä1)",
+      "type": 0,
+      "start": "N6",
+      "end": "(mitä1)"
+    },
+    {
+      "id": "N10_virtaa",
+      "type": 0,
+      "start": "N10",
+      "end": "virtaa"
+    },
+    {
+      "id": "N11_(virtaa1)",
+      "type": 0,
+      "start": "N11",
+      "end": "(virtaa1)"
+    },
+    {
+      "id": "N4_kysyi",
+      "type": 0,
+      "start": "N4",
+      "end": "kysyi"
+    },
+    {
+      "id": "N5_(kysyi1)",
+      "type": 0,
+      "start": "N5",
+      "end": "(kysyi1)"
+    },
+    {
+      "id": "N6_kuka",
+      "type": 0,
+      "start": "N6",
+      "end": "kuka"
+    },
+    {
+      "id": "N7_(kuka1)",
+      "type": 0,
+      "start": "N7",
+      "end": "(kuka1)"
+    },
+    {
+      "id": "N8_(kuka2)",
+      "type": 0,
+      "start": "N8",
+      "end": "(kuka2)"
+    }
+  ],
+  "states": [
+    {
+      "0": {
+        "id": 0,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N0",
+            "ketä"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('ketä')",
+        "checked_features": []
+      },
+      "1": {
+        "id": 1,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N1",
+            "(ketä1)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(ketä1)')",
+        "checked_features": []
+      },
+      "3": {
+        "id": 3,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N2",
+            "(ketä2)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(ketä2)')",
+        "checked_features": []
+      },
+      "4": {
+        "id": 4,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N3",
+            "Merja"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('Merja')",
+        "checked_features": []
+      },
+      "5": {
+        "id": 5,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('kysyi')",
+        "checked_features": []
+      },
+      "6": {
+        "id": 6,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N3",
+            "Merja"
+          ]
+        ],
+        "msg": "spec()",
+        "checked_features": [
+          [
+            "N:nom3sg",
+            "=N:nom3sg"
+          ]
+        ]
+      },
+      "7": {
+        "id": 7,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N5",
+            "(kysyi1)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(kysyi1)')",
+        "checked_features": []
+      },
+      "8": {
+        "id": 8,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N5",
+            "(kysyi1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N2",
+            "(ketä2)"
+          ]
+        ],
+        "msg": "spec('(ketä2)')",
+        "checked_features": [
+          [
+            "N:prt",
+            "=N:prt"
+          ]
+        ]
+      },
+      "11": {
+        "id": 11,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N6",
+            "kuka"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('kuka')",
+        "checked_features": []
+      },
+      "14": {
+        "id": 14,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N7",
+            "(kuka1)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(kuka1)')",
+        "checked_features": []
+      },
+      "17": {
+        "id": 17,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N8",
+            "(kuka2)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(kuka2)')",
+        "checked_features": []
+      },
+      "18": {
+        "id": 18,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N9",
+            "saavuttaa"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('saavuttaa')",
+        "checked_features": []
+      },
+      "19": {
+        "id": 19,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N9",
+            "saavuttaa"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N8",
+            "(kuka2)"
+          ]
+        ],
+        "msg": "spec()",
+        "checked_features": [
+          [
+            "N:nom3sg",
+            "=N:nom3sg"
+          ]
+        ]
+      },
+      "22": {
+        "id": 22,
+        "type": [
+          0
+        ],
+        "head_ids": [
+          [
+            "N10",
+            "(saavuttaa1)"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "add('(saavuttaa1)')",
+        "checked_features": []
+      },
+      "23": {
+        "id": 23,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N9",
+            "saavuttaa"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N10",
+            "(saavuttaa1)"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "v",
+            "=v"
+          ]
+        ]
+      },
+      "20": {
+        "id": 20,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N7",
+            "(kuka1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N9",
+            "saavuttaa"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "T",
+            "=T"
+          ]
+        ]
+      },
+      "15": {
+        "id": 15,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N6",
+            "kuka"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N7",
+            "(kuka1)"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "wh",
+            "=wh"
+          ]
+        ]
+      },
+      "12": {
+        "id": 12,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N5",
+            "(kysyi1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N6",
+            "kuka"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "C",
+            "=C"
+          ]
+        ]
+      },
+      "9": {
+        "id": 9,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N5",
+            "(kysyi1)"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "v",
+            "=v"
+          ]
+        ]
+      },
+      "10": {
+        "id": 10,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N1",
+            "(ketä1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "T",
+            "=T"
+          ]
+        ]
+      },
+      "2": {
+        "id": 2,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N0",
+            "ketä"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N1",
+            "(ketä1)"
+          ]
+        ],
+        "msg": "comp()",
+        "checked_features": [
+          [
+            "wh",
+            "=wh"
+          ]
+        ]
+      },
+      "26": {
+        "id": 26,
+        "type": [
+          7
+        ],
+        "head_ids": [
+          [
+            "N0",
+            "ketä"
+          ]
+        ],
+        "arg_ids": [],
+        "msg": "done()",
+        "checked_features": []
+      },
+      "25": {
+        "id": 25,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N10",
+            "(saavuttaa1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N2",
+            "(ketä2)"
+          ]
+        ],
+        "msg": "spec('(ketä2)')",
+        "checked_features": [
+          [
+            "N:prt",
+            "=N:acc|prt"
+          ]
+        ]
+      },
+      "16": {
+        "id": 16,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N7",
+            "(kuka1)"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "msg": "spec()",
+        "checked_features": [
+          [
+            "T",
+            "=T"
+          ]
+        ]
+      },
+      "24": {
+        "id": 24,
+        "type": [
+          5
+        ],
+        "head_ids": [
+          [
+            "N4",
+            "kysyi"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N10",
+            "(saavuttaa1)"
+          ]
+        ],
+        "msg": "comp('kysyi')",
+        "checked_features": [
+          [
+            "v",
+            "=v"
+          ]
+        ]
+      },
+      "21": {
+        "id": 21,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N9",
+            "saavuttaa"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N5",
+            "(kysyi1)"
+          ]
+        ],
+        "msg": "spec()",
+        "checked_features": [
+          [
+            "v",
+            "=v"
+          ]
+        ]
+      },
+      "13": {
+        "id": 13,
+        "type": [
+          4
+        ],
+        "head_ids": [
+          [
+            "N6",
+            "kuka"
+          ]
+        ],
+        "arg_ids": [
+          [
+            "N1",
+            "(ketä1)"
+          ]
+        ],
+        "msg": "spec()",
+        "checked_features": [
+          [
+            "wh",
+            "=wh"
+          ]
+        ]
+      }
+    }
+  ],
+  "routes": [
+    [
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12,
+        9,
+        10,
+        2,
+        26
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12,
+        9,
+        10,
+        2,
+        26
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        9,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12,
+        9
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        9,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12,
+        9
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        2,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        10,
+        2,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        10,
+        2,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        10,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        10,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        9,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        9,
+        10,
+        2,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        9,
+        10,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        9,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12,
+        9,
+        10
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12,
+        9
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15,
+        12
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        2,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        10,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        8,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        10,
+        2,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        10,
+        2,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        10,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        10,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        17,
+        18,
+        19,
+        22,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        9,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        17,
+        18,
+        19,
+        21,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        8,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        12,
+        17,
+        18,
+        19,
+        21,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        17,
+        18,
+        19,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        9,
+        10,
+        2,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        9,
+        10,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        9,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        22,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        8,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        12,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        15,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25,
+        24
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        20,
+        22
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12,
+        9,
+        10
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12,
+        9
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15,
+        12
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20,
+        15
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23,
+        20
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25,
+        23
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22,
+        25
+      ],
+      [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        14,
+        17,
+        18,
+        19,
+        22
+      ]
+    ]
+  ]
+}

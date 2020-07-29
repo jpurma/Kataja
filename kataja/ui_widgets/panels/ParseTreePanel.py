@@ -34,10 +34,12 @@ class ParseTreePanel(Panel):
         self.mode_button.show()
         self.mode_button.setFixedSize(20, 20)
         self.node_count = QtWidgets.QLabel('nodes:', parent=self)
+        self.node_count.setFixedWidth(80)
         self.node_count.move(8, 18)
         self.node_count.show()
         self.edge_count = QtWidgets.QLabel('edges:', parent=self)
         self.edge_count.move(8, 32)
+        self.edge_count.setFixedWidth(80)
         self.edge_count.show()
 
         ctrl.main.forest_changed.connect(self.prepare_model)

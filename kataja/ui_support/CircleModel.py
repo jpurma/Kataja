@@ -7,13 +7,14 @@ from kataja.ui_support.TreeModel import ParseTreeBaseModel
 
 
 class PathNode:
-    def __init__(self, state_id, node_type, msg):
-        self.state_id = ''
+    def __init__(self, state_id, node_type, msg, state_path):
+        self.state_id = state_id
         self.parents = []
         self.x = 0
         self.y = 0
         self.msg = msg
         self.node_type = node_type
+        self.state_path = state_path
 
     def add_parent(self, parent):
         if parent not in self.parents:
@@ -57,12 +58,12 @@ class CircleModel(ParseTreeBaseModel):
                 states = [int(state) for state in state_path.split('_')]
                 prev_node_id = None
                 state_id = None
-                for state_id in states:
+                for i, state_id in enumerate(states):
                     if state_id in nodes:
                         node = nodes[state_id]
                     else:
                         command, node_type = state_metadata[state_id]
-                        node = PathNode(state_id, node_type, command)
+                        node = PathNode(state_id, node_type, command, '_'.join(str(s) for s in states[:i + 1]))
                         nodes[state_id] = node
                     if prev_node_id:
                         node.add_parent(prev_node_id)
@@ -98,7 +99,7 @@ class CircleModel(ParseTreeBaseModel):
         for node_id, node in nodes.items():
             node.nx = node.x * w2 + w2 + 4
             node.ny = node.y * h2 + h2 + 4
-            g_node = DTNode(node_id, node.nx, node.ny, node_id, node.node_type)
+            g_node = DTNode(node.state_path, node.nx, node.ny, node.msg, node.node_type)
             graph_nodes[node_id] = g_node
             sc.addItem(g_node)
         for key, graph_node in graph_nodes.items():
