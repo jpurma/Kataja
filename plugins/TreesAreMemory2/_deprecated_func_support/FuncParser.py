@@ -1,7 +1,7 @@
 try:
     from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
     from plugins.TreesAreMemory2.State import State
-    from plugins.TreesAreMemory2.FuncSupport import context, FuncSupport, add_feature
+    from plugins.TreesAreMemory2._deprecated_func_support.FuncSupport import context, FuncSupport, add_feature
     from plugins.TreesAreMemory2.Feature import Feature
     from plugins.TreesAreMemory2.operations import Add, Spec, Comp, Adj
     from plugins.TreesAreMemory2.route_utils import *
@@ -21,7 +21,6 @@ class FuncParser:
         self.last_used_feature = 0
         self.parser = parser
         context.parser = self
-        context.states = parser.states
         context.Spec = Spec
         context.Add = Add
         context.Adj = Adj

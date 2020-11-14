@@ -15,27 +15,6 @@ unadjoinable_categories = {'T', 'V', 'rel', 'että', 'v', 'neg', 'ld'}
 phase_borders = {'rel'}
 
 
-def get_free_precedent_from_route_o(route):
-    connected_heads = {route[-1].state.head}
-    for operation in reversed(route):
-        if operation.state.head not in connected_heads:
-            fail = False
-            for op in route:
-                if op.state.arg_ == operation.state.head:
-                    fail = True
-                    break
-                elif op is operation:
-                    break
-            #print('from route ', route, ' free precedent is ', operation)
-            if not fail:
-                return operation
-        if operation.state.arg_: # and not operation.long_distance:
-            connected_heads.add(operation.state.arg_)
-        if operation.state.state_type == ADJUNCT:
-            for head in operation.state.head:
-                connected_heads.add(head)
-
-
 def get_label(const):
     if not const:
         return None
@@ -99,9 +78,9 @@ def find_matches(pos_features, neg_features, neg_signs='-='):
 
 def head_precedes(precedent, top):
     for operation in top.as_route():
-        if operation.state.head is precedent.state.head:
+        if operation.head is precedent.head:
             return True
-        elif operation.state.head is top.state.head:
+        elif operation.head is top.head:
             return False
 
 
@@ -180,9 +159,15 @@ def flatten(head):
         return [head]
 
 
-def find_shared_heads(a_operation, b_operation):
-    flatten_a = set(flatten(a_operation.state.head))
-    flatten_b = set(flatten(b_operation.state.head))
+def print_route_str(route):
+    print(f'derivation route, {len(route)} steps')
+    for ri in route:
+        print(ri)
+    print('--------')
+
+def find_shared_heads(route_item_a, route_item_b):
+    flatten_a = set(flatten(route_item_a.operation.head))
+    flatten_b = set(flatten(route_item_b.operation.head))
     return flatten_a & flatten_b
 
 
@@ -200,42 +185,10 @@ def find_operation_with_features(feats, route):
 
 
 def make_path(route):
-    return '_'.join(str(op.state.state_id) for op in route)
+    return '_'.join(str(op.uid) for op in route)
 
 
 def route_str(path):
-    return [op.state.state_id for op in path]
+    return [op.uid for op in path]
 
-
-def linearize(route):
-    """ This is a very simple linearisation because route already has elements in correct order.
-    To verify that the structure is valid, one should try to linearise the constituent tree """
-    result = []
-    for operation in route:
-        state = operation.state
-        if state.state_type == state.ADD:
-            label = state.get_head_label()
-            if label and not label.startswith('('):
-                result.append(state.get_head_label())
-    str_result = ' '.join(result)
-    debug_linearization and print('linearised: ', str_result)
-    return str_result
-
-
-def is_fully_connected(route):
-    heads = set()
-    args = set()
-
-    for operation in route:
-        state = operation.state
-        if state.head not in args:
-            heads.add(state.head)
-        if state.arg_:
-            args.add(state.arg_)
-            heads.discard(state.arg_)
-        elif state.state_type == ADJUNCT:
-            head1, head2 = state.head
-            heads.discard(head1)
-            heads.discard(head2)
-    return len(heads) == 1
 

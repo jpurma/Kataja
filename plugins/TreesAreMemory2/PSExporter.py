@@ -90,7 +90,7 @@ class PSExporter(Exporter):
                     assert features_have_host(const)
                     self.set_const(path, trees)
                 elif state.state_type == state.ADJUNCT:
-                    head_path1 = make_path(passed_route[:passed_route.index(operation.other_head_op)+1])
+                    head_path1 = make_path(passed_route[:passed_route.index(operation.arg_op)+1])
                     head_path2 = make_path(passed_route[:-1])
                     head1 = self.get_const(head_path1)[0]
                     head2 = self.get_const(head_path2)[0]

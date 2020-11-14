@@ -13,7 +13,9 @@ class State:
     ADD = 0
     ADJUNCT = 6
     SPECIFIER = 4
-    COMPLEMENT = 5
+    COMPLEMENT = 1
+    PROMISE_COMPLEMENT = 3
+    RESOLVE_COMPLEMENT = 5
     RETURN = 8
 
     @staticmethod
