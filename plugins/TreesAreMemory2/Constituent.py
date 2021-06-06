@@ -35,17 +35,27 @@ class Constituent(BaseConstituent or object):
         def __str__(self):
             return self.as_string(set())
 
-        def as_string(self, done):
-            if self in done:
-                return '...'
-            done.add(self)
-            if self.parts:
-                return f'[{self.parts[0].as_string(done)} {self.parts[1].as_string(done)}]'
-            else:
-                return repr(self.label)
-
         def __repr__(self):
             return str(self)
+
+    def __str__(self):
+        return self.label
+        #return f'{self.label}: {self.features}'
+
+    def __repr__(self):
+        return str(self)
+
+    def as_string(self, done=None, with_id=False):
+        if done is None:
+            done = set()
+        if self in done:
+            return '...'
+        done.add(self)
+        id_part = f'({str(id(self))[-5:]})' if with_id else ''
+        if self.parts:
+            return f'[{self.parts[0].as_string(done, with_id)} {self.parts[1].as_string(done, with_id)}]{id_part}'
+        else:
+            return self.label + id_part
 
     @property
     def left(self):

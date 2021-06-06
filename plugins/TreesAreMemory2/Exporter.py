@@ -1,21 +1,19 @@
 try:
     from plugins.TreesAreMemory2.Constituent import Constituent
-    from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
     from plugins.TreesAreMemory2.WebWeaver import Web
     from kataja.syntax.SyntaxState import SyntaxState
     from plugins.TreesAreMemory2.route_utils import *
     from plugins.TreesAreMemory2.operations import Add, Comp, Spec, Adj, Done, Fail
 except ImportError:
-    from SimpleConstituent import SimpleConstituent
     from Constituent import Constituent
     from WebWeaver import Web
     from route_utils import *
-    from operations import Add, Comp, Spec, Adj, Done, Fail, Return
+    from operations import Add, Comp, Spec, Adj, Done, Fail
     SyntaxState = None
 from collections import Iterable, defaultdict, Counter
 from pathlib import Path
 import time
-WEAVE = False
+WEAVE = True
 
 DATA_PATH = Path(__file__).parent.absolute() / 'webviewer/data/data.json'
 
@@ -149,32 +147,36 @@ class Exporter:
                 return const_.keystring
             const_.keystring = [create_keystring(part) for part in const_.parts] if const_.parts else const_.uid
 
+        def find_add(starting_ri):
+            ri = starting_ri
+            while ri:
+                if ri.operation.state_type is ADD and ri.operation.head is starting_ri.operation.head:
+                    return ri
+                ri = ri.parent
+
         operation = route_item.operation
         if operation.head in branches:
             const = branches[operation.head]
             if isinstance(const, str):
                 print('looping structure at ', operation)
-                const = Constituent(f'loop: {operation.head.label}')
+                const = Constituent(f'loop: {get_label(operation.head)}')
                 const.long_key = f'loop:{operation.uid}'
+                const.original_head = operation.head
                 self.c_counter += 1
                 route_item.const = const
                 return const
             return branches[operation.head]
-        print('building head ', operation.head, id(operation.head), route_item.path)
         branches[operation.head] = 'loop'  # loops can be detected by trying to access this in sub branch, before the
         # branch is completed and this replaced with proper constituent
         #print('parts: ', heads[operation.head])
         const = None
         specs, adjs, comps = heads[operation.head]
         if adjs:
-            print('head is formed by adjunction: ', adjs)
             for adj_item in adjs:
                 head0, head1 = adj_item.operation.head
                 head_item0 = adj_item.parent.find_closest_head(head0)
                 head_item1 = adj_item.parent.find_closest_head(head1)
-                print('find adjunct part0 from path: ', head_item0.path)
                 adj0 = self._head_chain_to_consts(head_item0, heads, branches)
-                print('find adjunct part1 from path: ', head_item1.path)
                 adj1 = self._head_chain_to_consts(head_item1, heads, branches)
                 long_key = f'A{adj0.long_key}{adj1.long_key}'
                 if long_key in self.route_items_to_consts:
@@ -188,22 +190,22 @@ class Exporter:
                     const.original_head = adj_item.operation.head
                     self.c_counter += 1
         else:
-            long_key = operation.uid
-            if operation.uid in self.roots:
-                const = self.roots[operation.uid]
+            add_item = find_add(route_item)
+            add_op = add_item.operation
+            long_key = add_op.uid
+            if add_op.uid in self.roots:
+                const = self.roots[add_op.uid]
                 route_item.const = const
             else:
-                const = Constituent(operation.get_head_label(), features=list(operation.head.features))
+                const = Constituent(add_op.get_head_label(), features=list(add_op.head.features))
                 const.long_key = long_key
-                const.path = route_item.path
+                const.path = add_item.path
                 self.c_counter += 1
-                self.roots[operation.uid] = const
-                const.original_head = operation.head
-                route_item.const = const
+                self.roots[add_op.uid] = const
+                const.original_head = add_op.head
+                add_item.const = const
             self.rehost_features(const)
         for spec_item in specs:
-            print('head has spec: ', spec_item)
-            print('find spec from path: ', spec_item.path)
             arg = self._head_chain_to_consts(spec_item.find_arg_item(), heads, branches)
             long_key = f'S{arg.long_key}{const.long_key}'
             spec_item.long_key = long_key
@@ -219,8 +221,6 @@ class Exporter:
                 spec_item.const = const
                 self.c_counter += 1
         for comp_item in comps:
-            print('head has comp: ', comp_item)
-            print('find comp from path: ', comp_item.path)
             arg = self._head_chain_to_consts(comp_item.find_arg_item(), heads, branches)
             long_key = f'C{const.long_key}{arg.long_key}'
             comp_item.long_key = long_key
@@ -272,70 +272,15 @@ class Exporter:
                 specs, adjs, comps = heads.get(operation.head, ([], [], []))
                 adjs.append(route_item)
                 heads[operation.head] = specs, adjs, comps
-                free_route_items = remove_head(free_route_items, operation.arg)
-                free_route_items = remove_head(free_route_items, operation.head)
+                free_route_items = remove_head(free_route_items, operation.head[0])
+                free_route_items = remove_head(free_route_items, operation.head[1])
                 free_route_items.append(route_item)
             if not route_item.consts:
-                print('*********************** route step ', route_item.path, route_item)
-                print('free route items: ', free_route_items)
+                if not free_route_items:
+                    print('no free route items at route item ', route_item)
                 route_item.consts = self._flat_heads_to_consts(heads, free_route_items)
         #print('open comps at end: ', open_comps)
-        print('**** finished exporting route')
-        print_route_str(route)
-        print(f'{self.c_counter=}')
-
-    def to_constituents_old(self, route):
-
-        steps = []
-        recent_heads = {}
-        prev_const = None
-        passed_route = []
-        for operation in route:
-            passed_route.append(operation)
-            path = operation.path
-            if type(operation) is Add:
-                if operation.uid in self.roots:
-                    const = self.roots[operation.uid]
-                else:
-                    const = Constituent(operation.get_head_label(), features=list(operation.features))
-                    self.roots[operation.uid] = const
-                self.rehost_features(const)
-                original_heads[operation.head.uid] = const
-                if prev_const and prev_const.head:
-                    const = Constituent(const.label, parts=[prev_const, const], head=const.head)
-                self.set_const(path, const)
-                recent_heads[operation.head.uid] = const
-            elif type(operation) is Spec:
-                arg = recent_heads[operation.arg_op.get_head_uid()]
-                head = recent_heads[operation.head_op.get_head_uid()]
-                const = Constituent(head.label, parts=[arg, head], checked_features=operation.checked_features,
-                                    argument=arg, head=head.head)
-                self.set_const(path, const)
-                recent_heads[operation.get_head_uid()] = const
-            elif type(operation) is Comp:
-                head = recent_heads[operation.get_head_uid()]
-                arg = recent_heads[operation.get_arg_uid()]
-                const = Constituent(head.label, parts=[head, arg], argument=arg, head=head.head, checked_features=operation.checked_features)
-                self.set_const(path, const)
-                recent_heads[operation.get_head_uid()] = const
-            elif type(operation) is Adj:
-                head1 = recent_heads[operation.arg_op.get_head_uid()]
-                head2 = recent_heads[operation.head_op.get_head_uid()]
-                const = Constituent(f'{head1.label}+{head2.label}', parts=[head1, head2], head=(head1.head, head2.head))
-                self.set_const(path, const)
-                recent_heads[operation.get_head_uid()] = const
-            elif type(operation) is Done or type(operation) is Fail:
-                steps.append(([const], path))
-                #steps.append((self.reform_const(route, original_heads), path))
-                continue
-            else:
-                print(type(operation))
-                const = recent_heads[operation.get_head_uid()]
-                self.set_const(path, const)
-                recent_heads[operation.get_head_uid()] = const
-            steps.append(([const], path))
-            prev_const = const
-        return steps
+        #print(f'{self.c_counter=}')
 
     def find_closest_const(self, head, consts):
         def _find_const(const):
@@ -382,19 +327,26 @@ class Exporter:
 
                     if route_item.path and type(operation) is not Done and type(operation) is not Fail:
                         last_const = self.find_closest_const(route_item.operation.head, route_item.consts)
-                        groups = [('', [last_const])]
-                        precedent_consts = []
-                        for precedent_item in route_item.free_precedents:
-                            precedent_consts.append(self.find_closest_const(precedent_item.operation.head, route_item.consts))
+                        groups = [('last', [last_const])]
+                        local_head_consts = []
+                        free_head_consts = []
+                        local_heads = route_item.local_heads
+                        if len(local_heads) < 2 and route_item.parent:
+                            local_heads = route_item.parent.local_heads
 
-                        heads = [ri.operation.get_head_label() for ri in route_item.free_precedents]
-                        assert len(heads) == len(set(heads))
-                        print(route_item.operation.get_head_label(), heads)
-                        assert route_item.operation.head not in heads
-                        groups.append(('', precedent_consts))
-                        if route_item.previous:
-                            previous_const = self.find_closest_const(route_item.previous.operation.head, route_item.consts)
-                            groups.append(('', [previous_const]))
+                        for precedent_item in local_heads:
+                            local_head_consts.append(self.find_closest_const(precedent_item.operation.head, route_item.consts))
+                        for precedent_item in route_item.free_heads:
+                            free_head_consts.append(self.find_closest_const(precedent_item.operation.head, route_item.consts))
+
+                        #heads = [ri.operation.get_head_label() for ri in route_item.free_precedents]
+                        #assert len(heads) == len(set(heads))
+                        #assert route_item.operation.head not in heads
+                        groups.append(('free', free_head_consts))
+                        groups.append(('local', local_head_consts))
+                        if route_item.parent:
+                            parent_const = self.find_closest_const(route_item.parent.operation.head, route_item.consts)
+                            groups.append(('parent', [parent_const]))
 
                     arg = f', {repr(operation.get_arg_label())}' if operation.arg else ''
                     #ld = ', long_distance=True' if route_item.long_distance else ''
@@ -404,17 +356,9 @@ class Exporter:
                     msg = f"{paths_n}. {operation.__class__.__name__}({repr(operation.get_head_label())}{arg}{checked}{ld})"
                     syn_state = SyntaxState(tree_roots=route_item.consts, msg=msg, state_id=route_item.path, parent_id=parent_path,
                                             groups=groups, state_type=operation.state_type, sort_order=paths_n)
-                    #print([const.full_tree(), state.entry, path, parent_path, groups, state.state_type])
+                    #print('exported consts ', [const.as_string(with_id=True) for const in route_item.consts])
                     self.forest.add_step(syn_state)
                     parent_path = route_item.path
-                #path += '_99'
-                #msg = 'flip promises'
-                #flipped_const = self.flip_complements(route)
-                #flipped_const = self.const_with_proper_complements(route)
-                #syn_state = SyntaxState(tree_roots=[flipped_const], msg=msg, state_id=path, parent_id=parent_path,
-                #                        groups=[], state_type=operation.state_type, sort_order=paths_n)
-                #print([const.full_tree(), state.entry, path, parent_path, groups, state.state_type])
-                #self.forest.add_step(syn_state)
 
             print(f'exporting {len(routes)} routes with {len(paths)} different path parts took {time.time() - t} seconds')
 

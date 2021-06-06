@@ -15,6 +15,7 @@ class Operation:
         self.head = head
         self.arg = arg
         self.uid = f'{self.get_head_uid()}{self.get_arg_uid()}S{self.state_type}'
+        self.ord = 0
         self.msg = msg
         self.entry = entry
         self.checked_features = checked_features or []
@@ -38,10 +39,13 @@ class Operation:
         return route_item.parent
 
     def calculate_features(self, route_item):
-        return list(self.head.features)
+        return self.head.features
 
-    def calculate_free_precedents(self, route_item):
-        return route_item.parent.free_precedents if route_item.parent else []
+    def calculate_free_heads(self, route_item):
+        return []
+
+    def calculate_local_heads(self, route_item):
+        return []
 
     def __repr__(self):
         checked_feats = ', ' + str(self.checked_features) if self.checked_features else ''

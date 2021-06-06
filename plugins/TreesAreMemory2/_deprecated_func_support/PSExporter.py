@@ -1,17 +1,17 @@
-try:
-    from plugins.TreesAreMemory2.Constituent import Constituent
-    from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
-    from plugins.TreesAreMemory2.WebWeaver import Web
-    from plugins.TreesAreMemory2.Exporter import *
-    from kataja.syntax.SyntaxState import SyntaxState
-    from plugins.TreesAreMemory2.route_utils import *
-except ImportError:
-    from SimpleConstituent import SimpleConstituent
-    from Exporter import *
-    from Constituent import Constituent
-    from WebWeaver import Web
-    from route_utils import *
-    SyntaxState = None
+#try:
+from plugins.TreesAreMemory2.Constituent import Constituent
+from plugins.TreesAreMemory2.SimpleConstituent import SimpleConstituent
+from plugins.TreesAreMemory2.WebWeaver import Web
+from plugins.TreesAreMemory2.Exporter import *
+from kataja.syntax.SyntaxState import SyntaxState
+from plugins.TreesAreMemory2.route_utils import *
+# except ImportError:
+#     from SimpleConstituent import SimpleConstituent
+#     from Exporter import *
+#     from Constituent import Constituent
+#     from WebWeaver import Web
+#     from route_utils import *
+#     SyntaxState = None
 from collections import Iterable
 import time
 WEAVE = False

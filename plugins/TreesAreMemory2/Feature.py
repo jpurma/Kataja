@@ -19,6 +19,8 @@ class Feature(BaseFeature):
             self.name = str(name)
             self.value = value
             self.sign = sign
+        # If feature matches multiple values, it is practical to have values available as set:
+        self.values = set(value.split('|')) if value else set()
         # It is useful to have a fast route from a feature to lexical element where it is used.
         self.host = None
         # checks and checked_by are computed relatively from the surroundings when creating derivations, but they can

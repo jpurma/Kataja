@@ -38,17 +38,19 @@ def flatten_checked(checked_features):
 class RouteItem:
 
     def __init__(self, parent, operation):
-        self.uid = operation_ids.get_id()
         self.parent = parent
         self.operation = operation
+        self.path = f'{self.parent.path}_{self.operation.ord}' if self.parent else str(self.operation.ord)
+        self.uid = self.operation.ord
         self.features = []
-        self.free_precedents = []
+        self.free_heads = []
+        self.local_heads = []
         self.flat_checked_features = flatten_checked(operation.checked_features)
         self.features = self.operation.calculate_features(self)
-        print(f'route item {self} has features: {self.features}')
         self.previous = self.calculate_previous_item()
-        self.free_precedents = self.operation.calculate_free_precedents(self)
-        self.path = f'{self.parent.path}_{self.uid}' if self.parent else str(self.uid)
+        self.used_features = self.calculate_used_features()
+        self.free_heads = self.operation.calculate_free_heads(self)
+        self.local_heads = self.operation.calculate_local_heads(self)
         self.consts = []
         debug_state and print('creating new RouteItem: ', self)
 
@@ -68,6 +70,18 @@ class RouteItem:
     def __hash__(self):
         return self.uid
 
+    @property
+    def head(self):
+        return self.operation.head
+
+    @property
+    def arg(self):
+        return self.operation.arg
+
+    @property
+    def label(self):
+        return self.operation.get_head_label()
+
     def as_route(self):
         route = []
         route_item = self
@@ -75,10 +89,6 @@ class RouteItem:
             route.append(route_item)
             route_item = route_item.parent
         return list(reversed(route))
-
-    def first_free_precedent(self):
-        if self.free_precedents:
-            return self.free_precedents[0]
 
     def is_phase_border(self):
         for feat in self.features:
@@ -92,22 +102,56 @@ class RouteItem:
             return self.parent.find_closest_head(head)
 
     def find_arg_item(self):
-        if self.operation.arg:
+        if self.operation.arg and self.parent:
             return self.parent.find_closest_head(self.operation.arg)
 
     def find_head_item(self):
-        return self.parent.find_closest_head(self.operation.head)
+        if self.parent:
+            return self.parent.find_closest_head(self.operation.head)
 
-    def find_previous_added_head(self):
-        if type(self.operation) is Adj or type(self.operation) is Add:
+    def find_top_head(self):
+        head = self.head
+        top_ri = self
+        prev = self.parent
+        while prev:
+            if prev.operation.arg is head:
+                head = prev.head
+                top_ri = prev
+            prev = prev.parent
+        return top_ri
+
+    def find_previous_added_head(self, excluded):
+        if type(self.operation) is Adj or type(self.operation) is Add and self.operation.head is not excluded:
             return self.operation.head
         elif self.parent:
-            return self.parent.find_previous_added_head()
+            return self.parent.find_previous_added_head(excluded)
 
     def calculate_previous_item(self):
         if self.parent:
-            prev_added_head = self.parent.find_previous_added_head()
+            prev_added_head = self.parent.find_previous_added_head(self.operation.head)
             if prev_added_head:
                 found = self.find_closest_head(prev_added_head)
-                print(f'for {self} previous item is {found}')
                 return found
+
+    def find_closest_merging_item(self, head):
+        if self.operation.checked_features and (self.operation.head is head or self.operation.arg is head):
+            return self
+        elif self.parent:
+            return self.parent.find_closest_head(head)
+
+    def calculate_used_features(self):
+        feats = list(self.flat_checked_features)
+        route_item = self.parent
+        relevant_heads = {self.operation.head}
+        while route_item:
+            if route_item.flat_checked_features:
+                if route_item.operation.head in relevant_heads:
+                    feats += route_item.flat_checked_features
+                elif route_item.operation.arg in relevant_heads:
+                    feats += route_item.flat_checked_features
+                    relevant_heads.add(route_item.operation.head)
+            route_item = route_item.parent
+        return feats
+
+    def not_used(self, features):
+        return [f for f in features if f not in self.used_features]

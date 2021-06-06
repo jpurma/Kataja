@@ -29,10 +29,16 @@ class Add(Operation):
         msg = f"add '{const.label}'"
         Operation.__init__(self, const, msg=msg, entry=f"add('{const.label}')")
 
-    def calculate_free_precedents(self, route_item):
+    def calculate_top_head(self, route_item):
+        return [self]
+
+    def calculate_free_heads(self, route_item):
         if route_item.parent:
-            return [route_item.parent] + route_item.parent.free_precedents
-        return []
+            return [route_item] + route_item.parent.free_heads
+        return [route_item]
+
+    def calculate_local_heads(self, route_item):
+        return [route_item]
 
 
 class Spec(Operation):
@@ -42,22 +48,36 @@ class Spec(Operation):
     def __init__(self, head, spec, checked_features, long_distance=False):
         ld = ' (long distance)' if long_distance else ''
         msg = f"raise '{spec}' as specifier arg for: '{head}' ({checked_features or ''}){ld}"
-        entry = f"spec('{spec}')" if long_distance else 'spec()'
+        #entry = f"spec('{spec}')" if long_distance else 'spec()'
+        entry = f"spec('{spec}', '{head}')"
         Operation.__init__(self, head, arg=spec, msg=msg, entry=entry, checked_features=checked_features)
 
     def calculate_features(self, route_item):
         head_item = route_item.find_head_item()
         return [feat for feat in head_item.features if feat not in route_item.flat_checked_features]
 
-    def calculate_free_precedents(self, route_item):
-        used = {self.head, self.arg}
-        arg_item = route_item.find_arg_item()
-        free_precedents = []
-        for precedent in arg_item.free_precedents:
-            if precedent.operation.head not in used:
-                free_precedents.append(precedent)
-                used.add(precedent.operation.head)
-        return free_precedents
+    def calculate_top_head(self, route_item):
+        return route_item.find_head_item()
+
+    def calculate_free_heads(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head is not self.head and ri.head is not self.arg]
+
+    def calculate_local_heads(self, route_item):
+        head = route_item.head
+        parent = route_item.parent
+        local_heads = [route_item]
+        heads = [route_item.head]
+        while parent:
+            if parent.arg is head:
+                head = parent.head
+                if head not in heads:
+                    local_heads.append(parent)
+                    heads.append(parent.head)
+            parent = parent.parent
+        return local_heads
+
+    def calculate_local_heads2(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.parent.local_heads if ri.head is not self.head and ri.head is not self.arg]
 
 
 class Comp(Operation):
@@ -67,30 +87,40 @@ class Comp(Operation):
     def __init__(self, head, comp, checked_features, long_distance=False):
         ld = ' (long distance)' if long_distance else ''
         msg = f"set '{comp}' as complement arg for: '{head}' ({checked_features or ''}){ld}"
-        entry = f"comp('{head}')" if long_distance else 'comp()'
+        #entry = f"comp('{head}')" if long_distance else 'comp()'
+        entry = f"comp('{head}', '{comp}')"
         Operation.__init__(self, head, arg=comp, entry=entry, msg=msg, checked_features=checked_features)
-
-    def get_as_previous(self):
-        return self.previous
 
     def calculate_features(self, route_item):
         head_item = route_item.find_head_item()
         return [feat for feat in head_item.features if feat not in route_item.flat_checked_features]
 
-    def calculate_free_precedents(self, route_item):
-        used = {self.head, self.arg}
-        # pitäisi estää se, että pääsana tai tämän pääsanan päässana olisi vapaissa edeltäjissä jotta sitä ei käytetä
-        # speccinä tai comppina ja tehdä kehää.
-        free_precedents = []
-        arg_item = route_item.find_arg_item()
-        print('arg_item free precedents: ', arg_item.free_precedents)
-        for precedent in [route_item.parent] + arg_item.free_precedents:
-            print('used: ', used)
-            if precedent.operation.head not in used:
-                free_precedents.append(precedent)
-                used.add(precedent.operation.head)
-        print(f'set free precedents for {route_item}****: {free_precedents}')
-        return free_precedents
+    def calculate_top_head(self, route_item):
+        head = route_item.head
+        parent = route_item.parent
+        heads = []
+        while parent:
+            if parent.arg is head:
+                head = parent.head
+                if head not in heads:
+                    heads.append(parent)
+
+    def calculate_free_heads(self, route_item):
+        return [route_item if ri.head is self.head else ri for ri in route_item.parent.free_heads if ri.head is not self.arg]
+
+    def calculate_local_heads(self, route_item):
+        head = route_item.head
+        parent = route_item.parent
+        local_heads = [route_item.find_arg_item(), route_item]
+        heads = [route_item.arg, route_item.head]
+        while parent:
+            if parent.arg is head:
+                head = parent.head
+                if head not in heads:
+                    local_heads.append(parent)
+                    heads.append(parent.head)
+            parent = parent.parent
+        return local_heads
 
 
 class Adj(Operation):
@@ -99,7 +129,9 @@ class Adj(Operation):
 
     def __init__(self, head, other_head):
         msg = f"set '{other_head}' as adjunct for {head}"
-        Operation.__init__(self, (other_head, head), msg=msg, entry="adj()")
+        # entry = "adj()"
+        entry = f"adj('{other_head}', '{head}')"
+        Operation.__init__(self, (other_head, head), msg=msg, entry=entry)
 
     def calculate_features(self, route_item):
         head, other_head = self.head
@@ -107,12 +139,16 @@ class Adj(Operation):
         other_head_op = route_item.parent.find_closest_head(other_head)
         return union(head_op.features, other_head_op.features)
 
-    def calculate_free_precedents(self, route_item):
-        free_precedents = []
-        for precedent in [route_item.parent] + route_item.parent.free_precedents:
-            if precedent.operation.head not in self.head:
-                free_precedents.append(precedent)
-        return free_precedents
+    # route itemin free headsin on tarkoitus olla ne route itemit jotka ovat käytettävissä silloin kun tämä on viimeinen
+    # route item ja yritetään päättää minkä toisen route itemin kanssa tämä voi yhdistyä. Eli free heads ei sisällä
+    # tätä route itemiä itseään, mutta sisältää edeltävän elementin ylimmän pään.
+    def calculate_free_heads(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head not in self.head]
+
+    # [.A+B A B]
+
+    def calculate_local_heads(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head not in self.head]
 
 
 class Done(Operation):
@@ -122,6 +158,9 @@ class Done(Operation):
     def __init__(self, head, msg=""):
         Operation.__init__(self, head, msg=msg, entry="done()")
 
+    def calculate_features(self, route_item):
+        return []
+
 
 class Fail(Operation):
     sort_order = 8
@@ -129,3 +168,6 @@ class Fail(Operation):
 
     def __init__(self, head, msg=""):
         Operation.__init__(self, head, msg, entry="fail()")
+
+    def calculate_features(self, route_item):
+        return []

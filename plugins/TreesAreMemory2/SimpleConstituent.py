@@ -7,7 +7,8 @@ class SimpleConstituent:
         self.uid = id(self)
 
     def __str__(self):
-        return f'{self.label}: {self.features}'
+        return self.label
+        #return f'{self.label}: {self.features}'
 
     def __repr__(self):
         return str(self)

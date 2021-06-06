@@ -2,8 +2,10 @@ import json
 from pathlib import Path
 from collections import Counter
 try:
+    from plugins.TreesAreMemory2.operations import Add
     from plugins.TreesAreMemory2.route_utils import get_label
 except ImportError:
+    from operations import Add
     from route_utils import get_label
 
 
@@ -32,7 +34,7 @@ class WNode:
         return {'id': self.id, 'type': self.type, 'features': self.features}
 
 
-class WState:
+class WOperation:
     def __init__(self, id, type, msg, checked_features):
         self.id = id
         self.type = type,
@@ -46,9 +48,9 @@ class WState:
                 'arg_ids': self.arg_ids, 'msg': self.msg, 'checked_features': self.checked_features}
 
     @staticmethod
-    def from_state(state):
-        checked_features = [(str(f1), str(f2)) for f1, f2 in state.checked_features]
-        return WState(state.state_id, state.state_type, state.entry, checked_features)
+    def from_operation(operation):
+        checked_features = [(str(f1), str(f2)) for f1, f2 in operation.checked_features]
+        return WOperation(operation.uid, operation.state_type, operation.entry, checked_features)
 
 
 class WEdge:
@@ -89,19 +91,19 @@ class Web:
         self.nodes = {}
         self.done_uids = {}
         self.edges = {}
-        self.all_states = []
+        self.all_operations = []
         self.all_routes = []
-        self.states = {}
+        self.operations = {}
         self.routes = []
         self.heads = []
         self.label_count = Counter()
 
     def reset(self):
         print('reset web')
-        if self.states:
-            self.all_states.append(self.states)
+        if self.operations:
+            self.all_operations.append(self.operations)
             self.all_routes.append(self.routes)
-        self.states = {}
+        self.operations = {}
         self.routes = []
 
     def _nodefy_feature(self, feat):
@@ -111,7 +113,7 @@ class Web:
         if f_id in self.nodes:
             return self.nodes[f_id]
         else:
-            if feat.sign == '-' or feat.sign == '=' or feat.sign == '_':
+            if feat.sign == '-' or feat.sign == '=' or feat.sign == '_' or feat.sign == '>':
                 ftype = NEG_FEATURE
             else:
                 ftype = POS_FEATURE
@@ -177,37 +179,37 @@ class Web:
                     arg_num = self.nodes[arg_num_id]
                     self.edges[edge_id] = WEdge(head_num, arg_num, NUMERATION_EDGE)
 
-    def _nodefy(self, operation):
-        state = operation.state
-        wstate = self.states.get(state.state_id, None)
-        if wstate:
-            if state.state_type == state.ADD:
-                self.heads.append(state.head.uid)
-            return wstate
+    def _nodefy(self, route_item):
+        operation = route_item.operation
+        w_op = self.operations.get(operation.uid, None)
+        if w_op:
+            if type(operation) is Add:
+                self.heads.append(operation.head.uid)
+            return w_op
 
-        wstate = WState.from_state(operation.state)
-        self.states[state.state_id] = wstate
-        wstate.head_ids = self._create_if_necessary(state.head)
-        wstate.arg_ids = self._create_if_necessary(state.arg_)
-        self._create_dominance_relation(wstate.head_ids, wstate.arg_ids)
-        for f1, f2 in state.checked_features:
+        w_op = WOperation.from_operation(operation)
+        self.operations[operation.uid] = w_op
+        w_op.head_ids = self._create_if_necessary(operation.head)
+        w_op.arg_ids = self._create_if_necessary(operation.arg)
+        self._create_dominance_relation(w_op.head_ids, w_op.arg_ids)
+        for f1, f2 in operation.checked_features:
             fnode1 = self._nodefy_feature(f1)
             fnode2 = self._nodefy_feature(f2)
             self._get_or_add_edge(fnode1, fnode2)
 
-        return wstate
+        return w_op
 
     def weave_in(self, routes):
         for route in routes:
             self.heads = []
-            wroute = [self._nodefy(op) for op in route]
+            wroute = [self._nodefy(route_item) for route_item in route]
             self.routes.append(wroute)
 
     def export(self):
         return {
             'nodes': [n.as_dict() for n in self.nodes.values()],
             'links': [e.as_dict() for e in self.edges.values()],
-            'states': [dict([(key, s.as_dict()) for key, s in self.states.items()])],
+            'states': [dict([(key, s.as_dict()) for key, s in self.operations.items()])],
             'routes': [[[s.id for s in route] for route in self.routes]]
         }
 
@@ -220,4 +222,4 @@ class Web:
         file.close()
         #tot_states = sum([len(states) for states in e["states"]])
         #tot_routes = sum([len(routes) for routes in e["routes"]])
-        print(f'wrote into file {path} {len(e["nodes"])} nodes, {len(e["links"])} edges, {len(e["states"])} states and {len(e["routes"])} routes')
+        print(f'wrote into file {path} {len(e["nodes"])} nodes, {len(e["links"])} edges, {len(e["states"])} operations and {len(e["routes"])} routes')

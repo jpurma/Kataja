@@ -302,10 +302,10 @@ class NodeParser:
 
 if __name__ == '__main__':
     t = time.time()
-    my_lexicon = read_lexicon(open('lexicon.txt'))
+    my_lexicon = read_lexicon(open('../lexicon.txt'))
     parser = NodeParser(my_lexicon)
     sentences = []
-    readfile = open('sentences_en.txt', 'r')
+    readfile = open('../sentences_en.txt', 'r')
     for line in readfile:
         line = line.strip()
         if line and not line.startswith('#') and not line.startswith('['):

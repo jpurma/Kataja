@@ -110,7 +110,7 @@ class BaseVisualization:
             while ls in self.banned_cn_shapes:
                 ls += 1
             self.forest.settings.set('cn_shape', ls)
-            self.forest.update_cn_shapes()
+            self.forest.update_constituent_node_shapes()
 
     def reset_nodes(self):
         for node in self.forest.nodes.values():
