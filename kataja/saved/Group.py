@@ -54,7 +54,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.buttons = []
         self._br = None
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
         self._should_update = False
         if selection:
             self.update_selection(selection)

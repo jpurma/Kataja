@@ -61,9 +61,9 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self._local_drag_handle_position = None
         self._label_start_pos = None
         self.setFont(self.get_font())
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.update_color()
 
     def type(self):
