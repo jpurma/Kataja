@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from kataja.saved.Movable import Movable
 

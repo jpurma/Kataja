@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.UIItem import UIGraphicsItem
 from kataja.singletons import prefs, ctrl

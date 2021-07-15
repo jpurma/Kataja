@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id
@@ -35,7 +35,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
 
     def paint(self, painter, style, QWidget_widget=None):
         painter.setBrush(self.color)
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
         for chain in self.d.chains:
             vis_chain = [x for x in chain if x.is_visible()]
             if len(vis_chain) < 2:

@@ -24,7 +24,7 @@
 
 import itertools
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.saved.Movable import Movable
@@ -57,8 +57,10 @@ class DragData:
             self.parent = None
 
 
-qbytes_scale = QtCore.QByteArray()
-qbytes_scale.append("scale")
+#qbytes_scale = QtCore.QByteArray()
+#qbytes_scale.append("scale")
+
+qbytes_scale = QtCore.QByteArray("scale".encode())
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -76,8 +78,8 @@ class Draggable(Movable):
         Constituents, Features etc. """
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.drag_data = None
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
     # ### MOUSE - kataja
     # ########################################################
@@ -180,7 +182,7 @@ class Draggable(Movable):
         called for each element.
         :param event:
         """
-        crossed_out_flag = event.modifiers() == QtCore.Qt.ShiftModifier
+        crossed_out_flag = event.modifiers() == QtCore.Qt.KeyboardModifier.ShiftModifier
         for edge in self.edges_up:
             edge.crossed_out_flag = crossed_out_flag
         scene_pos = to_tuple(event.scenePos())
@@ -291,7 +293,7 @@ class Draggable(Movable):
         if ctrl.dragged_focus is self:
             self.drag(e)
             ctrl.graph_scene.dragging_over(scene_pos_pf)
-        elif (e.buttonDownScenePos(QtCore.Qt.LeftButton) - scene_pos_pf).manhattanLength() > 6:
+        elif (e.buttonDownScenePos(QtCore.Qt.MouseButton.LeftButton) - scene_pos_pf).manhattanLength() > 6:
             scene_pos = to_tuple(scene_pos_pf)
             self.start_dragging(scene_pos)
             self.drag(e)
@@ -307,7 +309,7 @@ class Draggable(Movable):
         :return:
         """
         replay_click = False
-        shift = event.modifiers() == QtCore.Qt.ShiftModifier
+        shift = event.modifiers() == QtCore.Qt.KeyboardModifier.ShiftModifier
 
         if ctrl.pressed is self:
             ctrl.release(self)

@@ -25,7 +25,7 @@
 import os
 from copy import deepcopy
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 import kataja
 from kataja.Shapes import SHAPE_PRESETS
@@ -55,8 +55,8 @@ def extract_bitmaps(filename):
     pm = QtGui.QPixmap(filename)
     color1 = QtGui.QColor(0, 0, 255)
     color2 = QtGui.QColor(0, 0, 0)
-    bms = (pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
-           pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
+    bms = (pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskMode.MaskOutColor),
+           pm.createMaskFromColor(color2, QtCore.Qt.MaskMode.MaskOutColor))
     return bms
 
 
@@ -131,6 +131,7 @@ class Preferences(object):
         }
 
         self.fonts = running_environment.fonts
+        print(f'{running_environment.fonts=}')
         self._fonts_ui = {
             'tab': 'General',
             'special': 'fonts'
@@ -690,7 +691,6 @@ class QtPreferences:
         self.font_space_width = 0
         self.font_bracket_width = 0
         self.font_bracket_height = 0
-        self.fontdb = None
         self.no_pen = None
         self.no_brush = None
         self.lock_icon = None
@@ -760,7 +760,7 @@ class QtPreferences:
         self.stop_pixmap = None
         self.trash_icon = None
 
-    def late_init(self, running_environment, preferences, fontdb, log):
+    def late_init(self, running_environment, preferences, log):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
         qt requirements that are difficult to get around.
         """
@@ -776,15 +776,13 @@ class QtPreferences:
             p = QtGui.QIcon(os.path.join(iconpath, path))
             return p
 
-        # print("get_font families:", QtGui.QFontDatabase().families())
-        self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts, running_environment, log)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
         self.no_pen = QtGui.QPen()
-        self.no_pen.setStyle(QtCore.Qt.NoPen)
+        self.no_pen.setStyle(QtCore.Qt.PenStyle.NoPen)
         self.no_brush = QtGui.QBrush()
-        self.no_brush.setStyle(QtCore.Qt.NoBrush)
+        self.no_brush.setStyle(QtCore.Qt.BrushStyle.NoBrush)
         self.lock_icon = icon('lock48.png')
         self.unlock_icon = icon('lock_open48.png')
         self.cut_icon = icon('cut_icon48.png')
@@ -853,12 +851,13 @@ class QtPreferences:
         self.trash_icon = icon('trash24.svg')
 
     def update(self, preferences, running_environment, log):
+        print('qt prefs update with ', preferences.fonts)
         self.prepare_fonts(preferences.fonts, running_environment, log)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
 
     def prepare_easing_curve(self, curve_type, frames):
-        curve = QtCore.QEasingCurve(getattr(QtCore.QEasingCurve, curve_type))
+        curve = QtCore.QEasingCurve(getattr(QtCore.QEasingCurve.Type, curve_type))
 
         def curve_value(x):
             z = 1.0 / frames
@@ -877,27 +876,28 @@ class QtPreferences:
         self.curve = curve
 
     def prepare_fonts(self, fonts_dict, running_environment, log):
+
         self.fonts = {}
-        asana_math = self.fontdb.addApplicationFont(
+        asana_math = QtGui.QFontDatabase.addApplicationFont(
             os.path.join(running_environment.resources_path, "Asana-Math.otf"))
         if asana_math == -1:
             log.warning("Failed to load 'Asana-Math.otf' from %s, if it is not provided by "
                         "system, things can get ugly.")
         for key, font_tuple in fonts_dict.items():
+            if isinstance(font_tuple, list) and len(font_tuple) < 3:
+                font_tuple = font_tuple[0]
             name, style, size = font_tuple
             size = int(size)
-            font = self.fontdb.font(name, style, size)
+            font = QtGui.QFontDatabase.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)
             self.fonts[key] = font
-        font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
-        # print('get_font leading: %s get_font height: %s ' % (get_font.leading(),
-        # get_font.height()))
+        font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])
         main = self.fonts[MAIN_FONT]
-        main.setHintingPreference(QtGui.QFont.PreferNoHinting)
-        self.font_space_width = font.width(' ')
-        self.font_bracket_width = font.width(']')
-        self.font_bracket_height = font.height()  # print('get_font metrics: ', get_font)  # print(self.font_space_width, self.font_bracket_width,  # self.font_bracket_height)  # self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
+        main.setHintingPreference(QtGui.QFont.HintingPreference.PreferNoHinting)
+        self.font_space_width = font.horizontalAdvance(' ')
+        self.font_bracket_width = font.horizontalAdvance(']')
+        self.font_bracket_height = font.height()
 
     def toggle_large_ui_font(self, enabled, fonts_dict):
         ui_font = self.fonts[UI_FONT]
@@ -908,8 +908,12 @@ class QtPreferences:
             if console_font.pointSize() < 14:
                 console_font.setPointSize(14)
         else:
-            ui_font.setPointSize(fonts_dict[UI_FONT][2])
-            console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
+            ui_font_def = fonts_dict[UI_FONT]
+            ui_font_def = ui_font_def[0] if isinstance(ui_font_def[0], list) else ui_font_def
+            ui_font.setPointSize(ui_font_def[2])
+            console_font_def = fonts_dict[CONSOLE_FONT]
+            console_font_def = console_font_def[0] if isinstance(console_font_def[0], list) else console_font_def
+            console_font.setPointSize(console_font_def[2])
 
     def get_font(self, name) -> QtGui.QFont:
         """

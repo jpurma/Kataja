@@ -27,9 +27,9 @@ import operator
 import random
 from collections import OrderedDict
 
-import PyQt5.QtGui as QtGui
-from PyQt5.QtGui import QColor
-from PyQt5.QtGui import QColor as c
+import PyQt6.QtGui as QtGui
+from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QColor as c
 
 from kataja.color_names import color_names
 from kataja.singletons import ctrl, prefs, log
@@ -144,7 +144,7 @@ class PaletteManager:
         self._accent_palettes = {}
         self.current_hex = ''
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
-        self.gradient.setSpread(QtGui.QGradient.PadSpread)
+        self.gradient.setSpread(QtGui.QGradient.Spread.PadSpread)
         self.background_lightness = 0.5
         self.custom = False
         # Theme management
@@ -756,13 +756,13 @@ class PaletteManager:
         self._ui_palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'],
                                           p['mid'], p['text'], p['bright_text'], p['base'],
                                           p['window'])
-        self._ui_palette.setColor(QtGui.QPalette.AlternateBase, shady(self.d['background2'], 0.7))
+        self._ui_palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, shady(self.d['background2'], 0.7))
         self._ui_palette = self.add_disabled_palette(self._ui_palette, p)
         return self._ui_palette
 
     def add_disabled_palette(self, palette, p):
 
-        palette.setColorGroup(QtGui.QPalette.Disabled, self.broken(p['windowText']),
+        palette.setColorGroup(QtGui.QPalette.ColorGroup.Disabled, self.broken(p['windowText']),
                               self.broken(p['button']), self.broken(p['light']),
                               self.broken(p['dark']), self.broken(p['mid']), self.broken(p['text']),
                               self.broken(p['bright_text']), p['base'], p['window'])

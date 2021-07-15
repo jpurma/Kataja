@@ -5,7 +5,7 @@ __author__ = 'purma'
 import unittest
 import sys
 from kataja.KatajaMain import KatajaMain
-from PyQt5 import QtWidgets, QtCore, QtTest
+from PyQt6 import QtWidgets, QtCore, QtTest
 from kataja.singletons import running_environment
 
 running_environment.switch_to_test_mode()
@@ -41,8 +41,6 @@ class TestMainWindowStructure(unittest.TestCase):
         m = self._main
         self.assertTrue(m.app, "No main app")
         self.assertTrue(m.forest, "No forest")
-        self.assertTrue(m.fontdb, "No fontdb")
-        self.assertTrue(m.fontdb, "No fontdb")
         self.assertTrue(m.color_manager, "No color manager")
         # ctrl.late_init(self)
         # prefs.import_node_classes(ctrl)

@@ -26,7 +26,7 @@
 import time
 import traceback
 
-from PyQt5.QtCore import QPointF, QPoint
+from PyQt6.QtCore import QPointF, QPoint
 
 
 def print_rect(rect):

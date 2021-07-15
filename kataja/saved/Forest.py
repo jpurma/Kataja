@@ -23,7 +23,7 @@
 # ############################################################################
 import itertools
 
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 import kataja.globals as g
 from kataja.ChainManager import ChainManager

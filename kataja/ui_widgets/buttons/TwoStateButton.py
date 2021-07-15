@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl
@@ -25,7 +25,7 @@ class TwoStateButton(PanelButton):
             font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
             font.setPointSize(font.pointSize() * 1.2)
             fm = QtGui.QFontMetrics(font)
-            mw = max(fm.width(text0), fm.width(text1))
+            mw = max(fm.horizontalAdvance(text0), fm.horizontalAdvance(text1))
             self.setMinimumWidth(mw + 24)
             ctrl.main.ui_font_changed.connect(self.update_font)
         self.setMinimumHeight(24)

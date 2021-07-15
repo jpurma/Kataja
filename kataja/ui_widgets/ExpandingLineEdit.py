@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt6 import QtWidgets, QtGui
 
 from kataja.UIItem import UIWidget
 from kataja.utils import open_symbol_data

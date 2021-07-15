@@ -54,8 +54,11 @@ def feature_match(feat, other):
         return (not feat.value) or matching_values(feat, other)
 
 
-def union(features1, features2):
-    return list(set(features1) | set(features2))
+def union(featuresets):
+    union = set()
+    for features in featuresets:
+        union |= set(features)
+    return list(union)
 
 
 def allow_long_distance(features):

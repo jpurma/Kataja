@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from kataja.singletons import prefs, ctrl
 from kataja.ui_support.SettingsFields import FieldBuilder

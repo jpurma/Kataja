@@ -204,6 +204,7 @@ class KatajaDocument(SavedObject):
         comments = []
         started_forest = False
 
+        print('loaded forest files')
         SyntaxAPI = classes.SyntaxAPI
         Forest = classes.Forest
         for line in treelist:
@@ -246,7 +247,9 @@ class KatajaDocument(SavedObject):
             # another trees definition, append to previous
             elif line:
                 buildstring += '\n' + line
+        print('created forests')
         if started_forest:  # make sure that the last forest is also added
+            print('started forests')
             syn = SyntaxAPI()
             syn.input_tree = buildstring
             syn.lexicon = definitions_as_text(definitions)
@@ -254,7 +257,9 @@ class KatajaDocument(SavedObject):
                             comments=comments,
                             syntax=syn)
             forests.append(forest)
+            print('forests: ', forests)
         if not forests:
+            print('no forests')
             syn = SyntaxAPI()
             forest = Forest(heading_text='',
                             comments=[],

@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaTextarea import KatajaTextarea

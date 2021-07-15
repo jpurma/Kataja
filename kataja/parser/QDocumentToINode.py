@@ -36,7 +36,7 @@ class QDocumentToINode:
             cf = b.charFormat()
             # b.blockFormat().alignment(),
             caps = cf.fontCapitalization()
-            family = cf.fontFamily()
+            family = cf.fontFamilies()
             italic = cf.fontItalic()
             overline = cf.fontOverline()
             strikeout = cf.fontStrikeOut()
@@ -58,13 +58,9 @@ class QDocumentToINode:
                         # print('cap: ', caps)
                     else:
                         result = removed(stack, 'smallcaps')
-                if family != cf.fontFamily():
-                    family = cf.fontFamily()
-                    # command = ICommandNode('paa')
-                    # stack.append(command)
-                    # result.append(command)
-                    # result = command
-                    # print('family: ', family)
+                if family != cf.fontFamilies():
+                    family = cf.fontFamilies()
+                    print('family: ', family)
                 if italic != cf.fontItalic():
                     italic = cf.fontItalic()
                     if italic:

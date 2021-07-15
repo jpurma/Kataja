@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl
@@ -12,7 +12,7 @@ class KatajaTextarea(QtWidgets.QPlainTextEdit, UIWidget):
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
-        self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
+        self.setSizeAdjustPolicy(QtWidgets.QTextEdit.SizeAdjustPolicy.AdjustToContents)
         self.setMinimumHeight(24)
         self.changed = False
         self.textChanged.connect(self.flag_as_changed)

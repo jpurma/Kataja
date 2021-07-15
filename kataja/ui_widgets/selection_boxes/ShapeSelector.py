@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui
 
 import kataja.globals as g
 from kataja.Shapes import SHAPE_PRESETS
@@ -20,10 +20,10 @@ class LineStyleIcon(QtGui.QIcon):
         isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
 
         image = QtGui.QImage(
-            isize, QtGui.QImage.Format_ARGB32_Premultiplied)
-        image.fill(QtCore.Qt.transparent)
+            isize, QtGui.QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(QtCore.Qt.GlobalColor.transparent)
         painter = QtGui.QPainter(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         painter.setPen(color)
         SHAPE_PRESETS[self.shape_key].icon_path(painter, image.rect(), color)
         painter.end()

@@ -24,7 +24,7 @@
 import random
 import string
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.errors import ForestError

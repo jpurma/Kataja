@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.uniqueness_generator import next_available_type_id
@@ -18,8 +18,8 @@ class DTNode(QtWidgets.QGraphicsEllipseItem):
         self.k_tooltip = f'{state_id}: {msg}'
         self.ds_type = ds_type
         self.setAcceptHoverEvents(True)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.setBrush(color_for(ds_type))
         self.selected = False
         self.fog = False

@@ -2,8 +2,8 @@ import math
 from collections import OrderedDict
 from math import sin, cos, pi, acos, sqrt
 
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QPointF as Pf
+from PyQt6 import QtCore, QtGui
+from PyQt6.QtCore import QPointF as Pf
 
 __author__ = 'purma'
 
@@ -803,7 +803,7 @@ def draw_leaf(painter, x, y, radius):
     # leaf stem
     path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
     path.cubicTo(x, y - radius, x - minor_shift, y, x + minor_shift, y + radius)
-    painter.setBrush(QtCore.Qt.NoBrush)
+    painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
     # path.addRect(x - radius, y - radius, radius * 2, radius * 2) # for debugging
     painter.drawPath(path)
 
@@ -822,7 +822,7 @@ def draw_tailed_leaf(painter, x, y, radius):
     # stem part
     path = QtGui.QPainterPath(QtCore.QPointF(x + shift, y - radius - shift))
     path.cubicTo(x, y - radius, x - minor_shift, y + shift, x + minor_shift, y + radius)
-    painter.setBrush(QtCore.Qt.NoBrush)
+    painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
     painter.drawPath(path)
 
 

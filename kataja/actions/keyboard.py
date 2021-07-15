@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl
@@ -81,7 +81,7 @@ class KeyUp(KatajaAction):
             # elif not getattr(ctrl.ui_focus, 'grab_cursor', False):
             # This is stupid but I haven't found a better solution that works
             print('key_up -action')
-            key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Up,
+            key_event = QtGui.QKeyEvent(QtCore.QEvent.Type.KeyPress, QtCore.Qt.Key_Up,
                                         QtCore.Qt.NoModifier)
             ctrl.ui_focus.keyPressEvent(key_event)
 
@@ -96,6 +96,6 @@ class KeyDown(KatajaAction):
         if not ctrl.ui_focus:
             ctrl.graph_scene.move_selection('down')
         else:  # This is stupid but I haven't found a better solution that works
-            key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Down,
+            key_event = QtGui.QKeyEvent(QtCore.QEvent.Type.KeyPress, QtCore.Qt.Key_Down,
                                         QtCore.Qt.NoModifier)
             ctrl.ui_focus.keyPressEvent(key_event)

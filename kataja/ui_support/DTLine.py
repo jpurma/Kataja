@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt6 import QtWidgets, QtGui
 
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id

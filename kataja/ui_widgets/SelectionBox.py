@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl

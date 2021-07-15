@@ -24,7 +24,7 @@ CommentNode is a non-functional node for freeform text
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt6 import QtGui, QtCore, QtWidgets
 
 import kataja.globals as g
 from kataja.SavedField import SavedField
@@ -175,7 +175,7 @@ class CommentNode(Node):
             painter.setPen(p)
             # painter.setBrush(self.drag_data.background)
             painter.drawRect(self.inner_rect)
-            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
 
 
         elif self.hovering:

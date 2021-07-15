@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
@@ -34,7 +34,7 @@ class PanelButton(PushButtonBase):
         elif self.draw_method:
             isize = QtCore.QSize(size.width() * 2, size.height() * 2)
             self.base_image = QtGui.QImage(isize, QtGui.QImage.Format_ARGB32_Premultiplied)
-            self.base_image.fill(QtCore.Qt.transparent)
+            self.base_image.fill(QtCore.Qt.GlobalColor.NoPen)
             self.compose_icon()
 
         self.w2 = self.iconSize().width() / 2
@@ -69,7 +69,7 @@ class PanelButton(PushButtonBase):
         image = QtGui.QImage()
         painter = QtGui.QPainter(image)
         # painter.setDevicePixelRatio(2.0)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         painter.setPen(color)
         self.draw_method(painter, image.rect(), color)
         painter.end()

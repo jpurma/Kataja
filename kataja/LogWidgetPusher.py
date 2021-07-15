@@ -2,7 +2,7 @@ import logging
 import queue
 import sys
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 MAX_LOG_SIZE = 20000
 

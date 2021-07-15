@@ -3,7 +3,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from kataja.environments.Base import Base
 from kataja.globals import *

@@ -22,10 +22,10 @@
 #
 # ############################################################################
 
-import PyQt5.QtCore as QtCore
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
-from PyQt5.QtCore import Qt
+import PyQt6.QtCore as QtCore
+import PyQt6.QtGui as QtGui
+import PyQt6.QtWidgets as QtWidgets
+from PyQt6.QtCore import Qt
 
 from kataja.singletons import ctrl
 
@@ -41,25 +41,25 @@ class GraphView(QtWidgets.QGraphicsView):
     def __init__(self, graph_scene):
         QtWidgets.QGraphicsView.__init__(self)
         self.setScene(graph_scene)
-        self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
-        self.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.setCacheMode(QtWidgets.QGraphicsView.CacheModeFlag.CacheBackground)
+        self.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         # self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
-        self.setOptimizationFlag(QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        self.setResizeAnchor(QtWidgets.QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+        self.setOptimizationFlag(QtWidgets.QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(False)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         # self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.latest_mpe = None
@@ -84,7 +84,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :return:
         """
         self.latest_mpe = event
-        self.setFocus(QtCore.Qt.MouseFocusReason)
+        self.setFocus(QtCore.Qt.FocusReason.MouseFocusReason)
         QtWidgets.QGraphicsView.mousePressEvent(self, event)
 
     def replay_mouse_press(self):
@@ -92,7 +92,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.mousePressEvent(self.latest_mpe)
 
     def wheelEvent(self, event):
-        ctrl.view_manager.zoom_by_angle(event.pos(), event.angleDelta().y())
+        ctrl.view_manager.zoom_by_angle(event.position(), event.angleDelta().y())
 
     def toggle_suppress_drag(self, suppress):
         """ ScrollHandDrag or RubberBandDrag shouldn't register if we are dragging one object
@@ -101,7 +101,7 @@ class GraphView(QtWidgets.QGraphicsView):
          """
         if suppress:
             self._suppressed_drag_mode = self.dragMode()
-            self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         else:
             self.setDragMode(self._suppressed_drag_mode)
 
@@ -110,8 +110,8 @@ class GraphView(QtWidgets.QGraphicsView):
             return
         if selection_mode:
             self.selection_mode = True
-            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
         else:
             self.selection_mode = False
-            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
         self._suppressed_drag_mode = self.dragMode()

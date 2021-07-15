@@ -1,12 +1,12 @@
 # coding=utf-8
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.KatajaLabel import KatajaBuddyLabel
 from kataja.uniqueness_generator import next_available_ui_key
 
-qbytes_opacity = QtCore.QByteArray()
-qbytes_opacity.append("opacity")
+
+qbytes_opacity = QtCore.QByteArray("opacity".encode())
 
 
 class UIItem:
@@ -95,13 +95,13 @@ class UIItem:
             self.prepare_fade_in_effect()
         self._opacity_effect.setEnabled(True)
         self._fade_in_anim.setDuration(s)
-        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def prepare_fade_out_effect(self):
         self._fade_out_anim = QtCore.QPropertyAnimation(self._opacity_effect, qbytes_opacity)
         self._fade_out_anim.setStartValue(1.0)
         self._fade_out_anim.setEndValue(0.0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.Type.OutQuad)
         self._fade_out_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
@@ -127,7 +127,7 @@ class UIItem:
         if self.is_fading_in:
             self._fade_in_anim.stop()
         self._fade_out_anim.setDuration(s)
-        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
 
 class UIGraphicsItem(UIItem):

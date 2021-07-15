@@ -26,9 +26,9 @@
 import subprocess
 import tempfile
 
-import PyQt5.QtCore as QtCore
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
+import PyQt6.QtCore as QtCore
+import PyQt6.QtGui as QtGui
+import PyQt6.QtWidgets as QtWidgets
 from PIL import Image
 
 from kataja.singletons import ctrl, prefs, log
@@ -156,7 +156,7 @@ class Recorder:
         image.fill(ctrl.cm.paper())
         painter = QtGui.QPainter()
         painter.begin(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         self.scene.render(painter, source=source, target=target)
         painter.end()

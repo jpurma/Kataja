@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from PyQt5 import QtGui
-from PyQt5.QtGui import QKeySequence
+from PyQt6 import QtGui
+from PyQt6.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl
@@ -35,7 +35,7 @@ from kataja.singletons import ctrl
 class ToggleItalic(KatajaAction):
     k_action_uid = 'toggle_italic'
     k_command = 'Toggle italics'
-    k_shortcut = QKeySequence(QKeySequence.Italic)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Italic)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -55,7 +55,7 @@ class ToggleItalic(KatajaAction):
 class ToggleBold(KatajaAction):
     k_action_uid = 'toggle_bold'
     k_command = 'Toggle bold'
-    k_shortcut = QKeySequence(QKeySequence.Bold)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Bold)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -78,7 +78,7 @@ class ToggleBold(KatajaAction):
 class ToggleUnderline(KatajaAction):
     k_action_uid = 'toggle_underline'
     k_command = 'Toggle underline'
-    k_shortcut = QKeySequence(QKeySequence.Underline)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Underline)
     k_shortcut_context = 'parent_and_children'
 
     def method(self):
@@ -129,12 +129,12 @@ class ToggleSubscript(KatajaAction):
         sender = self.sender()
         fmt = QtGui.QTextCharFormat()
         if sender.isChecked():
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
+            fmt.setVerticalAlignment(QtGui.QTextCharFormat.VerticalAlignment.AlignSubScript)
         else:
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
+            fmt.setVerticalAlignment(QtGui.QTextCharFormat.VerticalAlignment.AlignNormal)
         cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
-            cursor.select(QtGui.QTextCursor.WordUnderCursor)
+            cursor.select(QtGui.QTextCursor.SelectionType.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
 
 
@@ -152,12 +152,12 @@ class ToggleSuperscript(KatajaAction):
         sender = self.sender()
         fmt = QtGui.QTextCharFormat()
         if sender.isChecked():
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
+            fmt.setVerticalAlignment(QtGui.QTextCharFormat.VerticalAlignment.AlignSuperScript)
         else:
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
+            fmt.setVerticalAlignment(QtGui.QTextCharFormat.VerticalAlignment.AlignNormal)
         cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
-            cursor.select(QtGui.QTextCursor.WordUnderCursor)
+            cursor.select(QtGui.QTextCursor.SelectionType.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
 
 
@@ -171,13 +171,13 @@ class RemoveStyles(KatajaAction):
         :return:
         """
         fmt = QtGui.QTextCharFormat()
-        fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
+        fmt.setVerticalAlignment(QtGui.QTextCharFormat.VerticalAlignment.AlignNormal)
         fmt.setFontStrikeOut(False)
         fmt.setFontUnderline(False)
-        fmt.setFontWeight(QtGui.QFont.Normal)
+        fmt.setFontWeight(QtGui.QFont.Weight.Normal)
         fmt.setFontItalic(False)
         cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
-            cursor.select(QtGui.QTextCursor.WordUnderCursor)
+            cursor.select(QtGui.QTextCursor.SelectionType.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
         ctrl.ui.quick_edit_buttons.update_formats(fmt)

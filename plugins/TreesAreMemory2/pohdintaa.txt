@@ -279,3 +279,14 @@ Hm, hm, hm. Mietin tuota parsintaa niin, että jos ei ole lainkaan sitä, että 
 Aika pian selvisi, että pitää jakaa vapaiden edeltäjien käsite kahdeksi: kun ollaan syvällä lauseessa ja tulee uusi sana joka saattaa olla komplementtiargumentti jollekin, niin hakuavaruus siinä on sitä kohtaa hallitsevat päät, rakennepuussa siis oikeanpuoleinen ranka. Sama mikä Paulin parserissa on hakuavaruutena. Minun vapaat edeltäjät sisältää oikean rangan. Toinen mahdollisuus uudelle sanalle on, että se saattaa olla pää jollekin kauemmalle edeltävälle argumentille. Jos argumentti on heti edeltävä, se argumentti tulkitaan määreeksi, mutta jos se on jossain kauempana edellä se voi edustaa komplementin paikalle menevää argumenttia. Noiden kauempaa haettavien täytyy olla todellisia vapaita päitä, päitä jotka eivät ole argumentteja kenellekään.
 
 Tuossa on nyt se pulma, että mikä on tavallisen specin hakuavaruus, se että se on välitön edeltäjä ei taida riittää. Meillä voi olla vaikkapa 'Pekka, joka oli myöhässä, saapui kahvilaan' Tässä 'saapui' ottaa speciksi koko '[Pekka, joka oli myöhässä]', ei '[myöhässä]'. Se sopisi siihen, että otetaan edeltävä vapaa pää, mutta tuleeko tilanteita joissa rakenne joka ei ole enää vapaa tarvittaisiin speciksi? Tälläinen voisi syntyä jos olisi vaikka rakennettu komplementtiargumenttia. 'Pekka etsi koiraa potkivaa miestä' Siinäkin oikeastaan tuo on parseroinnin epävarmuuskohta otetaanko 'koiraa' etsi:n komplementiksi vai annetaanko sen olla vapaa. Sen epävarmuuskohdan täytyy kuitenkin näemmä olla ja se tulee aiheuttamaan paljon haarautumia. Voiko niitä haarautumia sulkea myös nopeasti? Ei näy ainakaan heti keinoa. Voisi kuitenkin olla maksimimäärä vapaiksi jääneitä päitä, mutta sitä kannattaa katsoa myöhemmin kun parseriin on toteutettu sellainen hypoteesi että komplementtia etsitään oikean reunan päistä, mutta specciä etsitään ensimmäisestä vapaasta päästä.
+
+
+6.6. 2021
+Mietin voiko parserin käsittelemien vaihtoehtojen joukon rajoittaa seuraaviin: N0 - uusin elementti, N1 - edellinen elementti, X - päärakenne ja LR - vasen laita. Vaihtoehdot olisi: Comp:{^N1, N0}, Spec:{N1, ^N0}, Adj:{^N1, ^N0}, XComp:{^X, N0}, LRComp{^X, LR}
+
+13.6. 2021
+Rajoitusten taustalla oli se, että neuraalisessa versiossa jokainen sana voi ottaa n mergeroolia, ja se vaatii minun osaamisellani yhteyden jokaisesta sanasta n:ään soluun jotka vastaavat näitä rooleja, tai n:ään signaalityyppiin. Olisi hyvä pitää n mahdollisimman pienenä.
+
+Pekka sanoi että se että teoria kumoutui kumoutui
+
+add('Pekka').spec('sanoi').comp('että').comp('se').comp('että').comp('teoria').spec('kumoutui').spec('kumoutui')

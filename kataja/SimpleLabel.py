@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, \
@@ -104,11 +104,11 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         force_update = True
         self.has_been_initialized = True
         if self.text_align == LEFT_ALIGN:
-            self.editable_doc.set_align(QtCore.Qt.AlignLeft)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
-            self.editable_doc.set_align(QtCore.Qt.AlignRight)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignRight)
         else:
-            self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignHCenter)
         html = self._host.label_as_html()
         if force_update or html != self.editable_html:
             if self.editable_html != html:
@@ -212,7 +212,6 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         """
         parsed_parts = ctrl.qdocument_parser.process(self.editable_doc)
         # Parser should return INode or str, if there is nothing that needs INode in it.
-        print('parsed_parts:', repr(parsed_parts))
         self._host.parse_edited_label(self.edited_field, parsed_parts)
 
     def editable_doc_changed(self):

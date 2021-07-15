@@ -23,9 +23,9 @@
 #
 # ############################################################################
 
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
-from PyQt5.QtCore import Qt
+import PyQt6.QtGui as QtGui
+import PyQt6.QtWidgets as QtWidgets
+from PyQt6.QtCore import Qt
 
 from kataja.globals import ViewUpdateReason, CONSTITUENT_NODE
 from kataja.saved.Edge import Edge
@@ -47,7 +47,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         It is associated with view-widget to display it. """
         QtWidgets.QGraphicsScene.__init__(self)
 
-        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.ItemIndexMethod.NoIndex)
         self.setSceneRect(-300, -200, 600, 400)
         if ctrl.cm.gradient:
             self.setBackgroundBrush(ctrl.cm.gradient)
@@ -249,7 +249,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     if selectable:
                         selection.add(selectable)
 
-            if event.modifiers() == Qt.ShiftModifier:
+            if event.modifiers() == Qt.KeyboardModifier.ShiftModifier:
                 select = ctrl.ui.get_action('add_to_selection')
             else:
                 select = ctrl.ui.get_action('select')
@@ -262,7 +262,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             select.run_command(sorted([x.uid for x in selection]))
 
         # click on empty place means select nothing, unless we are shift+selecting
-        elif event.modifiers() != Qt.ShiftModifier:
+        elif event.modifiers() != Qt.KeyboardModifier.ShiftModifier:
             select = ctrl.ui.get_action('select')
             select.run_command(None)
 

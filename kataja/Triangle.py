@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.FadeInOut import FadeInOut
@@ -54,7 +54,7 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
         self.update()
 
     def paint(self, painter, option, widget=None):
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         c = self.get_color()
         center = 0
         w2 = self.width / 2

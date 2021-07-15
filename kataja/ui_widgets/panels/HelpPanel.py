@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import Panel
@@ -31,7 +31,7 @@ class HelpPanel(Panel):
         self.preferred_floating_size = QtCore.QSize(260, 320)
         self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.browser.palette()
-        p.setColor(QtGui.QPalette.Base, QtCore.Qt.transparent)
+        p.setColor(QtGui.QPalette.Base, QtCore.Qt.GlobalColor.NoPen)
         self.browser.setPalette(p)
         layout.addWidget(self.browser)
         self.set_text(HelpPanel.default_text)

@@ -31,8 +31,8 @@ import traceback
 from html import escape as str_escape
 from types import FrameType
 
-from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QPointF, QPoint
+from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6.QtCore import QPointF, QPoint
 
 import kataja.globals as g
 
@@ -44,8 +44,8 @@ def escape(text):
 def colored_image(color, base_image):
     image = QtGui.QImage(base_image)
     painter = QtGui.QPainter(image)
-    painter.setRenderHint(QtGui.QPainter.Antialiasing)
-    painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+    painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+    painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceIn)
     painter.fillRect(image.rect(), color)
     painter.end()
     return image

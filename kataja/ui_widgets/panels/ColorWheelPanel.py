@@ -1,7 +1,7 @@
 import math
 import random
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl
 from kataja.ui_support.panel_utils import box_row
@@ -311,8 +311,8 @@ class ColorWheelInner(QtWidgets.QWidget):
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.setRenderHints(QtGui.QPainter.Antialiasing)  # | QtGui.QPainter.TextAntialiasing)
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setRenderHints(QtGui.QPainter.RenderHint.Antialiasing)  # | QtGui.QPainter.TextAntialiasing)
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
         r = self._radius
         v = self.outer.selected_hsv[2] * 255
         con_grad = QtGui.QConicalGradient(self._top_corner + r, self._top_corner + r, 0)

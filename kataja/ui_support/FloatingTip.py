@@ -1,18 +1,18 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 stylesheet = """font-size: 10pt; padding: 4px;"""
 
 
 class FloatingTip(QtWidgets.QLabel):
     def __init__(self):
-        QtWidgets.QWidget.__init__(self, None, QtCore.Qt.ToolTip)
+        QtWidgets.QWidget.__init__(self, None, QtCore.Qt.WindowType.ToolTip)
         self.setText('')
         self.setStyleSheet(stylesheet)
         # self.setFont(qt_prefs.get_font('ui_font'))
         # self.setMinimumHeight(20)
         # self.setMinimumWidth(40)
         # self.setMaximumWidth(120)
-        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Minimum)
         # self.setContentsMargins(2, 2, 2, 2)
         self.setWordWrap(True)
         self.item = None

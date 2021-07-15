@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link line {
+  stroke-opacity: 1
+}
+
+.labels text {
+  pointer-events: none;
+  font: 10px sans-serif;
+  /*color: hsl(192, 81%, 14%);*/
+  color: rgb(238, 232, 213);
+}
+
+#state_message {
+  display: inline-block;
+  position: absolute;
+  bottom: 50px;
+  left: 20px;
+  font-size: 20pt;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+}
+
+svg {
+  /*background-color: hsl(192, 81%, 14%);*/
+  background: radial-gradient(rgb(253, 246, 227), rgb(238, 232, 213));
+}
+
+.buttons {
+  position: fixed;
+  bottom: 24px;
+  left: 8px;
+  display: inline-block;
+  background-color: transparent;
+}
+
+button {
+  width: 72px;
+  height: 20px;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+  border: 0;
+  cursor: pointer;
+}
+
+#tree_n, #step_n, #route_n {
+  text-align: center;
+  display: inline-block;
+  min-width: 48px;
+  height: 20px;
+  color: rgb(131, 148, 150);
+  background-color: rgb(253, 246, 227);
+}
+
+button:active {
+  background-color: rgb(238, 232, 213);
+  color: rgb(147, 161, 161);
+}
+
+
+</style>
+<body>
+<div id="state_message"></div>
+<div class="buttons">
+    <button id="prev_tree" onclick="prevTree()">←</button>
+    <span id="tree_n">0</span>
+    <button id="next_tree" onclick="nextTree()">→</button>
+    <button id="prev_route" onclick="prevRoute()">←</button>
+    <span id="route_n">0</span>
+    <button id="next_route" onclick="nextRoute()">→</button>
+    <button id="prev_der" onclick="prevStep()">-</button>
+    <span id="step_n">0</span>
+    <button id="next_der" onclick="nextStep()">+</button>
+    <button id="reload" onclick="openNetwork()">refresh</button>
+</div>
+<svg width="2880" height="1920"></svg>
+</body>
+<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+<!-- switch link above with local version for offline development -->
+<script src="d3.min.js"></script>
+<!-- -->
+<script src="d3-ellipse-force.js"></script>
+<script src="webviewer.js"></script>

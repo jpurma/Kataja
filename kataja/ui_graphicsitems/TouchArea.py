@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from kataja.Shapes import draw_plus, draw_x, draw_triangle, draw_tailed_leaf, \
     draw_arrow_shape_from_points
@@ -86,9 +86,9 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.click_kwargs = click_kwargs or {}
         self.drop_action = drop_action
         self.drop_kwargs = drop_kwargs or {}
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
-        self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.DeviceCoordinateCache)
         if click_action and isinstance(click_action, str):
             action_obj = ctrl.ui.get_action(click_action)
             if action_obj:

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link line {
+  stroke-opacity: 1
+}
+
+.labels text {
+  pointer-events: none;
+  font: 10px sans-serif;
+  /*color: hsl(192, 81%, 14%);*/
+  color: rgb(238, 232, 213);
+}
+
+svg {
+  /*background-color: hsl(192, 81%, 14%);*/
+  background: radial-gradient(rgb(253, 246, 227), rgb(238, 232, 213));
+}
+
+.buttons {
+  position: fixed;
+  bottom: 24px;
+  left: 8px;
+  display: inline-block;
+  background-color: transparent;
+}
+
+button {
+  width: 72px;
+  height: 20px;
+  background-color: rgb(253, 246, 227);
+  color: rgb(131, 148, 150);
+  border: 0;
+  cursor: pointer;
+}
+
+#tree_n, #step_n {
+  text-align: center;
+  display: inline-block;
+  min-width: 48px;
+  height: 20px;
+  color: rgb(131, 148, 150);
+  background-color: rgb(253, 246, 227);
+}
+
+button:active {
+  background-color: rgb(238, 232, 213);
+  color: rgb(147, 161, 161);
+}
+
+
+</style>
+<body>
+<div class="buttons">
+    <button id="prev_tree" onclick="prevTree()">←</button>
+    <span id="tree_n">0</span>
+    <button id="next_tree" onclick="nextTree()">→</button>
+    <button id="prev_der" onclick="prevStep()">-</button>
+    <span id="step_n">0</span>
+    <button id="next_der" onclick="nextStep()">+</button>
+</div>
+<h3>Hello</h3>
+<svg width="2880" height="1920"></svg>
+</body>
+<script src="static/d3.min.js"></script>
+<!-- switch link above with local version for offline development
+<script src="https://d3js.org/d3.v4.min.js"></script>
+-->
+<script src="static/d3-ellipse-force.js"></script>
+<!-- Data is loaded as .js files instead of JSON, because this way we
+  can run visualisations locally instead of having to set up a web server.
+
+  If you have means to save data as JSON, you can make it readable as .js
+  simply by adding a variable declaration before it: e.g. plugin writes
+  graph.json having:
+
+  {nodes: [...], links: [...]}
+
+  we'll make it proper javascript by prepending it with variable assignment:
+
+  const graph = {nodes: [...], links: [...]}
+
+  Then you just use the variables loaded from the file as containing the data
+  you need. Kataja plugins have examples of how to write prefix and then json data 
+  to one file with Python.   
+-->
+<script src="mg0.js"></script>
+<script src="parses.js"></script>-->
+<script>
+
+var state = { tree:0, step:0 };
+var parsedata = parses;
+var active = parsedata[state.tree][state.step];
+var nodemap = {};
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var base03 = [0, 43, 54]; // [192, 100, 11] // #002b36
+var base02 = [7, 54, 66]; // [192, 81, 14] // #073642
+var base01 = [88, 110, 117]; // [194, 14, 40] // #586e75
+var base00 = [101, 123, 131]; // [196, 13, 45] // #657b83
+var base0 = [131, 148, 150]; // [186, 8, 55] // #839496
+var base1 = [147, 161, 161]; // [180, 7, 60] // #93a1a1
+var base2 = [238, 232, 213]; // [46, 42, 88] // #eee8d5
+var base3 = [253, 246, 227]; // [44, 87, 94] // #fdf6e3
+var accents = [
+  [181, 137, 0], // [45, 100, 35], // #b58900 yellow
+  [203, 75, 22], //[18, 80, 44], // #cb4b16 orange
+  [220, 50, 47], //[1, 71, 52], // #dc322f red
+  [211, 54, 130], //[331, 164, 52], // #d33682 magenta
+  [108, 113, 196], //[237, 43, 60], // #6c71c4 violet
+  [38, 139, 210], //[205, 69, 49], // #268bd2 blue
+  [42, 161, 152], //[175, 59, 40], // #2aa198 cyan
+  [133, 153, 0] //[68, 100, 30] // #859900 green  
+];
+var negative = [68, 68, 228];
+var positive = [208, 48, 48];
+
+var tree_words = [];
+
+//var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+for (const nd of graph.nodes) {
+  nd.rx = nd.label.length * 4.5;
+  nd.ry = 12;
+  switch (nd.group) {
+    case 0: // root    
+      nd.baseColor = base2.concat([0.20]);
+      break;
+    case 1: // inner const
+      nd.baseColor = base1.concat([0.20]);
+      break;
+    case 2: // unused
+      nd.baseColor = base00.concat([0.20]);
+      break;
+    case 3: // inner feature subtype
+      nd.baseColor = base00.concat([0.20]);
+      break;
+    case 4: // inner feature
+      nd.baseColor = base01.concat([0.20]);
+      break;
+    case 5: // feature subtype
+      nd.baseColor = base2.concat([0.20]);
+      break;
+    case 6: // feature
+      nd.baseColor = base3.concat([0.20]);
+      break;
+  }
+  nd.color = nd.baseColor;
+} 
+const pullLinks = graph.links.filter(l => l.value == 1 || true);
+
+var link = svg.append("g")
+    .attr("class", "link")
+  .selectAll("line")
+  .data(graph.links)
+  .enter().append("line")
+    .attr("stroke-width", d => Math.sqrt(d.value));
+
+var node = svg.append("g")
+    .attr("class", "node")
+  .selectAll("ellipse")
+  .data(graph.nodes)
+  .enter().append("ellipse")  
+    .attr("rx", d => d.rx)
+    .attr("ry", d => d.ry)
+    .attr("fill", d => d.color)
+    //.on("click", nodeclick)
+    .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+var text = svg.append("g")
+    .attr("class", "labels")
+  .selectAll("text")
+  .data(graph.nodes)
+  .enter().append("text")  
+    .attr("dy", 2)
+    .attr("text-anchor", "middle")
+    .text(d => d.label)
+    .attr("fill", "#93a1a1;");
+
+function initLinks(simulation) {
+    simulation.force("link", d3.forceLink(pullLinks)
+      .id(d => d.id)
+      .strength(l => l.weight || 0.3));
+}
+
+var simulation = d3.forceSimulation()
+    .nodes(graph.nodes)
+    .force("collide", d3.ellipseForce(6, 0.1, 5))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .on("tick", ticked);
+initLinks(simulation);
+
+graph.nodes.forEach(n => nodemap[n.id] = n);
+
+startTree();
+
+//link.style("stroke", function(d) { return d.target.color });
+
+function ticked() {
+  link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y)
+      .attr("stroke", d => { 
+        let color = d.color;
+        if (color) {
+          return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+        } else {
+          return base0
+        }
+      }) 
+      .attr("stroke-width", d => d.strokeWidth);
+
+  node
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("fill", d => { 
+        const color = d.color;
+        if (color && color.length) {
+          return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+        } else {
+          return 'rgba(128, 128, 128, 0.5)';
+        }
+      });
+  text
+      .attr("x", d => d.x)
+      .attr("y", d => d.y);
+}
+
+function getAccentColor(word) {
+  i = tree_words.indexOf(word);
+  if (i > -1) {
+    return accents[(i * 5) % accents.length];
+  }
+  tree_words.push(word);
+  return accents[((tree_words.length - 1) * 5) % accents.length];
+}
+
+function averagedNodeColor(values) {
+  let rs=0, gs=0, bs=0, as=0;
+  const vl = values.length;
+  for (const ev of values) {
+    color = pickColorForEvent(ev);
+    rs += color[0];
+    gs += color[1];
+    bs += color[2];
+    as += color[3];
+  }
+  return [Math.ceil(Math.min(rs / vl, 255)), 
+          Math.ceil(Math.min(gs / vl, 255)), 
+          Math.ceil(Math.min(bs / vl, 255)), 
+          Math.min(as / vl, 1)];
+}
+
+function pickColorForEvent({ sign, label }) {
+  switch (sign) {
+    case '+': 
+      return positive.concat([0.80])
+    case '-':
+      return negative.concat([0.40])
+    case '!+':
+      return getAccentColor(label).concat([1.00]);
+    case '!-':
+      return getAccentColor(label).concat([1.00]);
+    default:
+      return getAccentColor(label).concat([1.00]);    
+  }
+}
+
+function lightUpNodes() {
+  const active = parsedata[state.tree][state.step];
+  console.log(active);
+  for (const n of graph.nodes) {
+    n.values = [];
+    n.color = n.baseColor;
+  } 
+  // node colors are defined by 
+  let n;
+  for (const key in active) {
+    n = nodemap[key];
+    n.values = active[key];
+    if (n.values) {
+      n.color = averagedNodeColor(n.values);
+    } else {
+      n.color = n.baseColor;
+    }
+  }
+
+  var j, found;
+
+  for (const e of graph.links) {
+    found = false;
+    // there are many connections from the node, but only few
+    // are active. The active connections are stored in node by
+    // their target. We'll find if this edge is active for either its
+    // target or source and highlight it if it is. 
+    // highlight them.
+    for (const { sign, target } of e.source.values) {
+      // negative or positive edge means here that the edge's source 
+      // node needs target feature (-), or that source node offers target 
+      // feature (+). 
+      if (target == e.target.id) {
+        if (sign == '-') {
+          e.color = negative.concat([1.0]);
+          e.strokeWidth = 2;
+          e.weight = 1;
+        } else if (sign == '+') {
+          e.color = positive.concat([1.0]);
+          e.strokeWidth = 3;            
+          e.weight = 1;
+        } else {
+          e.color = e.target.color;
+          e.strokeWidth = 5;            
+          e.weight = 0.7;
+        }
+        found = true;
+        break;
+      }
+    }
+
+    for (const { sign, target } of e.target.values) {
+      if (target == e.source.id) {
+        if (sign == '=') {
+          e.color = positive.concat([1.0]);
+          e.strokeWidth = 2;
+          e.weight = 1;
+        } else if (sign == '-') {
+          e.color = negative.concat([1.0]);
+          e.strokeWidth = 2;
+          e.weight = 1;
+        } else if (sign == '+') {
+          e.color = positive.concat([1.0]);
+          e.strokeWidth = 1;            
+          e.weight = 1;
+        } else {
+          e.color = e.source.color;
+          e.strokeWidth = 5;            
+          e.weight = 0.7;
+        }
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      e.strokeWidth = 1;
+      if (e.sign == '=') {
+        e.color = positive.concat([.2]);
+        e.strokeWidth = 1.2;
+        e.weight = 0.2;
+
+      } else if (e.sign == '-') {
+        e.color = negative.concat([.2]);
+        e.weight = 0.1;
+      } else if (e.sign == '+') {
+        e.color = positive.concat([.2]);
+        e.weight = 0.1;
+      } else {
+        e.color = e.target.color;
+        e.weight = 0.1;
+      }
+    }
+ }
+  initLinks(simulation);
+  simulation.alphaTarget(0.1).restart();
+  ticked();
+}
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.1).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+function nextStep() {
+  state.step++;
+  var max_step = parsedata[state.tree].length;
+  if (state.step === max_step) {
+    state.step = 0;
+    nextTree();
+    max_step = parsedata[state.tree].length;
+  }
+  var step_n = document.getElementById('step_n');
+  step_n.innerText = `${state.step + 1}/${max_step}`;
+  lightUpNodes();
+}
+
+function prevStep() {
+  state.step--;
+  var max_step = parsedata[state.tree].length;
+  if (state.step < 0) {
+    prevTree();
+    max_step = parsedata[state.tree].length;
+    state.step = max_step - 1;
+  }
+  var step_n = document.getElementById('step_n');
+  step_n.innerText = `${state.step + 1}/${max_step}`;
+  lightUpNodes();
+}
+
+function nextTree() {
+  state.tree++;
+  if (state.tree === parsedata.length) {
+    state.tree = 0;
+  }
+  startTree();
+}
+
+function prevTree() {
+  state.tree--;
+  if (state.tree < 0) {
+    state.tree = parsedata.length - 1;
+  }
+  startTree();
+}
+
+function startTree() {
+  state.step = 0;
+  tree_words = [];
+  var step_n = document.getElementById('step_n');
+  var max_step = parsedata[state.tree].length
+  step_n.innerText = `${1}/${max_step}`;
+  var tree_n = document.getElementById('tree_n');
+  tree_n.innerText = `${state.tree + 1}/${parsedata.length}`;
+  lightUpNodes();
+}
+
+function navKeys(e) {
+  switch(e.keyCode || window.event.keyCode) {
+    case 37:  // Left
+      prevTree();
+      e.preventDefault();
+      return;
+    case 39: // Right
+      nextTree();
+      e.preventDefault();
+      return;
+    case 38: // Up
+      nextStep();
+      e.preventDefault();
+      return;
+    case 40: // Down
+      prevStep();
+      e.preventDefault();
+      return
+  }
+}
+
+document.onkeydown = navKeys;
+
+
+</script>

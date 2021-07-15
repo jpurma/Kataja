@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs
@@ -38,7 +38,7 @@ class HeadingWidget(UIWidget, QtWidgets.QWidget):
                                               pixmap1=qt_prefs.more_pixmap,
                                               action='toggle_heading',
                                               size=12).to_layout(layout)
-        layout.setAlignment(QtCore.Qt.AlignLeft)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         layout.addSpacing(8)
         self.text_widget = QtWidgets.QLabel(self.text)
         # noinspection PyArgumentList

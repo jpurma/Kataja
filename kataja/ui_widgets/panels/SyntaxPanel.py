@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -30,7 +30,7 @@ class SyntaxPanel(Panel):
                                           tooltip='Visualization settings',
                                           parent=inner, size=20,
                                           action='toggle_panel_%s' % g.VIS_OPTIONS
-                                          ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                          ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
         ctrl.main.forest_changed.connect(self.update_treeset_counter)

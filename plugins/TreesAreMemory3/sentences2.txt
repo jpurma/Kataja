@@ -1,0 +1,1005 @@
+# BC parser v. 0.9
+# 2019-06-11 09:45:46.659792
+# Test sentences from file "Study4_sample.txt".
+# Logs into file "Study4_sample_log.txt.
+# Lexicon from file "lexicon.txt".
+* ei häiritä kuorsaamalla käskenyt Pekka heidän Merjaa 
+* käskenyt antaa kirjaa Merjalle Pekka heidän ei 
+* heidän Pekka käskenyt Merjaa kuorsaamalla häiritä ei 
+* heidän kirjaa Merjalle käskenyt ei heittämällä antaa Pekka 
+* käskenyt antaa ei heittämällä Pekka heidän kirjaa Merjalle 
+* kirjaa heidän antaa ei heittämällä käskenyt Merjalle Pekka 
+* ei heittämällä kirjaa heidän Pekka antaa käskenyt Merjalle 
+?* kirjaa Merjalle heidän ei heittämällä Pekka käskenyt antaa 
+* heidän Merjalle käskenyt Pekka heittämällä kirjaa antaa ei 
+* antaa Merjalle ei Pekka käskenyt kirjaa heidän 
+* Merjalle kirjaa heidän käskenyt Pekka ei antaa heittämällä 
+* kirjan käski heittämällä Pekka Merjalle heidän antaa 
+?? käski Merjalle heidän antaa kirjan heittämällä Pekka 
+* Pekka Merjalle antaa kirjaa heidän käskenyt ei heittämällä 
+?* Merjalle ei heittämällä heidän käskenyt antaa kirjaa Pekka 
+?? kirjaa ei käskenyt heidän antaa Merjalle heittämällä Pekka 
+* Pekka antaa heidän Merjalle kirjaa ei heittämällä käskenyt 
+* kirjaa käskenyt ei antaa heidän Pekka Merjalle 
+* käskenyt ei Pekka heidän kuorsaamalla nukkua 
+?* Merjalle heittämällä ei Pekka heidän kirjaa antaa käskenyt 
+* heidän kirjaa Merjalle heittämällä Pekka ei antaa käskenyt 
+* Merjalle käskenyt antaa ei heittämällä heidän kirjaa Pekka 
+* käskenyt Pekka kirjaa Merjalle ei antaa heittämällä heidän 
+?* Pekka Merjalle kirjaa heidän ei käskenyt heittämällä antaa 
+* käski heittämällä Merjalle kirjan Pekka antaa heidän 
+* antaa heittämällä Pekka Merjalle käskenyt ei kirjaa heidän 
+* häiritä käski Pekka Merjaa kuorsaamalla heidän 
+* heidän käskenyt häiritä ei Pekka kuorsaamalla Merjaa 
+* antaa käski heidän heittämällä Merjalle Pekka kirjan 
+* Pekka ei antaa kirjaa heittämällä Merjalle heidän käskenyt 
+* antaa Pekka heidän ei kirjaa heittämällä käskenyt Merjalle 
+* käskenyt ei kirjaa Pekka antaa Merjalle heittämällä heidän 
+?? kirjaa käskenyt Pekka ei heidän Merjalle antaa 
+?? heittämällä ei käskenyt Pekka heidän Merjalle kirjaa antaa 
+?? Pekka käskenyt ei heidän Merjaa häiritä kuorsaamalla 
+?* Pekka heidän ei heittämällä käskenyt kirjaa antaa Merjalle 
+* heidän Merjalle Pekka antaa käskenyt ei heittämällä kirjaa 
+* ei heidän antaa heittämällä kirjaa Merjalle käskenyt Pekka 
+* antaa ei heittämällä heidän Pekka kirjaa käskenyt Merjalle 
+* ei heittämällä antaa heidän kirjaa Pekka Merjalle käskenyt 
+* ei käskenyt Merjalle antaa heidän Pekka kirjaa heittämällä 
+## käskenyt heidän ei kuorsaamalla Pekka Merjaa häiritä 
+* käskenyt Pekka kirjaa antaa ei Merjalle heittämällä heidän 
+* heidän Merjalle kirjaa Pekka antaa heittämällä ei käskenyt 
+* ei Merjalle Pekka heidän antaa käskenyt kirjaa 
+* Merjalle heittämällä antaa kirjaa ei käskenyt Pekka heidän 
+* käskenyt heidän Pekka kirjaa antaa heittämällä Merjalle ei 
+* käskenyt kirjaa Pekka heittämällä Merjalle ei heidän antaa 
+* kirjan Merjalle heittämällä heidän antaa Pekka käski 
+* heidän antaa käskenyt heittämällä Pekka Merjalle ei kirjaa 
+* antaa Merjalle Pekka heittämällä kirjaa ei heidän käskenyt 
+?* Pekka häiritä kuorsaamalla ei käskenyt heidän Merjaa 
+* heidän Pekka antaa käskenyt heittämällä Merjalle ei kirjaa 
+* heidän kirjan antaa heittämällä Pekka käski Merjalle 
+* heittämällä käski Merjalle antaa kirjan heidän Pekka 
+* antaa heidän kirjaa heittämällä käskenyt Pekka ei Merjalle 
+* käskenyt Pekka antaa heidän Merjalle kirjaa ei heittämällä 
+* käski Merjalle heidän Pekka kirjan antaa heittämällä 
+?* Merjalle heidän antaa ei kirjaa Pekka käskenyt 
+* heidän heittämällä Pekka käskenyt kirjaa antaa Merjalle ei 
+* käskenyt kirjaa antaa Merjalle ei heidän Pekka 
+* kirjaa heittämällä käskenyt ei heidän Pekka antaa Merjalle 
+?* kirjaa heidän Merjalle ei heittämällä käskenyt Pekka antaa 
+* Merjalle Pekka käskenyt antaa heidän ei kirjaa 
+?? heidän Merjalle käski antaa heittämällä kirjan Pekka 
+* kirjaa käskenyt heidän antaa ei Merjalle Pekka 
+* antaa heidän käskenyt ei Merjalle kirjaa Pekka 
+* heidän Merjalle heittämällä käskenyt antaa Pekka kirjaa ei 
+* ei heittämällä Merjalle käskenyt heidän Pekka antaa kirjaa 
+* Merjalle Pekka käskenyt heidän antaa kirjaa ei 
+?* heidän antaa kirjan käski Pekka Merjalle 
+?* heidän heittämällä Merjalle ei käskenyt antaa kirjaa Pekka 
+* käskenyt kirjaa antaa heidän heittämällä ei Pekka Merjalle 
+* ei käskenyt kuorsaamalla Pekka heidän Merjaa häiritä 
+* heittämällä Pekka Merjalle antaa heidän kirjaa käskenyt ei 
+* Pekka käskenyt Merjalle kirjaa heidän heittämällä antaa ei 
+* Pekka käskenyt antaa Merjalle ei heittämällä kirjaa heidän 
+?* kuorsaamalla Pekka häiritä heidän ei käskenyt Merjaa 
+* käskenyt Pekka antaa heidän kirjaa ei heittämällä Merjalle 
+? antaa kirjan Pekka käski heidän Merjalle 
+* heittämällä käskenyt heidän Pekka Merjalle ei kirjaa antaa 
+* Merjalle antaa Pekka ei käskenyt heittämällä kirjaa heidän 
+* Pekka heittämällä antaa kirjan käski heidän Merjalle 
+* kirjaa antaa Pekka Merjalle heidän ei käskenyt 
+?* ei Merjalle antaa käskenyt kirjaa heidän heittämällä Pekka 
+* käskenyt heidän ei kirjaa Merjalle antaa heittämällä Pekka 
+* kirjaa antaa Pekka heidän heittämällä ei käskenyt Merjalle 
+* heittämällä antaa kirjaa käskenyt heidän Pekka ei Merjalle 
+* antaa Pekka kirjaa Merjalle käskenyt ei heidän 
+* Merjalle käskenyt Pekka ei heidän antaa kirjaa 
+?* ei heidän Pekka kirjaa Merjalle heittämällä antaa käskenyt 
+* antaa heidän kirjan käski Merjalle Pekka 
+* Pekka käskenyt Merjalle antaa ei heidän kirjaa heittämällä 
+* Merjalle käskenyt antaa heidän kirjaa heittämällä ei Pekka 
+?* heittämällä Merjalle kirjan Pekka käski heidän antaa 
+* ei Merjalle heittämällä heidän Pekka antaa käskenyt kirjaa 
+* Merjalle heidän heittämällä kirjaa Pekka antaa ei käskenyt 
+* ei antaa Pekka kirjaa käskenyt Merjalle heidän heittämällä 
+* heidän Pekka Merjalle ei antaa käskenyt heittämällä kirjaa 
+* Merjalle Pekka heidän kirjaa ei heittämällä käskenyt antaa 
+* Merjalle kirjaa Pekka käskenyt antaa heidän ei 
+?* Pekka heidän ei Merjalle antaa käskenyt kirjaa heittämällä 
+?* kirjaa käskenyt heidän antaa Pekka ei Merjalle heittämällä 
+?? heittämällä ei heidän käskenyt Pekka Merjalle kirjaa antaa 
+?* heidän antaa käskenyt Merjalle Pekka ei kirjaa heittämällä 
+* Pekka antaa heidän kirjan Merjalle käski 
+* Pekka heittämällä Merjalle antaa heidän ei kirjaa käskenyt 
+?* heidän heittämällä Pekka käski kirjan Merjalle antaa 
+* käskenyt antaa kirjaa Merjalle heittämällä ei Pekka heidän 
+* heidän heittämällä käskenyt Pekka Merjalle antaa ei kirjaa 
+? ei heidän Pekka heittämällä käskenyt kirjaa antaa Merjalle 
+* käskenyt Merjalle kirjaa ei Pekka antaa heidän 
+* heittämällä kirjan Pekka antaa heidän käski Merjalle 
+?* häiritä ei käskenyt Pekka kuorsaamalla heidän Merjaa 
+* Pekka heidän käskenyt Merjalle heittämällä kirjaa antaa ei 
+?? heidän Merjalle kirjaa ei heittämällä antaa käskenyt Pekka 
+* Pekka heittämällä ei kirjaa Merjalle käskenyt antaa heidän 
+?? ei kirjaa Pekka käskenyt antaa heidän heittämällä Merjalle 
+* heidän antaa ei Merjalle kirjaa heittämällä Pekka käskenyt 
+?* kirjaa heidän käskenyt ei heittämällä Merjalle Pekka antaa 
+* Pekka Merjalle kirjaa heittämällä antaa ei käskenyt heidän 
+* ei Merjalle heittämällä Pekka antaa heidän käskenyt kirjaa 
+* Merjalle kirjan antaa heidän Pekka heittämällä käski 
+?* heittämällä ei kirjaa Merjalle Pekka heidän käskenyt antaa 
+* käskenyt heidän Pekka antaa heittämällä Merjalle kirjaa ei 
+* käskenyt Merjalle ei antaa heittämällä Pekka heidän kirjaa 
+* Pekka antaa heittämällä heidän ei Merjalle kirjaa käskenyt 
+?* Pekka käski Merjalle heittämällä heidän kirjan antaa 
+? ei heidän kirjaa antaa Merjalle käskenyt Pekka heittämällä 
+* käskenyt kirjaa Merjalle Pekka antaa heidän ei heittämällä 
+* antaa kirjaa ei Merjalle heittämällä käskenyt Pekka heidän 
+?? antaa Pekka heittämällä heidän kirjan käski Merjalle 
+kuorsaamalla ei Merjaa käskenyt Pekka heidän häiritä 
+* heittämällä heidän käskenyt Pekka Merjalle kirjaa antaa ei 
+? ei heittämällä Pekka käskenyt heidän Merjalle antaa kirjaa 
+* kirjaa Merjalle heittämällä Pekka antaa käskenyt heidän ei 
+* Merjalle heittämällä heidän käskenyt antaa ei kirjaa Pekka 
+* Pekka käskenyt heittämällä antaa kirjaa heidän Merjalle ei 
+* antanut Merjalle heittämällä Pekka kirjaa ei 
+* ei heidän kirjaa Pekka käskenyt heittämällä Merjalle antaa 
+?* antaa Pekka kirjan heidän käski Merjalle 
+* Merjaa käskenyt häiritä kuorsaamalla ei heidän Pekka 
+* heittämällä käskenyt heidän Merjalle antaa Pekka ei kirjaa 
+* kirjaa heittämällä Merjalle käskenyt antaa Pekka ei heidän 
+?? Pekka heittämällä heidän käski kirjan antaa Merjalle 
+* käskenyt heidän kirjaa heittämällä Pekka antaa Merjalle ei 
+* käskenyt heidän Merjalle kirjaa antaa heittämällä ei Pekka 
+?? kirjaa heittämällä ei Pekka käskenyt heidän antaa Merjalle 
+* antaa heidän heittämällä käskenyt Merjalle ei Pekka kirjaa 
+* käskenyt Pekka kirjaa antaa ei heittämällä heidän Merjalle 
+* antaa Pekka käskenyt heidän heittämällä kirjaa ei Merjalle 
+* Pekka heidän käskenyt antaa ei heittämällä Merjalle kirjaa 
+?? ei käskenyt kirjaa antaa heidän heittämällä Merjalle Pekka 
+?? kirjaa ei Merjalle Pekka heittämällä antanut 
+* kirjaa heittämällä Merjalle Pekka käskenyt antaa ei heidän 
+?* Pekka heittämällä heidän antaa ei käskenyt Merjalle kirjaa 
+* Merjalle kirjaa Pekka heidän käskenyt heittämällä ei antaa 
+* käskenyt ei antaa kirjaa Merjalle heittämällä heidän Pekka 
+* Merjalle antaa ei heittämällä kirjaa Pekka heidän käskenyt 
+?? Merjalle ei käskenyt kirjaa Pekka heidän antaa heittämällä 
+?? ei heidän Merjaa ihailla käskenyt Pekka 
+?* ei kirjaa käskenyt heidän antaa Pekka Merjalle 
+?* kirjaa heittämällä Pekka ei heidän Merjalle käskenyt antaa 
+* heidän Merjalle kirjaa käskenyt Pekka antaa heittämällä ei 
+* ei kirjaa heidän käskenyt Pekka Merjalle antaa 
+* kirjaa heittämällä Pekka käskenyt ei antaa heidän Merjalle 
+?* heidän kirjaa Merjalle Pekka ei antaa käskenyt 
+* kirjaa Merjalle Pekka antaa ei käskenyt heittämällä heidän 
+* kuorsaamalla heidän Pekka käskenyt häiritä ei Merjaa 
+?* kirjaa käskenyt antaa heidän ei Pekka heittämällä Merjalle 
+* heittämällä Merjalle antaa Pekka kirjaa heidän ei käskenyt 
+* Pekka käskenyt kirjaa ei Merjalle antaa heidän heittämällä 
+?* heittämällä käskenyt Pekka antaa heidän ei Merjalle kirjaa 
+* käski kirjan heidän Pekka heittämällä antaa Merjalle 
+* heidän Pekka häiritä Merjaa kuorsaamalla käskenyt ei 
+* heidän käskenyt antaa ei Pekka heittämällä kirjaa Merjalle 
+* ei heidän heittämällä Pekka käskenyt kirjaa antaa Merjalle 
+* käskenyt Merjalle heittämällä antaa kirjaa ei Pekka heidän 
+?? ei Pekka heittämällä heidän kirjaa käskenyt Merjalle antaa 
+* ei antaa käskenyt heittämällä Pekka kirjaa heidän Merjalle 
+* käskenyt heittämällä antaa Pekka heidän kirjaa Merjalle ei 
+* Pekka heittämällä ei heidän Merjalle antaa käskenyt kirjaa 
+* Pekka heittämällä heidän käskenyt Merjalle kirjaa antaa ei 
+?* heidän käski kirjan antaa Pekka Merjalle 
+* kirjan heittämällä käski Pekka antaa Merjalle heidän 
+* Pekka heittämällä heidän Merjalle ei käskenyt kirjaa antaa 
+* heittämällä kirjaa käskenyt antaa Pekka heidän Merjalle ei 
+* käskenyt ei häiritä Merjaa heidän kuorsaamalla Pekka 
+* Merjalle käskenyt Pekka kirjaa antaa ei heidän 
+* heidän käskenyt ihailla Pekka Merjaa ei 
+* kirjaa antaa Merjalle Pekka käskenyt ei heidän heittämällä 
+?? heidän Merjalle ei Pekka käskenyt kirjaa antaa 
+?* antaa käski heidän kirjan Merjalle heittämällä Pekka 
+* kirjaa käskenyt Merjalle antaa Pekka heidän heittämällä ei 
+* heidän Merjalle antaa Pekka heittämällä ei kirjaa käskenyt 
+* antaa heittämällä Merjalle käskenyt heidän Pekka kirjaa ei 
+* heidän antaa kirjaa käskenyt heittämällä Pekka ei Merjalle 
+?* heidän Merjalle heittämällä ei käskenyt kirjaa Pekka antaa 
+?? ei heidän käskenyt Pekka kirjaa Merjalle antaa 
+* antaa heittämällä heidän Merjalle kirjaa Pekka käskenyt ei 
+?? käski heidän antaa Merjalle Pekka heittämällä kirjan 
+* antaa heidän ei Pekka heittämällä käskenyt Merjalle kirjaa 
+?* heittämällä ei Merjalle heidän Pekka käskenyt kirjaa antaa 
+* Pekka Merjalle heittämällä käskenyt kirjaa antaa heidän ei 
+?? ei Pekka heidän käskenyt häiritä kuorsaamalla Merjaa 
+* kirjaa heittämällä käskenyt antaa heidän Merjalle ei Pekka 
+* ei heidän antaa Pekka Merjalle käskenyt heittämällä kirjaa 
+* Merjalle heittämällä kirjaa käskenyt antaa Pekka ei heidän 
+?* käski antaa heidän Pekka heittämällä kirjan Merjalle 
+* käskenyt ei heittämällä heidän Merjalle Pekka kirjaa antaa 
+* käskenyt kirjaa Pekka ei Merjalle heittämällä heidän antaa 
+* kirjaa antaa heittämällä Pekka Merjalle heidän käskenyt ei 
+* käskenyt heittämällä Merjalle antaa Pekka heidän ei kirjaa 
+* kirjaa antanut Merjalle heittämällä Pekka ei 
+* Merjaa heidän käskenyt Pekka kuorsaamalla ei häiritä 
+* antaa Pekka Merjalle heidän kirjaa käskenyt heittämällä ei 
+* heidän käskenyt Pekka Merjalle antaa kirjaa ei heittämällä 
+* ei Pekka heittämällä heidän käskenyt kirjaa antaa Merjalle 
+* käskenyt ei antaa heittämällä Merjalle Pekka heidän kirjaa 
+* heittämällä antaa Pekka kirjan heidän käski Merjalle 
+* Merjalle heittämällä heidän kirjaa käskenyt antaa Pekka ei 
+* antaa Pekka heidän heittämällä ei käskenyt kirjaa Merjalle 
+* kirjaa heittämällä antaa heidän Pekka Merjalle käskenyt ei 
+* käskenyt kirjaa antaa Merjalle ei heidän Pekka heittämällä 
+* Pekka ei Merjalle käskenyt kirjaa heittämällä heidän antaa 
+* heidän heittämällä kirjaa Merjalle käskenyt antaa ei Pekka 
+* Pekka kirjaa käskenyt heidän antaa Merjalle ei 
+* heidän kirjaa käskenyt Pekka heittämällä ei Merjalle antaa 
+* Pekka kirjaa heidän käskenyt Merjalle ei antaa heittämällä 
+* heittämällä antaa ei kirjaa heidän Pekka Merjalle käskenyt 
+?* ei ihailla Pekka käskenyt Merjaa heidän 
+* häiritä heidän käskenyt Pekka kuorsaamalla Merjaa ei 
+* Pekka ei antaa Merjalle käskenyt kirjaa heidän heittämällä 
+* heidän kirjaa käskenyt ei antaa Pekka Merjalle 
+* heidän antaa käskenyt ei kirjaa Pekka heittämällä Merjalle 
+?* heidän Pekka heittämällä ei kirjaa antaa Merjalle käskenyt 
+* Pekka heidän häiritä Merjaa ei käskenyt kuorsaamalla 
+?? ei käskenyt heidän Merjalle Pekka antaa heittämällä kirjaa 
+* käskenyt Merjaa häiritä kuorsaamalla heidän ei Pekka 
+* Pekka antaa kirjan käski heidän heittämällä Merjalle 
+* heittämällä käskenyt Pekka ei Merjalle antaa kirjaa heidän 
+* käskenyt heittämällä Merjalle antaa Pekka ei kirjaa heidän 
+* kirjaa ei Pekka antaa heidän heittämällä käskenyt Merjalle 
+* antaa Pekka heidän kirjaa käskenyt heittämällä Merjalle ei 
+* ei heittämällä käskenyt heidän antaa Pekka kirjaa Merjalle 
+* heittämällä Pekka antaa Merjalle heidän kirjaa käskenyt ei 
+* kirjaa Pekka ei käskenyt antaa Merjalle heidän 
+* antaa Merjalle kirjaa heidän ei käskenyt Pekka heittämällä 
+* Merjalle antanut heittämällä kirjaa Pekka ei 
+* Pekka kirjaa heittämällä ei heidän antaa käskenyt Merjalle 
+* antaa heidän Merjalle ei kirjaa käskenyt heittämällä Pekka 
+heidän Pekka Merjaa käski ihailla 
+* Pekka heittämällä käskenyt kirjaa ei antaa Merjalle heidän 
+* Merjalle Pekka käskenyt kirjaa antaa heittämällä heidän ei 
+* Merjalle heidän ei antaa kirjaa Pekka käskenyt heittämällä 
+* kirjaa käskenyt Pekka ei antaa Merjalle heidän heittämällä 
+* ei Merjalle Pekka antaa kirjaa käskenyt heidän 
+* Pekka heidän ei heittämällä Merjalle kirjaa antaa käskenyt 
+* käskenyt kuorsaamalla heidän Pekka nukkua ei 
+* käskenyt ei heidän heittämällä Pekka antaa Merjalle kirjaa 
+?* ei heittämällä Merjalle kirjaa antaa käskenyt heidän Pekka 
+* käskenyt Pekka kuorsaamalla Merjaa häiritä ei heidän 
+* heidän Pekka heittämällä Merjalle ei antaa kirjaa käskenyt 
+kirjan antoi heittämällä Merjalle Pekka 
+?* kirjaa heittämällä Pekka käskenyt ei heidän Merjalle antaa 
+* käskenyt heidän kirjaa heittämällä ei antaa Merjalle Pekka 
+* Pekka heittämällä käskenyt Merjalle ei antaa heidän kirjaa 
+* Merjalle heidän kirjaa antaa käskenyt ei Pekka 
+* ei häiritä käskenyt heidän Pekka Merjaa kuorsaamalla 
+* kuorsaamalla Merjaa heidän Pekka ei häiritä käskenyt 
+* heittämällä Pekka antaa kirjaa käskenyt heidän Merjalle ei 
+* käskenyt Merjalle heidän Pekka ei kirjaa antaa heittämällä 
+* antaa ei Merjalle kirjaa käskenyt heittämällä Pekka heidän 
+* käskenyt heittämällä Merjalle ei antaa Pekka heidän kirjaa 
+?* käskenyt ei heidän kirjaa Pekka Merjalle antaa 
+? heittämällä ei heidän käskenyt antaa Merjalle kirjaa Pekka 
+* kirjaa käskenyt heittämällä ei Merjalle heidän Pekka antaa 
+?* Merjalle ei heidän Pekka antaa käskenyt kirjaa 
+* antaa heittämällä Pekka kirjaa Merjalle ei käskenyt heidän 
+?* heidän Pekka ei antaa käskenyt Merjalle kirjaa heittämällä 
+* heidän antaa Merjalle ei käskenyt heittämällä kirjaa Pekka 
+* käskenyt heittämällä ei Merjalle antaa kirjaa Pekka heidän 
+* käskenyt kirjaa heittämällä antaa ei Pekka Merjalle heidän 
+* kirjaa antaa käskenyt heidän Pekka ei Merjalle 
+* Merjalle kirjaa ei antaa Pekka käskenyt heidän heittämällä 
+* antaa Merjalle heittämällä käskenyt kirjaa ei Pekka heidän 
+* ei käskenyt Merjaa Pekka ihailla heidän 
+* heittämällä käskenyt kirjaa heidän Merjalle antaa ei Pekka 
+* heidän Pekka häiritä kuorsaamalla Merjaa käskenyt ei 
+* kirjaa antaa käskenyt heidän ei Pekka Merjalle 
+* Merjalle käskenyt antaa Pekka heidän heittämällä ei kirjaa 
+?* ei heittämällä Pekka heidän antaa Merjalle käskenyt kirjaa 
+?? heidän kirjaa ei Merjalle heittämällä antaa käskenyt Pekka 
+?* Pekka heittämällä heidän Merjalle ei kirjaa käskenyt antaa 
+?* ei antaa käskenyt heidän Pekka kirjaa heittämällä Merjalle 
+* Merjalle Pekka heittämällä antaa käski kirjan heidän 
+* antaa Merjalle heidän käskenyt ei kirjaa heittämällä Pekka 
+?* heidän kirjaa antaa heittämällä käskenyt ei Pekka Merjalle 
+* nukkua kuorsaamalla heidän ei Pekka käskenyt 
+* kirjaa antaa heittämällä ei käskenyt heidän Pekka Merjalle 
+?* ei Pekka antaa kirjaa heidän Merjalle heittämällä käskenyt 
+?* ei käskenyt heidän kuorsaamalla Merjaa Pekka häiritä 
+* Pekka ei heittämällä kirjaa heidän antaa Merjalle käskenyt 
+* ei antaa kirjaa Pekka Merjalle heittämällä käskenyt heidän 
+?* ei kirjaa heidän antaa Pekka käskenyt Merjalle 
+* ei Merjalle kirjaa antaa heittämällä Pekka käskenyt heidän 
+* kirjaa käskenyt antaa ei heittämällä heidän Pekka Merjalle 
+* kirjaa Merjalle käskenyt heidän heittämällä ei antaa Pekka 
+?* kirjaa Merjalle Pekka ei heittämällä antanut 
+?? ei heidän käskenyt Merjaa Pekka ihailla 
+?* Pekka kirjan antaa käski heidän Merjalle heittämällä 
+* ei Merjalle käskenyt antaa kirjaa heidän Pekka heittämällä 
+* kirjaa käskenyt heittämällä antaa ei Merjalle heidän Pekka 
+?* kuorsaamalla heidän ei Pekka Merjaa käskenyt häiritä 
+* antaa heittämällä ei käskenyt heidän Merjalle Pekka kirjaa 
+## kirjaa antaa Merjalle heidän heittämällä Pekka ei käskenyt 
+* heittämällä heidän antaa Pekka kirjaa käskenyt ei Merjalle 
+* käskenyt Pekka heittämällä kirjaa ei Merjalle antaa heidän 
+* käskenyt heidän ei Merjalle Pekka kirjaa antaa heittämällä 
+* heittämällä kirjaa antaa heidän Merjalle käskenyt Pekka ei 
+?* heittämällä käski heidän antaa Pekka Merjalle kirjan 
+* ei antaa heidän Pekka heittämällä käskenyt kirjaa Merjalle 
+* Merjalle antaa heidän heittämällä kirjaa ei Pekka käskenyt 
+* Merjalle antaa ei kirjaa heidän käskenyt Pekka heittämällä 
+* häiritse Pekka Merjaa kuorsaamalla ei 
+* Pekka heittämällä heidän kirjaa Merjalle käskenyt ei antaa 
+* käskenyt Pekka kirjaa antaa ei Merjalle heidän heittämällä 
+* heidän heittämällä Pekka ei antaa Merjalle käskenyt kirjaa 
+* heidän käskenyt kirjaa ei antaa Merjalle Pekka heittämällä 
+* heittämällä Pekka käskenyt heidän Merjalle ei kirjaa antaa 
+* Merjaa käski häiritä kuorsaamalla Pekka heidän 
+* antaa ei kirjaa Pekka Merjalle käskenyt heittämällä heidän 
+* Pekka Merjalle käskenyt kirjaa ei antaa heidän 
+? heittämällä Merjalle ei Pekka kirjaa antanut 
+* kirjaa käskenyt heittämällä Pekka heidän ei Merjalle antaa 
+* käskenyt kirjaa heittämällä Merjalle heidän antaa Pekka ei 
+* heittämällä kirjaa Pekka antaa Merjalle käskenyt heidän ei 
+* ei kirjaa käskenyt heidän antaa heittämällä Merjalle Pekka 
+* häiritä heidän Pekka käskenyt ei kuorsaamalla Merjaa 
+* Merjalle kirjaa antaa ei käskenyt Pekka heidän heittämällä 
+* Pekka käskenyt Merjalle heidän kirjaa antaa ei 
+* heidän antaa kirjan Merjalle käski Pekka 
+* Merjaa Pekka häiritä heidän käskenyt ei kuorsaamalla 
+?* ei kuorsaamalla Pekka nukkua heidän käskenyt 
+* Pekka häiritä ei käskenyt kuorsaamalla Merjaa heidän 
+* kirjan heittämällä käski Merjalle Pekka antaa heidän 
+* antaa ei Pekka heittämällä heidän käskenyt kirjaa Merjalle 
+* Pekka antaa käski Merjalle heittämällä kirjan heidän 
+* antaa Merjalle ei käskenyt heidän kirjaa Pekka 
+* kirjaa Merjalle antaa Pekka ei heidän käskenyt heittämällä 
+* heidän ei heittämällä Pekka kirjaa Merjalle antaa käskenyt 
+* antaa ei Merjalle heittämällä heidän käskenyt kirjaa Pekka 
+* kirjaa heittämällä ei Pekka antaa heidän Merjalle käskenyt 
+* Pekka heidän kirjaa käskenyt ei antaa Merjalle 
+* Pekka heidän käskenyt antaa kirjaa Merjalle ei heittämällä 
+* heidän antaa Merjalle Pekka käski kirjan heittämällä 
+* antaa Merjalle Pekka heidän ei käskenyt kirjaa heittämällä 
+* ei kirjaa Pekka Merjalle heittämällä antaa heidän käskenyt 
+* heidän ei kuorsaamalla Merjaa häiritä Pekka käskenyt 
+?? heidän ei kirjaa käskenyt antaa Pekka Merjalle 
+* antaa Merjalle käskenyt kirjaa heidän heittämällä Pekka ei 
+?* häiritä kuorsaamalla heidän Merjaa Pekka ei käskenyt 
+* Pekka kirjaa antaa heidän ei käskenyt Merjalle 
+* heidän Pekka käskenyt heittämällä ei antaa Merjalle kirjaa 
+* heittämällä Merjalle kirjaa Pekka antaa ei heidän käskenyt 
+* Pekka kirjan käski antaa Merjalle heidän heittämällä 
+?* kirjaa ei Pekka käskenyt heidän Merjalle heittämällä antaa 
+* kirjaa antaa ei käskenyt heittämällä Merjalle heidän Pekka 
+? kirjaa Pekka antanut ei Merjalle 
+* heidän Merjaa Pekka käskenyt ihailla ei 
+* ei heittämällä kirjaa Pekka käskenyt heidän Merjalle antaa 
+* heidän heittämällä Merjalle käskenyt ei antaa Pekka kirjaa 
+* heittämällä Merjalle antaa Pekka käskenyt ei heidän kirjaa 
+* Merjalle heidän käskenyt ei antaa kirjaa Pekka heittämällä 
+* Pekka ei Merjalle heittämällä kirjaa heidän antaa käskenyt 
+?* Merjalle ei heidän antaa käskenyt Pekka kirjaa heittämällä 
+* heidän Pekka Merjalle ei käskenyt kirjaa antaa heittämällä 
+* heidän Pekka antaa Merjalle kirjan heittämällä käski 
+* käskenyt ei Merjalle antaa Pekka kirjaa heittämällä heidän 
+* heidän käskenyt heittämällä Merjalle ei kirjaa Pekka antaa 
+* Pekka kirjaa heittämällä käskenyt ei Merjalle heidän antaa 
+* ei heidän antaa heittämällä kirjaa Pekka Merjalle käskenyt 
+* heittämällä antaa kirjaa käskenyt heidän Merjalle Pekka ei 
+* heidän Merjalle Pekka käskenyt ei kirjaa antaa heittämällä 
+* heidän käskenyt Pekka antaa kirjaa Merjalle ei 
+* heidän Merjalle käskenyt heittämällä Pekka ei kirjaa antaa 
+* käskenyt antaa Pekka heittämällä ei heidän Merjalle kirjaa 
+* antaa heittämällä Pekka Merjalle kirjaa käskenyt ei heidän 
+? Merjalle ei kirjaa antanut Pekka heittämällä 
+* antaa Pekka kirjaa ei Merjalle käskenyt heidän heittämällä 
+* heittämällä Merjalle kirjaa Pekka ei antaa heidän käskenyt 
+* antaa heidän kirjaa Merjalle ei käskenyt Pekka heittämällä 
+* heittämällä Pekka käskenyt antaa ei Merjalle heidän kirjaa 
+* antaa ei käskenyt heittämällä Merjalle kirjaa heidän Pekka 
+* antaa Merjalle heittämällä kirjaa Pekka käskenyt ei heidän 
+?* Merjalle ei Pekka antaa käskenyt heidän kirjaa heittämällä 
+? ei Pekka Merjalle käskenyt heidän antaa kirjaa 
+* heidän käskenyt ei heittämällä antaa Pekka Merjalle kirjaa 
+?*Merjalle Pekka ei heidän antaa kirjaa käskenyt 
+?* heidän heittämällä antaa Merjalle ei kirjaa Pekka käskenyt 
+* ei Merjalle kirjaa heidän Pekka antaa käskenyt 
+* heittämällä Merjalle antaa käskenyt heidän kirjaa ei Pekka 
+* heittämällä ei antaa käskenyt Pekka kirjaa heidän Merjalle 
+? heidän antaa käski Pekka Merjalle kirjan 
+* kirjaa antaa heittämällä käskenyt Pekka Merjalle ei heidän 
+* heittämällä käski kirjan antaa Merjalle Pekka heidän 
+?? käskenyt ei Pekka heidän Merjaa kuorsaamalla häiritä 
+* Merjalle heittämällä heidän käskenyt Pekka ei kirjaa antaa 
+* Pekka käskenyt antaa heidän Merjalle ei heittämällä kirjaa 
+?* Merjaa ei ihailla Pekka käskenyt heidän 
+* ei käskenyt Pekka heidän kirjaa Merjalle antaa 
+?? heidän kirjaa ei käskenyt Pekka antaa heittämällä Merjalle 
+?? häiritä ei heidän Merjaa käskenyt kuorsaamalla Pekka 
+* Merjalle heidän käskenyt antaa kirjaa heittämällä Pekka ei 
+* Merjalle käskenyt Pekka heidän heittämällä antaa ei kirjaa 
+* ei antaa kirjaa Pekka Merjalle heidän käskenyt heittämällä 
+* heidän heittämällä Merjalle kirjaa ei Pekka antaa käskenyt 
+* kirjaa ei antaa Pekka heidän heittämällä Merjalle käskenyt 
+* Pekka käski antaa kirjan heittämällä Merjalle heidän 
+nukkunut Pekka ei 
+* ei kirjaa antaa käskenyt Merjalle Pekka heidän 
+?* häiritä Merjaa kuorsaamalla Pekka ei heidän käskenyt 
+* antaa kirjaa käskenyt heidän Pekka ei Merjalle 
+?* Pekka ei kirjaa Merjalle heidän käskenyt antaa 
+* kirjaa Pekka antaa ei käskenyt heittämällä Merjalle heidän 
+* Merjalle antaa heidän kirjaa Pekka käskenyt ei heittämällä 
+* heidän kirjaa heittämällä antaa käskenyt ei Pekka Merjalle 
+* käskenyt heittämällä antaa heidän Pekka kirjaa Merjalle ei 
+* antaa käskenyt ei kirjaa heittämällä Merjalle Pekka heidän 
+* käskenyt antaa heidän ei Merjalle kirjaa Pekka 
+* heidän heittämällä kirjaa antaa Pekka Merjalle ei käskenyt 
+?* Pekka kirjaa heidän ei käskenyt Merjalle antaa heittämällä 
+* heittämällä Pekka Merjalle heidän käskenyt kirjaa antaa ei 
+* heittämällä käskenyt kirjaa heidän Merjalle Pekka ei antaa 
+* heittämällä heidän Merjalle käskenyt Pekka kirjaa antaa ei 
+* heidän antaa Merjalle heittämällä kirjaa Pekka ei käskenyt 
+kuorsaamalla Pekka Merjaa häiritsee 
+* Pekka Merjalle käskenyt ei antaa kirjaa heidän heittämällä 
+* antaa heidän heittämällä Pekka kirjaa ei Merjalle käskenyt 
+?? ei kirjaa heidän antaa käskenyt Merjalle Pekka 
+* antaa heidän Merjalle Pekka kirjaa käskenyt heittämällä ei 
+* heidän kirjaa käskenyt heittämällä ei Pekka Merjalle antaa 
+?* häiritä ei heidän Pekka käskenyt kuorsaamalla Merjaa 
+* kirjaa Pekka Merjalle heidän heittämällä käskenyt antaa ei 
+* kirjaa ei käskenyt Pekka Merjalle heittämällä antaa heidän 
+* Pekka kirjaa heidän heittämällä käskenyt antaa ei Merjalle 
+?* käskenyt Pekka Merjalle ei heidän kirjaa antaa heittämällä 
+* käski kirjan antaa heittämällä heidän Pekka Merjalle 
+* kirjan antaa heidän heittämällä käski Pekka Merjalle 
+* heidän Merjalle Pekka kirjaa heittämällä käskenyt antaa ei 
+* antaa Merjalle heidän käskenyt ei Pekka kirjaa 
+* heittämällä heidän kirjaa käskenyt Merjalle antaa Pekka ei 
+* käskenyt Merjalle kirjaa heidän ei Pekka antaa heittämällä 
+* kirjaa antaa Pekka heidän ei käskenyt Merjalle 
+* ei kirjaa käskenyt heidän Pekka antaa Merjalle 
+* antaa käskenyt ei Pekka kirjaa heittämällä heidän Merjalle 
+* häiritä käski kuorsaamalla Pekka Merjaa heidän 
+?* kirjaa ei heittämällä heidän käskenyt antaa Merjalle Pekka 
+* kirjaa Merjalle heittämällä Pekka antaa ei käskenyt heidän 
+* antaa heittämällä ei Pekka kirjaa käskenyt heidän Merjalle 
+* heidän antaa ei kirjaa heittämällä Merjalle käskenyt Pekka 
+* heittämällä Merjalle antaa ei heidän käskenyt kirjaa Pekka 
+*? antaa ei kirjaa heidän Merjalle heittämällä Pekka käskenyt 
+* Merjalle kirjaa antaa heidän Pekka käskenyt ei 
+?* Merjalle kirjaa ei käskenyt heidän Pekka antaa heittämällä 
+* heittämällä Pekka antaa käskenyt Merjalle heidän ei kirjaa 
+* Merjalle käskenyt antaa heidän Pekka kirjaa ei heittämällä 
+* Merjalle kirjaa heittämällä heidän käskenyt Pekka ei antaa 
+* Pekka ei kirjaa Merjalle heittämällä heidän antaa käskenyt 
+?? heittämällä heidän Merjalle antaa käski Pekka kirjan 
+* heittämällä ei heidän Merjalle Pekka käskenyt antaa kirjaa 
+* antaa heidän Pekka heittämällä ei kirjaa Merjalle käskenyt 
+* kirjan Pekka Merjalle heittämällä antaa käski heidän 
+* heidän kirjaa antaa heittämällä ei Pekka käskenyt Merjalle 
+## heittämällä ei käskenyt kirjaa Merjalle Pekka heidän antaa 
+? heidän käski Merjalle Pekka kirjan heittämällä antaa 
+?* Merjalle antaa käskenyt ei kirjaa heidän Pekka heittämällä 
+* antaa Merjalle heidän heittämällä kirjan Pekka käski 
+?* heidän Merjalle antaa käskenyt Pekka ei kirjaa heittämällä 
+* heittämällä heidän kirjan antaa käski Merjalle Pekka 
+* Pekka heittämällä käskenyt ei kirjaa antaa Merjalle heidän 
+* heittämällä kirjaa käskenyt heidän Pekka Merjalle ei antaa 
+* kirjaa heidän heittämällä Merjalle Pekka käskenyt antaa ei 
+?? häiritä käski Pekka heidän kuorsaamalla Merjaa 
+* kirjaa Pekka Merjalle heidän ei heittämällä käskenyt antaa 
+* antaa käskenyt Merjalle Pekka heittämällä ei kirjaa heidän 
+* heittämällä heidän Merjalle antaa ei Pekka käskenyt kirjaa 
+* Pekka heidän ei antaa Merjalle käskenyt kirjaa heittämällä 
+* Pekka antaa Merjalle käskenyt heidän ei kirjaa 
+?* käskenyt Pekka ei heidän Merjaa ihailla 
+* antaa Pekka käskenyt ei Merjalle kirjaa heidän heittämällä 
+?? Merjaa ihaile ei Pekka 
+* kirjaa antaa heidän Pekka heittämällä käskenyt Merjalle ei 
+## ei Pekka käskenyt antaa Merjalle heidän heittämällä kirjaa 
+* käskenyt heidän Pekka Merjalle heittämällä antaa kirjaa ei 
+?? heidän kirjaa ei Pekka Merjalle käskenyt antaa 
+?* Pekka ei käskenyt kirjaa heidän heittämällä Merjalle antaa 
+* Merjalle kirjaa käskenyt antaa Pekka heittämällä ei heidän 
+?* Pekka ei käskenyt antaa heittämällä heidän kirjaa Merjalle 
+* käskenyt kirjaa antaa ei Merjalle Pekka heittämällä heidän 
+* heidän ei Merjalle Pekka kirjaa antaa käskenyt 
+* kirjaa käskenyt Pekka antaa heittämällä Merjalle heidän ei 
+?? Merjalle käski Pekka heidän kirjan antaa 
+* antaa käskenyt Pekka heidän kirjaa Merjalle ei 
+* ei kirjaa Merjalle antaa käskenyt Pekka heidän 
+* kirjaa Merjalle heittämällä antaa heidän Pekka käskenyt ei 
+* Pekka ei antaa Merjalle käskenyt heittämällä heidän kirjaa 
+* käskenyt heidän ei Merjalle heittämällä antaa Pekka kirjaa 
+* käskenyt kirjaa ei antaa Merjalle heittämällä heidän Pekka 
+* käskenyt ei Pekka Merjalle heidän heittämällä antaa kirjaa 
+* käskenyt antaa kirjaa ei heidän Merjalle heittämällä Pekka 
+* kirjaa heittämällä Pekka käskenyt heidän Merjalle ei antaa 
+* Pekka käskenyt heittämällä Merjalle heidän kirjaa ei antaa 
+* Pekka ei kirjaa heidän käskenyt Merjalle heittämällä antaa 
+* heidän antaa kirjaa heittämällä Merjalle Pekka käskenyt ei 
+## kirjaa ei heidän antaa Merjalle Pekka käskenyt heittämällä 
+* heittämällä heidän kirjaa Pekka käskenyt antaa ei Merjalle 
+* antaa heidän heittämällä kirjaa Pekka käskenyt Merjalle ei 
+* nukkua Pekka heidän ei käskenyt 
+* Merjalle antaa ei kirjaa heidän heittämällä Pekka käskenyt 
+* kirjaa heittämällä antanut Merjalle Pekka ei 
+* käskenyt heidän Pekka Merjalle heittämällä kirjaa ei antaa 
+* Pekka heittämällä käskenyt kirjaa heidän ei antaa Merjalle 
+* käskenyt heittämällä heidän antaa kirjaa Pekka Merjalle ei 
+? ei heidän Pekka kuorsaamalla käskenyt nukkua 
+?* kuorsaamalla heidän häiritä Pekka Merjaa käski 
+?? ihailla ei heidän Pekka käskenyt Merjaa 
+* kirjaa antaa Merjalle käskenyt Pekka heidän heittämällä ei 
+* heidän heittämällä ei antaa Pekka Merjalle käskenyt kirjaa 
+* heidän antaa heittämällä Merjalle Pekka käski kirjan 
+* Merjalle heittämällä käski kirjan heidän antaa Pekka 
+* käskenyt heidän Pekka antaa kirjaa heittämällä Merjalle ei 
+* heittämällä heidän käskenyt ei Merjalle kirjaa antaa Pekka 
+* antaa kirjaa Merjalle ei heidän Pekka käskenyt heittämällä 
+* käskenyt Merjalle Pekka ei heittämällä kirjaa heidän antaa 
+* käskenyt Pekka heittämällä antaa Merjalle kirjaa heidän ei 
+* heidän käskenyt Merjalle Pekka kirjaa ei heittämällä antaa 
+* kuorsaamalla Merjaa käskenyt häiritä Pekka heidän ei 
+* ei antaa käskenyt heidän kirjaa heittämällä Merjalle Pekka 
+* Merjalle heidän Pekka kirjaa ei heittämällä antaa käskenyt 
+* heidän heittämällä antaa kirjaa ei käskenyt Pekka Merjalle 
+* käskenyt Merjalle Pekka heidän kirjaa antaa ei heittämällä 
+* heittämällä heidän käskenyt antaa kirjaa Pekka ei Merjalle 
+* käskenyt heidän Merjalle kirjaa antaa ei Pekka 
+* Merjaa kuorsaamalla heidän Pekka ei käskenyt häiritä 
+* antaa ei Merjalle kirjaa käskenyt Pekka heidän 
+* käski heidän heittämällä Merjalle Pekka kirjan antaa 
+* kirjaa Pekka Merjalle heidän käskenyt antaa ei 
+* Merjalle ei Pekka kirjaa antaa käskenyt heidän 
+* Merjalle ei kirjaa käskenyt Pekka heittämällä heidän antaa 
+* käskenyt heidän Pekka ei heittämällä kirjaa Merjalle antaa 
+* ei käskenyt heittämällä kirjaa Merjalle antaa heidän Pekka 
+* Merjalle kirjaa käskenyt antaa Pekka heidän heittämällä ei 
+* heidän Merjalle heittämällä antaa Pekka ei käskenyt kirjaa 
+* Pekka käskenyt kirjaa ei Merjalle heittämällä antaa heidän 
+* Merjalle Pekka ei käskenyt heittämällä antaa kirjaa heidän 
+* heidän antaa Merjalle heittämällä käskenyt ei kirjaa Pekka 
+* Merjaa häiritä heidän Pekka kuorsaamalla käskenyt ei 
+* Pekka kirjaa heittämällä ei antaa Merjalle käskenyt heidän 
+* heittämällä antaa ei Merjalle käskenyt Pekka kirjaa heidän 
+* antaa kirjaa heidän Pekka ei Merjalle käskenyt heittämällä 
+* kirjan käski antaa heidän Pekka Merjalle 
+* kuorsaamalla käski häiritä Merjaa Pekka heidän 
+* Merjalle ei Pekka käskenyt heidän antaa kirjaa 
+?* Merjaa heidän ei Pekka käskenyt kuorsaamalla häiritä 
+? heidän käski Pekka Merjaa häiritä kuorsaamalla 
+* heidän käskenyt heittämällä Merjalle antaa ei kirjaa Pekka 
+* käskenyt heidän heittämällä Merjalle kirjaa antaa ei Pekka 
+* Merjalle käskenyt Pekka heittämällä antaa ei heidän kirjaa 
+? Merjalle heidän käski antaa Pekka kirjan heittämällä 
+* ei heittämällä kirjaa antaa käskenyt Merjalle heidän Pekka 
+* heidän Merjaa käskenyt kuorsaamalla ei häiritä Pekka 
+* ei heidän Merjalle kirjaa heittämällä Pekka käskenyt antaa 
+?* heidän käski kirjan antaa Pekka heittämällä Merjalle 
+* kirjaa käskenyt heidän antaa heittämällä ei Pekka Merjalle 
+* häiritä Merjaa ei kuorsaamalla Pekka heidän käskenyt 
+* Pekka Merjalle ei heidän heittämällä kirjaa antaa käskenyt 
+* heittämällä ei kirjaa käskenyt antaa heidän Merjalle Pekka 
+* käskenyt heittämällä antaa heidän Pekka ei kirjaa Merjalle 
+* käskenyt heidän kirjaa Pekka ei Merjalle heittämällä antaa 
+* käskenyt heittämällä Merjalle kirjaa heidän antaa Pekka ei 
+* kirjaa Merjalle ei Pekka antaa käskenyt heidän 
+* Pekka antaa heittämällä kirjaa heidän käskenyt Merjalle ei 
+* ei Merjalle heidän käskenyt kirjaa Pekka antaa heittämällä 
+* kirjaa heittämällä Merjalle Pekka antaa käskenyt ei heidän 
+* heittämällä ei käskenyt heidän antaa Merjalle Pekka kirjaa 
+* heidän heittämällä kirjan käski Merjalle Pekka antaa 
+* heittämällä kirjaa käskenyt ei Pekka Merjalle heidän antaa 
+* Pekka heittämällä käskenyt ei antaa Merjalle heidän kirjaa 
+* ei Pekka Merjalle käskenyt antaa kirjaa heidän heittämällä 
+* Pekka kirjaa antaa heidän heittämällä Merjalle käskenyt ei 
+* käski heidän häiritä kuorsaamalla Pekka Merjaa 
+* ei heidän Pekka Merjalle heittämällä kirjaa antaa käskenyt 
+* Merjalle käskenyt Pekka heidän kirjaa heittämällä ei antaa 
+? ei heittämällä käskenyt Pekka antaa heidän kirjaa Merjalle 
+* heittämällä Merjalle Pekka ei kirjaa heidän antaa käskenyt 
+* kirjaa ei antaa heittämällä heidän Pekka Merjalle käskenyt 
+* Pekka antaa heidän ei kirjaa käskenyt heittämällä Merjalle 
+* antaa käskenyt Pekka heittämällä ei heidän kirjaa Merjalle 
+* ei Pekka antaa käskenyt Merjalle kirjaa heittämällä heidän 
+* heittämällä antaa kirjaa Pekka ei heidän käskenyt Merjalle 
+* ei Merjalle heidän heittämällä käskenyt Pekka antaa kirjaa 
+* kirjaa antaa ei heidän Pekka heittämällä Merjalle käskenyt 
+* antaa heidän heittämällä Merjalle Pekka käskenyt ei kirjaa 
+* Merjalle kirjaa heidän antaa Pekka ei käskenyt 
+* Pekka kirjaa käskenyt Merjalle antaa heidän ei heittämällä 
+* antaa heidän Pekka käskenyt kirjaa heittämällä ei Merjalle 
+* heidän heittämällä kirjaa käskenyt antaa Merjalle ei Pekka 
+* käskenyt Merjalle heittämällä antaa ei kirjaa heidän Pekka 
+* antaa ei kirjaa Pekka heidän heittämällä Merjalle käskenyt 
+* kirjan heittämällä Merjalle Pekka antaa heidän käski 
+* käskenyt heidän Pekka ei kirjaa heittämällä Merjalle antaa 
+* käskenyt Pekka heidän ei kirjaa Merjalle heittämällä antaa 
+* ei Pekka heidän antaa käskenyt Merjalle kirjaa 
+* heittämällä heidän Pekka antaa käskenyt kirjaa ei Merjalle 
+* heittämällä heidän kirjaa ei käskenyt Pekka Merjalle antaa 
+* Merjalle ei Pekka heidän heittämällä kirjaa antaa käskenyt 
+* kirjaa heidän Pekka käskenyt antaa ei Merjalle 
+* kirjaa ei Merjalle käskenyt antaa heidän Pekka 
+* heittämällä Merjalle kirjan käski Pekka heidän antaa 
+* heidän kirjaa Pekka käskenyt ei heittämällä antaa Merjalle 
+* käskenyt heittämällä Merjalle kirjaa antaa heidän Pekka ei 
+* kirjan heidän käski Pekka antaa heittämällä Merjalle 
+* heittämällä ei kirjaa antaa Pekka heidän käskenyt Merjalle 
+* heidän antaa kirjaa Pekka ei Merjalle käskenyt heittämällä 
+* Pekka heittämällä heidän käski kirjan Merjalle antaa 
+* Merjalle käskenyt ei antaa heidän Pekka heittämällä kirjaa 
+* ei käskenyt kirjaa Merjalle antaa Pekka heidän heittämällä 
+* Pekka Merjalle antaa käskenyt heidän ei heittämällä kirjaa 
+* antaa kirjaa Pekka heidän heittämällä käskenyt ei Merjalle 
+?* käski Pekka Merjalle heidän kirjan heittämällä antaa 
+* Pekka heittämällä käskenyt Merjalle kirjaa ei antaa heidän 
+? Merjalle kirjaa ei käskenyt heidän antaa Pekka 
+* kirjaa antaa Pekka heidän käskenyt heittämällä Merjalle ei 
+Merjaa ei Pekka ihaile 
+* heittämällä kirjaa antaa Pekka heidän Merjalle ei käskenyt 
+* heittämällä ei antaa heidän Merjalle käskenyt kirjaa Pekka 
+* ei heittämällä kirjaa heidän antaa Pekka Merjalle käskenyt 
+? heidän kirjaa Merjalle antaa Pekka käskenyt ei heittämällä 
+?* Pekka heidän ihailla Merjaa ei käskenyt 
+* ei heidän kuorsaamalla häiritä Pekka Merjaa käskenyt 
+* Pekka Merjalle ei heittämällä antaa heidän käskenyt kirjaa 
+* heidän ei antaa Pekka kirjaa käskenyt Merjalle 
+* ei heidän kirjaa heittämällä antaa käskenyt Pekka Merjalle 
+* heidän heittämällä Pekka ei käskenyt antaa Merjalle kirjaa 
+* Pekka kirjaa ei heittämällä Merjalle käskenyt antaa heidän 
+* heittämällä kirjaa käskenyt ei heidän antaa Pekka Merjalle 
+* Merjalle käski Pekka antaa kirjan heidän heittämällä 
+* ei heittämällä Merjalle antaa käskenyt Pekka kirjaa heidän 
+* heidän käski kirjan heittämällä Pekka antaa Merjalle 
+* heidän Merjalle kirjaa ei antaa käskenyt Pekka 
+* heittämällä antaa kirjan käski heidän Merjalle Pekka 
+* heidän kirjaa Merjalle käskenyt ei antaa heittämällä Pekka 
+ei Merjaa käskenyt heidän Pekka kuorsaamalla häiritä 
+* ei Pekka heidän käskenyt nukkua 
+* käskenyt heidän heittämällä Pekka ei Merjalle antaa kirjaa 
+* Merjaa käskenyt ei kuorsaamalla häiritä Pekka heidän 
+* käskenyt kirjaa Merjalle heidän Pekka antaa heittämällä ei 
+?? kirjaa ei Pekka Merjalle antanut 
+* Merjalle kirjaa Pekka käskenyt antaa ei heidän heittämällä 
+* Merjalle heidän käskenyt Pekka kirjaa ei antaa 
+?? heittämällä kirjaa ei Merjalle Pekka antanut 
+?* Merjalle heidän Pekka heittämällä käskenyt ei kirjaa antaa 
+* ei käskenyt antaa heittämällä heidän Pekka kirjaa Merjalle 
+* käski heittämällä Pekka Merjalle heidän kirjan antaa 
+* ei käskenyt antaa Pekka heittämällä Merjalle kirjaa heidän 
+* kirjaa käskenyt Merjalle antaa heidän heittämällä Pekka ei 
+* heidän Pekka Merjalle kirjan antaa heittämällä käski 
+* antaa ei Pekka heidän käskenyt heittämällä kirjaa Merjalle 
+?* heittämällä ei heidän Merjalle käskenyt antaa kirjaa Pekka 
+* ei Pekka häiritä kuorsaamalla käskenyt heidän Merjaa 
+* Merjalle kirjaa heidän Pekka käskenyt heittämällä antaa ei 
+?? Merjalle Pekka heidän kirjan käski antaa 
+* Merjalle heidän heittämällä antaa käskenyt kirjaa ei Pekka 
+?* heidän kirjaa Merjalle Pekka käskenyt ei antaa heittämällä 
+* käskenyt heidän ei kirjaa Pekka Merjalle heittämällä antaa 
+* heidän antaa Pekka käskenyt kirjaa ei Merjalle 
+* antaa ei Merjalle Pekka käskenyt heittämällä kirjaa heidän 
+* antaa heittämällä käskenyt heidän Pekka Merjalle kirjaa ei 
+* antaa Merjalle heittämällä käski heidän kirjan Pekka 
+?* antaa heidän kirjan Pekka käski Merjalle 
+* käskenyt kirjaa Pekka heittämällä Merjalle antaa ei heidän 
+* käskenyt Pekka häiritä kuorsaamalla heidän Merjaa ei 
+* antaa heidän heittämällä Pekka kirjaa Merjalle ei käskenyt 
+? kirjan Pekka heidän käski antaa Merjalle heittämällä 
+* antaa kirjaa käskenyt heidän Merjalle heittämällä Pekka ei 
+* heittämällä heidän Pekka käskenyt antaa Merjalle kirjaa ei 
+?* Merjalle käskenyt ei antaa Pekka heidän kirjaa 
+* Merjalle heidän kirjan Pekka käski heittämällä antaa 
+* heidän kirjaa Pekka heittämällä käskenyt antaa Merjalle ei 
+* ei häiritse kuorsaamalla Pekka Merjaa 
+* heidän Merjalle heittämällä kirjaa käskenyt ei antaa Pekka 
+* antaa heittämällä ei Pekka Merjalle kirjaa heidän käskenyt 
+* heidän ei Pekka antaa heittämällä käskenyt Merjalle kirjaa 
+* heidän heittämällä Pekka antaa käskenyt Merjalle kirjaa ei 
+* heittämällä antaa kirjaa käskenyt ei heidän Pekka Merjalle 
+* Merjalle Pekka käskenyt heittämällä heidän ei antaa kirjaa 
+## ei Merjalle heittämällä antaa heidän Pekka kirjaa käskenyt 
+?? kuorsaamalla häiritä ei käskenyt Pekka heidän Merjaa 
+## antaa Merjalle Pekka heidän ei kirjaa heittämällä käskenyt 
+* heittämällä heidän antaa Merjalle Pekka käskenyt ei kirjaa 
+* Merjalle heidän kirjaa heittämällä käskenyt antaa Pekka ei 
+* antaa Merjalle heidän kirjaa Pekka käskenyt ei heittämällä 
+* antaa heidän kirjaa käskenyt heittämällä Merjalle ei Pekka 
+## heittämällä kirjaa ei käskenyt Merjalle heidän Pekka antaa 
+? Pekka heidän ei käskenyt kirjaa antaa Merjalle 
+* käskenyt Pekka antaa heidän Merjalle ei kirjaa 
+* heidän Pekka kirjaa käskenyt Merjalle heittämällä antaa ei 
+* Pekka kirjan käski heittämällä Merjalle heidän antaa 
+?? heittämällä kirjaa käskenyt ei heidän Merjalle Pekka antaa 
+* kirjaa käskenyt antaa Merjalle heidän ei Pekka heittämällä 
+* heidän käskenyt heittämällä antaa Merjalle kirjaa ei Pekka 
+käski Pekka heidän antaa heittämällä kirjan Merjalle 
+?* kirjaa Pekka heidän Merjalle käskenyt ei antaa heittämällä 
+* antaa käskenyt heittämällä Merjalle heidän ei kirjaa Pekka 
+* antaa Merjalle Pekka heidän käskenyt kirjaa heittämällä ei 
+* Merjaa ei Pekka kuorsaamalla häiritä käskenyt heidän 
+? antanut Merjalle kirjaa Pekka ei heittämällä 
+* ei kirjaa heidän Pekka antaa käskenyt Merjalle 
+* Pekka käskenyt kirjaa Merjalle heidän heittämällä ei antaa 
+?* heidän kirjaa Pekka ei käskenyt Merjalle antaa heittämällä 
+?? Merjalle heidän antaa kirjaa ei käskenyt Pekka 
+* Pekka kirjaa ei heidän heittämällä antaa käskenyt Merjalle 
+? Pekka Merjaa häiritsee kuorsaamalla 
+* kirjan Merjalle Pekka käski heittämällä antaa heidän 
+* heidän Merjalle Pekka käskenyt kirjaa ei antaa 
+* heittämällä heidän kirjaa Pekka ei Merjalle antaa käskenyt 
+* Merjalle kirjaa Pekka käskenyt heittämällä antaa ei heidän 
+* heittämällä Pekka kirjan Merjalle antaa heidän käski 
+* Merjalle heittämällä Pekka käskenyt kirjaa heidän antaa ei 
+* heidän heittämällä Merjalle ei antaa Pekka kirjaa käskenyt 
+* Pekka kirjaa käskenyt antaa heittämällä heidän Merjalle ei 
+* heidän antaa Pekka Merjalle heittämällä kirjaa käskenyt ei 
+? ei käskenyt heidän kirjaa Pekka antaa Merjalle 
+* heittämällä käskenyt antaa Merjalle heidän kirjaa Pekka ei 
+* häiritä heidän käskenyt Merjaa kuorsaamalla Pekka ei 
+* nukkua heidän käskenyt Pekka ei 
+?? Merjalle Pekka heidän antaa kirjaa ei käskenyt heittämällä 
+* heittämällä heidän käskenyt antaa Merjalle kirjaa Pekka ei 
+* heidän kirjaa käskenyt ei heittämällä Merjalle Pekka antaa 
+* kirjaa Merjalle heidän Pekka käskenyt antaa ei heittämällä 
+* käskenyt heidän kirjaa ei Merjalle Pekka antaa 
+* käskenyt Merjalle Pekka heidän ei antaa heittämällä kirjaa 
+?? ei Merjalle Pekka kirjaa käskenyt heittämällä heidän antaa 
+* Pekka kirjaa Merjalle heidän heittämällä ei antaa käskenyt 
+* antaa kirjan Merjalle heittämällä Pekka käski heidän 
+* heidän Merjaa Pekka käskenyt ihailla ei 
+* antaa heittämällä kirjaa Merjalle ei heidän Pekka käskenyt 
+* antaa Pekka kirjan heittämällä heidän Merjalle käski 
+? ei Pekka Merjalle heidän käskenyt antaa kirjaa 
+* antaa käskenyt Merjalle heittämällä kirjaa heidän Pekka ei 
+* käski Merjalle heittämällä antaa Pekka heidän kirjan 
+* heittämällä Merjalle antaa käskenyt heidän ei kirjaa Pekka 
+* ei käskenyt kirjaa Merjalle Pekka heidän heittämällä antaa 
+* käskenyt ei Merjalle antaa heittämällä heidän kirjaa Pekka 
+* Pekka Merjalle käskenyt ei heittämällä heidän kirjaa antaa 
+* heittämällä antaa käski kirjan Merjalle Pekka heidän 
+## kuorsaamalla heidän Pekka käskenyt Merjaa ei häiritä 
+?? heittämällä Pekka ei heidän käskenyt kirjaa antaa Merjalle 
+* käskenyt Merjalle Pekka antaa kirjaa heidän ei heittämällä 
+?? Merjalle Pekka heidän ei kirjaa heittämällä käskenyt antaa 
+* heittämällä kirjaa antaa Pekka Merjalle käskenyt heidän ei 
+* Merjalle antaa käskenyt ei Pekka kirjaa heittämällä heidän 
+* kirjan Pekka heittämällä antaa Merjalle heidän käski 
+* heittämällä heidän Merjalle ei kirjaa antaa Pekka käskenyt 
+* käskenyt antaa Merjalle heidän Pekka ei heittämällä kirjaa 
+* kuorsaamalla häiritä käskenyt heidän ei Merjaa Pekka 
+* ei kirjaa antaa Pekka käskenyt Merjalle heidän heittämällä 
+* Pekka antaa kirjaa Merjalle käskenyt heidän ei heittämällä 
+* antaa ei Merjalle Pekka kirjaa heidän käskenyt heittämällä 
+* heittämällä käskenyt Pekka Merjalle ei heidän kirjaa antaa 
+* kirjaa heidän Merjalle ei heittämällä Pekka antaa käskenyt 
+* kirjaa heittämällä heidän Pekka antaa käskenyt Merjalle ei 
+* Merjalle käskenyt ei kirjaa heidän antaa heittämällä Pekka 
+?? heidän ei käskenyt antaa kirjaa Pekka Merjalle heittämällä 
+* kirjaa heittämällä antaa Pekka käskenyt heidän Merjalle ei 
+* kirjaa heittämällä Merjalle heidän käskenyt antaa Pekka ei 
+* Merjalle heittämällä Pekka heidän ei kirjaa käskenyt antaa 
+?* Merjalle heittämällä antanut Pekka kirjaa ei 
+* kirjaa heidän käskenyt ei antaa heittämällä Merjalle Pekka 
+?? Merjalle Pekka antaa kirjan käski heidän heittämällä 
+* heittämällä antaa ei Merjalle Pekka käskenyt kirjaa heidän 
+?? ei heittämällä käskenyt antaa heidän Pekka kirjaa Merjalle 
+* heittämällä antaa heidän Merjalle kirjaa Pekka käskenyt ei 
+?? kirjaa Merjalle heittämällä antanut ei Pekka 
+?* Pekka käskenyt heidän ei Merjaa häiritä kuorsaamalla 
+* kirjan käski Merjalle antaa Pekka heidän 
+?? Merjalle heidän käski antaa kirjan heittämällä Pekka 
+* ei kirjaa käskenyt heittämällä antaa heidän Pekka Merjalle 
+* kirjaa käskenyt ei Pekka Merjalle heidän antaa 
+?* käskenyt Merjalle antaa Pekka heidän ei heittämällä kirjaa 
+* heittämällä antaa Merjalle kirjan käski Pekka heidän 
+* heittämällä Pekka käskenyt heidän ei antaa Merjalle kirjaa 
+?* heittämällä ei käskenyt kirjaa antaa heidän Merjalle Pekka 
+* ei heittämällä kirjaa käskenyt Merjalle Pekka heidän antaa 
+* Merjalle kirjaa heittämällä ei Pekka antaa heidän käskenyt 
+?* Merjalle ei Pekka heittämällä käskenyt antaa heidän kirjaa 
+* käskenyt heittämällä kirjaa antaa heidän Pekka ei Merjalle 
+?* kirjaa heittämällä käskenyt heidän antaa ei Pekka Merjalle 
+* Merjalle heittämällä antaa käskenyt heidän Pekka ei kirjaa 
+?* Merjalle ei Pekka heittämällä käskenyt kirjaa heidän antaa 
+* antaa Merjalle heittämällä käski Pekka kirjan heidän 
+* Merjalle kirjaa heittämällä Pekka käskenyt antaa ei heidän 
+?? kuorsaamalla Pekka häiritä heidän käski Merjaa 
+## heidän Pekka kirjan antaa heittämällä käski Merjalle 
+* kirjaa heittämällä antaa käskenyt Pekka ei heidän Merjalle 
+* ei Pekka kirjaa Merjalle antaa heittämällä käskenyt heidän 
+?* antaa Pekka ei Merjalle kirjaa heidän heittämällä käskenyt 
+* heittämällä antaa Merjalle heidän ei käskenyt Pekka kirjaa 
+* Merjaa ei kuorsaamalla häiritä Pekka käskenyt heidän 
+?* Pekka antaa heidän käski heittämällä kirjan Merjalle 
+?? heidän ei käskenyt antaa heittämällä kirjaa Merjalle Pekka 
+* kirjaa heittämällä käskenyt Pekka heidän antaa Merjalle ei 
+* käskenyt Merjalle heittämällä antaa Pekka heidän kirjaa ei 
+* ei antaa käskenyt Pekka heidän Merjalle kirjaa 
+* ei Merjalle käskenyt Pekka kirjaa heittämällä heidän antaa 
+* heittämällä käskenyt Merjalle antaa ei Pekka kirjaa heidän 
+* Merjalle heittämällä käskenyt kirjaa ei Pekka antaa heidän 
+* käskenyt Pekka kirjaa heittämällä heidän antaa ei Merjalle 
+* heidän kirjaa Merjalle heittämällä Pekka käskenyt antaa ei 
+?* ei Merjalle antaa heidän Pekka heittämällä käskenyt kirjaa 
+* heidän Merjalle kirjaa käskenyt antaa Pekka ei 
+* heittämällä Merjalle heidän Pekka käskenyt ei antaa kirjaa 
+* käskenyt antaa heidän Merjalle Pekka heittämällä ei kirjaa 
+* kirjaa heidän Merjalle antaa heittämällä Pekka käskenyt ei 
+## heittämällä heidän ei käskenyt kirjaa Merjalle antaa Pekka 
+* antaa käskenyt kirjaa ei heidän heittämällä Pekka Merjalle 
+* antaa Merjalle Pekka heittämällä heidän kirjaa ei käskenyt 
+* heidän käskenyt Merjalle antaa kirjaa ei Pekka 
+?* häiritä käski Merjaa kuorsaamalla heidän Pekka 
+* käskenyt kirjaa ei Pekka antaa heidän Merjalle heittämällä 
+kirjaa Pekka ei käskenyt heidän antaa Merjalle heittämällä 
+* Merjalle Pekka kirjaa ei antaa käskenyt heidän heittämällä 
+* Pekka heittämällä heidän ei käskenyt Merjalle kirjaa antaa 
+* heittämällä ei heidän kirjaa Pekka Merjalle antaa käskenyt 
+* ei käskenyt heittämällä antaa Merjalle kirjaa Pekka heidän 
+* ei heidän kirjaa antaa käskenyt Pekka heittämällä Merjalle 
+* käskenyt antaa heidän kirjaa ei Pekka heittämällä Merjalle 
+* Merjalle heittämällä ei antaa Pekka heidän käskenyt kirjaa 
+* Pekka heidän käskenyt heittämällä antaa kirjaa Merjalle ei 
+* antaa ei käskenyt kirjaa heidän Merjalle Pekka heittämällä 
+* ei antaa käskenyt heidän Merjalle Pekka kirjaa heittämällä 
+* heidän antaa ei heittämällä kirjaa Pekka Merjalle käskenyt 
+* Pekka käskenyt Merjaa häiritä ei heidän kuorsaamalla 
+?? ei heidän käskenyt Merjaa kuorsaamalla Pekka häiritä 
+* ei heittämällä antaa Pekka Merjalle heidän käskenyt kirjaa 
+* heittämällä käskenyt antaa kirjaa heidän Pekka ei Merjalle 
+* käskenyt ei Pekka kirjaa Merjalle antaa heidän heittämällä 
+* antaa kirjaa heittämällä ei käskenyt Pekka heidän Merjalle 
+* käskenyt heittämällä heidän Merjalle ei Pekka kirjaa antaa 
+* heittämällä Pekka kirjaa antaa ei käskenyt heidän Merjalle 
+* heidän antaa kirjaa Pekka Merjalle ei käskenyt 
+ei Pekka käskenyt kirjaa heidän antaa heittämällä Merjalle 
+?* Merjalle kirjaa heidän ei heittämällä Pekka käskenyt antaa 
+* Pekka häiritä Merjaa kuorsaamalla käskenyt heidän ei 
+* heidän ei Pekka antaa heittämällä kirjaa käskenyt Merjalle 
+?* ei heidän käskenyt kirjaa Merjalle heittämällä Pekka antaa 
+* heidän Pekka Merjalle kirjan heittämällä antaa käski 
+?* kirjan Merjalle käski antaa heidän heittämällä Pekka 
+? heittämällä käski Pekka heidän Merjalle kirjan antaa 
+* ei Merjalle heidän heittämällä kirjaa Pekka antaa käskenyt 
+* kirjaa heittämällä käskenyt ei Pekka heidän Merjalle antaa 
+* heittämällä ei kirjaa heidän Pekka antaa Merjalle käskenyt 
+* käskenyt ei heittämällä antaa kirjaa Pekka Merjalle heidän 
+* Merjalle heittämällä heidän käskenyt kirjaa Pekka ei antaa 
+? ei heidän Pekka käskenyt Merjalle heittämällä antaa kirjaa 
+?* Merjalle heidän Pekka heittämällä ei kirjaa antaa käskenyt 
+* ei Merjaa ihailla heidän Pekka käskenyt 
+?? ei käskenyt kuorsaamalla nukkua heidän Pekka 
+* käski antaa Merjalle Pekka heittämällä kirjan heidän 
+* Merjalle antaa käskenyt kirjaa ei Pekka heidän heittämällä 
+? ei Pekka heidän antaa kirjaa Merjalle käskenyt 
+## Pekka heidän ei kirjaa antaa heittämällä käskenyt Merjalle 
+* Merjalle Pekka kirjaa käskenyt heidän heittämällä antaa ei 
+* kirjaa Merjalle heittämällä käskenyt Pekka antaa heidän ei 
+* antaa heittämällä kirjaa Merjalle Pekka ei heidän käskenyt 
+* käskenyt Merjaa kuorsaamalla Pekka häiritä heidän ei 
+* ei antaa heidän kirjaa käskenyt Pekka heittämällä Merjalle 
+## häiritä käskenyt Pekka heidän Merjaa ei kuorsaamalla 
+* Merjalle kirjaa heittämällä ei antaa Pekka käskenyt heidän 
+* heidän Merjalle heittämällä antaa kirjaa käskenyt Pekka ei 
+* heidän heittämällä antaa käskenyt kirjaa Pekka Merjalle ei 
+* antaa Pekka Merjalle heittämällä kirjaa heidän käskenyt ei 
+* heittämällä Pekka Merjalle ei kirjaa käskenyt antaa heidän 
+* häiritä kuorsaamalla Pekka käskenyt ei Merjaa heidän 
+* Pekka kuorsaamalla häiritä ei Merjaa heidän käskenyt 
+?* heidän kirjaa Merjalle Pekka käskenyt antaa ei heittämällä 
+* Pekka nukkua ei käskenyt heidän 
+?* ihailla käskenyt ei Pekka heidän Merjaa 
+* heidän antaa Merjalle heittämällä kirjaa käskenyt ei Pekka 
+?* heidän häiritä kuorsaamalla Pekka käski Merjaa 
+* käskenyt antaa heittämällä Merjalle Pekka ei kirjaa heidän 
+* käskenyt heidän antaa Merjalle Pekka ei kirjaa heittämällä 
+?* antaa heidän käskenyt Merjalle ei heittämällä Pekka kirjaa 
+* heittämällä käskenyt Merjalle kirjaa heidän antaa ei Pekka 
+* ei heidän Pekka antaa käskenyt kirjaa heittämällä Merjalle 
+* antaa käskenyt heittämällä kirjaa Pekka Merjalle ei heidän 
+heittämällä ei heidän Pekka käskenyt antaa kirjaa Merjalle 
+* ei häiritä heidän Pekka käskenyt Merjaa kuorsaamalla 
+* antaa heidän Merjalle kirjaa käskenyt ei Pekka 
+* Pekka käskenyt ei heittämällä Merjalle heidän kirjaa antaa 
+* kirjaa Merjalle heittämällä Pekka käskenyt antaa heidän ei 
+## Pekka käski antaa heittämällä kirjan heidän Merjalle 
+?? heittämällä kirjaa ei heidän Merjalle käskenyt antaa Pekka 
+* ei häiritä kuorsaamalla heidän käskenyt Merjaa Pekka 
+* kirjaa heittämällä heidän antaa Merjalle ei Pekka käskenyt 
+* ei Pekka käskenyt kirjaa antaa heittämällä heidän Merjalle 
+* antaa käskenyt heidän heittämällä ei Pekka Merjalle kirjaa 
+heidän ei Pekka käskenyt häiritä Merjaa kuorsaamalla 
+* Pekka antaa käskenyt Merjalle kirjaa ei heidän 
+* Merjalle heidän käskenyt Pekka kirjaa antaa ei heittämällä 
+* käskenyt Merjalle heidän ei kirjaa antaa heittämällä Pekka 
+* heidän käskenyt Pekka Merjaa kuorsaamalla häiritä ei 
+* antaa Merjalle Pekka käskenyt heidän ei kirjaa heittämällä 
+* kuorsaamalla ei Merjaa häiritä heidän Pekka käskenyt 
+* heittämällä antaa heidän Pekka käskenyt Merjalle ei kirjaa 
+* antaa käskenyt heidän ei Merjalle kirjaa heittämällä Pekka 
+?* Merjalle käskenyt ei kirjaa Pekka heittämällä heidän antaa 
+* käskenyt ei antaa heittämällä Pekka heidän kirjaa Merjalle 
+?? heittämällä Pekka ei kirjaa käskenyt heidän antaa Merjalle 
+* antaa heidän käskenyt Pekka ei kirjaa heittämällä Merjalle 
+* Merjalle kirjaa ei heittämällä Pekka käskenyt heidän antaa 
+* käskenyt Pekka heidän kirjaa antaa ei Merjalle heittämällä 
+* Merjalle Pekka heidän heittämällä ei antaa kirjaa käskenyt 
+?* kirjaa heidän ei antaa Merjalle Pekka käskenyt 
+* heittämällä antaa ei Pekka Merjalle kirjaa heidän käskenyt 
+?? käskenyt ei heidän antaa Merjalle Pekka kirjaa 
+* Merjalle käskenyt antaa ei Pekka kirjaa heidän 
+* Merjalle käskenyt antaa Pekka heittämällä kirjaa heidän ei 
+* kirjaa heidän Pekka heittämällä ei antaa käskenyt Merjalle 
+* Pekka ei antaa heidän käskenyt heittämällä Merjalle kirjaa 
+?* heittämällä heidän Pekka ei käskenyt kirjaa antaa Merjalle 
+* käskenyt Pekka ei antaa kirjaa heidän Merjalle 
+?* Merjalle heidän antaa ei kirjaa heittämällä käskenyt Pekka 
+* käskenyt antaa heidän kirjaa heittämällä Merjalle ei Pekka 
+?? käskenyt ei heittämällä heidän Pekka kirjaa antaa Merjalle 
+?? ei heittämällä Merjalle Pekka kirjaa antanut 
+* heittämällä Merjalle ei antaa heidän Pekka käskenyt kirjaa 
+* ei Pekka antaa heittämällä kirjaa käskenyt heidän Merjalle 
+* käskenyt Pekka heidän antaa Merjalle ei heittämällä kirjaa 
+* Pekka käskenyt heidän kirjaa antaa heittämällä ei Merjalle 
+?* heidän Merjalle Pekka käskenyt antaa ei kirjaa 
+?? heidän ei kuorsaamalla Pekka käskenyt häiritä Merjaa 
+* kirjaa Merjalle antaa heidän käskenyt ei Pekka 
+?? kirjaa ei Pekka Merjalle käskenyt heidän heittämällä antaa 
+* heidän antaa kirjaa käskenyt Merjalle ei heittämällä Pekka 
+* Merjalle heittämällä käskenyt heidän antaa kirjaa Pekka ei 
+?? kuorsaamalla heidän Merjaa käski Pekka häiritä 
+* ei antaa heittämällä Pekka käskenyt heidän Merjalle kirjaa 
+## heidän heittämällä antaa kirjan Merjalle Pekka käski 
+* Pekka käskenyt häiritä kuorsaamalla heidän ei Merjaa 
+* ei Merjalle antaa heittämällä kirjaa käskenyt heidän Pekka 
+* antaa käskenyt Pekka Merjalle heittämällä ei heidän kirjaa 
+?* heittämällä heidän kirjaa ei Pekka Merjalle antaa käskenyt 
+* Pekka Merjaa häiritä käskenyt heidän ei kuorsaamalla 
+## Merjalle heittämällä kirjaa heidän antaa Pekka ei käskenyt 
+?? ei käskenyt heidän heittämällä kirjaa Pekka Merjalle antaa 
+* heittämällä heidän Merjalle kirjaa Pekka ei antaa käskenyt 
+* Pekka käskenyt ei ihailla Merjaa heidän 
+* Pekka heittämällä ei antaa kirjaa käskenyt heidän Merjalle 
+* antaa Merjalle kirjaa ei heidän Pekka käskenyt heittämällä 
+* kirjaa Merjalle heidän heittämällä Pekka ei antaa käskenyt 
+?* kirjaa ei käskenyt Pekka heittämällä heidän Merjalle antaa 
+* heittämällä antaa Merjalle käskenyt heidän Pekka kirjaa ei 
+* kuorsaamalla Pekka häiritä ei heidän käskenyt Merjaa 
+* käskenyt kirjaa heidän Pekka Merjalle ei antaa 
+* Pekka käskenyt antaa heidän kirjaa Merjalle ei heittämällä 
+* antaa heidän Merjalle ei käskenyt kirjaa Pekka 
+* heittämällä Merjalle Pekka kirjaa heidän ei käskenyt antaa 
+*? ei Pekka käskenyt heittämällä heidän Merjalle kirjaa antaa 
+* ei Pekka Merjalle kirjaa antaa käskenyt heidän heittämällä 
+?* käskenyt heidän ei Pekka antaa Merjalle heittämällä kirjaa 
+* Merjaa käskenyt Pekka kuorsaamalla heidän ei häiritä 
+* käskenyt kirjaa Merjalle Pekka heidän antaa heittämällä ei 
+?* kirjaa heidän Pekka ei antaa käskenyt heittämällä Merjalle 
+?? ei antaa käskenyt kirjaa heidän Pekka Merjalle 
+* Merjaa Pekka häiritä käski kuorsaamalla heidän 
+* Pekka heidän heittämällä ei antaa Merjalle kirjaa käskenyt 
+?? Merjaa Pekka heidän käski häiritä kuorsaamalla 
+* käskenyt Merjalle ei Pekka antaa heidän heittämällä kirjaa 
+?* ei heidän antaa Merjalle käskenyt heittämällä Pekka kirjaa 
+?? Pekka ei heidän kirjaa antaa Merjalle käskenyt heittämällä 
+* heidän heittämällä kirjaa Pekka Merjalle ei antaa käskenyt 
+* ei käskenyt ihailla heidän Pekka Merjaa 
+* ei heidän Merjalle käskenyt antaa kirjaa Pekka heittämällä 
+* antaa Pekka ei käskenyt kirjaa Merjalle heittämällä heidän 
+* ei heidän heittämällä Pekka käskenyt kirjaa Merjalle antaa 
+* kirjaa heittämällä käskenyt Pekka ei Merjalle heidän antaa 
+* kirjaa Merjalle antaa käskenyt Pekka heittämällä heidän ei 
+?* heidän ei käskenyt heittämällä Pekka kirjaa Merjalle antaa 
+* Pekka ei kirjaa käskenyt Merjalle antaa heidän heittämällä 
+* Pekka Merjalle käskenyt heittämällä ei heidän antaa kirjaa 
+* heittämällä kirjaa heidän antaa Pekka Merjalle käskenyt ei 
+?* käski antaa kirjan Merjalle heittämällä heidän Pekka 
+* käski antaa Merjalle kirjan Pekka heidän 
+* kirjaa käskenyt Merjalle ei antaa heidän heittämällä Pekka 
+* Merjalle käskenyt Pekka heidän kirjaa ei heittämällä antaa 
+?* heidän ei käskenyt kirjaa heittämällä Pekka Merjalle antaa 
+?* Pekka heidän käskenyt ei antaa heittämällä Merjalle kirjaa 
+* heittämällä heidän Merjalle käskenyt antaa ei kirjaa Pekka 

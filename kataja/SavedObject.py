@@ -2,8 +2,8 @@ import copy
 import types
 from collections import Iterable
 
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import QPointF, QPoint
+from PyQt6 import QtGui, QtCore
+from PyQt6.QtCore import QPointF, QPoint
 
 from kataja.SavedField import SavedField
 from kataja.globals import CREATED, DELETED

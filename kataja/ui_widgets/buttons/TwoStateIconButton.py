@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase

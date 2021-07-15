@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -73,12 +73,12 @@ class FeaturePanel(NodePanel):
         self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape_for_features',
                                             for_edge_type=g.FEATURE_EDGE
-                                            ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                            ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_visible = EyeButton(action='toggle_feature_edge_visibility', height=22,
-                                      width=24).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                      width=24).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_options = PanelButton(parent=widget,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options',
-                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_options.data = g.FEATURE_NODE
         self.finish_init()

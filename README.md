@@ -13,7 +13,7 @@ Kataja aims to help you with:
 
 Kataja is published under GPL3 license. See COPYING. It is designed and developed by Jukka Purma as a part for PhD (Doctor of Arts) research in Aalto University School of Art, Design and Architecture, supervised by doc. Saara Huhmarniemi (University of Helsinki, prev. supervised by Pauli Brattico) and prof. Teemu Leinonen (Aalto ARTS). 
 
-Kataja is built on Qt5, PyQt5, and Python3.
+Kataja is built on Qt5, PyQt6, and Python3.
 
 The software is alpha and under sporadic development. At this stage there are no actual releases, but the code from the master branch should run. Daily updates may break features here and there.  
 

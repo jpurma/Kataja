@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 from kataja.UIItem import UIWidget
 
@@ -12,13 +12,13 @@ class KatajaSpinbox(QtWidgets.QSpinBox, UIWidget):
         UIWidget.__init__(self, **kwargs)
         self.setAccelerated(True)
         self.setReadOnly(False)
-        self.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.setRange(range_min, range_max)
         self.setSuffix(suffix)
         self.setWrapping(wrapping)
         self.setFixedWidth(50)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        # slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        # slabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
     def set_value(self, value):
         self.blockSignals(True)
@@ -55,7 +55,7 @@ class KatajaDecimalSpinbox(QtWidgets.QDoubleSpinBox, UIWidget):
         self.setSuffix(suffix)
         self.setWrapping(wrapping)
         self.setFixedWidth(58)
-        # slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        # slabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
     def set_value(self, value):
         self.blockSignals(True)

@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.KatajaButtonGroup import KatajaButtonGroup

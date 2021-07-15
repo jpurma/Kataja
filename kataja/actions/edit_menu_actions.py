@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5.QtGui import QKeySequence
+from PyQt6.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl
@@ -32,7 +32,7 @@ class Cut(KatajaAction):
     k_action_uid = 'cut'
     k_command = 'Cut'
     k_tooltip = 'Cut element'
-    k_shortcut = QKeySequence(QKeySequence.Cut)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Cut)
 
     def method(self):
         qclipboard = ctrl.main.app.clipboard()
@@ -57,7 +57,7 @@ class Copy(KatajaAction):
     k_action_uid = 'copy'
     k_command = 'Copy'
     k_tooltip = 'Copy element'
-    k_shortcut = QKeySequence(QKeySequence.Copy)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Copy)
 
     def method(self):
         ctrl.clipboard = []
@@ -79,7 +79,7 @@ class Paste(KatajaAction):
     k_action_uid = 'paste'
     k_command = 'Paste'
     k_tooltip = 'Paste element'
-    k_shortcut = QKeySequence(QKeySequence.Paste)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Paste)
 
     def method(self):
         print('Paste called')
@@ -95,7 +95,7 @@ class Undo(KatajaAction):
     k_action_uid = 'undo'
     k_command = 'Undo'
     k_tooltip = 'Undo element'
-    k_shortcut = QKeySequence(QKeySequence.Undo)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Undo)
     k_undoable = False
 
     def method(self):
@@ -115,7 +115,7 @@ class Redo(KatajaAction):
     k_action_uid = 'redo'
     k_command = 'Redo'
     k_tooltip = 'Redo element'
-    k_shortcut = QKeySequence(QKeySequence.Redo)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Redo)
     k_undoable = False
 
     def method(self):

@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.buttons.PanelButton import PanelButton

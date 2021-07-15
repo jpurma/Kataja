@@ -1,6 +1,6 @@
 import math
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from kataja.globals import SMALL_FEATURE
 from kataja.singletons import ctrl, qt_prefs
@@ -80,7 +80,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
         return r
 
     def paint(self, painter, *args, **kwargs):
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
         label_rect = self.label_rect()
         if self.members:
             painter.setBrush(ctrl.cm.get(self.color_key))
@@ -91,7 +91,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
             x = scene_pos.x()
             y = scene_pos.y()
             mid_height = label_rect.height() / 2
-            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
 
             for member in self.members:
                 if member.cached_sorted_feature_edges:
@@ -104,7 +104,7 @@ class SemanticsItem(QtWidgets.QGraphicsSimpleTextItem):
                 py = pos.y()
                 px += i_shift
                 if True:
-                    painter.setPen(QtCore.Qt.NoPen)
+                    painter.setPen(QtCore.Qt.PenStyle.NoPen)
                     grad = QtGui.QLinearGradient(0, 0, px - x, 0)
                     grad.setColorAt(0, ctrl.cm.get(self.color_key))
                     grad.setColorAt(0.1, ctrl.cm.get(self.color_key_tr))

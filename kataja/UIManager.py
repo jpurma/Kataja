@@ -27,7 +27,7 @@ import logging
 import os
 from collections import OrderedDict
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 import kataja.actions
 import kataja.globals as g
@@ -198,7 +198,7 @@ class UIManager:
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist """
         if action_group_name not in self._action_groups:
-            self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
+            self._action_groups[action_group_name] = QtGui.QActionGroup(self.main)
         return self._action_groups[action_group_name]
 
     def set_scope(self, scope):
@@ -562,7 +562,7 @@ class UIManager:
                     add_menu(new_menu, item[0], item[1])
                 elif item == '---':
                     new_menu.addSeparator()
-                elif isinstance(item, QtWidgets.QAction):
+                elif isinstance(item, QtGui.QAction):
                     new_menu.addAction(item)
                     item.host_menu = new_menu
                 else:
@@ -1064,7 +1064,7 @@ class UIManager:
             self.remove_ui(self.drag_info)
             self.drag_info = None
 
-    def show_help(self, item, event):
+    def show_help(self, item, event: [QtGui.QEnterEvent, QtWidgets.QGraphicsSceneHoverEvent]):
         if not (item.k_tooltip or (item.k_action and item.k_action.active_tooltip)):
             if self.floating_tip and self.floating_tip.isVisible():
                 self.floating_tip.hide()
@@ -1075,7 +1075,11 @@ class UIManager:
         self.floating_tip.set_item(item)
         if not self.floating_tip.isVisible():
             self.floating_tip.show()
-        self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
+        if isinstance(event, QtWidgets.QGraphicsSceneHoverEvent):
+            pos = event.screenPos()
+        else:
+            pos = event.globalPosition().toPoint()
+        self.floating_tip.set_position(pos + QtCore.QPoint(20, 20))
 
     def hide_help(self, item, event):
         if self.floating_tip and self.floating_tip.item is item:
@@ -1086,8 +1090,12 @@ class UIManager:
             self.floating_tip.hide()
 
     def move_help(self, event):
+        if isinstance(event, QtWidgets.QGraphicsSceneHoverEvent):
+            pos = event.screenPos()
+        else:
+            pos = event.globalPosition().toPoint()
         if self.floating_tip:
-            self.floating_tip.set_position(event.screenPos() + QtCore.QPoint(20, 20))
+            self.floating_tip.set_position(pos + QtCore.QPoint(20, 20))
 
     def refresh_heading(self):
         if not (ctrl.document and ctrl.forest):

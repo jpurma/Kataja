@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.Shapes import SHAPE_PRESETS
@@ -97,7 +97,7 @@ class LineOptionsPanel(Panel):
         # Curvature
         hlayout = box_row(layout)
         hlayout.addWidget(QtWidgets.QLabel('Curvature'))
-        hlayout.setAlignment(QtCore.Qt.AlignRight)
+        hlayout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         self.arc_rel_dx_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                 action='change_edge_relative_curvature_x',
                                                 suffix='%'
@@ -108,7 +108,7 @@ class LineOptionsPanel(Panel):
                                                 ).to_layout(hlayout, with_label='Y')
 
         hlayout = box_row(layout)
-        hlayout.setAlignment(QtCore.Qt.AlignRight)
+        hlayout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         self.arc_fixed_dx_spinbox = KatajaSpinbox(parent=widget, range_min=-200, range_max=200,
                                                   action='change_edge_fixed_curvature_x',
                                                   suffix=' px'

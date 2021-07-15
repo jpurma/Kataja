@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_support.panel_utils import box_row
@@ -34,7 +34,7 @@ class VisualizationPanel(Panel):
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
                                           action='toggle_panel',
                                           parent=inner,
-                                          size=20).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                          size=20).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
         self.toggle_options.data = 'VisualizationOptionsPanel'

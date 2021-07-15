@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.parser.latex_to_unicode import latex_to_unicode
@@ -105,14 +105,14 @@ class SymbolPanel(Panel):
         self.selector.add_items([(item, item) for item in table_names])
         # noinspection PyUnresolvedReferences
         self.selector.activated.connect(self.change_symbol_set)
-        self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
+        self.selector.setFocusPolicy(QtCore.Qt.FocusPolicy.TabFocus)
         layout.addWidget(self.selector)
         self.symlist = QtWidgets.QListWidget(parent=widget)
-        self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.symlist.setSpacing(8)
         self.symlist.setMouseTracking(True)
-        self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
+        self.symlist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self.symlist.setViewMode(QtWidgets.QListWidget.ViewMode.IconMode)
         f = qt_prefs.get_font(g.MAIN_FONT)
         self.symlist.setStyleSheet(
             'font-family: "%s"; font-size: %spx;' % (f.family(), int(f.pointSize() * 1.5)))
@@ -126,7 +126,7 @@ class SymbolPanel(Panel):
         hlayout.addWidget(self.info)
         self.resize_grip = QtWidgets.QSizeGrip(widget)
         self.resize_grip.hide()
-        hlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
+        hlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignmentFlag.AlignRight)
         self.tables = {}
         keys = list(latex_to_unicode.keys())
         for name in table_names:

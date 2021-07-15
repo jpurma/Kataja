@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl, classes

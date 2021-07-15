@@ -1,7 +1,6 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
-qbytes_opacity = QtCore.QByteArray()
-qbytes_opacity.append("opacity")
+qbytes_opacity = QtCore.QByteArray("opacity".encode())
 
 
 class FadeInOut:
@@ -27,13 +26,14 @@ class FadeInOut:
         if self.is_fading_out:
             self.is_fading_out = False
             self._fade_out_anim.stop()
+        #foo = QtCore.QPropertyAnimation(self, "opacity")
         self._fade_in_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_in_anim.setDuration(s)
         self._fade_in_anim.setStartValue(0.0)
         self._fade_in_anim.setEndValue(1.0)
-        self._fade_in_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_in_anim.setEasingCurve(QtCore.QEasingCurve.Type.InQuad)
         self._fade_in_anim.finished.connect(self.fade_in_finished)
-        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def fade_in_finished(self):
         self.is_fading_in = False
@@ -54,9 +54,9 @@ class FadeInOut:
         self._fade_out_anim.setDuration(s)
         self._fade_out_anim.setStartValue(1.0)
         self._fade_out_anim.setEndValue(0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.Type.OutQuad)
         self._fade_out_anim.finished.connect(self.fade_out_finished)
-        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def fade_out_and_delete(self, s=150):
         """ Start fade out. The object exists until fade end.
@@ -80,9 +80,9 @@ class FadeInOut:
         self._fade_out_anim.setDuration(s)
         self._fade_out_anim.setStartValue(1.0)
         self._fade_out_anim.setEndValue(0)
-        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.Type.OutQuad)
         self._fade_out_anim.finished.connect(self.fade_out_finished_delete)
-        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def fade_out_finished_delete(self):
         self.is_fading_out = False

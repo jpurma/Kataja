@@ -25,7 +25,7 @@
 import math
 import random
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.FadeInOut import FadeInOut
 from kataja.SavedField import SavedField

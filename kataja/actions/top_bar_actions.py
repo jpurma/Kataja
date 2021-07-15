@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtWidgets, QtGui
+from PyQt6 import QtWidgets, QtGui
 
 from kataja.KatajaAction import KatajaAction, MediatingAction
 from kataja.globals import ViewUpdateReason
@@ -249,7 +249,7 @@ class ToggleFullScreen(KatajaAction):
     k_action_uid = 'fullscreen_mode'
     k_command = 'Fullscreen'
     k_undoable = False
-    k_shortcut = QtGui.QKeySequence(QtGui.QKeySequence.FullScreen)
+    k_shortcut = QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.FullScreen)
     k_checkable = True
 
     def method(self):

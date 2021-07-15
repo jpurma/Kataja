@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.parser.INodes import as_html
@@ -133,10 +133,10 @@ class NodeEditEmbed(UIEmbed):
         # U+21A9 &#8617;
         self.enter_button = PushButtonBase(parent=self, text="Keep ↩",
                                            action='finish_editing_node')
-        hlayout.addWidget(self.enter_button, 0, QtCore.Qt.AlignRight)
+        hlayout.addWidget(self.enter_button, 0, QtCore.Qt.AlignmentFlag.AlignRight)
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
-            hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
+            hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignmentFlag.AlignRight)
         self.update_embed()
         self.update_position()
         self.hide()

@@ -85,10 +85,11 @@ class DerivationTree(SavedObject):
     def collect_states(self):
         states = {}
         for key, val in self.d.items():
-            state_key = key.rsplit('_', 1)[-1]
-            if state_key not in states:
+            if isinstance(key, str):
+                key = int(key.rsplit('_', 1)[-1])
+            if key not in states:
                 uid, data, msg, state_id, parent_id, state_type, sort_order = val
-                states[int(state_key)] = msg, state_type
+                states[key] = msg, state_type
         return states
 
     def build_branches(self):

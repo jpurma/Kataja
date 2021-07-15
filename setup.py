@@ -187,7 +187,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['PyQt5>=5.11.3', 'Pillow>=5.3.0'],  # Optional
+    install_requires=['PyQt6>=5.11.3', 'Pillow>=5.3.0'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

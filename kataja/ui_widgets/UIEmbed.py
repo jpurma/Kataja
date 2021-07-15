@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore, QtGui
 
 from kataja.KatajaAction import KatajaAction
 from kataja.UIItem import UIWidget
@@ -59,7 +59,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.ui_manager.connect_element_to_action(close_button, 'close_embed')
         # noinspection PyArgumentList
         self.top_row_layout.addWidget(close_button)
-        self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.top_row_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.top_row_layout.addSpacing(8)
         self.top_title = QtWidgets.QLabel(text)
         # noinspection PyArgumentList
@@ -216,6 +216,6 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         super().mouseReleaseEvent(event)
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.PaletteChange:
+        if e.type() == QtCore.QEvent.Type.PaletteChange:
             self.update_colors()
         return QtWidgets.QWidget.event(self, e)

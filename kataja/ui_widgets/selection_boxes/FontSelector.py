@@ -1,5 +1,5 @@
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import QSize
+from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtCore import QSize
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl

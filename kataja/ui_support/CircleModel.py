@@ -55,7 +55,10 @@ class CircleModel(ParseTreeBaseModel):
 
         def add_nodes(state_paths):
             for state_path in state_paths:
-                states = [int(state) for state in state_path.split('_')]
+                if isinstance(state_path, str):
+                    states = [int(state) for state in state_path.split('_')]
+                else:
+                    states = [state_path]
                 prev_node_id = None
                 state_id = None
                 for i, state_id in enumerate(states):

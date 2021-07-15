@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.parser.INodes import as_editable_latex, as_editable_html

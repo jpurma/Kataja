@@ -25,7 +25,7 @@
 import math
 from itertools import chain
 
-import PyQt5.QtCore as QtCore
+import PyQt6.QtCore as QtCore
 
 from kataja.globals import ViewUpdateReason
 from kataja.singletons import ctrl, prefs
@@ -133,7 +133,7 @@ class ViewManager:
         tm = 500 if target_rect.top() < sr.top() else 0
         if rm or bm or lm or tm:
             self.view.setSceneRect(sr + QtCore.QMarginsF(500, 500, 500, 500))
-        self.view.fitInView(target_rect, 1)
+        self.view.fitInView(target_rect, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self._fit_scale = self.view.transform().m11()
         ctrl.main.viewport_moved.emit()
         self.view.centerOn(target_rect.center())

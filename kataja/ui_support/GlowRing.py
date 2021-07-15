@@ -4,7 +4,7 @@ Created on 28.8.2013
 
 @author: purma
 """
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt6 import QtGui, QtCore, QtWidgets
 
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_type_id

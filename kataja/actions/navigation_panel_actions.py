@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, log
@@ -32,7 +32,7 @@ class NewStructure(KatajaAction):
     k_action_uid = 'new_forest'
     k_command = 'New forest'
     k_tooltip = 'Create a new forest after the current one'
-    k_shortcut = QtGui.QKeySequence(QtGui.QKeySequence.New)
+    k_shortcut = QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.New)
     k_undoable = False
 
     def method(self):

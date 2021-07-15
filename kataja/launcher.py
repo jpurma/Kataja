@@ -35,7 +35,7 @@ import datetime
 import os
 import sys
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 import kataja
 from kataja.singletons import running_environment, log
@@ -103,7 +103,7 @@ def launch_from_command_line():
         # splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
         #                      QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
         # splash.showMessage(f'{kataja.__author__} | Fetching version...', QtCore.Qt.AlignBottom |
-        #                   QtCore.Qt.AlignHCenter, splash_color)
+        #                   QtCore.Qt.AlignmentFlag.AlignHCenter, splash_color)
         # app.processEvents()
         # splash.show()
         # app.processEvents()
@@ -112,7 +112,7 @@ def launch_from_command_line():
             version_str = bump_and_save_version(version_str)
 
         # splash.showMessage(f'{kataja.__author__} | {version_str}',
-        #                   QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+        #                   QtCore.Qt.AlignBottom | QtCore.Qt.AlignmentFlag.AlignHCenter, splash_color)
         # splash.repaint()
         app.processEvents()
 
@@ -124,7 +124,7 @@ def launch_from_command_line():
         # splash.finish(window)
         app.setActiveWindow(window)
     app.processEvents()
-    app.exec_()
+    app.exec()
 
 
 def start(**kwargs):
@@ -146,7 +146,7 @@ def draw(tree, image_out='kataja_tree.pdf', **kwargs):
 
 def prepare_app():
     app = QtWidgets.QApplication(sys.argv)
-    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    #app.setAttribute(QtCore.Qt..AA_UseHighDpiPixmaps)
     app.setApplicationName('Kataja')
     app.setOrganizationName('Purma')
     app.setOrganizationDomain('purma.fi')

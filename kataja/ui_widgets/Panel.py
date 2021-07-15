@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from kataja.KatajaAction import KatajaAction
 from kataja.UIItem import UIWidget
@@ -55,11 +55,11 @@ class PanelTitle(QtWidgets.QWidget):
     def __init__(self, name, panel, foldable=True):
         # noinspection PyArgumentList
         QtWidgets.QWidget.__init__(self, parent=panel)
-        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
-                                                 QtWidgets.QSizePolicy.Preferred))
+        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+                                                 QtWidgets.QSizePolicy.Policy.Preferred))
         self.panel = panel
         self.preferred_size = QtCore.QSize(200, 22)
-        self.setBackgroundRole(QtGui.QPalette.Base)
+        self.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
         self.setAutoFillBackground(True)
         self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QHBoxLayout()
@@ -98,7 +98,7 @@ class PanelTitle(QtWidgets.QWidget):
 
     def push_to_layout(self, widget):
         layout = self.layout()
-        layout.addWidget(widget, alignment=QtCore.Qt.AlignRight)
+        layout.addWidget(widget, alignment=QtCore.Qt.AlignmentFlag.AlignRight)
 
     def add_before_label(self, widget):
         self.layout().insertWidget(self.label_index, widget)
@@ -137,15 +137,15 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.default_position = default_position
 
         if default_position == 'bottom':
-            parent.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self)
+            parent.addDockWidget(QtCore.Qt.DockWidgetArea.BottomDockWidgetArea, self)
         elif default_position == 'top':
-            parent.addDockWidget(QtCore.Qt.TopDockWidgetArea, self)
+            parent.addDockWidget(QtCore.Qt.DockWidgetArea.TopDockWidgetArea, self)
         elif default_position == 'left':
-            parent.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self)
+            parent.addDockWidget(QtCore.Qt.DockWidgetArea.LeftDockWidgetArea, self)
         elif default_position == 'right':
-            parent.addDockWidget(QtCore.Qt.RightDockWidgetArea, self)
+            parent.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self)
         elif default_position == 'float':
-            parent.addDockWidget(QtCore.Qt.RightDockWidgetArea, self)
+            parent.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self)
             self.setFloating(True)
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
@@ -256,7 +256,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
             y = max(40, ctrl.main.y() / pixel_ratio)
         w = self.width()
         h = self.height()
-        screen_rect = ctrl.main.app.desktop().availableGeometry()
+        screen_rect = ctrl.main.app.primaryScreen().availableGeometry()
         if x > screen_rect.right():
             x = screen_rect.right() - w
         if y > screen_rect.bottom():

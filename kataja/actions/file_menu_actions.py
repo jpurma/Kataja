@@ -5,8 +5,8 @@ import pickle
 import pprint
 import time
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QKeySequence
+from PyQt6 import QtWidgets
+from PyQt6.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log
@@ -80,7 +80,7 @@ class NewProject(KatajaAction):
 class Open(KatajaAction):
     k_action_uid = 'open'
     k_command = 'Open'
-    k_shortcut = QKeySequence(QKeySequence.Open)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Open)
     k_undoable = False
 
     @staticmethod
@@ -184,7 +184,7 @@ class Open(KatajaAction):
 class Save(KatajaAction):
     k_action_uid = 'save'
     k_command = 'Save'
-    k_shortcut = QKeySequence(QKeySequence.Save)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Save)
     k_undoable = False
 
     @staticmethod
@@ -254,7 +254,7 @@ class Save(KatajaAction):
 class SaveAs(Save):
     k_action_uid = 'save_as'
     k_command = 'Save as'
-    k_shortcut = QKeySequence(QKeySequence.SaveAs)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.SaveAs)
     k_undoable = False
 
     def method(self, filename='', save_as=False):
@@ -268,7 +268,7 @@ class SaveAs(Save):
 class PrintToFile(KatajaAction):
     k_action_uid = 'print_pdf'
     k_command = 'Print'
-    k_shortcut = QKeySequence(QKeySequence.Print)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Print)
     k_undoable = False
     k_tooltip = 'Capture as image'
 
@@ -302,7 +302,7 @@ class PrintToFile(KatajaAction):
 class OpenPreferences(KatajaAction):
     k_action_uid = 'preferences'
     k_command = 'Preferences'
-    k_shortcut = QKeySequence(QKeySequence.Preferences)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Preferences)
     k_undoable = False
 
     def method(self):
@@ -317,7 +317,7 @@ class OpenPreferences(KatajaAction):
 class Quit(KatajaAction):
     k_action_uid = 'quit'
     k_command = 'Quit'
-    k_shortcut = QKeySequence(QKeySequence.Quit)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Quit)
     k_undoable = False
 
     def method(self):

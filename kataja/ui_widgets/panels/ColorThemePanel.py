@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -21,15 +21,15 @@ def color_theme_fragment(panel, inner, layout):
 
     panel.randomise = RandomiseButton(parent=inner, text='', size=(40, 20),
                                       action='randomise_palette'
-                                      ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                      ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
 
     panel.remove_theme = TwoColorButton(parent=inner, text='Remove', action='remove_color_theme',
-                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
     panel.remove_theme.hide()
 
     panel.store_favorite = UnicodeIconButton(parent=inner, text='★', size=(26, 20),
                                              action='remember_palette'
-                                             ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                             ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
     panel.store_favorite.setStyleSheet(
         'font-family: "%s"; font-size: %spx;' % (f.family(), f.pointSize()))
     panel.store_favorite.setEnabled(False)

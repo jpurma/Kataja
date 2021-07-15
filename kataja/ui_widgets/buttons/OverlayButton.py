@@ -21,7 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -282,11 +282,10 @@ class NodeEditorButton(OverlayButton):
 
     def update_position(self):
         """ """
-        adjust = QtCore.QPointF(9, -8)
+        adjust = QtCore.QPoint(9, -8)
         x, y = self.host.centered_scene_position
         p = QtCore.QPointF(x + (self.host.width / 2), y)
         p = ctrl.main.graph_view.mapFromScene(p) + adjust
-        p = p.toPoint()
         p = self.avoid_overlaps(p, 8, 0)
         self.move(p)
 
@@ -307,10 +306,10 @@ class LockButton(OverlayButton):
 
     def update_position(self):
         """ """
-        adjust = QtCore.QPointF(9, -8)
+        adjust = QtCore.QPoint(9, -8)
         x, y = self.host.centered_scene_position
         p = QtCore.QPointF(x + (self.host.width / 2), y + (self.host.height / 2))
-        p = (ctrl.main.graph_view.mapFromScene(p) + adjust).toPoint()
+        p = (ctrl.main.graph_view.mapFromScene(p) + adjust)
         p = self.avoid_overlaps(p, 8, 0)
         self.move(p)
 

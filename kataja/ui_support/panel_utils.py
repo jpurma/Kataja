@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from kataja.ui_widgets.SelectionBox import SelectionBox
 from kataja.ui_widgets.selection_boxes.TableModelSelectionBox import TableModelSelectionBox
@@ -59,7 +59,7 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
     :return:
     """
     slabel = QtWidgets.QLabel(label, panel)
-    slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+    slabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
     dial = QtWidgets.QDial()
     dial.setFixedSize(28, 28)
     dial.setWrapping(wrapping)

@@ -134,10 +134,18 @@ class Adj(Operation):
         Operation.__init__(self, (other_head, head), msg=msg, entry=entry)
 
     def calculate_features(self, route_item):
-        head, other_head = self.head
-        head_op = route_item.parent.find_closest_head(head)
-        other_head_op = route_item.parent.find_closest_head(other_head)
-        return union(head_op.features, other_head_op.features)
+        def find_featuresets(head):
+            featuresets = []
+            if isinstance(head, tuple):
+                for h in head:
+                    featuresets += find_featuresets(h)
+            else:
+                head_op = route_item.parent.find_closest_head(head)
+                featuresets.append(head_op.features)
+            return featuresets
+
+        flat_featuresets = find_featuresets(self.head)
+        return union(flat_featuresets)
 
     # route itemin free headsin on tarkoitus olla ne route itemit jotka ovat käytettävissä silloin kun tämä on viimeinen
     # route item ja yritetään päättää minkä toisen route itemin kanssa tämä voi yhdistyä. Eli free heads ei sisällä

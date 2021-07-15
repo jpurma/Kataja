@@ -189,6 +189,8 @@ class Parser:
                 ri = ri.parent
             local_heads = ri.local_heads
         print(f'building route item {route_item}, local heads: {local_heads} ')
+        local_heads = [ri for ri in local_heads if ri is not route_item][:1]
+        #print('local heads other than this: ', [ri for ri in local_heads if ri is not route_item])
         #assert previous is route_item.local_heads[0]
 
         # comp match from previous
@@ -198,6 +200,7 @@ class Parser:
             # adjunct operation
             # (adjunktointi ei saisi olla poissulkeva vaihtoehto, vrt. 'show Mary castles' ja 'show Mary Castles')
             if has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
+                print(op_head, previous.operation.head)
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head))
                 new_route_items.append(new_route_item)
                 is_sus = True
@@ -224,31 +227,32 @@ class Parser:
             is_first = False
         # comp operations
         if not is_sus:
-            found_comp = False
-            for precedent in local_heads:
+            # found_comp = False
+            # for precedent in local_heads:
+            #     if precedent is previous or precedent is route_item:
+            #         continue
+            #     raise hell
+            #     comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
+            #     #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
+            #     if comp_match:
+            #         new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
+            #         new_route_items.append(new_route_item)
+            #         is_sus = True
+            #         found_comp = True
+            #         break
+            # if not found_comp:
+            for precedent in route_item.free_heads:
                 if precedent is previous or precedent is route_item:
                     continue
+                #elif not allow_long_distance(precedent.features):
+                #    continue
                 comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
                 #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
                 if comp_match:
                     new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
                     new_route_items.append(new_route_item)
                     is_sus = True
-                    found_comp = True
                     break
-            if not found_comp:
-                for precedent in route_item.free_heads:
-                    if precedent is previous or precedent is route_item:
-                        continue
-                    #elif not allow_long_distance(precedent.features):
-                    #    continue
-                    comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
-                    #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
-                    if comp_match:
-                        new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
-                        new_route_items.append(new_route_item)
-                        is_sus = True
-                        break
 
         if new_route_items:
             is_sus = is_sus and len(new_route_items) == 1

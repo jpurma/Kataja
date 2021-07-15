@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
 from kataja.ui_support.CircleModel import CircleModel
@@ -19,8 +19,8 @@ class ParseTreePanel(Panel):
         self.scene = QtWidgets.QGraphicsScene()
         self.scene.setSceneRect(0, 0, 310, 300)
         self.view.setScene(self.scene)
-        self.view.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
-        self.view.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.view.setCacheMode(QtWidgets.QGraphicsView.CacheModeFlag.CacheBackground)
+        self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         self.setWidget(self.view)
         self.columns = []
         self.circle_model = CircleModel(self)

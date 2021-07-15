@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from kataja.UIItem import UIWidget
 from kataja.singletons import ctrl

@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 from kataja.singletons import ctrl
 from kataja.ui_widgets.PushButtonBase import PushButtonBase
@@ -47,7 +47,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
     def pixmap(self, QSize, QIcon_Mode=None, QIcon_State=None):
         pm = QtGui.QIconEngine.pixmap(self, QSize, QIcon_Mode, QIcon_State)
         if self.mask:
-            pm.setMask(QtGui.QBitmap(self.mask.scaled(QSize, QtCore.Qt.KeepAspectRatio)))
+            pm.setMask(QtGui.QBitmap(self.mask.scaled(QSize, QtCore.Qt.AspectRatioMode.KeepAspectRatio)))
         return pm
 
     def addPixmap(self, bitmaps, **kwargs):
@@ -74,7 +74,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             self.mask = self.bitmap.mask()
 
     # @time_me
-    def paint(self, painter, rect, mode, state):
+    def paint(self, painter, rect, mode: QtGui.QIcon.Mode, state: QtGui.QIcon.State):
         """
 
         :param painter:
@@ -82,21 +82,21 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         c = ctrl.cm.ui()
-        if mode == 0:  # normal
+        if mode == QtGui.QIcon.Mode.Normal:
             painter.setPen(c)
-        elif mode == 1:  # disabled
+        elif mode == QtGui.QIcon.Mode.Disabled:
             painter.setPen(ctrl.cm.inactive(c))
-        elif mode == 2:  # hovering
+        elif mode == QtGui.QIcon.Mode.Selected:
             painter.setPen(ctrl.cm.hovering(c))
-        elif mode == 3:  # selected
+        elif mode == QtGui.QIcon.Mode.Active:
             painter.setPen(ctrl.cm.active(c))
         else:
             painter.setPen(c)
             print('Weird button mode: ', mode)
         #
-        # print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
+        # print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.GlobalColor.NoPenMode)
         #
 
         if self.mono:

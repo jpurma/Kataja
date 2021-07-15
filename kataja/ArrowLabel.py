@@ -24,8 +24,8 @@
 
 import math
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtCore import QPointF as Pf, Qt
 
 import kataja.globals as g
 import kataja.utils as utils
@@ -220,7 +220,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
         if self._host and self._host.selected:
             ctrl.ui.start_arrow_label_editing(self._host)
         else:
-            adding = event.modifiers() == Qt.ShiftModifier
+            adding = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
             self._host.select(adding=adding, select_area=False)
 
     def select(self, adding=False, select_area=False):

@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtWidgets, QtGui
+from PyQt6 import QtWidgets, QtGui
 
 from kataja.singletons import prefs, running_environment, ctrl
 from kataja.ui_support.panel_utils import box_row

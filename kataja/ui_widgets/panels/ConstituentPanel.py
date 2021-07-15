@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs, prefs, classes
@@ -55,15 +55,15 @@ class ConstituentPanel(NodePanel):
         self.shape_selector = ShapeSelector(parent=widget,
                                             action='change_edge_shape_for_constituents',
                                             for_edge_type=g.CONSTITUENT_EDGE
-                                            ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                            ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_visible = EyeButton(action='toggle_constituent_edge_visibility',
                                       height=22,
                                       width=24
-                                      ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                      ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_options = PanelButton(parent=widget,
                                         pixmap=qt_prefs.settings_icon,
                                         action='open_line_options'
-                                        ).to_layout(hlayout, align=QtCore.Qt.AlignRight)
+                                        ).to_layout(hlayout, align=QtCore.Qt.AlignmentFlag.AlignRight)
         self.edge_options.data = g.CONSTITUENT_NODE
 
         hlayout = box_row(layout)

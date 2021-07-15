@@ -25,7 +25,7 @@
 import random
 import string
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 import kataja.globals as g
 from kataja.EdgePath import TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE
@@ -348,7 +348,7 @@ class FeatureNode(Node):
             path.lineTo(x, y + mid + mid * dy)
 
         old_pen = painter.pen()
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
         if left or right:  # square, triangular or round knob
             base_shape = rect.adjusted(4, 0, -4, 0)
             if not right:

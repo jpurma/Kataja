@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.panel_utils import box_row

@@ -23,7 +23,7 @@
 # ############################################################################
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 import kataja.globals as g
 from kataja.EdgePath import EdgePath
@@ -85,9 +85,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         self._end_node_moving = False
         self.setZValue(15)
         self.crossed_out_flag = False
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self._visible_by_logic = False
         self.cached_edge_start_index = (0, 1)
         self.cached_edge_end_index = (0, 1)
@@ -514,7 +514,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
             else:  # This is regular click on 'pressed' object
-                shift = event.modifiers() == QtCore.Qt.ShiftModifier
+                shift = event.modifiers() == QtCore.Qt.KeyboardModifier.ShiftModifier
                 self.select(adding=shift, select_area=False)
                 self.update()
             return None  # this mouseRelease is now consumed
@@ -607,7 +607,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
                 thickness = self.settings.get_shape('thickness')
                 p = QtGui.QPen()
                 p.setColor(c)
-                p.setCapStyle(QtCore.Qt.RoundCap)
+                p.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
                 p.setWidthF(thickness)
                 painter.setPen(p)
                 painter.drawPath(dpath)

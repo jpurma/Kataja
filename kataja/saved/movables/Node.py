@@ -24,8 +24,8 @@
 
 import math
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt
+from PyQt6 import QtWidgets, QtGui, QtCore
+from PyQt6.QtCore import Qt
 
 import kataja.globals as g
 import kataja.ui_widgets.buttons.OverlayButton as Buttons
@@ -43,8 +43,9 @@ from kataja.utils import equal_synobj
 
 call_counter = [0]
 
-qbytes_scale = QtCore.QByteArray()
-qbytes_scale.append("scale")
+#qbytes_scale = QtCore.QByteArray()
+#qbytes_scale.append("scale")
+qbytes_scale = QtCore.QByteArray("scale".encode())
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -130,11 +131,11 @@ class Node(Draggable, Movable):
         self.setFiltersChildEvents(False)
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
-        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
+        self.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.DeviceCoordinateCache)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemSendsGeometryChanges)
         # self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         # self.fade_in()
         self.update_visibility()
 
@@ -638,7 +639,7 @@ class Node(Draggable, Movable):
         pen = QtGui.QPen(self.contextual_color())
         pen.setWidth(1)
         rect = False
-        brush = Qt.NoBrush
+        brush = Qt.BrushStyle.NoBrush
 
         if self.drag_data:
             rect = True

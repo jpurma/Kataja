@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui
 
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea as TA
@@ -705,7 +705,7 @@ class ConstituentNode(Node):
         pen = QtGui.QPen(self.contextual_color())
         pen.setWidth(1)
         rect = False
-        brush = QtCore.Qt.NoBrush
+        brush = QtCore.Qt.BrushStyle.NoBrush
 
         if shape == g.SCOPEBOX or (shape == g.BOX and not self.is_empty()):
             pen.setWidthF(0.5)
@@ -761,7 +761,7 @@ class ConstituentNode(Node):
                     x += w - 4
         elif self.has_visible_label():
             old_pen = painter.pen()
-            painter.setPen(QtCore.Qt.NoPen)
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
             paper = ctrl.cm.paper()
             r = self.inner_rect
             w = r.width()
@@ -777,7 +777,7 @@ class ConstituentNode(Node):
             else:
                 gradient = QtGui.QRadialGradient(0, 0, radius)
                 gradient.setColorAt(0, paper)
-                gradient.setColorAt(1, QtCore.Qt.transparent)
+                gradient.setColorAt(1, QtCore.Qt.GlobalColor.transparent)
                 painter.setBrush(gradient)
             painter.drawEllipse(r)
             painter.setPen(old_pen)

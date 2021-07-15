@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -72,11 +72,10 @@ class RotateButton(NodeOverlayButton):
 
     def update_position(self):
         """ """
-        adjust = QtCore.QPointF(9, 16)
+        adjust = QtCore.QPoint(9, 16)
         x, y = self.host.centered_scene_position
         p = QtCore.QPointF(x + (self.host.width / 2), y)
         p = ctrl.main.graph_view.mapFromScene(p) + adjust
-        p = p.toPoint()
         p = self.avoid_overlaps(p, 8, 0)
         self.move(p)
 

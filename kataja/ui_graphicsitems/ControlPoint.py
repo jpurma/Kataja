@@ -2,9 +2,9 @@
 # #######################################################
 import math
 
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtCore import QPointF as Pf
-from PyQt5.QtCore import Qt
+from PyQt6 import QtCore, QtWidgets, QtGui
+from PyQt6.QtCore import QPointF as Pf
+from PyQt6.QtCore import Qt
 
 import kataja.globals as g
 from kataja.UIItem import UIGraphicsItem
@@ -183,7 +183,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         if ctrl.pressed is self:
             ctrl.release(self)
             if self.being_dragged:
-                shift = event.modifiers() == QtCore.Qt.ShiftModifier
+                shift = event.modifiers() == QtCore.Qt.KeyboardModifier.ShiftModifier
                 x, y = to_tuple(event.scenePos())
                 self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
                 self.being_dragged = False

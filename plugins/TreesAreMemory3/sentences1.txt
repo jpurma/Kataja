@@ -1,0 +1,216 @@
+se väite että Pekka nukkui kumoutui
+Pekka oli jonossa ennen Merjaa
+Pekka saavuttaa Merjaa
+
+# Koordinaatiolauseita
+
+#Pekka ihaili keltaisia osti punaisia ja varasti keltaisia kukkia
+#Pekka osti myi ja varasti kukkia
+#Pekka Merja ja Minttu ihailevat kirjaa
+
+mitä kohti Pekka käveli
+
+
+# Huhmarniemi, thesis
+# (177)
+Pekka käveli kohti puistoa
+mitä kohti Pekka käveli
+# (178)
+Pekka oli jonossa ennen Merjaa
+ketä ennen Pekka oli jonossa
+# (179)
+Kate Moss ei voisi elää ilman käsilaukkua
+mitä ilman Kate Moss ei voisi elää
+# (181)
+puisto jota kohti Pekka käveli
+* puisto kohti jota Pekka käveli
+# (184)
+Pekka otti kurssin suoraan kohti lentokenttää
+Pekka otti kurssin suoraan lentokenttää kohti
+? Pekka otti kurssin lentokenttää suoraan kohti
+* Pekka otti kurssin kohti suoraan lentokenttää
+* mitä suoraan kohti Pekka otti kurssin
+suoraan mitä kohti Pekka otti kurssin
+
+# Study 2 normal order (Brattico)
+Pekka nukkui
+Pekka ihailee Merjaa
+Pekka antoi kirjan Merjalle
+Pekka ei nukkunut
+Pekka ei ihaile Merjaa
+Pekka ei antanut kirjaa Merjalle
+Pekka käski heidän nukkua
+Pekka käski heidän ihailla Merjaa
+Pekka käski heidän antaa kirjan Merjalle
+Pekka nukkui kuorsaamalla
+Pekka häiritsee Merjaa kuorsaamalla
+Pekka antoi kirjan Merjalle heittämällä
+Pekka ei nukkunut kuorsaamalla
+Pekka ei häiritse Merjaa kuorsaamalla
+Pekka ei antanut kirjaa Merjalle heittämällä
+Pekka ei käskenyt heidän nukkua
+Pekka ei käskenyt heidän ihailla Merjaa
+Pekka ei käskenyt heidän antaa kirjaa Merjalle
+Pekka käski heidän nukkua kuorsaamalla
+Pekka käski heidän häiritä Merjaa kuorsaamalla
+Pekka käski heidän antaa kirjan Merjalle heittämällä
+Pekka ei käskenyt heidän nukkua kuorsaamalla
+Pekka ei käskenyt heidän häiritä Merjaa kuorsaamalla
+Pekka ei käskenyt heidän antaa kirjaa Merjalle heittämällä
+
+# Study 2 wh (Brattico)
+kuka nukkui
+kuka ei nukkunut
+ketä Pekka ihailee
+ketä Pekka ei ihaile
+mitä Pekka antoi Merjalle
+mitä Pekka ei antanut Merjalle
+kenen Pekka käski nukkua
+kenen Pekka ei käskenyt nukkua
+mitä Pekka käski heidän ihailla
+mitä Pekka ei käskenyt heidän ihailla
+mitä Pekka käski heidän antaa Merjalle
+mitä Pekka ei käskenyt heidän antaa Merjalle
+kuka nukkui kuorsaamalla
+kuka ei nukkunut kuorsaamalla
+mitä Pekka ihailee virtaamalla
+mitä Pekka ei ihaile virtaamalla
+kuka antoi kirjan Merjalle heittämällä
+mitä Pekka ei antanut Merjalle heittämällä
+kenen Pekka käski nukkua kuorsaamalla
+kenen Pekka ei käskenyt nukkua kuorsaamalla
+mitä Pekka käski heidän ihailla virtaamalla
+mitä Pekka ei käskenyt heidän ihailla virtaamalla
+mitä Pekka käski heidän antaa Merjalle heittämällä
+mitä Pekka ei käskenyt heidän antaa Merjalle heittämällä
+
+# Study 2 shuffled sentences 
+
+
+# Study 1 finnish sentences from https://github.com/pajubrat/parser-grammar/blob/master/language%20data%20working%20directory/study-1-pied-piping/test_set_all.txt
+teoria kumoutui
+Pekka sanoi että teoria kumoutui
+Pekka kertoi että Merja sanoi että teoria kumoutui
+se väite että Pekka nukkui kumoutui
+se väite että Pekka sanoi että teoria kumoutui kumoutui
+Pekka sanoi että se väite että Merja nukkui kumoutui
+
+kaupungissa asui Pekka
+Pekka saavuttaa Merjaa
+Seine saavuttaa meren
+Seine saavuttaa meren virtaamalla
+Seine saavuttaa meren virtaamalla kohti kaupunkia
+
+Pekka sanoi että Merja löysi meren
+se väite että Seine saavuttaa meren kumoutui
+Pekkaa saavuttaa Merja
+Pekka sanoi että meren löysi Merja
+Pekka antoi kirjan Merjalle
+Pekka sanoi että Pekka antoi kirjan Merjalle
+
+Pekka antoi Merjalle kirjan
+kirjan antoi Merjalle Pekka
+kirjan antoi Pekka Merjalle
+Merjalle antoi kirjan Pekka
+Merjalle antoi Pekka kirjan
+
+Pekka sanoi että kirjan antoi Merjalle Pekka
+Pekka sanoi että kirjan antoi Pekka Merjalle
+Pekka sanoi että Merjalle antoi kirjan Pekka
+Pekka sanoi että Merjalle antoi Pekka kirjan
+se väite että Pekka antoi kirjan Merjalle kumoutui
+se väite että meren löysi Merja kumoutui
+se väite että kirjan antoi Merjalle Pekka
+se väite että kirjan antoi Pekka Merjalle
+se väite että Merjalle antoi kirjan Pekka
+se väite että Merjalle antoi Pekka kirjan
+
+kuka kumoutui
+Merja kysyi kuka kumoutui
+mitä Pekka löysi
+kuka löysi meren
+
+Merja kysyi mitä Pekka löysi
+Merja kysyi että mitä Pekka löysi
+
+mitä löysi Pekka
+Merja kysyi mitä löysi Pekka
+kenelle Pekka antoi kirjan
+mitä Pekka antoi Merjalle
+kuka antoi Merjalle kirjan
+
+Merja kysyi kenelle Pekka antoi kirjan
+Merja kysyi kuka antoi Merjalle kirjan
+Merja kysyi mitä Pekka antoi Merjalle
+
+kenelle kirjan antoi Pekka
+mitä Merjalle antoi Pekka
+
+Merja kysyi kenelle kirjan antoi Pekka
+Merja kysyi mitä antoi Pekka Merjalle
+Merja kysyi mitä antoi Merjalle Pekka
+Pekka kysyi kuka antoi Merjalle kirjan
+
+mitä Pekka sanoi että Merja löysi
+mitä Pekka sanoi että Merja sanoi että Pekka löysi
+kenelle Pekka sanoi että Merja antoi kirjan
+kenelle Pekka sanoi että kirjan antoi Merja
+
+teoria joka kumoutui kumoutui
+Pekka löysi kirjan joka kumoutui
+
+talo jonka Pekka löysi
+Merja löysi talon jonka Pekka löysi
+talo jonka löysi Pekka
+Merja löysi talon jonka löysi Pekka
+mies jolle Pekka antoi kirjan
+Merja ihailee henkilöä jolle Pekka antoi kirjan
+mies jolle kirjan antoi Pekka
+henkilö jolle kirjan antoi Pekka kasvaa
+
+Merjan Pekka löysi
+virtaamalla Seine saavuttaa meren
+
+mitä kaupunkia kohti Seine virtaa
+mitä kaupunkia kohti virtaamalla teoria kumoutui
+
+Pekka kysyi mitä kaupunkia kohti Seine virtaa
+Pekka kysyi mitä kaupunkia kohti virtaamalla teoria kumoutui
+mitä kaupunkia kohti virtaamalla Seine saavuttaa meren
+minne virtaamalla Seine saavuttaa meren
+Pekka kysyi mitä kaupunkia kohti virtaamalla Seine saavuttaa meren
+mitä kaupunkia kohti virtaamalla meren saavuttaa Seine
+minne virtaamalla meren saavuttaa Seine
+Pekka kysyi mitä kaupunkia kohti virtaamalla meren saavuttaa Seine
+Pekka kysyi minne virtaamalla meren saavuttaa Seine
+mitä kaupunkia kohti virtaamalla Pekka antoi kirjan Merjalle
+Pekka kysyi mitä kaupunkia kohti virtaamalla Pekka antoi kirjan Merjalle
+mitä kaupunkia kohti virtaamalla kirjan antoi Pekka Merjalle
+mitä kaupunkia kohti virtaamalla Merjalle antoi kirjan Pekka
+mitä kaupunkia kohti virtaamalla Pekka antoi Merjalle kirjan
+
+Pekka kysyi mitä kaupunkia kohti virtaamalla meren saavuttaa Seine
+Pekka kysyi mitä kaupunkia kohti virtaamalla kirjan antoi Pekka Merjalle
+Pekka kysyi mitä kaupunkia kohti virtaamalla Merjalle antoi kirjan Pekka
+Pekka kysyi mitä kaupunkia kohti virtaamalla Pekka antoi Merjalle kirjan
+
+mitä kaupunkia lähellä Pekka asui
+mitä kaupunkia Pekka asui lähellä
+
+se kaupunki jota lähellä Pekka asui tuhoutui
+se kaupunki jota kohti Seine virtaa
+
+se kaupunki jota kohti virtaamalla Seine saavuttaa meren
+se kaupunki jota kohti virtaamalla meren saavuttaa Seine
+
+se kaupunki jota kohti virtaamalla Pekka antoi kirjan Merjalle
+se kaupunki jota kohti virtaamalla Merjalle antoi Pekka kirjan
+se kaupunki jota kohti virtaamalla kirjan antoi Pekka Merjalle
+se kaupunki jota kohti virtaamalla Pekka antoi Merjalle kirjan
+
+# ungrammatical (?)
+* mitä Pekka sanoi kaupunkia kohti Seine virtaa
+* mitä Seine virtaa kohti kaupunkia
+* mitä kaupunkia Seine saavuttaa meren virtaamalla kohti
+* mikä Pekka kysyi mitä kaupunkia kohti virtaa
+* ketä Merja kysyi kuka saavuttaa

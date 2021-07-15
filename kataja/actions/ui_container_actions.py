@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5.QtGui import QKeySequence
+from PyQt6.QtGui import QKeySequence
 
 from kataja.KatajaAction import KatajaAction, MediatingAction
 from kataja.singletons import ctrl
@@ -102,7 +102,7 @@ class ToggleFoldPanel(KatajaAction):
 class CloseEmbed(KatajaAction):
     k_action_uid = 'close_embed'
     k_command = 'Close panel'
-    k_shortcut = QKeySequence(QKeySequence.Close)
+    k_shortcut = QKeySequence(QKeySequence.StandardKey.Close)
     k_shortcut_context = 'parent_and_children'
     k_undoable = False
 

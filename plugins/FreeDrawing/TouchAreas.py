@@ -1,7 +1,7 @@
 import math
 from math import sqrt
 
-from PyQt5 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui
 
 import kataja.globals as g
 from kataja.Shapes import draw_plus, draw_leaf, SHAPE_PRESETS

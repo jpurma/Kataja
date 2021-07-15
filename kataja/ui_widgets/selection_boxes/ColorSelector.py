@@ -1,5 +1,5 @@
-from PyQt5 import QtGui, QtWidgets, QtCore
-from PyQt5.QtCore import QSize
+from PyQt6 import QtGui, QtWidgets, QtCore
+from PyQt6.QtCore import QSize
 
 from kataja.PaletteManager import color_keys
 from kataja.singletons import ctrl
@@ -52,7 +52,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         bg = ctrl.cm.get('background1')
         painter.fillRect(rect, bg)
         c = ctrl.cm.get(self.color_key, allow_none=True)
@@ -74,7 +74,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
             painter.setBrush(self.grad)
             painter.drawRoundedRect(rect, 2, 2)
             painter.setBrush(ctrl.cm.paper2())
-            painter.setPen(QtCore.Qt.NoPen)
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
             painter.drawEllipse(rect.left() + 2, rect.top() + 2, rect.width() - 4,
                                 rect.height() - 4)
 

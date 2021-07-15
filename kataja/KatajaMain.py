@@ -31,9 +31,9 @@
 
 import gc
 
-import PyQt5.QtCore as QtCore
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
+import PyQt6.QtCore as QtCore
+import PyQt6.QtGui as QtGui
+import PyQt6.QtWidgets as QtWidgets
 
 import kataja.globals as g
 from kataja.GraphScene import GraphScene
@@ -138,17 +138,16 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         self.use_tooltips = True
         self.setWindowTitle("Kataja")
-        self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
-        self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+        self.setDockOptions(QtWidgets.QMainWindow.DockOption.AnimatedDocks)
+        self.setCorner(QtCore.Qt.Corner.TopLeftCorner, QtCore.Qt.DockWidgetArea.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.Corner.TopRightCorner, QtCore.Qt.DockWidgetArea.RightDockWidgetArea)
+        self.setCorner(QtCore.Qt.Corner.BottomLeftCorner, QtCore.Qt.DockWidgetArea.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.Corner.BottomRightCorner, QtCore.Qt.DockWidgetArea.RightDockWidgetArea)
         x, y, w, h = (50, 50, 1024, 800)
         self.setMinimumSize(w, h)
         self.app = kataja_app
         self.classes = classes
         self.save_prefs = not no_prefs
-        self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager(self)
         self.plugin_manager = PluginManager()
         self.document = None
@@ -157,7 +156,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         classes.late_init()  # make all default classes available
         prefs.import_node_classes(classes)  # add node styles defined at class to prefs
         prefs.load_preferences(disable=reset_prefs or no_prefs)
-        qt_prefs.late_init(running_environment, prefs, self.fontdb, log)
+        qt_prefs.late_init(running_environment, prefs, log)
         self.plugin_manager.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.print_manager = PrintManager()

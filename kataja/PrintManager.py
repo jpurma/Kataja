@@ -1,6 +1,6 @@
 import os
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, prefs, running_environment, log
 from kataja.utils import find_free_filename
@@ -24,12 +24,12 @@ class PrintManager:
         """
         sc = ctrl.graph_scene
         # hide unwanted components
-        no_brush = QtGui.QBrush(QtCore.Qt.NoBrush)
+        no_brush = QtGui.QBrush(QtCore.Qt.BrushStyle.NoBrush)
         sc.setBackgroundBrush(no_brush)
         sc.photo_frame = sc.addRect(ctrl.view_manager.print_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
         sc.update()
         for node in ctrl.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+            node.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.NoCache)
         ctrl.graph_view.repaint()
         self.print_started = True  # to avoid a bug where other timers end up triggering main's
         ctrl.main.startTimer(50)
@@ -75,7 +75,7 @@ class PrintManager:
         source = ctrl.view_manager.print_rect()
 
         for node in ctrl.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+            node.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.NoCache)
 
         if overwrite:
             write_path = os.path.join(path, f'{filename}{suffix}')
@@ -89,19 +89,19 @@ class PrintManager:
 
         # Restore image
         for node in ctrl.forest.nodes.values():
-            node.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
+            node.setCacheMode(QtWidgets.QGraphicsItem.CacheMode.DeviceCoordinateCache)
         ctrl.graph_scene.setBackgroundBrush(ctrl.cm.gradient)
 
     @staticmethod
     def _write_png(source, write_path):
         scale = 4
         target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
-        writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
-        writer.fill(QtCore.Qt.transparent)
+        writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format.Format_ARGB32_Premultiplied)
+        writer.fill(QtCore.Qt.GlobalColor.NoPen)
         painter = QtGui.QPainter()
         painter.begin(writer)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.SmoothPixmapTransform)
 
         ctrl.graph_scene.render(painter, target=target, source=source)
         painter.end()
@@ -117,13 +117,14 @@ class PrintManager:
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
 
         writer = QtGui.QPdfWriter(write_path)
-        writer.setResolution(dpi)
-        writer.setPageSizeMM(target.size())
+        writer.setResolution(int(dpi))
+        page_size = QtGui.QPageSize(target.size(), QtGui.QPageSize.Unit.Millimeter)
+        writer.setPageSize(page_size)
         writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
         ctrl.printing = True
         painter = QtGui.QPainter()
         painter.begin(writer)
-        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         # painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         ctrl.graph_scene.render(painter, target=target, source=source)
         painter.end()

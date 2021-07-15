@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui
 
 import kataja
 import kataja.globals as g
@@ -37,9 +37,9 @@ def bump_polygons(left, right, adjust):
         return True
     pl = QtGui.QPolygon()
     adjusted = [int(x) + adjust if i % 2 == 0 else int(x) for i, x in enumerate(left)]
-    pl.setPoints(adjusted)
+    pl.setPoints(*adjusted)
     pr = QtGui.QPolygon()
-    pr.setPoints([int(x) for x in right])
+    pr.setPoints(*(int(x) for x in right))
     return pl.intersects(pr)
 
 

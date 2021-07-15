@@ -1,4 +1,4 @@
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs

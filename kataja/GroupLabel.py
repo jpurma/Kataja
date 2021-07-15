@@ -24,8 +24,8 @@
 
 import math
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtCore import Qt
 
 import kataja.globals as g
 import kataja.utils as utils
@@ -216,7 +216,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         if self._host and ctrl.is_selected(self._host):
             ctrl.ui.start_group_label_editing(self._host)
         else:
-            adding = event.modifiers() == Qt.ShiftModifier
+            adding = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
             self._host.select(adding=adding, select_area=False)
 
     def select(self, adding=False, select_area=False):

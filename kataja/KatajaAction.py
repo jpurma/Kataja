@@ -24,7 +24,7 @@
 import sys
 import traceback
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from kataja.globals import SELECTION
 from kataja.singletons import ctrl, log, running_environment
@@ -54,7 +54,7 @@ class ShortcutSolver(QtCore.QObject):
         :param event:
         :return:
         """
-        if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
+        if event.type() == QtCore.QEvent.Type.Shortcut and event.isAmbiguous():
             key = event.key().toString()
             print('Shortcut solver called, ', event, key)
             if key in ['Left', 'Right', 'Up', 'Down']:
@@ -95,7 +95,7 @@ class ButtonShortcutFilter(QtCore.QObject):
     """ For some reason button shortcut sometimes focuses instead of clicks. """
 
     def eventFilter(self, button, event):
-        if event.type() == QtCore.QEvent.Shortcut:
+        if event.type() == QtCore.QEvent.Type.Shortcut:
             button.animateClick()
             return True
         return False
@@ -114,7 +114,7 @@ class ButtonShortcutFilter(QtCore.QObject):
         # Move: 13
 
 
-class KatajaAction(QtWidgets.QAction):
+class KatajaAction(QtGui.QAction):
     """ Actions are defined as classes that have only one instance. Action method()
     performs the actual work, but class variables below can be used to finetune how action is
     presented for the user.
@@ -158,13 +158,13 @@ class KatajaAction(QtWidgets.QAction):
             # widgets and they can resolve ambiguous shortcuts only when the UI widgets are
             # connected. So disable these actions until the connection has been made.
             if self.k_shortcut_context == 'parent_and_children':
-                sc = QtCore.Qt.WidgetWithChildrenShortcut
+                sc = QtCore.Qt.ShortcutContext.WidgetWithChildrenShortcut
                 self.setEnabled(False)
             elif self.k_shortcut_context == 'widget':
-                sc = QtCore.Qt.WidgetShortcut
+                sc = QtCore.Qt.ShortcutContext.WidgetShortcut
                 self.setEnabled(False)
             else:
-                sc = QtCore.Qt.ApplicationShortcut
+                sc = QtCore.Qt.ShortcutContext.ApplicationShortcut
             self.setShortcutContext(sc)
             self.installEventFilter(ctrl.ui.shortcut_solver)
             self.tip0, self.tip1 = self.tips_with_shortcuts()
@@ -334,7 +334,7 @@ class KatajaAction(QtWidgets.QAction):
             # accidental firings)
             # self.setEnabled(True)
         if isinstance(element, QtWidgets.QWidget):
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
+            element.setFocusPolicy(QtCore.Qt.FocusPolicy.TabFocus)
         if not connect_slot:
             slot_name = getattr(element, 'action_slot', '')
             connect_slot = element
@@ -435,9 +435,9 @@ class KatajaAction(QtWidgets.QAction):
             return sender.value()
 
 
-class MediatingAction(QtWidgets.QAction):
+class MediatingAction(QtGui.QAction):
     def __init__(self, text='', target=None, key=''):
-        QtWidgets.QAction.__init__(self, text)
+        QtGui.QAction.__init__(self, text)
         self.key = key
         self.target = target
         self.triggered.connect(target.trigger)

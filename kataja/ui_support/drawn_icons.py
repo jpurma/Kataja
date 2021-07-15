@@ -1,6 +1,6 @@
 __author__ = 'purma'
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 
 def fit_to_screen(painter, rect, color=None):

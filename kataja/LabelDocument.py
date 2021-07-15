@@ -1,6 +1,6 @@
 __author__ = 'purma'
 
-from PyQt5 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
 
 
 class LabelDocument(QtGui.QTextDocument):
@@ -12,9 +12,10 @@ class LabelDocument(QtGui.QTextDocument):
         QtGui.QTextDocument.__init__(self)
         self.lines = []
         self.new_lines = {}
-        self.align = QtCore.Qt.AlignHCenter
+        self.align = QtCore.Qt.AlignmentFlag.AlignHCenter
+        self.setDocumentMargin(4)
         dto = self.defaultTextOption()
-        dto.setWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        dto.setWrapMode(QtGui.QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
         dto.setAlignment(self.align)
         self.setDefaultTextOption(dto)
 
@@ -37,10 +38,10 @@ class LabelDocument(QtGui.QTextDocument):
         b = self.firstBlock()
         count = 0
         while b:
-            cf = b.charFormat()
-            dat = [b.blockFormat().alignment(), cf.fontCapitalization(), cf.fontFamily(),
-                   cf.fontItalic(), cf.fontOverline(), cf.fontStrikeOut(), cf.fontWeight(),
-                   cf.fontUnderline(), cf.verticalAlignment()]
+            #cf = b.charFormat()
+            #dat = [b.blockFormat().alignment(), cf.fontCapitalization(), cf.fontFamily(),
+            #       cf.fontItalic(), cf.fontOverline(), cf.fontStrikeOut(), cf.fontWeight(),
+            #       cf.fontUnderline(), cf.verticalAlignment()]
             # print(dat)
             # print(int(dat[0]))
             for frange in b.textFormats():

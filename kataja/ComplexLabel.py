@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from kataja.SimpleLabel import SimpleLabel
 from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, RIGHT_ALIGN
@@ -53,11 +53,11 @@ class ComplexLabel(SimpleLabel):
         self.has_been_initialized = True
         is_card = self.is_card()
         if self.text_align == LEFT_ALIGN:
-            self.editable_doc.set_align(QtCore.Qt.AlignLeft)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
-            self.editable_doc.set_align(QtCore.Qt.AlignRight)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignRight)
         else:
-            self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
+            self.editable_doc.set_align(QtCore.Qt.AlignmentFlag.AlignHCenter)
         html = self._host.label_as_html()
         if html is None:
             print('problems ahead:')
@@ -85,6 +85,7 @@ class ComplexLabel(SimpleLabel):
             self._previous_values = (self.cn_shape, self.editable_html, is_card)
 
         self.resize_label()
+        self.adjustSize()
 
     def is_card(self):
         if self.cn_shape != CARD:
@@ -120,6 +121,7 @@ class ComplexLabel(SimpleLabel):
             width = self.card_size[0]
         else:
             self.setTextWidth(-1)
+            self.editable_doc.setTextWidth(-1)
             ideal_width = self.editable_doc.idealWidth()
             if user_width and user_width < ideal_width:
                 width = user_width
@@ -131,6 +133,7 @@ class ComplexLabel(SimpleLabel):
                 width = 20
             elif width > ComplexLabel.max_width:
                 width = ComplexLabel.max_width
+
         self.setTextWidth(width)
 
         # ------------------- Height -------------------

@@ -1,7 +1,7 @@
 # coding=utf-8
 import random
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction

@@ -1,7 +1,7 @@
 # import code
 # import sys
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt6 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 # from kataja.UIItem import UIWidget
@@ -136,11 +136,11 @@ class LogPanel(Panel):
         ss = f'font-family: "{f.family()}"; font-size: {f.pointSize()}px;'
         self.log_browser.setStyleSheet(ss)
         self.log_browser.setAutoFillBackground(True)
-        self.log_browser.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.log_browser.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.resize_grip = QtWidgets.QSizeGrip(widget)
         self.resize_grip.hide()
-        self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
-        self.vlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
+        self.setAllowedAreas(QtCore.Qt.DockWidgetArea.TopDockWidgetArea | QtCore.Qt.DockWidgetArea.BottomDockWidgetArea)
+        self.vlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignmentFlag.AlignRight)
         self.finish_init()
         log.log_handler.set_widget(self.log_browser)
 
