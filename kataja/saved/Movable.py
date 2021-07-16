@@ -537,10 +537,9 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         x, y = self.current_position
         self.use_adjustment = True
         dx, dy = nx - x, ny - y
-        print('dx, dy:', dx, dy)
-        self.adjustment = self.adjustment[0] + dx, self.adjustment[1] + dy
+        adj_x, adj_y = self.adjustment[0] + dx, self.adjustment[1] + dy
+        self.adjustment =  adj_x, adj_y
         self.target_position = nx, ny
-        print('target position: ', nx, ny)
         self.current_position = nx, ny
 
     def dragged_to(self, scene_pos):

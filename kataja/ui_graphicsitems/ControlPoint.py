@@ -22,25 +22,24 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
     def __init__(self, edge, index=-1, role=''):
         UIGraphicsItem.__init__(self, host=edge, role=role)
         QtWidgets.QGraphicsItem.__init__(self)
-        print('creating control_point, role is: ', role)
         if prefs.touch:
             self._wh = 12
             self._xy = -6
             self.round = True
-            self.setCursor(Qt.PointingHandCursor)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
         else:
             self._wh = 4
             self._xy = -2
             self.round = True
-            self.setCursor(Qt.CrossCursor)
+            self.setCursor(Qt.CursorShape.CrossCursor)
         self._index = index
         self.focusable = True
         self.pressed = False
         self._hovering = False
         self.being_dragged = False
         self.setAcceptHoverEvents(True)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.GraphicsItemFlag.ItemIsSelectable)
 
         self.setZValue(52)
         self._compute_position()

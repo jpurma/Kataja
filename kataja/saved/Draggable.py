@@ -102,7 +102,7 @@ class Draggable(Movable):
     #   2b. prepare_children_for_dragging -- compute what should be included in drag for this
     #   type of node.
     #
-    #   3. prepare_dragging_participiant -- this is called for each node that is included into drag.
+    #   3. prepare_dragging_participant -- this is called for each node that is included into drag.
     #   Prepares drag data and sets up animations.
     #
     #   4. dragged_to -- this is called for each node in drag set. Node moves to position
@@ -134,13 +134,13 @@ class Draggable(Movable):
                 if item.drag_data:
                     continue
                 elif getattr(item, 'draggable', True):
-                    item.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
+                    item.prepare_dragging_participant(host=False, scene_pos=scene_pos)
                     item.prepare_children_for_dragging(scene_pos)
                     multidrag = True
         # no selection -- drag what is under the pointer
         else:
             self.prepare_children_for_dragging(scene_pos)
-            self.prepare_dragging_participiant(host=True, scene_pos=scene_pos)
+            self.prepare_dragging_participant(host=True, scene_pos=scene_pos)
 
         moving = ctrl.dragged_set
         ctrl.ui.prepare_touch_areas_for_dragging(moving=moving, multidrag=multidrag)
@@ -153,7 +153,7 @@ class Draggable(Movable):
         """
         pass
 
-    def prepare_dragging_participiant(self: 'Node', host=False, scene_pos=None):
+    def prepare_dragging_participant(self: 'Node', host=False, scene_pos=None):
         """ Add this node into the entourage of dragged node. These nodes will
         maintain their relative position to dragged node while dragging.
         This can and should be called also for the host of the dragging operation. In this case
@@ -238,7 +238,6 @@ class Draggable(Movable):
                 drop_action.run_command(self.uid, x, y)
             else:
                 drop_action = ctrl.ui.get_action('adjust_node')
-                print('dropping with adjustment ', self.adjustment)
                 drop_action.run_command(self.uid, *self.adjustment)
         self.update_position()
         self.finish_dragging()
@@ -316,11 +315,7 @@ class Draggable(Movable):
             ctrl.release(self)
             if ctrl.dragged_set:
                 x, y = to_tuple(event.scenePos())
-                print(f'dropping to scenePos {int(x)}, {int(y)}. ')
-                print(self.drag_data)
                 self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
-                print(f'x, y after drop: {self.x(), self.y()}')
-                print('scenePos after drop: ', self.scenePos())
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
             else:  # This is a regular click on 'pressed' object

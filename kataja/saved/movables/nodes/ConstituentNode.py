@@ -676,8 +676,8 @@ class ConstituentNode(Node):
                 nodes_above.add(node)
 
         for child in self.get_sorted_nodes():
-            if child not in nodes_above:
-                child.prepare_dragging_participiant(host=False, scene_pos=scene_pos)
+            if child not in nodes_above and not child.parentItem():
+                child.prepare_dragging_participant(host=False, scene_pos=scene_pos)
 
     #################################
 
