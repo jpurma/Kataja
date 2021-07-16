@@ -664,8 +664,8 @@ class PaletteManager:
         else:
             palette = QtGui.QPalette(self.get_qt_palette())
 
-        palette.setColor(QtGui.QPalette.WindowText, self.d[key])
-        palette.setColor(QtGui.QPalette.Text, self.d[key])
+        palette.setColor(QtGui.QPalette.ColorRole.WindowText, self.d[key])
+        palette.setColor(QtGui.QPalette.ColorRole.Text, self.d[key])
         return palette
 
     def create_accent_palette(self, key):

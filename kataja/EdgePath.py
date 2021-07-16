@@ -530,8 +530,8 @@ class EdgePath:
             for i, (cpx, cpy) in enumerate(self.control_points):
                 painter.drawLine(sx, sy, cpx, cpy)
                 if len(adjust) > i:
-                    pen.setStyle(QtCore.Qt.DashLine)
+                    pen.setStyle(QtCore.Qt.PenStyle.DashLine)
                     ax, ay = adjust[i]
                     painter.drawLine(cpx, cpy, ax, ay)
-                    pen.setStyle(QtCore.Qt.SolidLine)
+                    pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
                 sx, sy = self.edge.end_point

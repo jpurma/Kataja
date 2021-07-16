@@ -146,7 +146,7 @@ def draw(tree, image_out='kataja_tree.pdf', **kwargs):
 
 def prepare_app():
     app = QtWidgets.QApplication(sys.argv)
-    #app.setAttribute(QtCore.Qt..AA_UseHighDpiPixmaps)
+    #app.setAttribute(QtCore.Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     app.setApplicationName('Kataja')
     app.setOrganizationName('Purma')
     app.setOrganizationDomain('purma.fi')

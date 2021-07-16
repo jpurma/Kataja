@@ -34,7 +34,7 @@ class ConstituentNodeEditEmbed(UIEmbed):
         ui_p = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(ui_p)
         ui_s = QtGui.QPalette(ui_p)
-        ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
+        ui_s.setColor(QtGui.QPalette.ColorRole.Text, ctrl.cm.secondary())
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)

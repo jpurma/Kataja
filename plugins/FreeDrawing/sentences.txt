@@ -1,3 +1,12 @@
+ [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
+  [.T\\$[$+past$]$\\$[$NOM$]$ ]
+  [.VP [.VP \qroof{Donald}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
+    [.vP [.DP\\$<\Theta>$ t$_j$ ]
+      [.v [.v\\$[$ACC$]$\\$<\Theta>$$<\Theta>$ t$_i$ ]
+      \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]
+  [.AP  [.A' today ] ] ] ] ] ]
+
+
 [ A [ B C ] ]
 
 [.S [.S-TPC-1
@@ -68,15 +77,6 @@
          [.VBD reported ]
          [.SBAR [.-NONE- 0 ] [.S [.-NONE- *T*-1 ] ] ] ]
        [.. . ] ] ] ] ]
-
-
- [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
-  [.T\\$[$+past$]$\\$[$NOM$]$ ]
-  [.VP [.VP \qroof{Donald}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
-    [.vP [.DP\\$<\Theta>$ t$_j$ ]
-      [.v [.v\\$[$ACC$]$\\$<\Theta>$$<\Theta>$ t$_i$ ]
-      \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]
-  [.AP  [.A' today ] ] ] ] ] ]
 
 
 [.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ]

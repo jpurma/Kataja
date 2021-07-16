@@ -242,9 +242,9 @@ class SuperParser:
 
         node = IParserNode()
         for part in parts_list:
-            print(repr(part), type(part))
             if isinstance(part, list):
-                node.parts.append(self.parse_parts(part, tidy_up=False))
+                parts = self.parse_parts(part, tidy_up=False)
+                node.parts.append(parts)
             else:
                 rows_of_words = self.parse_word(part)
                 tidy_rows = []

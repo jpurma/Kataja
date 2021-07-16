@@ -168,11 +168,11 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
             if ctrl.text_editor_focus:
                 ctrl.release_editor_focus()
             ctrl.text_editor_focus = self
-            self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextEditorInteraction)
             self.prepareGeometryChange()
             self.editable_doc.setTextWidth(self._get_editing_width())
             self.edited_field, self.editable_html = self._host.label_as_editable_html()
-            self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
+            self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.IBeamCursor))
 
             ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
             self.setHtml(self.editable_html)
@@ -194,9 +194,9 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()
             self._host.update_label()
-            self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
             self.setAcceptDrops(False)
-            self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            self.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.NoTextInteraction)
             self.clearFocus()
             self._fresh_focus = False
 

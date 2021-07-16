@@ -127,8 +127,8 @@ class CommentNode(Node):
             return
         self.user_size = (width, height)
         if self.image_object:
-            scaled = self.image.scaled(width, height, QtCore.Qt.KeepAspectRatio,
-                                       QtCore.Qt.SmoothTransformation)
+            scaled = self.image.scaled(width, height, QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                                       QtCore.Qt.TransformationMode.SmoothTransformation)
             self.image_object.prepareGeometryChange()
             self.image_object.setPixmap(scaled)
             self.image_object.setPos(-scaled.width() / 2, -scaled.height() / 2)
@@ -185,7 +185,7 @@ class CommentNode(Node):
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
         elif self.has_empty_label() and self.node_alone():
-            p.setStyle(QtCore.Qt.DotLine)
+            p.setStyle(QtCore.Qt.PenStyle.DotLine)
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
 

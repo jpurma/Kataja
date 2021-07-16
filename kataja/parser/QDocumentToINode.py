@@ -60,7 +60,6 @@ class QDocumentToINode:
                         result = removed(stack, 'smallcaps')
                 if family != cf.fontFamilies():
                     family = cf.fontFamilies()
-                    print('family: ', family)
                 if italic != cf.fontItalic():
                     italic = cf.fontItalic()
                     if italic:

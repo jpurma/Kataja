@@ -31,7 +31,7 @@ class HelpPanel(Panel):
         self.preferred_floating_size = QtCore.QSize(260, 320)
         self.browser.setFrameStyle(QtWidgets.QFrame.NoFrame)
         p = self.browser.palette()
-        p.setColor(QtGui.QPalette.Base, QtCore.Qt.GlobalColor.NoPen)
+        p.setColor(QtGui.QPalette.ColorRole.Base, QtCore.Qt.GlobalColor.NoPen)
         self.browser.setPalette(p)
         layout.addWidget(self.browser)
         self.set_text(HelpPanel.default_text)

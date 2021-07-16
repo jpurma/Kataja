@@ -78,84 +78,91 @@ def nodes_to_synobjs(forest, syntax, roots: list):
             joined = ', '.join(l)
             return f'({joined})'
 
+    def convert_features(node):
+        feature_nodes = node.get_children(of_type=g.FEATURE_NODE)
+        features = []
+        for fnode in feature_nodes:
+            if fnode in converted_nodes:
+                features.append(fnode.syntactic_object)
+            else:
+                if fnode.syntactic_object:
+                    fobj = fnode.syntactic_object
+                    fobj.name = fnode.name
+                    fobj.value = fnode.value
+                    fobj.family = fnode.family
+                else:
+                    fobj = syntax.create_feature(name=fnode.name, value=fnode.value,
+                                                 family=fnode.family)
+                features.append(fobj)
+                converted_nodes.add(fnode)
+                fnode.set_syntactic_object(fobj)
+                for checked in fnode.get_children():
+                    checked_features.add((fnode, checked))
+        return features
+
     def convert_node(node):
         if node in visited_nodes or node in converted_nodes:
             return
         visited_nodes.add(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            if node.index and node.is_trace:
-                head, traces = forest.get_nodes_by_index(node.index)
+            convert_constituent_node(node)
+
+    def convert_constituent_node(node):
+        if node.index and node.is_trace:
+            head, traces = forest.get_nodes_by_index(node.index)
+            if head:
                 if head not in converted_nodes:
                     convert_node(head)
                 node.syntactic_object = head.syntactic_object
                 converted_nodes.add(node)
                 return
-            children = node.get_children()
-            feature_nodes = node.get_children(of_type=g.FEATURE_NODE)
-            features = []
-            for fnode in feature_nodes:
-                if fnode in converted_nodes:
-                    features.append(fnode.syntactic_object)
-                else:
-                    if fnode.syntactic_object:
-                        fobj = fnode.syntactic_object
-                        fobj.name = fnode.name
-                        fobj.value = fnode.value
-                        fobj.family = fnode.family
-                    else:
-                        fobj = syntax.create_feature(name=fnode.name, value=fnode.value,
-                                                     family=fnode.family)
-                    features.append(fobj)
-                    converted_nodes.add(fnode)
-                    fnode.set_syntactic_object(fobj)
-                    for checked in fnode.get_children():
-                        checked_features.add((fnode, checked))
-            if len(children) == 2:
-                for child in children:
-                    convert_node(child)
-                n1, n2 = children
-                synobj = syntax.merge(n1.syntactic_object, n2.syntactic_object,
-                                      c=node.syntactic_object)
-                synobj.label = define_label(node)
-                node.is_syntactically_valid = True
-                node.set_syntactic_object(synobj)
-                if features:
-                    node.is_syntactically_valid = False
-                    synobj.features += features
-                else:
-                    node.is_syntactically_valid = True
-            elif len(children) == 1:
-                n1 = children[0]
-                convert_node(n1)
-                synobj = node.syntactic_object
-                if not synobj:
-                    synobj = syntax.create_constituent(label='')
-                synobj.parts = [n1.syntactic_object]
-                synobj.label = define_label(node)
+        children = node.get_children()
+        features = convert_features(node)
+        if len(children) == 2:
+            for child in children:
+                convert_node(child)
+            n1, n2 = children
+            synobj = syntax.merge(n1.syntactic_object, n2.syntactic_object,
+                                  c=node.syntactic_object)
+            synobj.label = define_label(node)
+            node.set_syntactic_object(synobj)
+            if features:
                 node.is_syntactically_valid = False
-                node.set_syntactic_object(synobj)
-                if features:
-                    synobj.features += features
-            elif len(children) == 0:
-                label = define_label(node)
-                synobj = node.syntactic_object
-                if not synobj:
-                    synobj = syntax.create_constituent(label=label)
-                node.set_syntactic_object(synobj)
-                node.is_syntactically_valid = True
-                synobj.features = features
+                synobj.features += features
             else:
-                for child in children:
-                    convert_node(child)
-                label = define_label(node)
-                synobj = node.syntactic_object
-                if not synobj:
-                    synobj = syntax.create_constituent(label=label)
-                synobj.parts = [x.syntactic_object for x in children]
-                node.set_syntactic_object(synobj)
-                node.is_syntactically_valid = False
-                synobj.features = features
-            converted_nodes.add(node)
+                node.is_syntactically_valid = True
+        elif len(children) == 1:
+            n1 = children[0]
+            convert_node(n1)
+            synobj = node.syntactic_object
+            if not synobj:
+                synobj = syntax.create_constituent(label='')
+            synobj.parts = [n1.syntactic_object]
+            synobj.label = define_label(node)
+            node.is_syntactically_valid = False
+            node.set_syntactic_object(synobj)
+            if features:
+                synobj.features += features
+        elif len(children) == 0:
+            label = define_label(node)
+            synobj = node.syntactic_object
+            if not synobj:
+                synobj = syntax.create_constituent(label=label)
+            node.set_syntactic_object(synobj)
+            node.is_syntactically_valid = True
+            synobj.features = features
+        else:
+            for child in children:
+                convert_node(child)
+            label = define_label(node)
+            synobj = node.syntactic_object
+            if not synobj:
+                synobj = syntax.create_constituent(label=label)
+            synobj.parts = [x.syntactic_object for x in children]
+            node.set_syntactic_object(synobj)
+            node.is_syntactically_valid = False
+            synobj.features = features
+        converted_nodes.add(node)
 
     for root in roots:
         convert_node(root)

@@ -67,7 +67,7 @@ class PluginSelector(QtWidgets.QWidget):
             if activated:
                 plugin_frame.setPalette(enabled_palette)
             else:
-                plugin_frame.setBackgroundRole(QtGui.QPalette.AlternateBase)
+                plugin_frame.setBackgroundRole(QtGui.QPalette.ColorRole.AlternateBase)
             plugin_frame.setAutoFillBackground(True)
             hlayout = QtWidgets.QHBoxLayout()
             vlayout = QtWidgets.QVBoxLayout()

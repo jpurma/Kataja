@@ -558,8 +558,8 @@ class Node(Draggable, Movable):
         :return:
         """
         palette = QtGui.QPalette(ctrl.cm.get_qt_palette())
-        palette.setColor(QtGui.QPalette.WindowText, self.color)
-        palette.setColor(QtGui.QPalette.Text, self.color)
+        palette.setColor(QtGui.QPalette.ColorRole.WindowText, self.color)
+        palette.setColor(QtGui.QPalette.ColorRole.Text, self.color)
         return palette
 
     def contextual_color(self):

@@ -35,5 +35,5 @@ class Image(Movable, QtWidgets.QGraphicsPixmapItem):
         QtWidgets.QGraphicsPixmapItem.__init__(self, pixmap)
         Movable.__init__(self, forest=forest)
         self.setFlag(QtWidgets.QGraphicsRectItem.ItemIsMovable)
-        self.setTransformationMode(QtCore.Qt.SmoothTransformation)
+        self.setTransformationMode(QtCore.Qt.TransformationMode.SmoothTransformation)
         # self.setPos(pixmap.width()*-.5, pixmap.height()*-.5)

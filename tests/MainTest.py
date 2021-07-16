@@ -13,7 +13,7 @@ running_environment.switch_to_test_mode()
 
 def prepare_app():
     app = QtWidgets.QApplication(sys.argv)
-    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    app.setAttribute(QtCore.Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     app.setApplicationName('Kataja')
     app.setOrganizationName('Purma')
     app.setOrganizationDomain('purma.fi')

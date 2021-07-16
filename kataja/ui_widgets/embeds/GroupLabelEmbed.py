@@ -71,7 +71,7 @@ class GroupLabelEmbed(UIEmbed):
     def update_embed(self, focus_point=None):
         if self.host:
             p = QtGui.QPalette()
-            p.setColor(QtGui.QPalette.Text, self.host.color)
+            p.setColor(QtGui.QPalette.ColorRole.Text, self.host.color)
             self.input_line_edit.setPalette(p)
         super().update_embed()
 

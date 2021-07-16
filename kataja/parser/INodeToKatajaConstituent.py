@@ -37,9 +37,7 @@ class INodeToKatajaConstituent:
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in SuperParser ###
-        print('superparse ', string)
         self.parser = SuperParser(string)
-        print('parser ', self.parser)
         result = [self.inode_to_constituentnode(inode) for inode in self.parser.nodes]
         self.should_add_to_scene = old_should_add
         return result

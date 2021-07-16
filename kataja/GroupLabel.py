@@ -197,7 +197,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     def mouseMoveEvent(self, event):
         if ctrl.pressed is self:
             if self.being_dragged() or (event.buttonDownScenePos(
-                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                    QtCore.Qt.MouseButton.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
                 ctrl.graph_scene.dragging_over(event.scenePos())
 

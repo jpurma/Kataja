@@ -145,7 +145,7 @@ class MergeToTop(AbstractBranchingTouchArea):
 
     @classmethod
     def select_condition(cls, host):
-        return not host.is_top_node()
+        return not host.is_top_node() or host.is_triangle
 
     @classmethod
     def drop_condition(cls, host):

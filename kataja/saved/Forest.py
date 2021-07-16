@@ -260,12 +260,11 @@ class Forest(SavedObject):
         head = None
         traces = set()
         for node in self.nodes.values():
-            if node.node_type == g.CONSTITUENT_NODE:
-                if node.index == index:
-                    if node.is_trace:
-                        traces.add(node)
-                    else:
-                        head = node
+            if node.node_type == g.CONSTITUENT_NODE and node.index == index:
+                if node.is_trace:
+                    traces.add(node)
+                else:
+                    head = node
         return head, traces
 
     def set_visualization(self, name):

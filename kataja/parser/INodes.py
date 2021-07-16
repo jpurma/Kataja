@@ -396,7 +396,10 @@ class ITextNode:
         in_math = self._as_latex(s)
         if in_math:
             s.append('$')
-        return ''.join(s).replace('\n', '\\\\\n').replace('\r', '\\\\\r')
+
+        joined = ''.join(s)
+        #joined = joined.replace('\n', '\\\\\n').replace('\r', '\\\\\r')
+        return joined
 
     def as_editable_latex(self):
         s = []
@@ -655,10 +658,6 @@ class IParserNode(ITextNode):
         :param keep_node:
         :return:
         """
-        # print('tidying parsernode')
-        # t = ITextNode.tidy(self, keep_node=True)
-        # print(repr(t.label_rows))
-        # return t
         return ITextNode.tidy(self, keep_node=True)
 
     def is_plain_string(self):

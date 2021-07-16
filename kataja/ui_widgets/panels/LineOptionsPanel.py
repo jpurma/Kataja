@@ -19,8 +19,8 @@ __author__ = 'purma'
 def hdivider():
     # noinspection PyArgumentList
     hline = QtWidgets.QFrame()
-    hline.setForegroundRole(QtGui.QPalette.AlternateBase)
-    hline.setFrameShape(QtWidgets.QFrame.HLine)
+    hline.setForegroundRole(QtGui.QPalette.ColorRole.AlternateBase)
+    hline.setFrameShape(QtWidgets.QFrame.Shape.HLine)
     return hline
 
 

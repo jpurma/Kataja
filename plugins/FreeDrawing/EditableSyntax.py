@@ -180,21 +180,13 @@ class EditableSyntax(SyntaxAPI):
         If a forest is provided, derivation steps are created there.
         :return:
         """
-        print('free drawing create derivation')
         self._prepare_derivation_parameters(input_text, lexicon, semantics)
-        print('free drawing create derivation 1')
         if self.input_tree:
-            print('free drawing create derivation 1b')
             roots = forest.parser.string_into_forest(str(self.input_tree))
-            print('free drawing create derivation 2')
             forest.drawing.definitions_to_nodes(self.get_editable_lexicon())
-            print('free drawing create derivation 3')
             self.nodes_to_synobjs(forest, roots)
-            print('free drawing create derivation 4')
             syn_state = SyntaxState(tree_roots=[x.syntactic_object for x in roots])
-            print('free drawing create derivation 5')
             forest.add_step(syn_state)
-            print('free drawing create derivation 6')
 
     def set_display_mode(self, i):
         self.display_mode = i

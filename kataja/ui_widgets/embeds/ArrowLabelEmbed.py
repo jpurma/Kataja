@@ -40,7 +40,7 @@ class ArrowLabelEmbed(UIEmbed):
     def update_embed(self, focus_point=None):
         if self.host:
             p = QtGui.QPalette()
-            p.setColor(QtGui.QPalette.Text, self.host.color)
+            p.setColor(QtGui.QPalette.ColorRole.Text, self.host.color)
             self.label = self.host.label_item
             self.input_line_edit.setPalette(p)
             f = QtGui.QFont(self.label.get_font())

@@ -69,7 +69,7 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self._magnet = QtCore.QPoint(0, 0), 1
         # Effect will be disabled if QTextEdit is used.
         self.setAutoFillBackground(True)
-        self.setBackgroundRole(QtGui.QPalette.Window)
+        self.setBackgroundRole(QtGui.QPalette.ColorRole.Window)
         self.hide()
         self.vlayout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         self.vlayout.addSpacing(4)
