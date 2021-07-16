@@ -416,6 +416,9 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """
         return self._visible_by_logic
 
+    def has_adjustment(self):
+        return self.adjustment != (0, 0)
+
     # ## Hover ################################################################
 
     # def shape(self):
@@ -534,9 +537,10 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         x, y = self.current_position
         self.use_adjustment = True
         dx, dy = nx - x, ny - y
-
+        print('dx, dy:', dx, dy)
         self.adjustment = self.adjustment[0] + dx, self.adjustment[1] + dy
         self.target_position = nx, ny
+        print('target position: ', nx, ny)
         self.current_position = nx, ny
 
     def dragged_to(self, scene_pos):

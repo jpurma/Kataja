@@ -56,6 +56,8 @@ class DragData:
         else:
             self.parent = None
 
+    def __str__(self):
+        return str(dict(vars(self)))
 
 #qbytes_scale = QtCore.QByteArray()
 #qbytes_scale.append("scale")
@@ -118,7 +120,6 @@ class Draggable(Movable):
         """ Figure out which nodes belong to the dragged set of nodes.
         :param scene_pos:
         """
-        print('start dragging')
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         ctrl.dragged_groups = set()
@@ -236,9 +237,9 @@ class Draggable(Movable):
                 drop_action = ctrl.ui.get_action('move_node')
                 drop_action.run_command(self.uid, x, y)
             else:
-                adj_x, adj_y = self.adjustment
                 drop_action = ctrl.ui.get_action('adjust_node')
-                drop_action.run_command(self.uid, adj_x, adj_y)
+                print('dropping with adjustment ', self.adjustment)
+                drop_action.run_command(self.uid, *self.adjustment)
         self.update_position()
         self.finish_dragging()
 
@@ -315,7 +316,11 @@ class Draggable(Movable):
             ctrl.release(self)
             if ctrl.dragged_set:
                 x, y = to_tuple(event.scenePos())
+                print(f'dropping to scenePos {int(x)}, {int(y)}. ')
+                print(self.drag_data)
                 self.drop_to(int(x), int(y), recipient=ctrl.drag_hovering_on, shift_down=shift)
+                print(f'x, y after drop: {self.x(), self.y()}')
+                print('scenePos after drop: ', self.scenePos())
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
             else:  # This is a regular click on 'pressed' object
@@ -355,3 +360,4 @@ class Draggable(Movable):
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") \
                 or event.mimeData().hasFormat("text/plain"):
             self.label_object.dropEvent(event)
+        QtWidgets.QGraphicsObject.dropEvent(self, event)

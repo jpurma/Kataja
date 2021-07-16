@@ -737,7 +737,7 @@ class Node(Draggable, Movable):
 
         expanding_rect = QtCore.QRectF(self.inner_rect)
         for child in self.childItems():
-            if isinstance(child, Node) and child.is_visible():
+            if isinstance(child, Node) and child.is_visible() and not child.has_adjustment():
                 expanding_rect |= child.future_children_bounding_rect().translated(
                     *child.target_position)
 

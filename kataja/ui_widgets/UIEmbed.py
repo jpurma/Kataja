@@ -177,7 +177,6 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         else:
             y = h / 2 - node_rect.height() / 2
 
-        print('updating embed position, ', x, y)
         self.move(x, y)
         self.updateGeometry()
 
@@ -200,18 +199,17 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
     def focus_to_main(self):
         pass
 
-    def mousePressEvent(self, event):
-        self._drag_diff = event.pos()
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        self._drag_diff = event.position().toPoint()
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if self._drag_diff:
-            print(self.mapToParent(event.pos()) - self._drag_diff, self.geometry())
-            self.move(self.mapToParent(event.pos()) - self._drag_diff)
+            self.move(self.mapToParent(event.position()).toPoint() - self._drag_diff)
             self.moved_by_hand = True
-        QtWidgets.QWidget.mouseMoveEvent(self, event)
+        super().mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
         self._drag_diff = None
         super().mouseReleaseEvent(event)
 

@@ -287,7 +287,7 @@ class ConstituentNode(Node):
         # lines.append(f'pos: ({x:.1f},{y:.1f})')
 
         if self.use_adjustment:
-            lines.append(f' adjusted position {coords_as_str(self.adjustment)}')
+            lines.append(f' adjustment to position {coords_as_str(self.adjustment)}')
 
         synobj = self.syntactic_object
         if synobj:

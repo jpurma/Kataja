@@ -63,12 +63,12 @@ class HeadingWidget(UIWidget, QtWidgets.QWidget):
         return self.__qt_type_id__
 
     def mousePressEvent(self, event):
-        self._drag_diff = event.pos()
+        self._drag_diff = event.position()
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self._drag_diff:
-            self.move(self.mapToParent(event.pos()) - self._drag_diff)
+            self.move(self.mapToParent(event.position()) - self._drag_diff)
             self.moved_by_hand = True
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 

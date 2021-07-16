@@ -53,7 +53,7 @@ class NewElementEmbed(UIEmbed):
 
     def mouseMoveEvent(self, event):
         if self._drag_diff:
-            self.move(self.mapToParent(event.pos()) - self._drag_diff)
+            self.move(self.mapToParent(event.position()) - self._drag_diff)
             if self.marker:
                 self.marker.update_position()
         QtWidgets.QWidget.mouseMoveEvent(self, event)

@@ -138,6 +138,37 @@ class FeatureNode(Node):
     def preferred_z_value(self):
         return 60
 
+    def get_children(self, visible=False, of_type=None) -> list:
+        """
+        For features we don't want to count checking relation to create parent - child relations. Otherwise same as with Node
+        :return: iterator of Nodes
+        """
+        of_type = of_type or self.node_type
+        if visible:
+            if of_type == g.FEATURE_NODE:
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.edge_type != g.CHECKING_EDGE and edge.end.node_type == of_type and edge.end.is_visible()]
+            else:
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.edge_type != g.CHECKING_EDGE and edge.end.node_type == of_type and (not edge.origin) and edge.end.is_visible()]
+        else:
+            if of_type == g.FEATURE_NODE:
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.edge_type != g.CHECKING_EDGE and edge.end.node_type == of_type]
+            else:
+                return [edge.end for edge in self.edges_down if
+                        edge.end and edge.edge_type != g.CHECKING_EDGE and (not edge.origin) and edge.end.node_type == of_type]
+
+    def get_all_children(self, visible=False) -> list:
+        """
+        Get child nodes of this node
+        :return: iterator of Nodes
+        """
+        if visible:
+            return [edge.end for edge in self.edges_down if edge.end and edge.edge_type != g.CHECKING_EDGE and edge.end.is_visible()]
+        else:
+            return [edge.end for edge in self.edges_down if edge.end and edge.edge_type != g.CHECKING_EDGE]
+
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features.
         If not, then some random noise is added to prevent features sticking together
@@ -176,7 +207,8 @@ class FeatureNode(Node):
           (field_name, html).
         :return:
         """
-        return 'label', ''
+        #return 'label', ''
+        return None
 
     def hidden_in_triangle(self):
         """ If features are folded into triangle, they are always hidden. 
