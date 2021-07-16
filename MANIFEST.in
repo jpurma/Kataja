@@ -1,0 +1,4 @@
+include VERSION
+recursive-include plugins webviewer tools resources
+recursive-exclude plugins/TreesAreMemory3
+global-exclude *.py[cod]

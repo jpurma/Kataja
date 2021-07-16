@@ -13,7 +13,7 @@ python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 """
 
-from os import path, walk
+from os import path, walk, getcwd
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
@@ -58,8 +58,8 @@ def find_symlinks(directory):
                 paths.append(f_path)
     return [x.replace('/', '.') for x in paths]
 
-
-here = path.abspath(path.dirname(__file__))
+here = path.abspath(getcwd())
+#here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
