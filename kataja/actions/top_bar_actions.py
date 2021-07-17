@@ -158,10 +158,8 @@ class ToggleAutomaticZoom(KatajaAction):
     k_shortcut = 'Shift+Z'
     k_undoable = False
     k_checkable = True
-    k_tooltip = '''<p><b>Auto zoom:</b></p><p><b>On:</b> Try to keep all elements in view
-    </p>
-    <p><b>Off:</b> Manual pan and zoom</p> 
-    '''
+    k_tooltip = '''<p><b>Auto zoom:</b></p><p><b>On:</b> Try to keep all elements in view</p><p><b>Off:</b> Manual 
+    pan and zoom</p> '''
 
     def prepare_parameters(self, args, kwargs):
         sender = self.sender()

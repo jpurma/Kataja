@@ -137,13 +137,14 @@ class AdjustNode(KatajaAction):
         """ Node has been dragged to this position and the current algorithm has a static position
         computed for it. Coords are relative adjustment to that computed position.
         :param node_uid:
-        :param x:
-        :param y:
-        :return:
+        :param x: adjustment x
+        :param y: adjustment y
+        :return: None
         """
         node = ctrl.forest.nodes[node_uid]
         node.adjustment = x, y
         if x or y:
+            ctrl.action_redraw = False
             node.lock()
             node.update_position()
         else:

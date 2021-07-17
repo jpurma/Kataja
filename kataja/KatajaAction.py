@@ -245,6 +245,7 @@ class KatajaAction(QtGui.QAction):
             command_string = action_name + '(' + ', '.join(arg_parts + kwarg_parts) + ')'
             log.info('>>> ' + command_string)
             log.log_handler.add_to_command_backlog(command_string)
+
         try:
             message = self.method(*args, **kwargs)
             error = None
@@ -254,6 +255,7 @@ class KatajaAction(QtGui.QAction):
             error += '<br/>'.join(traceback.format_exception(*sys.exc_info()))
             log.error("Unexpected error: %s" % str(sys.exc_info()))
             traceback.print_exc()
+
         # Restore undo state to what it was
         if not self.undoable:
             ctrl.resume_undo()
