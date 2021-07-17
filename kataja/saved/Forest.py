@@ -496,7 +496,7 @@ class Forest(SavedObject):
             return
         self.update_feature_ordering()
         self.update_forest_gloss()
-        self.update_constitution_node_shapes()
+        self.update_constituent_node_shapes()
         if self.visualization:
             self.visualization.prepare_draw()
             self.free_movers = self.visualization.has_free_movers()
@@ -624,7 +624,7 @@ class Forest(SavedObject):
                     ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    def update_constitution_node_shapes(self):
+    def update_constituent_node_shapes(self):
         """ Make sure that all nodes use right kind of label and that the locked-in children are 
         presented in right way.        
         :return: 
