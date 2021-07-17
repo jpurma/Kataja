@@ -24,7 +24,7 @@ class KnobDial(QtWidgets.QWidget):
         self.spinbox = QtWidgets.QSpinBox(self)
         self.spinbox.setAccelerated(True)
         self.spinbox.setReadOnly(False)
-        self.spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.spinbox.setRange(0, 360)
         self.spinbox.setSuffix(suffix)
         self.spinbox.setWrapping(True)

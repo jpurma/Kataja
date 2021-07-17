@@ -23,7 +23,7 @@ class AddBelowTouchArea(AbstractBelowTouchArea):
 
     @classmethod
     def select_condition(cls, host):
-        return host.is_top_node()
+        return host.is_top_node() and not host.in_triangle()
 
     @classmethod
     def drop_condition(cls, host):
@@ -140,12 +140,12 @@ class AbstractRightBranching(AbstractBranchingTouchArea):
 
 
 class MergeToTop(AbstractBranchingTouchArea):
-    """ TouchArea that connects to nodes and has \-shape.  """
+    """ TouchArea that connects to nodes and has ↖︎-shape.  """
     __qt_type_id__ = next_available_type_id()
 
     @classmethod
     def select_condition(cls, host):
-        return not host.is_top_node() or host.is_triangle
+        return not (host.in_triangle(exclude_top=True) or host.is_top_node())
 
     @classmethod
     def drop_condition(cls, host):
@@ -392,7 +392,7 @@ class LeftAddInnerSibling(AbstractLeftBranching):
 
     @classmethod
     def select_condition(cls, host):
-        return host.end.inner_add_sibling()
+        return host.end.inner_add_sibling() and not host.end.in_triangle(exclude_top=True)
 
     @classmethod
     def drop_condition(cls, host):
@@ -437,7 +437,7 @@ class RightAddInnerSibling(AbstractRightBranching):
 
     @classmethod
     def select_condition(cls, host):
-        return host.end.inner_add_sibling()
+        return host.end.inner_add_sibling() and not host.end.in_triangle(exclude_top=True)
 
     @classmethod
     def drop_condition(cls, host):
@@ -558,7 +558,7 @@ class LeftAddUnaryChild(AbstractLeftAddChild):
 
     @classmethod
     def select_condition(cls, host):
-        return host.has_one_child()
+        return host.has_one_child() and not host.in_triangle()
 
     @classmethod
     def drop_condition(cls, host):
@@ -581,7 +581,7 @@ class LeftAddLeafSibling(AbstractLeftAddChild):
 
     @classmethod
     def select_condition(cls, host):
-        return host.is_leaf()
+        return host.is_leaf() and not host.in_triangle()
 
     @classmethod
     def drop_condition(cls, host):
@@ -648,7 +648,7 @@ class RightAddUnaryChild(AbstractRightAddChild):
 
     @classmethod
     def select_condition(cls, host):
-        return host.has_one_child()
+        return host.has_one_child() and not host.in_triangle()
 
     @classmethod
     def drop_condition(cls, host):
@@ -671,7 +671,7 @@ class RightAddLeafSibling(AbstractRightAddChild):
 
     @classmethod
     def select_condition(cls, host):
-        return host.is_leaf()
+        return host.is_leaf() and not host.in_triangle()
 
     @classmethod
     def drop_condition(cls, host):

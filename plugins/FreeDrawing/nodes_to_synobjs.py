@@ -169,5 +169,5 @@ def nodes_to_synobjs(forest, syntax, roots: list):
         for checker, checked in checked_features:
             checker.syntactic_object.checks = checked.syntactic_object
 
-    print('visited %s nodes, converted %s nodes to synobjs' % (
-        len(visited_nodes), len(converted_nodes)))
+    #print('visited %s nodes, converted %s nodes to synobjs' % (
+    #    len(visited_nodes), len(converted_nodes)))

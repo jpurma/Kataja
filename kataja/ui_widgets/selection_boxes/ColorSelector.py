@@ -70,7 +70,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
             painter.setPen(pen)
             painter.drawRoundedRect(rect, 2, 2)
         else:
-            self.grad.setCenter(rect.center())
+            self.grad.setCenter(QtCore.QPointF(rect.center()))
             painter.setBrush(self.grad)
             painter.drawRoundedRect(rect, 2, 2)
             painter.setBrush(ctrl.cm.paper2())

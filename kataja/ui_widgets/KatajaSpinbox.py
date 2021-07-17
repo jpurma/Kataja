@@ -49,7 +49,7 @@ class KatajaDecimalSpinbox(QtWidgets.QDoubleSpinBox, UIWidget):
         UIWidget.__init__(self, **kwargs)
         self.setAccelerated(True)
         self.setReadOnly(False)
-        self.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.setRange(range_min, range_max)
         self.setSingleStep(step)
         self.setSuffix(suffix)

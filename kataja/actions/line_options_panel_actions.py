@@ -327,7 +327,7 @@ class ChangeEdgeRelativeCurvatureX(PanelAction):
     k_tooltip = 'Curvature value is relative to edge width'
 
     def prepare_parameters(self, args, kwargs):
-        value = args[0]
+        value = args[0] if args else 0
         if ctrl.ui.scope_is_selection:
             kwargs = {'level': ctrl.ui.active_scope}
         else:

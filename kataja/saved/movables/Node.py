@@ -899,6 +899,9 @@ class Node(Draggable, Movable):
         """
         return self.triangle_stack and self.triangle_stack[-1] is not self and not self.is_leaf()
 
+    def in_triangle(self, exclude_top=False):
+        return self.triangle_stack and (not exclude_top or self.triangle_stack[-1] is not self)
+
     # ## Magnets
     # ######################################################################
 
