@@ -456,7 +456,7 @@ class EdgePath:
             self.arrowhead_start_path = None
             return
         ad = 0.5
-        t = self.edge.settings.get('thickness')
+        t = self.edge.settings.get_shape('thickness')
         size = self.arrowhead_size_at_start
         if t:
             size *= t
@@ -492,7 +492,7 @@ class EdgePath:
             self.arrowhead_end_path = None
             return
         ad = 0.5
-        t = self.edge.settings.get('thickness')
+        t = self.edge.settings.get_shape('thickness')
         size = self.arrowhead_size_at_end
         if t:
             size *= t

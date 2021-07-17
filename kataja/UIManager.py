@@ -631,7 +631,8 @@ class UIManager:
                     self.create_panel(panel_data)
                     panel = self.get_panel(panel_id)
                     break
-        panel.show()
+        if not panel.isVisible():
+            panel.show()
         toggle_action = self.get_action('toggle_panel')
         toggle_action.set_checked_for(panel_id, True)
 
@@ -1195,6 +1196,22 @@ class UIManager:
             return ctrl.doc_settings.set_for_edge_type(key, value, edge_type)
         else:
             return prefs.set_for_edge_type(key, value, edge_type)
+
+    def set_active_edge_shape_setting(self, key, value, edge_type):
+        shape_name = ctrl.ui.get_active_edge_setting('shape_name', edge_type)
+        if self.scope_is_selection:
+            edges = ctrl.get_selected_edges()
+            if edges:
+                for edge in edges:
+                    if edge.edge_type == edge_type:
+                        edge.path.my_shape.set(key, value)
+        elif self.active_scope == g.FOREST:
+            return ctrl.forest.settings.set_for_edge_shape(key, value, shape_name)
+        elif self.active_scope == g.DOCUMENT:
+            return ctrl.doc_settings.set_for_edge_shape(key, value, shape_name)
+        else:
+            return prefs.set_for_edge_shape(key, value, shape_name)
+
 
     def reset_active_edge_setting(self, edge_type):
         if self.scope_is_selection:

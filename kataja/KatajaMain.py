@@ -143,8 +143,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.Corner.TopRightCorner, QtCore.Qt.DockWidgetArea.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.Corner.BottomLeftCorner, QtCore.Qt.DockWidgetArea.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.Corner.BottomRightCorner, QtCore.Qt.DockWidgetArea.RightDockWidgetArea)
-        x, y, w, h = (50, 50, 1024, 800)
-        self.setMinimumSize(w, h)
+        x, y, w, h = (50, 50, 1024, 780)
+        self.setBaseSize(w, h)
+        self.setMinimumSize(720, 500)
         self.app = kataja_app
         self.classes = classes
         self.save_prefs = not no_prefs

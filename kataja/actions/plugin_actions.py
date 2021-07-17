@@ -105,8 +105,11 @@ class TogglePlugin(KatajaAction):
         :param value: bool
         """
         m = ctrl.main.plugin_manager.set_active_plugin(plugin_key, value)
-        if self.sender():
-            parent = self.sender().parentWidget()
+        sender = self.sender()
+        if sender:
+            if isinstance(sender, MediatingAction):
+                sender = sender.sender()
+            parent = sender.parentWidget()
             while parent and not hasattr(parent, 'refresh_plugin_selection'):
                 parent = parent.parentWidget()
             if hasattr(parent, 'refresh_plugin_selection'):

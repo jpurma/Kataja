@@ -14,6 +14,7 @@ class ForestError(Exception):
 
 
 class TouchAreaError(Exception):
+    print('touch area error?')
     pass
 
 

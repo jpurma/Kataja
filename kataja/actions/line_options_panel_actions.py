@@ -246,7 +246,7 @@ class LeafShapeX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('leaf_x', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('leaf_x', value, edge_type=edge_type, level=level)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -279,7 +279,7 @@ class LeafShapeY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('leaf_y', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('leaf_y', value, edge_type=edge_type, level=level)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -311,7 +311,7 @@ class EdgeThickness(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('thickness', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('thickness', value, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -342,7 +342,7 @@ class ChangeEdgeRelativeCurvatureX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('rel_dx', value * .01, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('rel_dx', value * .01, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -374,7 +374,7 @@ class ChangeEdgeRelativeCurvatureY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('rel_dy', value * .01, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('rel_dy', value * .01, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -406,7 +406,7 @@ class ChangeEdgeFixedCurvatureX(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('fixed_dx', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('fixed_dx', value, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -438,7 +438,7 @@ class ChangeEdgeFixedCurvatureY(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('fixed_dy', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('fixed_dy', value, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -470,7 +470,7 @@ class EdgeShapeFill(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('fill', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('fill', value, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
@@ -501,7 +501,7 @@ class EdgeShapeLine(PanelAction):
           g.FOREST (2), g.DOCUMENT (3), g.PREFS (4).
         :return: None
         """
-        ctrl.ui.set_shape_setting('outline', value, edge_type=edge_type, level=level)
+        ctrl.ui.set_active_edge_shape_setting('outline', value, edge_type=edge_type)
         ctrl.forest.redraw_edges(edge_type=edge_type)
 
     def enabler(self):
