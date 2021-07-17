@@ -122,7 +122,7 @@ class SimpleLabel(QtWidgets.QGraphicsTextItem):
         self.resize_label()
 
     def string_width(self, string):
-        return self._font_metrics.width(string)
+        return self._font_metrics.horizontalAdvance(string)
 
     def is_empty(self) -> bool:
         """ Turning this node into label would result in an empty label.

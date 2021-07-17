@@ -113,7 +113,7 @@ class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
             self.text_area.setPlainText(text)
             self.toggle_area_mode()
         else:
-            tw = self.line_edit.fontMetrics().width(text)
+            tw = self.line_edit.fontMetrics().horizontalAdvance(text)
             if tw > self.line_edit.width():
                 self.setFixedWidth(tw)
                 self.parentWidget().update_size()
