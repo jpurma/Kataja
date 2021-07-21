@@ -123,7 +123,6 @@ class Parser:
         self.total = 0
         self.total_good_routes = 0
         self.last_const_id = 0
-        #self.func_parser = FuncParser(self)
 
     def set_forest(self, forest):
         self.exporter.forest = forest

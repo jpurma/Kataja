@@ -58,6 +58,7 @@ class PanelTitle(QtWidgets.QWidget):
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding,
                                                  QtWidgets.QSizePolicy.Policy.Preferred))
         self.panel = panel
+        self._drag_start = None
         self.preferred_size = QtCore.QSize(200, 22)
         self.setBackgroundRole(QtGui.QPalette.ColorRole.Base)
         self.setAutoFillBackground(True)
@@ -117,6 +118,27 @@ class PanelTitle(QtWidgets.QWidget):
             'font': f.family()
         })
 
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        if self.panel.isFloating():
+            self._drag_start = event.position().toPoint()
+        else:
+            event.ignore()
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        if self.panel.isFloating() and self._drag_start:
+            self.panel.move(event.globalPosition().toPoint() - self._drag_start)
+        else:
+            event.ignore()
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        if self.panel.isFloating():
+            self._drag_start = None
+        else:
+            event.ignore()
+            super().mouseReleaseEvent(event)
+
 
 class Panel(UIWidget, QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated.
@@ -135,6 +157,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         self.preferred_size = QtCore.QSize(200, 200)
         self.preferred_floating_size = QtCore.QSize(220, 220)
         self.default_position = default_position
+        self.setContentsMargins(0, 0, 0, 0)
+        self.title_widget = PanelTitle(name, self, foldable=foldable)
+        self.setTitleBarWidget(self.title_widget)
 
         if default_position == 'bottom':
             parent.addDockWidget(QtCore.Qt.DockWidgetArea.BottomDockWidgetArea, self)
@@ -147,11 +172,9 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         elif default_position == 'float':
             parent.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self)
             self.setFloating(True)
+
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.title_widget = PanelTitle(name, self, foldable=foldable)
-        self.setTitleBarWidget(self.title_widget)
         self.report_top_level()
         # noinspection PyArgumentList
         inner = QtWidgets.QWidget(self)
@@ -167,6 +190,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         setting them up. Subclass __init__:s must call finish_init at the end!
         :return:
         """
+        print('finish init for panel ', self)
         self.set_folded(self.folded)
         inner = self.widget()
         inner.setLayout(self.vlayout)
@@ -199,7 +223,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
 
     def set_folded(self, folded):
         self.folded = folded
-        self.titleBarWidget().update_fold(folded)
+        if self.titleBarWidget():
+            self.titleBarWidget().update_fold(folded)
         widget = self.widget()
         if widget:
             if folded:
@@ -212,13 +237,14 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         pass
 
     def report_top_level(self):
-        if self.isFloating():
-            if self.size() != self.sizeHint():
-                self.resize(self.sizeHint())
-            if self.resize_grip:
-                self.resize_grip.show()
-        elif self.resize_grip:
-            self.resize_grip.hide()
+        print('report top level ', self)
+        # if self.isFloating():
+        #     if self.size() != self.sizeHint():
+        #         self.resize(self.sizeHint())
+        #     if self.resize_grip:
+        #         self.resize_grip.show()
+        # elif self.resize_grip:
+        #     self.resize_grip.hide()
 
     def inner_size_hint(self):
         if self.isFloating() and (self.preferred_floating_size or self.preferred_size):
