@@ -14,10 +14,11 @@ class Operation:
     def __init__(self, head, arg=None, msg='', entry='', checked_features=None):
         self.head = head
         self.arg = arg
-        self.uid = f'{self.get_head_uid()}{self.get_arg_uid()}S{self.state_type}'
+        self.uid = f'{self.get_head_uid()}{self.get_arg_uid() or ""}S{self.state_type}'
         self.ord = 0
         self.msg = msg
         self.entry = entry
+        self.complex_parts = None
         self.checked_features = checked_features or []
 
     def __str__(self):
@@ -41,7 +42,7 @@ class Operation:
     def calculate_features(self, route_item):
         return self.head.features
 
-    def calculate_free_heads(self, route_item):
+    def calculate_available_heads(self, route_item):
         return []
 
     def calculate_local_heads(self, route_item):

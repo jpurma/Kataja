@@ -131,9 +131,10 @@ class NodeEditEmbed(UIEmbed):
         hlayout = box_row(self.vlayout)
         hlayout.addStretch(0)
         # U+21A9 &#8617;
-        self.enter_button = PushButtonBase(parent=self, text="Keep ↩",
-                                           action='finish_editing_node')
-        hlayout.addWidget(self.enter_button, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+        if self.editable:
+            self.enter_button = PushButtonBase(parent=self, text="Keep ↩",
+                                               action='finish_editing_node')
+            hlayout.addWidget(self.enter_button, 0, QtCore.Qt.AlignmentFlag.AlignRight)
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)
             hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignmentFlag.AlignRight)
@@ -211,7 +212,10 @@ class NodeEditEmbed(UIEmbed):
             if 'setter' in d:
                 getattr(self.host, d['setter'])(value)
             else:
-                setattr(self.host, field_name, value)
+                if d.get('syntactic', False):
+                    setattr(self.host.syntactic_object, field_name, value)
+                else:
+                    setattr(self.host, field_name, value)
         self.host.update_label()
 
     def focus_to_main(self):

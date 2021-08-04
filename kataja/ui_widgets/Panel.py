@@ -190,7 +190,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         setting them up. Subclass __init__:s must call finish_init at the end!
         :return:
         """
-        print('finish init for panel ', self)
         self.set_folded(self.folded)
         inner = self.widget()
         inner.setLayout(self.vlayout)
@@ -237,14 +236,13 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         pass
 
     def report_top_level(self):
-        print('report top level ', self)
-        # if self.isFloating():
-        #     if self.size() != self.sizeHint():
-        #         self.resize(self.sizeHint())
-        #     if self.resize_grip:
-        #         self.resize_grip.show()
-        # elif self.resize_grip:
-        #     self.resize_grip.hide()
+        if self.isFloating():
+            if self.size() != self.sizeHint():
+                self.resize(self.sizeHint())
+            if self.resize_grip:
+                self.resize_grip.show()
+        elif self.resize_grip:
+            self.resize_grip.hide()
 
     def inner_size_hint(self):
         if self.isFloating() and (self.preferred_floating_size or self.preferred_size):

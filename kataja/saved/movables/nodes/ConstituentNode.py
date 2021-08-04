@@ -52,6 +52,7 @@ def flatten(thick_list):
     flat(thick_list)
     return res
 
+
 class ConstituentNode(Node):
     """ ConstituentNode is enriched with few elements that have no syntactic meaning but help with
      reading the trees aliases, indices and glosses.

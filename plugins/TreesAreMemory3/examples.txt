@@ -1,0 +1,180 @@
+f('mitä', wh=True).f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().f('Seine').f('saavuttaa').arg().f('valtameren').r().arg()
+
+f('mitä', wh=True).f('kaupunkia').r().f('kohti').arg().f('virtaamalla').arg().f('Seine').f('pääsee').arg().f('valtamereen').r().arg()
+
+f('tyttö').f('jota', wh=True).arg().f('Pekka').f('halusi').arg().f('rakastaa').wharg().arg().r().r().r().f('löytyi').arg().f('kaapista').r()
+
+f('lääke').f('josta').arg().f('Merja').f('halusi').arg().arg().f('eroon').r().r().f('löytyi').arg().f('kaapista').r().f('ja').f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').r().f('syömällä').arg().r().f('hän').f('parantui').arg().r().r().f('rakasti').arg().f('Merjaa').r()
+
+f('lääke').f('josta', wh=True).arg().f('Merja').f('halusi').arg().f('eroon').wharg().r().r().r().r().f('löytyi').arg().f('kaapista').r()
+
+f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').r().f('syömällä').arg().r().f('hän').f('parantui').arg().r().r().f('rakasti').arg().f('Merjaa')
+
+f('Pekka').f('joka').arg().f('tiesi').arg().f('mitä').f('lääkettä').f('syömällä').arg().r().r().f('hän').f('parantui').arg().r().f('rakasti').arg().f('Merjaa').r()
+
+f('Pekka').arg(f('joka').arg().f('tiesi').arg().arg(f('mitä').arg(f('lääkettä').f('syömällä').arg())).f('hän').f('parantui').arg()).f('rakasti').arg().arg(f('Merjaa'))
+
+f('who', wh=True).f('did').arg().f('john').f('ask').arg().f('mary').r().f('to').f('take').f('a').f('picture').r().f('of').wharg().r().r().r().r().r().f('at').f('the').f('party').r().r().r().r()
+
+f('who').f('did').f('john').f('ask').arg().f('mary').r().f('to').f('take').f('a').f('picture').r().f('of').arg().r().r().r().r().f('at').f('the').f('party').r().r().r().r()
+
+f('Pekka').f('parantui').arg().arg(f('syömällä').arg(f('lääkettä')))
+
+f('mitä').arg(f('lääkettä')).f('syömällä').arg().f('Pekka').f('parantui').arg().arg()
+
+f('Pekka').f('tiesi').arg().arg(f('mitä').arg(f('lääkettä')).f('syömällä').arg().f('hän').f('parantui').arg().arg())
+
+f('syömällä').f('Pekka').f('parantui').arg().arg()
+
+f('Pekka').f('syömällä').f('parantui').arg().arg()
+
+f('syömällä').f('parantui').arg(f('Pekka')).arg()
+
+f('Pekka').arg(f('joka').arg().f('tiesi').arg().arg(f('mitä').arg(f('lääkettä').f('syömällä').arg())).f('hän').f('parantui').arg()).f('rakasti').arg().arg(f('Merjaa'))
+
+f('Pekka').f('käski').arg().arg(f('palauttaa').arg(f('kirjan')).arg(f('Merjalle')))
+
+f('Merjalle').f('Pekka').f('käski').arg().arg(f('palauttaa').arg(f('kirjan'))).arg()
+
+f('koulusta').f('Pekka').f('käski').arg().arg(f('palauttaa').arg(f('kirjan'))).arg(f('Merjalle')).arg()
+
+f('Kenen').f('käski').arg(f('Pekka')).arg().arg(f('palauttaa').arg().arg(f('kirjan')).arg(f('Merjalle')))
+
+f('Kenen').f('Pekka').f('käski').arg().arg().f('palauttaa').arg().arg(f('kirjan')).arg(f('Merjalle'))
+f('Kenen').f('Pekka').f('käski').arg().arg(f('palauttaa').arg().arg().arg(f('kirjan')).arg(f('Merjalle')))
+f('kirjan').f('Pekka').f('käski').arg().arg().f('palauttaa').arg().arg(f('Merjalle'))
+
+f('Pekka').f('parantui').arg().arg(f('syömällä'))
+
+f('Kenen').arg(f('kuvan')).f('Pekka').f('antoi').arg().arg().arg(f('juhlissa')).arg(f('Merjalle'))
+
+f('Kenelle').f('Pekka').f('antoi').arg().arg().arg(f('kenen').arg(f('kuvan'))).arg(f('juhlissa'))
+
+f('Kenelle').f('Pekka').f('antoi').arg().arg().f('kenen').f('kuvan').r().r().f('juhlissa').r()
+
+f('Kenen').f('kuvan').r().f('Pekka').f('antoi').arg().arg().f('Merjalle').r().f('juhlissa').r()
+
+# r = se mitä on rakennettu annetaan argumenttina edelliselle
+
+#Pekka ei käskenyt heidän antaa kirjaa Merjalle heittämällä
+
+f('Pekka').f('ei').arg().arg(f('käskenyt').arg(f('heidän').f('antaa').arg().arg(f('kirjaa')).arg(f('Merjalle')).arg(f('heittämällä'))))
+
+f('Pekka').f('ei').arg().f('käskenyt').f('heidän').f('antaa').arg().f('kirjaa').r().f('Merjalle').r().f('heittämällä').r().r().r()
+
+
+# Merjalle antoi kirjan Pekka
+f('Merjalle').f('antoi').arg().arg(f('kirjan')).arg(f('Pekka'))
+
+# who did john like a picture of at the party
+f('who').f('did').arg().f('john').f('like').arg().arg().f('a').f('picture').r().arg().f('of').arg().r().r().r().f('at').f('the').f('party').r().r().r()
+
+
+f('who').f('did').f('john').f('ask').arg().f('mary').r().f('to').f('take').f('a').f('picture').r().f('of').arg().r().r().r().r().f('at').f('the').f('party').r().r().r().r()
+
+f('did').arg(f('john').f('ask').arg().arg(f('mary')).arg(f('to').arg(f('take').arg(f('a').arg(f('picture')).arg(f('of').arg(f('merja')))))).arg(f('at').arg(f('the').arg(f('party')))))
+
+# of + who . did < + ( john . like < < + ( a + picture < ) ) + ( at + ( the + party ) )
+
+# Mitä Pekka tiesi että Merja ei ostanut
+
+f('Mitä').f('Pekka').f('tiesi').arg().arg(f('että').arg(f('Merja').f('ei').arg().arg(f('ostanut').arg())))
+
+f('Iloinen').f('Pekka').adj().f('parantui').arg().arg(f('syömällä').arg(f('hyvää').f('lääkettä').adj()))
+
+f('of').arg(f('who')).f('did').arg().arg(f('john').f('like').arg().arg().arg(f('a').arg(f('picture')).arg())).arg(f('at').arg(f('the').arg(f('party'))))
+
+# who did john ask mary to take a picture of at the party
+f('who').f('did').arg().arg(f('john').f('ask').arg().shf().arg(f('mary')).arg(f('to').arg(f('take').arg().shf().arg(f('a').arg(f('picture')).shf().arg(f('of').shf().arg())))).arg(f('at').arg(f('the').arg(f('party')))))
+f('who').f('did').arg().l().f('john').f('ask').arg().shf().l().f('mary').r().l().f('to').l().f('take').arg().shf().l().f('a').l().f('picture').r().shf().l().f('of').shf().arg().r().r().r().r().l().f('at').l().f('the').l().f('party').r().r().r().r()
+
+# oletetaan että jokainen .l() on .shf().l()
+#f('who').f('did').arg().l().f('the').l().f('servant').r().f('ask').arg().l().f('mary').r().l().f('to').l().f('take').arg().l().f('a').l().f('picture').r().l().f('of').arg().r().r().l().f('at').l().f('the').l().f('party').r().r().r().r()
+f('who').f('did').arg().f('the').f('servant').r().f('ask').arg().f('mary').r().f('to').f('take').arg().f('a').f('picture').r().f('of').arg().r().r().f('at').f('the').f('party').r().r().r().r()
+f('who').f('did').arg().f('the').f('servant').r().f('ask').arg().f('mary').f('to').f('take').f('a').f('picture').f('of').arg().r().r().r().r().r().r().f('at').f('the').f('party').r().r().r().r()
+
+f('who').f('did').arg().shf().f('the').f('servant').r().shf().f('ask').arg().f('mary').shf().f('to').shf().f('take').shf().f('a').shf().f('picture').shf().f('of').argr().r().r().r().r().r().r().f('at').f('the').f('party').r().r().r().r()
+
+# adjunktit pitäisi liittää tuohon. Osa noista argumenteista pitäisi korvata adjunkteilla mutta ne myös
+# käyttäytyvät erilailla. Miten erilailla?
+# Noissa rakenteissa on se ongelma että kun siirretään rakenteita, saatetaan siirtää ihan vääränoloinen pääsana jotta saadaan joku sen
+# määre nostettua eteen. Pitää tarkistaa onko se ongelma ja jos on, pitää laittaa älyä nostoihin niin että nostaa ensimmäisen
+# sopivan pinosta eikä vain ensimmäisen pinosta. Se on epäilyttävän rajaava temppu.
+
+# Muuta Constituent kataja-constituentiksi jotta nähdään siirtymät tutulla tavalla. Sitä varten tämä pitänee siirtää
+# Kataja-pluginiksi.
+
+# Tutki onko tämä no-tampering-rakenne. Se vaikuttaa siihen kuinka tehokkaasti tästä syntyvä parseri kykenee käsittelemään
+# vaihtoehtoja seuraavan askeleen ottamisessa.
+
+#mitä(lääkettä())._(syömällä(x)._(Pekka()._(parantui(x).arg())))
+#[mitä lääkettä]._[[syömällä x]._[Pekka [parantui x].arg]]
+#x = 'mitä(lääkettä())._(syömällä(x)._(Pekka()._(parantui(x).arg())))'
+#xx = '[mitä lääkettä]._[[syömällä x]._[Pekka [parantui x].arg]]'
+
+#x = f('mitä').arg(f('lääkettä')._(f('syömällä').arg(x)._(f('Pekka')._(f('parantui').arg(x).arg(x))))
+#x.show()
+
+
+# print('Pekka parantui')
+# x = Pekka()._(parantui(x))
+# x.show()
+
+# print('syömällä Pekka parantui')
+# x = syömällä()._(Pekka()._(parantui(x).arg()))
+# x.show()
+
+# print('Pekka syömällä parantui')
+# x = Pekka()._(syömällä(parantui(x)))
+# x.show()
+
+# print('Pekka parantui syömällä lääkettä')
+# x = Pekka()._(parantui(x).arg(syömällä(lääkettä())))
+# x.show()
+
+# print('Pekka tiesi mitä lääkettä syömällä hän parantui')
+# x = Pekka()._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(hän()._(parantui(x).arg())))))
+# x.show()
+
+# print('Pekka tiesi mitä lääkettä syömällä parantui')
+# x = Pekka()._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(parantui().arg()))))
+# x.show()
+
+# print('Pekka tiesi mitä lääkettä syömällä Merja parantui')
+# x = Pekka()._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(Merja()._(parantui(x).arg())))))
+# x.show()
+
+# print('Pekka joka tiesi mitä lääkettä syömällä hän parantui nukkui')
+# x = Pekka().arg(joka()._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(hän()._(parantui(x).arg()))))))._(nukkui(x))
+# x.show()
+
+# print('Pekka joka tiesi mitä lääkettä syömällä hän parantui rakasti Merjaa')
+# x = Pekka().arg(joka()._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(hän()._(parantui(x).arg()))))))._(rakasti(x).arg(Merjaa()))
+# x.show()
+
+# print('Pekka joka rakasti Merjaa tiesi mitä lääkettä syömällä hän parantui')
+# x = Pekka().arg(joka()._(rakasti(x).arg(Merjaa())))._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(hän()._(parantui(x).arg())))))
+# x.show()
+
+# print('Pekka jota Merja rakasti tiesi mitä lääkettä syömällä hän parantui')
+# x = Pekka().arg(jota()._(Merja()._(rakasti(x).arg())))._(tiesi(x).arg(mitä(lääkettä())._(syömällä(x)._(hän()._(parantui(x).arg())))))
+# x.show()
+
+
+# print('Pekka käski palauttaa kirjan Merjalle')
+# x = Pekka()._(käski(x).arg(palauttaa(kirjan()).arg(Merjalle())))
+# x.show()
+
+# print('kirjan käski palauttaa Merjalle Pekka')
+# x = kirjan()._(käski(palauttaa(x).arg(Merjalle())).arg(Pekka()))
+# x.show()
+
+# print('käski Pekka palauttaa kirjan Merjalle')
+# x = käski(Pekka()).arg(palauttaa(kirjan()).arg(Merjalle()))
+# x.show()
+
+# print('kirjan Pekka käski palauttaa Merjalle')
+# x = kirjan()._(Pekka()._(käski(x).arg(palauttaa(x).arg(Merjalle()))))
+# x.show()
+
+

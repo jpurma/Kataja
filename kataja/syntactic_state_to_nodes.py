@@ -57,8 +57,9 @@ def syntactic_state_to_nodes(forest, syn_state):
     #    num_tree = forest.get_numeration()
 
     scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
-    sc_center = scene_rect.center().x()
-    sc_middle = scene_rect.center().y()
+    center = scene_rect.center()
+    sc_center = center.x()
+    sc_middle = center.y()
 
     # ################ Helpers ###################################
 
@@ -135,6 +136,8 @@ def syntactic_state_to_nodes(forest, syn_state):
             recursive_add_const_node(tree_root, None)
     node_keys_to_validate -= found_nodes
     for syn_bare, syn_parent in cns_to_create:
+        if syn_bare.uid in forest.nodes_from_synobs:
+            continue
         host = forest.get_node(syn_parent)
         pos = None
         if host:
@@ -289,11 +292,9 @@ def syntactic_state_to_nodes(forest, syn_state):
             new_g.update_selection([forest.get_node(synobj) for synobj in members])
 
     # ---------
-    strat = forest.settings.get('gloss_strategy')
-    if strat and strat == 'message':
+    if forest.settings.get('gloss_strategy') == 'message':
         forest.heading_text = syn_state.msg
     forest.trees = [forest.get_node(tree_root) for tree_root in syn_state.tree_roots if tree_root]
-
 
 def verify_edge_order_for_constituent_nodes(node):
     """ Verify that relations to children are in same order as in syntactic object. This

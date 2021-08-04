@@ -109,10 +109,11 @@ class TogglePlugin(KatajaAction):
         if sender:
             if isinstance(sender, MediatingAction):
                 sender = sender.sender()
-            parent = sender.parentWidget()
-            while parent and not hasattr(parent, 'refresh_plugin_selection'):
-                parent = parent.parentWidget()
-            if hasattr(parent, 'refresh_plugin_selection'):
-                parent.refresh_plugin_selection()
+            if hasattr(sender, 'parentWidget'):
+                parent = sender.parentWidget()
+                while parent and not hasattr(parent, 'refresh_plugin_selection'):
+                    parent = parent.parentWidget()
+                if hasattr(parent, 'refresh_plugin_selection'):
+                    parent.refresh_plugin_selection()
         ctrl.ui.update_plugin_menu()
         return m

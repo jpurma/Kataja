@@ -139,12 +139,17 @@ class Parser:
             for complex_const in homonyms:
                 routes = []
                 new_routes = list(original_routes)
+                complex_parts = []
                 for const in complex_const:
                     added = Add(const)
+                    complex_parts.append(added)
                     added.ord = operation_ids.get_id()
                     new_routes = [RouteItem(route_end, added) for route_end in new_routes] or [RouteItem(None, added)]
                     new_routes = list(chain.from_iterable(self.build_route(route) for route in new_routes))
-                    print('-- new_routes: ', new_routes)
+                    #print('-- new_routes: ', new_routes)
+                if len(complex_parts) > 1:
+                    for op in complex_parts:
+                        op.complex_parts = complex_parts
                 routes += new_routes
         print('routes after parse: ', routes)
         return routes
@@ -166,12 +171,17 @@ class Parser:
         return consts
 
     def new_step(self, prev_route_item, operation):
+        #print('making new step for ', operation.uid)
         if operation.uid in self.operations:
             operation = self.operations[operation.uid]
+            #print('fetch known operation, ', operation.uid)
         else:
             self.operations[operation.uid] = operation
             operation.ord = operation_ids.get_id()
-        return RouteItem(prev_route_item, operation)
+        ri = RouteItem(prev_route_item, operation)
+        if ri not in ri.parent.children:
+            ri.parent.children.append(ri)
+        return ri
 
     def build_route(self, route_item):
         if not (route_item.parent and route_item.local_heads):
@@ -187,16 +197,16 @@ class Parser:
             while ri and ri.head is op_head:
                 ri = ri.parent
             local_heads = ri.local_heads
-        print(f'building route item {route_item}, local heads: {local_heads} ')
-        #assert previous is route_item.local_heads[0]
+        #print(f'building route item {route_item}, local heads: {local_heads} ')
 
+        adjunction_is_possible = type(route_item.operation) is Add
         # comp match from previous
         for previous in local_heads:
             if previous is route_item:
                 continue
             # adjunct operation
             # (adjunktointi ei saisi olla poissulkeva vaihtoehto, vrt. 'show Mary castles' ja 'show Mary Castles')
-            if has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
+            if adjunction_is_possible and has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head))
                 new_route_items.append(new_route_item)
                 is_sus = True
@@ -209,7 +219,7 @@ class Parser:
 
         # spec operations
         is_first = True
-        for precedent in route_item.free_heads:
+        for precedent in route_item.available_heads:
             if precedent is route_item:
                 continue
             if not (is_first or allow_long_distance(precedent.features)):
@@ -235,9 +245,9 @@ class Parser:
                     is_sus = True
                     found_comp = True
                     break
-            if not found_comp:
-                for precedent in route_item.free_heads:
-                    if precedent is previous or precedent is route_item:
+            if not found_comp:  # is this only long distance comp, and if it is, does it ever make sense?
+                for precedent in route_item.available_heads:
+                    if precedent is previous or precedent is route_item or precedent in local_heads:
                         continue
                     #elif not allow_long_distance(precedent.features):
                     #    continue
@@ -264,11 +274,6 @@ class Parser:
         self.exporter.reset()
         print('--------------')
 
-        # if func_parse:
-        #     print('using func parse')
-        #     route_ends = self.func_parser.parse(sentence)
-        #     target_linearisation = self.func_parser.compute_target_linearisation(routes[0])
-        # else:
         route_ends = self._string_parse(sentence)
 
         print('==============')
@@ -276,32 +281,28 @@ class Parser:
         print(f'{len(route_ends)} result routes')
         good_routes = []
         bad_routes = []
-        for route_item in list(route_ends):
+        for route_item in route_ends:
             route = route_item.as_route()
             linear = linearize(route)
             is_valid = is_fully_connected(route) and not has_unsatisfied_necessary_features(route)
             if sentence == linear and is_valid:
                 done = self.new_step(route_item, Done(route_item.operation.head, msg=f'done: {linear}'))
-                route_ends.append(done)
-                route_ends.remove(route_item)
                 good_routes.append(done)
                 print(f'result path: {route_str(route)} is in correct order and fully connected')
                 if not func_parse:
                     print('possible derivation: ', '.'.join(route_item_.operation.entry for route_item_ in route))
             elif show_bad_routes:
-                pass
                 #fail = self.new_step(route_item, Fail(route_item.operation.head, msg=f'fail: {linear}'))
                 #bad_routes.append(fail)
                 #route_ends.append(fail)
                 #route_ends.remove(route_item)
                 bad_routes.append(route_item)
 
+        print('parse took ', time.time() - t)
         self.exporter.export_to_kataja(good_routes + bad_routes)  # + bad_routes, good_routes)
-        print()
         self.exporter.save_as_json()
         self.total += len(route_ends)
         self.total_good_routes += len(good_routes)
-        print('parse took ', time.time() - t)
         return good_routes
 
 

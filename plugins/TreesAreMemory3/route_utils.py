@@ -28,8 +28,9 @@ def get_uid(const):
     if not const:
         return None
     elif isinstance(const, tuple):
-        return '+'.join([get_uid(c) for c in const])
+        return f"({'+'.join(get_uid(c) for c in const)})"
     else:
+        assert 'None' not in str(const.uid)
         return str(const.uid)
 
 

@@ -39,19 +39,23 @@ class RouteItem:
 
     def __init__(self, parent, operation):
         self.parent = parent
+        self.children = []
         self.operation = operation
         self.path = f'{self.parent.path}_{self.operation.ord}' if self.parent else str(self.operation.ord)
         self.uid = self.operation.ord
         self.features = []
-        self.free_heads = []
+        self.available_heads = []
         self.local_heads = []
         self.flat_checked_features = flatten_checked(operation.checked_features)
         self.features = self.operation.calculate_features(self)
         self.previous = self.calculate_previous_item()
         self.used_features = self.calculate_used_features()
-        self.free_heads = self.operation.calculate_free_heads(self)
+        self.available_heads = self.operation.calculate_available_heads(self)
         self.local_heads = self.operation.calculate_local_heads(self)
         self.consts = []
+        self.const = None
+        if parent and self not in parent.children:
+            parent.children.append(self)
         debug_state and print('creating new RouteItem: ', self)
 
     def __str__(self):

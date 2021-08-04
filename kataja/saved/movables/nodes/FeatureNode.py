@@ -83,7 +83,8 @@ class FeatureNode(Node):
                                      syntactic=True),
                        'sign': dict(name='Sign',
                                     prefill='',
-                                    tooltip='Sign of this feature, e.g. +, -, u, =...'),
+                                    tooltip='Sign of this feature, e.g. +, -, u, =...',
+                                    syntactic=True),
                        'family': dict(name='Family', prefill='',
                                       tooltip='Several distinct features can be '
                                               'grouped under one family (e.g. '

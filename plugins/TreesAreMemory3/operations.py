@@ -32,9 +32,9 @@ class Add(Operation):
     def calculate_top_head(self, route_item):
         return [self]
 
-    def calculate_free_heads(self, route_item):
+    def calculate_available_heads(self, route_item):
         if route_item.parent:
-            return [route_item] + route_item.parent.free_heads
+            return [route_item] + route_item.parent.available_heads
         return [route_item]
 
     def calculate_local_heads(self, route_item):
@@ -59,8 +59,8 @@ class Spec(Operation):
     def calculate_top_head(self, route_item):
         return route_item.find_head_item()
 
-    def calculate_free_heads(self, route_item):
-        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head is not self.head and ri.head is not self.arg]
+    def calculate_available_heads(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.available_heads if ri.head is not self.head and ri.head is not self.arg]
 
     def calculate_local_heads(self, route_item):
         head = route_item.head
@@ -105,8 +105,8 @@ class Comp(Operation):
                 if head not in heads:
                     heads.append(parent)
 
-    def calculate_free_heads(self, route_item):
-        return [route_item if ri.head is self.head else ri for ri in route_item.parent.free_heads if ri.head is not self.arg]
+    def calculate_available_heads(self, route_item):
+        return [route_item if ri.head is self.head else ri for ri in route_item.parent.available_heads if ri.head is not self.arg]
 
     def calculate_local_heads(self, route_item):
         head = route_item.head
@@ -142,13 +142,13 @@ class Adj(Operation):
     # route itemin free headsin on tarkoitus olla ne route itemit jotka ovat käytettävissä silloin kun tämä on viimeinen
     # route item ja yritetään päättää minkä toisen route itemin kanssa tämä voi yhdistyä. Eli free heads ei sisällä
     # tätä route itemiä itseään, mutta sisältää edeltävän elementin ylimmän pään.
-    def calculate_free_heads(self, route_item):
-        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head not in self.head]
+    def calculate_available_heads(self, route_item):
+        return [route_item] + [ri for ri in route_item.parent.available_heads if ri.head not in self.head]
 
     # [.A+B A B]
 
     def calculate_local_heads(self, route_item):
-        return [route_item] + [ri for ri in route_item.parent.free_heads if ri.head not in self.head]
+        return [route_item] + [ri for ri in route_item.parent.available_heads if ri.head not in self.head]
 
 
 class Done(Operation):
