@@ -175,7 +175,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         """
         if not self._local_drag_handle_position:
             self._local_drag_handle_position = self.mapFromScene(
-                event.buttonDownScenePos(Qt.LeftButton))
+                event.buttonDownScenePos(Qt.MouseButton.LeftButton))
         self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
         self.update_position()
 
@@ -271,6 +271,15 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         br = self._host.boundingRect()
         best_x = cx
         best_y = br.bottom() + 4
+        self.prepareGeometryChange()
+        self.setPos(best_x, best_y)
+        self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))
+
+    def position_at_top(self):
+        cx, cy = self._host.center_point
+        br = self._host.boundingRect()
+        best_x = cx
+        best_y = br.top() - self._size.height() / 2 - 4
         self.prepareGeometryChange()
         self.setPos(best_x, best_y)
         self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))

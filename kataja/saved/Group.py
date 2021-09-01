@@ -130,10 +130,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.label_item = GroupLabel(value, parent=self)
             self.poke('label_data')
             self.label_data['text'] = value
-        if self.label_item.automatic_position:
-            self.label_item.position_at_bottom()
-        else:
-            self.label_item.update_position()
+        self.position_label()
 
     def remove_node(self, node, delete_if_empty=True):
         """ Manual removal of single node, should be called e.g. when node is deleted.
@@ -276,11 +273,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                             continue
                     route.append(closest)
 
-        if self.label_item:
-            if self.label_item.automatic_position:
-                self.label_item.position_at_bottom()
-            else:
-                self.label_item.update_position()
+        self.position_label()
 
         curved_path = Group.interpolate_point_with_bezier_curves(route)
         sx, sy = route[0]
@@ -324,6 +317,24 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     def update_position(self):
         self.update_shape()
+
+    def position_label(self):
+        if self.label_item:
+            if self.label_item.automatic_position:
+                root_nodes = 0
+                child_nodes = 0
+                for node in self.selection:
+                    if node.node_type == g.CONSTITUENT_NODE:
+                        if [edge for edge in node.edges_up if edge.isVisible()]:
+                            child_nodes += 1
+                        else:
+                            root_nodes += 1
+                if root_nodes >= child_nodes:
+                    self.label_item.position_at_top()
+                else:
+                    self.label_item.position_at_bottom()
+            else:
+                self.label_item.update_position()
 
     def boundingRect(self):
         if self._br is None:

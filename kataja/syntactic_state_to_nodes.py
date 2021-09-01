@@ -24,6 +24,7 @@
 
 
 import time
+import pprint
 
 import kataja.globals as g
 from kataja.singletons import ctrl
@@ -295,6 +296,8 @@ def syntactic_state_to_nodes(forest, syn_state):
     if forest.settings.get('gloss_strategy') == 'message':
         forest.heading_text = syn_state.msg
     forest.trees = [forest.get_node(tree_root) for tree_root in syn_state.tree_roots if tree_root]
+    for top_node in forest.trees:
+        pprint.pprint(top_node.as_bracket_string())
 
 def verify_edge_order_for_constituent_nodes(node):
     """ Verify that relations to children are in same order as in syntactic object. This

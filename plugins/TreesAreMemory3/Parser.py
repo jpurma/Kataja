@@ -79,6 +79,8 @@ def is_fully_connected(route):
             args.add(head2)
             heads.discard(head1)
             heads.discard(head2)
+    heads = [const for const in heads if not isinstance(const, tuple) and not const.is_internal]
+    print('top heads in parsed sentence (should be 1): ', len(heads))
     return len(heads) == 1
 
 
@@ -110,7 +112,7 @@ def has_unsatisfied_necessary_features(route):
                 if not unsatisfied_feats:
                     del unsatisfied_heads[op.head]
     print(f'{unsatisfied_heads=}')
-    return unsatisfied_heads
+    return [const for const in unsatisfied_heads if not const.is_internal]
 
 
 class Parser:
@@ -140,12 +142,15 @@ class Parser:
                 routes = []
                 new_routes = list(original_routes)
                 complex_parts = []
+                is_internal = False
                 for const in complex_const:
                     added = Add(const)
                     complex_parts.append(added)
                     added.ord = operation_ids.get_id()
                     new_routes = [RouteItem(route_end, added) for route_end in new_routes] or [RouteItem(None, added)]
                     new_routes = list(chain.from_iterable(self.build_route(route) for route in new_routes))
+                    const.is_internal = is_internal
+                    is_internal = True
                     #print('-- new_routes: ', new_routes)
                 if len(complex_parts) > 1:
                     for op in complex_parts:
@@ -188,7 +193,7 @@ class Parser:
             return [route_item]
         new_route_items = []
         op_head = route_item.head
-        is_sus = False
+        is_suspicious = False
         previous = None
         local_heads = route_item.local_heads
         assert len(route_item.local_heads) == len({x.head for x in route_item.local_heads})
@@ -209,7 +214,7 @@ class Parser:
             if adjunction_is_possible and has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head))
                 new_route_items.append(new_route_item)
-                is_sus = True
+                is_suspicious = True
             if not is_argument(previous, route_item, route_item):
                 comp_match = find_matches(route_item.features, route_item.not_used(previous.features), '=>')
                 if comp_match:
@@ -228,11 +233,11 @@ class Parser:
             if spec_match:
                 new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
                 new_route_items.append(new_route_item)
-                is_sus = is_sus or is_first
+                is_suspicious = is_suspicious or is_first
                 break
             is_first = False
         # comp operations
-        if not is_sus:
+        if not is_suspicious:
             found_comp = False
             for precedent in local_heads:
                 if precedent is previous or precedent is route_item:
@@ -242,7 +247,7 @@ class Parser:
                 if comp_match:
                     new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
                     new_route_items.append(new_route_item)
-                    is_sus = True
+                    is_suspicious = True
                     found_comp = True
                     break
             if not found_comp:  # is this only long distance comp, and if it is, does it ever make sense?
@@ -256,13 +261,12 @@ class Parser:
                     if comp_match:
                         new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
                         new_route_items.append(new_route_item)
-                        is_sus = True
+                        is_suspicious = True
                         break
 
         if new_route_items:
-            is_sus = is_sus and len(new_route_items) == 1
             new_route_items = list(chain.from_iterable(self.build_route(ri) for ri in new_route_items))
-            if not is_sus:
+            if not is_suspicious: # or len(new_route_items) > 1:
                 return new_route_items
         new_route_items.append(route_item)
         return new_route_items

@@ -405,14 +405,19 @@ class ConstituentNode(Node):
         """
         return None, ''
 
-    def as_bracket_string(self):
-        """ returns a simple bracket string representation """
+    def as_bracket_string(self, done=None):
+        """ returns a simple bracket string representation with loop prevention """
+        if done is None:
+            done = set()
         children = self.get_children()
+        if self in done:
+            if children:
+                return f'[.{self.label}...]'
+            return f'{self.label}...'
+        done.add(self)
         if children:
-            return '[.%s %s ]' % (
-                self.label, ' '.join((c.as_bracket_string() for c in children)))
-        else:
-            return str(self.label)
+            return f'[.{self.label} {" ".join(c.as_bracket_string() for c in children)} ]'
+        return str(self.label)
 
     def can_cascade_edges(self):
         """ Cascading edges is a visual effect for nodes that try to display many similar edges

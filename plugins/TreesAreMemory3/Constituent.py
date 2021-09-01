@@ -28,6 +28,7 @@ class Constituent(BaseConstituent or object):
                 for feature in features:
                     feature.host = self
         self.argument = argument
+        self.is_internal = False
         if not self.head:
             self.head = self
 
@@ -106,6 +107,7 @@ class Constituent(BaseConstituent or object):
         for feature in other.features:
             feature.host = other
         other.head = other
+        other.is_internal = self.is_internal
         return other
 
     if in_kataja:

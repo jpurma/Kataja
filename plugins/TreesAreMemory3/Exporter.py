@@ -249,7 +249,7 @@ class Exporter:
 
         def prepare_groups(route_item):
             groups = []
-            if route_item.consts:
+            if route_item.consts and route_item.const:
                 groups.append(('current', [route_item.const]))
             local_head_consts = []
             available_head_consts = []

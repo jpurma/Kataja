@@ -181,7 +181,7 @@ class ArrowLabel(QtWidgets.QGraphicsTextItem):
             return
         if not self._local_drag_handle_position:
             self._local_drag_handle_position = self.mapFromScene(
-                event.buttonDownScenePos(Qt.LeftButton))
+                event.buttonDownScenePos(Qt.MouseButton.LeftButton))
         self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
         self.update()
 

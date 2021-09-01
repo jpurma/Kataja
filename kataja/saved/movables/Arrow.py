@@ -40,7 +40,7 @@ class Arrow(Movable):
         ex, ey = self.end_point
         sx, sy = self.start_point
         if not self._local_drag_handle_position:
-            drag_x, drag_y = to_tuple(event.buttonDownScenePos(QtCore.Qt.LeftButton))
+            drag_x, drag_y = to_tuple(event.buttonDownScenePos(QtCore.Qt.MouseButton.LeftButton))
             self._local_drag_handle_position = drag_x - sx, drag_y - sy
         handle_x, handle_y = self._local_drag_handle_position
         start_x = scene_x - handle_x

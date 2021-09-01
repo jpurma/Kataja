@@ -29,7 +29,7 @@ class ResizeHandle(QtWidgets.QSizeGrip):
         self.adjust = None
 
     def mouseMoveEvent(self, e):
-        if e.buttons() != QtCore.Qt.LeftButton:
+        if e.buttons() != QtCore.Qt.MouseButton.LeftButton:
             return
         if not self.pressed:
             return
@@ -88,7 +88,7 @@ class GraphicsResizeHandle(UIWidget, QtWidgets.QSizeGrip):
         :param e:
         :return:
         """
-        if e.buttons() != QtCore.Qt.LeftButton:
+        if e.buttons() != QtCore.Qt.MouseButton.LeftButton:
             return
         if not self.pressed:
             return
