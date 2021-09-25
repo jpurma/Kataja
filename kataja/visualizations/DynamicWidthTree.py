@@ -26,18 +26,15 @@ import math
 import kataja.globals as g
 from kataja.Visualization import centered_node_position
 from kataja.saved.movables import Node
-from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
+from kataja.visualizations.BalancedGridBasedTree import BalancedGridBasedTree
 
 
-class DynamicWidthTree(DivideAndConquerTree):
+class DynamicWidthTree(BalancedGridBasedTree):
     """
 
     """
     name = 'Dynamic width trees'
-
-    def __init__(self):
-        super().__init__()
-        self.use_gravity = False
+    use_gravity = False
 
     def reset_node(self, node):
         """

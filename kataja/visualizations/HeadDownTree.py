@@ -59,15 +59,11 @@ class HeadDownTree(BaseVisualization):
     """
     name = 'Head down trees'
     banned_cn_shapes = (g.BRACKETED,)
-    use_rotation = True
+    use_rotation = False
 
     def __init__(self):
         BaseVisualization.__init__(self)
-        self.forest = None
-        self._directed = True
-        self.grid_lines_y = {}
-        self.grid_lines_x = {}
-        self.traces_to_draw = None
+        self.trees_width = 0
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -75,11 +71,15 @@ class HeadDownTree(BaseVisualization):
         :param reset:boolean
         """
         self.forest = forest
-        self._directed = True
+        self.trees_width = 0
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
         self.validate_cn_shapes()
+
+    def prepare_draw(self):
+        super().prepare_draw()
+        self.trees_width = 0
 
     def reset_node(self, node):
         """
@@ -233,11 +233,13 @@ class HeadDownTree(BaseVisualization):
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height
-        offset_x = tree_width / -2
-        offset_y = tree_height / -2
+        offset_x = 0 # tree_width / -2
+        offset_y = 0
+        offset_x += self.trees_width
         height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
         # Actual drawing: set nodes to their places in scene
+
         for y, row in enumerate(merged_grid):
             height_now += edge_height
             edge_height -= height_reduction
@@ -246,3 +248,10 @@ class HeadDownTree(BaseVisualization):
                 if node and isinstance(node, Movable):
                     node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width
+        self.trees_width += tree_width
+
+    def estimate_overlap_and_shift_tree(self, right_tree_top, left_nodes):
+        pass
+
+    def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
+        pass

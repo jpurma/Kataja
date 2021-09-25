@@ -51,18 +51,18 @@ class BaseVisualization:
     banned_cn_shapes = ()
     hide_edges_if_nodes_overlap = True
     use_rotation = False
+    use_gravity = True
 
     def __init__(self):
         """ This is called once when building Kataja. Set up properties for this kind of 
         visualization. vis_data can be used to store states of visualization: when restoring a visualization, vis_data is the only stored data that can be used. """
         self.forest = None
-        self._directed = False
         self._hits = {}
         self._max_hits = {}
-        self.use_gravity = True
         self.gravity = 2.0
         self._stored_top_node_positions = []
         self.traces_to_draw = {}
+        self.done_nodes = set()
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -70,7 +70,6 @@ class BaseVisualization:
         :param reset:boolean
         """
         self.forest = forest
-        self._directed = False
         self._hits = {}
         self._max_hits = {}
         if reset:
@@ -85,6 +84,8 @@ class BaseVisualization:
         if self.use_rotation:
             new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
             self.set_data('rotation', new_rotation)
+        else:
+            self.done_nodes = set()
 
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes
@@ -180,25 +181,18 @@ class BaseVisualization:
         """ Subclasses implement this """
         pass
 
-    def estimate_overlap_and_shift_tree(self, left_trees, right_tree):
-        right_edges = []
-        left_nodes = set()
-        for left_tree in left_trees:
-            for node in left_tree.get_sorted_nodes():
-                if node.locked_to_node:
-                    continue
-                elif node.physics_x and node.physics_y:
-                    continue
-                left_nodes.add(node)
-                br = node.boundingRect()
-                tx, ty = node.target_position
-                right = br.x() + br.width() + tx
-                top = br.y() + ty
-                right_edges.append((top, right, top + br.height()))
+    def estimate_overlap_and_shift_tree(self, right_tree_top, left_nodes):
+        max_right = 0
+        for node in left_nodes:
+            br = node.boundingRect()
+            tx, ty = node.target_position
+            right = br.x() + br.width() + tx
+            if right > max_right:
+                max_right = right
 
-        left_edges = []
+        min_left = 1000
         nodes_to_move = []
-        for node in right_tree.get_sorted_nodes():
+        for node in right_tree_top.get_sorted_nodes():
             if node.locked_to_node:
                 continue
             elif node.physics_x and node.physics_y:
@@ -208,26 +202,16 @@ class BaseVisualization:
             br = node.boundingRect()
             tx, ty = node.target_position
             left = br.x() + tx
-            top = br.y() + ty
-            left_edges.append((top, left, top + br.height()))
+            if left < min_left:
+                min_left = left
             nodes_to_move.append(node)
 
-        dist = 0
-        for lt, left, lb in left_edges:
-            for rt, right, rb in right_edges:
-                if rt > lb:
-                    break
-                if right > left + dist and ((rt < lt < rb) or (rt < lb < rb) or (lt < rt < lb) or
-                                            (lt < rb < lb)):
-                    dist = right - left
-
-        dist += 30
+        dist = (max_right - min_left) + 30
         for node in nodes_to_move:
-            node.target_position = node.target_position[0] + dist, node.target_position[1]
-            node.start_moving()
+            left_nodes.add(node)
+            node.shift_target_position(dist, 0)
 
     def normalise_all(self, shift_x=0, shift_y=0):
-        print('normalisation shifts: ', shift_x, shift_y)
         free_movers = False
         for node in self.forest.nodes.values():
             if node.locked_to_node:
@@ -235,23 +219,34 @@ class BaseVisualization:
             elif node.use_physics():
                 free_movers = True
                 continue
-            node.target_position = (node.target_position[0] + shift_x,
-                                    node.target_position[1] + shift_y)
-            node.start_moving()  # restart moving since we moved the goal
+            node.shift_target_position(shift_x, shift_y)
         return free_movers
 
     def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
+        top_x, top_y = tree_top.target_position
+
+        def _normalise_to_origo(node, done):
+            if node in done:
+                return
+            done.add(node)
+            node.shift_target_position(shift_x - top_x, shift_y - top_y)
+            for child in node.get_all_children(visible=False):
+                if child.locked_to_node:
+                    continue
+                elif child.physics_x and child.physics_y:
+                    continue
+                elif not self.forest.should_we_draw(child, node):
+                    continue
+                _normalise_to_origo(child, done)
+
         if tree_top not in self.forest.trees:
             return
-        top_x, top_y = tree_top.target_position
-        for node in tree_top.get_sorted_nodes():
-            if node.locked_to_node:
-                continue
-            elif node.physics_x and node.physics_y:
-                continue
-            node.target_position = ((node.target_position[0] - top_x) + shift_x,
-                                    (node.target_position[1] - top_y) + shift_y)
-            node.start_moving()  # restart moving since we shifted the end point
+        if tree_top.locked_to_node:
+            return
+        elif tree_top.physics_x and tree_top.physics_y:
+            return
+
+        _normalise_to_origo(tree_top, set())
 
     def normalise_movers_to_top(self, tree_top):
         if tree_top not in self.forest.trees:
@@ -266,9 +261,7 @@ class BaseVisualization:
                 continue
             elif node.physics_x and node.physics_y:
                 continue
-            node.target_position = node.target_position[0] + dx, node.target_position[1] + dy
-            if node.target_position != node.current_position:
-                node.start_moving()  # restart moving since we shifted the end point
+            node.shift_target_position(dx, dy)
 
     # def reset(self):
     # """ Not sure if this should be used at all, it is confusing in its purpose """

@@ -37,13 +37,6 @@ class BracketedLinearization(BaseVisualization):
     banned_cn_shapes = ()
     use_rotation = True
 
-    def __init__(self):
-        BaseVisualization.__init__(self)
-        self.forest = None
-        self._hits = {}
-        self._max_hits = {}
-        self._directed = True
-
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
         :param forest:Forest

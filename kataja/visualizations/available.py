@@ -27,7 +27,7 @@ from collections import OrderedDict
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 from kataja.visualizations.BalancedTree import BalancedTree
 from kataja.visualizations.BracketedLinearization import BracketedLinearization
-from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
+from kataja.visualizations.BalancedGridBasedTree import BalancedGridBasedTree
 from kataja.visualizations.EquidistantElasticTree import EquidistantElasticTree
 from kataja.visualizations.GridlessDivideAndConquerTree import GridlessDivideAndConquerTree
 from kataja.visualizations.HeadDownTree import HeadDownTree
@@ -39,7 +39,7 @@ from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
 # These will be mapped to number keys 1...0,+ in given order.
 
 visualizations_list = [GridlessDivideAndConquerTree,
-                       DivideAndConquerTree,
+                       BalancedGridBasedTree,
                        BalancedTree,
                        HeadDownTree,
                        LeftFirstTree,

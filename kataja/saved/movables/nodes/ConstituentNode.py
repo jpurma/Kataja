@@ -793,6 +793,10 @@ class ConstituentNode(Node):
             p.setWidth(3)
             painter.setPen(p)
             painter.drawLine(r.topLeft().toPoint(), r.topRight().toPoint())
+        # fcr = self.future_children_bounding_rect()
+        # if fcr:
+        #     print(self, fcr)
+        #     painter.drawRect(fcr)
 
     # ############## #
     #                #

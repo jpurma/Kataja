@@ -344,11 +344,13 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
         """ Initiate moving animation for object.
         :return: None
         """
+        tx, ty = self.target_position
+        x, y = self.current_position
+        if tx == x and ty == y:
+            return
         self.is_moving = True
         self.setAcceptHoverEvents(False)
         self._use_easing = True
-        tx, ty = self.target_position
-        x, y = self.current_position
         dx, dy = tx - x, ty - y
         d = math.sqrt(dx * dx + dy * dy)
         self._distance = dx, dy
@@ -383,6 +385,13 @@ class Movable(QtWidgets.QGraphicsObject, SavedObject, FadeInOut):
 
     def _current_position_changed(self, value):
         self.setPos(value[0], value[1])
+
+    def shift_target_position(self, dx, dy):
+        """ Adjust target position for e.g. normalisation,
+        assuming that target position is already calculated with move_to """
+        if dx or dy:
+            self.target_position = self.target_position[0] + dx, self.target_position[1] + dy
+            self.start_moving()
 
     def update_position(self):
         """ Compute new current_position and target_position

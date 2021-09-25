@@ -33,13 +33,7 @@ class BalancedTree(BaseVisualization):
     """
     name = 'Balanced trees'
     banned_cn_shapes = (g.BRACKETED,)
-    use_rotation = True
-
-    def __init__(self):
-        BaseVisualization.__init__(self)
-        self.forest = None
-        self._directed = True
-        self._linear = []
+    use_rotation = False
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -47,7 +41,6 @@ class BalancedTree(BaseVisualization):
         :param reset:boolean
         """
         self.forest = forest
-        self._directed = True
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()
@@ -72,51 +65,15 @@ class BalancedTree(BaseVisualization):
                 return True
         return True
 
-    def estimate_overlap_and_shift_tree(self, left_trees, right_tree):
-        max_right = 0
-        left_nodes = set()
-        for left_tree in left_trees:
-            for node in left_tree.get_sorted_nodes():
-                if node.locked_to_node:
-                    continue
-                elif node.physics_x and node.physics_y:
-                    continue
-                elif not node.isVisible():
-                    continue
-                left_nodes.add(node)
-                br = node.boundingRect()
-                tx, ty = node.target_position
-                right = br.x() + br.width() + tx
-                if right > max_right:
-                    max_right = right
-
-        min_left = 1000
-        nodes_to_move = []
-        for node in right_tree.get_sorted_nodes():
-            if node.locked_to_node:
-                continue
-            elif node.physics_x and node.physics_y:
-                continue
-            elif node in left_nodes:
-                continue
-            br = node.boundingRect()
-            tx, ty = node.target_position
-            left = br.x() + tx
-            if left < min_left:
-                min_left = left
-            nodes_to_move.append(node)
-
-        dist = (max_right - min_left) + 30
-        for node in nodes_to_move:
-            node.target_position = node.target_position[0] + dist, node.target_position[1]
-            node.start_moving()
-
     # @time_me
     def draw_tree(self, tree_top):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
         linearisation of leaves."""
 
         def recursive_position(node, x, y, largest_x):
+            if node in self.done_nodes:
+                return x, y, largest_x
+            self.done_nodes.add(node)
             if node.locked_to_node:
                 return x, y, largest_x
             children = list(reversed(node.get_children(visible=True, of_type=g.CONSTITUENT_NODE)))
@@ -143,3 +100,6 @@ class BalancedTree(BaseVisualization):
                 return x + leaf_rect.left(), y + leaf_rect.top(), largest_x
 
         recursive_position(tree_top, 0, 0, 0)
+
+    def normalise_to_origo(self, tree_top, shift_x=0, shift_y=0):
+        pass

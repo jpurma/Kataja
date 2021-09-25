@@ -193,21 +193,12 @@ class GridlessDivideAndConquerTree(BalancedTree):
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
     use_rotation = True
 
-    def __init__(self):
-        BalancedTree.__init__(self)
-        self.forest = None
-        self._directed = True
-        self.grid_lines_y = {}
-        self.grid_lines_x = {}
-        self.traces_to_draw = None
-
     def prepare(self, forest: 'kataja.saved.Forest', reset=True):
         """ If loading a state, don't reset.
         :param forest:Forest
         :param reset:boolean
         """
         self.forest = forest
-        self._directed = True
         if reset:
             self.set_data('rotation', 0)
             self.reset_nodes()

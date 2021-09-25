@@ -42,13 +42,8 @@ class LeftFirstTree(BaseVisualization):
 
     def __init__(self):
         BaseVisualization.__init__(self)
-        self.forest = None
-        self._hits = {}
-        self._max_hits = {}
-        self._directed = True
         self._indentation = 0
         self._shuffle = False
-        self.traces_to_draw = {}
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.

@@ -183,7 +183,8 @@ the :: a:D
 tiennyt :: T:nfinsg, =että =N:acc|prt =C, =D =neg:sg
 tiesi :: T =N:nom3sg, =että =N:acc =C
 tiesin :: T =N:nom1sg, =että =N:acc =C
-to :: P =T:inf =N:acc|nom3sg adjL:adv
+to :: P =N:acc|nom3sg adjL:adv
+to :: P =T:inf adjL:adv
 towards :: P a:P =p adjL:adv, a:P =N:acc|nom3sg p
 tuhoutui :: T =N:nom3sg =v, v
 työnnettiin :: T, =N:acc|prt =N:een
@@ -221,5 +222,5 @@ who :: C rel =T adjL:P, N:nom3sg adjL:P ld
 who's :: C =T, N:gen ld
 who2 :: C rel =T, N:nom3sg ld
 whom :: adjL:P N:acc =trel ld, C =P trel
-with :: P a:P >N:nom3sg|acc
+with :: P a:P =N:nom3sg|acc
 wonders :: T =N:nom3sg, =C

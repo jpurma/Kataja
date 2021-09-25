@@ -37,11 +37,6 @@ class EquidistantElasticTree(BaseVisualization):
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
     hide_edges_if_nodes_overlap = False
 
-    def __init__(self):
-        BaseVisualization.__init__(self)
-        self.forest = None
-        self._directed = False
-
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
         :param forest:Forest

@@ -130,10 +130,6 @@ class SpirallingTree(BaseVisualization):
 
     def __init__(self):
         BaseVisualization.__init__(self)
-        self.forest = None
-        self._hits = {}
-        self._max_hits = {}
-        self._directed = False
         self.drawn = {}
         self.areas = {}
         self.start_x = 0

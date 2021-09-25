@@ -60,50 +60,57 @@ class Exporter:
             self.web.save_as_json(DATA_PATH)
 
     def routes_to_constituents(self, route_item: RouteItem):
-        def _replace_upwards(old, new, parents):
-            for const in reversed(parents):
-                if const.parts:
-                    left, right = const.parts
-                    if left is old:
-                        left = new
-                    elif right is old:
-                        right = new
-                    long_key = const.long_key.replace(old.long_key, new.long_key)
-                    if long_key in self.branches:
-                        new_const = self.branches[long_key]
-                    else:
-                        new_const = Constituent(label=const.label, features=const.features, checked_features=const.checked_features, parts=[left, right])
-                        new_const.long_key = long_key
-                        new_const.original_head = const.original_head
-                        new_const.contained_feats = left.contained_feats | right.contained_feats
-                        self.branches[long_key] = new_const
-                    old = const
-                    new = new_const
-            return new
-
-        def _replace_first(old, new, node, parents):
-            parents.append(node)
-            if node.parts:
-                if node.parts[1] is old:
-                    #print('find it at depth ', len(parents))
-                    return _replace_upwards(old, new, parents)
-                elif new_top := _replace_first(old, new, node.parts[1], list(parents)):
-                    return new_top
-                elif node.parts[0] is old:
-                    return _replace_upwards(old, new, parents)
-                elif new_top := _replace_first(old, new, node.parts[0], list(parents)):
-                    return new_top
-
-        def replace_first(old, new, consts):
-            for i, const in reversed(list(enumerate(consts))):
-                if const is old:
-                    consts[i] = new
-                    #print(f'replaced top {old.as_string()} with {new.as_string()}')
-                    #print([c.as_string() for c in consts])
-                    return True
-                elif new_top := _replace_first(old, new, const, []):
-                    consts[i] = new_top
-                    return True
+        # def _replace_upwards(old, new, parents):
+        #     for const in reversed(parents):
+        #         if const.parts:
+        #             left, right = const.parts
+        #             if left is old:
+        #                 left = new
+        #             elif right is old:
+        #                 right = new
+        #             print('replacing ', old.long_key, ' with ', new.long_key)
+        #             long_key = const.long_key.replace(old.long_key, new.long_key)
+        #             if long_key in self.branches:
+        #                 new_const = self.branches[long_key]
+        #             else:
+        #                 new_const = Constituent(label=const.label, features=const.features, checked_features=const.checked_features, parts=[left, right])
+        #                 new_const.long_key = long_key
+        #                 new_const.original_head = const.original_head
+        #                 new_const.contained_feats = left.contained_feats | right.contained_feats
+        #                 self.branches[long_key] = new_const
+        #             old = const
+        #             new = new_const
+        #     return new
+        #
+        # def _replace_first(old, new, node, parents):
+        #     parents.append(node)
+        #     if node.parts:
+        #         if node.parts[1] is old:
+        #             #print('find it at depth ', len(parents))
+        #             return _replace_upwards(old, new, parents)
+        #         elif new_top := _replace_first(old, new, node.parts[1], list(parents)):
+        #             return new_top
+        #         elif node.parts[0] is old:
+        #             return _replace_upwards(old, new, parents)
+        #         elif new_top := _replace_first(old, new, node.parts[0], list(parents)):
+        #             return new_top
+        #
+        # def replace_first(old, new, consts):
+        #     for i, const in reversed(list(enumerate(consts))):
+        #         if const is old:
+        #             consts[i] = new
+        #             #print(f'replaced top {old.as_string()} with {new.as_string()}')
+        #             #print([c.as_string() for c in consts])
+        #             return True
+        #         elif new_top := _replace_first(old, new, const, []):
+        #             consts[i] = new_top
+        #             return True
+        def replace_parts_with_merged(left, right, merged, consts):
+            if left in consts:
+                consts.remove(left)
+            if right in consts:
+                consts.remove(right)
+            consts.append(merged)
 
         def create_constituent(op):
             const = Constituent(op.get_head_label(), features=list(op.head.features))
@@ -119,6 +126,7 @@ class Exporter:
         if type(op) is Add:
             long_key = route_item.operation.uid
             if long_key in self.branches:
+                print(f'(add) found existing long_key "{long_key}" in branches: ', self.branches[long_key])
                 route_item.const = self.branches[long_key]
                 route_item.long_key = long_key
             else:
@@ -138,9 +146,13 @@ class Exporter:
                                 merged = const
                         route_item.const = merged
                         route_item.long_key = route_item.const.long_key
+                        print(f'(add complex) creating for long_key "{long_key}", in branches: ',
+                              self.branches[long_key])
                 else:
                     route_item.const = create_constituent(op)
                     route_item.long_key = route_item.const.long_key
+                    print(f'(add simple) creating for long_key "{long_key}", in branches: ', self.branches[long_key])
+
             route_item.consts.append(route_item.const)
         elif type(op) is Adj:
             head0, head1 = op.head
@@ -150,88 +162,60 @@ class Exporter:
             long_key = f'({head_item0.long_key}+{head_item1.long_key})'
             adj0 = head_item0.const
             adj1 = head_item1.const
-            if long_key in self.branches:
-                route_item.const = self.branches[long_key]
-                route_item.long_key = long_key
-            else:
-                route_item.const = Constituent(f'{adj0.label}+{adj1.label}', parts=[adj0, adj1], head=(adj0.head, adj1.head))
-                route_item.const.long_key = long_key
-                route_item.long_key = long_key
-                route_item.const.original_head = op.head
-                route_item.const.inherited_features = route_item.features
-                route_item.const.contained_feats = adj0.contained_feats | adj1.contained_feats
-                self.branches[long_key] = route_item.const
-            if adj0 in route_item.consts:
-                route_item.consts.remove(adj0)
-            if adj1 in route_item.consts:
-                route_item.consts.remove(adj1)
-            route_item.consts.append(route_item.const)
-
-            #route_item.consts.remove(adj1)
-            #print(f'replace: {adj0.as_string()} with {route_item.const.as_string()}')
-            #assert replace_first(adj0, route_item.const, route_item.consts)
+            if long_key not in self.branches:
+                merged = Constituent(f'{adj0.label}+{adj1.label}', parts=[adj0, adj1], head=(adj0.head, adj1.head))
+                merged.long_key = long_key
+                merged.original_head = op.head
+                merged.inherited_features = route_item.features
+                merged.contained_feats = adj0.contained_feats | adj1.contained_feats
+                self.branches[long_key] = merged
+                print(f'(adj) creating for long_key "{long_key}", in branches: ', merged)
+            route_item.long_key = long_key
+            route_item.const = self.branches[long_key]
+            replace_parts_with_merged(adj0, adj1, route_item.const, route_item.consts)
         elif type(op) is Comp:
             head_item = route_item.parent.find_closest_head(op.head)
             arg_item = route_item.parent.find_closest_head(op.arg)
             long_key = f'[{head_item.long_key} {arg_item.long_key} {op.checked_features}]'
-            if long_key in self.branches:
-                route_item.const = self.branches[long_key]
-                route_item.long_key = long_key
-            else:
-                route_item.const = Constituent(head_item.const.label, parts=[head_item.const, arg_item.const],
-                                               checked_features=op.checked_features,
-                                               argument=arg_item.const, head=head_item.const.head)
-                route_item.const.long_key = long_key
-                route_item.long_key = long_key
-                route_item.const.original_head = op.head
-                route_item.const.contained_feats = head_item.const.contained_feats | arg_item.const.contained_feats
+            if long_key not in self.branches:
+                head = head_item.const
+                arg = arg_item.const
+                merged = Constituent(head.label, parts=[head, arg], checked_features=op.checked_features,
+                                     argument=arg, head=head.head)
+                merged.long_key = long_key
+                merged.original_head = op.head
+                merged.contained_feats = head.contained_feats | arg.contained_feats
                 for pos, neg in op.checked_features:
-                    route_item.const.contained_feats[pos] = route_item.const.contained_feats[pos] + [neg]
-                route_item.const.inherited_features = route_item.features
-                self.branches[long_key] = route_item.const
+                    merged.contained_feats[pos] = merged.contained_feats[pos] + [neg]
+                merged.inherited_features = route_item.features
+                self.branches[long_key] = merged
+                print(f'(comp) creating for long_key "{long_key}", in branches: ', merged)
 
-            if head_item.const in route_item.consts:
-                route_item.consts.remove(head_item.const)
-            if arg_item.const in route_item.consts:
-                route_item.consts.remove(arg_item.const)
-
-            #print([c.as_string() for c in route_item.consts])
-            #print('replace: ', head_item.const.as_string(), ' with ', route_item.const.as_string())
-            #print('remove: ', arg_item.const.as_string())
-            #if arg_item.const in route_item.consts:
-            #    route_item.consts.remove(arg_item.const)
-            #replace_first(head_item.const, route_item.const, route_item.consts)
-            route_item.consts.append(route_item.const)
+            route_item.long_key = long_key
+            route_item.const = self.branches[long_key]
+            replace_parts_with_merged(head_item.const, arg_item.const, route_item.const, route_item.consts)
         elif type(op) is Spec:
             head_item = route_item.parent.find_closest_head(op.head)
             arg_item = route_item.parent.find_closest_head(op.arg)
             long_key = f'[{arg_item.long_key} {head_item.long_key} {op.checked_features}]'
-            if long_key in self.branches:
-                route_item.const = self.branches[long_key]
-                route_item.long_key = long_key
-            else:
-                route_item.const = Constituent(head_item.const.label, parts=[arg_item.const, head_item.const],
-                                               checked_features=op.checked_features,
-                                               argument=arg_item.const, head=head_item.const.head)
-                route_item.const.long_key = long_key
-                route_item.long_key = long_key
-                route_item.const.contained_feats = head_item.const.contained_feats | arg_item.const.contained_feats
+            if long_key not in self.branches:
+                head = head_item.const
+                arg = arg_item.const
+                merged = Constituent(head.label, parts=[arg, head], checked_features=op.checked_features,
+                                     argument=arg, head=head.head)
+                merged.long_key = long_key
+                merged.contained_feats = head.contained_feats | arg.contained_feats
                 for pos, neg in op.checked_features:
-                    route_item.const.contained_feats[pos] = route_item.const.contained_feats[pos] + [neg]
-                route_item.const.inherited_features = route_item.features
-                route_item.const.original_head = op.head
-                self.branches[long_key] = route_item.const
+                    merged.contained_feats[pos] = merged.contained_feats[pos] + [neg]
+                merged.inherited_features = route_item.features
+                merged.original_head = op.head
+                self.branches[long_key] = merged
+                print(f'(spec) creating for long_key "{long_key}", in branches: ', merged)
 
-            #print('replace: ', arg_item.const.as_string(), ' with ', route_item.const.as_string())
-            #print('remove: ', head_item.const.as_string())
             #replace_first(arg_item.const, route_item.const, route_item.consts)
-            if head_item.const in route_item.consts:
-                route_item.consts.remove(head_item.const)
-            if arg_item.const in route_item.consts:
-                route_item.consts.remove(arg_item.const)
-
-            route_item.consts.append(route_item.const)
-
+            route_item.long_key = long_key
+            route_item.const = self.branches[long_key]
+            replace_parts_with_merged(head_item.const, arg_item.const, route_item.const, route_item.consts)
 
         # olisiko joku yksi tapa toimia mergeillä jotka kohdistuvat oikeaan alakulmaan?
         for child in route_item.children:
@@ -284,6 +268,9 @@ class Exporter:
             arg = f', {repr(op.get_arg_label())}' if op.arg else ''
             checked = f', {op.checked_features}' if op.checked_features else ''
             msg = f"{paths_n}. {op.__class__.__name__}({repr(op.get_head_label())}{arg}{checked})"
+            print('*** exporting syntactic state *** ', route_item.path)
+            for const in route_item.consts:
+                print('exporting root ', const, const.parts)
             syn_state = SyntaxState(tree_roots=route_item.consts, msg=msg, state_id=route_item.path, parent_id=parent_path,
                                     groups=groups, state_type=op.state_type, sort_order=self.path_counter)
             self.forest.add_step(syn_state)
@@ -306,6 +293,7 @@ class Exporter:
             paths_n = 0
             route_item = route_root
             export_route_items(route_item)
+            print('branches: ', self.branches)
 
             print(f'exporting {len(route_ends)} routes with {self.path_counter} different path parts took {time.time() - t} seconds')
 

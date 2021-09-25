@@ -500,13 +500,11 @@ class Forest(SavedObject):
         if self.visualization:
             self.visualization.prepare_draw()
             self.free_movers = self.visualization.has_free_movers()
-            prev_trees = []
+            left_nodes = set()
             for tree_top in self.trees:
                 self.visualization.draw_tree(tree_top)
                 self.visualization.normalise_to_origo(tree_top)
-                if prev_trees:
-                    self.visualization.estimate_overlap_and_shift_tree(prev_trees, tree_top)
-                prev_trees.append(tree_top)
+                self.visualization.estimate_overlap_and_shift_tree(tree_top, left_nodes)
             # keep everything centered to minimise movement between steps
             # cp = ctrl.view_manager.center()
             # print('current center point: ', cp)
@@ -815,14 +813,13 @@ class Forest(SavedObject):
         :param parent:
         :return:
         """
-        if not parent:
+        if not self.traces_to_draw:
             return True
-        elif not self.traces_to_draw:
-            return True
+        elif not parent:
+            return node.uid not in self.traces_to_draw or not self.traces_to_draw[node.uid]
         elif hasattr(node, 'index') and len(node.get_parents(visible=True)) > 1:
-            key = node.uid
-            if key in self.traces_to_draw:
-                if parent.uid != self.traces_to_draw[key]:
+            if node.uid in self.traces_to_draw:
+                if parent.uid != self.traces_to_draw[node.uid]:
                     return False
         return True
 

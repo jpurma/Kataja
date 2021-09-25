@@ -31,52 +31,13 @@ from kataja.singletons import prefs
 from kataja.visualizations.BalancedTree import BalancedTree
 
 
-class DivideAndConquerTree(BalancedTree):
+class BalancedGridBasedTree(BalancedTree):
     """
 
     """
     name = 'Balanced grid-based tree'
     banned_cn_shapes = (g.BRACKETED, g.SCOPEBOX)
-    use_rotation = True
-
-    def __init__(self):
-        BalancedTree.__init__(self)
-        self.forest = None
-        self._directed = True
-        self.grid_lines_y = {}
-        self.grid_lines_x = {}
-        self.traces_to_draw = None
-
-    def prepare(self, forest, reset=True):
-        """ If loading a state, don't reset.
-        :param forest:Forest
-        :param reset:boolean
-        """
-        self.forest = forest
-        self._directed = True
-        if reset:
-            self.set_data('rotation', 0)
-            self.reset_nodes()
-        self.validate_cn_shapes()
-
-    def reset_node(self, node):
-        """
-
-        :param node:
-        """
-        super().reset_node(node)
-        if node.node_type == g.CONSTITUENT_NODE:
-            node.physics_x = False
-            node.physics_y = False
-        else:
-            node.physics_x = True
-            node.physics_y = True
-
-    def has_free_movers(self):
-        for node in self.forest.nodes.values():
-            if node.isVisible() and (node.physics_x or node.physics_y):
-                return True
-        return True
+    use_rotation = False
 
     def draw_tree(self, tree_top):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
@@ -94,6 +55,8 @@ class DivideAndConquerTree(BalancedTree):
         .L.........                
         
         """
+        print('draw tree called for grid based tree')
+        print('traces to draw: ', self.traces_to_draw, self.use_rotation, len(self.done_nodes))
         only_similar = True
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width / 2
@@ -112,7 +75,7 @@ class DivideAndConquerTree(BalancedTree):
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
-        def _build_grid(node, parent=None, done: set = None):
+        def _build_grid(node, parent, done: set):
             last_drawn_child = None
             if node not in done and self.forest.should_we_draw(node, parent):
                 done.add(node)
@@ -127,7 +90,7 @@ class DivideAndConquerTree(BalancedTree):
                         children = node.get_all_children(visible=True)
                     last_drawn_child = None
                     for child in children:
-                        grid = _build_grid(child, parent=node, done=done)
+                        grid = _build_grid(child, node, done)
                         if grid:
                             grids.append(grid)
                             last_drawn_child = child
@@ -180,7 +143,7 @@ class DivideAndConquerTree(BalancedTree):
             else:
                 return Grid()
 
-        merged_grid = _build_grid(node=tree_top, done=set())
+        merged_grid = _build_grid(tree_top, None, self.done_nodes)
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height
@@ -195,5 +158,6 @@ class DivideAndConquerTree(BalancedTree):
             width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
+                    print('drawing node to grid: ', node.label, node.uid, width_now, height_now)
                     node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width

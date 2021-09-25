@@ -33,11 +33,6 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
     """
     name = 'Linearized Dynamic'
 
-    def __init__(self):
-        AsymmetricElasticTree.__init__(self)
-        self.forest = None
-        self._directed = True
-
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
         :param forest:Forest
