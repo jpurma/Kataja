@@ -150,7 +150,7 @@ class PluginManager:
                     error_dialog.set_error('%s, line %s\n%s: %s' % (
                         plugin_module + ".setup.py", e[2].tb_lineno, e[0].__name__, e[1]))
                     error_dialog.set_traceback(traceback.format_exc())
-                    retry = error_dialog.exec_()
+                    retry = error_dialog.exec()
                     setup = None
         else:
             plugin_path = os.path.join(plugin_module)

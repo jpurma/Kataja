@@ -12,7 +12,7 @@ except ImportError:
 class Feature(BaseFeature):
     simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*')
 
-    def __init__(self, name='Feature', sign='', value=None, required=False, strong=False, depends=False):
+    def __init__(self, name='Feature', sign='', value=None, required=False, strong=False):
         if in_kataja:
             super().__init__(name=name, sign=sign, value=value)
         else:
@@ -29,18 +29,16 @@ class Feature(BaseFeature):
         self.checked_by = None
         self.required = required
         self.strong = strong
-        self.depends = depends
 
     def copy(self, done=None):
-        return Feature(name=self.name, sign=self.sign, value=self.value, required=self.required, strong=self.strong, depends=self.depends)
+        return Feature(name=self.name, sign=self.sign, value=self.value, required=self.required, strong=self.strong)
 
     def __repr__(self):
         c = '✓' if self.checks or self.checked_by else ''
         val = ':' + self.value if self.value else ''
         required = '!' if self.required else ''
         strong = '*' if self.strong else ''
-        dependant = '?' if self.depends else ''
-        return ''.join([c, self.sign, self.name, val, required, strong, dependant])
+        return ''.join([c, self.sign, self.name, val, required, strong])
 
     def __str__(self):
         return repr(self)
@@ -60,7 +58,6 @@ class Feature(BaseFeature):
         s = s.strip()
         required = False
         strong = False
-        depends = False
         if not s:
             return
         if s[0] in cls.simple_signs:
@@ -75,14 +72,10 @@ class Feature(BaseFeature):
         elif name.endswith('*'):
             strong = True
             name = name[:-1]
-        elif name.endswith('?'):
-            depends = True
-            name = name[:-1]
         name, sep, value = name.partition(':')  # 'case:acc' -> name = 'case', subtype = 'acc'
-        return cls(name, sign, value, required=required, strong=strong, depends=depends)
+        return cls(name, sign, value, required=required, strong=strong)
 
     if in_kataja:
         # Announce Kataja that these fields should be saved (in addition to those from BaseFeature):
         required = SavedField('required')
         strong = SavedField('strong')
-        depends = SavedField('depends')

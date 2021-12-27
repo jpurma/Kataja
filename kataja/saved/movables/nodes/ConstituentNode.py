@@ -317,8 +317,6 @@ class ConstituentNode(Node):
                 lines.append(f'checked features: {synobj.checked_features}')
             if synobj.features:
                 lines.append(f'features: {synobj.features}')
-            if hasattr(synobj, 'sticky'):
-                lines.append(f'sticky: {synobj.sticky}')
             lines.append('')
             if getattr(synobj, 'word_edge', None):
                 lines.append('--Word edge--')

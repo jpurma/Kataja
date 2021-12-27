@@ -36,6 +36,11 @@ def flatten_checked(checked_features):
 
 
 class RouteItem:
+    """ RouteItems are elements of attempted parses. Each RouteItem hosts one operation -- same operation can be hosted
+      in many RouteItems if the same operation appears in different stages in parses. RouteItems form parse trees,
+        each RouteItem (except first) has a parent item for 'previous step' and children for its possible next steps.
+        RouteItems store parser's state at that point.
+        """
 
     def __init__(self, parent, operation):
         self.parent = parent
@@ -46,16 +51,17 @@ class RouteItem:
         self.features = []
         self.available_heads = []
         self.local_heads = []
-        self.flat_checked_features = flatten_checked(operation.checked_features)
+        self.features_used = self.calculate_features_used()
+        self.features_satisfied = self.calculate_features_satisfied()
         self.features = self.operation.calculate_features(self)
         self.previous = self.calculate_previous_item()
-        self.used_features = self.calculate_used_features()
         self.available_heads = self.operation.calculate_available_heads(self)
-        self.local_heads = self.operation.calculate_local_heads(self)
+        self.local_heads = self.operation.global_calculate_local_heads(self)
         self.consts = []
         self.const = None
         if parent and self not in parent.children:
             parent.children.append(self)
+        self.head_trees = None
         debug_state and print('creating new RouteItem: ', self)
 
     def __str__(self):
@@ -143,19 +149,49 @@ class RouteItem:
         elif self.parent:
             return self.parent.find_closest_head(head)
 
-    def calculate_used_features(self):
-        feats = list(self.flat_checked_features)
+    def calculate_features_used_simple(self):
+        if self.parent:
+            self.features_used = self.parent.features_used + self.operation.features_used
+        else:
+            self.features_used = self.operation.features_used
+
+    def calculate_features_satisfied_simple(self):
+        if self.parent:
+            self.features_satisfied = self.parent.features_satisfied + self.operation.features_satisfied
+        else:
+            self.features_satisfied = self.operation.features_satisfied
+
+    def calculate_features_used(self):
+        """ Only count those route items that are part of this structure, so that in coordinated structures
+        a feature can (maybe) be used in all coordinated sections. """
+        feats = list(self.operation.features_used)
         route_item = self.parent
         relevant_heads = {self.operation.head}
         while route_item:
-            if route_item.flat_checked_features:
+            if route_item.operation.features_used:
                 if route_item.operation.head in relevant_heads:
-                    feats += route_item.flat_checked_features
+                    feats += route_item.operation.features_used
                 elif route_item.operation.arg in relevant_heads:
-                    feats += route_item.flat_checked_features
+                    feats += route_item.operation.features_used
+                    relevant_heads.add(route_item.operation.head)
+            route_item = route_item.parent
+        return feats
+
+    def calculate_features_satisfied(self):
+        """ Only count those route items that are part of this structure, so that in coordinated structures
+        a feature can (maybe) be used in all coordinated sections. """
+        feats = list(self.operation.features_satisfied)
+        route_item = self.parent
+        relevant_heads = {self.operation.head}
+        while route_item:
+            if route_item.operation.features_satisfied:
+                if route_item.operation.head in relevant_heads:
+                    feats += route_item.operation.features_satisfied
+                elif route_item.operation.arg in relevant_heads:
+                    feats += route_item.operation.features_satisfied
                     relevant_heads.add(route_item.operation.head)
             route_item = route_item.parent
         return feats
 
     def not_used(self, features):
-        return [f for f in features if f not in self.used_features]
+        return [f for f in features if f not in self.features_used]

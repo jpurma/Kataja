@@ -440,7 +440,7 @@ class Preferences(object):
             'range': (10, 60),
             'label': 'Target FPS'
         }
-        self.fps_in_msec = 1000 / self.FPS
+        self.fps_in_msec = int(1000 / self.FPS)
 
         self.move_frames = 10
         self._move_frames_ui = {

@@ -96,9 +96,9 @@ def has_adjunct_licensed(precedent, operation):
         if feat.name == 'adjL':
             for featp in precedent.features:
                 if featp.name == 'a' and matching_values(feat, featp):
-                    return (feat, featp)
-                elif featp.name == 'adjL' and matching_values(featp, feat):
-                    return (feat, featp)
+                    return feat, featp
+                #elif featp.name == 'adjL' and matching_values(featp, feat):
+                #    return (feat, featp)
 
 
 def find_common_features(a_features, b_features):
@@ -204,7 +204,7 @@ def is_argument(arg_ri, head_ri, route_item):
         op = route_item.operation
         if op.arg:
             if op.arg in args and op.head in heads:
-                print(f'{arg_ri} is argument of {head_ri}')
+                #print(f'{arg_ri} is argument of {head_ri}')
                 return True
             elif op.head in heads:
                 heads.add(op.arg)

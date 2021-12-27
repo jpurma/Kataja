@@ -55,8 +55,6 @@ class BalancedGridBasedTree(BalancedTree):
         .L.........                
         
         """
-        print('draw tree called for grid based tree')
-        print('traces to draw: ', self.traces_to_draw, self.use_rotation, len(self.done_nodes))
         only_similar = True
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width / 2
@@ -158,6 +156,5 @@ class BalancedGridBasedTree(BalancedTree):
             width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
-                    print('drawing node to grid: ', node.label, node.uid, width_now, height_now)
                     node.move_to(width_now, height_now, valign=g.TOP, align=g.CENTER_ALIGN)
                 width_now += edge_width

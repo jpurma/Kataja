@@ -1,5 +1,5 @@
 from kataja.singletons import ctrl
-from collections import Iterable
+from collections.abc import Iterable
 
 
 class SavedField(object):

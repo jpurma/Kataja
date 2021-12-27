@@ -80,7 +80,6 @@ class DerivationStep(SavedObject):
             c += 1
             for obj in list(open_references.values()):
                 if hasattr(obj, 'uid'):
-                    # print('saving obj ', obj.uid)
                     obj.save_object(data, open_references)
                 else:
                     print('cannot save open reference object ', obj)

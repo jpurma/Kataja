@@ -285,4 +285,4 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
             x = screen_rect.right() - w
         if y > screen_rect.bottom():
             y = screen_rect.bottom() - h
-        return QtCore.QPoint(x, y)
+        return QtCore.QPoint(int(x), int(y))

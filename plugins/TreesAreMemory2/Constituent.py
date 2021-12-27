@@ -86,7 +86,7 @@ class Constituent(BaseConstituent or object):
         else:
             return self.label
 
-    def full_tree(self):
+    def print_tree(self):
         for f0, f1 in self.checked_features:
             assert isinstance(f0.host, Constituent)
             assert isinstance(f1.host, Constituent)
@@ -95,7 +95,7 @@ class Constituent(BaseConstituent or object):
         for f in self.inherited_features:
             assert isinstance(f.host, Constituent)
         if self.parts:
-            return f'[{" ".join([part.full_tree() for part in self.parts])}]'
+            return f'[{" ".join([part.print_tree() for part in self.parts])}]'
         else:
             return self.label
 

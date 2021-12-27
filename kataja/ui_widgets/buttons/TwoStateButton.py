@@ -23,7 +23,7 @@ class TwoStateButton(PanelButton):
         self.setCheckable(True)
         if text0:
             font = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])
-            font.setPointSize(font.pointSize() * 1.2)
+            font.setPointSize(int(font.pointSize() * 1.2))
             fm = QtGui.QFontMetrics(font)
             mw = max(fm.horizontalAdvance(text0), fm.horizontalAdvance(text1))
             self.setMinimumWidth(mw + 24)

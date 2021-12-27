@@ -145,7 +145,7 @@ class PSExporter(Exporter):
                     msg = f'{state.entry} ({state.get_head_label()}{arg}){ld} {path}'
                     syn_state = SyntaxState(tree_roots=trees, msg=msg, state_id=path, parent_id=parent_path,
                                             groups=groups, state_type=state.state_type)
-                    #print([const.full_tree(), state.entry, path, parent_path, groups, state.state_type])
+                    #print([const.print_tree(), state.entry, path, parent_path, groups, state.state_type])
                     self.forest.add_step(syn_state)
                     parent_path = path
             print(f'exporting {len(const_routes)} routes with {len(paths)} different paths parts took {time.time() - t} seconds')

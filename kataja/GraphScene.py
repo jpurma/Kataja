@@ -432,7 +432,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if ctrl.play and not self._timer_id:
-            self._timer_id = self.startTimer(prefs.fps_in_msec)
+            self._timer_id = self.startTimer(int(prefs.fps_in_msec))
             self.timer_counter = 0
             self.heat = 5.0
 

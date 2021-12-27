@@ -58,40 +58,46 @@ def linearize(route):
             if label and not label.startswith('('):
                 result.append(label)
     str_result = ' '.join(result)
-    debug_linearization and print('linearised: ', str_result)
+    print('linearised: ', str_result)
     return str_result
 
 
 def is_fully_connected(route):
-    heads = set()
+    unused_heads = set()
     args = set()
 
     for route_item in route:
         op = route_item.operation
         if op.head not in args:
-            heads.add(op.head)
+            if not op.complex_parts or op is op.complex_parts[0]:
+                unused_heads.add(op.head)
         if op.arg:
             args.add(op.arg)
-            heads.discard(op.arg)
+            unused_heads.discard(op.arg)
         if type(op) is Adj:
             head1, head2 = op.head
-            args.add(head1)
-            args.add(head2)
-            heads.discard(head1)
-            heads.discard(head2)
-    heads = [const for const in heads if not isinstance(const, tuple) and not const.is_internal]
-    print('top heads in parsed sentence (should be 1): ', len(heads))
+            if head1 in args or head2 in args:
+                args.add(op.head)
+                unused_heads.discard(op.head)
+            unused_heads.discard(head1)
+            unused_heads.discard(head2)
+    print('unused heads: ', unused_heads, len(unused_heads))
+    heads = [const for const in unused_heads if isinstance(const, tuple) or not const.complex_parts]
+    print('heads: ', heads, len(heads))
+    print('top heads in parsed sentence (should be 1): ', len(heads), heads)
+    #assert len(heads) == 1
     return len(heads) == 1
 
 
 def has_unsatisfied_necessary_features(route):
     def add_unsatisfied_feat(ri):
         for feat in ri.features:
-            if feat.sign == '>':
+            if feat.sign == '>' or feat.name == 'req':
                 if ri.head in unsatisfied_heads:
                     unsatisfied_heads[ri.head].append(feat)
                 else:
                     unsatisfied_heads[ri.head] = [feat]
+
 
     unsatisfied_heads = {}
     for route_item in route:
@@ -108,11 +114,21 @@ def has_unsatisfied_necessary_features(route):
         elif type(op) is Spec or type(op) is Comp:
             if op.head in unsatisfied_heads:
                 unsatisfied_feats = unsatisfied_heads[op.head]
-                unsatisfied_feats = [feat for feat in unsatisfied_feats if feat not in route_item.flat_checked_features]
+                unsatisfied_feats = [feat for feat in unsatisfied_feats if feat not in route_item.features_satisfied]
                 if not unsatisfied_feats:
                     del unsatisfied_heads[op.head]
+                else:
+                    unsatisfied_heads[op.head] = unsatisfied_feats
+            if op.arg in unsatisfied_heads:
+                unsatisfied_feats = unsatisfied_heads[op.arg]
+                unsatisfied_feats = [feat for feat in unsatisfied_feats if feat.name != 'req']
+                if not unsatisfied_feats:
+                    del unsatisfied_heads[op.arg]
+                else:
+                    unsatisfied_heads[op.arg] = unsatisfied_feats
+
     print(f'{unsatisfied_heads=}')
-    return [const for const in unsatisfied_heads if not const.is_internal]
+    return [const for const in unsatisfied_heads if isinstance(const, tuple) or not const.complex_parts]
 
 
 class Parser:
@@ -137,25 +153,23 @@ class Parser:
         routes = []
         for word in sentence.split():
             homonyms = self.get_from_lexicon(word)
-            original_routes = list(routes)
+            routes_before_add = list(routes)
             for complex_const in homonyms:
                 routes = []
-                new_routes = list(original_routes)
+                route_ends = list(routes_before_add)
                 complex_parts = []
-                is_internal = False
                 for const in complex_const:
                     added = Add(const)
                     complex_parts.append(added)
                     added.ord = operation_ids.get_id()
-                    new_routes = [RouteItem(route_end, added) for route_end in new_routes] or [RouteItem(None, added)]
-                    new_routes = list(chain.from_iterable(self.build_route(route) for route in new_routes))
-                    const.is_internal = is_internal
-                    is_internal = True
-                    #print('-- new_routes: ', new_routes)
+                    route_ends = [RouteItem(route_end, added) for route_end in route_ends] or [RouteItem(None, added)]
+                    route_ends = list(chain.from_iterable(
+                        self.append_possible_route_operations(route_end) for route_end in route_ends
+                    ))
                 if len(complex_parts) > 1:
                     for op in complex_parts:
-                        op.complex_parts = complex_parts
-                routes += new_routes
+                        op.head.complex_parts = complex_parts
+                routes += route_ends
         print('routes after parse: ', routes)
         return routes
 
@@ -188,7 +202,55 @@ class Parser:
             ri.parent.children.append(ri)
         return ri
 
-    def build_route(self, route_item):
+    def append_possible_route_operations(self, route_item):
+        if not (route_item.parent and route_item.local_heads):
+            return [route_item]
+        new_route_items = []
+        op_head = route_item.head
+        previous = None
+        for previous in route_item.local_heads:
+            #print('checking previous local head', previous, ' for ', route_item)
+            if (adjunct_check := has_adjunct_licensed(previous, route_item)) and not find_shared_heads(previous, route_item):
+                new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head, [adjunct_check]))
+                new_route_items.append(new_route_item)
+            if not is_argument(previous, route_item, route_item):
+                if spec_match := find_matches(previous.features, route_item.features, '>'):
+                    new_route_item = self.new_step(route_item, Spec(op_head, previous.operation.head, spec_match))
+                    new_route_items.append(new_route_item)
+                    break
+                if comp_match := find_matches(route_item.features, previous.features, '=>'):
+                    new_route_item = self.new_step(route_item, Comp(previous.operation.head, op_head, comp_match))
+                    new_route_items.append(new_route_item)
+                    break
+            break
+
+        # spec operations
+        for precedent in route_item.available_heads:
+            if precedent is route_item:
+                continue
+            spec_match = find_matches(route_item.not_used(precedent.features), route_item.features, '=')
+            if spec_match:
+                new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
+                new_route_items.append(new_route_item)
+                break
+        # comp operations
+        for precedent in route_item.available_heads:
+            if precedent is previous or precedent is route_item:
+                continue
+            comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
+            #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
+            if comp_match:
+                new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
+                new_route_items.append(new_route_item)
+                break
+
+        if new_route_items:
+            new_route_items = list(chain.from_iterable(self.append_possible_route_operations(ri) for ri in new_route_items))
+        else:
+            new_route_items.append(route_item)
+        return new_route_items
+
+    def append_possible_route_operations_strict(self, route_item):
         if not (route_item.parent and route_item.local_heads):
             return [route_item]
         new_route_items = []
@@ -196,21 +258,23 @@ class Parser:
         is_suspicious = False
         previous = None
         local_heads = route_item.local_heads
-        assert len(route_item.local_heads) == len({x.head for x in route_item.local_heads})
-        if len(local_heads) < 2:
-            ri = route_item.parent
-            while ri and ri.head is op_head:
-                ri = ri.parent
-            local_heads = ri.local_heads
+        # assert len(route_item.local_heads) == len({x.head for x in route_item.local_heads})
+        # if len(local_heads) < 2:
+        #     ri = route_item.parent
+        #     while ri and ri.head is op_head:
+        #         ri = ri.parent
+        #     local_heads = ri.local_heads
         #print(f'building route item {route_item}, local heads: {local_heads} ')
 
-        adjunction_is_possible = type(route_item.operation) is Add
+        adjunction_is_possible = True # type(route_item.operation) is Add
         # comp match from previous
         for previous in local_heads:
             if previous is route_item:
+                raise hell
                 continue
             # adjunct operation
             # (adjunktointi ei saisi olla poissulkeva vaihtoehto, vrt. 'show Mary castles' ja 'show Mary Castles')
+            print('trying adjunction, ', route_item, route_item.features, previous, previous.features)
             if adjunction_is_possible and has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head))
                 new_route_items.append(new_route_item)
@@ -265,8 +329,8 @@ class Parser:
                         break
 
         if new_route_items:
-            new_route_items = list(chain.from_iterable(self.build_route(ri) for ri in new_route_items))
-            if not is_suspicious: # or len(new_route_items) > 1:
+            new_route_items = list(chain.from_iterable(self.append_possible_route_operations(ri) for ri in new_route_items))
+            if not is_suspicious and False: # or len(new_route_items) > 1:
                 return new_route_items
         new_route_items.append(route_item)
         return new_route_items
@@ -288,7 +352,7 @@ class Parser:
         for route_item in route_ends:
             route = route_item.as_route()
             linear = linearize(route)
-            is_valid = is_fully_connected(route) and not has_unsatisfied_necessary_features(route)
+            is_valid = is_fully_connected(route)  # and not has_unsatisfied_necessary_features(route)
             if sentence == linear and is_valid:
                 done = self.new_step(route_item, Done(route_item.operation.head, msg=f'done: {linear}'))
                 good_routes.append(done)

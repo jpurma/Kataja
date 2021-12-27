@@ -1,6 +1,6 @@
 import copy
 import types
-from collections import Iterable
+from collections.abc import Iterable
 
 from PyQt6 import QtGui, QtCore
 from PyQt6.QtCore import QPointF, QPoint
@@ -153,7 +153,7 @@ class SavedObject(object):
         return transitions, self._cd
 
     def flush_history(self):
-        """ Call after getting storing a set of transitions. Prepare for next
+        """ Call after storing a set of transitions. Prepare for next
         round of transitions.
         :return: None
         """

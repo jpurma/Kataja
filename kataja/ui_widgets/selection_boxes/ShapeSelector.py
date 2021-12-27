@@ -17,7 +17,7 @@ class LineStyleIcon(QtGui.QIcon):
         size = self.size_hint
 
         hidp = ctrl.main.devicePixelRatio()
-        isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
+        isize = QtCore.QSize(int(size.width() * hidp), int(size.height() * hidp))
 
         image = QtGui.QImage(
             isize, QtGui.QImage.Format.Format_ARGB32_Premultiplied)

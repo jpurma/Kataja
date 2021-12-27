@@ -38,8 +38,8 @@ class DTLine(QtWidgets.QGraphicsLineItem):
         if value != self.fog and not self.selected:
             pen = QtGui.QPen(color_for(self.ds_type, value))
             if value:
-                pen.setWidth(0.5)
-            else:
                 pen.setWidth(1)
+            else:
+                pen.setWidth(2)
             self.setPen(pen)
         self.fog = value
