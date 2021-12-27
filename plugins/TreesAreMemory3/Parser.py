@@ -98,7 +98,6 @@ def has_unsatisfied_necessary_features(route):
                 else:
                     unsatisfied_heads[ri.head] = [feat]
 
-
     unsatisfied_heads = {}
     for route_item in route:
         op = route_item.operation
@@ -168,7 +167,8 @@ class Parser:
                     ))
                 if len(complex_parts) > 1:
                     for op in complex_parts:
-                        op.head.complex_parts = complex_parts
+                        op.complex_parts = complex_parts
+                        op.head.complex_parts = [o.head for o in complex_parts]
                 routes += route_ends
         print('routes after parse: ', routes)
         return routes
@@ -207,7 +207,6 @@ class Parser:
             return [route_item]
         new_route_items = []
         op_head = route_item.head
-        previous = None
         for previous in route_item.local_heads:
             #print('checking previous local head', previous, ' for ', route_item)
             if (adjunct_check := has_adjunct_licensed(previous, route_item)) and not find_shared_heads(previous, route_item):
@@ -224,22 +223,14 @@ class Parser:
                     break
             break
 
-        # spec operations
         for precedent in route_item.available_heads:
             if precedent is route_item:
                 continue
-            spec_match = find_matches(route_item.not_used(precedent.features), route_item.features, '=')
-            if spec_match:
+            elif spec_match := find_matches(route_item.not_used(precedent.features), route_item.features, '='):
                 new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
                 new_route_items.append(new_route_item)
                 break
-        # comp operations
-        for precedent in route_item.available_heads:
-            if precedent is previous or precedent is route_item:
-                continue
-            comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
-            #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
-            if comp_match:
+            elif comp_match := find_matches(route_item.features, route_item.not_used(precedent.features), '='):
                 new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
                 new_route_items.append(new_route_item)
                 break

@@ -242,10 +242,10 @@ class Exporter:
                 route_item.const = self.branches[long_key]
                 route_item.long_key = long_key
             else:
-                if op.head.complex_parts:
-                    if op.head is op.head.complex_parts[0]:
+                if op.complex_parts:
+                    if op is op.complex_parts[0]:
                         merged = None
-                        for part in op.head.complex_parts:
+                        for part in op.complex_parts:
                             const = create_constituent(part)
                             const.is_highest = True
                             if merged:

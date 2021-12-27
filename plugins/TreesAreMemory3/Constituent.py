@@ -28,6 +28,7 @@ class Constituent(BaseConstituent or object):
                 for feature in features:
                     feature.host = self
         self.argument = argument
+        self.is_internal = False
         self.is_highest = False
         self.complex_parts = []
         if not self.head:
@@ -108,6 +109,7 @@ class Constituent(BaseConstituent or object):
         for feature in other.features:
             feature.host = other
         other.head = other
+        other.is_internal = self.is_internal
         return other
 
     if in_kataja:

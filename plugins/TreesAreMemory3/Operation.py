@@ -68,8 +68,8 @@ class Operation:
         while item:
             if item.operation.state_type in {ADJUNCT, ADD}:
                 if item.head in unavailable:
-                    if item.head.complex_parts:
-                        for op in item.head.complex_parts:
+                    if item.operation.complex_parts:
+                        for op in item.operation.complex_parts:
                             unavailable.add(op.head)
                 else:
                     return [item]
