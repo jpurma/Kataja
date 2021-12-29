@@ -58,10 +58,10 @@ class Triangle(QtWidgets.QGraphicsItem, FadeInOut):
         c = self.get_color()
         center = 0
         w2 = self.width / 2
-        left = -w2
-        right = w2
+        left = int(-w2)
+        right = int(w2)
         top = 0
-        bottom = self.height
+        bottom = int(self.height)
         simple = False
         painter.setPen(c)
         if simple:

@@ -18,8 +18,8 @@ class ExpandingLineEdit(QtWidgets.QWidget, UIWidget):
         # self.command_prompt.setClearButtonEnabled(True)
         self.text_area = QtWidgets.QPlainTextEdit(parent)
         self.text_area.setAutoFillBackground(True)
-        self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
-        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.text_area.setSizeAdjustPolicy(self.text_area.SizeAdjustPolicy.AdjustToContents)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
         self.on_edit = on_edit
         self.line_edit.show()
         self.text_area.hide()
