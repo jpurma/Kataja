@@ -29,15 +29,9 @@ class Add(Operation):
         msg = f"add '{const.label}'"
         Operation.__init__(self, const, msg=msg, entry=f"add('{const.label}')")
 
-    def calculate_top_head(self, route_item):
-        return [self]
-
     def calculate_available_heads(self, route_item):
         if route_item.parent:
             return [route_item] + route_item.parent.available_heads
-        return [route_item]
-
-    def calculate_local_heads(self, route_item):
         return [route_item]
 
 
@@ -45,44 +39,13 @@ class Spec(Operation):
     sort_order = 1
     state_type = SPECIFIER
 
-    def __init__(self, head, spec, checked_features, long_distance=False):
-        ld = ' (long distance)' if long_distance else ''
-        msg = f"raise '{spec}' as specifier arg for: '{head}' ({checked_features or ''}){ld}"
-        #entry = f"spec('{spec}')" if long_distance else 'spec()'
+    def __init__(self, head, spec, checked_features):
+        msg = f"raise '{spec}' as specifier arg for: '{head}' ({checked_features or ''})"
         entry = f"spec('{spec}', '{head}')"
-        features_used = [checkee for checkee, checked in checked_features]
-        features_satisfied = [checked for checkee, checked in checked_features]
-        Operation.__init__(self, head, arg=spec, msg=msg, entry=entry,
-                           features_used=features_used, features_satisfied=features_satisfied, checked_features=checked_features)
-
-    def calculate_features(self, route_item):
-        head_item = route_item.find_head_item()
-        return [feat for feat in head_item.features if feat not in route_item.features_satisfied]
-
-    def calculate_top_head(self, route_item):
-        return route_item.find_head_item()
+        Operation.__init__(self, head, arg=spec, msg=msg, entry=entry, checked_features=checked_features)
 
     def calculate_available_heads(self, route_item):
         return [route_item] + [ri for ri in route_item.parent.available_heads
-                               if ri.head is not self.head and ri.head is not self.arg]
-
-    def calculate_local_heads(self, route_item):
-        head = route_item.head
-        parent = route_item.parent
-        local_heads = [route_item]
-        heads = [route_item.head, route_item.arg.head]
-        while parent:
-            if parent.arg is head:
-                head = parent.head
-                if head not in heads:
-                    local_heads.append(parent)
-                    heads.append(parent.head)
-            parent = parent.parent
-        print('calculated local heads for spec ', route_item, local_heads)
-        return local_heads
-
-    def calculate_local_heads_(self, route_item):
-        return [route_item] + [ri for ri in route_item.parent.parent.local_heads
                                if ri.head is not self.head and ri.head is not self.arg]
 
 
@@ -90,47 +53,14 @@ class Comp(Operation):
     sort_order = 2
     state_type = COMPLEMENT
 
-    def __init__(self, head, comp, checked_features, long_distance=False):
-        ld = ' (long distance)' if long_distance else ''
-        msg = f"set '{comp}' as complement arg for: '{head}' ({checked_features or ''}){ld}"
-        #entry = f"comp('{head}')" if long_distance else 'comp()'
+    def __init__(self, head, comp, checked_features):
+        msg = f"set '{comp}' as complement arg for: '{head}' ({checked_features or ''})"
         entry = f"comp('{head}', '{comp}')"
-        features_used = [checkee for checkee, checked in checked_features]
-        features_satisfied = [checked for checkee, checked in checked_features]
-        Operation.__init__(self, head, arg=comp, entry=entry, features_used=features_used,
-                           features_satisfied=features_satisfied, msg=msg, checked_features=checked_features)
-
-    def calculate_features(self, route_item):
-        head_item = route_item.find_head_item()
-        return [feat for feat in head_item.features if feat not in route_item.features_satisfied]
-
-    def calculate_top_head(self, route_item):
-        head = route_item.head
-        parent = route_item.parent
-        heads = []
-        while parent:
-            if parent.arg is head:
-                head = parent.head
-                if head not in heads:
-                    heads.append(parent)
+        Operation.__init__(self, head, arg=comp, entry=entry, msg=msg, checked_features=checked_features)
 
     def calculate_available_heads(self, route_item):
         return [route_item if ri.head is self.head else ri for ri in route_item.parent.available_heads
                 if ri.head is not self.arg]
-
-    def calculate_local_heads(self, route_item):
-        head = route_item.head
-        parent = route_item.parent
-        local_heads = [route_item.find_arg_item(), route_item]
-        heads = [route_item.arg, route_item.head]
-        while parent:
-            if parent.arg is head:
-                head = parent.head
-                if head not in heads:
-                    local_heads.append(parent)
-                    heads.append(parent.head)
-            parent = parent.parent
-        return local_heads
 
 
 class Adj(Operation):
@@ -139,28 +69,13 @@ class Adj(Operation):
 
     def __init__(self, head, other_head, checked_features):
         msg = f"set '{other_head}' as adjunct for {head}"
-        # entry = "adj()"
         entry = f"adj('{other_head}', '{head}')"
-        features_used = [checkee for checkee, checked in checked_features]
-        Operation.__init__(self, (other_head, head), msg=msg, entry=entry, features_used=features_used,
-                           checked_features=checked_features)
-
-    def calculate_features(self, route_item):
-        head, other_head = self.head
-        head_op = route_item.parent.find_closest_head(head)
-        other_head_op = route_item.parent.find_closest_head(other_head)
-        return [feat for feat in union(head_op.features, other_head_op.features)
-                if feat not in route_item.features_used and feat not in route_item.features_satisfied]
+        Operation.__init__(self, (other_head, head), msg=msg, entry=entry, checked_features=checked_features)
 
     # route itemin free headsin on tarkoitus olla ne route itemit jotka ovat käytettävissä silloin kun tämä on viimeinen
     # route item ja yritetään päättää minkä toisen route itemin kanssa tämä voi yhdistyä. Eli free heads ei sisällä
     # tätä route itemiä itseään, mutta sisältää edeltävän elementin ylimmän pään.
     def calculate_available_heads(self, route_item):
-        return [route_item] + [ri for ri in route_item.parent.available_heads if ri.head not in self.head]
-
-    # [.A+B A B]
-
-    def calculate_local_heads(self, route_item):
         return [route_item] + [ri for ri in route_item.parent.available_heads if ri.head not in self.head]
 
 
@@ -171,9 +86,6 @@ class Done(Operation):
     def __init__(self, head, msg=""):
         Operation.__init__(self, head, msg=msg, entry="done()")
 
-    def calculate_features(self, route_item):
-        return []
-
 
 class Fail(Operation):
     sort_order = 8
@@ -181,6 +93,3 @@ class Fail(Operation):
 
     def __init__(self, head, msg=""):
         Operation.__init__(self, head, msg, entry="fail()")
-
-    def calculate_features(self, route_item):
-        return []

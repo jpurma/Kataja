@@ -362,7 +362,7 @@ class Exporter:
                 groups.append(('current', [route_item.const]))
             local_head_consts = []
             available_head_consts = []
-            local_heads = route_item.local_heads
+            local_heads = route_item.find_local_heads()
             # if len(local_heads) < 2:
             #     ri = route_item.parent
             #     while ri and ri.head is route_item.head:
@@ -373,7 +373,7 @@ class Exporter:
             for precedent_item in local_heads:
                 if precedent_item is not route_item:
                     local_head_consts.append(self.find_closest_const(precedent_item.operation.head, route_item.consts))
-            for precedent_item in route_item.available_heads:
+            for precedent_item in route_item.find_available_heads():
                 if precedent_item is not route_item:
                     available_head_consts.append(self.find_closest_const(precedent_item.operation.head, route_item.consts))
 

@@ -23,7 +23,7 @@ class Operation:
     sort_order = 10
     state_type = 0
 
-    def __init__(self, head, arg=None, msg='', entry='', features_used=None, features_satisfied=None, checked_features=None):
+    def __init__(self, head, arg=None, msg='', entry='', checked_features=None):
         self.head = head
         self.arg = arg
         self.uid = f'{self.get_head_uid()}{self.get_arg_uid() or ""}S{self.state_type}'
@@ -31,8 +31,6 @@ class Operation:
         self.msg = msg
         self.entry = entry
         self.complex_parts = None
-        self.features_used = features_used or []
-        self.features_satisfied = features_satisfied or []
         self.checked_features = checked_features or []
 
     def __str__(self):
@@ -53,35 +51,7 @@ class Operation:
     def calculate_previous_item(self, route_item):
         return route_item.parent
 
-    def calculate_features(self, route_item):
-        return self.head.features
-
     def calculate_available_heads(self, route_item):
-        return []
-
-    def calculate_local_heads(self, route_item):
-        return []
-
-    def global_calculate_local_heads(self, route_item):
-        unavailable = {route_item.head}
-        item = route_item
-        while item:
-            if item.operation.state_type in {ADJUNCT, ADD}:
-                if item.head in unavailable:
-                    if item.operation.complex_parts:
-                        for op in item.operation.complex_parts:
-                            unavailable.add(op.head)
-                else:
-                    return [item]
-            if item.head in unavailable and item.arg:
-                unavailable.add(item.arg)
-            elif item.arg and item.arg in unavailable:
-                unavailable.add(item.head)
-            elif item.head in unavailable and item.operation.state_type is ADJUNCT:
-                head0, head1 = item.head
-                unavailable.add(head0)
-                unavailable.add(head1)
-            item = item.parent
         return []
 
     def __repr__(self):

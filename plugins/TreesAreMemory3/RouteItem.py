@@ -48,15 +48,9 @@ class RouteItem:
         self.operation = operation
         self.path = f'{self.parent.path}_{self.operation.ord}' if self.parent else str(self.operation.ord)
         self.uid = self.operation.ord
-        self.features = []
-        self.available_heads = []
-        self.local_heads = []
-        self.features_used = self.calculate_features_used()
-        self.features_satisfied = self.calculate_features_satisfied()
-        self.features = self.operation.calculate_features(self)
-        self.previous = self.calculate_previous_item()
-        self.available_heads = self.operation.calculate_available_heads(self)
-        self.local_heads = self.operation.global_calculate_local_heads(self)
+        self._features = None
+        self._local_heads = None
+        self._available_heads = None
         self.consts = []
         self.const = None
         if parent and self not in parent.children:
@@ -92,6 +86,85 @@ class RouteItem:
     def label(self):
         return self.operation.get_head_label()
 
+    @property
+    def features(self):
+        return self.collect_available_features()
+
+    def collect_available_features(self):
+        if self._features is not None:
+            return self._features
+        heads = {self.head}
+        removed = set()
+        route_item = self
+        feats = []
+        while route_item and heads:
+            if route_item.head in heads:
+                removed |= {checked for checkee, checked in self.operation.checked_features if checked.sign}
+                removed |= {checkee for checkee, checked in self.operation.checked_features if checked.sign}
+                if route_item.operation.state_type == ADJUNCT:
+                    heads.remove(route_item.head)
+                    heads.add(route_item.head[0])
+                    heads.add(route_item.head[1])
+                elif route_item.operation.state_type == ADD:
+                    heads.remove(route_item.head)
+                    feats += [f for f in route_item.head.features if f not in feats]
+            route_item = route_item.parent
+        self._features = [f for f in feats if f not in removed]
+        return self._features
+
+    def find_available_heads(self):
+        if self._available_heads is not None:
+            return self._available_heads
+        unavailable = {self.head}
+        banned_arguments = {self.head}
+        if self.operation.complex_parts:
+            unavailable |= set(self.head.complex_parts)
+            banned_arguments |= set(self.head.complex_parts)
+        self._available_heads = []
+        item = self
+        while item:
+            if item.arg:
+                unavailable.add(item.arg)
+                if item.arg in banned_arguments:
+                    banned_arguments.add(item.head)
+            elif item.operation.state_type == ADJUNCT:
+               unavailable.add(item.head[0])
+               unavailable.add(item.head[1])
+            # Myös jos nykyinen on osa elementin argumenttia
+            if item.arg and item.arg in banned_arguments:
+                pass
+            elif item.head not in unavailable:
+                self._available_heads.append(item)
+                unavailable.add(item.head)
+            item = item.parent
+        return self._available_heads
+
+    def find_local_heads(self):
+        if self._local_heads is not None:
+            return self._local_heads
+        unavailable = {self.head}
+        item = self
+        self._local_heads = []
+        while item:
+            if item.operation.state_type in {ADJUNCT, ADD}:
+                if item.head in unavailable:
+                    if item.operation.complex_parts:
+                        for op in item.operation.complex_parts:
+                            unavailable.add(op.head)
+                else:
+                    self._local_heads.append(item)
+                    break
+            if item.head in unavailable and item.arg:
+                unavailable.add(item.arg)
+            elif item.arg and item.arg in unavailable:
+                unavailable.add(item.head)
+            elif item.head in unavailable and item.operation.state_type is ADJUNCT:
+                head0, head1 = item.head
+                unavailable.add(head0)
+                unavailable.add(head1)
+            item = item.parent
+        return self._local_heads
+
     def as_route(self):
         route = []
         route_item = self
@@ -100,98 +173,8 @@ class RouteItem:
             route_item = route_item.parent
         return list(reversed(route))
 
-    def is_phase_border(self):
-        for feat in self.features:
-            if feat.name in phase_borders and is_positive(feat):
-                return True
-
     def find_closest_head(self, head):
         if self.operation.head is head:
             return self
         elif self.parent:
             return self.parent.find_closest_head(head)
-
-    def find_arg_item(self):
-        if self.operation.arg and self.parent:
-            return self.parent.find_closest_head(self.operation.arg)
-
-    def find_head_item(self):
-        if self.parent:
-            return self.parent.find_closest_head(self.operation.head)
-
-    def find_top_head(self):
-        head = self.head
-        top_ri = self
-        prev = self.parent
-        while prev:
-            if prev.operation.arg is head:
-                head = prev.head
-                top_ri = prev
-            prev = prev.parent
-        return top_ri
-
-    def find_previous_added_head(self, excluded):
-        if type(self.operation) is Adj or type(self.operation) is Add and self.operation.head is not excluded:
-            return self.operation.head
-        elif self.parent:
-            return self.parent.find_previous_added_head(excluded)
-
-    def calculate_previous_item(self):
-        if self.parent:
-            prev_added_head = self.parent.find_previous_added_head(self.operation.head)
-            if prev_added_head:
-                found = self.find_closest_head(prev_added_head)
-                return found
-
-    def find_closest_merging_item(self, head):
-        if self.operation.checked_features and (self.operation.head is head or self.operation.arg is head):
-            return self
-        elif self.parent:
-            return self.parent.find_closest_head(head)
-
-    def calculate_features_used_simple(self):
-        if self.parent:
-            self.features_used = self.parent.features_used + self.operation.features_used
-        else:
-            self.features_used = self.operation.features_used
-
-    def calculate_features_satisfied_simple(self):
-        if self.parent:
-            self.features_satisfied = self.parent.features_satisfied + self.operation.features_satisfied
-        else:
-            self.features_satisfied = self.operation.features_satisfied
-
-    def calculate_features_used(self):
-        """ Only count those route items that are part of this structure, so that in coordinated structures
-        a feature can (maybe) be used in all coordinated sections. """
-        feats = list(self.operation.features_used)
-        route_item = self.parent
-        relevant_heads = {self.operation.head}
-        while route_item:
-            if route_item.operation.features_used:
-                if route_item.operation.head in relevant_heads:
-                    feats += route_item.operation.features_used
-                elif route_item.operation.arg in relevant_heads:
-                    feats += route_item.operation.features_used
-                    relevant_heads.add(route_item.operation.head)
-            route_item = route_item.parent
-        return feats
-
-    def calculate_features_satisfied(self):
-        """ Only count those route items that are part of this structure, so that in coordinated structures
-        a feature can (maybe) be used in all coordinated sections. """
-        feats = list(self.operation.features_satisfied)
-        route_item = self.parent
-        relevant_heads = {self.operation.head}
-        while route_item:
-            if route_item.operation.features_satisfied:
-                if route_item.operation.head in relevant_heads:
-                    feats += route_item.operation.features_satisfied
-                elif route_item.operation.arg in relevant_heads:
-                    feats += route_item.operation.features_satisfied
-                    relevant_heads.add(route_item.operation.head)
-            route_item = route_item.parent
-        return feats
-
-    def not_used(self, features):
-        return [f for f in features if f not in self.features_used]

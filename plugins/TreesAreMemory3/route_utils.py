@@ -59,12 +59,6 @@ def union(features1, features2):
     return list(set(features1) | set(features2))
 
 
-def allow_long_distance(features):
-    for feature in features:
-        if feature.name == 'ld':
-            return True
-
-
 def find_matches(pos_features, neg_features, neg_signs='-='):
     matches = []
     for pos_feat in pos_features:
@@ -91,14 +85,12 @@ def has_loose_adjoining_feature(features):
             return True
 
 
-def has_adjunct_licensed(precedent, operation):
-    for feat in operation.features:
+def has_adjunct_licensed(prev_features, features):
+    for feat in features:
         if feat.name == 'adjL':
-            for featp in precedent.features:
+            for featp in prev_features:
                 if featp.name == 'a' and matching_values(feat, featp):
                     return feat, featp
-                #elif featp.name == 'adjL' and matching_values(featp, feat):
-                #    return (feat, featp)
 
 
 def find_common_features(a_features, b_features):

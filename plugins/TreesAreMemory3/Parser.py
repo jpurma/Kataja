@@ -88,48 +88,6 @@ def is_fully_connected(route):
     #assert len(heads) == 1
     return len(heads) == 1
 
-
-def has_unsatisfied_necessary_features(route):
-    def add_unsatisfied_feat(ri):
-        for feat in ri.features:
-            if feat.sign == '>' or feat.name == 'req':
-                if ri.head in unsatisfied_heads:
-                    unsatisfied_heads[ri.head].append(feat)
-                else:
-                    unsatisfied_heads[ri.head] = [feat]
-
-    unsatisfied_heads = {}
-    for route_item in route:
-        op = route_item.operation
-        if type(op) is Add:
-            add_unsatisfied_feat(route_item)
-        elif type(op) is Adj:
-            h1, h2 = op.head
-            if h1 in unsatisfied_heads:
-                del unsatisfied_heads[h1]
-            if h2 in unsatisfied_heads:
-                del unsatisfied_heads[h2]
-            add_unsatisfied_feat(route_item)
-        elif type(op) is Spec or type(op) is Comp:
-            if op.head in unsatisfied_heads:
-                unsatisfied_feats = unsatisfied_heads[op.head]
-                unsatisfied_feats = [feat for feat in unsatisfied_feats if feat not in route_item.features_satisfied]
-                if not unsatisfied_feats:
-                    del unsatisfied_heads[op.head]
-                else:
-                    unsatisfied_heads[op.head] = unsatisfied_feats
-            if op.arg in unsatisfied_heads:
-                unsatisfied_feats = unsatisfied_heads[op.arg]
-                unsatisfied_feats = [feat for feat in unsatisfied_feats if feat.name != 'req']
-                if not unsatisfied_feats:
-                    del unsatisfied_heads[op.arg]
-                else:
-                    unsatisfied_heads[op.arg] = unsatisfied_feats
-
-    print(f'{unsatisfied_heads=}')
-    return [const for const in unsatisfied_heads if isinstance(const, tuple) or not const.complex_parts]
-
-
 class Parser:
     def __init__(self, lexicon, forest=None):
         self.exporter = PSExporter(forest) if use_classic_phrase_structure_exporter else Exporter(forest)
@@ -156,19 +114,27 @@ class Parser:
             for complex_const in homonyms:
                 routes = []
                 route_ends = list(routes_before_add)
-                complex_parts = []
-                for const in complex_const:
+                if len(complex_const) == 1:
+                    const = complex_const[0]
                     added = Add(const)
-                    complex_parts.append(added)
                     added.ord = operation_ids.get_id()
                     route_ends = [RouteItem(route_end, added) for route_end in route_ends] or [RouteItem(None, added)]
                     route_ends = list(chain.from_iterable(
                         self.append_possible_route_operations(route_end) for route_end in route_ends
                     ))
-                if len(complex_parts) > 1:
+                else:
+                    complex_parts = []
+                    for const in complex_const:
+                        added = Add(const)
+                        added.ord = operation_ids.get_id()
+                        complex_parts.append(added)
                     for op in complex_parts:
                         op.complex_parts = complex_parts
                         op.head.complex_parts = [o.head for o in complex_parts]
+                        route_ends = [RouteItem(route_end, op) for route_end in route_ends] or [RouteItem(None, op)]
+                        route_ends = list(chain.from_iterable(
+                            self.append_possible_route_operations(route_end) for route_end in route_ends
+                        ))
                 routes += route_ends
         print('routes after parse: ', routes)
         return routes
@@ -203,34 +169,36 @@ class Parser:
         return ri
 
     def append_possible_route_operations(self, route_item):
-        if not (route_item.parent and route_item.local_heads):
+        if not route_item.parent:
             return [route_item]
         new_route_items = []
         op_head = route_item.head
-        for previous in route_item.local_heads:
+        features = route_item.collect_available_features()
+        for previous in route_item.find_local_heads():
             #print('checking previous local head', previous, ' for ', route_item)
-            if (adjunct_check := has_adjunct_licensed(previous, route_item)) and not find_shared_heads(previous, route_item):
+            prev_features = previous.collect_available_features()
+            if (adjunct_check := has_adjunct_licensed(prev_features, features)) and not find_shared_heads(previous, route_item):
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head, [adjunct_check]))
                 new_route_items.append(new_route_item)
-            if not is_argument(previous, route_item, route_item):
-                if spec_match := find_matches(previous.features, route_item.features, '>'):
-                    new_route_item = self.new_step(route_item, Spec(op_head, previous.operation.head, spec_match))
-                    new_route_items.append(new_route_item)
-                    break
-                if comp_match := find_matches(route_item.features, previous.features, '=>'):
-                    new_route_item = self.new_step(route_item, Comp(previous.operation.head, op_head, comp_match))
-                    new_route_items.append(new_route_item)
-                    break
+            if spec_match := find_matches(prev_features, features, '>'):
+                new_route_item = self.new_step(route_item, Spec(op_head, previous.operation.head, spec_match))
+                new_route_items.append(new_route_item)
+                break
+            if comp_match := find_matches(features, prev_features, '=>'):
+                new_route_item = self.new_step(route_item, Comp(previous.operation.head, op_head, comp_match))
+                new_route_items.append(new_route_item)
+                break
             break
 
-        for precedent in route_item.available_heads:
+        for precedent in route_item.find_available_heads():
             if precedent is route_item:
                 continue
-            elif spec_match := find_matches(route_item.not_used(precedent.features), route_item.features, '='):
+            prev_features = precedent.collect_available_features()
+            if spec_match := find_matches(prev_features, features, '='):
                 new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
                 new_route_items.append(new_route_item)
                 break
-            elif comp_match := find_matches(route_item.features, route_item.not_used(precedent.features), '='):
+            elif comp_match := find_matches(features, prev_features, '='):
                 new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
                 new_route_items.append(new_route_item)
                 break
@@ -239,91 +207,6 @@ class Parser:
             new_route_items = list(chain.from_iterable(self.append_possible_route_operations(ri) for ri in new_route_items))
         else:
             new_route_items.append(route_item)
-        return new_route_items
-
-    def append_possible_route_operations_strict(self, route_item):
-        if not (route_item.parent and route_item.local_heads):
-            return [route_item]
-        new_route_items = []
-        op_head = route_item.head
-        is_suspicious = False
-        previous = None
-        local_heads = route_item.local_heads
-        # assert len(route_item.local_heads) == len({x.head for x in route_item.local_heads})
-        # if len(local_heads) < 2:
-        #     ri = route_item.parent
-        #     while ri and ri.head is op_head:
-        #         ri = ri.parent
-        #     local_heads = ri.local_heads
-        #print(f'building route item {route_item}, local heads: {local_heads} ')
-
-        adjunction_is_possible = True # type(route_item.operation) is Add
-        # comp match from previous
-        for previous in local_heads:
-            if previous is route_item:
-                raise hell
-                continue
-            # adjunct operation
-            # (adjunktointi ei saisi olla poissulkeva vaihtoehto, vrt. 'show Mary castles' ja 'show Mary Castles')
-            print('trying adjunction, ', route_item, route_item.features, previous, previous.features)
-            if adjunction_is_possible and has_adjunct_licensed(previous, route_item) and not find_shared_heads(previous, route_item):
-                new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head))
-                new_route_items.append(new_route_item)
-                is_suspicious = True
-            if not is_argument(previous, route_item, route_item):
-                comp_match = find_matches(route_item.features, route_item.not_used(previous.features), '=>')
-                if comp_match:
-                    new_route_item = self.new_step(route_item, Comp(previous.operation.head, op_head, comp_match))
-                    new_route_items.append(new_route_item)
-            break
-
-        # spec operations
-        is_first = True
-        for precedent in route_item.available_heads:
-            if precedent is route_item:
-                continue
-            if not (is_first or allow_long_distance(precedent.features)):
-                continue
-            spec_match = find_matches(route_item.not_used(precedent.features), route_item.features, '=>')
-            if spec_match:
-                new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
-                new_route_items.append(new_route_item)
-                is_suspicious = is_suspicious or is_first
-                break
-            is_first = False
-        # comp operations
-        if not is_suspicious:
-            found_comp = False
-            for precedent in local_heads:
-                if precedent is previous or precedent is route_item:
-                    continue
-                comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
-                #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
-                if comp_match:
-                    new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
-                    new_route_items.append(new_route_item)
-                    is_suspicious = True
-                    found_comp = True
-                    break
-            if not found_comp:  # is this only long distance comp, and if it is, does it ever make sense?
-                for precedent in route_item.available_heads:
-                    if precedent is previous or precedent is route_item or precedent in local_heads:
-                        continue
-                    #elif not allow_long_distance(precedent.features):
-                    #    continue
-                    comp_match = find_matches(route_item.features, route_item.not_used(precedent.features), '=')
-                    #print('looked for comp match, comp: ', route_item, ' head: ', precedent, comp_match)
-                    if comp_match:
-                        new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
-                        new_route_items.append(new_route_item)
-                        is_suspicious = True
-                        break
-
-        if new_route_items:
-            new_route_items = list(chain.from_iterable(self.append_possible_route_operations(ri) for ri in new_route_items))
-            if not is_suspicious and False: # or len(new_route_items) > 1:
-                return new_route_items
-        new_route_items.append(route_item)
         return new_route_items
 
     def parse(self, sentence):
@@ -343,7 +226,7 @@ class Parser:
         for route_item in route_ends:
             route = route_item.as_route()
             linear = linearize(route)
-            is_valid = is_fully_connected(route)  # and not has_unsatisfied_necessary_features(route)
+            is_valid = is_fully_connected(route)
             if sentence == linear and is_valid:
                 done = self.new_step(route_item, Done(route_item.operation.head, msg=f'done: {linear}'))
                 good_routes.append(done)
