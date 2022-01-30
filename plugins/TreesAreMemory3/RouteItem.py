@@ -115,28 +115,56 @@ class RouteItem:
     def find_available_heads(self):
         if self._available_heads is not None:
             return self._available_heads
-        unavailable = {self.head}
-        banned_arguments = {self.head}
-        if self.operation.complex_parts:
-            unavailable |= set(self.head.complex_parts)
-            banned_arguments |= set(self.head.complex_parts)
+
+        def add_unavailable(const, unavailable):
+            if not isinstance(const, tuple) and const.complex_parts:
+                unavailable |= set(const.complex_parts)
+            else:
+                unavailable.add(const)
+
+        def add_banned_argument(const, banned_arguments):
+            if not isinstance(const, tuple) and const.complex_parts:
+                banned_arguments |= set(const.complex_parts)
+            else:
+                banned_arguments.add(const)
+
+        unavailable = set()
+        banned_arguments = set()
+        add_unavailable(self.head, unavailable)
+        add_banned_argument(self.head, banned_arguments)
         self._available_heads = []
         item = self
+        print('starting from ', item)
+        print('unavailable: ', unavailable, ' banned_arguments: ', banned_arguments)
         while item:
+            print('doing item ', item)
             if item.arg:
-                unavailable.add(item.arg)
+                print('adding unavailable arg: ', item.arg)
+                add_unavailable(item.arg, unavailable)
                 if item.arg in banned_arguments:
-                    banned_arguments.add(item.head)
+                    print('adding banned argument: ', item.head)
+                    add_banned_argument(item.head, banned_arguments)
             elif item.operation.state_type == ADJUNCT:
-               unavailable.add(item.head[0])
-               unavailable.add(item.head[1])
+                print("at adjunct, add unavailable: ", item.head[0], item.head[1])
+                add_unavailable(item.head[0], unavailable)
+                add_unavailable(item.head[1], unavailable)
+                if item.head in banned_arguments:
+                    add_banned_argument(item.head[0], banned_arguments)
+                    add_banned_argument(item.head[1], banned_arguments)
+                    print('added banned arguments: ', item.head[0], item.head[1])
             # Myös jos nykyinen on osa elementin argumenttia
             if item.arg and item.arg in banned_arguments:
+                print('skipping ', item, ' because of banned arguments ', banned_arguments)
+                add_unavailable(item.head, unavailable)
+                print('add ', item.head, ' to unavailables')
                 pass
             elif item.head not in unavailable:
+                print('add ', item, ' to available heads')
                 self._available_heads.append(item)
-                unavailable.add(item.head)
+                add_unavailable(item.head, unavailable)
+                print('add ', item.head, ' to unavailables')
             item = item.parent
+        print('------ done, ', self, ' available heads: ', self._available_heads)
         return self._available_heads
 
     def find_local_heads(self):

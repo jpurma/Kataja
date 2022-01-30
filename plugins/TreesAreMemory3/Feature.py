@@ -10,7 +10,7 @@ except ImportError:
 
 
 class Feature(BaseFeature):
-    simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*')
+    simple_signs = ('+', '-', '=', '_', '~', '≈', '>', '*', '<')
 
     def __init__(self, name='Feature', sign='', value=None, required=False, strong=False):
         if in_kataja:

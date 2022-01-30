@@ -113,7 +113,7 @@ class Web:
         if f_id in self.nodes:
             return self.nodes[f_id]
         else:
-            if feat.sign == '-' or feat.sign == '=' or feat.sign == '_' or feat.sign == '>':
+            if feat.sign in '-=_><':
                 ftype = NEG_FEATURE
             else:
                 ftype = POS_FEATURE

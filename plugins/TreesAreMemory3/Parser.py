@@ -180,7 +180,7 @@ class Parser:
             if (adjunct_check := has_adjunct_licensed(prev_features, features)) and not find_shared_heads(previous, route_item):
                 new_route_item = self.new_step(route_item, Adj(op_head, previous.operation.head, [adjunct_check]))
                 new_route_items.append(new_route_item)
-            if spec_match := find_matches(prev_features, features, '>'):
+            if spec_match := find_matches(prev_features, features, '<'):
                 new_route_item = self.new_step(route_item, Spec(op_head, previous.operation.head, spec_match))
                 new_route_items.append(new_route_item)
                 break
@@ -190,18 +190,19 @@ class Parser:
                 break
             break
 
-        for precedent in route_item.find_available_heads():
-            if precedent is route_item:
-                continue
-            prev_features = precedent.collect_available_features()
-            if spec_match := find_matches(prev_features, features, '='):
-                new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
-                new_route_items.append(new_route_item)
-                break
-            elif comp_match := find_matches(features, prev_features, '='):
-                new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
-                new_route_items.append(new_route_item)
-                break
+        if not new_route_items:
+            for precedent in route_item.find_available_heads():
+                if precedent is route_item:
+                    continue
+                prev_features = precedent.collect_available_features()
+                if spec_match := find_matches(prev_features, features, '='):
+                    new_route_item = self.new_step(route_item, Spec(op_head, precedent.operation.head, spec_match))
+                    new_route_items.append(new_route_item)
+                    break
+                elif comp_match := find_matches(features, prev_features, '='):
+                    new_route_item = self.new_step(route_item, Comp(precedent.operation.head, op_head, comp_match))
+                    new_route_items.append(new_route_item)
+                    break
 
         if new_route_items:
             new_route_items = list(chain.from_iterable(self.append_possible_route_operations(ri) for ri in new_route_items))

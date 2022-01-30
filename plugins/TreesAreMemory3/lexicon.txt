@@ -2,16 +2,17 @@ I :: N:nom1sg
 John :: N:nom3sg|acc
 Kate :: N:nom3sg|acc a:n
 Mary :: N:nom3sg|acc adjL:P
-Merja :: N:nom3sg n
-Merjaa :: N:prt adjL:D >rel >N:gen a:N
+Merja :: N:nom3sg n a:n
+Merjaa :: N:prt adjL:D <N:gen a:n
 Merjalle :: N:lle
-Merjan :: N:gen N:acc
-Minttu :: N:nom3sg n
+Merjan :: N:gen N:acc a:n
+Minttu :: N:nom3sg n a:n
+Minttua :: N:prt n a:n
 Moss :: N:nom3sg a:n adjL:n
-Pariisia :: N:prt
-Pekan :: N:gen >N:gen adjL:gen
-Pekka :: N:nom3sg n
-Pekkaa :: N:prt
+Pariisia :: N:prt a:n
+Pekan :: N:gen <N:gen adjL:gen
+Pekka :: N:nom3sg n a:n
+Pekkaa :: N:prt a:n
 Seine :: N:nom3sg
 Seineä :: N:prt
 Simon :: N:nom3sg
@@ -25,7 +26,7 @@ antanut :: T:nfinsg =neg:sg, v =N:acc|prt =N:lle =N:lla
 antoi :: T =N:nom3sg, v =N:prt|acc =N:lle =N:lla
 asui :: T =N:nom3sg, v =N:ssa =P
 avaimen :: N:acc
-book :: adjL:D adjL:P N:nom3sg N:acc =N:gen >rel
+book :: adjL:D adjL:P N:nom3sg N:acc =N:gen <rel
 broke :: T =N:nom3sg, v =P
 by :: P =N:nom3sg
 can :: T =N:nom1sg|nom2sg|nom3sg|nom1pl|nom2pl|nom3pl, =T:inf
@@ -34,7 +35,7 @@ chose :: =N:nom3sg T, v =N:nom3sg|acc|to
 city :: N:nom3sg =N:gen adjL:D
 claim :: n N:nom3sg =N:gen
 dance :: T:inf, =P =to
-dance_fin :: T:fin =N:nom1sg|nom2sg, >P >to
+dance_fin :: T:fin =N:nom1sg|nom2sg, <P <to
 did :: a:bleb
 did :: a:bleb =N:nom3sg =P, v =N:acc
 does :: bleb =N:nom3sg
@@ -54,6 +55,7 @@ flowing :: N:nom3sg =P
 found :: T =bleb =N:nom3sg, v =N:nom3sg
 gave :: T adjL:bleb =N:nom3sg, v =N:acc =P, =N:acc
 gently :: a:adv
+haluaa :: T:pre3sg =N:nom3sg, v =N:acc
 haluan :: T:pre1sg =N:nom1sg, v =N:acc
 he :: N:nom3pl
 heidän :: N:gen
@@ -70,20 +72,21 @@ häiritsee :: T =N:nom3sg, v =N:prt =N:lla
 häiritä :: T:a =N:gen, v =N:prt =N:lla
 hän :: N:nom3sg
 ihaile :: T:nfinsg =neg:sg, v =N:prt =N:lla
-ihailee :: T =N:nom3sg, v =N:prt =N:lla
+ihailee :: T =N:nom3sg a:t, v =N:prt =N:lla a:t
 ihailevat :: T =N:nom3pl, v =N:prt =N:lla
 ihaili :: T =N:nom3sg, v =N:prt
 ihailla :: T:a-inf, v =N:prt =N:lla
 ihaillaan :: T:pass, =N:prt
 ilman :: =N:prt P
-isä :: N:nom3sg >N:gen
-ja :: coord N:nom3pl T
+isä :: N:nom3sg <N:gen
+ja :: coord N:nom3pl|prt <n adjL:n
+ja :: coord T =T adjL:t
 joka :: rel =T, N:nom3sg
 jolle :: rel =T, N:lle
-jonka :: adjL:N =T, N:acc
+jonka :: adjL:n =T, N:acc
 jonkun :: N:acc a:N
 jonossa :: N:ssa
-jota :: rel =T, N:prt
+jota :: adjL:n rel =T, N:prt
 jäätyään :: =N:iin adv
 kanssa :: adjL:gen =v:a
 kasvaa :: T =N:nom3sg, v
@@ -101,8 +104,8 @@ key :: N:nom3sg adjL:a|D
 kirjaa :: N:prt =N:gen =rel
 kirjan :: N:acc =N:gen =rel
 kohti :: adjL:adv P =N:prt
-kolme :: N:nom3sg >N:prt >N:gen adjL:Num
-kolmea :: N:prt >N:prt >N:gen adjL:Num
+kolme :: N:nom3sg >N:prt <N:gen adjL:Num a:n
+kolmea :: N:prt >N:prt <N:gen adjL:Num
 korjasi :: T =N:nom3sg, =N:acc|prt
 kotiin :: N:iin
 kuka :: C =wh, =T wh, N:nom3sg
@@ -151,7 +154,7 @@ ollut :: T =neg:sg =T:nfinsg
 oltu :: T =neg:pass =T:pass
 on :: =N:nom3sg T =T:nfinsg
 on :: =T:pass
-opettajan :: N:gen >N:gen
+opettajan :: N:gen <N:gen
 osta :: T, =N:nom3sg|nom3pl|prt, =N:nom3sg
 ostaa :: =N:acc|prt =P v
 ostapa :: pa, T =N:nom3sg, =N:nom3sg|nom3pl
@@ -160,7 +163,7 @@ ostit :: =N:nom2sg T =N:acc|prt =P
 otti :: T =N:nom3sg, =N:acc|prt =P
 ovat :: =N:nom3pl T =T:nfinpl
 palasi :: =N:nom3sg =N:iin adv T
-person :: adjL:D|P N:nom3sg|acc N:accP =N:gen >N:to
+person :: adjL:D|P N:nom3sg|acc N:accP =N:gen
 peruuntui :: =N:nom3sg T:pst
 pieni :: adjL:D|a a:a N:nom3sg
 pojat :: N:nom3pl =N:gen
@@ -178,7 +181,8 @@ rakasti :: T =N:nom3sg, =N:prt
 reach :: T =bleb, =N:nom3sg =P
 red :: adjL:a|D a:a
 rolled :: T =N:nom3sg, =P =N:nom3sg
-run :: T =bleb, =P
+run :: T =bleb, =P adjL:P
+runs :: T =N:nom3sg, =P adjL:P
 saavuttaa :: T =N:nom3sg, =N:acc|prt =N:lla
 saavutti :: T =N:nom3sg, =N:acc =N:lla
 said :: T =N:nom3sg, v
@@ -186,7 +190,7 @@ sanoi :: T =N:nom3sg, =että =N:acc =C =N:lle
 se :: N:nom3sg a:D
 sinisiä :: N:prt
 sinä :: N:nom2sg
-sitä :: N:prt a:D|N
+sitä :: N:prt a:D|n
 sleeps :: T =N:nom3sg, v
 somebody :: adjL:P N:nom3sg N:acc =N:gen =trel =C
 sopimuksen :: N:acc =T:a-inf
@@ -206,8 +210,8 @@ the :: a:D
 tiennyt :: T:nfinsg, =että =N:acc|prt =C, =D =neg:sg
 tiesi :: T =N:nom3sg, =että =N:acc =C
 tiesin :: T =N:nom1sg, =että =N:acc =C
-to :: N:to rel, >N:acc >T:inf adjL:adv
-towards :: P a:P adjL:adv, a:P =N:acc|nom3sg
+to :: N:acc adjL:D rel, N:acc|nom1sg adjL:adv
+towards :: P a:P adjL:adv =N:acc|nom3sg
 tuhoutui :: T =N:nom3sg =v, v
 työnnettiin :: T, =N:acc|prt =N:een
 työnnettiin :: T:pass, =N:acc|prt =N:een
@@ -240,16 +244,16 @@ virtaa :: T =N:nom3sg, =P
 virtaamalla :: N:lla =P =N:een
 voisi :: =neg:sg|pl T:nfin, =T:a
 väite :: N:nom3sg adjL:n, =että
-want :: =N:nom1sg|nom2sg T:fin, =N:acc|to
-wants :: =N:nom3sg T:fin, =N:acc >N:to
+want :: =N:nom1sg|nom2sg T:fin, =N:acc =N:to
+wants :: =N:nom3sg T:fin, =N:acc <N:to
 what :: C =T, N:nom3sg
 which :: C =T, req adjL:P a:D
 who :: C rel =T =N:to adjL:D, N:nom3sg
 who's :: C =T, N:gen
 who2 :: C rel =T, N:nom3sg
-who3 :: C rel >T adjL:P N:nom3sg|acc
+who3 :: C rel <T adjL:P N:nom3sg|acc
 whom :: adjL:D =rel, C N:acc
 with :: P a:P =N:acc
 wonders :: T =N:nom3sg, =C
-ystävä :: N:nom3sg >N:gen adjL:nomsg
-ystävää :: N:prt >N:gen adjL:prt
+ystävä :: N:nom3sg <N:gen adjL:nomsg
+ystävää :: N:prt <N:gen adjL:prt
