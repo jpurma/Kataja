@@ -30,6 +30,8 @@
 # Classnames are in camelcase.
 
 import gc
+import json
+import socketserver
 
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -49,6 +51,8 @@ from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classe
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 from kataja.utils import quit
 from kataja.visualizations.available import VISUALIZATIONS
+
+IP, PORT = '127.0.0.1', 62236
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -102,6 +106,27 @@ HeadingWidget QLabel {font-family: "%(main_font)s";
 """
 
 
+class Emitter(QtCore.QObject):
+    signal = QtCore.pyqtSignal(str)
+
+
+class Handler(socketserver.BaseRequestHandler):
+    emitter = Emitter()
+
+    def handle(self):
+        self.emitter.signal.emit(self.request.recv(1024).decode())
+
+
+class Thread(QtCore.QThread):
+    def __init__(self, target, parent=None):
+        QtCore.QThread.__init__(self, parent)
+        self.target = target
+
+    def run(self):
+        while True:
+            self.target()
+
+
 class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
@@ -134,6 +159,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         self._stored_init_state = True
         self.disable_signaling()
         self.outgoing = []
+        Handler.emitter.signal.connect(self.receive_external_signal)
+        self.server = socketserver.TCPServer((IP, PORT), Handler)
+
+        thread = Thread(target=self.server.handle_request)
+        thread.start()
         kataja_app.processEvents()
 
         self.use_tooltips = True
@@ -218,6 +248,14 @@ class KatajaMain(QtWidgets.QMainWindow):
     @property
     def forest(self):
         return self.document.forest
+
+    def receive_external_signal(self, json_data):
+        data = json.loads(json_data)
+        print('received: ', data)
+        forests = self.document.create_forests(treelist=data)
+        if forests:
+            self.document.forests = forests
+            self.document.set_forest(forests[0])
 
     def update_style_sheet(self):
         c = ctrl.cm.drawing()
@@ -409,6 +447,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event:
         """
         QtWidgets.QMainWindow.closeEvent(self, event)
+        self.server.server_close()
         if ctrl.print_garbage:
             # import objgraph
             log.debug('garbage stats: ' + str(gc.get_count()))

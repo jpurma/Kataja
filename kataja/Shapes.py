@@ -110,7 +110,7 @@ def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, color,
     destArrowP2y = (cos(angle - pi + pi / 3) * arrow_size) + end_y
     l2cx = dx * prop + end_x
     l2cy = dy * prop + end_y
-    painter.drawLine(start_x, start_y, l2cx, l2cy)
+    painter.drawLine(int(start_x), int(start_y), int(l2cx), int(l2cy))
     path2 = QtGui.QPainterPath(Pf(end_x, end_y))
     path2.lineTo(end_x, end_y)
     path2.lineTo(destArrowP1x, destArrowP1y)
@@ -786,6 +786,8 @@ def draw_circle(painter, x, y, end_spot_size):
 
 
 def draw_plus(painter, x, y):
+    x = int(x)
+    y = int(y)
     painter.drawLine(x - 1, y + 1, x + 3, y + 1)
     painter.drawLine(x + 1, y - 1, x + 1, y + 3)
 
@@ -827,6 +829,8 @@ def draw_tailed_leaf(painter, x, y, radius):
 
 
 def draw_x(painter, x, y, end_spot_size):
+    x = int(x)
+    y = int(y)
     painter.drawLine(x - end_spot_size, y - end_spot_size, x + end_spot_size, y + end_spot_size)
     painter.drawLine(x - end_spot_size, y + end_spot_size, x + end_spot_size, y - end_spot_size)
 

@@ -67,6 +67,7 @@ hill :: adjL:D N:nom3sg
 him :: N:acc
 his :: N:gen
 hitaasti :: adv
+hylättiin :: T =N:nom3sg, =N:lla
 häiritse :: T:nfinsg =neg:sg, v =N:prt =N:lla
 häiritsee :: T =N:nom3sg, v =N:prt =N:lla
 häiritä :: T:a =N:gen, v =N:prt =N:lla
@@ -187,7 +188,7 @@ saavuttaa :: T =N:nom3sg, =N:acc|prt =N:lla
 saavutti :: T =N:nom3sg, =N:acc =N:lla
 said :: T =N:nom3sg, v
 sanoi :: T =N:nom3sg, =että =N:acc =C =N:lle
-se :: N:nom3sg a:D
+se :: N:nom3sg a:D|n
 sinisiä :: N:prt
 sinä :: N:nom2sg
 sitä :: N:prt a:D|n

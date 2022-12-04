@@ -80,7 +80,7 @@ class AbstractLeftBranching(AbstractBranchingTouchArea):
         painter.setPen(c)
         sx, sy = self.start_point
         ex, ey = self.end_point
-        painter.drawLine(sx - ex, sy - ey, 0, 0)
+        painter.drawLine(int(sx - ex), int(sy - ey), 0, 0)
         if self._hovering:
             painter.save()
             painter.setBrush(ctrl.cm.ui())
